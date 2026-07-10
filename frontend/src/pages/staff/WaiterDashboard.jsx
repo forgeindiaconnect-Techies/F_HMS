@@ -125,7 +125,8 @@ const WaiterDashboard = () => {
             fetchData();
         } catch (error) {
             console.error('Failed to send order', error);
-            alert('Failed to send order');
+            const errorMsg = error.response?.data?.message || error.message || 'Unknown error';
+            alert(`Failed to send order: ${errorMsg}`);
         }
     };
 
