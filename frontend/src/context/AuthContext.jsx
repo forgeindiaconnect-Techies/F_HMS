@@ -5,14 +5,27 @@ const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
+const api = axios.create({
+    baseURL: 'http://localhost:5000/api',
+    withCredentials: true,
+});
+
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            localStorage.removeItem('restosys_user');
+            if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+                window.location.href = '/login';
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-
-    const api = axios.create({
-        baseURL: 'http://localhost:5000/api',
-        withCredentials: true,
-    });
 
     useEffect(() => {
         const storedUser = localStorage.getItem('restosys_user');
