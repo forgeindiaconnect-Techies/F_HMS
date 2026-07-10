@@ -42,6 +42,9 @@ const orderSchema = new mongoose.Schema({
     tableNumber: {
         type: String,
     },
+    notes: {
+        type: String,
+    },
     shippingAddress: {
         address: { type: String },
         city: { type: String },

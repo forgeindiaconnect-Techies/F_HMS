@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChefHat, Timer, CheckCircle, AlertTriangle, Flame, AlertOctagon, Check } from 'lucide-react';
+import { ChefHat, Timer, CheckCircle, AlertTriangle, Flame, AlertOctagon, Check, MessageSquare } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const ChefDashboard = () => {
@@ -157,6 +157,12 @@ const ChefDashboard = () => {
                                         </div>
                                     </div>
                                 ))}
+                                {order.notes && (
+                                    <div className="mt-3 p-3 rounded-xl border border-yellow-500/30 bg-yellow-900/20 text-yellow-200 text-sm">
+                                        <p className="font-bold mb-1 flex items-center gap-1.5"><MessageSquare size={14} /> Kitchen Notes:</p>
+                                        <p>{order.notes}</p>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Ticket Action Button based on Tab */}

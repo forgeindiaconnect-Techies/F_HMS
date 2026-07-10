@@ -52,6 +52,8 @@ export const addOrderItems = async (req, res) => {
             restaurantId: finalRestaurantId,
             branchId: finalBranchId,
             orderType,
+            tableNumber,
+            notes,
             source,
             paymentMethod,
             taxPrice,

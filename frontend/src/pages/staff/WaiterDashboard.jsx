@@ -102,7 +102,8 @@ const WaiterDashboard = () => {
                     product: item._id
                 })),
                 totalPrice: cart.reduce((acc, curr) => acc + curr.price * curr.qty, 0),
-                taxPrice: 0
+                taxPrice: 0,
+                notes: orderNote
             };
 
             if (activeTable.orders) {
@@ -122,6 +123,8 @@ const WaiterDashboard = () => {
             }
             
             setPanelOpen(false);
+            setCart([]);
+            setOrderNote('');
             fetchData();
         } catch (error) {
             console.error('Failed to send order', error);
