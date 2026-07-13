@@ -18,7 +18,9 @@ const RestaurantDetails = () => {
     useEffect(() => {
         const fetchDetails = async () => {
             try {
-                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+                let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+                if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
+                if (!API_URL.endsWith('/api')) API_URL += '/api';
                 // Fetch branches
                 const branchRes = await axios.get(`${API_URL}/restaurants/${id}/branches`);
                 setBranches(branchRes.data);

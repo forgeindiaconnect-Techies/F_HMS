@@ -5,8 +5,12 @@ const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
+let API_URL_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+if (API_URL_BASE.endsWith('/')) API_URL_BASE = API_URL_BASE.slice(0, -1);
+if (!API_URL_BASE.endsWith('/api')) API_URL_BASE += '/api';
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+    baseURL: API_URL_BASE,
     withCredentials: true,
 });
 
