@@ -6,6 +6,7 @@ const Settings = () => {
     const { api } = useAuth();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [activeTab, setActiveTab] = useState('general');
     
     const [formData, setFormData] = useState({
         name: '',
@@ -95,16 +96,28 @@ const Settings = () => {
                 {/* Settings Navigation */}
                 <div className="w-full md:w-64 shrink-0">
                     <nav className="flex flex-col gap-1">
-                        <button className="flex items-center gap-3 px-4 py-3 bg-green-50 text-green-700 rounded-xl font-medium transition-colors text-sm">
+                        <button 
+                            onClick={() => setActiveTab('general')}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-sm ${activeTab === 'general' ? 'bg-green-50 text-green-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                        >
                             <Store size={18} /> General
                         </button>
-                        <button className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors text-sm">
+                        <button 
+                            onClick={() => setActiveTab('payments')}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-sm ${activeTab === 'payments' ? 'bg-green-50 text-green-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                        >
                             <CreditCard size={18} /> Payments & Tax
                         </button>
-                        <button className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors text-sm">
+                        <button 
+                            onClick={() => setActiveTab('notifications')}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-sm ${activeTab === 'notifications' ? 'bg-green-50 text-green-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                        >
                             <Bell size={18} /> Notifications
                         </button>
-                        <button className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors text-sm">
+                        <button 
+                            onClick={() => setActiveTab('security')}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-sm ${activeTab === 'security' ? 'bg-green-50 text-green-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                        >
                             <Lock size={18} /> Security
                         </button>
                     </nav>
@@ -112,95 +125,120 @@ const Settings = () => {
 
                 {/* Settings Form Area */}
                 <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
-                    <h3 className="text-lg font-bold text-gray-900 mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>General Information</h3>
-                    
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Restaurant Name</label>
-                                <input 
-                                    type="text" 
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Contact Email</label>
-                                <input 
-                                    type="email" 
-                                    name="contactEmail"
-                                    value={formData.contactEmail}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Primary Currency</label>
-                                <select 
-                                    name="currency"
-                                    value={formData.currency}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all"
-                                >
-                                    <option value="USD">USD ($)</option>
-                                    <option value="EUR">EUR (€)</option>
-                                    <option value="GBP">GBP (£)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Timezone</label>
-                                <select 
-                                    name="timezone"
-                                    value={formData.timezone}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all"
-                                >
-                                    <option value="America/New_York (EST)">America/New_York (EST)</option>
-                                    <option value="America/Los_Angeles (PST)">America/Los_Angeles (PST)</option>
-                                    <option value="Europe/London (GMT)">Europe/London (GMT)</option>
-                                </select>
-                            </div>
                         </div>
+                        
+                        {activeTab === 'general' && (
+                            <>
+                                <h3 className="text-lg font-bold text-gray-900 mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>General Information</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Restaurant Name</label>
+                                        <input 
+                                            type="text" 
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            required
+                                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Contact Email</label>
+                                        <input 
+                                            type="email" 
+                                            name="contactEmail"
+                                            value={formData.contactEmail}
+                                            onChange={handleChange}
+                                            required
+                                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Primary Currency</label>
+                                        <select 
+                                            name="currency"
+                                            value={formData.currency}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all"
+                                        >
+                                            <option value="USD">USD ($)</option>
+                                            <option value="EUR">EUR (€)</option>
+                                            <option value="GBP">GBP (£)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Timezone</label>
+                                        <select 
+                                            name="timezone"
+                                            value={formData.timezone}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all"
+                                        >
+                                            <option value="America/New_York (EST)">America/New_York (EST)</option>
+                                            <option value="America/Los_Angeles (PST)">America/Los_Angeles (PST)</option>
+                                            <option value="Europe/London (GMT)">Europe/London (GMT)</option>
+                                        </select>
+                                    </div>
+                                </div>
 
-                        <div className="pt-6 border-t border-gray-100">
-                            <h4 className="font-semibold text-gray-900 mb-4">Features</h4>
-                            <div className="space-y-4">
-                                <label className="flex items-center justify-between cursor-pointer">
-                                    <div>
-                                        <p className="font-medium text-sm text-gray-800">Enable Online Ordering</p>
-                                        <p className="text-xs text-gray-500">Allow customers to place orders via the customer app.</p>
+                                <div className="pt-6 mt-6 border-t border-gray-100">
+                                    <h4 className="font-semibold text-gray-900 mb-4">Features</h4>
+                                    <div className="space-y-4">
+                                        <label className="flex items-center justify-between cursor-pointer">
+                                            <div>
+                                                <p className="font-medium text-sm text-gray-800">Enable Online Ordering</p>
+                                                <p className="text-xs text-gray-500">Allow customers to place orders via the customer app.</p>
+                                            </div>
+                                            <div className="relative">
+                                                <input 
+                                                    type="checkbox" 
+                                                    className="sr-only peer" 
+                                                    checked={formData.features.onlineOrdering}
+                                                    onChange={() => handleFeatureToggle('onlineOrdering')}
+                                                />
+                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                                            </div>
+                                        </label>
+                                        <label className="flex items-center justify-between cursor-pointer">
+                                            <div>
+                                                <p className="font-medium text-sm text-gray-800">Table Reservations</p>
+                                                <p className="text-xs text-gray-500">Accept advance bookings for dine-in.</p>
+                                            </div>
+                                            <div className="relative">
+                                                <input 
+                                                    type="checkbox" 
+                                                    className="sr-only peer" 
+                                                    checked={formData.features.tableReservations}
+                                                    onChange={() => handleFeatureToggle('tableReservations')}
+                                                />
+                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                                            </div>
+                                        </label>
                                     </div>
-                                    <div className="relative">
-                                        <input 
-                                            type="checkbox" 
-                                            className="sr-only peer" 
-                                            checked={formData.features.onlineOrdering}
-                                            onChange={() => handleFeatureToggle('onlineOrdering')}
-                                        />
-                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-                                    </div>
-                                </label>
-                                <label className="flex items-center justify-between cursor-pointer">
-                                    <div>
-                                        <p className="font-medium text-sm text-gray-800">Table Reservations</p>
-                                        <p className="text-xs text-gray-500">Accept advance bookings for dine-in.</p>
-                                    </div>
-                                    <div className="relative">
-                                        <input 
-                                            type="checkbox" 
-                                            className="sr-only peer" 
-                                            checked={formData.features.tableReservations}
-                                            onChange={() => handleFeatureToggle('tableReservations')}
-                                        />
-                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-                                    </div>
-                                </label>
+                                </div>
+                            </>
+                        )}
+
+                        {activeTab === 'payments' && (
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>Payments & Tax</h3>
+                                <p className="text-gray-500 text-sm">Payment gateway and taxation settings will be configured here.</p>
                             </div>
-                        </div>
+                        )}
+
+                        {activeTab === 'notifications' && (
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>Notifications</h3>
+                                <p className="text-gray-500 text-sm">Email and SMS notification preferences will be configured here.</p>
+                            </div>
+                        )}
+
+                        {activeTab === 'security' && (
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>Security</h3>
+                                <p className="text-gray-500 text-sm">Password policies and Two-Factor Authentication (2FA) will be configured here.</p>
+                            </div>
+                        )}
 
                         <div className="pt-6 border-t border-gray-100 flex justify-end">
                             <button 
