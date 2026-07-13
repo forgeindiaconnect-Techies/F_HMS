@@ -103,18 +103,6 @@ const Settings = () => {
                             <Store size={18} /> General
                         </button>
                         <button 
-                            onClick={() => setActiveTab('payments')}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-sm ${activeTab === 'payments' ? 'bg-green-50 text-green-700' : 'text-gray-600 hover:bg-gray-50'}`}
-                        >
-                            <CreditCard size={18} /> Payments & Tax
-                        </button>
-                        <button 
-                            onClick={() => setActiveTab('notifications')}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-sm ${activeTab === 'notifications' ? 'bg-green-50 text-green-700' : 'text-gray-600 hover:bg-gray-50'}`}
-                        >
-                            <Bell size={18} /> Notifications
-                        </button>
-                        <button 
                             onClick={() => setActiveTab('security')}
                             className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-sm ${activeTab === 'security' ? 'bg-green-50 text-green-700' : 'text-gray-600 hover:bg-gray-50'}`}
                         >
@@ -217,20 +205,6 @@ const Settings = () => {
                                     </div>
                                 </div>
                             </>
-                        )}
-
-                        {activeTab === 'payments' && (
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>Payments & Tax</h3>
-                                <p className="text-gray-500 text-sm">Payment gateway and taxation settings will be configured here.</p>
-                            </div>
-                        )}
-
-                        {activeTab === 'notifications' && (
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>Notifications</h3>
-                                <p className="text-gray-500 text-sm">Email and SMS notification preferences will be configured here.</p>
-                            </div>
                         )}
 
                         {activeTab === 'security' && (
