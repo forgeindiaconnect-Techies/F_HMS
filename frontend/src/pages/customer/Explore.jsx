@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Search, MapPin, Star, ChevronDown, User, ShoppingBag, Percent } from 'lucide-react';
+import { Search, MapPin, Star, ChevronDown, User, ShoppingBag, Percent, Navigation } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
 const Explore = () => {
     const { user } = useAuth();
     const [restaurants, setRestaurants] = useState([]);
     const [search, setSearch] = useState('');
-    const [location, setLocation] = useState('San Francisco, CA');
+    const [location, setLocation] = useState(localStorage.getItem('userLocation') || 'San Francisco, CA');
     const [isLocationOpen, setIsLocationOpen] = useState(false);
     const [loading, setLoading] = useState(true);
 
@@ -34,6 +35,45 @@ const Explore = () => {
         { name: 'Noodles', img: 'https://b.zmtcdn.com/data/dish_images/91c554bcbbab049353a8808fc970e3b31615960315.png' },
         { name: 'Dosa', img: 'https://b.zmtcdn.com/data/o2_assets/8dc39742916ddc369ebeb91928391b931632716660.png' }
     ];
+
+    const fetchLocation = () => {
+        if (!navigator.geolocation) {
+            toast.error("Geolocation is not supported by your browser");
+            return;
+        }
+
+        toast.loading("Detecting location...", { id: "gps" });
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                try {
+                    const { latitude, longitude } = position.coords;
+                    const res = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                    
+                    if (res.data && res.data.address) {
+                        const city = res.data.address.city || res.data.address.town || res.data.address.village || "";
+                        const state = res.data.address.state || "";
+                        const country = res.data.address.country || "";
+                        
+                        let newLoc = city ? `${city}, ${state || country}` : country;
+                        
+                        setLocation(newLoc);
+                        localStorage.setItem('userLocation', newLoc);
+                        toast.success("Location updated!", { id: "gps" });
+                        setIsLocationOpen(false);
+                    } else {
+                        toast.error("Could not determine city", { id: "gps" });
+                    }
+                } catch (error) {
+                    console.error(error);
+                    toast.error("Failed to fetch location data", { id: "gps" });
+                }
+            },
+            (error) => {
+                toast.error("Location permission denied", { id: "gps" });
+            }
+        );
+    };
 
     useEffect(() => {
         const fetchRestaurants = async () => {
@@ -89,11 +129,17 @@ const Explore = () => {
                             </div>
 
                             {isLocationOpen && (
-                                <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50">
+                                <div className="absolute top-full left-0 mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50">
+                                    <div 
+                                        onClick={fetchLocation}
+                                        className="px-4 py-2 text-sm cursor-pointer hover:bg-red-50 text-red-600 transition-colors font-bold flex items-center gap-2 border-b border-gray-100 pb-3 mb-1"
+                                    >
+                                        <Navigation size={16} /> Detect Current Location
+                                    </div>
                                     {availableLocations.map(loc => (
                                         <div 
                                             key={loc}
-                                            onClick={() => { setLocation(loc); setIsLocationOpen(false); }}
+                                            onClick={() => { setLocation(loc); localStorage.setItem('userLocation', loc); setIsLocationOpen(false); }}
                                             className={`px-4 py-2 text-sm cursor-pointer hover:bg-red-50 hover:text-red-600 transition-colors ${location === loc ? 'font-bold text-red-500 bg-red-50/50' : 'text-gray-700'}`}
                                         >
                                             {loc}
