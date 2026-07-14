@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import CustomerProtectedRoute from './components/CustomerProtectedRoute';
 import DashboardLayout from './layouts/DashboardLayout';
@@ -102,6 +102,9 @@ function App() {
         <Route path="/staff/login" element={<StaffAuthPage />} />
         <Route path="/staff/register" element={<StaffAuthPage />} />
 
+        {/* Alias for super admin mistypes */}
+        <Route path="/superadmin" element={<Navigate to="/super-admin" replace />} />
+
         {/* Super Admin Routes */}
         <Route path="/super-admin" element={<ProtectedRoute allowedRoles={['SuperAdmin']}><SuperAdminLayout /></ProtectedRoute>}>
           <Route index element={<SuperAdminDashboard />} />
@@ -185,6 +188,15 @@ function App() {
           <Route path="billing" element={<CashierDashboard />} />
           <Route path="history" element={<CashierHistory />} />
         </Route>
+
+        {/* 404 Fallback */}
+        <Route path="*" element={
+          <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+            <h1 className="text-6xl font-black text-gray-900 mb-4">404</h1>
+            <p className="text-xl font-medium text-gray-500 mb-8">Page not found</p>
+            <a href="/" className="px-6 py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-colors">Go Home</a>
+          </div>
+        } />
       </Routes>
     </>
   );
