@@ -68,9 +68,11 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const register = async (name, email, password, roleName) => {
+    const register = async (name, email, password, roleName, loginType = 'staff', restaurantName, plan, billingCycle) => {
         try {
-            const { data } = await api.post('/auth/register', { name, email, password, roleName, loginType: 'staff' });
+            const { data } = await api.post('/auth/register', { 
+                name, email, password, roleName, loginType, restaurantName, plan, billingCycle 
+            });
             setUser(data);
             localStorage.setItem('restosys_staff_user', JSON.stringify(data));
             return { success: true, data };

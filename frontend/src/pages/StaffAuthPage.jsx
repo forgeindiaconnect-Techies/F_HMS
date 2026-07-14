@@ -29,7 +29,16 @@ const StaffAuthPage = () => {
         if (mode === 'login') {
             result = await login(data.email, data.password);
         } else {
-            result = await registerUser(data.name, data.email, data.password, data.role);
+            result = await registerUser(
+                data.name, 
+                data.email, 
+                data.password, 
+                'RestaurantAdmin', // Hardcoded for SaaS signup
+                'staff',
+                data.restaurantName,
+                data.plan,
+                data.billingCycle
+            );
         }
         
         setLoading(false);
@@ -153,29 +162,53 @@ const StaffAuthPage = () => {
                             {errors.email && <p className="text-orange-500 text-xs mt-1.5 ml-1 font-medium">{errors.email.message}</p>}
                         </div>
 
-                        {/* Role - Register only */}
+                        {/* Restaurant Name - Register only */}
                         {mode === 'register' && (
                             <div>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-green-500 transition-colors">
-                                        <Tag size={18} />
+                                        <UtensilsCrossed size={18} />
                                     </div>
-                                    <select
-                                        {...register('role', { required: 'Role is required' })}
-                                        className={`w-full pl-11 pr-4 py-3.5 bg-gray-50 border rounded-xl text-sm outline-none transition-all appearance-none ${errors.role ? 'border-orange-400 focus:ring-4 focus:ring-orange-100' : 'border-gray-200 hover:border-gray-300 focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100'}`}
-                                    >
-                                        <option value="" disabled hidden>Select Account Type</option>
-                                        <option value="RestaurantAdmin">Restaurant Owner</option>
-                                        <option value="BranchManager">Manager</option>
-                                        <option value="Chef">Chef</option>
-                                        <option value="Waiter">Waiter</option>
-                                        <option value="Cashier">Cashier</option>
-                                    </select>
-                                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    <input
+                                        type="text"
+                                        placeholder="Restaurant Name"
+                                        {...register('restaurantName', { required: 'Restaurant Name is required' })}
+                                        className={`w-full pl-11 pr-4 py-3.5 bg-gray-50 border rounded-xl text-sm outline-none transition-all ${errors.restaurantName ? 'border-orange-400 focus:ring-4 focus:ring-orange-100' : 'border-gray-200 hover:border-gray-300 focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100'}`}
+                                    />
+                                </div>
+                                {errors.restaurantName && <p className="text-orange-500 text-xs mt-1.5 ml-1 font-medium">{errors.restaurantName.message}</p>}
+                            </div>
+                        )}
+
+                        {/* Plan & Billing Cycle - Register only */}
+                        {mode === 'register' && (
+                            <div className="flex gap-4">
+                                <div className="flex-1">
+                                    <div className="relative group">
+                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-green-500 transition-colors">
+                                            <Tag size={18} />
+                                        </div>
+                                        <select
+                                            {...register('plan')}
+                                            className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 hover:border-gray-300 focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100 rounded-xl text-sm outline-none transition-all appearance-none"
+                                            defaultValue={searchParams.get('plan') || 'Basic'}
+                                        >
+                                            <option value="Basic">Basic Plan</option>
+                                            <option value="Pro">Pro Plan</option>
+                                            <option value="Enterprise">Enterprise Plan</option>
+                                        </select>
                                     </div>
                                 </div>
-                                {errors.role && <p className="text-orange-500 text-xs mt-1.5 ml-1 font-medium">{errors.role.message}</p>}
+                                <div className="flex-1">
+                                    <select
+                                        {...register('billingCycle')}
+                                        className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 hover:border-gray-300 focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100 rounded-xl text-sm outline-none transition-all appearance-none"
+                                        defaultValue={searchParams.get('billing') || 'monthly'}
+                                    >
+                                        <option value="monthly">Monthly</option>
+                                        <option value="yearly">Yearly (-20%)</option>
+                                    </select>
+                                </div>
                             </div>
                         )}
 

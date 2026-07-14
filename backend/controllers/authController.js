@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import Role from '../models/Role.js';
+import Restaurant from '../models/Restaurant.js';
 
 // Generate JWT
 const generateToken = (id) => {
@@ -38,6 +39,29 @@ export const registerUser = async (req, res) => {
             password,
             role: role,
         });
+
+        if (role === 'RestaurantAdmin' && req.body.restaurantName) {
+            const expiryDate = new Date();
+            if (req.body.billingCycle === 'yearly') {
+                expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+            } else {
+                expiryDate.setMonth(expiryDate.getMonth() + 1);
+            }
+            
+            const restaurant = await Restaurant.create({
+                name: req.body.restaurantName,
+                ownerId: user._id,
+                subscription: {
+                    status: 'Active',
+                    plan: req.body.plan || 'Basic',
+                    billingCycle: req.body.billingCycle || 'monthly',
+                    expiryDate: expiryDate
+                },
+                approvalStatus: 'Approved'
+            });
+            user.restaurantId = restaurant._id;
+            await user.save();
+        }
 
         if (user) {
             const token = generateToken(user._id);
@@ -80,6 +104,20 @@ export const loginUser = async (req, res) => {
             }
             if (loginType === 'customer' && user.role !== 'Customer') {
                 return res.status(403).json({ message: 'Staff cannot log into the customer portal' });
+            }
+
+            // Check subscription if user belongs to a restaurant
+            if (user.restaurantId && user.role !== 'SuperAdmin') {
+                const restaurant = await Restaurant.findById(user.restaurantId);
+                if (restaurant) {
+                    if (restaurant.subscription.status === 'Frozen' || (restaurant.subscription.expiryDate && new Date(restaurant.subscription.expiryDate) < new Date())) {
+                        if (restaurant.subscription.status !== 'Frozen') {
+                            restaurant.subscription.status = 'Frozen';
+                            await restaurant.save();
+                        }
+                        return res.status(403).json({ message: 'Your subscription has expired. Please renew to continue using the platform.' });
+                    }
+                }
             }
 
             const token = generateToken(user._id);

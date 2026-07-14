@@ -1,15 +1,55 @@
 import Restaurant from '../models/Restaurant.js';
 import Branch from '../models/Branch.js';
 
-// @desc    Get all restaurants
+// @desc    Get all restaurants (SuperAdmin only)
 // @route   GET /api/restaurants
-// @access  Private/Admin
+// @access  Private/SuperAdmin
 export const getRestaurants = async (req, res) => {
     try {
-        const restaurants = await Restaurant.find({});
+        const restaurants = await Restaurant.find({}).populate('ownerId', 'name email');
         res.json(restaurants);
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Update restaurant subscription
+// @route   PUT /api/restaurants/:id/subscription
+// @access  Private/SuperAdmin
+export const updateSubscription = async (req, res) => {
+    try {
+        const { status, plan, billingCycle, addMonths, addYears } = req.body;
+        const restaurant = await Restaurant.findById(req.params.id);
+
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        if (status) restaurant.subscription.status = status;
+        if (plan) restaurant.subscription.plan = plan;
+        if (billingCycle) restaurant.subscription.billingCycle = billingCycle;
+        
+        if (addMonths || addYears) {
+            let currentExpiry = restaurant.subscription.expiryDate ? new Date(restaurant.subscription.expiryDate) : new Date();
+            // If already expired, start from today
+            if (currentExpiry < new Date()) {
+                currentExpiry = new Date();
+            }
+            if (addMonths) currentExpiry.setMonth(currentExpiry.getMonth() + addMonths);
+            if (addYears) currentExpiry.setFullYear(currentExpiry.getFullYear() + addYears);
+            
+            restaurant.subscription.expiryDate = currentExpiry;
+            
+            // Automatically reactivate on renewal if frozen
+            if (restaurant.subscription.status === 'Frozen') {
+                restaurant.subscription.status = 'Active';
+            }
+        }
+
+        const updatedRestaurant = await restaurant.save();
+        res.json(updatedRestaurant);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
     }
 };
 
