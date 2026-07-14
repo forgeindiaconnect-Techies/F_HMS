@@ -46,13 +46,13 @@ const ManagerReservations = () => {
                                 </div>
                             </div>
                             <div className="flex gap-2">
-                                <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors" title="Message Customer">
+                                <button onClick={() => alert(`Messaging customer ${res.name}...`)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors" title="Message Customer">
                                     <MessageSquare size={20} />
                                 </button>
-                                <button className="flex items-center gap-1 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl font-bold text-sm transition-colors">
+                                <button onClick={() => alert(`Rejecting reservation ${res.id}...`)} className="flex items-center gap-1 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl font-bold text-sm transition-colors">
                                     <X size={16} /> Reject
                                 </button>
-                                <button className="flex items-center gap-1 px-4 py-2 bg-green-500 text-white hover:bg-green-600 rounded-xl font-bold text-sm transition-colors shadow-sm">
+                                <button onClick={() => alert(`Approving reservation ${res.id}...`)} className="flex items-center gap-1 px-4 py-2 bg-green-500 text-white hover:bg-green-600 rounded-xl font-bold text-sm transition-colors shadow-sm">
                                     <Check size={16} /> Approve
                                 </button>
                             </div>
