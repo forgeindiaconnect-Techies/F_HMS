@@ -1,4 +1,5 @@
-import { Star, MessageSquareReply, ThumbsUp, AlertCircle, Filter } from 'lucide-react';
+import { useState } from 'react';
+import { Star, MessageSquareReply, ThumbsUp, AlertCircle, Filter, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const mockFeedback = [
@@ -8,6 +9,8 @@ const mockFeedback = [
 ];
 
 const ManagerFeedback = () => {
+    const [actionModal, setActionModal] = useState({ show: false, type: '', feedback: null });
+
     return (
         <div className="p-8 max-w-[1600px] mx-auto space-y-6 font-sans">
             <div className="flex justify-between items-end mb-6">
@@ -57,11 +60,11 @@ const ManagerFeedback = () => {
                             
                             <div className="mt-6 flex flex-wrap items-center gap-3">
                                 {fb.status === 'Requires Action' ? (
-                                    <button onClick={() => toast.success(`Resolving issue for ${fb.customer}...`)} className="bg-red-50 hover:bg-red-100 text-red-600 text-sm font-bold px-4 py-2 rounded-lg transition-colors border border-red-200 flex items-center gap-2">
+                                    <button onClick={() => setActionModal({ show: true, type: 'resolve', feedback: fb })} className="bg-red-50 hover:bg-red-100 text-red-600 text-sm font-bold px-4 py-2 rounded-lg transition-colors border border-red-200 flex items-center gap-2">
                                         <MessageSquareReply size={16} /> Resolve Issue
                                     </button>
                                 ) : fb.status === 'New' ? (
-                                    <button onClick={() => toast.success(`Replying to ${fb.customer}...`)} className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-bold px-4 py-2 rounded-lg transition-colors shadow-sm flex items-center gap-2">
+                                    <button onClick={() => setActionModal({ show: true, type: 'reply', feedback: fb })} className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-bold px-4 py-2 rounded-lg transition-colors shadow-sm flex items-center gap-2">
                                         <MessageSquareReply size={16} /> Reply
                                     </button>
                                 ) : (
@@ -72,6 +75,84 @@ const ManagerFeedback = () => {
                     </div>
                 ))}
             </div>
+
+            {/* Action Modals */}
+            {actionModal.show && actionModal.feedback && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+                        
+                        {/* Header */}
+                        <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                            <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
+                                {actionModal.type === 'reply' ? <><MessageSquareReply size={20} className="text-blue-600"/> Reply to Feedback</> : <><AlertCircle size={20} className="text-red-600"/> Resolve Issue</>}
+                            </h3>
+                            <button onClick={() => setActionModal({ show: false, type: '', feedback: null })} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="p-6 overflow-y-auto space-y-6">
+                            <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 relative">
+                                {actionModal.type === 'resolve' && <div className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl-lg rounded-tr-xl"><AlertCircle size={14} /></div>}
+                                <div className="flex justify-between items-start mb-2">
+                                    <div>
+                                        <p className="font-bold text-gray-900">{actionModal.feedback.customer}</p>
+                                        <p className="text-xs text-gray-500">Order {actionModal.feedback.orderId}</p>
+                                    </div>
+                                    <div className="flex items-center gap-1 pr-6">
+                                        {[...Array(5)].map((_, idx) => (
+                                            <Star key={idx} size={14} className={idx < actionModal.feedback.rating ? 'text-yellow-400 fill-current' : 'text-gray-200'} />
+                                        ))}
+                                    </div>
+                                </div>
+                                <p className="text-sm text-gray-700 italic">"{actionModal.feedback.comment}"</p>
+                            </div>
+
+                            {actionModal.type === 'reply' && (
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Your Public Response</label>
+                                    <textarea rows="4" placeholder="Thank you for your feedback..." className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+                                </div>
+                            )}
+
+                            {actionModal.type === 'resolve' && (
+                                <>
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-1">Action Taken</label>
+                                        <select className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-500 mb-4">
+                                            <option>Contacted Customer Privately</option>
+                                            <option>Issued Full Refund</option>
+                                            <option>Provided Promo Code</option>
+                                            <option>Escalated to Corporate</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-1">Internal Resolution Notes</label>
+                                        <textarea rows="3" placeholder="Explain how this was handled..." className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"></textarea>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 mt-auto">
+                            <button onClick={() => setActionModal({ show: false, type: '', feedback: null })} className="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">Cancel</button>
+                            <button 
+                                onClick={() => { 
+                                    toast.success(actionModal.type === 'reply' ? 'Reply posted!' : 'Issue marked as resolved!');
+                                    setActionModal({ show: false, type: '', feedback: null }); 
+                                }} 
+                                className={`px-5 py-2.5 text-sm font-bold text-white rounded-xl transition-colors ${
+                                    actionModal.type === 'reply' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700'
+                                }`}
+                            >
+                                {actionModal.type === 'reply' ? 'Post Reply' : 'Mark as Resolved'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
