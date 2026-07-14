@@ -34,8 +34,8 @@ const ManagerReports = () => {
                                 <span className="text-gray-400">Cash Expected</span>
                                 <span className="text-white font-bold">$1,245.00</span>
                             </div>
-                            <button className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition-colors shadow-md mt-4 flex items-center justify-center gap-2">
-                                <CheckCircle size={18} /> Run EOD Process
+                            <button onClick={() => alert('Generating report...')} className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition-colors shadow-md mt-4 flex items-center justify-center gap-2">
+                                <FileText size={18} /> Generate Report
                             </button>
                         </div>
                     </div>
@@ -59,12 +59,12 @@ const ManagerReports = () => {
                                 <h4 className="font-bold text-gray-900 mb-1">{report.name}</h4>
                                 <p className="text-sm text-gray-500 mb-4 h-10">{report.desc}</p>
                                 
-                                <div className="flex gap-2">
-                                    <button className="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-bold py-2 rounded-lg transition-colors flex justify-center items-center gap-1 border border-gray-200">
-                                        <Printer size={14} /> Print
+                                <div className="flex gap-2 mt-4">
+                                    <button onClick={() => alert('Viewing report...')} className="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-bold py-2 rounded-lg transition-colors flex justify-center items-center gap-1 border border-gray-200">
+                                        <FileText size={14} /> View
                                     </button>
-                                    <button className="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-bold py-2 rounded-lg transition-colors flex justify-center items-center gap-1 border border-gray-200">
-                                        <FileDown size={14} /> PDF
+                                    <button onClick={() => alert('Downloading report...')} className="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-bold py-2 rounded-lg transition-colors flex justify-center items-center gap-1 border border-gray-200">
+                                        <Download size={14} /> Download
                                     </button>
                                 </div>
                             </div>

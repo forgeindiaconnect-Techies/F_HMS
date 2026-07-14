@@ -24,11 +24,11 @@ const ManagerFeedback = () => {
 
             {/* Quick Filters */}
             <div className="flex gap-2 mb-6 overflow-x-auto pb-2 custom-scrollbar">
-                <button className="px-4 py-2 rounded-xl text-sm font-bold bg-gray-900 text-white flex items-center gap-2">
+                <button onClick={() => alert('Filtering by All...')} className="px-4 py-2 rounded-xl text-sm font-bold bg-gray-900 text-white flex items-center gap-2">
                     <Filter size={16} /> All Reviews (142)
                 </button>
                 {['Requires Action (1)', '5 Stars', 'Negative', 'Unread'].map((filter, i) => (
-                    <button key={i} className="px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">
+                    <button key={i} onClick={() => alert(`Filtering by ${filter}...`)} className="px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">
                         {filter}
                     </button>
                 ))}
@@ -56,11 +56,11 @@ const ManagerFeedback = () => {
                             
                             <div className="mt-6 flex flex-wrap items-center gap-3">
                                 {fb.status === 'Requires Action' ? (
-                                    <button className="bg-red-50 hover:bg-red-100 text-red-600 text-sm font-bold px-4 py-2 rounded-lg transition-colors border border-red-200 flex items-center gap-2">
+                                    <button onClick={() => alert(`Resolving issue for ${fb.customer}...`)} className="bg-red-50 hover:bg-red-100 text-red-600 text-sm font-bold px-4 py-2 rounded-lg transition-colors border border-red-200 flex items-center gap-2">
                                         <MessageSquareReply size={16} /> Resolve Issue
                                     </button>
                                 ) : fb.status === 'New' ? (
-                                    <button className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-bold px-4 py-2 rounded-lg transition-colors shadow-sm flex items-center gap-2">
+                                    <button onClick={() => alert(`Replying to ${fb.customer}...`)} className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-bold px-4 py-2 rounded-lg transition-colors shadow-sm flex items-center gap-2">
                                         <MessageSquareReply size={16} /> Reply
                                     </button>
                                 ) : (

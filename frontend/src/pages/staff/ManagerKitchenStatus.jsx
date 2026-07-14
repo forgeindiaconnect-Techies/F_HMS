@@ -25,10 +25,14 @@ const ManagerKitchenStatus = () => {
                         <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Avg Prep Time (Overall)</p>
                         <p className="text-2xl font-bold text-gray-900">12m 45s</p>
                     </div>
-                    <div className="h-10 w-px bg-gray-200"></div>
-                    <button className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-xl font-medium transition-colors text-sm shadow-sm flex items-center gap-2">
-                        <UtensilsCrossed size={16} /> View KDS
-                    </button>
+                    <div className="flex gap-3">
+                        <button onClick={() => alert('Refreshing display...')} className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-xl font-medium transition-colors text-sm shadow-sm flex items-center gap-2">
+                            <RefreshCw size={16} /> Refresh Display
+                        </button>
+                        <button className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-xl font-medium transition-colors text-sm shadow-sm flex items-center gap-2">
+                            <UtensilsCrossed size={16} /> View KDS
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -91,9 +95,11 @@ const ManagerKitchenStatus = () => {
                             </div>
                             <div className="flex items-center gap-4">
                                 <span className="text-sm font-bold text-orange-600">{ticket.status}</span>
-                                <button className="bg-red-50 hover:bg-red-100 text-red-700 text-sm font-bold px-4 py-2 rounded-lg transition-colors border border-red-200">
-                                    Intervene
-                                </button>
+                                <div className="flex gap-2">
+                                    <button onClick={() => alert('Expediting order...')} className="bg-red-50 hover:bg-red-100 text-red-700 text-sm font-bold px-4 py-2 rounded-lg transition-colors border border-red-200">
+                                        Expedite
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))}

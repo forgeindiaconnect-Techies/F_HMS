@@ -8,7 +8,7 @@ const ManagerSettings = () => {
                     <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>Branch Settings</h2>
                     <p className="text-gray-500 text-sm mt-1">Manage local branch preferences, notifications, and profile.</p>
                 </div>
-                <button className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold transition-colors flex items-center gap-2 text-sm shadow-md">
+                <button onClick={() => alert('Saving settings...')} className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold transition-colors flex items-center gap-2 text-sm shadow-md">
                     <Save size={18} /> Save Changes
                 </button>
             </div>
@@ -22,7 +22,7 @@ const ManagerSettings = () => {
                         { name: 'Notifications', icon: Bell, active: false },
                         { name: 'Security', icon: Lock, active: false },
                     ].map((item, i) => (
-                        <button key={i} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-bold text-sm ${item.active ? 'bg-green-50 text-green-700' : 'bg-white text-gray-600 hover:bg-gray-50 border border-transparent hover:border-gray-200'}`}>
+                        <button key={i} onClick={() => alert(`Selected ${item.name}`)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-bold text-sm ${item.active ? 'bg-green-50 text-green-700' : 'bg-white text-gray-600 hover:bg-gray-50 border border-transparent hover:border-gray-200'}`}>
                             <item.icon size={18} className={item.active ? 'text-green-600' : 'text-gray-400'} /> {item.name}
                         </button>
                     ))}
