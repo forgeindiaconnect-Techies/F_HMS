@@ -124,6 +124,22 @@ const StaffAuthPage = () => {
         }
     };
 
+    // Simulate an automatic webhook arriving from a payment gateway if they scan with a real phone
+    useEffect(() => {
+        let timeout;
+        if (mode === 'register' && step === 3 && paymentStatus === 'idle') {
+            timeout = setTimeout(() => {
+                // If they haven't manually clicked anything after 15 seconds, assume they paid on their phone
+                setPaymentStatus('success');
+                setTimeout(() => {
+                    setStep(4);
+                    submitRegistration();
+                }, 2000);
+            }, 15000);
+        }
+        return () => clearTimeout(timeout);
+    }, [mode, step, paymentStatus]);
+
     const switchMode = (newMode) => {
         setMode(newMode);
         setStep(1);
@@ -131,6 +147,9 @@ const StaffAuthPage = () => {
         setShowPassword(false);
         setShowConfirm(false);
         setAuthError('');
+        setPaymentStatus('idle');
+        setShowUpiModal(false);
+        setScanActive(false);
     };
 
     const selectedPlan = watch('plan');
@@ -339,7 +358,7 @@ const StaffAuthPage = () => {
             >
                 {/* QR Code Graphic */}
                 <div className={`transition-all duration-1000 flex flex-col items-center justify-center ${scanActive ? 'scale-110 opacity-30 blur-sm' : ''}`}>
-                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi%3A%2F%2Fpay%3Fpa%3Ddemo%40upi%26pn%3DRestaurant%26cu%3DINR&bgcolor=ffffff&color=1a73e8`} alt="QR Code" className="w-40 h-40" />
+                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi%3A%2F%2Fpay%3Fpa%3Ddemo%40upi%26pn%3DRestoSys%26am%3D${getPlanAmount()}%26cu%3DINR&bgcolor=ffffff&color=1a73e8`} alt="QR Code" className="w-40 h-40" />
                     <div className="mt-4 flex items-center gap-1.5">
                         <ShieldCheck size={14} className="text-blue-600" />
                         <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Secure UPI Payment</span>
