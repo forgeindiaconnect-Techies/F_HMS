@@ -339,7 +339,7 @@ const StaffAuthPage = () => {
             >
                 {/* QR Code Graphic */}
                 <div className={`transition-all duration-1000 flex flex-col items-center justify-center ${scanActive ? 'scale-110 opacity-30 blur-sm' : ''}`}>
-                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=DummySubscriptionPayment&bgcolor=ffffff&color=1a73e8`} alt="QR Code" className="w-40 h-40" />
+                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi%3A%2F%2Fpay%3Fpa%3Ddemo%40upi%26pn%3DRestaurant%26cu%3DINR&bgcolor=ffffff&color=1a73e8`} alt="QR Code" className="w-40 h-40" />
                     <div className="mt-4 flex items-center gap-1.5">
                         <ShieldCheck size={14} className="text-blue-600" />
                         <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Secure UPI Payment</span>
