@@ -1,4 +1,4 @@
-import { Bell, Search, User } from 'lucide-react';
+import { Bell, Search, User, Menu } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 
@@ -6,9 +6,16 @@ const Topbar = () => {
     const { user } = useAuth();
     
     return (
-        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-8 sticky top-0 z-10">
-            <div className="flex items-center bg-gray-100 px-4 py-2 rounded-full w-96 focus-within:ring-2 focus-within:ring-green-500/20 transition-all">
-                <Search size={18} className="text-gray-400" />
+        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-4 md:px-8 sticky top-0 z-10">
+            <div className="flex items-center gap-2 md:gap-4 w-full md:w-auto flex-1">
+                <button 
+                    onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))} 
+                    className="md:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg"
+                >
+                    <Menu size={24} />
+                </button>
+                <div className="flex items-center bg-gray-100 px-4 py-2 rounded-full w-full md:w-96 focus-within:ring-2 focus-within:ring-green-500/20 transition-all">
+                    <Search size={18} className="text-gray-400 shrink-0" />
                 <input 
                     type="text" 
                     placeholder="Search anything..." 
@@ -16,7 +23,7 @@ const Topbar = () => {
                 />
             </div>
             
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2 md:gap-6 ml-2 md:ml-0 shrink-0">
                 <Link 
                     to={
                         user?.role?.toLowerCase().includes('admin') ? '/admin/notifications' :

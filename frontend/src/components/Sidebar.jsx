@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
     LayoutDashboard, Store, Users, UtensilsCrossed, Settings, LogOut, 
@@ -10,6 +11,13 @@ import { useAuth } from '../context/AuthContext';
 
 const Sidebar = () => {
     const { logout } = useAuth();
+    const [isOpen, setIsOpen] = useState(false);
+
+    useEffect(() => {
+        const handleToggle = () => setIsOpen(prev => !prev);
+        window.addEventListener('toggle-sidebar', handleToggle);
+        return () => window.removeEventListener('toggle-sidebar', handleToggle);
+    }, []);
     
     const navGroups = [
         {
@@ -75,7 +83,18 @@ const Sidebar = () => {
     ];
 
     return (
-        <aside className="w-64 bg-white shadow-xl h-screen sticky top-0 flex flex-col transition-all duration-300 z-20 overflow-hidden border-r border-gray-100">
+        <>
+        {/* Mobile Overlay */}
+        {isOpen && (
+            <div 
+                className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-30 md:hidden" 
+                onClick={() => setIsOpen(false)}
+            />
+        )}
+        <aside className={clsx(
+            "w-64 bg-white shadow-xl h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-transform duration-300 z-40 border-r border-gray-100",
+            isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        )}>
             {/* Header */}
             <div className="p-6 border-b border-gray-100 flex items-center gap-3 shrink-0">
                 <div className="bg-green-500 text-white p-2 rounded-lg">
@@ -129,6 +148,7 @@ const Sidebar = () => {
                 </button>
             </div>
         </aside>
+        </>
     );
 };
 

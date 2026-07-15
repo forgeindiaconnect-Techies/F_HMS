@@ -101,7 +101,7 @@ const StaffManagement = () => {
     return (
         <div className="p-8 max-w-7xl mx-auto space-y-6 relative">
             {/* Header */}
-            <div className="flex justify-between items-end">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:gap-0">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>Staff Directory</h2>
                     <p className="text-gray-500 text-sm mt-1">Manage employee records, roles, and shift assignments.</p>
@@ -125,13 +125,13 @@ const StaffManagement = () => {
             </div>
 
             {/* Controls */}
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap gap-4 justify-between items-center">
-                <div className="relative flex-1 max-w-md">
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 justify-between items-center">
+                <div className="relative w-full md:flex-1 md:max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     <input type="text" placeholder="Search by name, email, or role..." className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
                 </div>
-                <div className="flex gap-2 items-center">
-                    <select className="bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-green-500">
+                <div className="flex flex-wrap gap-2 items-center w-full md:w-auto">
+                    <select className="flex-1 md:flex-none bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-green-500">
                         <option>All Roles</option>
                         <option>BranchManager</option>
                         <option>Chef</option>
