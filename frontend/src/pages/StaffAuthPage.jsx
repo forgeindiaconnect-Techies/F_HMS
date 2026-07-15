@@ -323,7 +323,11 @@ const StaffAuthPage = () => {
                 </button>
             </div>
 
-            <div className="relative w-56 h-56 mx-auto mb-8 bg-white p-4 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 flex items-center justify-center overflow-hidden group">
+            <div 
+                className="relative w-56 h-56 mx-auto mb-8 bg-white p-4 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 flex items-center justify-center overflow-hidden group cursor-pointer hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-shadow"
+                onClick={!scanActive ? startDummyScan : undefined}
+                title="Click to simulate scanning the QR Code"
+            >
                 {/* QR Code Graphic */}
                 <div className={`transition-all duration-1000 flex flex-col items-center justify-center ${scanActive ? 'scale-110 opacity-30 blur-sm' : ''}`}>
                     <img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=DummySubscriptionPayment&bgcolor=ffffff&color=${selectedPayment === 'gpay' ? '1a73e8' : selectedPayment === 'phonepe' ? '5f259f' : '00baf2'}`} alt="QR Code" className="w-40 h-40" />
@@ -348,14 +352,7 @@ const StaffAuthPage = () => {
                 )}
             </div>
 
-            <button
-                type="button"
-                onClick={startDummyScan}
-                disabled={scanActive}
-                className="w-full bg-gray-900 hover:bg-black text-white font-bold py-4 rounded-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
-            >
-                {scanActive ? 'Processing Payment...' : 'I have completed the payment'}
-            </button>
+            {/* Removed the manual completion button to automate activation on QR click */}
         </div>
     );
 
