@@ -474,14 +474,21 @@ const StaffAuthPage = () => {
                                     <div className="text-3xl font-black text-gray-900 mb-6">
                                         {watch('plan') === 'Basic' ? (watch('billingCycle') === 'yearly' ? '$39.00' : '$49.00') : watch('plan') === 'Pro' ? (watch('billingCycle') === 'yearly' ? '$79.00' : '$99.00') : '$199.00'}
                                     </div>
-                                    <div className="flex w-full gap-3">
-                                        <button onClick={() => handleUpiPayment(false)} className="flex-1 py-3 rounded-xl font-bold text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">
-                                            Fail
+                                    <p className="text-sm font-bold text-gray-500 mb-4">Select an app to complete payment:</p>
+                                    <div className="flex flex-col w-full gap-3">
+                                        <button onClick={() => handleUpiPayment(true)} className="flex items-center justify-center gap-3 py-3 rounded-xl border-2 border-gray-100 hover:border-blue-500 hover:bg-blue-50 transition-all bg-white shadow-sm hover:shadow">
+                                            <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" alt="GPay" className="h-5 object-contain" />
                                         </button>
-                                        <button onClick={() => handleUpiPayment(true)} className="flex-1 py-3 rounded-xl font-bold text-sm text-white bg-green-500 hover:bg-green-600 transition-colors shadow-lg shadow-green-500/30">
-                                            Pay Now
+                                        <button onClick={() => handleUpiPayment(true)} className="flex items-center justify-center gap-3 py-3 rounded-xl border-2 border-gray-100 hover:border-purple-500 hover:bg-purple-50 transition-all bg-white shadow-sm hover:shadow">
+                                            <img src="https://upload.wikimedia.org/wikipedia/commons/7/71/PhonePe_Logo.svg" alt="PhonePe" className="h-6 object-contain" />
+                                        </button>
+                                        <button onClick={() => handleUpiPayment(true)} className="flex items-center justify-center gap-3 py-3 rounded-xl border-2 border-gray-100 hover:border-blue-400 hover:bg-blue-50/50 transition-all bg-white shadow-sm hover:shadow">
+                                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm" className="h-4 object-contain" />
                                         </button>
                                     </div>
+                                    <button onClick={() => handleUpiPayment(false)} className="mt-4 text-xs font-bold text-gray-400 hover:text-red-500 transition-colors">
+                                        Simulate Payment Failure
+                                    </button>
                                 </>
                             )}
                             
