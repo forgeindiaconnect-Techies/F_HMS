@@ -82,7 +82,7 @@ const orderSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-        enum: ['Pending', 'Assigned', 'Preparing', 'Ready', 'Served', 'Billing Requested', 'Out for Delivery', 'Delivered'],
+        enum: ['Pending', 'Preparing', 'Ready', 'Served', 'Billing Requested', 'Out for Delivery', 'Delivered'],
         default: 'Pending'
     },
 }, { timestamps: true });

@@ -14,8 +14,8 @@ const getTypeIcon = (type) => {
 const getStatusColor = (status, isDelayed) => {
     if (isDelayed) return 'bg-red-50 border-red-200';
     switch (status) {
+        case 'Pending':
         case 'New': return 'bg-blue-50 border-blue-200';
-        case 'Assigned': return 'bg-indigo-50 border-indigo-200';
         case 'Preparing': return 'bg-orange-50 border-orange-200';
         case 'Ready': return 'bg-green-50 border-green-200';
         case 'Dispatched': return 'bg-purple-50 border-purple-200';
@@ -93,7 +93,6 @@ const ManagerOrderMonitoring = () => {
     const counts = {
         All: enhancedOrders.length,
         New: enhancedOrders.filter(o => o.status === 'Pending' || o.status === 'New').length,
-        Assigned: enhancedOrders.filter(o => o.status === 'Assigned').length,
         Preparing: enhancedOrders.filter(o => o.status === 'Preparing').length,
         Ready: enhancedOrders.filter(o => o.status === 'Ready').length,
         Dispatched: enhancedOrders.filter(o => o.status === 'Dispatched').length,
@@ -119,7 +118,7 @@ const ManagerOrderMonitoring = () => {
 
             {/* Quick Filters */}
             <div className="flex gap-2 mb-6 overflow-x-auto pb-2 custom-scrollbar">
-                {['All', 'New', 'Assigned', 'Preparing', 'Ready', 'Dispatched', 'Delayed'].map((filter, i) => (
+                {['All', 'New', 'Preparing', 'Ready', 'Dispatched', 'Delayed'].map((filter, i) => (
                     <button 
                         key={filter} 
                         onClick={() => setFilterStatus(filter)}
@@ -167,7 +166,7 @@ const ManagerOrderMonitoring = () => {
 
                             <div className="flex items-center justify-between mb-4 bg-white/60 rounded-xl p-3 border border-white/40">
                                 <div className="flex items-center gap-2">
-                                    <span className={`w-2.5 h-2.5 rounded-full ${order.status === 'Pending' ? 'bg-blue-500' : order.status === 'Assigned' ? 'bg-indigo-500' : order.status === 'Preparing' ? 'bg-orange-500' : order.status === 'Ready' ? 'bg-green-500' : 'bg-purple-500'}`}></span>
+                                    <span className={`w-2.5 h-2.5 rounded-full ${order.status === 'Pending' ? 'bg-blue-500' : order.status === 'Preparing' ? 'bg-orange-500' : order.status === 'Ready' ? 'bg-green-500' : 'bg-purple-500'}`}></span>
                                     <span className="text-sm font-bold text-gray-700">{order.status}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5 text-sm font-medium text-gray-600">
@@ -207,7 +206,7 @@ const ManagerOrderMonitoring = () => {
                         <div className="p-6">
                             <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Update Status</h4>
                             <div className="grid grid-cols-2 gap-3">
-                                {['Pending', 'Assigned', 'Preparing', 'Ready', 'Dispatched', 'Completed', 'Cancelled'].map(status => (
+                                {['Pending', 'Preparing', 'Ready', 'Dispatched', 'Completed', 'Cancelled'].map(status => (
                                     <button
                                         key={status}
                                         onClick={() => handleStatusUpdate(selectedOrder._id, status)}
@@ -220,7 +219,7 @@ const ManagerOrderMonitoring = () => {
                                                     : 'bg-white text-gray-700 border-gray-200 hover:border-gray-900 shadow-sm hover:shadow'
                                         }`}
                                     >
-                                        {status === 'Assigned' ? 'Send to Kitchen' : `Mark ${status}`}
+                                        Mark {status}
                                     </button>
                                 ))}
                             </div>

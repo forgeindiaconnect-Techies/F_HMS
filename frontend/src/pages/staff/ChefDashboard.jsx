@@ -5,8 +5,8 @@ import { useAuth } from '../../context/AuthContext';
 const ChefDashboard = () => {
     const { api } = useAuth();
     const [orders, setOrders] = useState([]);
-    const [activeTab, setActiveTab] = useState('Assigned');
-    const tabs = ['Assigned', 'Preparing', 'Ready', 'Completed'];
+    const [activeTab, setActiveTab] = useState('Pending');
+    const tabs = ['Pending', 'Preparing', 'Ready', 'Completed'];
 
     const fetchOrders = async () => {
         try {
@@ -74,7 +74,7 @@ const ChefDashboard = () => {
                                     : 'text-gray-400 hover:text-white hover:bg-[#2a3040]'
                                 }`}
                             >
-                                {tab === 'Assigned' ? 'Incoming' : tab === 'Preparing' ? 'Cooking' : tab}
+                                {tab === 'Pending' ? 'Incoming' : tab === 'Preparing' ? 'Cooking' : tab}
                                 {count > 0 && (
                                     <span className={`px-2 py-0.5 rounded-full text-[10px] ${
                                         activeTab === tab ? 'bg-white/20 text-white' : 'bg-[#2a3040] text-gray-300'
@@ -167,7 +167,7 @@ const ChefDashboard = () => {
 
                             {/* Ticket Action Button based on Tab */}
                             <div className="p-4 border-t border-[#2a3040] bg-[#1a1e2a]">
-                                {activeTab === 'Assigned' && (
+                                {activeTab === 'Pending' && (
                                     <button onClick={() => updateStatus(order._id, 'Preparing')} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all shadow-md">
                                         Start Cooking
                                     </button>
