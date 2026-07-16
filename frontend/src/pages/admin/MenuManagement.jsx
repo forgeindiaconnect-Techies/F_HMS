@@ -257,8 +257,8 @@ const MenuManagement = () => {
                             </button>
                         </div>
                         
-                        <div className="overflow-y-auto p-6">
-                            <form id="menu-form" onSubmit={handleSubmit} className="space-y-4">
+                        <form id="menu-form" onSubmit={handleSubmit} className="flex flex-col max-h-full">
+                            <div className="overflow-y-auto p-6 space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Item Name</label>
                                     <input 
@@ -347,25 +347,24 @@ const MenuManagement = () => {
                                         Item is Available (Active)
                                     </label>
                                 </div>
-                            </form>
-                        </div>
-                        
-                        <div className="px-6 py-4 border-t border-gray-100 flex gap-3 bg-gray-50/50 shrink-0">
-                            <button 
-                                type="button" 
-                                onClick={() => setIsModalOpen(false)}
-                                className="flex-1 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold rounded-xl transition-colors text-sm shadow-sm"
-                            >
-                                Cancel
-                            </button>
-                            <button 
-                                type="submit" 
-                                form="menu-form"
-                                className="flex-1 py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-sm shadow-green-600/20 transition-colors text-sm"
-                            >
-                                {editingItem ? 'Save Changes' : 'Create Item'}
-                            </button>
-                        </div>
+                            </div>
+                            
+                            <div className="px-6 py-4 border-t border-gray-100 flex gap-3 bg-gray-50/50 shrink-0">
+                                <button 
+                                    type="button" 
+                                    onClick={() => setIsModalOpen(false)}
+                                    className="flex-1 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold rounded-xl transition-colors text-sm shadow-sm"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    className="flex-1 py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-sm shadow-green-600/20 transition-colors text-sm"
+                                >
+                                    {editingItem ? 'Save Changes' : 'Create Item'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
