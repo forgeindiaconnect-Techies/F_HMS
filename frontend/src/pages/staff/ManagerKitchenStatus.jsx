@@ -30,9 +30,6 @@ const ManagerKitchenStatus = () => {
                         <button onClick={() => toast.success('Refreshing display...')} className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-xl font-medium transition-colors text-sm shadow-sm flex items-center gap-2">
                             <RefreshCw size={16} /> Refresh Display
                         </button>
-                        <button className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-xl font-medium transition-colors text-sm shadow-sm flex items-center gap-2">
-                            <UtensilsCrossed size={16} /> View KDS
-                        </button>
                     </div>
                 </div>
             </div>
