@@ -5,15 +5,14 @@ import { protect, authorize, checkSubscription } from '../middleware/authMiddlew
 const router = express.Router();
 
 router.use(protect);
-router.use(authorize('RestaurantAdmin'));
 router.use(checkSubscription);
 
 router.route('/')
-    .get(getStaff)
-    .post(createStaff);
+    .get(authorize('RestaurantAdmin', 'BranchManager'), getStaff)
+    .post(authorize('RestaurantAdmin'), createStaff);
 
 router.route('/:id')
-    .put(updateStaff)
-    .delete(deleteStaff);
+    .put(authorize('RestaurantAdmin'), updateStaff)
+    .delete(authorize('RestaurantAdmin'), deleteStaff);
 
 export default router;
