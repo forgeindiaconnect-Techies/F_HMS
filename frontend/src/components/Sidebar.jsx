@@ -24,7 +24,6 @@ const Sidebar = () => {
             title: 'Overview',
             items: [
                 { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
-                { name: 'Activity Logs', path: '/admin/activity', icon: Activity },
             ]
         },
         {
@@ -36,33 +35,16 @@ const Sidebar = () => {
         {
             title: 'People',
             items: [
-                { name: 'Customers', path: '/admin/customers', icon: Heart },
                 { name: 'Staff', path: '/admin/staff', icon: UserCheck },
                 { name: 'Roles', path: '/admin/roles', icon: Key },
-            ]
-        },
-        {
-            title: 'Operations',
-            items: [
-                { name: 'Reservations', path: '/admin/reservations', icon: CalendarCheck },
-                { name: 'Orders', path: '/admin/orders', icon: ShoppingBag },
             ]
         },
         {
             title: 'Kitchen & Catalog',
             items: [
                 { name: 'Menu', path: '/admin/menu', icon: UtensilsCrossed },
-                { name: 'Categories', path: '/admin/categories', icon: ListTree },
                 { name: 'Inventory', path: '/admin/inventory', icon: PackageSearch },
                 { name: 'Suppliers', path: '/admin/suppliers', icon: Truck },
-            ]
-        },
-        {
-            title: 'Finance & Marketing',
-            items: [
-                { name: 'Payments', path: '/admin/payments', icon: CreditCard },
-                { name: 'Offers & Coupons', path: '/admin/offers', icon: Tag },
-                { name: 'Taxes', path: '/admin/taxes', icon: ReceiptText },
             ]
         },
         {
