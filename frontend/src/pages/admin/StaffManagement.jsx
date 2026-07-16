@@ -20,6 +20,10 @@ const StaffManagement = () => {
     const [editingStaffId, setEditingStaffId] = useState(null);
     const [permsModalData, setPermsModalData] = useState(null);
 
+    const [searchQuery, setSearchQuery] = useState('');
+    const [roleFilter, setRoleFilter] = useState('All Roles');
+    const [branchFilter, setBranchFilter] = useState('All Branches');
+
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -98,6 +102,16 @@ const StaffManagement = () => {
         }
     };
 
+    const filteredStaff = staffList.filter(staff => {
+        const matchesSearch = !searchQuery || 
+                              staff.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                              staff.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              staff.role?.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesRole = roleFilter === 'All Roles' || staff.role === roleFilter;
+        const matchesBranch = branchFilter === 'All Branches' || staff.branchId?._id === branchFilter;
+        return matchesSearch && matchesRole && matchesBranch;
+    });
+
     return (
         <div className="p-8 max-w-7xl mx-auto space-y-6 relative">
             {/* Header */}
@@ -128,18 +142,32 @@ const StaffManagement = () => {
             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 justify-between items-center">
                 <div className="relative w-full md:flex-1 md:max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                    <input type="text" placeholder="Search by name, email, or role..." className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+                    <input 
+                        type="text" 
+                        placeholder="Search by name, email, or role..." 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
+                    />
                 </div>
                 <div className="flex flex-wrap gap-2 items-center w-full md:w-auto">
-                    <select className="flex-1 md:flex-none bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-green-500">
-                        <option>All Roles</option>
-                        <option>BranchManager</option>
-                        <option>Chef</option>
-                        <option>Waiter</option>
-                        <option>Cashier</option>
+                    <select 
+                        value={roleFilter}
+                        onChange={(e) => setRoleFilter(e.target.value)}
+                        className="flex-1 md:flex-none bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-green-500"
+                    >
+                        <option value="All Roles">All Roles</option>
+                        <option value="BranchManager">BranchManager</option>
+                        <option value="Chef">Chef</option>
+                        <option value="Waiter">Waiter</option>
+                        <option value="Cashier">Cashier</option>
                     </select>
-                    <select className="bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-green-500">
-                        <option>All Branches</option>
+                    <select 
+                        value={branchFilter}
+                        onChange={(e) => setBranchFilter(e.target.value)}
+                        className="bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-green-500"
+                    >
+                        <option value="All Branches">All Branches</option>
                         {branches.map(b => (
                             <option key={b._id} value={b._id}>{b.name}</option>
                         ))}
@@ -155,13 +183,13 @@ const StaffManagement = () => {
                 <div className="flex justify-center p-20">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
                 </div>
-            ) : staffList.length === 0 ? (
+            ) : filteredStaff.length === 0 ? (
                 <div className="text-center p-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
-                    <p className="text-gray-500">No staff members found. Hire your first employee!</p>
+                    <p className="text-gray-500">No staff members found matching your filters.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {staffList.map((staff) => (
+                    {filteredStaff.map((staff) => (
                         <div key={staff._id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden group">
                             
                             {/* Card Header Profile */}

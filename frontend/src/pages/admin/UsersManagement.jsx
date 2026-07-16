@@ -17,6 +17,8 @@ const UsersManagement = () => {
     const [branches, setBranches] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [roleFilter, setRoleFilter] = useState('All Roles');
 
     const [formData, setFormData] = useState({
         name: '',
@@ -74,6 +76,14 @@ const UsersManagement = () => {
         }
     };
 
+    const filteredUsers = users.filter(u => {
+        const matchesSearch = !searchQuery || 
+                              u.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                              u.email?.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesRole = roleFilter === 'All Roles' || u.role === roleFilter;
+        return matchesSearch && matchesRole;
+    });
+
     return (
         <div className="space-y-6 relative">
             {/* Header */}
@@ -97,17 +107,23 @@ const UsersManagement = () => {
                     <input 
                         type="text" 
                         placeholder="Search by name or email..." 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                     />
                 </div>
                 <div className="flex gap-3">
-                    <select className="bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-green-500">
-                        <option>All Roles</option>
-                        <option>Admin</option>
-                        <option>Manager</option>
-                        <option>Chef</option>
-                        <option>Waiter</option>
-                        <option>Cashier</option>
+                    <select 
+                        value={roleFilter}
+                        onChange={(e) => setRoleFilter(e.target.value)}
+                        className="bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-green-500"
+                    >
+                        <option value="All Roles">All Roles</option>
+                        <option value="RestaurantAdmin">Admin</option>
+                        <option value="BranchManager">Manager</option>
+                        <option value="Chef">Chef</option>
+                        <option value="Waiter">Waiter</option>
+                        <option value="Cashier">Cashier</option>
                     </select>
                 </div>
             </div>
@@ -117,13 +133,13 @@ const UsersManagement = () => {
                 <div className="flex justify-center p-20">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
                 </div>
-            ) : users.length === 0 ? (
+            ) : filteredUsers.length === 0 ? (
                 <div className="text-center p-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
-                    <p className="text-gray-500">No users found.</p>
+                    <p className="text-gray-500">No users found matching your filters.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {users.map(u => (
+                    {filteredUsers.map(u => (
                         <div key={u._id} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative group">
                             <button 
                                 onClick={() => handleDelete(u._id)}
