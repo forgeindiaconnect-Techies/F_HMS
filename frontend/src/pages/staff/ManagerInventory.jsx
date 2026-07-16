@@ -11,7 +11,6 @@ const mockInventory = [
 ];
 
 const ManagerInventory = () => {
-    const [showSyncModal, setShowSyncModal] = useState(false);
     const [showReorderModal, setShowReorderModal] = useState(false);
     const [selectedItemForAction, setSelectedItemForAction] = useState(null);
     const [actionType, setActionType] = useState(''); // 'reorder' or 'adjust'
@@ -24,9 +23,6 @@ const ManagerInventory = () => {
                     <p className="text-gray-500 text-sm mt-1">Track local branch stock levels and manage reorder requests.</p>
                 </div>
                 <div className="flex gap-3">
-                    <button onClick={() => setShowSyncModal(true)} className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-xl font-medium transition-colors text-sm shadow-sm flex items-center gap-2">
-                        <RefreshCw size={16} /> Sync Stock
-                    </button>
                     <button onClick={() => { setSelectedItemForAction(null); setActionType('reorder'); setShowReorderModal(true); }} className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold transition-colors flex items-center gap-2 text-sm shadow-md">
                         <ShoppingCart size={18} /> New Reorder
                     </button>
@@ -117,27 +113,7 @@ const ManagerInventory = () => {
                 </div>
             </div>
 
-            {/* Sync Stock Modal */}
-            {showSyncModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-                        <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                            <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2"><RefreshCw size={20} className="text-blue-600" /> Sync Inventory</h3>
-                            <button onClick={() => setShowSyncModal(false)} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                                <X size={20} />
-                            </button>
-                        </div>
-                        <div className="p-6">
-                            <p className="text-gray-600 text-sm">You are about to sync the local branch inventory levels with the central database. This will update the status of pending deliveries and stock alerts.</p>
-                            <p className="text-gray-600 text-sm mt-2 font-bold">Are you sure you want to proceed?</p>
-                        </div>
-                        <div className="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-                            <button onClick={() => setShowSyncModal(false)} className="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">Cancel</button>
-                            <button onClick={() => { setShowSyncModal(false); toast.success('Inventory synced successfully!'); }} className="px-5 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors">Sync Now</button>
-                        </div>
-                    </div>
-                </div>
-            )}
+
 
             {/* Reorder / Adjust Modal */}
             {showReorderModal && (
