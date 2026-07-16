@@ -13,7 +13,7 @@ const ManagerDashboard = () => {
         <div className="w-full max-w-[1600px] mx-auto space-y-6">
                 
                 {/* KPI Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden group">
                         <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 rounded-full group-hover:scale-110 transition-transform"></div>
                         <div className="relative">
@@ -23,18 +23,6 @@ const ManagerDashboard = () => {
                             </div>
                             <p className="text-gray-500 text-sm font-medium mb-1">Today's Revenue</p>
                             <h2 className="text-3xl font-extrabold text-gray-900" style={{ fontFamily: 'Manrope, sans-serif' }}>₹4,250.00</h2>
-                        </div>
-                    </div>
-                    
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden group">
-                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-green-50 rounded-full group-hover:scale-110 transition-transform"></div>
-                        <div className="relative">
-                            <div className="flex justify-between items-start mb-4">
-                                <div className="p-3 bg-green-100 text-green-600 rounded-xl"><ShoppingBag size={24}/></div>
-                                <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2.5 py-1 rounded-md">12 pending</span>
-                            </div>
-                            <p className="text-gray-500 text-sm font-medium mb-1">Active Orders</p>
-                            <h2 className="text-3xl font-extrabold text-gray-900" style={{ fontFamily: 'Manrope, sans-serif' }}>48</h2>
                         </div>
                     </div>
 
@@ -55,41 +43,7 @@ const ManagerDashboard = () => {
                     {/* Left Column (Orders & Stock) */}
                     <div className="lg:col-span-2 space-y-6">
                         
-                        {/* Live Orders Mini Kanban */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                            <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                                <h3 className="font-bold text-gray-900 text-lg" style={{ fontFamily: 'Poppins, sans-serif' }}>Live Orders Attention</h3>
-                                <Link to="/manager/orders" className="text-sm font-bold text-green-600 hover:text-green-700 flex items-center gap-1 transition-colors">
-                                    View All <ChevronRight size={16} />
-                                </Link>
-                            </div>
-                            <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Order Card 1 */}
-                                <div className="border border-orange-200 bg-orange-50/30 p-4 rounded-xl">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <span className="font-bold text-gray-900">#ORD-092</span>
-                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-orange-100 text-orange-700 border border-orange-200">Preparing</span>
-                                    </div>
-                                    <p className="text-sm text-gray-600 mb-3">Dine-in • Table T-04 • 3 items</p>
-                                    <div className="flex justify-between items-center pt-3 border-t border-orange-200/50">
-                                        <span className="text-xs text-orange-600 font-bold flex items-center gap-1"><Clock size={12}/> 15 mins ago</span>
-                                        <button onClick={() => toast.success('Order marked as ready!')} className="text-xs bg-orange-500 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-orange-600 transition-colors">Mark Ready</button>
-                                    </div>
-                                </div>
-                                {/* Order Card 2 */}
-                                <div className="border border-purple-200 bg-purple-50/30 p-4 rounded-xl">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <span className="font-bold text-gray-900">#ORD-096</span>
-                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-700 border border-purple-200">Delivery</span>
-                                    </div>
-                                    <p className="text-sm text-gray-600 mb-3">456 Elm St • 4 items</p>
-                                    <div className="flex justify-between items-center pt-3 border-t border-purple-200/50">
-                                        <span className="text-xs text-purple-600 font-bold flex items-center gap-1"><Clock size={12}/> Waiting for Rider</span>
-                                        <button onClick={() => toast.success('Order dispatched!')} className="text-xs bg-purple-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-purple-700 transition-colors">Dispatch</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+
 
                         {/* Low Stock Warnings */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">

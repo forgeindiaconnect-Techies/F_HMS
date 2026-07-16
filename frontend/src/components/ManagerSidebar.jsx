@@ -19,7 +19,6 @@ const ManagerSidebar = () => {
         {
             title: 'Operations',
             items: [
-                { name: 'Live Orders', path: '/manager/orders', icon: ShoppingBag },
                 { name: 'Kitchen Status', path: '/manager/kitchen', icon: ChefHat },
                 { name: 'Staff Schedule', path: '/manager/staff', icon: UserCheck },
                 { name: 'Branch Inventory', path: '/manager/inventory', icon: PackageSearch },
