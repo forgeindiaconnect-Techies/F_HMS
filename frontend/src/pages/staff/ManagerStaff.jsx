@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Plus, Calendar, Clock, UserCheck, UserX, AlertTriangle, MessageSquare, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
 
 const mockShift = [
     { name: 'Marcus Wong', role: 'Head Chef', status: 'Active', timeIn: '08:00 AM', hours: '4h 30m', alert: false },
@@ -11,10 +12,44 @@ const mockShift = [
 ];
 
 const ManagerStaff = () => {
+    const { api, user } = useAuth();
+    const [staffList, setStaffList] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [showScheduleModal, setShowScheduleModal] = useState(false);
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [selectedStaffForManage, setSelectedStaffForManage] = useState(null);
     const [selectedStaffForMessage, setSelectedStaffForMessage] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const fetchStaff = async () => {
+        try {
+            const res = await api.get('/staff');
+            // Filter by manager's branch
+            const filtered = res.data.filter(s => 
+                s.branchId?._id === user.branchId || s.branchId === user.branchId
+            );
+            setStaffList(filtered);
+        } catch (error) {
+            console.error('Failed to fetch staff for manager dashboard', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchStaff();
+    }, []);
+
+    // Format staff data for display with mock shift status info
+    const displayStaff = staffList.map((staff, index) => ({
+        ...staff,
+        status: index % 3 === 0 ? 'Active' : index % 3 === 1 ? 'Break' : 'Active',
+        timeIn: '09:00 AM',
+        hours: '8h 00m',
+        alert: false
+    })).filter(s => 
+        !searchQuery || s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.role.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
         <div className="p-8 max-w-[1600px] mx-auto space-y-6 font-sans">
@@ -65,7 +100,13 @@ const ManagerStaff = () => {
                     <h3 className="font-bold text-gray-900 text-lg" style={{ fontFamily: 'Poppins, sans-serif' }}>Current Shift Roster</h3>
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                        <input type="text" placeholder="Search staff..." className="pl-9 pr-4 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500" />
+                        <input 
+                            type="text" 
+                            placeholder="Search staff..." 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-9 pr-4 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500" 
+                        />
                     </div>
                 </div>
                 <div className="overflow-x-auto">
@@ -80,7 +121,19 @@ const ManagerStaff = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {mockShift.map((staff, i) => (
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="5" className="text-center py-8">
+                                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600 mx-auto"></div>
+                                    </td>
+                                </tr>
+                            ) : displayStaff.length === 0 ? (
+                                <tr>
+                                    <td colSpan="5" className="text-center py-8 text-gray-500 font-medium">
+                                        No staff members found assigned to this branch.
+                                    </td>
+                                </tr>
+                            ) : displayStaff.map((staff, i) => (
                                 <tr key={i} className={`hover:bg-gray-50 transition-colors ${staff.alert ? 'bg-red-50/10' : ''}`}>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
@@ -92,7 +145,7 @@ const ManagerStaff = () => {
                                                     {staff.name}
                                                     {staff.alert && <AlertTriangle size={14} className="text-red-500" />}
                                                 </p>
-                                                <p className="text-xs text-gray-500">{staff.role}</p>
+                                                <p className="text-xs text-gray-500">{staff.role.replace(/([A-Z])/g, ' $1').trim()}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -180,10 +233,11 @@ const ManagerStaff = () => {
                                 <label className="block text-sm font-bold text-gray-700 mb-1">Employee</label>
                                 <select className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500">
                                     <option value="">Select Employee...</option>
-                                    <option value="marcus">Marcus Wong (Head Chef)</option>
-                                    <option value="elena">Elena Rodriguez (Senior Waiter)</option>
-                                    <option value="jessica">Jessica Lee (Line Cook)</option>
-                                    <option value="tom">Tom Hardy (Waiter)</option>
+                                    {staffList.map(staff => (
+                                        <option key={staff._id} value={staff._id}>
+                                            {staff.name} ({staff.role.replace(/([A-Z])/g, ' $1').trim()})
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                             <div>
