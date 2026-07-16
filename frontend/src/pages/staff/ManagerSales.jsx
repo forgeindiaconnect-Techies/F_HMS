@@ -5,6 +5,110 @@ import toast from 'react-hot-toast';
 const ManagerSales = () => {
     const [showExportModal, setShowExportModal] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
+    const [exportFormat, setExportFormat] = useState('CSV');
+    const [dateRange, setDateRange] = useState('Today');
+
+    const handleDownload = () => {
+        if (exportFormat === 'PDF') {
+            // Load jsPDF from CDN
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+            script.onload = () => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                // Styles
+                doc.setFont('Helvetica', 'bold');
+                doc.setFontSize(22);
+                doc.setTextColor(22, 163, 74); // green-600
+                doc.text('RestoSys Sales Report', 14, 20);
+
+                doc.setFont('Helvetica', 'normal');
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text(`Date Range: ${dateRange} | Generated: ${new Date().toLocaleString()}`, 14, 26);
+
+                doc.setDrawColor(230, 230, 230);
+                doc.line(14, 30, 196, 30);
+
+                // Stats Section
+                doc.setFont('Helvetica', 'bold');
+                doc.setFontSize(11);
+                doc.setTextColor(60, 60, 60);
+                doc.text('Gross Sales: Rs. 4,850.00', 14, 38);
+                doc.text('Net Sales: Rs. 4,250.00', 14, 44);
+                doc.text('Total Tax (8%): Rs. 340.00', 14, 50);
+
+                // Table
+                let y = 62;
+                doc.line(14, y, 196, y);
+                doc.setFont('Helvetica', 'bold');
+                doc.setTextColor(30, 30, 30);
+                doc.text('Time', 16, y + 5);
+                doc.text('Order ID', 40, y + 5);
+                doc.text('Type', 80, y + 5);
+                doc.text('Payment Method', 115, y + 5);
+                doc.text('Amount', 165, y + 5);
+                doc.line(14, y + 8, 196, y + 8);
+
+                y += 13;
+                doc.setFont('Helvetica', 'normal');
+                doc.setTextColor(80, 80, 80);
+
+                const txns = [
+                    { time: '17:42', id: '#ORD-112', type: 'Dine-In', amount: 'Rs. 145.50', payment: 'Credit Card' },
+                    { time: '17:35', id: '#ORD-111', type: 'Takeaway', amount: 'Rs. 32.00', payment: 'Cash' },
+                    { time: '17:15', id: '#ORD-110', type: 'Dine-In', amount: 'Rs. 85.20', payment: 'Credit Card' },
+                    { time: '16:50', id: '#ORD-109', type: 'Delivery', amount: 'Rs. 55.00', payment: 'Online' },
+                    { time: '16:30', id: '#ORD-108', type: 'Dine-In', amount: 'Rs. 210.00', payment: 'Credit Card' },
+                    { time: '16:10', id: '#ORD-107', type: 'Takeaway', amount: 'Rs. 18.50', payment: 'Cash' },
+                ];
+
+                txns.forEach(tx => {
+                    doc.text(tx.time, 16, y);
+                    doc.text(tx.id, 40, y);
+                    doc.text(tx.type, 80, y);
+                    doc.text(tx.payment, 115, y);
+                    doc.text(tx.amount, 165, y);
+                    doc.line(14, y + 3, 196, y + 3);
+                    y += 10;
+                });
+
+                doc.save(`Sales_Report_${dateRange.replace(' ', '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+                setShowExportModal(false);
+                toast.success('PDF report downloaded successfully!');
+            };
+            script.onerror = () => {
+                toast.error('Failed to load PDF export library.');
+            };
+            document.body.appendChild(script);
+        } else {
+            // CSV or Excel download simulation
+            const headers = ['Time', 'Order ID', 'Type', 'Payment Method', 'Amount'];
+            const rows = [
+                ['17:42', '#ORD-112', 'Dine-In', 'Credit Card', '145.50'],
+                ['17:35', '#ORD-111', 'Takeaway', 'Cash', '32.00'],
+                ['17:15', '#ORD-110', 'Dine-In', 'Credit Card', '85.20'],
+                ['16:50', '#ORD-109', 'Delivery', 'Online', '55.00'],
+                ['16:30', '#ORD-108', 'Dine-In', 'Credit Card', '210.00'],
+                ['16:10', '#ORD-107', 'Takeaway', 'Cash', '18.50']
+            ];
+
+            const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            const ext = exportFormat.toLowerCase() === 'excel' ? 'xlsx' : 'csv';
+            link.setAttribute('download', `Sales_Report_${dateRange.replace(' ', '_')}_${new Date().toISOString().split('T')[0]}.${ext}`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            setShowExportModal(false);
+            toast.success(`${exportFormat} report downloaded successfully!`);
+        }
+    };
 
     return (
         <div className="p-8 max-w-[1600px] mx-auto space-y-6 font-sans">
@@ -111,26 +215,56 @@ const ManagerSales = () => {
                         <div className="p-6 space-y-5">
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-2">Select Date Range</label>
-                                <select className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option>Today</option>
-                                    <option>Yesterday</option>
-                                    <option>This Week</option>
-                                    <option>This Month</option>
-                                    <option>Custom Range...</option>
+                                <select 
+                                    value={dateRange}
+                                    onChange={(e) => setDateRange(e.target.value)}
+                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+                                >
+                                    <option value="Today">Today</option>
+                                    <option value="Yesterday">Yesterday</option>
+                                    <option value="This Week">This Week</option>
+                                    <option value="This Month">This Month</option>
                                 </select>
                             </div>
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-2">Export Format</label>
                                 <div className="grid grid-cols-3 gap-3">
-                                    <button className="border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold py-2 rounded-xl text-sm transition-colors">CSV</button>
-                                    <button className="border border-gray-200 hover:border-gray-300 text-gray-600 font-medium py-2 rounded-xl text-sm transition-colors">Excel</button>
-                                    <button className="border border-gray-200 hover:border-gray-300 text-gray-600 font-medium py-2 rounded-xl text-sm transition-colors">PDF</button>
+                                    <button 
+                                        onClick={() => setExportFormat('CSV')}
+                                        className={`py-2.5 rounded-xl text-sm font-bold transition-all border ${
+                                            exportFormat === 'CSV' 
+                                            ? 'border-green-600 bg-green-50 text-green-700 shadow-sm' 
+                                            : 'border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                                        }`}
+                                    >
+                                        CSV
+                                    </button>
+                                    <button 
+                                        onClick={() => setExportFormat('Excel')}
+                                        className={`py-2.5 rounded-xl text-sm font-bold transition-all border ${
+                                            exportFormat === 'Excel' 
+                                            ? 'border-green-600 bg-green-50 text-green-700 shadow-sm' 
+                                            : 'border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                                        }`}
+                                    >
+                                        Excel
+                                    </button>
+                                    <button 
+                                        onClick={() => setExportFormat('PDF')}
+                                        className={`py-2.5 rounded-xl text-sm font-bold transition-all border ${
+                                            exportFormat === 'PDF' 
+                                            ? 'border-green-600 bg-green-50 text-green-700 shadow-sm' 
+                                            : 'border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                                        }`}
+                                    >
+                                        PDF
+                                    </button>
                                 </div>
                             </div>
                         </div>
                         <div className="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
                             <button onClick={() => setShowExportModal(false)} className="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">Cancel</button>
-                            <button onClick={() => { setShowExportModal(false); toast.success('Download started!'); }} className="px-5 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors">Download Now</button>
+                            <button onClick={handleDownload} className="px-5 py-2.5 text-sm font-bold text-white bg-green-600 hover:bg-green-700 rounded-xl transition-colors shadow-md">Download Now</button>
                         </div>
                     </div>
                 </div>
