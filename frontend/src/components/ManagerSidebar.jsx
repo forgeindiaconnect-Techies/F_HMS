@@ -23,8 +23,6 @@ const ManagerSidebar = () => {
                 { name: 'Kitchen Status', path: '/manager/kitchen', icon: ChefHat },
                 { name: 'Staff Schedule', path: '/manager/staff', icon: UserCheck },
                 { name: 'Branch Inventory', path: '/manager/inventory', icon: PackageSearch },
-                { name: 'Reservations', path: '/manager/reservations', icon: CalendarCheck },
-                { name: 'Feedback', path: '/manager/feedback', icon: MessageSquare },
             ]
         },
         {
