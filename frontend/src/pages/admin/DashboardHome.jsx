@@ -1,4 +1,5 @@
 import { TrendingUp, Users, ShoppingBag, DollarSign } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import StatCard from '../../components/StatCard';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
@@ -128,7 +129,7 @@ const DashboardHome = () => {
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <div className="flex items-center justify-between mb-5">
                     <h3 className="text-lg font-bold text-gray-800" style={{ fontFamily: 'Poppins, sans-serif' }}>Recent Orders</h3>
-                    <button className="text-green-600 hover:text-green-700 text-sm font-semibold transition-colors">View All →</button>
+                    <Link to="/admin/orders" className="text-green-600 hover:text-green-700 text-sm font-semibold transition-colors">View All →</Link>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left" style={{ fontFamily: 'Inter, sans-serif' }}>
