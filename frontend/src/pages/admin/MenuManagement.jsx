@@ -75,7 +75,7 @@ const MenuManagement = () => {
             name: '',
             description: '',
             price: '',
-            category: categories.length > 0 ? categories[0].name : 'Main Course',
+            category: categories.length > 0 ? categories[0].name : 'Uncategorized',
             isActive: true,
             image: '',
             tags: ''
@@ -303,6 +303,7 @@ const MenuManagement = () => {
                                             onChange={(e) => setFormData({...formData, category: e.target.value})}
                                             className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                                         >
+                                            {categories.length === 0 && <option value="Uncategorized">Uncategorized</option>}
                                             {categories.map(c => (
                                                 <option key={c._id} value={c.name}>{c.name}</option>
                                             ))}
