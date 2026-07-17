@@ -60,6 +60,7 @@ import Checkout from './pages/customer/Checkout';
 import Reservations from './pages/customer/Reservations';
 import OrderTracking from './pages/customer/OrderTracking';
 import OrderHistory from './pages/customer/OrderHistory';
+import ReservationHistory from './pages/customer/ReservationHistory';
 import CustomerAuthPage from './pages/CustomerAuthPage';
 import StaffAuthPage from './pages/StaffAuthPage';
 import { CustomerAuthProvider } from './context/CustomerAuthContext';
@@ -90,6 +91,7 @@ function App() {
           <Route path="restaurant/:id" element={<RestaurantDetails />} />
           <Route path="profile" element={<CustomerProtectedRoute><CustomerDashboard /></CustomerProtectedRoute>} />
           <Route path="profile/orders" element={<CustomerProtectedRoute><OrderHistory /></CustomerProtectedRoute>} />
+          <Route path="profile/reservations" element={<CustomerProtectedRoute><ReservationHistory /></CustomerProtectedRoute>} />
           <Route path="checkout" element={<CustomerProtectedRoute><Checkout /></CustomerProtectedRoute>} />
           <Route path="track/:id" element={<CustomerProtectedRoute><OrderTracking /></CustomerProtectedRoute>} />
           <Route path="reservations" element={<CustomerProtectedRoute><Reservations /></CustomerProtectedRoute>} />

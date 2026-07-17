@@ -197,6 +197,13 @@ const Explore = () => {
                                         >
                                             Orders
                                         </Link>
+                                        <Link 
+                                            to="/profile/reservations" 
+                                            onClick={() => setIsProfileOpen(false)}
+                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 font-bold transition-colors text-left"
+                                        >
+                                            Table Booking History
+                                        </Link>
 
                                         <button 
                                             onClick={() => { setIsProfileOpen(false); logout(); }}
