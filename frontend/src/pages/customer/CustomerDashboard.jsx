@@ -34,12 +34,7 @@ const CustomerDashboard = () => {
                     </div>
                 </div>
                 <div className="flex gap-4">
-                    <button 
-                        onClick={logout}
-                        className="px-6 py-2.5 rounded-full border border-gray-200 text-gray-600 font-bold hover:bg-gray-50 transition-colors"
-                    >
-                        Sign Out
-                    </button>
+
                     <Link 
                         to="/menu"
                         className="px-6 py-2.5 rounded-full bg-orange-600 text-white font-bold hover:bg-orange-700 shadow-lg shadow-orange-600/20 transition-all flex items-center gap-2"
