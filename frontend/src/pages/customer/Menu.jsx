@@ -109,15 +109,7 @@ const Menu = () => {
                             className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-transparent focus:border-orange-200 focus:bg-white rounded-xl outline-none transition-all text-sm font-medium"
                         />
                     </div>
-                    
-                    <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 custom-scrollbar shrink-0">
-                        <button 
-                            onClick={() => setIsFilterOpen(!isFilterOpen)}
-                            className="flex items-center gap-2 px-4 py-3 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl font-bold text-sm transition-colors shrink-0"
-                        >
-                            <Filter size={18} /> Filters
-                        </button>
-                    </div>
+
                 </div>
 
                 {/* Categories */}
