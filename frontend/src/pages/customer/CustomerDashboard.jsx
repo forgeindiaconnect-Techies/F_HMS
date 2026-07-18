@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { Gift, Clock, Star, MapPin, ChevronRight, ShoppingBag, Heart } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { Link } from 'react-router-dom';
+import { useCart } from '../../context/CartContext';
 
 const CustomerDashboard = () => {
     const { user, logout } = useCustomerAuth();
+    const { wishlist } = useCart();
     const [reservations, setReservations] = useState([]);
 
     useEffect(() => {
@@ -67,6 +69,20 @@ const CustomerDashboard = () => {
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    {/* Wishlist Stat Card */}
+                    <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500">
+                                <Heart size={22} className="fill-rose-500" />
+                            </div>
+                            <div>
+                                <h4 className="text-2xl font-bold text-gray-900 font-sans">{wishlist.length}</h4>
+                                <p className="text-xs text-gray-500">Favorites in Wishlist</p>
+                            </div>
+                        </div>
+                        <Link to="/menu" className="text-xs font-bold text-orange-600 hover:underline">View Menu</Link>
                     </div>
 
                     {/* Active Coupons */}
@@ -162,27 +178,30 @@ const CustomerDashboard = () => {
                             </div>
                         </div>
 
-                        {/* Favorite Items */}
-                        <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="font-bold text-gray-900">Your Favorites</h3>
-                                <Link to="/menu" className="text-xs font-bold text-orange-600">Browse Menu</Link>
-                            </div>
-                            <div className="space-y-3">
-                                {[
-                                    { name: 'Avocado Bowl', price: '₹15.00' },
-                                    { name: 'Crispy Calamari', price: '₹12.00' }
-                                ].map((fav, i) => (
-                                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                                        <div className="flex items-center gap-3">
-                                            <Heart size={16} className="fill-red-500 text-red-500" />
-                                            <span className="font-medium text-gray-900 text-sm">{fav.name}</span>
-                                        </div>
-                                        <button className="text-xs font-bold text-orange-600">Add</button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                         {/* Favorite Items */}
+                         <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                             <div className="flex justify-between items-center mb-6">
+                                 <h3 className="font-bold text-gray-900">Your Favorites ({wishlist.length})</h3>
+                                 <Link to="/menu" className="text-xs font-bold text-orange-600">Browse Menu</Link>
+                             </div>
+                             <div className="space-y-3">
+                                 {wishlist.length === 0 ? (
+                                     <div className="text-center py-8 text-sm text-gray-400 font-medium bg-gray-50 rounded-2xl">
+                                         No favorites saved yet.
+                                     </div>
+                                 ) : (
+                                     wishlist.map((fav, i) => (
+                                         <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                                             <div className="flex items-center gap-3">
+                                                 <Heart size={16} className="fill-red-500 text-red-500" />
+                                                 <span className="font-medium text-gray-900 text-sm">{fav.name}</span>
+                                             </div>
+                                             <span className="text-xs font-bold text-gray-400">₹{fav.price}</span>
+                                         </div>
+                                     ))
+                                 )}
+                             </div>
+                         </div>
                     </div>
 
                 </div>
