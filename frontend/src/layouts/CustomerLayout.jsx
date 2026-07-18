@@ -33,7 +33,7 @@ const CustomerLayout = () => {
 
                     <div className="flex items-center gap-6">
                         <Link 
-                            to="/dashboard"
+                            to="/profile"
                             className="relative p-2 text-gray-600 hover:text-orange-600 transition-colors"
                         >
                             <Heart size={24} />
