@@ -6,8 +6,14 @@ import { useCart } from '../../context/CartContext';
 
 const CustomerDashboard = () => {
     const { user, logout } = useCustomerAuth();
-    const { wishlist } = useCart();
+    const { wishlist, addToCart } = useCart();
     const [reservations, setReservations] = useState([]);
+
+    const handleReorder = (itemsList) => {
+        itemsList.forEach(item => {
+            addToCart(item);
+        });
+    };
 
     useEffect(() => {
         const localRes = JSON.parse(localStorage.getItem('customerReservations') || '[]');
@@ -127,8 +133,28 @@ const CustomerDashboard = () => {
 
                         <div className="space-y-4">
                             {[
-                                { id: '#ORD-8821', date: 'Yesterday', items: 'Ribeye Steak, Craft IPA', total: '₹42.00', status: 'Delivered' },
-                                { id: '#ORD-8805', date: 'Oct 12, 2026', items: 'Paneer Tikka, Green Wrap', total: '₹28.50', status: 'Delivered' }
+                                { 
+                                    id: '#ORD-8821', 
+                                    date: 'Yesterday', 
+                                    items: 'Ribeye Steak, Craft IPA', 
+                                    total: '₹848.00', 
+                                    status: 'Delivered',
+                                    itemsList: [
+                                        { id: 'm_ribeye', name: 'Ribeye Steak', price: 599, image: 'https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800' },
+                                        { id: 'm_ipa', name: 'Craft IPA', price: 249, image: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?q=80&w=800' }
+                                    ]
+                                },
+                                { 
+                                    id: '#ORD-8805', 
+                                    date: 'Oct 12, 2026', 
+                                    items: 'Paneer Tikka, Green Wrap', 
+                                    total: '₹460.00', 
+                                    status: 'Delivered',
+                                    itemsList: [
+                                        { id: 'm12', name: 'Paneer Tikka', price: 280, image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=800' },
+                                        { id: 'm_wrap', name: 'Green Salad Wrap', price: 180, image: 'https://images.unsplash.com/photo-1626700051175-6518c4793f4f?q=80&w=800' }
+                                    ]
+                                }
                             ].map((order, idx) => (
                                 <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border border-gray-100 hover:border-orange-200 transition-colors gap-4">
                                     <div className="flex items-center gap-4">
@@ -142,7 +168,10 @@ const CustomerDashboard = () => {
                                     </div>
                                     <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2">
                                         <span className="font-bold text-gray-900">{order.total}</span>
-                                        <button className="text-xs font-bold text-orange-600 bg-orange-50 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors">
+                                        <button 
+                                            onClick={() => handleReorder(order.itemsList)}
+                                            className="text-xs font-bold text-orange-600 bg-orange-50 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors"
+                                        >
                                             Reorder
                                         </button>
                                     </div>
