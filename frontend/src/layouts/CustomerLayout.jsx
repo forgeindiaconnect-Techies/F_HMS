@@ -7,7 +7,7 @@ import CartDrawer from '../components/CartDrawer';
 
 const CustomerLayout = () => {
     const { user, logout } = useCustomerAuth();
-    const { cartCount, setIsCartOpen } = useCart();
+    const { cartCount, setIsCartOpen, wishlist } = useCart();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     return (
@@ -32,9 +32,17 @@ const CustomerLayout = () => {
                     </nav>
 
                     <div className="flex items-center gap-6">
-                        <button className="relative p-2 text-gray-600 hover:text-orange-600 transition-colors">
+                        <Link 
+                            to="/dashboard"
+                            className="relative p-2 text-gray-600 hover:text-orange-600 transition-colors"
+                        >
                             <Heart size={24} />
-                        </button>
+                            {wishlist && wishlist.length > 0 && (
+                                <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white animate-in zoom-in duration-200">
+                                    {wishlist.length}
+                                </span>
+                            )}
+                        </Link>
                         <button 
                             onClick={() => setIsCartOpen(true)}
                             className="relative p-2 text-gray-600 hover:text-orange-600 transition-colors"

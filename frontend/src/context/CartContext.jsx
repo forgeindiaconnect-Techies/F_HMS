@@ -57,8 +57,11 @@ export const CartProvider = ({ children }) => {
 
     const toggleWishlist = (item) => {
         setWishlist(prev => {
-            const exists = prev.find(i => i.id === item.id);
-            if (exists) return prev.filter(i => i.id !== item.id);
+            const itemId = item._id || item.id;
+            const exists = prev.find(i => (i._id || i.id) === itemId);
+            if (exists) {
+                return prev.filter(i => (i._id || i.id) !== itemId);
+            }
             return [...prev, item];
         });
     };
