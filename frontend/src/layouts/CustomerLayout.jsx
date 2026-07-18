@@ -16,11 +16,11 @@ const CustomerLayout = () => {
             
             <header className="bg-white shadow-sm sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-                    <Link to="/explore" className="flex items-center gap-3">
-                        <div className="bg-orange-500 text-white p-2 rounded-lg">
+                    <Link to="/explore" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-3 group">
+                        <div className="bg-orange-500 text-white p-2 rounded-lg group-hover:scale-105 transition-transform">
                             <UtensilsCrossed size={24} />
                         </div>
-                        <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-orange-400">
+                        <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-orange-400 group-hover:from-orange-500 group-hover:to-orange-300 transition-colors">
                             RestoSys
                         </h1>
                     </Link>
