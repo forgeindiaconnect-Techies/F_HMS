@@ -330,7 +330,7 @@ const StaffAuthPage = () => {
                                 {plan === 'Enterprise' && 'Custom'}
                             </span>
                         </div>
-                        <p className="text-xs text-gray-500 font-medium">Includes 7-day free trial. Cancel anytime.</p>
+                        <p className="text-xs text-gray-500 font-medium">Includes 1-day free trial. Cancel anytime.</p>
                         {selectedPlan === plan && <CheckCircle2 size={18} className="absolute top-4 right-4 text-green-500" />}
                     </label>
                 ))}
