@@ -150,32 +150,6 @@ const RestaurantDetails = () => {
                                             </div>
                                             <div className="w-32 h-32 shrink-0 relative">
                                                 <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-xl shadow-sm" />
-                                                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden">
-                                                    {getItemQuantity(item._id) > 0 ? (
-                                                        <div className="flex items-center justify-between w-24 h-9">
-                                                            <button 
-                                                                onClick={() => removeFromCart(item._id)}
-                                                                className="w-1/3 h-full flex items-center justify-center text-red-600 hover:bg-red-50"
-                                                            >
-                                                                <Minus size={14} />
-                                                            </button>
-                                                            <span className="text-sm font-bold w-1/3 text-center">{getItemQuantity(item._id)}</span>
-                                                            <button 
-                                                                onClick={() => addToCart(item)}
-                                                                className="w-1/3 h-full flex items-center justify-center text-red-600 hover:bg-red-50"
-                                                            >
-                                                                <Plus size={14} />
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <button 
-                                                            onClick={() => addToCart(item)}
-                                                            className="w-24 h-9 text-red-600 font-bold text-sm uppercase tracking-wider hover:bg-red-50 transition-colors"
-                                                        >
-                                                            Add
-                                                        </button>
-                                                    )}
-                                                </div>
                                             </div>
                                         </div>
                                     ))}
