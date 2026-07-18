@@ -273,13 +273,21 @@ const RestaurantDetails = () => {
                                         <CheckCircle size={32} className="text-green-600" />
                                     </div>
                                     <h4 className="font-bold text-gray-900 mb-1">Table Confirmed!</h4>
-                                    <p className="text-xs text-gray-500 mb-4">Your table has been reserved successfully.</p>
-                                    <button 
-                                        onClick={() => setBookingSuccess(false)}
-                                        className="text-xs text-red-500 font-bold hover:underline"
-                                    >
-                                        Book Another Table
-                                    </button>
+                                    <p className="text-xs text-gray-500 mb-6">Your table has been reserved successfully.</p>
+                                    <div className="flex flex-col gap-3">
+                                        <Link 
+                                            to="/profile/reservations"
+                                            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center gap-1"
+                                        >
+                                            View Details
+                                        </Link>
+                                        <button 
+                                            onClick={() => setBookingSuccess(false)}
+                                            className="text-xs text-gray-500 hover:text-red-500 font-bold transition-colors"
+                                        >
+                                            Book Another Table
+                                        </button>
+                                    </div>
                                 </div>
                             ) : (
                                 <form onSubmit={handleBookTable} className="space-y-4">
