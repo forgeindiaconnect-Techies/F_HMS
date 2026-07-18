@@ -368,7 +368,7 @@ const Home = () => {
                         <div className="inline-block px-4 py-2 bg-indigo-500/20 text-indigo-300 rounded-lg font-bold text-sm border border-indigo-500/30">Native iOS & Android</div>
                         <h2 className="text-4xl font-black tracking-tight">Your Restaurant, in Their Pocket</h2>
                         <p className="text-lg text-indigo-200 font-medium">Launch your own branded mobile app. Increase customer loyalty, send push notifications, and drive repeat orders.</p>
-                        <button className="bg-white text-indigo-900 font-bold px-8 py-3 rounded-xl mt-4 hover:bg-gray-100 transition-colors">Learn More</button>
+                        <Link to="/explore" className="inline-block bg-white text-indigo-900 font-bold px-8 py-3 rounded-xl mt-4 hover:bg-gray-100 transition-colors">Learn More</Link>
                     </div>
                     <div className="flex-1 flex justify-center relative">
                         <div className="w-64 h-[500px] bg-gray-900 rounded-[3rem] border-8 border-gray-800 shadow-2xl relative overflow-hidden flex flex-col relative z-10 transform rotate-[-5deg]">
