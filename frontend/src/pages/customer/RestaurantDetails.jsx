@@ -22,7 +22,7 @@ const dummyMenus = {
     demo1: [
         { _id: 'm1', name: 'Margherita Pizza', price: 299, category: 'Pizzas', description: 'Classic cheese and tomato pizza with basil.', image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80&w=800' },
         { _id: 'm2', name: 'Pepperoni Pizza', price: 399, category: 'Pizzas', description: 'Double pepperoni and mozzarella cheese.', image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=800' },
-        { _id: 'm3', name: 'Garlic Bread', price: 149, category: 'Sides', description: 'Toasted french bread with garlic butter and herbs.', image: 'https://images.unsplash.com/photo-1573140247632-f8fd74997d5c?q=80&w=800' }
+        { _id: 'm3', name: 'Garlic Bread', price: 149, category: 'Sides', description: 'Toasted french bread with garlic butter and herbs.', image: 'https://images.unsplash.com/photo-1619535860434-ba1d8fa12536?q=80&w=800' }
     ],
     demo2: [
         { _id: 'm4', name: 'Classic Cheeseburger', price: 199, category: 'Burgers', description: 'Flame-grilled beef patty, cheddar, lettuce, tomato, pickles.', image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800' },
