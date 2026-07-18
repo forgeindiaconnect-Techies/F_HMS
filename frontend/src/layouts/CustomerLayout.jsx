@@ -117,7 +117,6 @@ const CustomerLayout = () => {
                         <ul className="space-y-2">
                             <li><Link to="/menu" className="hover:text-green-400 transition-colors">Browse Menu</Link></li>
                             <li><Link to="/reservations" className="hover:text-green-400 transition-colors">Book a Table</Link></li>
-                            <li><a href="/#about" className="hover:text-green-400 transition-colors">About Us</a></li>
                         </ul>
                     </div>
                     <div>
