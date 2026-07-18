@@ -74,9 +74,26 @@ const Menu = () => {
 
     const filteredMenu = useMemo(() => {
         return menuItems.filter(item => {
-            const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
+            let matchesCategory = false;
+            const itemCat = (item.category || '').toLowerCase();
+            if (activeCategory === 'All') {
+                matchesCategory = true;
+            } else if (activeCategory === 'Starters') {
+                matchesCategory = ['sides', 'bbq', 'starters', 'starter'].includes(itemCat);
+            } else if (activeCategory === 'Salads') {
+                matchesCategory = ['salads', 'salad'].includes(itemCat);
+            } else if (activeCategory === 'Mains') {
+                matchesCategory = ['pizzas', 'pizza', 'burgers', 'burger', 'chinese', 'south indian', 'mains', 'main'].includes(itemCat);
+            } else if (activeCategory === 'Desserts') {
+                matchesCategory = ['desserts', 'dessert', 'sweets', 'sweet'].includes(itemCat);
+            } else if (activeCategory === 'Beverages') {
+                matchesCategory = ['beverages', 'beverage', 'drinks', 'drink'].includes(itemCat);
+            } else {
+                matchesCategory = itemCat === activeCategory.toLowerCase();
+            }
+
             const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                                  (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+                                   (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
             return matchesCategory && matchesSearch;
         });
     }, [searchQuery, activeCategory, menuItems]);
