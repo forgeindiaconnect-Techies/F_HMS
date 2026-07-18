@@ -9,6 +9,7 @@ import {
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const Home = () => {
     const { user } = useAuth();
@@ -478,7 +479,7 @@ const Home = () => {
                 </section>
 
                 {/* 12. FAQ */}
-                <section className="mb-24 max-w-3xl mx-auto">
+                <section id="faq" className="mb-24 max-w-3xl mx-auto">
                     <div className="text-center mb-12">
                         <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-4">Frequently Asked Questions</h2>
                     </div>
@@ -525,25 +526,25 @@ const Home = () => {
                         <div>
                             <h4 className="font-bold text-white mb-4">Product</h4>
                             <ul className="space-y-3 text-sm text-slate-400">
-                                <li><a href="#" className="hover:text-red-400 transition-colors">Features</a></li>
-                                <li><a href="#" className="hover:text-red-400 transition-colors">Pricing</a></li>
-                                <li><a href="#" className="hover:text-red-400 transition-colors">Integrations</a></li>
+                                <li><a href="#features" className="hover:text-red-400 transition-colors">Features</a></li>
+                                <li><a href="#pricing" className="hover:text-red-400 transition-colors">Pricing</a></li>
+                                <li><a href="#why-choose-us" className="hover:text-red-400 transition-colors">Integrations</a></li>
                             </ul>
                         </div>
                         <div>
                             <h4 className="font-bold text-white mb-4">Resources</h4>
                             <ul className="space-y-3 text-sm text-slate-400">
-                                <li><a href="#" className="hover:text-red-400 transition-colors">Help Center</a></li>
-                                <li><a href="#" className="hover:text-red-400 transition-colors">Blog</a></li>
-                                <li><a href="#" className="hover:text-red-400 transition-colors">API</a></li>
+                                <li><a href="#faq" className="hover:text-red-400 transition-colors">Help Center</a></li>
+                                <li><button onClick={() => toast.success("Blog portal coming soon!")} className="hover:text-red-400 transition-colors text-left">Blog</button></li>
+                                <li><button onClick={() => toast.success("Developer API keys will be available in your settings panel soon!")} className="hover:text-red-400 transition-colors text-left">API</button></li>
                             </ul>
                         </div>
                         <div>
                             <h4 className="font-bold text-white mb-4">Company</h4>
                             <ul className="space-y-3 text-sm text-slate-400">
-                                <li><a href="#" className="hover:text-red-400 transition-colors">About Us</a></li>
-                                <li><a href="#" className="hover:text-red-400 transition-colors">Contact</a></li>
-                                <li><a href="#" className="hover:text-red-400 transition-colors">Privacy</a></li>
+                                <li><a href="#about" className="hover:text-red-400 transition-colors">About Us</a></li>
+                                <li><a href="#pricing" onClick={() => setShowContact(true)} className="hover:text-red-400 transition-colors">Contact</a></li>
+                                <li><button onClick={() => toast.success("Privacy Policy & Terms of Service are available in platform documentation.")} className="hover:text-red-400 transition-colors text-left">Privacy</button></li>
                             </ul>
                         </div>
                     </div>
