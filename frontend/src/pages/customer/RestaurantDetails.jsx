@@ -227,7 +227,7 @@ const RestaurantDetails = () => {
                             <h3 className="font-bold text-gray-900 mb-4 px-2">Menu</h3>
                             <div className="space-y-1">
                                 {categories.map(cat => (
-                                    <a href={`#category-₹{cat}`} key={cat} className="block px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-red-600 transition-colors">
+                                    <a href={`#category-${cat}`} key={cat} className="block px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-red-600 transition-colors font-medium">
                                         {cat}
                                     </a>
                                 ))}
@@ -238,20 +238,25 @@ const RestaurantDetails = () => {
                     {/* Menu Items */}
                     <div className="flex-1 space-y-12">
                         {categories.map(category => (
-                            <div key={category} id={`category-₹{category}`} className="scroll-mt-24">
+                            <div key={category} id={`category-${category}`} className="scroll-mt-24">
                                 <h2 className="text-2xl font-bold text-gray-900 mb-6">{category}</h2>
                                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden divide-y divide-gray-50">
                                     {menu.filter(item => item.category === category).map(item => (
-                                        <div key={item._id} className="p-6 flex gap-6 hover:bg-gray-50/50 transition-colors">
+                                        <div 
+                                            key={item._id} 
+                                            onClick={() => addToCart(item)}
+                                            className="p-6 flex gap-6 hover:bg-orange-50/20 transition-colors cursor-pointer group active:scale-[0.99] transition-all rounded-2xl"
+                                            title="Click to add to cart"
+                                        >
                                             <div className="flex-1">
                                                 <div className="flex items-start justify-between mb-1">
-                                                    <h3 className="text-lg font-bold text-gray-900">{item.name}</h3>
+                                                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-red-600 transition-colors">{item.name}</h3>
                                                 </div>
                                                 <div className="font-medium text-gray-700 mb-3">₹{item.price}</div>
                                                 <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">{item.description}</p>
                                             </div>
-                                            <div className="w-32 h-32 shrink-0 relative">
-                                                <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-xl shadow-sm" />
+                                            <div className="w-32 h-32 shrink-0 relative overflow-hidden rounded-xl">
+                                                <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-xl shadow-sm group-hover:scale-105 transition-transform duration-300" />
                                             </div>
                                         </div>
                                     ))}
