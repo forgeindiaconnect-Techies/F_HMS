@@ -4,6 +4,50 @@ import axios from 'axios';
 import { MapPin, Star, Clock, Info, ShoppingBag, Plus, Minus } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 
+const dummyRestaurants = [
+    { _id: 'demo1', name: 'Pizza Palace', logo: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
+    { _id: 'demo2', name: 'Burger Hub', logo: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
+    { _id: 'demo3', name: 'South Indian Cafe', logo: 'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
+    { _id: 'demo4', name: 'Chinese Bowl', logo: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
+    { _id: 'demo5', name: 'BBQ Nation', logo: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
+    { _id: 'demo6', name: 'Juice Corner', logo: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' }
+];
+
+const dummyBranches = [
+    { _id: 'b1', name: 'Downtown Branch', address: '123 Main St, Downtown' },
+    { _id: 'b2', name: 'Uptown Branch', address: '456 High St, Uptown' }
+];
+
+const dummyMenus = {
+    demo1: [
+        { _id: 'm1', name: 'Margherita Pizza', price: 299, category: 'Pizzas', description: 'Classic cheese and tomato pizza with basil.', image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80&w=800' },
+        { _id: 'm2', name: 'Pepperoni Pizza', price: 399, category: 'Pizzas', description: 'Double pepperoni and mozzarella cheese.', image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=800' },
+        { _id: 'm3', name: 'Garlic Bread', price: 149, category: 'Sides', description: 'Toasted french bread with garlic butter and herbs.', image: 'https://images.unsplash.com/photo-1573140247632-f8fd74997d5c?q=80&w=800' }
+    ],
+    demo2: [
+        { _id: 'm4', name: 'Classic Cheeseburger', price: 199, category: 'Burgers', description: 'Flame-grilled beef patty, cheddar, lettuce, tomato, pickles.', image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800' },
+        { _id: 'm5', name: 'Veggie Burger', price: 179, category: 'Burgers', description: 'Spiced potato and pea patty, cheese, special sauce.', image: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?q=80&w=800' },
+        { _id: 'm6', name: 'French Fries', price: 99, category: 'Sides', description: 'Crispy golden potato fries, seasoned with salt.', image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?q=80&w=800' }
+    ],
+    demo3: [
+        { _id: 'm7', name: 'Masala Dosa', price: 120, category: 'Mains', description: 'Crispy rice crepe filled with spiced potato masala.', image: 'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?q=80&w=800' },
+        { _id: 'm8', name: 'Idli Sambar (2 Pcs)', price: 80, category: 'Starters', description: 'Steamed rice cakes served with sambar and coconut chutney.', image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?q=80&w=800' },
+        { _id: 'm9', name: 'Filter Coffee', price: 50, category: 'Beverages', description: 'Traditional South Indian chicory blend filter coffee.', image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=800' }
+    ],
+    demo4: [
+        { _id: 'm10', name: 'Veg Hakka Noodles', price: 180, category: 'Mains', description: 'Wok-tossed noodles with mixed vegetables and oriental spices.', image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?q=80&w=800' },
+        { _id: 'm11', name: 'Chicken Manchurian', price: 240, category: 'Starters', description: 'Crispy chicken chunks in a spicy, tangy manchurian sauce.', image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?q=80&w=800' }
+    ],
+    demo5: [
+        { _id: 'm12', name: 'Paneer Tikka', price: 280, category: 'Starters', description: 'Clay-oven roasted cottage cheese cubes marinated in yogurt spices.', image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=800' },
+        { _id: 'm13', name: 'Chicken Seekh Kebab', price: 320, category: 'Starters', description: 'Minced spiced chicken skewers grilled to perfection.', image: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?q=80&w=800' }
+    ],
+    demo6: [
+        { _id: 'm14', name: 'Fresh Orange Juice', price: 120, category: 'Beverages', description: 'Freshly squeezed 100% natural orange juice.', image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?q=80&w=800' },
+        { _id: 'm15', name: 'Mango Smoothie', price: 150, category: 'Beverages', description: 'Creamy yogurt blend with fresh sweet Alphonso mango pulp.', image: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?q=80&w=800' }
+    ]
+};
+
 const RestaurantDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -17,6 +61,14 @@ const RestaurantDetails = () => {
 
     useEffect(() => {
         const fetchDetails = async () => {
+            if (id && id.startsWith('demo')) {
+                setBranches(dummyBranches);
+                setSelectedBranch(dummyBranches[0]._id);
+                setMenu(dummyMenus[id] || []);
+                setRestaurant(dummyRestaurants.find(r => r._id === id));
+                setLoading(false);
+                return;
+            }
             try {
                 let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
                 if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
