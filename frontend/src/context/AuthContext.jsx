@@ -41,6 +41,11 @@ api.interceptors.response.use(
                 window.location.href = '/staff/login';
             }
         }
+        if (error.response && error.response.status === 402) {
+            if (window.location.pathname !== '/admin/billing') {
+                window.location.href = '/admin/billing';
+            }
+        }
         return Promise.reject(error);
     }
 );

@@ -54,6 +54,41 @@ export const updateSubscription = async (req, res) => {
     }
 };
 
+// @desc    Self-service subscribe/renew subscription
+// @route   PUT /api/restaurants/subscribe
+// @access  Private/RestaurantAdmin
+export const selfSubscribe = async (req, res) => {
+    try {
+        const { plan, billingCycle } = req.body;
+        const restaurant = await Restaurant.findById(req.user.restaurantId);
+
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        const expiryDate = new Date();
+        if (billingCycle === 'yearly') {
+            expiryDate.setDate(expiryDate.getDate() + 365);
+        } else {
+            // Monthly
+            expiryDate.setDate(expiryDate.getDate() + 30);
+        }
+
+        restaurant.subscription = {
+            status: 'Active',
+            plan: plan || 'Basic',
+            billingCycle: billingCycle || 'monthly',
+            trialActive: false,
+            expiryDate: expiryDate
+        };
+
+        const updatedRestaurant = await restaurant.save();
+        res.json(updatedRestaurant);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 // @desc    Create a restaurant
 // @route   POST /api/restaurants
 // @access  Private/Admin

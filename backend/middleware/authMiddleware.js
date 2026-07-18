@@ -66,16 +66,32 @@ export const checkSubscription = async (req, res, next) => {
         return next(); // SuperAdmin or Customer, skip
     }
 
+    // Bypass check for subscription routes
+    if (req.originalUrl.includes('/subscribe') || (req.method === 'GET' && req.originalUrl.includes('/mine'))) {
+        return next();
+    }
+
     try {
         const restaurant = await Restaurant.findById(req.user.restaurantId);
         if (!restaurant) {
             return res.status(404).json({ message: 'Restaurant not found' });
         }
 
-        if (restaurant.subscription.status === 'Frozen' && req.method !== 'GET') {
-            return res.status(403).json({ 
-                message: 'Your subscription is frozen. Please renew to perform actions.',
-                isFrozen: true
+        const now = new Date();
+        const expiry = restaurant.subscription?.expiryDate ? new Date(restaurant.subscription.expiryDate) : null;
+
+        if (restaurant.subscription?.trialActive && expiry && now > expiry) {
+            return res.status(402).json({
+                message: 'Your 1-day free trial has expired. Please subscribe to continue using the dashboard.',
+                trialExpired: true,
+                requiresSubscription: true
+            });
+        }
+
+        if (restaurant.subscription?.status === 'Frozen' || (expiry && now > expiry)) {
+            return res.status(402).json({ 
+                message: 'Your subscription has expired or is frozen. Please renew your subscription to continue.',
+                requiresSubscription: true
             });
         }
         

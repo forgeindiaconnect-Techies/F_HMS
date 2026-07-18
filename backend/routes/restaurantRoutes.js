@@ -1,5 +1,5 @@
 import express from 'express';
-import { getRestaurants, createRestaurant, getBranches, createBranch, getMyRestaurant, updateMyRestaurant, updateSubscription } from '../controllers/restaurantController.js';
+import { getRestaurants, createRestaurant, getBranches, createBranch, getMyRestaurant, updateMyRestaurant, updateSubscription, selfSubscribe } from '../controllers/restaurantController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -7,6 +7,9 @@ const router = express.Router();
 router.route('/mine')
     .get(protect, getMyRestaurant)
     .put(protect, authorize('RestaurantAdmin'), updateMyRestaurant);
+
+router.route('/subscribe')
+    .put(protect, authorize('RestaurantAdmin'), selfSubscribe);
 
 router.route('/')
     .get(protect, authorize('SuperAdmin'), getRestaurants)
