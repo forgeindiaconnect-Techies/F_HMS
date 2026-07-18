@@ -221,6 +221,7 @@ const StaffAuthPage = () => {
                     {...register('name', { required: 'Name is required' })}
                     className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100 transition-all"
                 />
+                {errors.name && <p className="text-xs text-red-500 mt-1 pl-1">{errors.name.message}</p>}
             </div>
 
             <div className="relative group">
@@ -232,10 +233,11 @@ const StaffAuthPage = () => {
                     placeholder="Email Address"
                     {...register('email', { 
                         required: 'Email is required',
-                        pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' }
+                        pattern: { value: /^\S+@\S+$/i, message: 'Invalid email address' }
                     })}
                     className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100 transition-all"
                 />
+                {errors.email && <p className="text-xs text-red-500 mt-1 pl-1">{errors.email.message}</p>}
             </div>
 
             <div className="relative group">
@@ -245,9 +247,10 @@ const StaffAuthPage = () => {
                 <input
                     type="tel"
                     placeholder="Phone Number"
-                    {...register('phoneNumber', { required: 'Phone is required' })}
+                    {...register('phoneNumber', { required: 'Phone number is required' })}
                     className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100 transition-all"
                 />
+                {errors.phoneNumber && <p className="text-xs text-red-500 mt-1 pl-1">{errors.phoneNumber.message}</p>}
             </div>
 
             <div className="relative group">
@@ -257,7 +260,10 @@ const StaffAuthPage = () => {
                 <input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Create Password"
-                    {...register('password', { required: 'Password is required', minLength: 6 })}
+                    {...register('password', { 
+                        required: 'Password is required', 
+                        minLength: { value: 6, message: 'Password must be at least 6 characters long' } 
+                    })}
                     className="w-full pl-11 pr-11 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100 transition-all"
                 />
                 <button
@@ -267,6 +273,7 @@ const StaffAuthPage = () => {
                 >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
+                {errors.password && <p className="text-xs text-red-500 mt-1 pl-1">{errors.password.message}</p>}
             </div>
 
             <div className="relative group">
@@ -282,6 +289,7 @@ const StaffAuthPage = () => {
                     })}
                     className="w-full pl-11 pr-11 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100 transition-all"
                 />
+                {errors.confirmPassword && <p className="text-xs text-red-500 mt-1 pl-1">{errors.confirmPassword.message}</p>}
             </div>
 
             <button
