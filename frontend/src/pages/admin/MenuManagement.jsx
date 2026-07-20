@@ -288,7 +288,7 @@ const MenuManagement = () => {
                             </button>
                         </div>
                         
-                        <form id="menu-form" onSubmit={handleSubmit} className="flex flex-col max-h-full">
+                        <form id="menu-form" onSubmit={handleSubmit} className="flex flex-col min-h-0 flex-1">
                             <div className="overflow-y-auto p-6 space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Item Name</label>

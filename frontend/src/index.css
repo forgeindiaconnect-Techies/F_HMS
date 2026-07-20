@@ -42,3 +42,39 @@ h1, h2, h3, h4, h5, h6 {
 .custom-scrollbar:hover::-webkit-scrollbar-thumb {
   background-color: #D1D5DB;
 }
+
+/* Globally optimize modal cards and forms for responsiveness and internal scrolling on mobile */
+.fixed.inset-0.z-50 {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.fixed.inset-0.z-50.flex {
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 100vh !important;
+}
+
+.fixed.inset-0.z-50.flex > div:not(.absolute) {
+  margin-top: auto !important;
+  margin-bottom: auto !important;
+  max-height: 90vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.fixed.inset-0.z-50.flex > div:not(.absolute) > form {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Apply scroll to the form body while keeping the header and footer sticky */
+.fixed.inset-0.z-50.flex > div:not(.absolute) > form > div:first-of-type:not(.border-t) {
+  overflow-y: auto !important;
+  min-height: 0 !important;
+  flex: 1 1 auto !important;
+}
+
