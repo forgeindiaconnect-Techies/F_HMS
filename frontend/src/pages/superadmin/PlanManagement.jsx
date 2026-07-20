@@ -76,6 +76,12 @@ const PlanManagement = () => {
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
+        // For price fields, only allow digits
+        if (name === 'monthlyPrice' || name === 'yearlyPrice') {
+            const numericOnly = value.replace(/[^0-9]/g, '');
+            setFormData(prev => ({ ...prev, [name]: numericOnly }));
+            return;
+        }
         setFormData(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : value
@@ -250,32 +256,38 @@ const PlanManagement = () => {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 mb-1">Monthly Price (₹)</label>
-                                        <input 
-                                            type="number" 
-                                            name="monthlyPrice"
-                                            value={formData.monthlyPrice}
-                                            onChange={handleInputChange}
-                                            required
-                                            min="0"
-                                            step="1"
-                                            placeholder="2999"
-                                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
-                                        />
+                                        <div className="relative">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">₹</span>
+                                            <input 
+                                                type="text"
+                                                inputMode="numeric"
+                                                pattern="[0-9]*"
+                                                name="monthlyPrice"
+                                                value={formData.monthlyPrice}
+                                                onChange={handleInputChange}
+                                                required
+                                                placeholder="2999"
+                                                className="w-full pl-7 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
+                                            />
+                                        </div>
                                         <p className="text-xs text-gray-400 mt-1">Per month billing</p>
                                     </div>
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 mb-1">Yearly Price (₹/mo)</label>
-                                        <input 
-                                            type="number" 
-                                            name="yearlyPrice"
-                                            value={formData.yearlyPrice}
-                                            onChange={handleInputChange}
-                                            required
-                                            min="0"
-                                            step="1"
-                                            placeholder="2399"
-                                            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
-                                        />
+                                        <div className="relative">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">₹</span>
+                                            <input 
+                                                type="text"
+                                                inputMode="numeric"
+                                                pattern="[0-9]*"
+                                                name="yearlyPrice"
+                                                value={formData.yearlyPrice}
+                                                onChange={handleInputChange}
+                                                required
+                                                placeholder="2399"
+                                                className="w-full pl-7 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors"
+                                            />
+                                        </div>
                                         <p className="text-xs text-gray-400 mt-1">Per month when billed yearly</p>
                                     </div>
                                 </div>
