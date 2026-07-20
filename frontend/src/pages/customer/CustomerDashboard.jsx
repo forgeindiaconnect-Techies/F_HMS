@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Gift, Clock, Star, MapPin, ChevronRight, ShoppingBag, Heart } from 'lucide-react';
+import { Gift, Clock, Star, MapPin, ChevronRight, ShoppingBag, Heart, LogOut } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
@@ -53,11 +53,16 @@ const CustomerDashboard = () => {
                         <p className="text-gray-500 mt-1 text-sm sm:text-base">Ready for your next culinary adventure?</p>
                     </div>
                 </div>
-                <div className="flex gap-4">
-
+                <div className="flex gap-3 sm:gap-4 flex-wrap justify-center sm:justify-start">
+                    <button 
+                        onClick={logout}
+                        className="px-5 py-2 sm:px-6 sm:py-2.5 rounded-full border border-gray-200 text-gray-700 hover:text-red-600 hover:border-red-200 hover:bg-red-50/50 font-bold transition-all flex items-center gap-2 cursor-pointer text-sm sm:text-base"
+                    >
+                        <LogOut size={18} /> Log Out
+                    </button>
                     <Link 
                         to="/menu"
-                        className="px-6 py-2.5 rounded-full bg-orange-600 text-white font-bold hover:bg-orange-700 shadow-lg shadow-orange-600/20 transition-all flex items-center gap-2"
+                        className="px-5 py-2 sm:px-6 sm:py-2.5 rounded-full bg-orange-600 text-white font-bold hover:bg-orange-700 shadow-lg shadow-orange-600/20 transition-all flex items-center gap-2 text-sm sm:text-base"
                     >
                         Order Now <ChevronRight size={18} />
                     </Link>
@@ -89,19 +94,7 @@ const CustomerDashboard = () => {
                         </div>
                     </div>
 
-                    {/* Wishlist Stat Card */}
-                    <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500">
-                                <Heart size={22} className="fill-rose-500" />
-                            </div>
-                            <div>
-                                <h4 className="text-2xl font-bold text-gray-900 font-sans">{wishlist.length}</h4>
-                                <p className="text-xs text-gray-500">Favorites in Wishlist</p>
-                            </div>
-                        </div>
-                        <Link to="/menu" className="text-xs font-bold text-orange-600 hover:underline">View Menu</Link>
-                    </div>
+                    {/* Wishlist Stat Card removed */}
 
                     {/* Active Coupons */}
                     <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
@@ -192,7 +185,7 @@ const CustomerDashboard = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 gap-8">
                         {/* Reservation History */}
                         <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between">
                             <div className="flex justify-between items-center mb-4">
@@ -218,31 +211,6 @@ const CustomerDashboard = () => {
                                 )}
                             </div>
                         </div>
-
-                         {/* Favorite Items */}
-                         <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                             <div className="flex justify-between items-center mb-6">
-                                 <h3 className="font-bold text-gray-900">Your Favorites ({wishlist.length})</h3>
-                                 <Link to="/menu" className="text-xs font-bold text-orange-600">Browse Menu</Link>
-                             </div>
-                             <div className="space-y-3">
-                                 {wishlist.length === 0 ? (
-                                     <div className="text-center py-8 text-sm text-gray-400 font-medium bg-gray-50 rounded-2xl">
-                                         No favorites saved yet.
-                                     </div>
-                                 ) : (
-                                     wishlist.map((fav, i) => (
-                                         <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                                             <div className="flex items-center gap-3">
-                                                 <Heart size={16} className="fill-red-500 text-red-500" />
-                                                 <span className="font-medium text-gray-900 text-sm">{fav.name}</span>
-                                             </div>
-                                             <span className="text-xs font-bold text-gray-400">₹{fav.price}</span>
-                                         </div>
-                                     ))
-                                 )}
-                             </div>
-                         </div>
                     </div>
 
                 </div>

@@ -4,19 +4,21 @@ import { ShoppingCart, User, UtensilsCrossed, Heart, CalendarDays, ShoppingBag }
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { useCart } from '../context/CartContext';
 import CartDrawer from '../components/CartDrawer';
+import WishlistDrawer from '../components/WishlistDrawer';
 
 const CustomerLayout = () => {
     const { user, logout } = useCustomerAuth();
-    const { cartCount, setIsCartOpen, wishlist } = useCart();
+    const { cartCount, setIsCartOpen, wishlist, setIsWishlistOpen } = useCart();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col font-sans relative">
             <CartDrawer />
+            <WishlistDrawer />
             
             <header className="bg-white shadow-sm sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-                    <Link to="/explore" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-3 group">
+                    <Link to="/explore" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2 sm:gap-3 group mr-3 sm:mr-0 shrink-0">
                         <div className="bg-orange-500 text-white p-2 rounded-lg group-hover:scale-105 transition-transform">
                             <UtensilsCrossed size={24} />
                         </div>
@@ -31,10 +33,10 @@ const CustomerLayout = () => {
                         <Link to="/reservations" className="text-gray-600 hover:text-orange-600 font-medium transition-colors">Reservations</Link>
                     </nav>
 
-                    <div className="flex items-center gap-6">
-                        <Link 
-                            to="/profile"
-                            className="relative p-2 text-gray-600 hover:text-orange-600 transition-colors"
+                    <div className="flex items-center gap-4 sm:gap-6">
+                        <button 
+                            onClick={() => setIsWishlistOpen(true)}
+                            className="relative p-2 text-gray-600 hover:text-orange-600 transition-colors cursor-pointer"
                         >
                             <Heart size={24} />
                             {wishlist && wishlist.length > 0 && (
@@ -42,7 +44,7 @@ const CustomerLayout = () => {
                                     {wishlist.length}
                                 </span>
                             )}
-                        </Link>
+                        </button>
                         <button 
                             onClick={() => setIsCartOpen(true)}
                             className="relative p-2 text-gray-600 hover:text-orange-600 transition-colors"

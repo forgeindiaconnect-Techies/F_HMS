@@ -8,6 +8,7 @@ export const CartProvider = ({ children }) => {
     const [cartItems, setCartItems] = useState([]);
     const [wishlist, setWishlist] = useState([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
+    const [isWishlistOpen, setIsWishlistOpen] = useState(false);
 
     // Load from local storage
     useEffect(() => {
@@ -74,6 +75,7 @@ export const CartProvider = ({ children }) => {
     return (
         <CartContext.Provider value={{
             cartItems, wishlist, isCartOpen, setIsCartOpen,
+            isWishlistOpen, setIsWishlistOpen,
             addToCart, removeFromCart, updateQuantity, toggleWishlist, clearCart,
             cartTotal, cartCount
         }}>
