@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { CreditCard, MapPin, Ticket, ChevronRight, Utensils, CheckCircle, ShieldCheck, ArrowRight } from 'lucide-react';
+import { CreditCard, MapPin, Ticket, ChevronRight, Utensils, CheckCircle, ShieldCheck, ArrowRight, Store } from 'lucide-react';
+import axios from 'axios';
 
 const Checkout = () => {
     const { cartItems, cartTotal, clearCart } = useCart();
@@ -24,6 +25,27 @@ const Checkout = () => {
     const [isScanned, setIsScanned] = useState(false);
     const [upiPlatform, setUpiPlatform] = useState(''); // 'GPay', 'PhonePe', 'Paytm'
     const [checkoutStep, setCheckoutStep] = useState(1);
+    const [restaurantsList, setRestaurantsList] = useState([]);
+    const [selectedRestaurantId, setSelectedRestaurantId] = useState('');
+
+    useEffect(() => {
+        const fetchRestaurants = async () => {
+            try {
+                let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+                if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
+                if (!API_URL.endsWith('/api')) API_URL += '/api';
+                const res = await axios.get(`${API_URL}/restaurants`);
+                const activeList = res.data.filter(r => r.isActive !== false);
+                setRestaurantsList(activeList);
+                if (activeList.length > 0 && !selectedRestaurantId && !location.state?.restaurantId) {
+                    setSelectedRestaurantId(activeList[0]._id);
+                }
+            } catch (error) {
+                console.error("Failed to load restaurants for checkout", error);
+            }
+        };
+        fetchRestaurants();
+    }, []);
 
     useEffect(() => {
         let timer;
@@ -61,6 +83,15 @@ const Checkout = () => {
     const location = useLocation();
     const { restaurantId, branchId } = location.state || {};
 
+    useEffect(() => {
+        if (restaurantId && !selectedRestaurantId) {
+            setSelectedRestaurantId(restaurantId);
+        }
+    }, [restaurantId, selectedRestaurantId]);
+
+    const selectedRestaurantObj = restaurantsList.find(r => r._id === (selectedRestaurantId || restaurantId));
+    const selectedRestaurantName = selectedRestaurantObj ? selectedRestaurantObj.name : 'Selected Restaurant';
+
     const handleApplyCoupon = (e) => {
         e.preventDefault();
         if (coupon.toUpperCase() === 'WELCOME20') {
@@ -73,6 +104,10 @@ const Checkout = () => {
 
     const handlePlaceOrder = async (e) => {
         e.preventDefault();
+        if (!selectedRestaurantId && !restaurantId) {
+            alert('Please select a restaurant from the dropdown list before proceeding.');
+            return;
+        }
         setIsPlacingOrder(true);
         
         try {
@@ -86,7 +121,7 @@ const Checkout = () => {
                 })),
                 orderType: 'Self-Pickup',
                 source: 'Self-Pickup',
-                restaurantId,
+                restaurantId: selectedRestaurantId || restaurantId,
                 branchId,
                 paymentMethod: paymentMethod === 'UPI' 
                     ? (upiMethod === 'QR' ? `UPI - ${upiPlatform || 'QR'}` : `UPI ID - ${upiId}`) 
@@ -119,6 +154,10 @@ const Checkout = () => {
                     
                     <div className="bg-gray-50 rounded-2xl p-6 mb-8 text-left border border-gray-100 space-y-2.5">
                         <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Order Details</p>
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="font-medium text-gray-600">Restaurant</span>
+                            <span className="font-bold text-gray-900">{selectedRestaurantName}</span>
+                        </div>
                         <div className="flex justify-between items-center text-sm">
                             <span className="font-medium text-gray-600">Type</span>
                             <span className="font-bold text-gray-900">Self-Pickup</span>
@@ -182,20 +221,49 @@ const Checkout = () => {
                         </div>
                     )}
 
-                    {/* Subscription selection dropdown */}
+                    {/* Subscription & Restaurant selection dropdown */}
                     {checkoutStep === 2 && (
-                        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
-                            <h2 className="text-xl font-bold text-gray-900 font-sans">Subscription Plan</h2>
-                            <p className="text-sm text-gray-500 leading-relaxed">Select a meal plan option for this order. Subscriptions give you additional discounts on your order total.</p>
-                            <select
-                                value={subscriptionPlan}
-                                onChange={(e) => setSubscriptionPlan(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors bg-white font-semibold text-gray-800 text-sm"
-                            >
-                                <option value="One-time Order">One-time Order (Standard Price)</option>
-                                <option value="Weekly Subscription">Weekly Subscription (10% Discount)</option>
-                                <option value="Monthly Subscription">Monthly Subscription (20% Discount)</option>
-                            </select>
+                        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900 font-sans flex items-center gap-2">
+                                    <Store className="text-orange-600" size={24} /> Choose Restaurant & Subscription
+                                </h2>
+                                <p className="text-sm text-gray-500 leading-relaxed mt-1">Select your preferred restaurant and subscription plan for this order. Subscriptions give you additional discounts on your total.</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Restaurant Selector */}
+                                <div className="space-y-2 text-left">
+                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest">Select Restaurant</label>
+                                    <select
+                                        value={selectedRestaurantId || restaurantId || ''}
+                                        onChange={(e) => setSelectedRestaurantId(e.target.value)}
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors bg-white font-semibold text-gray-800 text-sm"
+                                        required
+                                    >
+                                        <option value="">-- Choose Restaurant Name --</option>
+                                        {restaurantsList.map((r) => (
+                                            <option key={r._id} value={r._id}>
+                                                {r.name} {r.address ? `(${typeof r.address === 'object' ? (r.address.city || r.address.street || '') : r.address})` : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Subscription Plan Selector */}
+                                <div className="space-y-2 text-left">
+                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest">Subscription Plan</label>
+                                    <select
+                                        value={subscriptionPlan}
+                                        onChange={(e) => setSubscriptionPlan(e.target.value)}
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors bg-white font-semibold text-gray-800 text-sm"
+                                    >
+                                        <option value="One-time Order">One-time Order (Standard Price)</option>
+                                        <option value="Weekly Subscription">Weekly Subscription (10% Discount)</option>
+                                        <option value="Monthly Subscription">Monthly Subscription (20% Discount)</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     )}
 

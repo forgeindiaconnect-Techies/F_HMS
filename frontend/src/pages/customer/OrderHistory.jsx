@@ -58,11 +58,16 @@ const OrderHistory = () => {
                                         <ShoppingBag size={28} />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold text-gray-900 font-sans mb-1 flex items-center gap-2">
+                                        <h3 className="text-xl font-bold text-gray-900 font-sans mb-1 flex items-center flex-wrap gap-2">
                                             #{order._id.substring(order._id.length - 6).toUpperCase()}
                                             {order.subscriptionPlan && order.subscriptionPlan !== 'One-time Order' && (
                                                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200">
                                                     {order.subscriptionPlan}
+                                                </span>
+                                            )}
+                                            {order.restaurantId?.name && (
+                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 border border-orange-200">
+                                                    📍 {order.restaurantId.name}
                                                 </span>
                                             )}
                                         </h3>

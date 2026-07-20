@@ -131,10 +131,17 @@ const CustomerDashboard = () => {
                             ) : (
                                 activeSubscriptions.map((sub, idx) => (
                                     <div key={idx} className="border border-purple-100 bg-purple-50/30 rounded-2xl p-4 space-y-2 text-left">
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200">
-                                                {sub.subscriptionPlan}
-                                            </span>
+                                        <div className="flex justify-between items-center flex-wrap gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200">
+                                                    {sub.subscriptionPlan}
+                                                </span>
+                                                {sub.restaurantId?.name && (
+                                                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 border border-orange-200">
+                                                        📍 {sub.restaurantId.name}
+                                                    </span>
+                                                )}
+                                            </div>
                                             <span className="text-[10px] text-gray-500 font-semibold">
                                                 {new Date(sub.createdAt).toLocaleDateString()}
                                             </span>

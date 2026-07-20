@@ -16,7 +16,7 @@ const sanitizeOrderItems = (items) => {
 // @route   POST /api/orders
 // @access  Private (Customer/Waiter)
 export const addOrderItems = async (req, res) => {
-    const { orderItems, orderType, source, restaurantId, branchId, paymentMethod, taxPrice, totalPrice, tableNumber, notes } = req.body;
+    const { orderItems, orderType, source, restaurantId, branchId, paymentMethod, subscriptionPlan, taxPrice, totalPrice, tableNumber, notes } = req.body;
 
     if (orderItems && orderItems.length === 0) {
         res.status(400).json({ message: 'No order items' });
@@ -65,6 +65,7 @@ export const addOrderItems = async (req, res) => {
             notes,
             source,
             paymentMethod,
+            subscriptionPlan: subscriptionPlan || 'One-time Order',
             taxPrice,
             totalPrice,
             isPaid: false // Will be paid later or by cashier
@@ -159,7 +160,7 @@ export const getOrderById = async (req, res) => {
 // @route   GET /api/orders/myorders
 // @access  Private
 export const getMyOrders = async (req, res) => {
-    const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
+    const orders = await Order.find({ user: req.user._id }).populate('restaurantId', 'name').sort({ createdAt: -1 });
     res.json(orders);
 };
 
