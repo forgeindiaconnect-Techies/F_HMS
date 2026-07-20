@@ -34,28 +34,30 @@ const CustomerLayout = () => {
                     </nav>
 
                     <div className="flex items-center gap-4 sm:gap-6">
-                        <button 
-                            onClick={() => setIsWishlistOpen(true)}
-                            className="relative p-2 text-gray-600 hover:text-orange-600 transition-colors cursor-pointer"
-                        >
-                            <Heart size={24} />
-                            {wishlist && wishlist.length > 0 && (
-                                <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white animate-in zoom-in duration-200">
-                                    {wishlist.length}
-                                </span>
-                            )}
-                        </button>
-                        <button 
-                            onClick={() => setIsCartOpen(true)}
-                            className="relative p-2 text-gray-600 hover:text-orange-600 transition-colors"
-                        >
-                            <ShoppingCart size={24} />
-                            {cartCount > 0 && (
-                                <span className="absolute top-0 right-0 w-5 h-5 bg-orange-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white">
-                                    {cartCount}
-                                </span>
-                            )}
-                        </button>
+                        <div className="flex items-center gap-0 sm:gap-4">
+                            <button 
+                                onClick={() => setIsWishlistOpen(true)}
+                                className="relative p-1 sm:p-2 text-gray-600 hover:text-orange-600 transition-colors cursor-pointer animate-in fade-in"
+                            >
+                                <Heart size={24} />
+                                {wishlist && wishlist.length > 0 && (
+                                    <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white animate-in zoom-in duration-200">
+                                        {wishlist.length}
+                                    </span>
+                                )}
+                            </button>
+                            <button 
+                                onClick={() => setIsCartOpen(true)}
+                                className="relative p-1 sm:p-2 text-gray-600 hover:text-orange-600 transition-colors cursor-pointer"
+                            >
+                                <ShoppingCart size={24} />
+                                {cartCount > 0 && (
+                                    <span className="absolute top-0 right-0 w-5 h-5 bg-orange-600 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white animate-in zoom-in duration-200">
+                                        {cartCount}
+                                    </span>
+                                )}
+                            </button>
+                        </div>
                         
                         {user ? (
                             <div className="relative">
