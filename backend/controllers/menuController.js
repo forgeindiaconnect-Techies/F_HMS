@@ -11,7 +11,11 @@ export const getMenuItems = async (req, res) => {
             filter.restaurantId = req.query.restaurantId;
         }
         if (req.query.branchId) {
-            filter.branchId = req.query.branchId;
+            filter.$or = [
+                { branchId: req.query.branchId },
+                { branchId: { $exists: false } },
+                { branchId: null }
+            ];
         }
         
         // If staff is logged in, filter by their restaurant
