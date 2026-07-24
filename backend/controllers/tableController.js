@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Table from '../models/Table.js';
 import Order from '../models/Order.js';
 
@@ -6,7 +7,16 @@ import Order from '../models/Order.js';
 // @access  Private
 export const getTables = async (req, res) => {
     try {
-        const tables = await Table.find({ restaurantId: req.user.restaurantId, branchId: req.user.branchId }).populate('activeOrder');
+        const filter = { restaurantId: req.user.restaurantId };
+        
+        const queryBranchId = req.query.branchId;
+        if (queryBranchId) {
+            filter.branchId = queryBranchId;
+        } else if (req.user.branchId) {
+            filter.branchId = req.user.branchId;
+        }
+        
+        const tables = await Table.find(filter).populate('activeOrder').populate('branchId');
         res.json(tables);
     } catch (error) {
         res.status(500).json({ message: 'Server Error' });
@@ -17,18 +27,33 @@ export const getTables = async (req, res) => {
 // @route   POST /api/tables
 // @access  Private (Admin/Manager)
 export const createTable = async (req, res) => {
-    const { tableNumber, capacity } = req.body;
+    const { tableNumber, capacity, branchId } = req.body;
     try {
+        let finalBranchId = branchId || req.user.branchId;
+
+        if (!finalBranchId) {
+            const Branch = mongoose.model('Branch');
+            const firstBranch = await Branch.findOne({ restaurantId: req.user.restaurantId });
+            if (firstBranch) {
+                finalBranchId = firstBranch._id;
+            }
+        }
+
+        if (!finalBranchId) {
+            res.status(400).json({ message: 'Branch ID is required to create a table. Please create a branch first.' });
+            return;
+        }
+
         const table = await Table.create({
             restaurantId: req.user.restaurantId,
-            branchId: req.user.branchId,
+            branchId: finalBranchId,
             tableNumber,
             capacity: capacity || 4,
             status: 'Available'
         });
         res.status(201).json(table);
     } catch (error) {
-        res.status(400).json({ message: 'Failed to create table' });
+        res.status(400).json({ message: error.message || 'Failed to create table' });
     }
 };
 
