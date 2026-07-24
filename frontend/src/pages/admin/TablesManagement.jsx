@@ -243,7 +243,7 @@ const TablesManagement = () => {
                             <div className="flex gap-2 pt-2 border-t border-gray-100">
                                 <button 
                                     onClick={() => openQrModal(table)}
-                                    className="flex-1 py-2.5 bg-green-550 hover:bg-green-600 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-green-500/10"
+                                    className="flex-1 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-green-500/10"
                                 >
                                     <QrCode size={14} /> Scan Code
                                 </button>
