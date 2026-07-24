@@ -10,6 +10,7 @@ const TablesManagement = () => {
     const [branches, setBranches] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [localIp, setLocalIp] = useState('');
     
     // Modal states
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -82,7 +83,11 @@ const TablesManagement = () => {
 
     const getQrUrl = (table) => {
         if (!table) return '';
-        return `${window.location.origin}/customer/menu?restaurantId=${table.restaurantId}&branchId=${table.branchId}&tableNumber=${table.tableNumber}`;
+        let origin = window.location.origin;
+        if (localIp) {
+            origin = origin.replace(/localhost|127\.0\.0\.1/, localIp);
+        }
+        return `${origin}/customer/menu?restaurantId=${table.restaurantId}&branchId=${table.branchId}&tableNumber=${table.tableNumber}`;
     };
 
     const getQrImageSrc = (table) => {
@@ -352,9 +357,39 @@ const TablesManagement = () => {
                             </div>
                         </div>
 
-                        <p className="text-sm font-medium text-gray-500 mb-6 max-w-[250px]">
+                        <p className="text-sm font-medium text-gray-500 mb-4 max-w-[250px]">
                             Scan this QR code to view the menu and place dine-in orders instantly.
                         </p>
+
+                        <div className="w-full space-y-3 mb-6 text-left">
+                            <div className="p-3 bg-gray-50 rounded-2xl border border-gray-150 text-xs">
+                                <span className="font-bold text-gray-500 block mb-1">Click to Test on Desktop:</span>
+                                <a 
+                                    href={getQrUrl(selectedTable)} 
+                                    target="_blank" 
+                                    rel="noreferrer" 
+                                    className="text-green-600 hover:underline font-extrabold break-all"
+                                >
+                                    Open Customer Menu ↗
+                                </a>
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">
+                                    Testing on mobile? Enter PC Local IP
+                                </label>
+                                <input 
+                                    type="text" 
+                                    placeholder="e.g. 192.168.1.15" 
+                                    value={localIp}
+                                    onChange={(e) => setLocalIp(e.target.value)}
+                                    className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-green-500 text-center"
+                                />
+                                <p className="text-[9px] text-gray-400 mt-1 text-center leading-normal">
+                                    Ensure your mobile phone is connected to the same Wi-Fi network.
+                                </p>
+                            </div>
+                        </div>
 
                         <div className="grid grid-cols-2 gap-3 w-full">
                             <button 
