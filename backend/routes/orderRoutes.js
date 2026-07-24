@@ -18,9 +18,9 @@ router.route('/')
 
 router.route('/myorders').get(protect, getMyOrders);
 
-router.route('/:id').get(protect, getOrderById);
+router.route('/:id').get(optionalProtect, getOrderById);
 
-router.route('/:id/items').put(protect, appendOrderItems);
+router.route('/:id/items').put(optionalProtect, appendOrderItems);
 
 router.route('/:id/pay').put(protect, updateOrderToPaid);
 

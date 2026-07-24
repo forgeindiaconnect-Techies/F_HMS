@@ -75,6 +75,9 @@ import SupportTickets from './pages/superadmin/SupportTickets';
 import GlobalReports from './pages/superadmin/GlobalReports';
 
 import PublicLayout from './layouts/PublicLayout';
+import TablesManagement from './pages/admin/TablesManagement';
+import CustomerMenu from './pages/customer/CustomerMenu';
+import CustomerOrderTracking from './pages/customer/CustomerOrderTracking';
 
 import { Toaster } from 'react-hot-toast';
 
@@ -106,6 +109,10 @@ function App() {
         <Route path="/staff/login" element={<StaffAuthPage />} />
         <Route path="/staff/register" element={<StaffAuthPage />} />
 
+        {/* Public QR ordering flow */}
+        <Route path="/customer/menu" element={<CustomerMenu />} />
+        <Route path="/customer/track/:orderId" element={<CustomerOrderTracking />} />
+
         {/* Alias for super admin mistypes */}
         <Route path="/superadmin" element={<Navigate to="/super-admin" replace />} />
 
@@ -126,6 +133,7 @@ function App() {
           
           {/* Organization */}
           <Route path="branches" element={<BranchesManagement />} />
+          <Route path="tables" element={<TablesManagement />} />
           
           {/* People */}
           <Route path="customers" element={<CustomerManagement />} />
@@ -164,6 +172,7 @@ function App() {
           <Route path="staff" element={<ManagerStaff />} />
           <Route path="kitchen" element={<ManagerKitchenStatus />} />
           <Route path="inventory" element={<ManagerInventory />} />
+          <Route path="tables" element={<TablesManagement />} />
           <Route path="reservations" element={<ManagerReservations />} />
           <Route path="feedback" element={<ManagerFeedback />} />
           <Route path="sales" element={<ManagerSales />} />

@@ -4,7 +4,7 @@ import {
     LayoutDashboard, Store, Users, UtensilsCrossed, Settings, LogOut, 
     Activity, UserCheck, Key, ListTree, PackageSearch, Truck, Heart, 
     CalendarCheck, ShoppingBag, CreditCard, Tag, FileText, PieChart, 
-    Bell, ReceiptText, Lock
+    Bell, ReceiptText, Lock, QrCode
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../context/AuthContext';
@@ -32,6 +32,7 @@ const Sidebar = () => {
             title: 'Organization',
             items: [
                 { name: 'Branches', path: '/admin/branches', icon: Store },
+                { name: 'Tables', path: '/admin/tables', icon: QrCode },
             ]
         },
         {

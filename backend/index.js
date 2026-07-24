@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import connectDB from './config/db.js';
+import http from 'http';
+import { initWebSocket } from './config/websocket.js';
 
 // Load env vars
 dotenv.config();
@@ -45,6 +47,7 @@ import taxRoutes from './routes/taxRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import planRoutes from './routes/planRoutes.js';
+import serviceRequestRoutes from './routes/serviceRequestRoutes.js';
 import Plan from './models/Plan.js';
 
 
@@ -71,6 +74,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/tables', tableRoutes);
 app.use('/api/plans', planRoutes);
+app.use('/api/service-requests', serviceRequestRoutes);
 
 import path from 'path';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
@@ -96,7 +100,10 @@ if (process.env.NODE_ENV === 'production') {
 app.use(notFound);
 app.use(errorHandler);
 
-app.listen(PORT, async () => {
+const server = http.createServer(app);
+initWebSocket(server);
+
+server.listen(PORT, async () => {
     console.log(`Server running on port ${PORT}`);
     // Auto-seed default plans if none exist
     try {

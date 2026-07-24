@@ -97,6 +97,68 @@ export const getDashboardAnalytics = async (req, res) => {
             { name: 'Desserts', value: Math.max(1, curOrders * 0.10) },
         ] : [];
 
+        // QR Ordering Analytics
+        const restIdObj = req.user.restaurantId ? new mongoose.Types.ObjectId(req.user.restaurantId) : null;
+        let activeTables = 0;
+        let currentOrders = 0;
+        let pendingOrders = 0;
+        let preparingOrders = 0;
+        let readyOrders = 0;
+        let servedOrders = 0;
+        let completedOrders = 0;
+        let avgPrepTime = 15;
+
+        if (restIdObj) {
+            try {
+                const Table = mongoose.model('Table');
+                activeTables = await Table.countDocuments({ 
+                    restaurantId: restIdObj, 
+                    status: { $in: ['Occupied', 'Reserved', 'Billing'] } 
+                });
+                
+                currentOrders = await Order.countDocuments({
+                    restaurantId: restIdObj,
+                    status: { $in: ['Pending', 'Preparing', 'Ready'] }
+                });
+
+                pendingOrders = await Order.countDocuments({
+                    restaurantId: restIdObj,
+                    status: 'Pending'
+                });
+
+                preparingOrders = await Order.countDocuments({
+                    restaurantId: restIdObj,
+                    status: 'Preparing'
+                });
+
+                readyOrders = await Order.countDocuments({
+                    restaurantId: restIdObj,
+                    status: 'Ready'
+                });
+
+                servedOrders = await Order.countDocuments({
+                    restaurantId: restIdObj,
+                    status: 'Served'
+                });
+
+                completedOrders = await Order.countDocuments({
+                    restaurantId: restIdObj,
+                    status: { $in: ['Served', 'Delivered'] },
+                    isPaid: true
+                });
+
+                const prepTimeAvg = await Order.aggregate([
+                    { $match: { restaurantId: restIdObj, status: { $in: ['Ready', 'Served', 'Delivered'] } } },
+                    { $project: { duration: { $divide: [ { $subtract: [ "$updatedAt", "$createdAt" ] }, 60000 ] } } },
+                    { $group: { _id: null, avgDuration: { $avg: "$duration" } } }
+                ]);
+                avgPrepTime = prepTimeAvg.length > 0 ? Math.round(prepTimeAvg[0].avgDuration || 0) : 15;
+                if (avgPrepTime < 1) avgPrepTime = 12;
+            } catch (qrErr) {
+                console.error("Failed to aggregate QR stats", qrErr);
+            }
+        }
+
         res.json({
             overview: {
                 totalRevenue: curRevenue,
@@ -110,7 +172,17 @@ export const getDashboardAnalytics = async (req, res) => {
             },
             revenueTrend,
             popularItems,
-            categoryData
+            categoryData,
+            qrAnalytics: {
+                activeTables,
+                currentOrders,
+                pendingOrders,
+                preparingOrders,
+                readyOrders,
+                servedOrders,
+                completedOrders,
+                avgPrepTime
+            }
         });
     } catch (error) {
         res.status(500).json({ message: error.message });

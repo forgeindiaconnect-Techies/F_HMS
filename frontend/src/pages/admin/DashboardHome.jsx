@@ -110,6 +110,51 @@ const DashboardHome = () => {
                 />
             </div>
 
+            {/* QR Ordering Analytics Section */}
+            {data?.qrAnalytics && (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+                    <h3 className="text-lg font-bold text-gray-950 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        <span className="flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                        QR Dine-In Ordering Ops
+                    </h3>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+                        <div className="bg-gray-50 border border-gray-100 p-4 rounded-2xl text-center">
+                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Active Tables</p>
+                            <p className="text-2xl font-black text-gray-900 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.activeTables}</p>
+                        </div>
+                        <div className="bg-gray-50 border border-gray-100 p-4 rounded-2xl text-center">
+                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Current Orders</p>
+                            <p className="text-2xl font-black text-gray-900 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.currentOrders}</p>
+                        </div>
+                        <div className="bg-orange-50/70 border border-orange-100 p-4 rounded-2xl text-center">
+                            <p className="text-xs font-semibold text-orange-600 uppercase tracking-wider">Pending</p>
+                            <p className="text-2xl font-black text-orange-700 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.pendingOrders}</p>
+                        </div>
+                        <div className="bg-blue-50/70 border border-blue-100 p-4 rounded-2xl text-center">
+                            <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider">Preparing</p>
+                            <p className="text-2xl font-black text-blue-700 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.preparingOrders}</p>
+                        </div>
+                        <div className="bg-green-50/70 border border-green-100 p-4 rounded-2xl text-center">
+                            <p className="text-xs font-semibold text-green-600 uppercase tracking-wider">Ready</p>
+                            <p className="text-2xl font-black text-green-700 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.readyOrders}</p>
+                        </div>
+                        <div className="bg-purple-50/70 border border-purple-100 p-4 rounded-2xl text-center">
+                            <p className="text-xs font-semibold text-purple-600 uppercase tracking-wider">Served</p>
+                            <p className="text-2xl font-black text-purple-700 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.servedOrders}</p>
+                        </div>
+                        <div className="bg-gray-50 border border-gray-100 p-4 rounded-2xl text-center">
+                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Completed</p>
+                            <p className="text-2xl font-black text-gray-900 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.completedOrders}</p>
+                        </div>
+                        <div className="bg-emerald-50/70 border border-emerald-100 p-4 rounded-2xl text-center">
+                            <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Avg Prep Time</p>
+                            <p className="text-lg font-black text-emerald-800 mt-1.5" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.avgPrepTime} min</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Revenue Area Chart */}

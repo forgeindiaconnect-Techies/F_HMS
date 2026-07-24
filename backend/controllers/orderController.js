@@ -1,5 +1,6 @@
 import Order from '../models/Order.js';
 import mongoose from 'mongoose';
+import { broadcastToRestaurant, broadcastToCustomerOrder } from '../config/websocket.js';
 
 const sanitizeOrderItems = (items) => {
     if (!items) return items;
@@ -73,6 +74,26 @@ export const addOrderItems = async (req, res) => {
 
         const createdOrder = await order.save();
 
+        // Update table occupancy status if Dine In
+        if (orderType === 'Dine In' && tableNumber) {
+            try {
+                const Table = mongoose.model('Table');
+                const table = await Table.findOne({
+                    tableNumber,
+                    restaurantId: finalRestaurantId,
+                    branchId: finalBranchId
+                });
+                if (table) {
+                    table.status = 'Occupied';
+                    table.activeOrder = createdOrder._id;
+                    table.customers = Math.max(table.customers, 1);
+                    await table.save();
+                }
+            } catch (tableErr) {
+                console.error('Failed to set table status to Occupied', tableErr);
+            }
+        }
+
         // Create a notification for the chef
         try {
             const Notification = (await import('../models/Notification.js')).default;
@@ -86,6 +107,9 @@ export const addOrderItems = async (req, res) => {
         } catch (notifErr) {
             console.error('Failed to create order notification', notifErr);
         }
+
+        // Broadcast real-time websocket alert to kitchen display
+        broadcastToRestaurant(finalRestaurantId, 'new_order', createdOrder);
 
         res.status(201).json(createdOrder);
     }
@@ -133,6 +157,10 @@ export const appendOrderItems = async (req, res) => {
             } catch (notifErr) {
                 console.error('Failed to create order append notification', notifErr);
             }
+
+            // Broadcast order updates to kitchen & customers
+            broadcastToRestaurant(order.restaurantId, 'order_updated', updatedOrder);
+            broadcastToCustomerOrder(order._id, 'order_status_updated', updatedOrder);
 
             res.json(updatedOrder);
         } else {
@@ -197,6 +225,17 @@ export const updateOrderStatus = async (req, res) => {
     if (order) {
         order.status = req.body.status || order.status;
         const updatedOrder = await order.save();
+        
+        // Broadcast status update to customer tracking
+        broadcastToCustomerOrder(order._id, 'order_status_updated', updatedOrder);
+        
+        // Broadcast general update to kitchen & waiters
+        broadcastToRestaurant(order.restaurantId, 'order_updated', updatedOrder);
+        
+        if (updatedOrder.status === 'Ready') {
+            broadcastToRestaurant(order.restaurantId, 'ready_to_serve', updatedOrder);
+        }
+        
         res.json(updatedOrder);
     } else {
         res.status(404).json({ message: 'Order not found' });

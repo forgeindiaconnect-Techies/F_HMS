@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
-    Store, ShoppingBag, UserCheck, PackageSearch, FileText, Settings, LogOut, UtensilsCrossed, ChefHat, CalendarCheck, MessageSquare, DollarSign, PieChart
+    Store, ShoppingBag, UserCheck, PackageSearch, FileText, Settings, LogOut, UtensilsCrossed, ChefHat, CalendarCheck, MessageSquare, DollarSign, PieChart, QrCode
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../context/AuthContext';
@@ -30,6 +30,7 @@ const ManagerSidebar = () => {
                 { name: 'Kitchen Status', path: '/manager/kitchen', icon: ChefHat },
                 { name: 'Staff Schedule', path: '/manager/staff', icon: UserCheck },
                 { name: 'Branch Inventory', path: '/manager/inventory', icon: PackageSearch },
+                { name: 'Branch Tables', path: '/manager/tables', icon: QrCode },
             ]
         },
         {

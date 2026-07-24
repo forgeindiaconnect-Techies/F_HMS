@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
 import { 
     Coffee, CheckCircle, Clock, UtensilsCrossed, AlertTriangle, 
-    Plus, Minus, X, Send, Receipt, Users, MessageSquare 
+    Plus, Minus, X, Send, Receipt, Users, MessageSquare, Bell, Check
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const WaiterDashboard = () => {
-    const { api } = useAuth();
+    const { api, user } = useAuth();
     const [menu, setMenu] = useState([]);
     const [activeOrders, setActiveOrders] = useState([]);
     const [dbTables, setDbTables] = useState([]);
     const [activeTable, setActiveTable] = useState(null);
     const [panelOpen, setPanelOpen] = useState(false);
     const [statusFilter, setStatusFilter] = useState('All');
+    const [serviceRequests, setServiceRequests] = useState([]);
     
     // Order Panel State
     const [cart, setCart] = useState([]);
@@ -21,14 +22,16 @@ const WaiterDashboard = () => {
 
     const fetchData = async () => {
         try {
-            const [menuRes, ordersRes, tablesRes] = await Promise.all([
+            const [menuRes, ordersRes, tablesRes, requestsRes] = await Promise.all([
                 api.get('/menu'),
                 api.get('/orders'),
-                api.get('/tables').catch(() => ({ data: [] }))
+                api.get('/tables').catch(() => ({ data: [] })),
+                api.get('/service-requests').catch(() => ({ data: [] }))
             ]);
             setMenu(menuRes.data);
             setActiveOrders(ordersRes.data.filter(o => o.orderType === 'Dine In' && !['Delivered'].includes(o.status)));
             setDbTables(tablesRes.data);
+            setServiceRequests(requestsRes.data);
         } catch (error) {
             console.error('Failed to fetch data', error);
         }
@@ -36,9 +39,64 @@ const WaiterDashboard = () => {
 
     useEffect(() => {
         fetchData();
-        const interval = setInterval(fetchData, 10000);
-        return () => clearInterval(interval);
-    }, [api]);
+
+        let ws;
+        const connectWS = () => {
+            let baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
+            
+            ws = new WebSocket(wsURL);
+
+            ws.onopen = () => {
+                if (user && user.restaurantId) {
+                    ws.send(JSON.stringify({
+                        type: 'register',
+                        restaurantId: user.restaurantId,
+                        role: 'waiter'
+                    }));
+                }
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const msg = JSON.parse(event.data);
+                    if (msg.type === 'new_order' || msg.type === 'order_updated' || msg.type === 'ready_to_serve') {
+                        fetchData();
+                    } else if (msg.type === 'new_service_request') {
+                        setServiceRequests(prev => {
+                            if (prev.some(r => r._id === msg.data._id)) return prev;
+                            return [msg.data, ...prev];
+                        });
+                    } else if (msg.type === 'service_request_updated') {
+                        if (msg.data.status === 'Completed') {
+                            setServiceRequests(prev => prev.filter(r => r._id !== msg.data._id));
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error parsing websocket message", e);
+                }
+            };
+
+            ws.onclose = () => {
+                setTimeout(connectWS, 5000);
+            };
+        };
+
+        connectWS();
+
+        return () => {
+            if (ws) ws.close();
+        };
+    }, [api, user]);
+
+    const handleCompleteRequest = async (requestId) => {
+        try {
+            await api.put(`/service-requests/${requestId}/complete`);
+            setServiceRequests(prev => prev.filter(r => r._id !== requestId));
+        } catch (error) {
+            console.error('Failed to complete request', error);
+        }
+    };
 
     const tables = dbTables.length > 0 ? dbTables.map(t => {
         const order = activeOrders.find(o => String(o.tableNumber) === String(t.tableNumber));
@@ -205,8 +263,40 @@ const WaiterDashboard = () => {
                     </div>
                 </div>
 
-                {/* Active Orders Sidebar */}
+                {/* Active Orders Sidebar & Service Requests */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col min-h-0">
+                    {/* Service Requests */}
+                    {serviceRequests.length > 0 && (
+                        <div className="mb-6 border-b border-gray-100 pb-6 shrink-0">
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className="relative flex h-3 w-3">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                                </span>
+                                <h3 className="text-sm font-black text-red-600 tracking-wider uppercase flex items-center gap-1.5">
+                                    <Bell size={16} /> Assistance Alerts ({serviceRequests.length})
+                                </h3>
+                            </div>
+                            <div className="space-y-2 max-h-[180px] overflow-y-auto custom-scrollbar pr-1">
+                                {serviceRequests.map((req) => (
+                                    <div key={req._id} className="flex justify-between items-center bg-red-50/70 border border-red-100 p-3 rounded-xl shadow-sm">
+                                        <div>
+                                            <p className="font-bold text-red-800 text-sm">Table {req.tableNumber}</p>
+                                            <p className="text-xs text-red-600 font-semibold">{req.requestType}</p>
+                                        </div>
+                                        <button 
+                                            onClick={() => handleCompleteRequest(req._id)}
+                                            className="p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center justify-center hover:scale-105 active:scale-95 shadow-sm"
+                                            title="Complete Request"
+                                        >
+                                            <Check size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     <h3 className="text-lg font-bold text-gray-900 mb-6 shrink-0" style={{ fontFamily: 'Poppins, sans-serif' }}>Active Orders</h3>
                     
                     <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-2 pb-4">
