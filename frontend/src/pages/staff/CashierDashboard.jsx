@@ -4,6 +4,7 @@ import {
     Calculator, Split, Printer, CheckCircle 
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const CashierDashboard = () => {
     const { api } = useAuth();
@@ -71,7 +72,7 @@ const CashierDashboard = () => {
         } catch (error) {
             console.error('Failed to settle bill', error);
             setSettled(false);
-            alert('Payment failed');
+            toast.error('Payment failed');
         }
     };
 

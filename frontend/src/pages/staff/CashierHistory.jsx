@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Receipt, Search, Download, X, Printer } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
 const formatTime = (dateString) => {
@@ -43,7 +44,7 @@ const CashierHistory = () => {
     });
 
     const exportToCSV = () => {
-        if (filteredTransactions.length === 0) return alert('No data to export');
+        if (filteredTransactions.length === 0) return toast.error('No data to export');
         
         const headers = ['Transaction ID', 'Bill ID', 'Table/Type', 'Payment Method', 'Amount', 'Tax', 'Date'];
         const csvRows = [headers.join(',')];
@@ -210,7 +211,7 @@ const CashierHistory = () => {
 
                             <button 
                                 onClick={() => {
-                                    alert('Printing receipt...');
+                                    toast.success('Printing receipt...');
                                     setActiveReceipt(null);
                                 }}
                                 className="w-full mt-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors text-sm shadow-sm flex items-center justify-center gap-2"
