@@ -87,7 +87,9 @@ const TablesManagement = () => {
         if (localIp) {
             origin = origin.replace(/localhost|127\.0\.0\.1/, localIp);
         }
-        return `${origin}/customer/menu?restaurantId=${table.restaurantId}&branchId=${table.branchId}&tableNumber=${table.tableNumber}`;
+        const bId = table.branchId?._id || table.branchId || '';
+        const rId = table.restaurantId?._id || table.restaurantId || '';
+        return `${origin}/customer/menu?restaurantId=${rId}&branchId=${bId}&tableNumber=${table.tableNumber}`;
     };
 
     const getQrImageSrc = (table) => {

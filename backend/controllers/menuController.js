@@ -7,10 +7,10 @@ export const getMenuItems = async (req, res) => {
     try {
         const filter = { isActive: true };
         
-        if (req.query.restaurantId) {
+        if (req.query.restaurantId && req.query.restaurantId !== 'null' && req.query.restaurantId !== 'undefined') {
             filter.restaurantId = req.query.restaurantId;
         }
-        if (req.query.branchId) {
+        if (req.query.branchId && req.query.branchId !== 'null' && req.query.branchId !== 'undefined') {
             filter.$or = [
                 { branchId: req.query.branchId },
                 { branchId: { $exists: false } },
