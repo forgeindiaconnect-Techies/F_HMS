@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ShoppingBag, ChevronRight, Plus, Minus, Send, MessageSquare, BookOpen, Clock, Heart } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getItemImage } from '../../utils/imageHelper';
 
 const CustomerMenu = () => {
     const [searchParams] = useSearchParams();
@@ -150,7 +151,7 @@ const CustomerMenu = () => {
                     </span>
                     <h1 className="text-xl font-black text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>{restaurantName}</h1>
                     {tableNumber && (
-                        <p className="text-xs text-gray-500 font-medium mt-0.5">Seated at: <strong className="text-green-600">Table ${tableNumber}</strong></p>
+                        <p className="text-xs text-gray-500 font-medium mt-0.5">Seated at: <strong className="text-green-600">Table {tableNumber}</strong></p>
                     )}
                 </div>
                 
@@ -212,7 +213,8 @@ const CustomerMenu = () => {
                         return (
                             <div key={item._id} className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm flex gap-4 items-center">
                                 <img 
-                                    src={item.image} 
+                                    src={getItemImage(item)} 
+                                    onError={(e) => { e.target.onerror = null; e.target.src = getItemImage({ ...item, image: '' }); }}
                                     alt={item.name} 
                                     className="w-20 h-20 rounded-xl object-cover border border-gray-50 shrink-0"
                                 />
