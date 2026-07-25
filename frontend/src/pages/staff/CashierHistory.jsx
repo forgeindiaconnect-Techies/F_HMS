@@ -73,6 +73,110 @@ const CashierHistory = () => {
         document.body.removeChild(link);
     };
 
+    const handlePrintReceipt = (receipt) => {
+        if (!receipt) return;
+        const printWindow = window.open('', '_blank');
+        const itemsHtml = receipt.orderItems.map(item => `
+            <div class="row">
+                <span>${item.qty}x ${item.name}</span>
+                <span>₹${(item.price * item.qty).toFixed(2)}</span>
+            </div>
+        `).join('');
+
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Bill Receipt #${receipt._id.substring(receipt._id.length - 6).toUpperCase()}</title>
+                    <style>
+                        body {
+                            font-family: 'Courier New', Courier, monospace;
+                            width: 280px;
+                            margin: 0 auto;
+                            padding: 20px 10px;
+                            color: #000;
+                        }
+                        .header {
+                            text-align: center;
+                            border-bottom: 1px dashed #000;
+                            padding-bottom: 15px;
+                            margin-bottom: 15px;
+                        }
+                        .title {
+                            font-size: 20px;
+                            font-weight: bold;
+                            margin: 0 0 5px 0;
+                        }
+                        .info {
+                            font-size: 12px;
+                            margin: 2px 0;
+                        }
+                        .row {
+                            display: flex;
+                            justify-content: space-between;
+                            font-size: 13px;
+                            margin: 5px 0;
+                        }
+                        .totals {
+                            border-top: 1px dashed #000;
+                            border-bottom: 1px dashed #000;
+                            padding: 10px 0;
+                            margin: 15px 0;
+                        }
+                        .grand-total {
+                            font-weight: bold;
+                            font-size: 15px;
+                        }
+                        .footer {
+                            text-align: center;
+                            font-size: 11px;
+                            margin-top: 20px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <p class="title">RESTOSYS</p>
+                        <p class="info">BILL #${receipt._id.substring(receipt._id.length - 6).toUpperCase()}</p>
+                        <p class="info">${receipt.orderType === 'Dine In' ? `Table ${receipt.tableNumber || 'Any'}` : receipt.orderType}</p>
+                    </div>
+                    
+                    <div>
+                        ${itemsHtml}
+                    </div>
+                    
+                    <div class="totals">
+                        <div class="row">
+                            <span>Subtotal</span>
+                            <span>₹${(receipt.totalPrice - receipt.taxPrice).toFixed(2)}</span>
+                        </div>
+                        <div class="row">
+                            <span>Tax (5%)</span>
+                            <span>₹${receipt.taxPrice.toFixed(2)}</span>
+                        </div>
+                        <div class="row grand-total">
+                            <span>Grand Total</span>
+                            <span>₹${receipt.totalPrice.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="footer">
+                        Paid via ${receipt.paymentMethod}<br/>
+                        ${formatTime(receipt.paidAt || receipt.createdAt)}<br/><br/>
+                        Thank you for dining with us!
+                    </div>
+                    
+                    <script>
+                        window.onload = function() {
+                            window.print();
+                            window.close();
+                        }
+                    </script>
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+    };
+
     return (
         <div className="max-w-[1200px] mx-auto space-y-6">
             <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
@@ -211,6 +315,7 @@ const CashierHistory = () => {
 
                             <button 
                                 onClick={() => {
+                                    handlePrintReceipt(activeReceipt);
                                     toast.success('Printing receipt...');
                                     setActiveReceipt(null);
                                 }}

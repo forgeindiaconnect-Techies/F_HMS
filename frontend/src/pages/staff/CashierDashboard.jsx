@@ -55,6 +55,110 @@ const CashierDashboard = () => {
         setSettled(false);
     };
 
+    const handlePrintReceipt = (receipt) => {
+        if (!receipt) return;
+        const printWindow = window.open('', '_blank');
+        const itemsHtml = receipt.orderItems.map(item => `
+            <div class="row">
+                <span>${item.qty}x ${item.name}</span>
+                <span>₹${(item.price * item.qty).toFixed(2)}</span>
+            </div>
+        `).join('');
+
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Bill Receipt #${receipt._id.substring(receipt._id.length - 6).toUpperCase()}</title>
+                    <style>
+                        body {
+                            font-family: 'Courier New', Courier, monospace;
+                            width: 280px;
+                            margin: 0 auto;
+                            padding: 20px 10px;
+                            color: #000;
+                        }
+                        .header {
+                            text-align: center;
+                            border-bottom: 1px dashed #000;
+                            padding-bottom: 15px;
+                            margin-bottom: 15px;
+                        }
+                        .title {
+                            font-size: 20px;
+                            font-weight: bold;
+                            margin: 0 0 5px 0;
+                        }
+                        .info {
+                            font-size: 12px;
+                            margin: 2px 0;
+                        }
+                        .row {
+                            display: flex;
+                            justify-content: space-between;
+                            font-size: 13px;
+                            margin: 5px 0;
+                        }
+                        .totals {
+                            border-top: 1px dashed #000;
+                            border-bottom: 1px dashed #000;
+                            padding: 10px 0;
+                            margin: 15px 0;
+                        }
+                        .grand-total {
+                            font-weight: bold;
+                            font-size: 15px;
+                        }
+                        .footer {
+                            text-align: center;
+                            font-size: 11px;
+                            margin-top: 20px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <p class="title">RESTOSYS</p>
+                        <p class="info">BILL #${receipt._id.substring(receipt._id.length - 6).toUpperCase()}</p>
+                        <p class="info">${receipt.orderType === 'Dine In' ? `Table ${receipt.tableNumber || 'Any'}` : receipt.orderType}</p>
+                    </div>
+                    
+                    <div>
+                        ${itemsHtml}
+                    </div>
+                    
+                    <div class="totals">
+                        <div class="row">
+                            <span>Subtotal</span>
+                            <span>₹${(receipt.totalPrice - receipt.taxPrice).toFixed(2)}</span>
+                        </div>
+                        <div class="row">
+                            <span>Tax (5%)</span>
+                            <span>₹${receipt.taxPrice.toFixed(2)}</span>
+                        </div>
+                        <div class="row grand-total">
+                            <span>Grand Total</span>
+                            <span>₹${receipt.totalPrice.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="footer">
+                        Paid via ${receipt.paymentMethod}<br/>
+                        ${new Date(receipt.paidAt || receipt.createdAt || new Date()).toLocaleString()}<br/><br/>
+                        Thank you for dining with us!
+                    </div>
+                    
+                    <script>
+                        window.onload = function() {
+                            window.print();
+                            window.close();
+                        }
+                    </script>
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+    };
+
     const handleSettle = async () => {
         setSettled(true);
         try {
@@ -63,6 +167,13 @@ const CashierDashboard = () => {
                 paymentMethod: finalMethod,
                 taxPrice: taxAmount,
                 totalPrice: total
+            });
+            handlePrintReceipt({
+                ...activeBill,
+                paymentMethod: finalMethod,
+                taxPrice: taxAmount,
+                totalPrice: total,
+                paidAt: new Date()
             });
             setTimeout(() => {
                 setActiveBill(null);
@@ -304,11 +415,11 @@ const CashierDashboard = () => {
                             )}
 
                             {activeBill.isPaid ? (
-                                <div className="mt-auto p-4 bg-green-50 border border-green-200 rounded-2xl flex flex-col items-center justify-center text-center">
+                                <div className="mt-auto p-4 bg-green-50/70 border border-green-200 rounded-2xl flex flex-col items-center justify-center text-center">
                                     <CheckCircle size={32} className="text-green-500 mb-2" />
                                     <p className="text-green-700 font-bold">Paid Successfully</p>
                                     <p className="text-green-600 text-sm mt-1">Paid via {activeBill.paymentMethod}</p>
-                                    <button onClick={() => window.print()} className="mt-4 w-full bg-white border border-green-200 text-green-700 font-bold py-2 rounded-xl hover:bg-green-100 transition-colors flex items-center justify-center gap-2">
+                                    <button onClick={() => handlePrintReceipt(activeBill)} className="mt-4 w-full bg-white border border-green-200 text-green-700 font-bold py-2 rounded-xl hover:bg-green-100 transition-colors flex items-center justify-center gap-2">
                                         <Printer size={16} /> Print Copy
                                     </button>
                                 </div>
