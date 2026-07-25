@@ -24,13 +24,8 @@ const DashboardLayout = () => {
     let isPathBlocked = false;
     let blockedFeature = '';
 
-    if (plan === 'Basic') {
-        if (path.includes('/admin/inventory')) { isPathBlocked = true; blockedFeature = 'Inventory Management'; }
-        else if (path.includes('/admin/suppliers')) { isPathBlocked = true; blockedFeature = 'Supplier Management'; }
-        else if (path.includes('/admin/reports')) { isPathBlocked = true; blockedFeature = 'Advanced Reports'; }
-        else if (path.includes('/admin/analytics')) { isPathBlocked = true; blockedFeature = 'Analytics & Insights'; }
-    } else if (plan === 'Premium') {
-        if (path.includes('/admin/reports')) { isPathBlocked = true; blockedFeature = 'Advanced Reports'; }
+    if (plan === 'Basic' || plan === 'Starter') {
+        if (path.includes('/admin/suppliers')) { isPathBlocked = true; blockedFeature = 'Supplier Management'; }
         else if (path.includes('/admin/analytics')) { isPathBlocked = true; blockedFeature = 'Analytics & Insights'; }
     }
 

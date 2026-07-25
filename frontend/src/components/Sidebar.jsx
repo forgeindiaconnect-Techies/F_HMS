@@ -119,10 +119,8 @@ const Sidebar = () => {
 
                                 const plan = getPlanName();
                                 let isAllowed = true;
-                                if (plan === 'Basic') {
-                                    isAllowed = !['Inventory', 'Suppliers', 'Reports', 'Analytics'].includes(item.name);
-                                } else if (plan === 'Premium') {
-                                    isAllowed = !['Reports', 'Analytics'].includes(item.name);
+                                if (plan === 'Basic' || plan === 'Starter') {
+                                    isAllowed = !['Suppliers', 'Analytics'].includes(item.name);
                                 }
 
                                 if (!isAllowed) {
