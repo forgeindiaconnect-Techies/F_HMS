@@ -20,7 +20,13 @@ const CustomerOrderTracking = () => {
     const [loading, setLoading] = useState(true);
     const [requestLoading, setRequestLoading] = useState(null); // requestType or null
 
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    const getApiUrl = () => {
+        let baseURL = import.meta.env.VITE_API_URL;
+        if (baseURL) return baseURL;
+        const origin = window.location.origin;
+        return `${origin.replace(/:\d+$/, ':5000')}/api`;
+    };
+    const API_URL = getApiUrl();
 
     const fetchOrderDetails = async () => {
         try {
@@ -40,7 +46,7 @@ const CustomerOrderTracking = () => {
         // WebSocket Connection for instant status updates!
         let ws;
         const connectWS = () => {
-            let baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            let baseURL = API_URL;
             let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
             
             ws = new WebSocket(wsURL);

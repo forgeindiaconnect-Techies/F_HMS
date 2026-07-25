@@ -24,7 +24,13 @@ const CustomerMenu = () => {
     const [itemNotes, setItemNotes] = useState({}); // itemId -> note string
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    const getApiUrl = () => {
+        let baseURL = import.meta.env.VITE_API_URL;
+        if (baseURL) return baseURL;
+        const origin = window.location.origin;
+        return `${origin.replace(/:\d+$/, ':5000')}/api`;
+    };
+    const API_URL = getApiUrl();
 
     useEffect(() => {
         if (!restaurantId) {
