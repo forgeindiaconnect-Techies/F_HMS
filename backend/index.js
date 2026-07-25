@@ -103,7 +103,7 @@ app.use(errorHandler);
 const server = http.createServer(app);
 initWebSocket(server);
 
-server.listen(PORT, async () => {
+server.listen(PORT, '0.0.0.0', async () => {
     console.log(`Server running on port ${PORT}`);
     // Auto-seed default plans if none exist
     try {
