@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { CreditCard, CheckCircle, AlertTriangle, ShieldCheck, QrCode, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import dummyScanner from '../../assets/dummy_scanner.png';
 
 const SubscriptionPortal = () => {
     const { user, api } = useAuth();
@@ -234,7 +235,9 @@ const SubscriptionPortal = () => {
                                     </div>
                                     
                                     <div className="mt-8 flex flex-col items-center justify-center border border-gray-100 p-4 rounded-2xl bg-gray-50 w-full">
-                                        <QrCode size={120} className="text-gray-900 mb-2" />
+                                        <div className="w-32 h-32 flex items-center justify-center rounded-xl overflow-hidden bg-white border border-gray-100 mb-2">
+                                            <img src={dummyScanner} alt="UPI QR Scanner" className="w-full h-full object-cover" />
+                                        </div>
                                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Or Scan QR on Mobile</span>
                                     </div>
                                 </>

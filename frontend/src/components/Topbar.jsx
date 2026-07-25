@@ -31,16 +31,6 @@ const UpiModal = ({ plan, planPrice, onClose, onSuccess }) => {
         }, 2000);
     };
 
-  // Auto-trigger payment after dummy scanner appears
-  useEffect(() => {
-    if (step === 'scan') {
-      const timer = setTimeout(() => {
-        handlePay();
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [step]);
-
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden">
@@ -71,10 +61,21 @@ const UpiModal = ({ plan, planPrice, onClose, onSuccess }) => {
                     {/* STEP 1 — Dummy QR Scanner */}
                     {step === 'scan' && (
                         <div className="w-full flex flex-col items-center gap-4">
-                            <div className="w-56 h-56 flex items-center justify-center rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 animate-pulse">
+                            <div className="w-56 h-56 flex items-center justify-center rounded-2xl overflow-hidden bg-gray-50 border border-gray-100">
                                 <img src={dummyScanner} alt="QR Scanner" className="w-full h-full object-cover" />
                             </div>
-                            {/* Auto-trigger payment after scanner */}
+                            <button
+                                onClick={handlePay}
+                                className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors text-sm shadow-sm flex items-center justify-center gap-2"
+                            >
+                                <QrCode size={16} /> Simulate Scan & Pay
+                            </button>
+                            <button
+                                onClick={() => setStep('upi')}
+                                className="text-xs text-gray-400 hover:text-gray-600 font-semibold transition-colors mt-1"
+                            >
+                                Or pay using UPI Apps →
+                            </button>
                         </div>
                     )}
 
