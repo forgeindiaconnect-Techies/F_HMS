@@ -47,6 +47,12 @@ const Sidebar = () => {
             ]
         },
         {
+            title: 'Operations',
+            items: [
+                { name: 'Delivery Management', path: '/admin/delivery', icon: Truck },
+            ]
+        },
+        {
             title: 'Kitchen & Catalog',
             items: [
                 { name: 'Menu', path: '/admin/menu', icon: UtensilsCrossed },
@@ -134,7 +140,9 @@ const Sidebar = () => {
 
                                 const plan = getPlanName();
                                 let isAllowed = true;
-                                if (plan === 'Basic' || plan === 'Starter') {
+                                if (item.name === 'Delivery Management') {
+                                    isAllowed = isEnterprise;
+                                } else if (plan === 'Basic' || plan === 'Starter') {
                                     isAllowed = !['Suppliers', 'Analytics'].includes(item.name);
                                 }
 

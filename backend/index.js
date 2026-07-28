@@ -49,6 +49,7 @@ import notificationRoutes from './routes/notificationRoutes.js';
 import planRoutes from './routes/planRoutes.js';
 import serviceRequestRoutes from './routes/serviceRequestRoutes.js';
 import supportRoutes from './routes/supportRoutes.js';
+import deliveryRoutes from './routes/deliveryRoutes.js';
 import Plan from './models/Plan.js';
 
 
@@ -77,6 +78,7 @@ app.use('/api/tables', tableRoutes);
 app.use('/api/plans', planRoutes);
 app.use('/api/service-requests', serviceRequestRoutes);
 app.use('/api/support', supportRoutes);
+app.use('/api/delivery', deliveryRoutes);
 
 import path from 'path';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';

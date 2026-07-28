@@ -59,6 +59,17 @@ const restaurantSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    deliverySettings: {
+        deliveryType: { type: String, enum: ['Self', 'Third-Party', 'Both'], default: 'Both' },
+        enabled: { type: Boolean, default: false },
+        radius: { type: Number, default: 5 },
+        freeRadius: { type: Number, default: 2 },
+        baseFee: { type: Number, default: 30 },
+        perKmCharge: { type: Number, default: 10 },
+        peakHourFee: { type: Number, default: 15 },
+        rainSurcharge: { type: Number, default: 20 },
+        minOrderAmountForFreeDelivery: { type: Number, default: 300 }
+    },
     isActive: {
         type: Boolean,
         default: true,

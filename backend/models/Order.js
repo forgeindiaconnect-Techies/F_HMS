@@ -36,7 +36,7 @@ const orderSchema = new mongoose.Schema({
     orderType: {
         type: String,
         required: true,
-        enum: ['Dine In', 'Self-Pickup'],
+        enum: ['Dine In', 'Self-Pickup', 'Delivery'],
         default: 'Dine In'
     },
     tableNumber: {
@@ -86,9 +86,41 @@ const orderSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-        enum: ['Pending', 'Preparing', 'Ready', 'Served', 'Billing Requested', 'Out for Delivery', 'Delivered'],
+        enum: ['Pending', 'Preparing', 'Ready', 'Served', 'Billing Requested', 'Out for Delivery', 'Delivered', 'Cancelled'],
         default: 'Pending'
     },
+    // Delivery partner details
+    deliveryPartner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    deliveryStatus: {
+        type: String,
+        enum: ['None', 'Pending Assignment', 'Accepted', 'Rejected', 'Picked Up', 'On the Way', 'Delivered', 'Cancelled'],
+        default: 'None'
+    },
+    deliveryDistance: {
+        type: Number,
+        default: 0
+    },
+    deliveryCharge: {
+        type: Number,
+        default: 0
+    },
+    deliveryETA: {
+        type: Date
+    },
+    deliveryRating: {
+        speed: { type: Number, default: 0 },
+        behaviour: { type: Number, default: 0 },
+        foodHandling: { type: Number, default: 0 },
+        overall: { type: Number, default: 0 },
+        review: { type: String, default: '' }
+    },
+    internalRating: {
+        type: Number,
+        default: 0
+    }
 }, { timestamps: true });
 
 const Order = mongoose.model('Order', orderSchema);

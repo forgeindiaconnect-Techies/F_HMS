@@ -3,7 +3,7 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
     Clock, RefreshCw, ChevronLeft, PhoneCall, Coffee, Utensils, 
-    FileText, CheckCircle2, AlertCircle, ShoppingBag, BellRing 
+    FileText, CheckCircle2, AlertCircle, ShoppingBag, BellRing, Star
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -19,6 +19,14 @@ const CustomerOrderTracking = () => {
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const [requestLoading, setRequestLoading] = useState(null); // requestType or null
+
+    // Delivery Rating States
+    const [speedRating, setSpeedRating] = useState(5);
+    const [behaviourRating, setBehaviourRating] = useState(5);
+    const [foodHandlingRating, setFoodHandlingRating] = useState(5);
+    const [overallRating, setOverallRating] = useState(5);
+    const [reviewText, setReviewText] = useState('');
+    const [isRatingLoading, setIsRatingLoading] = useState(false);
 
     const getApiUrl = () => {
         let baseURL = import.meta.env.VITE_API_URL;
@@ -37,6 +45,26 @@ const CustomerOrderTracking = () => {
         return 'http://localhost:5000/api';
     };
     const API_URL = getApiUrl();
+
+    const handleSubmitRating = async (e) => {
+        e.preventDefault();
+        setIsRatingLoading(true);
+        try {
+            await axios.put(`${API_URL}/orders/${orderId}/rating`, {
+                speed: speedRating,
+                behaviour: behaviourRating,
+                foodHandling: foodHandlingRating,
+                overall: overallRating,
+                review: reviewText
+            });
+            toast.success('Thank you for rating your delivery experience!');
+            fetchOrderDetails();
+        } catch (error) {
+            toast.error('Failed to submit rating');
+        } finally {
+            setIsRatingLoading(false);
+        }
+    };
 
     const fetchOrderDetails = async () => {
         try {
@@ -116,10 +144,17 @@ const CustomerOrderTracking = () => {
         }
     };
 
+    const isDelivery = order?.orderType === 'Delivery';
+
     const getStatusStep = (status) => {
-        // Pending, Accepted, Preparing, Ready, Served
-        const steps = ['Pending', 'Preparing', 'Ready', 'Served'];
-        // Let's map schema status to these steps
+        if (isDelivery) {
+            if (status === 'Pending') return 0;
+            if (status === 'Preparing') return 1;
+            if (status === 'Ready') return 2;
+            if (status === 'Out for Delivery') return 3;
+            if (status === 'Delivered') return 4;
+            return 0;
+        }
         if (status === 'Pending') return 0;
         if (status === 'Preparing') return 1;
         if (status === 'Ready') return 2;
@@ -152,7 +187,13 @@ const CustomerOrderTracking = () => {
     }
 
     const currentStep = getStatusStep(order.status);
-    const stepsList = [
+    const stepsList = isDelivery ? [
+        { title: 'Order Received', desc: 'Awaiting restaurant accept' },
+        { title: 'Preparing Food', desc: 'Chef is cooking your recipe' },
+        { title: 'Ready for Pickup', desc: 'Food is prepared' },
+        { title: 'Out for Delivery', desc: 'Partner is carrying your food' },
+        { title: 'Delivered', desc: 'Food has reached your doorstep!' }
+    ] : [
         { title: 'Order Received', desc: 'Awaiting kitchen accept' },
         { title: 'In the Kitchen', desc: 'Chef is cooking your recipe' },
         { title: 'Ready to Serve', desc: 'Food is being plated' },
@@ -223,58 +264,145 @@ const CustomerOrderTracking = () => {
                 </div>
 
                 {/* Table Quick Requests */}
-                <div className="space-y-3">
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest pl-2">Need Assistance?</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                        <button 
-                            onClick={() => handleServiceRequest('Call Waiter')}
-                            disabled={requestLoading !== null}
-                            className="bg-white hover:bg-red-50 hover:border-red-200 border border-gray-150 p-4 rounded-2xl transition-all text-left flex flex-col justify-between shadow-sm h-28 group"
-                        >
-                            <PhoneCall size={20} className="text-red-500 stroke-[2] transition-transform group-hover:scale-110" />
-                            <div>
-                                <h4 className="font-black text-gray-900 text-sm">Call Waiter</h4>
-                                <p className="text-[10px] text-gray-400 mt-0.5">Request staff assistance</p>
-                            </div>
-                        </button>
+                {!isDelivery && (
+                    <div className="space-y-3">
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest pl-2">Need Assistance?</h3>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button 
+                                onClick={() => handleServiceRequest('Call Waiter')}
+                                disabled={requestLoading !== null}
+                                className="bg-white hover:bg-red-50 hover:border-red-200 border border-gray-150 p-4 rounded-2xl transition-all text-left flex flex-col justify-between shadow-sm h-28 group"
+                            >
+                                <PhoneCall size={20} className="text-red-500 stroke-[2] transition-transform group-hover:scale-110" />
+                                <div>
+                                    <h4 className="font-black text-gray-900 text-sm">Call Waiter</h4>
+                                    <p className="text-[10px] text-gray-400 mt-0.5">Request staff assistance</p>
+                                </div>
+                            </button>
 
-                        <button 
-                            onClick={() => handleServiceRequest('Request Water')}
-                            disabled={requestLoading !== null}
-                            className="bg-white hover:bg-blue-50 hover:border-blue-200 border border-gray-150 p-4 rounded-2xl transition-all text-left flex flex-col justify-between shadow-sm h-28 group"
-                        >
-                            <Coffee size={20} className="text-blue-500 stroke-[2] transition-transform group-hover:scale-110" />
-                            <div>
-                                <h4 className="font-black text-gray-900 text-sm">Need Water</h4>
-                                <p className="text-[10px] text-gray-400 mt-0.5">Request clean drinking water</p>
-                            </div>
-                        </button>
+                            <button 
+                                onClick={() => handleServiceRequest('Request Water')}
+                                disabled={requestLoading !== null}
+                                className="bg-white hover:bg-blue-50 hover:border-blue-200 border border-gray-150 p-4 rounded-2xl transition-all text-left flex flex-col justify-between shadow-sm h-28 group"
+                            >
+                                <Coffee size={20} className="text-blue-500 stroke-[2] transition-transform group-hover:scale-110" />
+                                <div>
+                                    <h4 className="font-black text-gray-900 text-sm">Need Water</h4>
+                                    <p className="text-[10px] text-gray-400 mt-0.5">Request clean drinking water</p>
+                                </div>
+                            </button>
 
-                        <button 
-                            onClick={() => handleServiceRequest('Request Cutlery')}
-                            disabled={requestLoading !== null}
-                            className="bg-white hover:bg-orange-50 hover:border-orange-200 border border-gray-150 p-4 rounded-2xl transition-all text-left flex flex-col justify-between shadow-sm h-28 group"
-                        >
-                            <Utensils size={20} className="text-orange-500 stroke-[2] transition-transform group-hover:scale-110" />
-                            <div>
-                                <h4 className="font-black text-gray-900 text-sm">Get Cutlery</h4>
-                                <p className="text-[10px] text-gray-400 mt-0.5">Spoons, forks, or tissues</p>
-                            </div>
-                        </button>
+                            <button 
+                                onClick={() => handleServiceRequest('Request Cutlery')}
+                                disabled={requestLoading !== null}
+                                className="bg-white hover:bg-orange-50 hover:border-orange-200 border border-gray-150 p-4 rounded-2xl transition-all text-left flex flex-col justify-between shadow-sm h-28 group"
+                            >
+                                <Utensils size={20} className="text-orange-500 stroke-[2] transition-transform group-hover:scale-110" />
+                                <div>
+                                    <h4 className="font-black text-gray-900 text-sm">Get Cutlery</h4>
+                                    <p className="text-[10px] text-gray-400 mt-0.5">Spoons, forks, or tissues</p>
+                                </div>
+                            </button>
 
-                        <button 
-                            onClick={() => handleServiceRequest('Request Bill')}
-                            disabled={requestLoading !== null}
-                            className="bg-white hover:bg-purple-50 hover:border-purple-200 border border-gray-150 p-4 rounded-2xl transition-all text-left flex flex-col justify-between shadow-sm h-28 group"
-                        >
-                            <FileText size={20} className="text-purple-500 stroke-[2] transition-transform group-hover:scale-110" />
-                            <div>
-                                <h4 className="font-black text-gray-900 text-sm">Ask for Bill</h4>
-                                <p className="text-[10px] text-gray-400 mt-0.5">Request dining check bill</p>
-                            </div>
-                        </button>
+                            <button 
+                                onClick={() => handleServiceRequest('Request Bill')}
+                                disabled={requestLoading !== null}
+                                className="bg-white hover:bg-purple-50 hover:border-purple-200 border border-gray-150 p-4 rounded-2xl transition-all text-left flex flex-col justify-between shadow-sm h-28 group"
+                            >
+                                <FileText size={20} className="text-purple-500 stroke-[2] transition-transform group-hover:scale-110" />
+                                <div>
+                                    <h4 className="font-black text-gray-900 text-sm">Ask for Bill</h4>
+                                    <p className="text-[10px] text-gray-400 mt-0.5">Request dining check bill</p>
+                                </div>
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
+
+                {/* Delivery Driver Info Card */}
+                {isDelivery && order.deliveryPartner && (
+                    <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
+                        <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                            <div>
+                                <p className="text-xs text-gray-400 font-black tracking-wider uppercase">Delivery Driver</p>
+                                <h4 className="font-extrabold text-gray-900 text-sm mt-1">{order.deliveryPartner.name || 'Assigned Driver'}</h4>
+                                <p className="text-[10px] text-gray-400 mt-0.5">Vehicle: Bike</p>
+                            </div>
+                            <a 
+                                href={`tel:${order.deliveryPartner.phoneNumber || '12345'}`}
+                                className="bg-green-50 text-green-700 p-3 rounded-2xl border border-green-100 hover:scale-105 active:scale-95 transition-transform"
+                            >
+                                <PhoneCall size={18} />
+                            </a>
+                        </div>
+                        
+                        {/* Mock Maps Tracking visual */}
+                        <div className="relative h-24 bg-slate-50 border border-slate-100 rounded-2xl overflow-hidden flex items-center justify-center">
+                            <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:15px_15px]"></div>
+                            <span className="relative flex h-2 w-2 mr-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                            </span>
+                            <span className="text-[10px] font-extrabold text-blue-600 uppercase tracking-widest">Driver en route</span>
+                        </div>
+                    </div>
+                )}
+
+                {/* Delivery Star Rating Form */}
+                {isDelivery && order.status === 'Delivered' && (!order.deliveryRating || order.deliveryRating.overall === 0) && (
+                    <form onSubmit={handleSubmitRating} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
+                        <div>
+                            <h3 className="text-sm font-black text-gray-900">Rate your Delivery</h3>
+                            <p className="text-[10px] text-gray-400">Share your feedback to help us improve service quality.</p>
+                        </div>
+                        
+                        <div className="space-y-3">
+                            {[
+                                { label: 'Overall Quality', val: overallRating, set: setOverallRating },
+                                { label: 'Delivery Speed', val: speedRating, set: setSpeedRating },
+                                { label: 'Driver Behaviour', val: behaviourRating, set: setBehaviourRating },
+                                { label: 'Food Handling', val: foodHandlingRating, set: setFoodHandlingRating }
+                            ].map((rItem, idx) => (
+                                <div key={idx} className="flex justify-between items-center">
+                                    <span className="text-xs font-semibold text-gray-700">{rItem.label}</span>
+                                    <div className="flex gap-1">
+                                        {[1, 2, 3, 4, 5].map(star => (
+                                            <button
+                                                type="button"
+                                                key={star}
+                                                onClick={() => rItem.set(star)}
+                                                className="text-amber-400 focus:outline-none hover:scale-110 transition-transform"
+                                            >
+                                                <Star 
+                                                    size={16} 
+                                                    className={star <= rItem.val ? 'fill-amber-400 text-amber-400' : 'text-gray-200'} 
+                                                />
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div>
+                            <textarea
+                                value={reviewText}
+                                onChange={(e) => setReviewText(e.target.value)}
+                                placeholder="Add comments (optional)..."
+                                className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-green-500"
+                                rows="2"
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={isRatingLoading}
+                            className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl text-xs shadow-sm transition-all"
+                        >
+                            {isRatingLoading ? 'Submitting...' : 'Submit Feedback'}
+                        </button>
+                    </form>
+                )}
 
                 {/* Ordered Items Summary */}
                 <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">

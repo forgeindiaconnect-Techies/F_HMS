@@ -85,6 +85,9 @@ import PublicLayout from './layouts/PublicLayout';
 import TablesManagement from './pages/admin/TablesManagement';
 import CustomerMenu from './pages/customer/CustomerMenu';
 import CustomerOrderTracking from './pages/customer/CustomerOrderTracking';
+import DeliveryManagement from './pages/admin/DeliveryManagement';
+import DeliveryPartnerLogin from './pages/customer/DeliveryPartnerLogin';
+import DeliveryPartnerDashboard from './pages/customer/DeliveryPartnerDashboard';
 
 import { Toaster } from 'react-hot-toast';
 
@@ -153,6 +156,7 @@ function App() {
           {/* Operations */}
           <Route path="reservations" element={<ReservationManagement />} />
           <Route path="orders" element={<OrderManagement />} />
+          <Route path="delivery" element={<DeliveryManagement />} />
           
           {/* Kitchen & Catalog */}
           <Route path="menu" element={<MenuManagement />} />
@@ -219,6 +223,10 @@ function App() {
           <Route path="billing" element={<CashierDashboard />} />
           <Route path="history" element={<CashierHistory />} />
         </Route>
+
+        {/* Delivery Staff App */}
+        <Route path="/delivery/login" element={<DeliveryPartnerLogin />} />
+        <Route path="/delivery/dashboard" element={<ProtectedRoute allowedRoles={['DeliveryPartner']}><DeliveryPartnerDashboard /></ProtectedRoute>} />
 
         {/* 404 Fallback */}
         <Route path="*" element={
