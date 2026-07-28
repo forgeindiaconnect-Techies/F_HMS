@@ -45,9 +45,24 @@ const UpiModal = ({ plan, planPrice, restaurantId, api, onClose, onSuccess }) =>
         return () => clearInterval(intervalId);
     }, [step, plan, api, onSuccess]);
 
-    const qrDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
-        `${new URL(api.defaults.baseURL).origin}/api/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`
-    )}`;
+    const getScanUrl = () => {
+        let base = api.defaults.baseURL;
+        if (!base.startsWith('http')) {
+            return `${window.location.origin}/api/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`;
+        }
+        try {
+            const urlObj = new URL(base);
+            if (urlObj.hostname === 'localhost' && window.location.hostname !== 'localhost') {
+                urlObj.hostname = window.location.hostname;
+            }
+            return `${urlObj.origin}/api/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`;
+        } catch (e) {
+            return `${base}/api/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`;
+        }
+    };
+
+    const scanUrl = getScanUrl();
+    const qrDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(scanUrl)}`;
 
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
@@ -79,12 +94,21 @@ const UpiModal = ({ plan, planPrice, restaurantId, api, onClose, onSuccess }) =>
                     {/* STEP 1 — Scan QR */}
                     {step === 'scan' && (
                         <div className="w-full flex flex-col items-center gap-4 text-center">
-                            <div className="w-56 h-56 flex items-center justify-center rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-inner">
+                            <a 
+                                href={scanUrl} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="w-56 h-56 flex items-center justify-center rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-inner hover:opacity-90 transition-opacity cursor-pointer"
+                                title="Click to simulate scan / activate directly"
+                            >
                                 <img src={qrDataUrl} alt="QR Code" className="w-full h-full object-contain p-4 bg-white" />
-                            </div>
+                            </a>
                             <div>
                                 <p className="text-sm font-semibold text-gray-800">Scan to Activate Subscription</p>
-                                <p className="text-xs text-gray-400 mt-1">Scan this QR code with your phone camera or payment app to complete the transaction.</p>
+                                <p className="text-xs text-gray-400 mt-1">Scan this QR code with your phone camera or payment app.</p>
+                                <p className="text-[10px] text-blue-500 font-bold mt-2 hover:underline cursor-pointer">
+                                    Tip: Or click the QR code to activate directly
+                                </p>
                             </div>
                         </div>
                     )}

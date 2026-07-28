@@ -68,6 +68,22 @@ const SubscriptionPortal = () => {
         return () => clearInterval(intervalId);
     }, [showUpiModal, selectedPlanToBuy, api]);
 
+    const getScanUrl = (planName) => {
+        let base = api.defaults.baseURL;
+        if (!base.startsWith('http')) {
+            return `${window.location.origin}/api/plans/scan-activate?restaurantId=${restaurant?._id}&plan=${planName}`;
+        }
+        try {
+            const urlObj = new URL(base);
+            if (urlObj.hostname === 'localhost' && window.location.hostname !== 'localhost') {
+                urlObj.hostname = window.location.hostname;
+            }
+            return `${urlObj.origin}/api/plans/scan-activate?restaurantId=${restaurant?._id}&plan=${planName}`;
+        } catch (e) {
+            return `${base}/api/plans/scan-activate?restaurantId=${restaurant?._id}&plan=${planName}`;
+        }
+    };
+
     const getPlanAmount = (planName) => {
         const found = plans.find(p => p.name === planName);
         if (found) {
@@ -242,28 +258,39 @@ const SubscriptionPortal = () => {
                         </div>
                         
                         <div className="p-8 flex flex-col items-center justify-center min-h-[200px]">
-                            {paymentStatus === 'idle' && (
-                                <>
-                                    <div className="text-3xl font-black text-gray-900 mb-6">
-                                        ₹{getPlanAmount(selectedPlanToBuy)}
-                                    </div>
-                                    <div className="w-full flex flex-col items-center gap-4 text-center">
-                                        <div className="w-56 h-56 flex items-center justify-center rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-inner">
-                                            <img 
-                                                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
-                                                    `${new URL(api.defaults.baseURL).origin}/api/plans/scan-activate?restaurantId=${restaurant._id}&plan=${selectedPlanToBuy}`
-                                                )}`} 
-                                                alt="UPI QR Code" 
-                                                className="w-full h-full object-contain p-4 bg-white animate-in zoom-in duration-300" 
-                                            />
+                            {paymentStatus === 'idle' && (() => {
+                                const scanUrl = getScanUrl(selectedPlanToBuy);
+                                const qrDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(scanUrl)}`;
+                                return (
+                                    <>
+                                        <div className="text-3xl font-black text-gray-900 mb-6">
+                                            ₹{getPlanAmount(selectedPlanToBuy)}
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-semibold text-gray-800">Scan to Activate Subscription</p>
-                                            <p className="text-xs text-gray-400 mt-1">Scan this QR code with your phone camera or payment app to complete the transaction.</p>
+                                        <div className="w-full flex flex-col items-center gap-4 text-center">
+                                            <a 
+                                                href={scanUrl} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer" 
+                                                className="w-56 h-56 flex items-center justify-center rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-inner hover:opacity-90 transition-opacity cursor-pointer"
+                                                title="Click to simulate scan / activate directly"
+                                            >
+                                                <img 
+                                                    src={qrDataUrl} 
+                                                    alt="UPI QR Code" 
+                                                    className="w-full h-full object-contain p-4 bg-white animate-in zoom-in duration-300" 
+                                                />
+                                            </a>
+                                            <div>
+                                                <p className="text-sm font-semibold text-gray-800">Scan to Activate Subscription</p>
+                                                <p className="text-xs text-gray-400 mt-1">Scan this QR code with your phone camera or payment app.</p>
+                                                <p className="text-[10px] text-blue-500 font-bold mt-2 hover:underline cursor-pointer">
+                                                    Tip: Or click the QR code to activate directly
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
-                                </>
-                            )}
+                                    </>
+                                );
+                            })()}
                             
                             {paymentStatus === 'processing' && (
                                 <div className="flex flex-col items-center gap-4">
