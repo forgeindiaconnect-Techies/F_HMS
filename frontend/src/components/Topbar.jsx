@@ -47,14 +47,22 @@ const UpiModal = ({ plan, planPrice, restaurantId, api, onClose, onSuccess }) =>
 
     const getScanUrl = () => {
         let base = api.defaults.baseURL;
+        if (base.startsWith('http') && !base.includes('localhost') && !base.includes('127.0.0.1')) {
+            try {
+                const urlObj = new URL(base);
+                return `${urlObj.origin}/api/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`;
+            } catch (e) {}
+        }
+        return `https://rms-backend.onrender.com/api/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`;
+    };
+
+    const getClickUrl = () => {
+        let base = api.defaults.baseURL;
         if (!base.startsWith('http')) {
             return `${window.location.origin}/api/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`;
         }
         try {
             const urlObj = new URL(base);
-            if (urlObj.hostname === 'localhost' && window.location.hostname !== 'localhost') {
-                urlObj.hostname = window.location.hostname;
-            }
             return `${urlObj.origin}/api/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`;
         } catch (e) {
             return `${base}/api/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`;
@@ -62,6 +70,7 @@ const UpiModal = ({ plan, planPrice, restaurantId, api, onClose, onSuccess }) =>
     };
 
     const scanUrl = getScanUrl();
+    const clickUrl = getClickUrl();
     const qrDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(scanUrl)}`;
 
     return (
@@ -95,7 +104,7 @@ const UpiModal = ({ plan, planPrice, restaurantId, api, onClose, onSuccess }) =>
                     {step === 'scan' && (
                         <div className="w-full flex flex-col items-center gap-4 text-center">
                             <a 
-                                href={scanUrl} 
+                                href={clickUrl} 
                                 target="_blank" 
                                 rel="noopener noreferrer" 
                                 className="w-56 h-56 flex items-center justify-center rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-inner hover:opacity-90 transition-opacity cursor-pointer"

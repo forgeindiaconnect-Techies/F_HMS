@@ -70,14 +70,22 @@ const SubscriptionPortal = () => {
 
     const getScanUrl = (planName) => {
         let base = api.defaults.baseURL;
+        if (base.startsWith('http') && !base.includes('localhost') && !base.includes('127.0.0.1')) {
+            try {
+                const urlObj = new URL(base);
+                return `${urlObj.origin}/api/plans/scan-activate?restaurantId=${restaurant?._id}&plan=${planName}`;
+            } catch (e) {}
+        }
+        return `https://rms-backend.onrender.com/api/plans/scan-activate?restaurantId=${restaurant?._id}&plan=${planName}`;
+    };
+
+    const getClickUrl = (planName) => {
+        let base = api.defaults.baseURL;
         if (!base.startsWith('http')) {
             return `${window.location.origin}/api/plans/scan-activate?restaurantId=${restaurant?._id}&plan=${planName}`;
         }
         try {
             const urlObj = new URL(base);
-            if (urlObj.hostname === 'localhost' && window.location.hostname !== 'localhost') {
-                urlObj.hostname = window.location.hostname;
-            }
             return `${urlObj.origin}/api/plans/scan-activate?restaurantId=${restaurant?._id}&plan=${planName}`;
         } catch (e) {
             return `${base}/api/plans/scan-activate?restaurantId=${restaurant?._id}&plan=${planName}`;
@@ -260,6 +268,7 @@ const SubscriptionPortal = () => {
                         <div className="p-8 flex flex-col items-center justify-center min-h-[200px]">
                             {paymentStatus === 'idle' && (() => {
                                 const scanUrl = getScanUrl(selectedPlanToBuy);
+                                const clickUrl = getClickUrl(selectedPlanToBuy);
                                 const qrDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(scanUrl)}`;
                                 return (
                                     <>
@@ -268,7 +277,7 @@ const SubscriptionPortal = () => {
                                         </div>
                                         <div className="w-full flex flex-col items-center gap-4 text-center">
                                             <a 
-                                                href={scanUrl} 
+                                                href={clickUrl} 
                                                 target="_blank" 
                                                 rel="noopener noreferrer" 
                                                 className="w-56 h-56 flex items-center justify-center rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-inner hover:opacity-90 transition-opacity cursor-pointer"
