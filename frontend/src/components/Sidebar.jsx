@@ -4,7 +4,7 @@ import {
     LayoutDashboard, Store, Users, UtensilsCrossed, Settings, LogOut, 
     Activity, UserCheck, Key, ListTree, PackageSearch, Truck, Heart, 
     CalendarCheck, ShoppingBag, CreditCard, Tag, FileText, PieChart, 
-    Bell, ReceiptText, Lock, QrCode
+    Bell, ReceiptText, Lock, QrCode, MessageSquare, HelpCircle, Volume2, LifeBuoy
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../context/AuthContext';
@@ -20,6 +20,10 @@ const Sidebar = () => {
         window.addEventListener('toggle-sidebar', handleToggle);
         return () => window.removeEventListener('toggle-sidebar', handleToggle);
     }, []);
+
+    const plan = restaurant?.subscription?.plan || 'Basic';
+    const status = restaurant?.subscription?.status || 'Inactive';
+    const isEnterprise = plan === 'Enterprise' && status === 'Active';
     
     const navGroups = [
         {
@@ -49,6 +53,16 @@ const Sidebar = () => {
                 { name: 'Suppliers', path: '/admin/suppliers', icon: Truck },
             ]
         },
+        ...(isEnterprise ? [{
+            title: 'Customer Care',
+            items: [
+                { name: 'Support Dashboard', path: '/admin/support', icon: LayoutDashboard },
+                { name: 'Support Tickets', path: '/admin/support/tickets', icon: MessageSquare },
+                { name: 'Create Ticket', path: '/admin/support/tickets/create', icon: LifeBuoy },
+                { name: 'Knowledge Base', path: '/admin/support/knowledge-base', icon: HelpCircle },
+                { name: 'Announcements', path: '/admin/support/announcements', icon: Volume2 },
+            ]
+        }] : []),
         {
             title: 'Insights',
             items: [

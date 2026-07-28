@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
     LayoutDashboard, Store, Users, CreditCard, 
-    Settings, Bell, LogOut, User, Menu, X, ShieldCheck
+    Settings, Bell, LogOut, User, Menu, X, ShieldCheck, MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -42,13 +42,20 @@ const SuperAdminLayout = () => {
 
     const unreadCount = notifications.filter(n => !n.read).length;
 
-    const navigation = [
-        { name: 'Overview', href: '/super-admin', icon: LayoutDashboard },
-        { name: 'Restaurants', href: '/super-admin/restaurants', icon: Store },
-        { name: 'Plans', href: '/super-admin/plans', icon: CreditCard },
-        { name: 'Verifications', href: '/super-admin/verifications', icon: ShieldCheck },
-        { name: 'Global Reports', href: '/super-admin/reports', icon: Settings },
-    ];
+    // Dynamically filter navigation links based on user role
+    const getNavigation = () => {
+        const fullNavigation = [
+            { name: 'Overview', href: '/super-admin', icon: LayoutDashboard, roles: ['SuperAdmin'] },
+            { name: 'Restaurants', href: '/super-admin/restaurants', icon: Store, roles: ['SuperAdmin'] },
+            { name: 'Plans', href: '/super-admin/plans', icon: CreditCard, roles: ['SuperAdmin'] },
+            { name: 'Verifications', href: '/super-admin/verifications', icon: ShieldCheck, roles: ['SuperAdmin'] },
+            { name: 'Support Console', href: '/super-admin/support', icon: MessageSquare, roles: ['SuperAdmin', 'SupportAgent'] },
+            { name: 'Global Reports', href: '/super-admin/reports', icon: Settings, roles: ['SuperAdmin'] },
+        ];
+        return fullNavigation.filter(item => item.roles.includes(user?.role));
+    };
+
+    const navigation = getNavigation();
 
     return (
         <div className="flex h-screen bg-gray-50 relative">

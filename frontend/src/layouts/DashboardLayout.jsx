@@ -20,13 +20,22 @@ const DashboardLayout = () => {
     };
 
     const plan = getPlanName();
+    const status = restaurant?.subscription?.status || 'Inactive';
+    const isEnterprise = plan === 'Enterprise' && status === 'Active';
     const path = location.pathname;
     let isPathBlocked = false;
     let blockedFeature = '';
+    let isSupportBlock = false;
 
     if (plan === 'Basic' || plan === 'Starter') {
         if (path.includes('/admin/suppliers')) { isPathBlocked = true; blockedFeature = 'Supplier Management'; }
         else if (path.includes('/admin/analytics')) { isPathBlocked = true; blockedFeature = 'Analytics & Insights'; }
+    }
+
+    if (path.includes('/admin/support') && !isEnterprise) {
+        isPathBlocked = true;
+        isSupportBlock = true;
+        blockedFeature = '24/7 Customer Care';
     }
 
     return (
@@ -46,7 +55,11 @@ const DashboardLayout = () => {
                             </div>
                             <h2 className="text-2xl font-black text-gray-900 mb-2">Upgrade Subscription Required</h2>
                             <p className="text-sm text-gray-500 mb-6 max-w-md leading-relaxed">
-                                The <strong>{blockedFeature}</strong> module is a premium feature. Please upgrade your active <strong>{plan}</strong> subscription plan to access this module.
+                                {isSupportBlock ? (
+                                    <><strong>24/7 Customer Care</strong> is available only for Enterprise Plan subscribers.</>
+                                ) : (
+                                    <>The <strong>{blockedFeature}</strong> module is a premium feature. Please upgrade your active <strong>{plan}</strong> subscription plan to access this module.</>
+                                )}
                             </p>
                             <Link 
                                 to="/admin/billing" 

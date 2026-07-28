@@ -25,6 +25,12 @@ import Settings from './pages/admin/Settings';
 import SubscriptionPortal from './pages/admin/SubscriptionPortal';
 import RestaurantVerification from './pages/admin/RestaurantVerification';
 import VerificationManagement from './pages/superadmin/VerificationManagement';
+import CustomerCareDashboard from './pages/admin/CustomerCareDashboard';
+import CreateTicket from './pages/admin/CreateTicket';
+import TicketList from './pages/admin/TicketList';
+import TicketDetails from './pages/admin/TicketDetails';
+import SupportKnowledgeBase from './pages/admin/SupportKnowledgeBase';
+import SupportAnnouncements from './pages/admin/SupportAnnouncements';
 import WaiterDashboard from './pages/staff/WaiterDashboard';
 import ChefDashboard from './pages/staff/ChefDashboard';
 import ChefPrepList from './pages/staff/ChefPrepList';
@@ -73,6 +79,7 @@ import PlatformRestaurants from './pages/superadmin/PlatformRestaurants';
 import PlanManagement from './pages/superadmin/PlanManagement';
 import SupportTickets from './pages/superadmin/SupportTickets';
 import GlobalReports from './pages/superadmin/GlobalReports';
+import SuperAdminSupportConsole from './pages/superadmin/SuperAdminSupportConsole';
 
 import PublicLayout from './layouts/PublicLayout';
 import TablesManagement from './pages/admin/TablesManagement';
@@ -117,12 +124,14 @@ function App() {
         <Route path="/superadmin" element={<Navigate to="/super-admin" replace />} />
 
         {/* Super Admin Routes */}
-        <Route path="/super-admin" element={<ProtectedRoute allowedRoles={['SuperAdmin']}><SuperAdminLayout /></ProtectedRoute>}>
+        <Route path="/super-admin" element={<ProtectedRoute allowedRoles={['SuperAdmin', 'SupportAgent']}><SuperAdminLayout /></ProtectedRoute>}>
           <Route index element={<SuperAdminDashboard />} />
           <Route path="restaurants" element={<PlatformRestaurants />} />
           <Route path="plans" element={<PlanManagement />} />
           <Route path="reports" element={<GlobalReports />} />
           <Route path="verifications" element={<VerificationManagement />} />
+          <Route path="support" element={<SuperAdminSupportConsole />} />
+          <Route path="support/tickets/:id" element={<TicketDetails />} />
         </Route>
 
         {/* Admin Dashboard Routes */}
@@ -164,6 +173,14 @@ function App() {
           <Route path="settings" element={<Settings />} />
           <Route path="billing" element={<SubscriptionPortal />} />
           <Route path="notifications" element={<NotificationCenter />} />
+
+          {/* Customer Care */}
+          <Route path="support" element={<CustomerCareDashboard />} />
+          <Route path="support/tickets" element={<TicketList />} />
+          <Route path="support/tickets/create" element={<CreateTicket />} />
+          <Route path="support/tickets/:id" element={<TicketDetails />} />
+          <Route path="support/knowledge-base" element={<SupportKnowledgeBase />} />
+          <Route path="support/announcements" element={<SupportAnnouncements />} />
         </Route>
         
         <Route path="/manager" element={<ProtectedRoute allowedRoles={['BranchManager', 'RestaurantAdmin']}><ManagerLayout /></ProtectedRoute>}>
