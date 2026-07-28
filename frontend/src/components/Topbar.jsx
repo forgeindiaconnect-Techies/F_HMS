@@ -329,7 +329,7 @@ const PlanUpgradeModal = ({ currentPlan, plans, api, restaurant, onClose, onUpgr
 
 /* ─── Topbar ────────────────────────────────────────────────────── */
 const Topbar = () => {
-    const { user, api, restaurant } = useAuth();
+    const { user, api, restaurant, fetchRestaurant } = useAuth();
     const [hasUnread, setHasUnread] = useState(false);
     const [subscriptionPlan, setSubscriptionPlan] = useState(null);
     const [plans, setPlans] = useState([]);
@@ -456,8 +456,9 @@ const Topbar = () => {
                     api={api}
                     restaurant={restaurant}
                     onClose={() => setShowUpgradeModal(false)}
-                    onUpgraded={(newPlan) => {
+                    onUpgraded={async (newPlan) => {
                         setSubscriptionPlan(newPlan);
+                        if (fetchRestaurant) await fetchRestaurant();
                     }}
                 />
             )}
