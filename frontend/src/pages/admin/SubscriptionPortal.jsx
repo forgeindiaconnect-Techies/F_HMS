@@ -11,6 +11,7 @@ const SubscriptionPortal = () => {
     const [showUpiModal, setShowUpiModal] = useState(false);
     const [paymentStatus, setPaymentStatus] = useState('idle'); // 'idle', 'processing', 'success', 'failed'
     const [plans, setPlans] = useState([]);
+    const [selectedPlanToBuy, setSelectedPlanToBuy] = useState(null);
 
     const fetchRestaurantInfo = async () => {
         try {

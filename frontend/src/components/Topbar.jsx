@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bell, User, Menu, Crown, Zap, Star, X, CheckCircle2, Loader2, AlertCircle, ArrowUpRight, Check } from 'lucide-react';
+import { Bell, User, Menu, Crown, Zap, Star, X, CheckCircle2, Loader2, AlertCircle, ArrowUpRight, Check, QrCode } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import dummyScanner from '../assets/dummy_scanner.png';
