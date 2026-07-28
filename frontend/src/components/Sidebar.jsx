@@ -161,7 +161,7 @@ const Sidebar = () => {
                                     <NavLink
                                         key={item.name}
                                         to={item.path}
-                                        end={item.path === '/admin'}
+                                        end={item.path !== '/admin/support/tickets'}
                                         className={({ isActive }) => clsx(
                                             "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm",
                                             isActive 
