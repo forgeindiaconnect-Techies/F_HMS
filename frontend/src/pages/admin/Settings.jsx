@@ -1,22 +1,34 @@
-import { useState, useEffect } from 'react';
-import { Save, Store, CreditCard, Bell, Lock, User, ArrowRight } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Save, Upload, User, ArrowRight, Camera, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
 
 const Settings = () => {
-    const { api } = useAuth();
+    const { api, fetchRestaurant } = useAuth();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [activeTab, setActiveTab] = useState('profile');
     const [subscription, setSubscription] = useState(null);
-    
+    const [logoPreview, setLogoPreview] = useState(null);
+    const [currentLogo, setCurrentLogo] = useState(null);
+    const [logoFile, setLogoFile] = useState(null);
+    const logoInputRef = useRef(null);
+
     const [formData, setFormData] = useState({
         name: '',
         contactEmail: '',
         phone: '',
         address: ''
     });
+
+    // Build full URL for a logo path from the backend
+    const getLogoUrl = (logoPath) => {
+        if (!logoPath) return null;
+        if (logoPath.startsWith('http')) return logoPath;
+        const base = new URL(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').origin;
+        return `${base}${logoPath}`;
+    };
 
     useEffect(() => {
         const fetchSettings = async () => {
@@ -30,6 +42,9 @@ const Settings = () => {
                         address: res.data.address || ''
                     });
                     setSubscription(res.data.subscription);
+                    if (res.data.logo) {
+                        setCurrentLogo(getLogoUrl(res.data.logo));
+                    }
                 }
             } catch (error) {
                 console.error('Failed to fetch settings', error);
@@ -42,19 +57,56 @@ const Settings = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleLogoChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        // Validate size (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Logo must be under 5 MB');
+            return;
+        }
+        setLogoFile(file);
+        setLogoPreview(URL.createObjectURL(file));
+    };
 
+    const clearLogoSelection = () => {
+        setLogoFile(null);
+        setLogoPreview(null);
+        if (logoInputRef.current) logoInputRef.current.value = '';
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSaving(true);
         try {
-            await api.put('/restaurants/mine', formData);
+            // Always use FormData so we can attach the file if present
+            const data = new FormData();
+            data.append('name', formData.name);
+            data.append('contactEmail', formData.contactEmail);
+            data.append('phone', formData.phone);
+            data.append('address', formData.address);
+            if (logoFile) {
+                data.append('logo', logoFile);
+            }
+
+            const res = await api.put('/restaurants/mine', data, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            // Update local preview to the saved logo
+            if (res.data?.logo) {
+                const savedUrl = getLogoUrl(res.data.logo);
+                setCurrentLogo(savedUrl);
+                setLogoPreview(null);
+                setLogoFile(null);
+            }
+
+            // Refresh global restaurant context so sidebar logo updates
+            if (fetchRestaurant) await fetchRestaurant();
+
             toast.success('Settings saved successfully!');
         } catch (error) {
             console.error('Failed to save settings', error);
@@ -71,6 +123,8 @@ const Settings = () => {
             </div>
         );
     }
+
+    const displayLogo = logoPreview || currentLogo;
 
     return (
         <div className="max-w-5xl">
@@ -100,6 +154,61 @@ const Settings = () => {
                         {activeTab === 'profile' && (
                             <>
                                 <h3 className="text-lg font-bold text-gray-900 mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>Profile Information</h3>
+
+                                {/* Logo Upload Section */}
+                                <div className="mb-8">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-3">Restaurant Logo</label>
+                                    <div className="flex items-center gap-5">
+                                        {/* Logo Preview */}
+                                        <div className="relative w-24 h-24 rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0">
+                                            {displayLogo ? (
+                                                <>
+                                                    <img
+                                                        src={displayLogo}
+                                                        alt="Restaurant Logo"
+                                                        className="w-full h-full object-cover"
+                                                        onError={(e) => { e.target.style.display = 'none'; }}
+                                                    />
+                                                    {logoPreview && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={clearLogoSelection}
+                                                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow hover:bg-red-600 transition"
+                                                        >
+                                                            <X size={10} />
+                                                        </button>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <Camera size={28} className="text-gray-300" />
+                                            )}
+                                        </div>
+
+                                        {/* Upload Controls */}
+                                        <div>
+                                            <input
+                                                ref={logoInputRef}
+                                                type="file"
+                                                accept="image/jpeg,image/jpg,image/png,image/webp,image/gif,image/svg+xml"
+                                                className="hidden"
+                                                id="logo-upload"
+                                                onChange={handleLogoChange}
+                                            />
+                                            <label
+                                                htmlFor="logo-upload"
+                                                className="cursor-pointer inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm px-4 py-2.5 rounded-xl transition-all"
+                                            >
+                                                <Upload size={15} />
+                                                {logoPreview ? 'Change Logo' : (currentLogo ? 'Replace Logo' : 'Upload Logo')}
+                                            </label>
+                                            <p className="text-xs text-gray-400 mt-1.5">JPG, PNG, WebP or SVG · Max 5 MB</p>
+                                            {logoPreview && (
+                                                <p className="text-xs text-green-600 mt-1 font-medium">✓ New logo selected — save to apply</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-700 mb-1.5">Restaurant Name</label>
@@ -161,8 +270,6 @@ const Settings = () => {
                                 </div>
                             </>
                         )}
-
-
 
                         <div className="pt-6 border-t border-gray-100 flex justify-end">
                             <button 

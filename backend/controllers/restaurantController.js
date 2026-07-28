@@ -1,6 +1,35 @@
 import Restaurant from '../models/Restaurant.js';
 import Branch from '../models/Branch.js';
 import Notification from '../models/Notification.js';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+
+// Multer setup for restaurant logo uploads
+const logoUploadDir = 'uploads/logos';
+if (!fs.existsSync(logoUploadDir)) {
+    fs.mkdirSync(logoUploadDir, { recursive: true });
+}
+
+const logoStorage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, logoUploadDir),
+    filename: (req, file, cb) => {
+        const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, 'logo-' + unique + path.extname(file.originalname));
+    }
+});
+
+const logoFileFilter = (req, file, cb) => {
+    const allowed = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    allowed.includes(ext) ? cb(null, true) : cb(new Error('Only image files are allowed'), false);
+};
+
+export const logoUpload = multer({
+    storage: logoStorage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+    fileFilter: logoFileFilter
+}).single('logo');
 
 // @desc    Get all restaurants (SuperAdmin only)
 // @route   GET /api/restaurants
@@ -165,6 +194,11 @@ export const updateMyRestaurant = async (req, res) => {
                     onlineOrdering: features.onlineOrdering !== undefined ? features.onlineOrdering : restaurant.features?.onlineOrdering,
                     tableReservations: features.tableReservations !== undefined ? features.tableReservations : restaurant.features?.tableReservations
                 };
+            }
+
+            // Handle logo upload
+            if (req.file) {
+                restaurant.logo = `/uploads/logos/${req.file.filename}`;
             }
             
             const updatedRestaurant = await restaurant.save();
