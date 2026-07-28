@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { CreditCard, CheckCircle, AlertTriangle, ShieldCheck, QrCode, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
-import dummyScanner from '../../assets/dummy_scanner.png';
+import dummyQrPayment from '../../assets/dummy_qr_payment.png';
 
 const SubscriptionPortal = () => {
     const { user, api } = useAuth();
@@ -237,7 +237,7 @@ const SubscriptionPortal = () => {
                                     
                                     <div className="mt-8 flex flex-col items-center justify-center border border-gray-100 p-4 rounded-2xl bg-gray-50 w-full">
                                         <div className="w-32 h-32 flex items-center justify-center rounded-xl overflow-hidden bg-white border border-gray-100 mb-2">
-                                            <img src={dummyScanner} alt="UPI QR Scanner" className="w-full h-full object-cover" />
+                                            <img src={dummyQrPayment} alt="UPI QR Code" className="w-full h-full object-contain p-2" />
                                         </div>
                                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Or Scan QR on Mobile</span>
                                     </div>
@@ -268,10 +268,10 @@ const SubscriptionPortal = () => {
                         </div>
                         
                         {(paymentStatus === 'idle') && (
-                            <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-center">
+                            <div className="p-6 bg-white border-t border-gray-100">
                                 <button 
                                     onClick={() => setShowUpiModal(false)}
-                                    className="text-sm font-bold text-gray-500 hover:text-gray-900"
+                                    className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors text-sm shadow-sm flex items-center justify-center"
                                 >
                                     Cancel Payment
                                 </button>

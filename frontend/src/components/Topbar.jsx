@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Bell, User, Menu, Crown, Zap, Star, X, CheckCircle2, Loader2, AlertCircle, ArrowUpRight, Check, QrCode } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import dummyScanner from '../assets/dummy_scanner.png';
+import dummyQrPayment from '../assets/dummy_qr_payment.png';
 /* ─── Plan styling helpers ───────────────────────────────────────── */
 const PLAN_META = {
     Starter:      { bg: 'bg-blue-100',   text: 'text-blue-700',   border: 'border-blue-300',   ring: 'ring-blue-400',   grad: 'from-blue-500 to-blue-600',   icon: Zap   },
@@ -62,7 +62,7 @@ const UpiModal = ({ plan, planPrice, onClose, onSuccess }) => {
                     {step === 'scan' && (
                         <div className="w-full flex flex-col items-center gap-4">
                             <div className="w-56 h-56 flex items-center justify-center rounded-2xl overflow-hidden bg-gray-50 border border-gray-100">
-                                <img src={dummyScanner} alt="QR Scanner" className="w-full h-full object-cover" />
+                                <img src={dummyQrPayment} alt="QR Code" className="w-full h-full object-contain p-4 bg-white" />
                             </div>
                             <button
                                 onClick={handlePay}
@@ -150,9 +150,12 @@ const UpiModal = ({ plan, planPrice, onClose, onSuccess }) => {
                 </div>
 
                 {(step === 'scan' || step === 'upi') && (
-                    <div className="px-6 pb-5 text-center">
-                        <button onClick={onClose} className="text-xs text-gray-400 hover:text-gray-700 font-semibold transition-colors">
-                            Cancel payment
+                    <div className="px-6 pb-5">
+                        <button 
+                            onClick={onClose} 
+                            className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors text-sm shadow-sm flex items-center justify-center"
+                        >
+                            Cancel Payment
                         </button>
                     </div>
                 )}
