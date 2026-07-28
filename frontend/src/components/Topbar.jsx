@@ -17,23 +17,41 @@ const getPlanMeta = (name) => {
         { bg: 'bg-gray-100', text: 'text-gray-600', border: 'border-gray-300', ring: 'ring-gray-400', grad: 'from-gray-500 to-gray-600', icon: Star };
 };
 
-/* ─── UPI Payment Modal — 3-step flow ──────────────────────────── */
-// step: 'scan' → show QR image  |  'upi' → show UPI app list  |  'processing' | 'success' | 'failed'
-const UpiModal = ({ plan, planPrice, onClose, onSuccess }) => {
+const UpiModal = ({ plan, planPrice, restaurantId, api, onClose, onSuccess }) => {
     const [step, setStep] = useState('scan');
 
-    const handlePay = () => {
-        setStep('processing');
-        // Simulate payment processing
-        setTimeout(() => {
-            setStep('success');
-            setTimeout(() => onSuccess(), 2000);
-        }, 2000);
-    };
+    useEffect(() => {
+        if (step !== 'scan') return;
+
+        let intervalId;
+        const checkStatus = async () => {
+            try {
+                const res = await api.get('/restaurants/mine');
+                if (res.data?.subscription?.plan === plan && res.data?.subscription?.status === 'Active') {
+                    setStep('processing');
+                    setTimeout(() => {
+                        setStep('success');
+                        setTimeout(() => onSuccess(), 2000);
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error("Failed to check subscription status", error);
+            }
+        };
+
+        // Check immediately
+        checkStatus();
+        intervalId = setInterval(checkStatus, 2000);
+        return () => clearInterval(intervalId);
+    }, [step, plan, api, onSuccess]);
+
+    const qrDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
+        `${new URL(api.defaults.baseURL).origin}/api/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`
+    )}`;
 
     return (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+            <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95">
 
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100">
@@ -41,7 +59,7 @@ const UpiModal = ({ plan, planPrice, onClose, onSuccess }) => {
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Complete Payment</p>
                         <h3 className="text-lg font-black text-gray-900">{plan} Plan</h3>
                     </div>
-                    {(step === 'scan' || step === 'upi') && (
+                    {step === 'scan' && (
                         <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors">
                             <X size={18} />
                         </button>
@@ -49,80 +67,43 @@ const UpiModal = ({ plan, planPrice, onClose, onSuccess }) => {
                 </div>
 
                 {/* Price */}
-                {(step === 'scan' || step === 'upi') && (
+                {step === 'scan' && (
                     <div className="text-center pt-5 pb-1">
                         <div className="text-4xl font-black text-gray-900">₹{planPrice}</div>
-                        <p className="text-xs text-gray-400 mt-1">per month · cancel anytime</p>
+                        <p className="text-xs text-gray-400 mt-1 font-medium">per month · cancel anytime</p>
                     </div>
                 )}
 
-                <div className="p-6 flex flex-col items-center justify-center">
+                <div className="p-6 flex flex-col items-center justify-center min-h-[220px]">
 
-                    {/* STEP 1 — Dummy QR Scanner */}
+                    {/* STEP 1 — Scan QR */}
                     {step === 'scan' && (
-                        <div className="w-full flex flex-col items-center gap-4">
-                            <div className="w-56 h-56 flex items-center justify-center rounded-2xl overflow-hidden bg-gray-50 border border-gray-100">
-                                <img src={dummyQrPayment} alt="QR Code" className="w-full h-full object-contain p-4 bg-white" />
+                        <div className="w-full flex flex-col items-center gap-4 text-center">
+                            <div className="w-56 h-56 flex items-center justify-center rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-inner">
+                                <img src={qrDataUrl} alt="QR Code" className="w-full h-full object-contain p-4 bg-white" />
                             </div>
-                            <button
-                                onClick={handlePay}
-                                className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors text-sm shadow-sm flex items-center justify-center gap-2"
-                            >
-                                <QrCode size={16} /> Simulate Scan & Pay
-                            </button>
-                            <button
-                                onClick={() => setStep('upi')}
-                                className="text-xs text-gray-400 hover:text-gray-600 font-semibold transition-colors mt-1"
-                            >
-                                Or pay using UPI Apps →
-                            </button>
+                            <div>
+                                <p className="text-sm font-semibold text-gray-800">Scan to Activate Subscription</p>
+                                <p className="text-xs text-gray-400 mt-1">Scan this QR code with your phone camera or payment app to complete the transaction.</p>
+                            </div>
                         </div>
                     )}
 
-                    {/* STEP 2 — UPI App Selection */}
-                    {step === 'upi' && (
-                        <div className="w-full flex flex-col gap-3">
-                            <p className="text-xs font-bold text-gray-500 text-center mb-1">Choose your UPI app to confirm payment</p>
-                            {[
-                                { name: 'Google Pay',  src: 'https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg',                    hover: 'hover:border-blue-400   hover:bg-blue-50'   },
-                                { name: 'PhonePe',     src: 'https://upload.wikimedia.org/wikipedia/commons/7/71/PhonePe_Logo.svg',                        hover: 'hover:border-purple-400 hover:bg-purple-50' },
-                                { name: 'Paytm',       src: 'https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg',          hover: 'hover:border-sky-400    hover:bg-sky-50'    },
-                            ].map(app => (
-                                <button
-                                    key={app.name}
-                                    onClick={handlePay}
-                                    className={`flex items-center gap-4 py-3 px-4 rounded-2xl border-2 border-gray-100 ${app.hover} transition-all bg-white shadow-sm text-gray-900 font-semibold text-sm w-full`}
-                                >
-                                    <img src={app.src} alt={app.name} className="h-6 object-contain w-16 shrink-0" />
-                                    <span>{app.name}</span>
-                                    <span className="ml-auto text-gray-300">›</span>
-                                </button>
-                            ))}
-
-                            <button
-                                onClick={() => setStep('scan')}
-                                className="text-xs text-gray-400 hover:text-gray-600 font-semibold mt-1 self-center transition-colors"
-                            >
-                                ← Back to QR
-                            </button>
-                        </div>
-                    )}
-
-                    {/* STEP 3 — Processing */}
+                    {/* STEP 2 — Processing */}
                     {step === 'processing' && (
                         <div className="flex flex-col items-center gap-4 py-6">
                             <div className="relative">
-                                <Loader2 size={52} className="animate-spin text-green-400" />
+                                <Loader2 size={52} className="animate-spin text-green-500" />
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="w-6 h-6 bg-green-100 rounded-full" />
                                 </div>
                             </div>
-                            <p className="font-bold text-gray-700">Processing payment…</p>
+                            <p className="font-bold text-gray-700">Verifying activation…</p>
                             <p className="text-xs text-gray-400">Please wait, do not close this window</p>
                         </div>
                     )}
 
-                    {/* STEP 4 — Success */}
+                    {/* STEP 3 — Success */}
                     {step === 'success' && (
                         <div className="flex flex-col items-center gap-3 py-6">
                             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
@@ -135,21 +116,9 @@ const UpiModal = ({ plan, planPrice, onClose, onSuccess }) => {
                             <p className="text-xs text-gray-400">Redirecting…</p>
                         </div>
                     )}
-
-                    {/* Failed */}
-                    {step === 'failed' && (
-                        <div className="flex flex-col items-center gap-4 py-6">
-                            <AlertCircle size={48} className="text-red-500" />
-                            <p className="font-black text-red-600 text-lg">Payment Failed</p>
-                            <div className="flex gap-2">
-                                <button onClick={() => setStep('scan')} className="px-4 py-2 bg-red-50 text-red-600 font-bold rounded-xl text-sm hover:bg-red-100 transition-colors">Retry</button>
-                                <button onClick={onClose}               className="px-4 py-2 bg-gray-100 text-gray-600 font-bold rounded-xl text-sm hover:bg-gray-200 transition-colors">Cancel</button>
-                            </div>
-                        </div>
-                    )}
                 </div>
 
-                {(step === 'scan' || step === 'upi') && (
+                {step === 'scan' && (
                     <div className="px-6 pb-5">
                         <button 
                             onClick={onClose} 
@@ -165,7 +134,7 @@ const UpiModal = ({ plan, planPrice, onClose, onSuccess }) => {
 };
 
 /* ─── Plan Upgrade Modal ────────────────────────────────────────── */
-const PlanUpgradeModal = ({ currentPlan, plans, api, onClose, onUpgraded }) => {
+const PlanUpgradeModal = ({ currentPlan, plans, api, restaurant, onClose, onUpgraded }) => {
     const [selectedPlan, setSelectedPlan] = useState(null); // opens UPI modal
     const [subscribing, setSubscribing] = useState(null);
     const modalRef = useRef(null);
@@ -315,6 +284,8 @@ const PlanUpgradeModal = ({ currentPlan, plans, api, onClose, onUpgraded }) => {
                 <UpiModal
                     plan={selectedPlan.name}
                     planPrice={(selectedPlan.monthlyPrice || selectedPlan.price || 0).toLocaleString('en-IN')}
+                    restaurantId={restaurant?._id}
+                    api={api}
                     onClose={() => setSelectedPlan(null)}
                     onSuccess={() => handleUpgradeSuccess(selectedPlan)}
                 />
@@ -325,7 +296,7 @@ const PlanUpgradeModal = ({ currentPlan, plans, api, onClose, onUpgraded }) => {
 
 /* ─── Topbar ────────────────────────────────────────────────────── */
 const Topbar = () => {
-    const { user, api } = useAuth();
+    const { user, api, restaurant } = useAuth();
     const [hasUnread, setHasUnread] = useState(false);
     const [subscriptionPlan, setSubscriptionPlan] = useState(null);
     const [plans, setPlans] = useState([]);
@@ -450,6 +421,7 @@ const Topbar = () => {
                     currentPlan={subscriptionPlan}
                     plans={plans}
                     api={api}
+                    restaurant={restaurant}
                     onClose={() => setShowUpgradeModal(false)}
                     onUpgraded={(newPlan) => {
                         setSubscriptionPlan(newPlan);

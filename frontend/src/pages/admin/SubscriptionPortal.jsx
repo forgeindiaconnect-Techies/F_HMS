@@ -40,6 +40,34 @@ const SubscriptionPortal = () => {
         fetchPlans();
     }, [api]);
 
+    useEffect(() => {
+        if (!showUpiModal || !selectedPlanToBuy) return;
+
+        let intervalId;
+        const checkStatus = async () => {
+            try {
+                const res = await api.get('/restaurants/mine');
+                if (res.data?.subscription?.plan === selectedPlanToBuy && res.data?.subscription?.status === 'Active') {
+                    setPaymentStatus('processing');
+                    setTimeout(() => {
+                        setPaymentStatus('success');
+                        setRestaurant(res.data);
+                        setTimeout(() => {
+                            setShowUpiModal(false);
+                            window.location.href = '/admin';
+                        }, 2000);
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error("Failed to check subscription status", error);
+            }
+        };
+
+        checkStatus();
+        intervalId = setInterval(checkStatus, 2000);
+        return () => clearInterval(intervalId);
+    }, [showUpiModal, selectedPlanToBuy, api]);
+
     const getPlanAmount = (planName) => {
         const found = plans.find(p => p.name === planName);
         if (found) {
@@ -219,27 +247,20 @@ const SubscriptionPortal = () => {
                                     <div className="text-3xl font-black text-gray-900 mb-6">
                                         ₹{getPlanAmount(selectedPlanToBuy)}
                                     </div>
-                                    <p className="text-sm font-bold text-gray-500 mb-4">Select UPI App:</p>
-                                    <div className="flex flex-col w-full gap-3">
-                                        <button onClick={() => handleUpiPayment(true)} className="flex items-center justify-center gap-3 py-3 rounded-xl border-2 border-gray-100 hover:border-blue-500 hover:bg-blue-50 transition-all bg-white shadow-sm hover:shadow text-gray-900 font-bold">
-                                            <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" alt="GPay" className="h-5 object-contain" />
-                                            Google Pay
-                                        </button>
-                                        <button onClick={() => handleUpiPayment(true)} className="flex items-center justify-center gap-3 py-3 rounded-xl border-2 border-gray-100 hover:border-purple-500 hover:bg-purple-50 transition-all bg-white shadow-sm hover:shadow text-gray-900 font-bold">
-                                            <img src="https://upload.wikimedia.org/wikipedia/commons/7/71/PhonePe_Logo.svg" alt="PhonePe" className="h-6 object-contain" />
-                                            PhonePe
-                                        </button>
-                                        <button onClick={() => handleUpiPayment(true)} className="flex items-center justify-center gap-3 py-3 rounded-xl border-2 border-gray-100 hover:border-blue-400 hover:bg-blue-50/50 transition-all bg-white shadow-sm hover:shadow text-gray-900 font-bold">
-                                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm" className="h-4 object-contain" />
-                                            Paytm
-                                        </button>
-                                    </div>
-                                    
-                                    <div className="mt-8 flex flex-col items-center justify-center border border-gray-100 p-4 rounded-2xl bg-gray-50 w-full">
-                                        <div className="w-32 h-32 flex items-center justify-center rounded-xl overflow-hidden bg-white border border-gray-100 mb-2">
-                                            <img src={dummyQrPayment} alt="UPI QR Code" className="w-full h-full object-contain p-2" />
+                                    <div className="w-full flex flex-col items-center gap-4 text-center">
+                                        <div className="w-56 h-56 flex items-center justify-center rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-inner">
+                                            <img 
+                                                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
+                                                    `${new URL(api.defaults.baseURL).origin}/api/plans/scan-activate?restaurantId=${restaurant._id}&plan=${selectedPlanToBuy}`
+                                                )}`} 
+                                                alt="UPI QR Code" 
+                                                className="w-full h-full object-contain p-4 bg-white animate-in zoom-in duration-300" 
+                                            />
                                         </div>
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Or Scan QR on Mobile</span>
+                                        <div>
+                                            <p className="text-sm font-semibold text-gray-800">Scan to Activate Subscription</p>
+                                            <p className="text-xs text-gray-400 mt-1">Scan this QR code with your phone camera or payment app to complete the transaction.</p>
+                                        </div>
                                     </div>
                                 </>
                             )}

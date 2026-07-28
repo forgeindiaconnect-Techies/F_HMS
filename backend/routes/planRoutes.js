@@ -1,9 +1,12 @@
 import express from 'express';
-import { getPublicPlans } from '../controllers/planController.js';
+import { getPublicPlans, scanActivateSubscription } from '../controllers/planController.js';
 
 const router = express.Router();
 
 router.route('/')
     .get(getPublicPlans);
+
+router.route('/scan-activate')
+    .get(scanActivateSubscription);
 
 export default router;
