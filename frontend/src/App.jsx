@@ -201,6 +201,7 @@ function App() {
           <Route path="analytics" element={<ManagerAnalytics />} />
           <Route path="settings" element={<ManagerSettings />} />
           <Route path="notifications" element={<NotificationCenter />} />
+          <Route path="delivery" element={<DeliveryManagement />} />
         </Route>
         
         {/* Staff Dashboards */}
