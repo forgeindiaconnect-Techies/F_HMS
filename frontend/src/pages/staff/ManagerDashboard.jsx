@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Store, Users, AlertTriangle, TrendingUp, MoreVertical, Clock, ShoppingBag, Phone, Mail, MapPin, X, Eye, Info, Search, ShieldCheck } from 'lucide-react';
+import { Store, Users, AlertTriangle, TrendingUp, MoreVertical, Clock, ShoppingBag, Phone, Mail, MapPin, X, Eye, Info, Search, ShieldCheck, Truck } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const ManagerDashboard = () => {
@@ -11,6 +11,7 @@ const ManagerDashboard = () => {
   const [loadingSuppliers, setLoadingSuppliers] = useState(true);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [data, setData] = useState(null);
 
   useEffect(() => {
     const fetchSuppliers = async () => {
@@ -24,7 +25,16 @@ const ManagerDashboard = () => {
         setLoadingSuppliers(false);
       }
     };
+    const fetchDashboard = async () => {
+      try {
+        const res = await api.get('/analytics/dashboard');
+        setData(res.data);
+      } catch (err) {
+        console.error('Failed to fetch dashboard data', err);
+      }
+    };
     fetchSuppliers();
+    fetchDashboard();
   }, []);
 
   const filteredSuppliers = suppliers.filter(s =>
@@ -95,6 +105,46 @@ const ManagerDashboard = () => {
               </div>
             </div>
           </div>
+
+          {/* Delivery Partner Ops */}
+          {data?.deliveryAnalytics && (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                  <Truck size={20} className="text-blue-500" /> Delivery Partner Ops
+                </h3>
+                <span className="bg-blue-100 text-blue-600 text-xs font-bold px-2.5 py-1 rounded-full">
+                  {data.deliveryAnalytics.onlinePartners} Online
+                </span>
+              </div>
+              <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-gray-50 border border-gray-100 p-4 rounded-xl text-center">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Pending Assign</p>
+                  <p className="text-xl font-black text-gray-900 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.deliveryAnalytics.pendingAssignments}</p>
+                </div>
+                <div className="bg-orange-50 border border-orange-100 p-4 rounded-xl text-center">
+                  <p className="text-xs font-semibold text-orange-600 uppercase tracking-wider">Active Deliveries</p>
+                  <p className="text-xl font-black text-orange-700 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.deliveryAnalytics.activeDeliveries}</p>
+                </div>
+                <div className="bg-green-50 border border-green-100 p-4 rounded-xl text-center">
+                  <p className="text-xs font-semibold text-green-600 uppercase tracking-wider">Completed</p>
+                  <p className="text-xl font-black text-green-700 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.deliveryAnalytics.completedDeliveries}</p>
+                </div>
+                <div className="bg-purple-50 border border-purple-100 p-4 rounded-xl text-center">
+                  <p className="text-xs font-semibold text-purple-600 uppercase tracking-wider">Delivery Revenue</p>
+                  <p className="text-xl font-black text-purple-700 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>₹{data.deliveryAnalytics.totalDeliveryEarnings}</p>
+                </div>
+              </div>
+              <div className="p-4 border-t border-gray-50 bg-gray-50/20 text-center">
+                <button 
+                  onClick={() => navigate('/manager/orders')} 
+                  className="text-xs text-blue-600 font-bold hover:underline"
+                >
+                  View Active Order Dispatch Tracking ↗
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Column (Staff & Daily Goal) */}

@@ -155,6 +155,39 @@ const DashboardHome = () => {
                 </div>
             )}
 
+            {/* Delivery Ops Section */}
+            {data?.deliveryAnalytics && (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+                    <h3 className="text-lg font-bold text-gray-950 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        <span className="flex h-2 w-2 rounded-full bg-blue-500"></span>
+                        Delivery Partner Ops
+                    </h3>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div className="bg-gray-50 border border-gray-100 p-4 rounded-2xl text-center">
+                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Online Drivers</p>
+                            <p className="text-2xl font-black text-gray-900 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.deliveryAnalytics.onlinePartners}</p>
+                        </div>
+                        <div className="bg-orange-50/70 border border-orange-100 p-4 rounded-2xl text-center">
+                            <p className="text-xs font-semibold text-orange-600 uppercase tracking-wider">Pending Assign</p>
+                            <p className="text-2xl font-black text-orange-700 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.deliveryAnalytics.pendingAssignments}</p>
+                        </div>
+                        <div className="bg-blue-50/70 border border-blue-100 p-4 rounded-2xl text-center">
+                            <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider">Active Deliveries</p>
+                            <p className="text-2xl font-black text-blue-700 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.deliveryAnalytics.activeDeliveries}</p>
+                        </div>
+                        <div className="bg-green-50/70 border border-green-100 p-4 rounded-2xl text-center">
+                            <p className="text-xs font-semibold text-green-600 uppercase tracking-wider">Completed Payouts</p>
+                            <p className="text-2xl font-black text-green-700 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.deliveryAnalytics.completedDeliveries}</p>
+                        </div>
+                        <div className="bg-emerald-50/70 border border-emerald-100 p-4 rounded-2xl text-center">
+                            <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Delivery Revenue</p>
+                            <p className="text-2xl font-black text-emerald-800 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>₹{data.deliveryAnalytics.totalDeliveryEarnings}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Revenue Area Chart */}

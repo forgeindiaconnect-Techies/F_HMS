@@ -159,6 +159,50 @@ export const getDashboardAnalytics = async (req, res) => {
             }
         }
 
+        // Delivery Analytics
+        let onlinePartners = 0;
+        let activeDeliveries = 0;
+        let pendingAssignments = 0;
+        let completedDeliveries = 0;
+        let totalDeliveryEarnings = 0;
+
+        if (restIdObj) {
+            try {
+                const DeliveryPartner = mongoose.model('DeliveryPartner');
+                onlinePartners = await DeliveryPartner.countDocuments({
+                    restaurantId: restIdObj,
+                    status: 'Online',
+                    verificationStatus: 'Approved'
+                });
+
+                activeDeliveries = await Order.countDocuments({
+                    restaurantId: restIdObj,
+                    orderType: 'Delivery',
+                    deliveryStatus: { $in: ['Accepted', 'Picked Up', 'On the Way'] }
+                });
+
+                pendingAssignments = await Order.countDocuments({
+                    restaurantId: restIdObj,
+                    orderType: 'Delivery',
+                    deliveryStatus: 'Pending Assignment'
+                });
+
+                completedDeliveries = await Order.countDocuments({
+                    restaurantId: restIdObj,
+                    orderType: 'Delivery',
+                    status: 'Delivered'
+                });
+
+                const earningsSum = await Order.aggregate([
+                    { $match: { restaurantId: restIdObj, orderType: 'Delivery', status: 'Delivered' } },
+                    { $group: { _id: null, total: { $sum: '$deliveryCharge' } } }
+                ]);
+                totalDeliveryEarnings = earningsSum.length > 0 ? earningsSum[0].total : 0;
+            } catch (delErr) {
+                console.error("Failed to aggregate delivery stats", delErr);
+            }
+        }
+
         res.json({
             overview: {
                 totalRevenue: curRevenue,
@@ -182,6 +226,13 @@ export const getDashboardAnalytics = async (req, res) => {
                 servedOrders,
                 completedOrders,
                 avgPrepTime
+            },
+            deliveryAnalytics: {
+                onlinePartners,
+                activeDeliveries,
+                pendingAssignments,
+                completedDeliveries,
+                totalDeliveryEarnings
             }
         });
     } catch (error) {
