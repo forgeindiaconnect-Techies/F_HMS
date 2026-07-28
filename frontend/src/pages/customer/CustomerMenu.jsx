@@ -165,17 +165,31 @@ const CustomerMenu = () => {
                     )}
                 </div>
                 
-                {cart.length > 0 && (
-                    <button 
-                        onClick={() => setShowCartModal(true)}
-                        className="bg-green-600 text-white p-3 rounded-2xl flex items-center gap-2 relative shadow-lg shadow-green-600/20 hover:scale-105 active:scale-95 transition-all"
-                    >
-                        <ShoppingBag size={20} />
-                        <span className="absolute -top-1.5 -right-1.5 bg-orange-500 text-white rounded-full w-5 h-5 text-[10px] font-bold flex items-center justify-center border-2 border-white">
-                            {cart.reduce((acc, curr) => acc + curr.qty, 0)}
-                        </span>
-                    </button>
-                )}
+                <div className="flex items-center gap-2.5">
+                    {activeOrderId && (
+                        <button 
+                            onClick={() => navigate(`/customer/track/${activeOrderId}?restaurantId=${restaurantId}&branchId=${branchId || ''}&tableNumber=${tableNumber || ''}`)}
+                            className="bg-green-50 text-green-700 hover:bg-green-100 px-3.5 py-2 rounded-2xl flex items-center gap-2 text-xs font-bold transition-all border border-green-200"
+                        >
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                            </span>
+                            View Order
+                        </button>
+                    )}
+                    {cart.length > 0 && (
+                        <button 
+                            onClick={() => setShowCartModal(true)}
+                            className="bg-green-600 text-white p-3 rounded-2xl flex items-center gap-2 relative shadow-lg shadow-green-600/20 hover:scale-105 active:scale-95 transition-all"
+                        >
+                            <ShoppingBag size={20} />
+                            <span className="absolute -top-1.5 -right-1.5 bg-orange-500 text-white rounded-full w-5 h-5 text-[10px] font-bold flex items-center justify-center border-2 border-white">
+                                {cart.reduce((acc, curr) => acc + curr.qty, 0)}
+                            </span>
+                        </button>
+                    )}
+                </div>
             </header>
 
             {/* Banner */}
@@ -331,6 +345,25 @@ const CustomerMenu = () => {
                             </button>
                         </div>
                     </div>
+                </div>
+            )}
+            
+            {/* Active Order Tracker Button */}
+            {activeOrderId && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 w-full max-w-xs px-4">
+                    <button 
+                        onClick={() => navigate(`/customer/track/${activeOrderId}?restaurantId=${restaurantId}&branchId=${branchId || ''}&tableNumber=${tableNumber || ''}`)}
+                        className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-bold py-3.5 px-6 rounded-2xl shadow-xl shadow-green-600/35 flex items-center justify-between transition-all duration-300 hover:scale-[1.03] active:scale-95 border border-green-500/20"
+                    >
+                        <div className="flex items-center gap-2.5">
+                            <span className="relative flex h-3 w-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-300 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-400"></span>
+                            </span>
+                            <span className="text-sm font-black tracking-wide">View Active Order</span>
+                        </div>
+                        <ChevronRight size={18} />
+                    </button>
                 </div>
             )}
         </div>
