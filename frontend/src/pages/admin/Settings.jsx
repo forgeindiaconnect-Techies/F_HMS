@@ -258,16 +258,77 @@ const Settings = () => {
 
                                 <div className="mt-10 border-t border-gray-100 pt-8">
                                     <h3 className="text-lg font-bold text-gray-900 mb-4" style={{ fontFamily: 'Poppins, sans-serif' }}>Subscription Plan</h3>
-                                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 flex items-center justify-between">
-                                        <div>
-                                            <p className="text-sm font-semibold text-gray-500 mb-1">Current Plan</p>
-                                            <p className="text-xl font-black text-gray-900">{subscription?.plan || 'Starter'}</p>
+                                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+                                        <div className="flex items-start justify-between gap-4 flex-wrap">
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Current Plan</p>
+                                                <div className="flex items-center gap-3 flex-wrap">
+                                                    <p className="text-2xl font-black text-gray-900">{subscription?.plan || 'Basic'}</p>
+                                                    {subscription?.status && (
+                                                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+                                                            subscription.status === 'Active'
+                                                                ? 'bg-green-50 text-green-700 border-green-200'
+                                                                : subscription.status === 'Frozen'
+                                                                ? 'bg-red-50 text-red-700 border-red-200'
+                                                                : subscription.status === 'Inactive'
+                                                                ? 'bg-gray-100 text-gray-500 border-gray-200'
+                                                                : 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                                                        }`}>
+                                                            <span className={`w-1.5 h-1.5 rounded-full ${
+                                                                subscription.status === 'Active' ? 'bg-green-500' :
+                                                                subscription.status === 'Frozen' ? 'bg-red-500' :
+                                                                'bg-gray-400'
+                                                            }`}></span>
+                                                            {subscription.status}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                {/* Dates grid */}
+                                                <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                    {subscription?.billingCycle && (
+                                                        <div className="bg-white border border-gray-100 rounded-lg px-3 py-2.5">
+                                                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Billing Cycle</p>
+                                                            <p className="text-sm font-bold text-gray-700 capitalize">{subscription.billingCycle}</p>
+                                                        </div>
+                                                    )}
+                                                    {subscription?.startDate && (
+                                                        <div className="bg-white border border-gray-100 rounded-lg px-3 py-2.5">
+                                                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Start Date</p>
+                                                            <p className="text-sm font-bold text-gray-700">
+                                                                {new Date(subscription.startDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                    {subscription?.expiryDate ? (
+                                                        <div className={`rounded-lg px-3 py-2.5 border ${
+                                                            new Date(subscription.expiryDate) < new Date()
+                                                                ? 'bg-red-50 border-red-200'
+                                                                : 'bg-white border-gray-100'
+                                                        }`}>
+                                                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+                                                                {new Date(subscription.expiryDate) < new Date() ? '⚠ Expired On' : 'Renews On'}
+                                                            </p>
+                                                            <p className={`text-sm font-bold ${new Date(subscription.expiryDate) < new Date() ? 'text-red-600' : 'text-gray-700'}`}>
+                                                                {new Date(subscription.expiryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                            </p>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="bg-white border border-gray-100 rounded-lg px-3 py-2.5">
+                                                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Renews On</p>
+                                                            <p className="text-sm font-bold text-gray-400 italic">Not set</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <Link to="/admin/billing" className="shrink-0 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm shadow-sm self-start">
+                                                Upgrade Plan <ArrowRight size={16} />
+                                            </Link>
                                         </div>
-                                        <Link to="/admin/billing" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm shadow-sm">
-                                            Upgrade Plan <ArrowRight size={16} />
-                                        </Link>
                                     </div>
                                 </div>
+
                             </>
                         )}
 
