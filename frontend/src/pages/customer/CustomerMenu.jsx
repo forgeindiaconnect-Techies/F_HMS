@@ -27,9 +27,12 @@ const CustomerMenu = () => {
 
     const getApiUrl = () => {
         let baseURL = import.meta.env.VITE_API_URL;
-        if (baseURL) return baseURL;
-        const origin = window.location.origin;
-        return `${origin.replace(/:\d+$/, ':5000')}/api`;
+        if (baseURL) {
+            if (baseURL.endsWith('/')) baseURL = baseURL.slice(0, -1);
+            if (!baseURL.endsWith('/api')) baseURL += '/api';
+            return baseURL;
+        }
+        return 'http://localhost:5000/api';
     };
     const API_URL = getApiUrl();
 
