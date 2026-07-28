@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
     LayoutDashboard, Store, Users, UtensilsCrossed, Settings, LogOut, 
     Activity, UserCheck, Key, ListTree, PackageSearch, Truck, Heart, 
@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 
 const Sidebar = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { logout, restaurant } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
 
@@ -157,12 +158,26 @@ const Sidebar = () => {
                                     );
                                 }
 
+                                const checkActive = () => {
+                                    if (item.path === '/admin') {
+                                        return location.pathname === '/admin';
+                                    }
+                                    if (item.path === '/admin/support') {
+                                        return location.pathname === '/admin/support';
+                                    }
+                                    if (item.path === '/admin/support/tickets') {
+                                        return location.pathname.startsWith('/admin/support/tickets') && 
+                                               location.pathname !== '/admin/support/tickets/create';
+                                    }
+                                    return location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+                                };
+                                const isActive = checkActive();
+
                                 return (
                                     <NavLink
                                         key={item.name}
                                         to={item.path}
-                                        end={item.path !== '/admin/support/tickets'}
-                                        className={({ isActive }) => clsx(
+                                        className={clsx(
                                             "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm",
                                             isActive 
                                             ? "bg-green-50 text-green-700 font-bold shadow-sm" 
