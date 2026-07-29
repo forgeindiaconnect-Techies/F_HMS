@@ -52,6 +52,8 @@ const TablesManagement = () => {
 
     useEffect(() => {
         fetchData();
+        const interval = setInterval(fetchData, 4000); // Auto-update tables list every 4 seconds
+        return () => clearInterval(interval);
     }, []);
 
     const handleAddClick = () => {
