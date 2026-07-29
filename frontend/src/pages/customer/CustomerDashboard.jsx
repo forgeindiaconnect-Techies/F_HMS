@@ -34,7 +34,6 @@ const CustomerDashboard = () => {
     const dashboardFoods = [
         { id: 'd_m1', name: 'Margherita Pizza', price: 299, category: 'Mains', description: 'Classic cheese and tomato pizza with basil.', image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80&w=800' },
         { id: 'd_m2', name: 'Pepperoni Pizza', price: 399, category: 'Mains', description: 'Double pepperoni and mozzarella cheese.', image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=800' },
-        { id: 'd_m3', name: 'Garlic Bread', price: 149, category: 'Starters', description: 'Toasted french bread with garlic butter and herbs.', image: 'https://images.unsplash.com/photo-1619535860434-ba1d8fa12536?q=80&w=800' },
         { id: 'd_m4', name: 'Greek Salad', price: 199, category: 'Salads', description: 'Fresh cucumbers, tomatoes, olives, and feta cheese.', image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=800' },
         { id: 'd_m5', name: 'Chocolate Lava Cake', price: 159, category: 'Desserts', description: 'Rich chocolate cake with a molten center.', image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=800' },
         { id: 'd_m6', name: 'Mango Smoothie', price: 129, category: 'Beverages', description: 'Creamy yogurt smoothie with fresh mango pulp.', image: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?q=80&w=800' },
