@@ -235,7 +235,7 @@ const WaiterDashboard = () => {
     };
 
     const activeTableOrders = tables.filter(t => t.orders && t.orders.status !== 'Served' && t.orders.status !== 'Delivered' && t.orders.status !== 'Completed');
-    const selfPickupOrders = allOrders.filter(o => (o.orderType === 'Self-Pickup' || o.orderType === 'Self Pickup') && o.status === 'Ready for Pickup');
+    const selfPickupOrders = allOrders.filter(o => (o.orderType === 'Self-Pickup' || o.orderType === 'Self Pickup') && ['Ready for Pickup', 'Ready'].includes(o.status));
 
     return (
         <div className="max-w-[1600px] mx-auto space-y-6 relative h-full flex flex-col">
