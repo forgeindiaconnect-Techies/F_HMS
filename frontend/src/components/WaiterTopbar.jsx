@@ -11,10 +11,10 @@ const WaiterTopbar = () => {
     const profileRef = useRef(null);
 
     useEffect(() => {
-        if (showNotifs) {
-            fetchNotifications();
-        }
-    }, [showNotifs]);
+        fetchNotifications();
+        const interval = setInterval(fetchNotifications, 10000);
+        return () => clearInterval(interval);
+    }, [api]);
 
     const fetchNotifications = async () => {
         try {

@@ -145,6 +145,7 @@ const CustomerOrderTracking = () => {
     };
 
     const isDelivery = order?.orderType === 'Delivery';
+    const isSelfPickup = order?.orderType === 'Self-Pickup' || order?.orderType === 'Self Pickup';
 
     const getStatusStep = (status) => {
         if (isDelivery) {
@@ -155,10 +156,19 @@ const CustomerOrderTracking = () => {
             if (status === 'Delivered') return 4;
             return 0;
         }
+        if (isSelfPickup) {
+            if (status === 'Pending') return 0;
+            if (status === 'Accepted') return 1;
+            if (status === 'Preparing') return 2;
+            if (status === 'Ready for Pickup') return 3;
+            if (status === 'Picked Up') return 4;
+            if (status === 'Completed') return 5;
+            return 0;
+        }
         if (status === 'Pending') return 0;
         if (status === 'Preparing') return 1;
         if (status === 'Ready') return 2;
-        if (['Served', 'Billing Requested', 'Delivered'].includes(status)) return 3;
+        if (['Served', 'Billing Requested', 'Delivered', 'Completed'].includes(status)) return 3;
         return 0;
     };
 
@@ -193,6 +203,13 @@ const CustomerOrderTracking = () => {
         { title: 'Ready for Pickup', desc: 'Food is prepared' },
         { title: 'Out for Delivery', desc: 'Partner is carrying your food' },
         { title: 'Delivered', desc: 'Food has reached your doorstep!' }
+    ] : isSelfPickup ? [
+        { title: 'Order Received', desc: 'Awaiting kitchen accept' },
+        { title: 'Accepted', desc: 'Chef accepted your order' },
+        { title: 'Preparing Food', desc: 'Chef is cooking your recipe' },
+        { title: 'Food Prepared', desc: 'Runner moving food to counter' },
+        { title: 'Ready for Pickup', desc: 'Collect it from the cashier counter!' },
+        { title: 'Collected', desc: 'Enjoy your meal!' }
     ] : [
         { title: 'Order Received', desc: 'Awaiting kitchen accept' },
         { title: 'In the Kitchen', desc: 'Chef is cooking your recipe' },
@@ -263,8 +280,32 @@ const CustomerOrderTracking = () => {
                     </div>
                 </div>
 
+                {/* Pickup Counter Verification Card */}
+                {isSelfPickup && (
+                    <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4 text-center">
+                        <div className="border-b border-gray-100 pb-3">
+                            <h3 className="font-black text-gray-905 text-sm">Pickup Verification</h3>
+                            <p className="text-[10px] text-gray-400 mt-0.5">Present this QR Code or Order ID at the counter to collect your food.</p>
+                        </div>
+                        
+                        <div className="flex justify-center py-2">
+                            <div className="bg-white p-3 rounded-2xl border border-gray-100 shadow-md">
+                                <img 
+                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${order._id}`} 
+                                    alt="Pickup QR Code" 
+                                    className="w-36 h-36 object-contain"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="bg-orange-50 text-orange-950 px-4 py-2.5 rounded-2xl font-mono text-xs font-bold border border-orange-100 tracking-wide select-all">
+                            ID: {order._id.toUpperCase()}
+                        </div>
+                    </div>
+                )}
+
                 {/* Table Quick Requests */}
-                {!isDelivery && (
+                {!isDelivery && !isSelfPickup && (
                     <div className="space-y-3">
                         <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest pl-2">Need Assistance?</h3>
                         <div className="grid grid-cols-2 gap-3">

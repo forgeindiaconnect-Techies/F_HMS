@@ -69,7 +69,11 @@ export const addOrderItems = async (req, res) => {
             subscriptionPlan: subscriptionPlan || 'One-time Order',
             taxPrice,
             totalPrice,
-            isPaid: false // Will be paid later or by cashier
+            isPaid: false, // Will be paid later or by cashier
+            statusHistory: [{
+                status: 'Pending',
+                timestamp: Date.now()
+            }]
         });
 
         const createdOrder = await order.save();
@@ -223,7 +227,77 @@ export const updateOrderStatus = async (req, res) => {
     const order = await Order.findById(req.params.id);
 
     if (order) {
-        order.status = req.body.status || order.status;
+        const oldStatus = order.status;
+        const newStatus = req.body.status || order.status;
+        
+        if (newStatus !== oldStatus) {
+            order.status = newStatus;
+            order.statusHistory.push({
+                status: newStatus,
+                timestamp: Date.now(),
+                updatedBy: req.user ? req.user._id : null
+            });
+
+            if (newStatus === 'Ready for Pickup') {
+                // Waiter notification
+                try {
+                    const Notification = (await import('../models/Notification.js')).default;
+                    await Notification.create({
+                        title: `Counter Transfer Required`,
+                        desc: `Order #${order._id.toString().substring(order._id.toString().length - 4).toUpperCase()} is ready. Move to counter.`,
+                        type: 'Order',
+                        restaurantId: order.restaurantId,
+                        read: false
+                    });
+                } catch (err) {
+                    console.error('Failed to create waiter notification', err);
+                }
+
+                // Customer notification
+                try {
+                    const Notification = (await import('../models/Notification.js')).default;
+                    await Notification.create({
+                        title: `Self-Pickup Order Ready`,
+                        desc: `Your order is ready. Please collect it from the cashier Dashboards.`,
+                        type: 'Order',
+                        restaurantId: order.restaurantId,
+                        userId: order.user,
+                        read: false
+                    });
+                } catch (err) {
+                    console.error('Failed to create customer notification', err);
+                }
+            }
+
+            if (newStatus === 'Completed') {
+                order.pickupTime = Date.now();
+                if (order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup') {
+                    order.isPaid = true;
+                    order.paidAt = Date.now();
+                }
+
+                // Clean up table occupancy if Dine In
+                if (order.orderType === 'Dine In') {
+                    try {
+                        const Table = mongoose.model('Table');
+                        const table = await Table.findOne({
+                            tableNumber: order.tableNumber,
+                            restaurantId: order.restaurantId,
+                            branchId: order.branchId
+                        });
+                        if (table) {
+                            table.status = 'Available';
+                            table.customers = 0;
+                            table.activeOrder = null;
+                            await table.save();
+                        }
+                    } catch (err) {
+                        console.error('Failed to clear table status', err);
+                    }
+                }
+            }
+        }
+
         const updatedOrder = await order.save();
         
         // Broadcast status update to customer tracking
@@ -232,7 +306,7 @@ export const updateOrderStatus = async (req, res) => {
         // Broadcast general update to kitchen & waiters
         broadcastToRestaurant(order.restaurantId, 'order_updated', updatedOrder);
         
-        if (updatedOrder.status === 'Ready') {
+        if (updatedOrder.status === 'Ready' || updatedOrder.status === 'Ready for Pickup') {
             broadcastToRestaurant(order.restaurantId, 'ready_to_serve', updatedOrder);
         }
         

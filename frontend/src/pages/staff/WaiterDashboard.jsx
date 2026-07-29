@@ -4,11 +4,14 @@ import {
     Plus, Minus, X, Send, Receipt, Users, MessageSquare, Bell, Check
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const WaiterDashboard = () => {
     const { api, user } = useAuth();
     const [menu, setMenu] = useState([]);
     const [activeOrders, setActiveOrders] = useState([]);
+    const [allOrders, setAllOrders] = useState([]);
+    const [viewMode, setViewMode] = useState('DineIn'); // 'DineIn' or 'SelfPickup'
     const [dbTables, setDbTables] = useState([]);
     const [activeTable, setActiveTable] = useState(null);
     const [panelOpen, setPanelOpen] = useState(false);
@@ -29,7 +32,8 @@ const WaiterDashboard = () => {
                 api.get('/service-requests').catch(() => ({ data: [] }))
             ]);
             setMenu(menuRes.data);
-            setActiveOrders(ordersRes.data.filter(o => o.orderType === 'Dine In' && !['Delivered'].includes(o.status)));
+            setAllOrders(ordersRes.data);
+            setActiveOrders(ordersRes.data.filter(o => o.orderType === 'Dine In' && !['Delivered', 'Completed'].includes(o.status)));
             setDbTables(tablesRes.data);
             setServiceRequests(requestsRes.data);
         } catch (error) {
@@ -62,6 +66,22 @@ const WaiterDashboard = () => {
                     const msg = JSON.parse(event.data);
                     if (msg.type === 'new_order' || msg.type === 'order_updated' || msg.type === 'ready_to_serve') {
                         fetchData();
+
+                        // Fire toast and sound if a self-pickup order is ready
+                        if (msg.data && (msg.data.orderType === 'Self-Pickup' || msg.data.orderType === 'Self Pickup') && msg.data.status === 'Ready for Pickup') {
+                            toast.success(`Self-Pickup Order #${msg.data._id.substring(msg.data._id.length - 6).toUpperCase()} is ready! Move it to the pickup counter.`, {
+                                duration: 8000,
+                                position: 'top-right',
+                                icon: '📦'
+                            });
+                            try {
+                                const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-500.wav');
+                                audio.volume = 0.5;
+                                audio.play();
+                            } catch (e) {
+                                console.log("Autoplay chime blocked by browser policy");
+                            }
+                        }
                     } else if (msg.type === 'new_service_request') {
                         setServiceRequests(prev => {
                             if (prev.some(r => r._id === msg.data._id)) return prev;
@@ -88,6 +108,7 @@ const WaiterDashboard = () => {
             if (ws) ws.close();
         };
     }, [api, user]);
+
 
     const handleCompleteRequest = async (requestId) => {
         try {
@@ -195,8 +216,10 @@ const WaiterDashboard = () => {
         try {
             await api.put(`/orders/${orderId}/status`, { status });
             fetchData();
+            toast.success(`Order status updated to: ${status}`);
         } catch (error) {
             console.error('Failed to update status', error);
+            toast.error('Failed to update status');
         }
     };
 
@@ -211,60 +234,169 @@ const WaiterDashboard = () => {
         }
     };
 
-    const activeTableOrders = tables.filter(t => t.orders && t.orders.status !== 'Served' && t.orders.status !== 'Delivered');
+    const activeTableOrders = tables.filter(t => t.orders && t.orders.status !== 'Served' && t.orders.status !== 'Delivered' && t.orders.status !== 'Completed');
+    const selfPickupOrders = allOrders.filter(o => (o.orderType === 'Self-Pickup' || o.orderType === 'Self Pickup') && o.status === 'Ready for Pickup');
 
     return (
         <div className="max-w-[1600px] mx-auto space-y-6 relative h-full flex flex-col">
             
+            {/* View Mode Switcher */}
+            <div className="flex gap-4 bg-white p-2 rounded-2xl border border-gray-150 shadow-sm shrink-0">
+                <button
+                    onClick={() => setViewMode('DineIn')}
+                    className={`flex-1 py-3 text-center rounded-xl font-bold transition-all cursor-pointer ${
+                        viewMode === 'DineIn'
+                        ? 'bg-gray-900 text-white shadow-md'
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                >
+                    🍽️ Dine-in Table Service
+                </button>
+                <button
+                    onClick={() => setViewMode('SelfPickup')}
+                    className={`flex-1 py-3 text-center rounded-xl font-bold transition-all relative cursor-pointer ${
+                        viewMode === 'SelfPickup'
+                        ? 'bg-orange-600 text-white shadow-md'
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                >
+                    📦 Self-Pickup Runner Queue
+                    {selfPickupOrders.length > 0 && (
+                        <span className="ml-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            {selfPickupOrders.length}
+                        </span>
+                    )}
+                </button>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
-                {/* Table Layout */}
+                {/* Main panel - Table Layout or Self-Pickup Queue */}
                 <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col min-h-0">
-                    <div className="flex justify-between items-center mb-6 shrink-0">
-                        <h3 className="text-lg font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>Table Layout</h3>
-                        <div className="flex gap-2">
-                            <button 
-                                onClick={() => setStatusFilter('All')} 
-                                className={`px-3 py-1 rounded-full text-xs font-bold border transition-colors ${statusFilter === 'All' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
-                            >
-                                All
-                            </button>
-                            {['Available', 'Occupied', 'Reserved', 'Cleaning'].map(status => (
-                                <button 
-                                    key={status} 
-                                    onClick={() => setStatusFilter(status)}
-                                    className={`px-3 py-1 rounded-full text-xs font-bold border transition-colors ${statusFilter === status ? getStatusColor(status) : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'}`}
-                                >
-                                    {status}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto custom-scrollbar pr-2 pb-4">
-                        {filteredTables.map(table => (
-                            <button 
-                                key={table.id}
-                                onClick={() => openTablePanel(table)}
-                                className={`p-4 rounded-2xl border-2 transition-all hover:scale-[1.02] active:scale-95 flex flex-col items-center justify-center gap-2 h-32 ${getStatusColor(table.status)} ${table.status === 'Occupied' ? 'shadow-md shadow-orange-500/10' : ''}`}
-                            >
-                                <span className="text-2xl font-bold font-sans">{table.id}</span>
-                                <div className="flex flex-col items-center">
-                                    <span className="text-sm font-bold">{table.status}</span>
-                                    {table.status === 'Occupied' ? (
-                                        <span className="text-xs font-medium opacity-80 flex items-center gap-1 mt-1">
-                                            <Users size={12} /> {table.customers} Guests
-                                        </span>
-                                    ) : (
-                                        <span className="text-xs font-medium opacity-75">{table.seats} seats</span>
-                                    )}
+                    {viewMode === 'DineIn' ? (
+                        <>
+                            <div className="flex justify-between items-center mb-6 shrink-0">
+                                <h3 className="text-lg font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>Table Layout</h3>
+                                <div className="flex gap-2">
+                                    <button 
+                                        onClick={() => setStatusFilter('All')} 
+                                        className={`px-3 py-1 rounded-full text-xs font-bold border transition-colors ${statusFilter === 'All' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
+                                    >
+                                        All
+                                    </button>
+                                    {['Available', 'Occupied', 'Reserved', 'Cleaning'].map(status => (
+                                        <button 
+                                            key={status} 
+                                            onClick={() => setStatusFilter(status)}
+                                            className={`px-3 py-1 rounded-full text-xs font-bold border transition-colors ${statusFilter === status ? getStatusColor(status) : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'}`}
+                                        >
+                                            {status}
+                                        </button>
+                                    ))}
                                 </div>
-                            </button>
-                        ))}
-                    </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto custom-scrollbar pr-2 pb-4">
+                                {filteredTables.map(table => (
+                                    <button 
+                                        key={table.id}
+                                        onClick={() => openTablePanel(table)}
+                                        className={`p-4 rounded-2xl border-2 transition-all hover:scale-[1.02] active:scale-95 flex flex-col items-center justify-center gap-2 h-32 ${getStatusColor(table.status)} ${table.status === 'Occupied' ? 'shadow-md shadow-orange-500/10' : ''}`}
+                                    >
+                                        <span className="text-2xl font-bold font-sans">{table.id}</span>
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-sm font-bold">{table.status}</span>
+                                            {table.status === 'Occupied' ? (
+                                                <span className="text-xs font-medium opacity-80 flex items-center gap-1 mt-1">
+                                                    <Users size={12} /> {table.customers} Guests
+                                                </span>
+                                            ) : (
+                                                <span className="text-xs font-medium opacity-75">{table.seats} seats</span>
+                                            )}
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className="mb-6 shrink-0">
+                                <h3 className="text-lg font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>Self-Pickup Runner Queue</h3>
+                                <p className="text-xs text-gray-500 mt-1">Collect prepared orders from the kitchen and move them to the Pickup Counter.</p>
+                            </div>
+                            
+                            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-2 pb-4">
+                                {selfPickupOrders.length === 0 ? (
+                                    <div className="text-center py-20 text-gray-400 font-medium">
+                                        <CheckCircle className="mx-auto text-gray-200 mb-4" size={48} />
+                                        No self-pickup orders waiting in the kitchen.
+                                    </div>
+                                ) : (
+                                    selfPickupOrders.map(order => {
+                                        const timeDiffMinutes = Math.floor((new Date() - new Date(order.createdAt)) / 60000);
+                                        return (
+                                            <div key={order._id} className="bg-gray-50 p-6 rounded-2xl border border-gray-150 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-md transition-shadow">
+                                                <div className="space-y-2 flex-1">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="font-extrabold text-gray-900 text-lg">#{order._id.substring(order._id.length - 6).toUpperCase()}</span>
+                                                        <span className="text-xs font-bold text-orange-700 bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-100 uppercase">Self-Pickup</span>
+                                                        <span className="text-xs font-medium text-gray-400 flex items-center gap-1"><Clock size={12}/> {timeDiffMinutes}m ago</span>
+                                                    </div>
+                                                    <p className="text-sm font-bold text-gray-700">
+                                                        {order.orderItems.map(i => `${i.qty}x ${i.name}`).join(', ')}
+                                                    </p>
+                                                    {order.notes && <p className="text-xs text-yellow-600 bg-yellow-50 px-2 py-1 rounded w-fit italic">Note: {order.notes}</p>}
+                                                </div>
+                                                <button
+                                                    onClick={() => handleUpdateStatus(order._id, 'Picked Up')}
+                                                    className="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-md hover:scale-[1.02] active:scale-95 cursor-pointer text-sm shrink-0 flex items-center gap-1.5"
+                                                >
+                                                    <CheckCircle size={16} /> Move to Counter
+                                                </button>
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* Active Orders Sidebar & Service Requests */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col min-h-0">
+                    {/* Self-Pickup Transfer Alerts */}
+                    {selfPickupOrders.length > 0 && (
+                        <div className="mb-6 border-b border-gray-100 pb-6 shrink-0">
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className="relative flex h-3 w-3">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
+                                </span>
+                                <h3 className="text-sm font-black text-orange-600 tracking-wider uppercase flex items-center gap-1.5" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                    <UtensilsCrossed size={16} /> Counter Transfers ({selfPickupOrders.length})
+                                </h3>
+                            </div>
+                            <div className="space-y-2 max-h-[180px] overflow-y-auto custom-scrollbar pr-1">
+                                {selfPickupOrders.map((order) => (
+                                    <div key={order._id} className="flex justify-between items-center bg-orange-50/70 border border-orange-100 p-3 rounded-xl shadow-sm">
+                                        <div>
+                                            <p className="font-bold text-orange-850 text-sm">Order #{order._id.substring(order._id.length - 6).toUpperCase()}</p>
+                                            <p className="text-xs text-orange-700 font-semibold truncate max-w-[150px]">
+                                                {order.orderItems.map(i => `${i.qty}x ${i.name}`).join(', ')}
+                                            </p>
+                                        </div>
+                                        <button 
+                                            onClick={() => handleUpdateStatus(order._id, 'Picked Up')}
+                                            className="p-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors flex items-center justify-center hover:scale-105 active:scale-95 shadow-sm cursor-pointer"
+                                            title="Move to Counter"
+                                        >
+                                            <Check size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Service Requests */}
                     {serviceRequests.length > 0 && (
                         <div className="mb-6 border-b border-gray-100 pb-6 shrink-0">

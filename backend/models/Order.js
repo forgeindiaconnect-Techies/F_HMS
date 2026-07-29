@@ -86,8 +86,18 @@ const orderSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-        enum: ['Pending', 'Preparing', 'Ready', 'Served', 'Billing Requested', 'Out for Delivery', 'Delivered', 'Cancelled'],
+        enum: ['Pending', 'Accepted', 'Preparing', 'Ready', 'Ready for Pickup', 'Picked Up', 'Served', 'Billing Requested', 'Out for Delivery', 'Delivered', 'Cancelled', 'Completed'],
         default: 'Pending'
+    },
+    statusHistory: [
+        {
+            status: { type: String, required: true },
+            timestamp: { type: Date, default: Date.now },
+            updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+        }
+    ],
+    pickupTime: {
+        type: Date
     },
     // Delivery partner details
     deliveryPartner: {

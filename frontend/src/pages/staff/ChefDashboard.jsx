@@ -6,7 +6,7 @@ const ChefDashboard = () => {
     const { api } = useAuth();
     const [orders, setOrders] = useState([]);
     const [activeTab, setActiveTab] = useState('Pending');
-    const tabs = ['Pending', 'Preparing', 'Ready', 'Completed'];
+    const tabs = ['Pending', 'Accepted', 'Preparing', 'Ready', 'Completed'];
 
     const fetchOrders = async () => {
         try {
@@ -34,7 +34,8 @@ const ChefDashboard = () => {
     };
 
     const filteredOrders = orders.filter(order => {
-        if (activeTab === 'Completed') return ['Served', 'Out for Delivery', 'Delivered'].includes(order.status);
+        if (activeTab === 'Ready') return ['Ready', 'Ready for Pickup', 'Picked Up'].includes(order.status);
+        if (activeTab === 'Completed') return ['Completed', 'Served', 'Out for Delivery', 'Delivered'].includes(order.status);
         return order.status === activeTab;
     });
 
@@ -61,7 +62,8 @@ const ChefDashboard = () => {
                 <div className="flex bg-[#151923] p-1.5 rounded-xl border border-[#2a3040]">
                     {tabs.map(tab => {
                         const count = orders.filter(o => {
-                            if (tab === 'Completed') return ['Served', 'Out for Delivery', 'Delivered'].includes(o.status);
+                            if (tab === 'Ready') return ['Ready', 'Ready for Pickup', 'Picked Up'].includes(o.status);
+                            if (tab === 'Completed') return ['Completed', 'Served', 'Out for Delivery', 'Delivered'].includes(o.status);
                             return o.status === tab;
                         }).length;
                         return (
@@ -168,29 +170,33 @@ const ChefDashboard = () => {
                             {/* Ticket Action Button based on Tab */}
                             <div className="p-4 border-t border-[#2a3040] bg-[#1a1e2a]">
                                 {activeTab === 'Pending' && (
+                                    <button onClick={() => updateStatus(order._id, 'Accepted')} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 rounded-xl transition-all shadow-md">
+                                        Accept Order
+                                    </button>
+                                )}
+                                {activeTab === 'Accepted' && (
                                     <button onClick={() => updateStatus(order._id, 'Preparing')} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all shadow-md">
                                         Start Cooking
                                     </button>
                                 )}
                                 {activeTab === 'Preparing' && (
-                                    <button onClick={() => updateStatus(order._id, 'Ready')} className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition-all shadow-md flex justify-center items-center gap-2">
+                                    <button 
+                                        onClick={() => {
+                                            const isSelfPickup = order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup';
+                                            updateStatus(order._id, isSelfPickup ? 'Ready for Pickup' : 'Ready');
+                                        }} 
+                                        className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition-all shadow-md flex justify-center items-center gap-2"
+                                    >
                                         <Check size={18} /> Mark Ticket Ready
                                     </button>
                                 )}
                                 {activeTab === 'Ready' && (
-                                    <button
-                                        onClick={() => {
-                                            if (order.source === 'Web' || order.orderType === 'Self Pickup') {
-                                                updateStatus(order._id, 'Completed');
-                                            }
-                                        }}
-                                        className={`w-full ${order.source === 'Web' || order.orderType === 'Self Pickup' ? 'bg-green-600 hover:bg-green-500 text-white' : 'bg-gray-600 text-gray-300 cursor-not-allowed'} font-bold py-3 rounded-xl transition-all flex justify-center items-center gap-2`}
-                                    >
-                                        {order.source === 'Web' || order.orderType === 'Self Pickup' ? 'Mark as Completed' : 'Waiting for Runner...'}
-                                    </button>
+                                    <p className="text-center text-sm font-bold text-gray-500">
+                                        {order.status === 'Ready for Pickup' ? 'Waiting for Waiter transfer...' : order.status === 'Picked Up' ? 'At pickup counter' : 'Dine-in Order Ready to Serve.'}
+                                    </p>
                                 )}
                                 {activeTab === 'Completed' && (
-                                    <p className="text-center text-sm font-bold text-gray-500">Order fulfilled successfully.</p>
+                                    <p className="text-center text-sm font-bold text-gray-500">Order completed successfully.</p>
                                 )}
                             </div>
                         </div>
