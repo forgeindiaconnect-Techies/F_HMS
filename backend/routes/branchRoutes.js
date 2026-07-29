@@ -6,15 +6,14 @@ const router = express.Router();
 
 // Apply middleware to all routes in this file
 router.use(protect);
-router.use(authorize('RestaurantAdmin', 'SuperAdmin'));
 router.use(checkSubscription);
 
 router.route('/')
-    .get(getBranches)
-    .post(createBranch);
+    .get(authorize('RestaurantAdmin', 'SuperAdmin', 'BranchManager', 'Waiter', 'Cashier'), getBranches)
+    .post(authorize('RestaurantAdmin', 'SuperAdmin'), createBranch);
 
 router.route('/:id')
-    .put(updateBranch)
-    .delete(deleteBranch);
+    .put(authorize('RestaurantAdmin', 'SuperAdmin'), updateBranch)
+    .delete(authorize('RestaurantAdmin', 'SuperAdmin'), deleteBranch);
 
 export default router;
