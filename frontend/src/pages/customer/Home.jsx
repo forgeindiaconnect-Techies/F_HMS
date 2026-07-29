@@ -250,7 +250,19 @@ const Home = () => {
                             {restaurants.slice(0,6).map((restaurant, idx) => (
                                 <Link to={`/restaurant/${restaurant._id}`} key={idx} className="group cursor-pointer block hover:scale-105 transition-transform duration-200">
                                     <div className="relative rounded-2xl overflow-hidden aspect-square mb-3 shadow-sm">
-                                        <img src={restaurant.img || restaurant.logo || "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"} alt={restaurant.name} className="w-full h-full object-cover" />
+                                        <img 
+                                            src={
+                                                restaurant.img 
+                                                    ? restaurant.img 
+                                                    : restaurant.logo 
+                                                        ? (restaurant.logo.startsWith('http') 
+                                                            ? restaurant.logo 
+                                                            : `${new URL(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').origin}${restaurant.logo}`)
+                                                        : "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
+                                            } 
+                                            alt={restaurant.name} 
+                                            className="w-full h-full object-cover" 
+                                        />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
                                         <div className="absolute bottom-2 left-3 right-3 text-white">
                                             <h3 className="text-sm font-bold truncate">{restaurant.name}</h3>
