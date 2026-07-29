@@ -78,6 +78,28 @@ const TablesManagement = () => {
         }
     };
 
+    const handleDeleteClick = (table) => {
+        setConfirmModal({
+            isOpen: true,
+            title: 'Delete Table',
+            message: `Are you sure you want to delete Table ${table.tableNumber}? This action cannot be undone.`,
+            isDestructive: true,
+            onConfirm: () => handleDeleteConfirm(table._id)
+        });
+    };
+
+    const handleDeleteConfirm = async (tableId) => {
+        try {
+            await api.delete(`/tables/${tableId}`);
+            toast.success('Table deleted successfully');
+            fetchData();
+            setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        } catch (error) {
+            console.error('Failed to delete table', error);
+            toast.error(error.response?.data?.message || 'Failed to delete table');
+        }
+    };
+
     const openQrModal = (table) => {
         setSelectedTable(table);
         setIsQrModalOpen(true);
@@ -258,6 +280,13 @@ const TablesManagement = () => {
                                     className="flex-1 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-green-500/10"
                                 >
                                     <QrCode size={14} /> Scan Code
+                                </button>
+                                <button 
+                                    onClick={() => handleDeleteClick(table)}
+                                    className="p-2.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl transition-all border border-red-100 flex items-center justify-center"
+                                    title="Delete Table"
+                                >
+                                    <Trash2 size={16} />
                                 </button>
                             </div>
                         </div>

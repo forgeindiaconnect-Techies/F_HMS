@@ -78,3 +78,23 @@ export const updateTableStatus = async (req, res) => {
         res.status(400).json({ message: 'Failed to update table' });
     }
 };
+
+// @desc    Delete a table
+// @route   DELETE /api/tables/:id
+// @access  Private (Admin/Manager)
+export const deleteTable = async (req, res) => {
+    try {
+        const table = await Table.findById(req.params.id);
+        if (table) {
+            if (table.restaurantId.toString() !== req.user.restaurantId.toString()) {
+                return res.status(403).json({ message: 'Not authorized to delete this table' });
+            }
+            await table.deleteOne();
+            res.json({ message: 'Table removed successfully' });
+        } else {
+            res.status(404).json({ message: 'Table not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to delete table' });
+    }
+};
