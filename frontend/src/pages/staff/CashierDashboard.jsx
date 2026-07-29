@@ -242,7 +242,7 @@ const CashierDashboard = () => {
                         onClick={() => { setActiveTab('Self-Pickup'); setActiveBill(null); }}
                         className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${activeTab === 'Self-Pickup' ? 'bg-white shadow-sm text-purple-700' : 'text-gray-500 hover:text-gray-750'}`}
                     >
-                        Pickups ({selfPickupQueue.length})
+                        Pickup Counter ({selfPickupQueue.length})
                     </button>
                     <button 
                         onClick={() => { setActiveTab('Paid'); setActiveBill(null); }}

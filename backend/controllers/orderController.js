@@ -258,7 +258,7 @@ export const updateOrderStatus = async (req, res) => {
                     const Notification = (await import('../models/Notification.js')).default;
                     await Notification.create({
                         title: `Self-Pickup Order Ready`,
-                        desc: `Your order is ready. Please collect it from the cashier Dashboards.`,
+                        desc: `Your order is ready. Please collect it from the Pickup Counter.`,
                         type: 'Order',
                         restaurantId: order.restaurantId,
                         userId: order.user,
