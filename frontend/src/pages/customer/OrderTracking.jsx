@@ -7,7 +7,7 @@ const OrderTracking = () => {
     const { id } = useParams();
     const { api } = useCustomerAuth();
     const [order, setOrder] = useState(null);
-    const [progress, setProgress] = useState(1); // 1: Received, 2: Preparing, 3: On the Way, 4: Delivered
+    const [progress, setProgress] = useState(1); // 1: Received, 2: Preparing, 3: Next Step, 4: Final Step
 
     useEffect(() => {
         const fetchOrder = async () => {
@@ -15,11 +15,19 @@ const OrderTracking = () => {
                 const { data } = await api.get(`/orders/${id}`);
                 setOrder(data);
                 
-                // Map status to progress
-                if (['Served', 'Delivered'].includes(data.status)) setProgress(4);
-                else if (['Ready', 'Out for Delivery'].includes(data.status)) setProgress(3);
-                else if (data.status === 'Preparing') setProgress(2);
-                else setProgress(1);
+                // Map status to progress dynamically
+                const isSelf = data.orderType === 'Self-Pickup' || data.orderType === 'Self Pickup';
+                if (isSelf) {
+                    if (['Completed', 'Picked Up'].includes(data.status)) setProgress(4);
+                    else if (['Ready for Pickup', 'Ready'].includes(data.status)) setProgress(3);
+                    else if (data.status === 'Preparing') setProgress(2);
+                    else setProgress(1);
+                } else {
+                    if (['Served', 'Delivered', 'Completed'].includes(data.status)) setProgress(4);
+                    else if (['Ready', 'Out for Delivery'].includes(data.status)) setProgress(3);
+                    else if (data.status === 'Preparing') setProgress(2);
+                    else setProgress(1);
+                }
             } catch (error) {
                 console.error('Failed to fetch order', error);
             }
@@ -30,7 +38,14 @@ const OrderTracking = () => {
         return () => clearInterval(interval);
     }, [id, api]);
 
-    const steps = [
+    const isSelfPickup = order && (order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup');
+
+    const steps = isSelfPickup ? [
+        { num: 1, title: 'Order Received', desc: 'We have received your order.', icon: PackageOpen },
+        { num: 2, title: 'Preparing', desc: 'The kitchen is preparing your food.', icon: ChefHat },
+        { num: 3, title: 'Ready for Pickup', desc: 'Please collect it from the Pickup Counter.', icon: PackageOpen },
+        { num: 4, title: 'Completed', desc: 'Thank you! Enjoy your meal.', icon: CheckCircle }
+    ] : [
         { num: 1, title: 'Order Received', desc: 'We have received your order.', icon: PackageOpen },
         { num: 2, title: 'Preparing', desc: 'The kitchen is preparing your food.', icon: ChefHat },
         { num: 3, title: 'On the Way', desc: 'Your order is out for delivery.', icon: Bike },
@@ -48,7 +63,10 @@ const OrderTracking = () => {
                     </Link>
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 font-sans tracking-tight">Track Order #{id ? id.substring(id.length - 6).toUpperCase() : 'ORD-8824'}</h1>
-                        <p className="text-gray-500">Estimated Delivery: <span className="font-bold text-gray-900">45 mins</span></p>
+                        <p className="text-gray-500">
+                            {isSelfPickup ? 'Order Method: ' : 'Estimated Delivery: '}
+                            <span className="font-bold text-gray-900">{isSelfPickup ? 'Self-Pickup at Counter' : '45 mins'}</span>
+                        </p>
                     </div>
                 </div>
 
@@ -117,7 +135,7 @@ const OrderTracking = () => {
                 </div>
 
                 {/* Delivery Driver (Only shows if on the way) */}
-                {progress >= 3 && (
+                {!isSelfPickup && progress >= 3 && (
                     <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex items-center justify-between animate-in slide-in-from-bottom-4">
                         <div className="flex items-center gap-4">
                             <div className="w-16 h-16 bg-gray-200 rounded-full overflow-hidden border-2 border-orange-500 p-1">
