@@ -56,8 +56,37 @@ const CustomerDashboard = () => {
         setReservations([...localRes, ...defaultReservations]);
     }, []);
 
+    const readySelfPickupOrders = orders.filter(o => 
+        (o.orderType === 'Self-Pickup' || o.orderType === 'Self Pickup') && 
+        (['Ready for Pickup', 'Ready'].includes(o.status))
+    );
+
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+            {/* Ready for Pickup Alert Banner */}
+            {readySelfPickupOrders.map(order => (
+                <div key={order._id} className="bg-gradient-to-r from-orange-500 to-red-600 rounded-3xl p-6 text-white shadow-xl flex flex-col sm:flex-row justify-between items-center gap-4 animate-pulse relative overflow-hidden group">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white shrink-0">
+                            <span className="relative flex h-3 w-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+                            </span>
+                        </div>
+                        <div>
+                            <h3 className="font-extrabold text-lg" style={{ fontFamily: 'Poppins, sans-serif' }}>Your Order is Ready for Pickup!</h3>
+                            <p className="text-white/90 text-sm mt-0.5 font-medium">Please collect your Order <span className="font-bold font-mono">#{order._id.substring(order._id.length - 6).toUpperCase()}</span> from the Pickup Counter.</p>
+                        </div>
+                    </div>
+                    <Link 
+                        to={`/track/${order._id}?restaurantId=${order.restaurantId}`}
+                        className="px-6 py-2.5 bg-white text-orange-600 font-extrabold text-sm rounded-full hover:bg-orange-50 hover:scale-105 active:scale-95 transition-all shadow-md shrink-0 flex items-center gap-2"
+                    >
+                        Track & View QR
+                    </Link>
+                </div>
+            ))}
+
             {/* Header / Welcome */}
             <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
                 <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-center sm:text-left">
@@ -263,11 +292,19 @@ const CustomerDashboard = () => {
                                                     <span>•</span>
                                                     <span>{new Date(order.createdAt).toLocaleDateString()}</span>
                                                     <span>•</span>
-                                                    <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
-                                                        order.status === 'Completed' || order.status === 'Delivered' 
+                                                    <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] flex items-center gap-1 ${
+                                                        order.status === 'Completed' || order.status === 'Delivered' || order.status === 'Picked Up'
                                                         ? 'bg-green-50 text-green-700' 
+                                                        : ['Ready', 'Ready for Pickup'].includes(order.status)
+                                                        ? 'bg-orange-500 text-white animate-bounce shadow-sm shadow-orange-500/30'
                                                         : 'bg-orange-50 text-orange-700 animate-pulse'
                                                     }`}>
+                                                        {['Ready', 'Ready for Pickup'].includes(order.status) && (
+                                                            <span className="relative flex h-2 w-2">
+                                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                                                            </span>
+                                                        )}
                                                         {order.status}
                                                     </span>
                                                 </p>
@@ -277,14 +314,12 @@ const CustomerDashboard = () => {
                                             <span className="font-bold text-gray-950">₹{order.totalPrice.toFixed(2)}</span>
                                             
                                             <div className="flex gap-2">
-                                                {order.status !== 'Completed' && order.status !== 'Delivered' && (
-                                                    <Link 
-                                                        to={`/track/${order._id}?restaurantId=${order.restaurantId}&branchId=${order.branchId || ''}`}
-                                                        className="text-xs font-bold text-white bg-orange-600 px-3 py-1.5 rounded-lg hover:bg-orange-750 transition-colors"
-                                                    >
-                                                        Track
-                                                    </Link>
-                                                )}
+                                                <Link 
+                                                    to={`/track/${order._id}?restaurantId=${order.restaurantId}&branchId=${order.branchId || ''}`}
+                                                    className="text-xs font-bold text-white bg-orange-600 px-3 py-1.5 rounded-lg hover:bg-orange-750 transition-colors"
+                                                >
+                                                    Track
+                                                </Link>
                                                 <button 
                                                     type="button"
                                                     onClick={() => handleReorder(order.orderItems.map(i => ({ _id: i.product, name: i.name, price: i.price, quantity: i.qty })))}
