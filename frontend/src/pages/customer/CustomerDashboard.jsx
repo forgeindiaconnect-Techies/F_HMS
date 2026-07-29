@@ -279,7 +279,7 @@ const CustomerDashboard = () => {
                                             <div className="flex gap-2">
                                                 {order.status !== 'Completed' && order.status !== 'Delivered' && (
                                                     <Link 
-                                                        to={`/order-tracking/${order._id}?restaurantId=${order.restaurantId}&branchId=${order.branchId || ''}`}
+                                                        to={`/track/${order._id}?restaurantId=${order.restaurantId}&branchId=${order.branchId || ''}`}
                                                         className="text-xs font-bold text-white bg-orange-600 px-3 py-1.5 rounded-lg hover:bg-orange-750 transition-colors"
                                                     >
                                                         Track
