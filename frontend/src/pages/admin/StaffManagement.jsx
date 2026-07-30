@@ -14,7 +14,8 @@ const getStatusColor = (status) => {
 };
 
 const StaffManagement = () => {
-    const { api } = useAuth();
+    const { api, restaurant } = useAuth();
+    const isEnterprise = restaurant?.plan === 'Enterprise' || restaurant?.plan?.toLowerCase() === 'enterprise';
     const [staffList, setStaffList] = useState([]);
     const [branches, setBranches] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -182,6 +183,7 @@ const StaffManagement = () => {
                         <option value="Chef">Chef</option>
                         <option value="Waiter">Waiter</option>
                         <option value="Cashier">Cashier</option>
+                        {isEnterprise && <option value="DeliveryPartner">Delivery Partner</option>}
                     </select>
                     <select 
                         value={branchFilter}
@@ -333,6 +335,7 @@ const StaffManagement = () => {
                                         <option value="Chef">Chef</option>
                                         <option value="Cashier">Cashier</option>
                                         <option value="BranchManager">Branch Manager</option>
+                                        {isEnterprise && <option value="DeliveryPartner">Delivery Partner</option>}
                                     </select>
                                 </div>
                                 <div>
@@ -417,6 +420,13 @@ const StaffManagement = () => {
                                     <li className="flex items-center gap-2 text-sm text-gray-700"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div> Full Branch Analytics</li>
                                     <li className="flex items-center gap-2 text-sm text-gray-700"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div> Manage Staff Shifts</li>
                                     <li className="flex items-center gap-2 text-sm text-gray-700"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div> Inventory & Purchasing</li>
+                                </>
+                            )}
+                            {permsModalData === 'DeliveryPartner' && (
+                                <>
+                                    <li className="flex items-center gap-2 text-sm text-gray-700"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div> View Assigned Delivery Orders</li>
+                                    <li className="flex items-center gap-2 text-sm text-gray-700"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div> Update Order Delivery Status</li>
+                                    <li className="flex items-center gap-2 text-sm text-gray-700"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div> Manage Delivery Profile & Availability</li>
                                 </>
                             )}
                         </ul>

@@ -1,5 +1,7 @@
 import User from '../models/User.js';
 import Branch from '../models/Branch.js';
+import Restaurant from '../models/Restaurant.js';
+import DeliveryPartner from '../models/DeliveryPartner.js';
 
 // @desc    Update a staff member
 // @route   PUT /api/staff/:id
@@ -18,11 +20,18 @@ export const updateStaff = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized to update this staff' });
         }
 
-        const validRoles = ['BranchManager', 'Chef', 'Waiter', 'Cashier'];
+        const restaurant = await Restaurant.findById(req.user.restaurantId);
+        const hasEnterprise = restaurant && (restaurant.plan === 'Enterprise' || restaurant.plan?.toLowerCase() === 'enterprise');
+
+        const validRoles = hasEnterprise
+            ? ['BranchManager', 'Chef', 'Waiter', 'Cashier', 'DeliveryPartner']
+            : ['BranchManager', 'Chef', 'Waiter', 'Cashier'];
+
         if (role && !validRoles.includes(role)) {
             return res.status(400).json({ message: 'Invalid staff role' });
         }
 
+        const oldRole = staff.role;
         staff.name = name || staff.name;
         if (phone !== undefined) {
             staff.phoneNumber = phone;
@@ -48,6 +57,29 @@ export const updateStaff = async (req, res) => {
             // If they are no longer BranchManager, clear them from all branches
             await Branch.updateMany({ manager: staff._id }, { $unset: { manager: 1 } });
         }
+
+        // If updated to DeliveryPartner and profile does not exist, create it
+        if (staff.role === 'DeliveryPartner' && oldRole !== 'DeliveryPartner') {
+            const exists = await DeliveryPartner.findOne({ userId: staff._id });
+            if (!exists) {
+                await DeliveryPartner.create({
+                    userId: staff._id,
+                    restaurantId: req.user.restaurantId,
+                    verificationStatus: 'Approved',
+                    vehicleDetails: {
+                        type: 'Bike',
+                        model: '',
+                        rcNumber: '',
+                        licenseNumber: ''
+                    },
+                    documents: {
+                        profilePhoto: '',
+                        drivingLicense: '',
+                        aadhaarProof: ''
+                    }
+                });
+            }
+        }
         
         const updatedStaff = await User.findById(staff._id).populate('branchId', 'name').select('-password');
         res.json(updatedStaff);
@@ -61,7 +93,12 @@ export const updateStaff = async (req, res) => {
 // @access  Private
 export const getStaff = async (req, res) => {
     try {
-        const staffRoles = ['BranchManager', 'Chef', 'Waiter', 'Cashier'];
+        const restaurant = await Restaurant.findById(req.user.restaurantId);
+        const hasEnterprise = restaurant && (restaurant.plan === 'Enterprise' || restaurant.plan?.toLowerCase() === 'enterprise');
+
+        const staffRoles = hasEnterprise
+            ? ['BranchManager', 'Chef', 'Waiter', 'Cashier', 'DeliveryPartner']
+            : ['BranchManager', 'Chef', 'Waiter', 'Cashier'];
         
         const staff = await User.find({ 
             restaurantId: req.user.restaurantId,
@@ -86,7 +123,13 @@ export const createStaff = async (req, res) => {
             return res.status(400).json({ message: 'A user with this email already exists' });
         }
 
-        const validRoles = ['BranchManager', 'Chef', 'Waiter', 'Cashier'];
+        const restaurant = await Restaurant.findById(req.user.restaurantId);
+        const hasEnterprise = restaurant && (restaurant.plan === 'Enterprise' || restaurant.plan?.toLowerCase() === 'enterprise');
+
+        const validRoles = hasEnterprise
+            ? ['BranchManager', 'Chef', 'Waiter', 'Cashier', 'DeliveryPartner']
+            : ['BranchManager', 'Chef', 'Waiter', 'Cashier'];
+
         if (!validRoles.includes(role)) {
             return res.status(400).json({ message: 'Invalid staff role' });
         }
@@ -105,6 +148,26 @@ export const createStaff = async (req, res) => {
         if (user.role === 'BranchManager' && user.branchId) {
             await Branch.updateMany({ manager: user._id, _id: { $ne: user.branchId } }, { $unset: { manager: 1 } });
             await Branch.findByIdAndUpdate(user.branchId, { manager: user._id });
+        }
+
+        // If role is DeliveryPartner, create profile
+        if (user.role === 'DeliveryPartner') {
+            await DeliveryPartner.create({
+                userId: user._id,
+                restaurantId: req.user.restaurantId,
+                verificationStatus: 'Approved',
+                vehicleDetails: {
+                    type: 'Bike',
+                    model: '',
+                    rcNumber: '',
+                    licenseNumber: ''
+                },
+                documents: {
+                    profilePhoto: '',
+                    drivingLicense: '',
+                    aadhaarProof: ''
+                }
+            });
         }
 
         // Fetch populated
@@ -129,6 +192,11 @@ export const deleteStaff = async (req, res) => {
 
             // Remove from manager fields of branches
             await Branch.updateMany({ manager: staff._id }, { $unset: { manager: 1 } });
+
+            // If role is DeliveryPartner, delete profile too
+            if (staff.role === 'DeliveryPartner') {
+                await DeliveryPartner.deleteOne({ userId: staff._id });
+            }
 
             await staff.deleteOne();
             res.json({ message: 'Staff member removed' });
