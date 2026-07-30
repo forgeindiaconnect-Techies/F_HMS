@@ -21,7 +21,7 @@ export const protect = async (req, res, next) => {
             }
 
             // Verification Check for Restaurant users
-            if (req.user.restaurantId && req.user.role !== 'SuperAdmin') {
+            if (req.user.restaurantId && req.user.role !== 'SuperAdmin' && req.user.role !== 'DeliveryPartner') {
                 const isBypassUrl = req.originalUrl.includes('/verification') || 
                                     (req.method === 'GET' && req.originalUrl.includes('/restaurants/mine')) ||
                                     req.originalUrl.includes('/notifications') ||
@@ -81,8 +81,8 @@ export const authorize = (...roles) => {
 
 // Check if restaurant subscription is active
 export const checkSubscription = async (req, res, next) => {
-    if (!req.user || !req.user.restaurantId) {
-        return next(); // SuperAdmin or Customer, skip
+    if (!req.user || !req.user.restaurantId || req.user.role === 'DeliveryPartner') {
+        return next(); // SuperAdmin, Customer, or DeliveryPartner, skip
     }
 
     // Bypass check for subscription routes
@@ -115,8 +115,8 @@ export const checkSubscription = async (req, res, next) => {
 
 // Check if restaurant is verified
 export const checkVerification = async (req, res, next) => {
-    if (!req.user || !req.user.restaurantId) {
-        return next(); // SuperAdmin or Customer, skip
+    if (!req.user || !req.user.restaurantId || req.user.role === 'DeliveryPartner') {
+        return next(); // SuperAdmin, Customer, or DeliveryPartner, skip
     }
 
     // Bypass check for verification endpoints, restaurant info, and basic system calls
