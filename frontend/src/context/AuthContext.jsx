@@ -37,8 +37,14 @@ api.interceptors.response.use(
     (error) => {
         if (error.response && error.response.status === 401) {
             localStorage.removeItem('restosys_staff_user');
-            if (window.location.pathname !== '/staff/login' && window.location.pathname !== '/staff/register') {
-                window.location.href = '/staff/login';
+            if (window.location.pathname.startsWith('/delivery')) {
+                if (window.location.pathname !== '/delivery/login') {
+                    window.location.href = '/delivery/login';
+                }
+            } else {
+                if (window.location.pathname !== '/staff/login' && window.location.pathname !== '/staff/register') {
+                    window.location.href = '/staff/login';
+                }
             }
         }
         if (error.response && error.response.status === 402) {
@@ -56,7 +62,7 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     const fetchRestaurant = async (currentUser = user) => {
-        if (!currentUser || !currentUser.restaurantId || currentUser.role === 'SuperAdmin') {
+        if (!currentUser || !currentUser.restaurantId || currentUser.role === 'SuperAdmin' || currentUser.role === 'DeliveryPartner') {
             setRestaurant(null);
             return null;
         }
@@ -129,14 +135,15 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             console.error('Logout error:', error);
         }
+        const isDelivery = user?.role === 'DeliveryPartner' || window.location.pathname.startsWith('/delivery');
         setUser(null);
         setRestaurant(null);
         localStorage.removeItem('restosys_staff_user');
-        window.location.href = '/staff/login';
+        window.location.href = isDelivery ? '/delivery/login' : '/staff/login';
     };
 
     return (
-        <AuthContext.Provider value={{ user, restaurant, fetchRestaurant, login, register, logout, loading, api }}>
+        <AuthContext.Provider value={{ user, setUser, restaurant, fetchRestaurant, login, register, logout, loading, api }}>
             {!loading && children}
         </AuthContext.Provider>
     );

@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Phone, Lock, ArrowRight, Truck, Smartphone } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
 
 const DeliveryPartnerLogin = () => {
     const navigate = useNavigate();
+    const { setUser } = useAuth();
     const [phoneNumber, setPhoneNumber] = useState('');
     const [otp, setOtp] = useState('');
     const [step, setStep] = useState('phone'); // phone, otp
@@ -52,8 +54,7 @@ const DeliveryPartnerLogin = () => {
             const res = await axios.post(`${API_URL}/delivery/auth/verify-otp`, { phoneNumber, otp });
             toast.success('Logged in successfully!');
             
-            // Save in localStorage as standard staff user context!
-            localStorage.setItem('restosys_staff_user', JSON.stringify({
+            const userData = {
                 _id: res.data._id,
                 name: res.data.name,
                 email: res.data.email,
@@ -61,7 +62,13 @@ const DeliveryPartnerLogin = () => {
                 role: res.data.role,
                 restaurantId: res.data.restaurantId,
                 token: res.data.token
-            }));
+            };
+
+            // Save in localStorage as standard staff user context!
+            localStorage.setItem('restosys_staff_user', JSON.stringify(userData));
+            
+            // Update AuthContext state instantly
+            setUser(userData);
 
             // Redirect to Delivery Partner Dashboard!
             navigate('/delivery/dashboard');

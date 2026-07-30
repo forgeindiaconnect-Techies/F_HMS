@@ -7,9 +7,11 @@ import {
     LogOut, Calendar, Wallet, ListTodo
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
 
 const DeliveryPartnerDashboard = () => {
     const navigate = useNavigate();
+    const { logout } = useAuth();
     const [user, setUser] = useState(null);
     const [profile, setProfile] = useState(null);
     const [assignedOrders, setAssignedOrders] = useState([]);
@@ -138,8 +140,7 @@ const DeliveryPartnerDashboard = () => {
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('restosys_staff_user');
-        navigate('/delivery/login');
+        logout();
     };
 
     if (loading) {

@@ -23,7 +23,12 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
                             path.startsWith('/cashier') || 
                             path.startsWith('/super-admin');
                             
-        const loginPath = isStaffPath ? '/staff/login' : '/login';
+        let loginPath = '/login';
+        if (path.startsWith('/delivery')) {
+            loginPath = '/delivery/login';
+        } else if (isStaffPath) {
+            loginPath = '/staff/login';
+        }
         
         return <Navigate to={loginPath} state={{ from: location }} replace />;
     }
@@ -45,6 +50,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
             else if (userRole === 'Chef') fallbackRoute = '/chef';
             else if (userRole === 'Waiter') fallbackRoute = '/waiter';
             else if (userRole === 'Cashier') fallbackRoute = '/cashier';
+            else if (userRole === 'DeliveryPartner') fallbackRoute = '/delivery/dashboard';
             
             return <Navigate to={fallbackRoute} replace />;
         }
