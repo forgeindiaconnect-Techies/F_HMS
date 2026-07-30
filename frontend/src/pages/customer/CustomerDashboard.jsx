@@ -314,12 +314,14 @@ const CustomerDashboard = () => {
                                             <span className="font-bold text-gray-950">₹{order.totalPrice.toFixed(2)}</span>
                                             
                                             <div className="flex gap-2">
-                                                <Link 
-                                                    to={`/track/${order._id}?restaurantId=${order.restaurantId}&branchId=${order.branchId || ''}`}
-                                                    className="text-xs font-bold text-white bg-orange-600 px-3 py-1.5 rounded-lg hover:bg-orange-750 transition-colors"
-                                                >
-                                                    Track
-                                                </Link>
+                                                {order.status !== 'Completed' && order.status !== 'Delivered' && order.status !== 'Served' && (
+                                                    <Link 
+                                                        to={`/track/${order._id}?restaurantId=${order.restaurantId}&branchId=${order.branchId || ''}`}
+                                                        className="text-xs font-bold text-white bg-orange-600 px-3 py-1.5 rounded-lg hover:bg-orange-750 transition-colors"
+                                                    >
+                                                        Track
+                                                    </Link>
+                                                )}
                                                 <button 
                                                     type="button"
                                                     onClick={() => handleReorder(order.orderItems.map(i => ({ _id: i.product, name: i.name, price: i.price, quantity: i.qty })))}
