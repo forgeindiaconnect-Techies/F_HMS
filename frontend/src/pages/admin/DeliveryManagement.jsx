@@ -24,7 +24,10 @@ const DeliveryManagement = () => {
         vehicleType: 'Bike',
         vehicleModel: '',
         rcNumber: '',
-        licenseNumber: ''
+        licenseNumber: '',
+        profilePhoto: '',
+        drivingLicense: '',
+        idProof: ''
     });
 
     // Settings state
@@ -37,7 +40,9 @@ const DeliveryManagement = () => {
         perKmCharge: 10,
         peakHourFee: 15,
         rainSurcharge: 20,
-        minOrderAmountForFreeDelivery: 300
+        minOrderAmountForFreeDelivery: 300,
+        minOrderAmountForDelivery: 0,
+        deliveryOperatingHours: { start: '09:00', end: '22:00' }
     });
 
     const fetchPartners = async () => {
@@ -75,7 +80,11 @@ const DeliveryManagement = () => {
     const initData = async () => {
         setLoading(true);
         if (restaurant && restaurant.deliverySettings) {
-            setSettings(restaurant.deliverySettings);
+            setSettings(prev => ({
+                ...prev,
+                ...restaurant.deliverySettings,
+                deliveryOperatingHours: restaurant.deliverySettings.deliveryOperatingHours || prev.deliveryOperatingHours
+            }));
         }
         await Promise.all([
             fetchPartners(),
@@ -112,7 +121,10 @@ const DeliveryManagement = () => {
                 vehicleType: 'Bike',
                 vehicleModel: '',
                 rcNumber: '',
-                licenseNumber: ''
+                licenseNumber: '',
+                profilePhoto: '',
+                drivingLicense: '',
+                idProof: ''
             });
             fetchPartners();
         } catch (error) {
@@ -127,6 +139,16 @@ const DeliveryManagement = () => {
             fetchPartners();
         } catch (error) {
             toast.error('Failed to update status');
+        }
+    };
+
+    const handleToggleActive = async (id) => {
+        try {
+            const res = await api.put(`/delivery/partners/${id}/toggle-active`);
+            toast.success(res.data.message || 'Status updated successfully');
+            fetchPartners();
+        } catch (error) {
+            toast.error('Failed to toggle active status');
         }
     };
 
@@ -308,6 +330,46 @@ const DeliveryManagement = () => {
                                             min="0"
                                         />
                                     </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Min Order Amount for Delivery (₹)</label>
+                                        <input
+                                            type="number"
+                                            value={settings.minOrderAmountForDelivery || 0}
+                                            onChange={(e) => setSettings(prev => ({ ...prev, minOrderAmountForDelivery: Number(e.target.value) }))}
+                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500"
+                                            min="0"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Delivery Start Hour</label>
+                                        <input
+                                            type="time"
+                                            value={settings.deliveryOperatingHours?.start || '09:00'}
+                                            onChange={(e) => setSettings(prev => ({ 
+                                                ...prev, 
+                                                deliveryOperatingHours: { 
+                                                    ...(prev.deliveryOperatingHours || {}), 
+                                                    start: e.target.value 
+                                                } 
+                                            }))}
+                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Delivery End Hour</label>
+                                        <input
+                                            type="time"
+                                            value={settings.deliveryOperatingHours?.end || '22:00'}
+                                            onChange={(e) => setSettings(prev => ({ 
+                                                ...prev, 
+                                                deliveryOperatingHours: { 
+                                                    ...(prev.deliveryOperatingHours || {}), 
+                                                    end: e.target.value 
+                                                } 
+                                            }))}
+                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -387,7 +449,12 @@ const DeliveryManagement = () => {
                                                             {p.userId?.name?.slice(0, 2).toUpperCase()}
                                                         </div>
                                                         <div>
-                                                            <p className="font-extrabold">{p.userId?.name}</p>
+                                                            <p className="font-extrabold flex items-center gap-1.5">
+                                                                {p.userId?.name}
+                                                                {p.userId?.isActive === false && (
+                                                                    <span className="px-1.5 py-0.5 rounded text-[8px] bg-red-105 text-red-700 font-extrabold uppercase border border-red-200">Inactive</span>
+                                                                )}
+                                                            </p>
                                                             <p className="text-[10px] text-gray-400">{p.userId?.email}</p>
                                                         </div>
                                                     </td>
@@ -443,6 +510,17 @@ const DeliveryManagement = () => {
                                                                 <X size={14} />
                                                             </button>
                                                         )}
+                                                        <button
+                                                            onClick={() => handleToggleActive(p._id)}
+                                                            className={`p-1.5 rounded-lg inline-flex items-center transition-all ${
+                                                                p.userId?.isActive !== false
+                                                                ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                                                                : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                                                            }`}
+                                                            title={p.userId?.isActive !== false ? "Deactivate Partner" : "Activate Partner"}
+                                                        >
+                                                            {p.userId?.isActive !== false ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             ))
@@ -735,6 +813,40 @@ const DeliveryManagement = () => {
                                         onChange={(e) => setNewPartner({...newPartner, licenseNumber: e.target.value})}
                                         className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
                                         placeholder="DL-XXXX"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Profile Photo (URL)</label>
+                                <input 
+                                    type="text"
+                                    value={newPartner.profilePhoto}
+                                    onChange={(e) => setNewPartner({...newPartner, profilePhoto: e.target.value})}
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                                    placeholder="https://example.com/avatar.jpg"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Driving License (URL)</label>
+                                    <input 
+                                        type="text"
+                                        value={newPartner.drivingLicense}
+                                        onChange={(e) => setNewPartner({...newPartner, drivingLicense: e.target.value})}
+                                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                                        placeholder="https://example.com/dl.pdf"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">ID Proof (URL)</label>
+                                    <input 
+                                        type="text"
+                                        value={newPartner.idProof}
+                                        onChange={(e) => setNewPartner({...newPartner, idProof: e.target.value})}
+                                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                                        placeholder="https://example.com/id.pdf"
                                     />
                                 </div>
                             </div>

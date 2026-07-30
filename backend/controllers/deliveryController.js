@@ -301,7 +301,10 @@ export const getDeliveryPartners = async (req, res) => {
 // @access  Private (Admin/Manager)
 export const addDeliveryPartner = async (req, res) => {
     try {
-        const { name, email, phoneNumber, vehicleType, vehicleModel, rcNumber, licenseNumber } = req.body;
+        const { 
+            name, email, phoneNumber, vehicleType, vehicleModel, 
+            rcNumber, licenseNumber, profilePhoto, drivingLicense, idProof 
+        } = req.body;
 
         // Check if user already exists
         const userExists = await User.findOne({ email });
@@ -329,10 +332,39 @@ export const addDeliveryPartner = async (req, res) => {
                 model: vehicleModel || '',
                 rcNumber: rcNumber || '',
                 licenseNumber: licenseNumber || ''
+            },
+            documents: {
+                profilePhoto: profilePhoto || '',
+                drivingLicense: drivingLicense || '',
+                aadhaarProof: idProof || ''
             }
         });
 
         res.status(201).json(partner);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Toggle delivery partner active status (Active/Inactive)
+// @route   PUT /api/delivery/partners/:id/toggle-active
+// @access  Private (Admin/Manager)
+export const togglePartnerActiveStatus = async (req, res) => {
+    try {
+        const partner = await DeliveryPartner.findById(req.params.id);
+        if (!partner) {
+            return res.status(404).json({ message: 'Delivery partner profile not found' });
+        }
+
+        const user = await User.findById(partner.userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.isActive = !user.isActive;
+        await user.save();
+
+        res.json({ message: `Partner is now ${user.isActive ? 'Active' : 'Inactive'}`, isActive: user.isActive });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

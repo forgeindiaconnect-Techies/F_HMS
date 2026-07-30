@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { CreditCard, MapPin, Ticket, ChevronRight, Utensils, CheckCircle, ShieldCheck, ArrowRight, Store } from 'lucide-react';
+import { CreditCard, MapPin, Ticket, ChevronRight, Utensils, CheckCircle, ShieldCheck, ArrowRight, Store, AlertTriangle } from 'lucide-react';
 import axios from 'axios';
 import { getItemImage } from '../../utils/imageHelper';
 
@@ -11,13 +11,16 @@ const Checkout = () => {
     const { api } = useCustomerAuth();
     const navigate = useNavigate();
     
-    const [orderType, setOrderType] = useState('dine_in');
+    const [orderType, setOrderType] = useState('Self-Pickup');
     const [tableNumber, setTableNumber] = useState('');
     const [address, setAddress] = useState('');
     const [coupon, setCoupon] = useState('');
     const [discount, setDiscount] = useState(0);
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
+    const [calculatedDeliveryFee, setCalculatedDeliveryFee] = useState(0);
+    const [deliveryValidation, setDeliveryValidation] = useState({ isValid: true, error: '' });
+    const mockDistance = 3.2; // 3.2 km mock distance
 
     const [subscriptionPlan, setSubscriptionPlan] = useState('One-time Order');
     const [paymentMethod, setPaymentMethod] = useState('Card');
@@ -94,9 +97,79 @@ const Checkout = () => {
         subscriptionDiscount = cartTotal * 0.20;
     }
 
+    const selectedRestaurantObj = restaurantsList.find(r => r._id === (selectedRestaurantId || restaurantId));
+    const selectedRestaurantName = selectedRestaurantObj ? selectedRestaurantObj.name : 'Selected Restaurant';
+
+    useEffect(() => {
+        if (orderType !== 'Delivery' || !selectedRestaurantObj) {
+            setCalculatedDeliveryFee(0);
+            setDeliveryValidation({ isValid: true, error: '' });
+            return;
+        }
+
+        const settings = selectedRestaurantObj.deliverySettings || {};
+        
+        // Check if delivery is enabled
+        if (settings.enabled === false) {
+            setCalculatedDeliveryFee(0);
+            setDeliveryValidation({ isValid: false, error: 'Home Delivery is currently disabled by this restaurant.' });
+            return;
+        }
+
+        // Check delivery radius
+        const maxRadius = settings.radius || 5;
+        if (mockDistance > maxRadius) {
+            setCalculatedDeliveryFee(0);
+            setDeliveryValidation({ isValid: false, error: `Your location (${mockDistance} km) is outside the restaurant's delivery radius of ${maxRadius} km.` });
+            return;
+        }
+
+        // Check minimum order amount for delivery
+        const minOrderAmt = settings.minOrderAmountForDelivery || 0;
+        if (cartTotal < minOrderAmt) {
+            setCalculatedDeliveryFee(0);
+            setDeliveryValidation({ isValid: false, error: `Minimum order amount for delivery is ₹${minOrderAmt}. (Your cart: ₹${cartTotal})` });
+            return;
+        }
+
+        // Check operating hours
+        if (settings.deliveryOperatingHours) {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMin = now.getMinutes();
+            const currentTimeStr = `${String(currentHour).padStart(2, '0')}:${String(currentMin).padStart(2, '0')}`;
+            
+            const startHour = settings.deliveryOperatingHours.start || '09:00';
+            const endHour = settings.deliveryOperatingHours.end || '22:00';
+            
+            if (currentTimeStr < startHour || currentTimeStr > endHour) {
+                setCalculatedDeliveryFee(0);
+                setDeliveryValidation({ isValid: false, error: `Delivery is closed. Operating hours are from ${startHour} to ${endHour}.` });
+                return;
+            }
+        }
+
+        // Compute delivery fee
+        let fee = settings.baseFee || 30;
+        const freeRadius = settings.freeRadius || 2;
+        if (mockDistance > freeRadius) {
+            fee += (mockDistance - freeRadius) * (settings.perKmCharge || 10);
+        }
+
+        // Check free delivery threshold
+        if (settings.minOrderAmountForFreeDelivery && cartTotal >= settings.minOrderAmountForFreeDelivery) {
+            fee = 0;
+        }
+
+        setCalculatedDeliveryFee(fee);
+        setDeliveryValidation({ isValid: true, error: '' });
+
+    }, [selectedRestaurantObj, orderType, cartTotal]);
+
     const totalDiscount = discount + subscriptionDiscount;
     const tax = (cartTotal - totalDiscount) * 0.05; // 5% tax
-    const grandTotal = cartTotal - totalDiscount + tax;
+    const deliveryFee = orderType === 'Delivery' ? calculatedDeliveryFee : 0;
+    const grandTotal = cartTotal - totalDiscount + tax + deliveryFee;
 
     const location = useLocation();
     const { restaurantId, branchId } = location.state || {};
@@ -106,9 +179,6 @@ const Checkout = () => {
             setSelectedRestaurantId(restaurantId);
         }
     }, [restaurantId, selectedRestaurantId]);
-
-    const selectedRestaurantObj = restaurantsList.find(r => r._id === (selectedRestaurantId || restaurantId));
-    const selectedRestaurantName = selectedRestaurantObj ? selectedRestaurantObj.name : 'Selected Restaurant';
 
     const handleApplyCoupon = (e) => {
         e.preventDefault();
@@ -126,6 +196,18 @@ const Checkout = () => {
             alert('Please select a restaurant from the dropdown list before proceeding.');
             return;
         }
+
+        if (orderType === 'Delivery') {
+            if (!deliveryValidation.isValid) {
+                alert(`Cannot place delivery order: ${deliveryValidation.error}`);
+                return;
+            }
+            if (!address.trim()) {
+                alert('Please enter a delivery address.');
+                return;
+            }
+        }
+
         setIsPlacingOrder(true);
         
         try {
@@ -137,8 +219,8 @@ const Checkout = () => {
                     price: item.price,
                     product: item._id || item.id
                 })),
-                orderType: 'Self-Pickup',
-                source: 'Self-Pickup',
+                orderType: orderType === 'Delivery' ? 'Delivery' : 'Self-Pickup',
+                source: orderType === 'Delivery' ? 'Walk-in' : 'Self-Pickup',
                 restaurantId: selectedRestaurantId || restaurantId,
                 branchId,
                 paymentMethod: paymentMethod === 'UPI' 
@@ -146,7 +228,11 @@ const Checkout = () => {
                     : paymentMethod,
                 subscriptionPlan,
                 taxPrice: tax,
-                totalPrice: grandTotal
+                totalPrice: grandTotal,
+                shippingAddress: orderType === 'Delivery' ? { address } : undefined,
+                deliveryDistance: orderType === 'Delivery' ? mockDistance : undefined,
+                deliveryCharge: orderType === 'Delivery' ? calculatedDeliveryFee : undefined,
+                deliveryStatus: orderType === 'Delivery' ? 'Pending Assignment' : undefined
             };
             
             const { data } = await api.post('/orders', orderData);
@@ -178,7 +264,7 @@ const Checkout = () => {
                         </div>
                         <div className="flex justify-between items-center text-sm">
                             <span className="font-medium text-gray-600">Type</span>
-                            <span className="font-bold text-gray-900">Self-Pickup</span>
+                            <span className="font-bold text-gray-900">{orderType}</span>
                         </div>
                         <div className="flex justify-between items-center text-sm">
                             <span className="font-medium text-gray-600">Plan / Subscription</span>
@@ -217,18 +303,100 @@ const Checkout = () => {
                 {/* Left Column: Details & Payment */}
                 <div className="lg:col-span-2 space-y-8">
                     
-                    {/* Self-Pickup Info */}
-                    <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100">
-                        <h2 className="text-xl font-bold text-gray-900 font-sans mb-6">Pickup Details</h2>
-                        <div className="flex items-center gap-4 p-4 border border-orange-200 bg-orange-50 rounded-2xl">
-                            <div className="w-12 h-12 rounded-full bg-orange-500 text-white flex items-center justify-center shrink-0">
-                                <Utensils size={24} />
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-gray-900 text-lg">Self-Pickup Order</h3>
-                                <p className="text-sm text-gray-600">Your order will be prepared and ready for you to pick up from the restaurant counter.</p>
-                            </div>
+                    {/* Order Type Tabs */}
+                    <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
+                        <h2 className="text-xl font-bold text-gray-900 font-sans">How would you like your order?</h2>
+                        <div className="flex gap-4">
+                            <button
+                                type="button"
+                                onClick={() => setOrderType('Self-Pickup')}
+                                className={`flex-1 py-3 px-4 rounded-2xl font-bold text-sm border transition-all flex items-center justify-center gap-2 ${
+                                    orderType === 'Self-Pickup'
+                                    ? 'bg-orange-50 border-orange-500 text-orange-600 font-black'
+                                    : 'bg-white border-gray-250 text-gray-500 hover:bg-gray-50'
+                                }`}
+                            >
+                                <Utensils size={18} /> Self-Pickup
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setOrderType('Delivery')}
+                                className={`flex-1 py-3 px-4 rounded-2xl font-bold text-sm border transition-all flex items-center justify-center gap-2 ${
+                                    orderType === 'Delivery'
+                                    ? 'bg-orange-50 border-orange-500 text-orange-600 font-black'
+                                    : 'bg-white border-gray-250 text-gray-500 hover:bg-gray-50'
+                                }`}
+                            >
+                                <MapPin size={18} /> Home Delivery
+                            </button>
                         </div>
+
+                        {orderType === 'Self-Pickup' ? (
+                            <div className="flex items-center gap-4 p-4 border border-orange-200 bg-orange-50 rounded-2xl">
+                                <div className="w-12 h-12 rounded-full bg-orange-500 text-white flex items-center justify-center shrink-0">
+                                    <Utensils size={24} />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-gray-900 text-lg">Self-Pickup Order</h3>
+                                    <p className="text-sm text-gray-600 font-medium">Your order will be prepared and ready for you to pick up from the restaurant counter.</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-4 text-left">
+                                <div className="flex items-center gap-4 p-4 border border-orange-200 bg-orange-50 rounded-2xl">
+                                    <div className="w-12 h-12 rounded-full bg-orange-500 text-white flex items-center justify-center shrink-0">
+                                        <MapPin size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-900 text-lg">Home Delivery</h3>
+                                        <p className="text-sm text-gray-600 font-medium">Our self-managed restaurant delivery executive will deliver your order directly to your door.</p>
+                                    </div>
+                                </div>
+
+                                {selectedRestaurantObj && (
+                                    <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200 text-xs font-semibold text-gray-600 space-y-1.5">
+                                        <p className="font-extrabold text-gray-800 uppercase tracking-wider text-[9px] mb-1">Delivery Settings</p>
+                                        <div className="flex justify-between">
+                                            <span>Radius Limit:</span>
+                                            <span className="font-bold text-gray-900">{selectedRestaurantObj.deliverySettings?.radius || 5} km</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>Operating Hours:</span>
+                                            <span className="font-bold text-gray-900">
+                                                {selectedRestaurantObj.deliverySettings?.deliveryOperatingHours?.start || '09:00'} - {selectedRestaurantObj.deliverySettings?.deliveryOperatingHours?.end || '22:00'}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>Base Fee (up to {selectedRestaurantObj.deliverySettings?.freeRadius || 2} km):</span>
+                                            <span className="font-bold text-gray-900">₹{selectedRestaurantObj.deliverySettings?.baseFee || 30}</span>
+                                        </div>
+                                        <div className="flex justify-between text-orange-600 font-black">
+                                            <span>Dynamic Fee (Simulated Distance: {mockDistance} km):</span>
+                                            <span>₹{calculatedDeliveryFee}</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {!deliveryValidation.isValid && (
+                                    <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-xs font-bold rounded-2xl flex items-center gap-2">
+                                        <AlertTriangle size={16} className="shrink-0" />
+                                        <span>{deliveryValidation.error}</span>
+                                    </div>
+                                )}
+
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Delivery Address</label>
+                                    <textarea
+                                        required={orderType === 'Delivery'}
+                                        rows="3"
+                                        value={address}
+                                        onChange={(e) => setAddress(e.target.value)}
+                                        placeholder="Enter your complete delivery address with landmark details..."
+                                        className="w-full p-4 bg-gray-50 border border-gray-250 rounded-2xl text-sm focus:outline-none focus:border-orange-500 focus:bg-white transition-all text-gray-900 resize-none font-semibold"
+                                    ></textarea>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Help banner for Step 1 */}
@@ -535,6 +703,12 @@ const Checkout = () => {
                                 <span>Tax (5%)</span>
                                 <span>₹{tax.toFixed(2)}</span>
                             </div>
+                            {orderType === 'Delivery' && (
+                                <div className="flex justify-between items-center text-sm font-bold text-orange-650">
+                                    <span>Delivery Fee ({mockDistance} km)</span>
+                                    <span>₹{calculatedDeliveryFee.toFixed(2)}</span>
+                                </div>
+                            )}
                             
                             <div className="flex justify-between items-end pt-4">
                                 <span>Total</span>

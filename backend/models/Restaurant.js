@@ -68,7 +68,12 @@ const restaurantSchema = new mongoose.Schema({
         perKmCharge: { type: Number, default: 10 },
         peakHourFee: { type: Number, default: 15 },
         rainSurcharge: { type: Number, default: 20 },
-        minOrderAmountForFreeDelivery: { type: Number, default: 300 }
+        minOrderAmountForFreeDelivery: { type: Number, default: 300 },
+        minOrderAmountForDelivery: { type: Number, default: 0 },
+        deliveryOperatingHours: {
+            start: { type: String, default: '09:00' },
+            end: { type: String, default: '22:00' }
+        }
     },
     isActive: {
         type: Boolean,
