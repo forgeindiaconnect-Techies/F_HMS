@@ -378,14 +378,65 @@ const CustomerOrderTracking = () => {
                         </div>
                         
                         {/* Mock Maps Tracking visual */}
-                        <div className="relative h-24 bg-slate-50 border border-slate-100 rounded-2xl overflow-hidden flex items-center justify-center">
-                            <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:15px_15px]"></div>
-                            <span className="relative flex h-2 w-2 mr-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                            </span>
-                            <span className="text-[10px] font-extrabold text-blue-600 uppercase tracking-widest">Driver en route</span>
-                        </div>
+                        {order.status === 'Out for Delivery' ? (
+                            <div className="relative h-28 bg-slate-900 rounded-2xl overflow-hidden flex items-center justify-between px-8">
+                                <style>{`
+                                    @keyframes bikeRideMap {
+                                        0% { left: 15%; transform: scaleX(1) translateY(-50%); }
+                                        45% { left: 75%; transform: scaleX(1) translateY(-50%); }
+                                        50% { left: 75%; transform: scaleX(-1) translateY(-50%); }
+                                        95% { left: 15%; transform: scaleX(-1) translateY(-50%); }
+                                        100% { left: 15%; transform: scaleX(1) translateY(-50%); }
+                                    }
+                                    @keyframes dashMap {
+                                        to { stroke-dashoffset: -20; }
+                                    }
+                                `}</style>
+                                <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:15px_15px]"></div>
+                                
+                                {/* Dashed Route Line */}
+                                <div className="absolute left-16 right-16 h-1 bg-gray-700/60 rounded-full overflow-hidden">
+                                    <div 
+                                        className="h-full bg-gradient-to-r from-orange-500 to-green-500 rounded-full" 
+                                        style={{ 
+                                            backgroundImage: 'linear-gradient(90deg, #f97316 50%, transparent 50%)',
+                                            backgroundSize: '10px 100%',
+                                            animation: 'dashMap 1s linear infinite'
+                                        }}
+                                    />
+                                </div>
+
+                                {/* Restaurant Icon */}
+                                <div className="w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center shadow-lg shadow-orange-500/20 z-10">
+                                    <ShoppingBag size={14} />
+                                </div>
+
+                                {/* Animated Motorbike Rider */}
+                                <div 
+                                    className="absolute w-9 h-9 bg-white text-orange-600 rounded-full shadow-lg flex items-center justify-center border border-orange-200 z-20"
+                                    style={{
+                                        animation: 'bikeRideMap 8s linear infinite',
+                                        top: '50%'
+                                    }}
+                                >
+                                    <span className="text-sm">🏍️</span>
+                                </div>
+
+                                {/* House Icon */}
+                                <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center shadow-lg shadow-green-500/20 z-10">
+                                    <span className="text-xs">🏠</span>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="relative h-24 bg-slate-50 border border-slate-100 rounded-2xl overflow-hidden flex items-center justify-center">
+                                <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:15px_15px]"></div>
+                                <span className="relative flex h-2 w-2 mr-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                                </span>
+                                <span className="text-[10px] font-extrabold text-blue-600 uppercase tracking-widest">Driver en route</span>
+                            </div>
+                        )}
                     </div>
                 )}
 

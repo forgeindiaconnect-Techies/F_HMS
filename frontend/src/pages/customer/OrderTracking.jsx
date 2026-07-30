@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { CheckCircle, ChefHat, Bike, PackageOpen, ChevronLeft, Phone, MapPin } from 'lucide-react';
+import { CheckCircle, ChefHat, Bike, PackageOpen, ChevronLeft, Phone, MapPin, Store } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 
 const OrderTracking = () => {
@@ -76,26 +76,81 @@ const OrderTracking = () => {
                 <>
 
                 {/* Progress Map Area (Visual flair) */}
-                <div className="bg-gray-900 rounded-3xl h-64 mb-8 relative overflow-hidden shadow-lg flex items-center justify-center">
-                    <div className="absolute inset-0 opacity-40">
+                <div className="bg-gray-900 rounded-3xl h-64 mb-8 relative overflow-hidden shadow-lg flex flex-col items-center justify-center">
+                    <style>{`
+                        @keyframes bikeRide {
+                            0% { left: 10%; transform: scaleX(1) translateY(-50%); }
+                            45% { left: 82%; transform: scaleX(1) translateY(-50%); }
+                            50% { left: 82%; transform: scaleX(-1) translateY(-50%); }
+                            95% { left: 10%; transform: scaleX(-1) translateY(-50%); }
+                            100% { left: 10%; transform: scaleX(1) translateY(-50%); }
+                        }
+                        @keyframes dash {
+                            to { stroke-dashoffset: -20; }
+                        }
+                    `}</style>
+                    <div className="absolute inset-0 opacity-30">
                         {/* Mock Map Background */}
                         <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1000&auto=format&fit=crop" alt="Map" className="w-full h-full object-cover" />
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
                     
-                    {/* Floating Tracker Card */}
-                    <div className="relative z-10 bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl flex items-center gap-6">
-                        <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center text-white shadow-[0_0_30px_rgba(249,115,22,0.6)] animate-pulse">
-                            {progress === 1 && <PackageOpen size={32} />}
-                            {progress === 2 && <ChefHat size={32} />}
-                            {progress === 3 && <Bike size={32} />}
-                            {progress === 4 && <CheckCircle size={32} />}
+                    {!isSelfPickup && progress === 3 ? (
+                        <div className="w-full max-w-lg px-8 relative h-28 flex items-center justify-between z-10">
+                            {/* Route Path (dashed line) */}
+                            <div className="absolute left-12 right-12 h-1.5 bg-gray-700/60 rounded-full overflow-hidden">
+                                <div 
+                                    className="h-full bg-gradient-to-r from-orange-500 to-green-500 rounded-full animate-pulse" 
+                                    style={{ 
+                                        backgroundImage: 'linear-gradient(90deg, #f97316 50%, transparent 50%)',
+                                        backgroundSize: '15px 100%',
+                                        animation: 'dash 1.2s linear infinite'
+                                    }}
+                                />
+                            </div>
+
+                            {/* Restaurant Starting Node */}
+                            <div className="flex flex-col items-center gap-1 z-10">
+                                <div className="w-10 h-10 rounded-full bg-orange-600 text-white flex items-center justify-center shadow-lg shadow-orange-500/20">
+                                    <Store size={18} />
+                                </div>
+                                <span className="text-[10px] font-black text-white bg-orange-650 px-2 py-0.5 rounded-full uppercase tracking-wider">Restaurant</span>
+                            </div>
+
+                            {/* Moving Delivery Partner (Bike) */}
+                            <div 
+                                className="absolute w-12 h-12 bg-white text-orange-600 rounded-full shadow-xl flex items-center justify-center border border-orange-200 z-20"
+                                style={{
+                                    animation: 'bikeRide 8s linear infinite',
+                                    top: '50%'
+                                }}
+                            >
+                                <Bike size={24} className="animate-bounce" />
+                            </div>
+
+                            {/* Customer Ending Node */}
+                            <div className="flex flex-col items-center gap-1 z-10">
+                                <div className="w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center shadow-lg shadow-green-500/20">
+                                    <MapPin size={18} />
+                                </div>
+                                <span className="text-[10px] font-black text-white bg-green-650 px-2 py-0.5 rounded-full uppercase tracking-wider">Home</span>
+                            </div>
                         </div>
-                        <div className="text-white">
-                            <p className="text-sm font-medium opacity-80 uppercase tracking-widest mb-1">Current Status</p>
-                            <h2 className="text-2xl font-bold font-sans">{steps[progress - 1].title}</h2>
+                    ) : (
+                        /* Floating Tracker Card */
+                        <div className="relative z-10 bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl flex items-center gap-6">
+                            <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center text-white shadow-[0_0_30px_rgba(249,115,22,0.6)] animate-pulse">
+                                {progress === 1 && <PackageOpen size={32} />}
+                                {progress === 2 && <ChefHat size={32} />}
+                                {progress === 3 && <Bike size={32} />}
+                                {progress === 4 && <CheckCircle size={32} />}
+                            </div>
+                            <div className="text-white">
+                                <p className="text-sm font-medium opacity-80 uppercase tracking-widest mb-1">Current Status</p>
+                                <h2 className="text-2xl font-bold font-sans">{steps[progress - 1].title}</h2>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
 
                 {/* Timeline */}
