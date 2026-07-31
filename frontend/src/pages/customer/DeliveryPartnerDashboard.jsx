@@ -27,6 +27,7 @@ const DeliveryPartnerDashboard = () => {
 
     // Mock maps modal
     const [showNavigationModal, setShowNavigationModal] = useState(false);
+    const [isSimulating, setIsSimulating] = useState(false);
     const [simulatedProgress, setSimulatedProgress] = useState(0);
     const [simLat, setSimLat] = useState(13.0827);
     const [simLng, setSimLng] = useState(80.2707);
@@ -106,6 +107,7 @@ const DeliveryPartnerDashboard = () => {
     useEffect(() => {
         if (!showNavigationModal) {
             setSimulatedProgress(0);
+            setIsSimulating(false);
             return;
         }
 
@@ -116,14 +118,21 @@ const DeliveryPartnerDashboard = () => {
         setSimLng(baseLng);
         setSimEta(15);
         setSimDistance(3.5);
+        setSimulatedProgress(0);
+        setIsSimulating(false);
+    }, [showNavigationModal]);
+
+    useEffect(() => {
+        if (!isSimulating) return;
 
         const interval = setInterval(() => {
             setSimulatedProgress(prev => {
                 if (prev >= 100) {
                     clearInterval(interval);
+                    setIsSimulating(false);
                     return 100;
                 }
-                const next = prev + 5; // 5% progress per second (20 seconds total)
+                const next = prev + 5; // 5% progress per second
                 
                 // Slightly adjust GPS coordinates
                 setSimLat(l => l + (Math.random() - 0.2) * 0.0008);
@@ -138,7 +147,7 @@ const DeliveryPartnerDashboard = () => {
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [showNavigationModal]);
+    }, [isSimulating]);
 
     const handleToggleStatus = async () => {
         if (!client || !profile) return;
@@ -333,7 +342,7 @@ const DeliveryPartnerDashboard = () => {
                                         )}
 
                                         {order.deliveryStatus === 'Accepted' && (
-                                            (order.status === 'Ready' || order.status === 'Ready for Pickup') ? (
+                                            (order.status === 'Ready' || order.status === 'Ready for Pickup' || order.status === 'Out for Delivery') ? (
                                                 <button
                                                     onClick={() => handleUpdateOrderStatus(order._id, 'Picked Up')}
                                                     className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl text-xs font-black tracking-wider uppercase transition-colors"
@@ -548,16 +557,18 @@ const DeliveryPartnerDashboard = () => {
             {/* MOCK MAPS / DIRECTIONS MODAL */}
             {showNavigationModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-slate-900 border border-slate-800 p-6 rounded-[2rem] shadow-2xl w-full max-w-sm relative text-center space-y-5">
+                    <div className="bg-slate-900 border border-slate-850 p-6 rounded-[2rem] shadow-2xl w-full max-w-sm relative text-center space-y-5">
                         
                         {/* Simulated Route Header */}
-                        <div className="flex justify-between items-center bg-slate-950/60 p-3 rounded-2xl border border-slate-850">
+                        <div className="flex justify-between items-center bg-slate-950/60 p-3 rounded-2xl border border-slate-800">
                             <div className="flex items-center gap-2 text-emerald-400 font-extrabold text-xs uppercase tracking-widest">
-                                <Navigation size={14} className="animate-bounce" />
-                                <span>GPS Active</span>
+                                <Navigation size={14} className={isSimulating ? "animate-bounce text-emerald-400" : "text-slate-450"} />
+                                <span className={isSimulating ? "text-emerald-400" : "text-slate-450"}>
+                                    {isSimulating ? "GPS Active" : "GPS Paused"}
+                                </span>
                             </div>
-                            <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded font-black text-slate-400 uppercase tracking-widest">
-                                {simulatedProgress === 100 ? 'Arrived' : `${simulatedProgress}% Transit`}
+                            <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded font-black text-slate-455 uppercase tracking-widest font-mono">
+                                {simulatedProgress === 100 ? 'Arrived' : `${simulatedProgress}%`}
                             </span>
                         </div>
 
@@ -602,28 +613,51 @@ const DeliveryPartnerDashboard = () => {
                                 </div>
                                 <div>
                                     <span className="text-[8px] text-slate-500 uppercase tracking-wider block">Speed</span>
-                                    <strong className="text-xs font-black text-emerald-400">
-                                        {simulatedProgress === 100 ? '0 km/h' : '32 km/h'}
+                                    <strong className="text-xs font-black text-emerald-400 font-mono">
+                                        {!isSimulating && simulatedProgress === 0 ? '0 km/h' : simulatedProgress === 100 ? '0 km/h' : '32 km/h'}
                                     </strong>
                                 </div>
                             </div>
                         </div>
 
                         {/* Leg description */}
-                        <div className="text-[10px] bg-slate-950/40 p-2.5 rounded-xl text-slate-400 font-bold border border-slate-850">
-                            {simulatedProgress === 0 && "📍 Starting navigation run..."}
-                            {simulatedProgress > 0 && simulatedProgress <= 25 && "🛵 Departing Hub. Navigating main bypass road."}
-                            {simulatedProgress > 25 && simulatedProgress <= 60 && "🛵 Cruising. Traffic flow normal."}
-                            {simulatedProgress > 60 && simulatedProgress <= 90 && "🛵 Entering customer neighborhood zone."}
-                            {simulatedProgress > 90 && simulatedProgress < 100 && "🛵 Searching for building block & door number."}
-                            {simulatedProgress === 100 && "🎉 Arrived! Deliver order to customer counter."}
+                        <div className="text-[10px] bg-slate-950/40 p-2.5 rounded-xl text-slate-400 font-bold border border-slate-850 min-h-[40px] flex items-center justify-center text-center">
+                            {!isSimulating && simulatedProgress === 0 ? (
+                                <span className="text-slate-500">🚦 Ready to start route navigation simulation.</span>
+                            ) : (
+                                <>
+                                    {simulatedProgress === 0 && "📍 Starting navigation run..."}
+                                    {simulatedProgress > 0 && simulatedProgress <= 25 && "🛵 Departing Hub. Navigating main bypass road."}
+                                    {simulatedProgress > 25 && simulatedProgress <= 60 && "🛵 Cruising. Traffic flow normal."}
+                                    {simulatedProgress > 60 && simulatedProgress <= 90 && "🛵 Entering customer neighborhood zone."}
+                                    {simulatedProgress > 90 && simulatedProgress < 100 && "🛵 Searching for building block & door number."}
+                                    {simulatedProgress === 100 && "🎉 Arrived! Deliver order to customer counter."}
+                                </>
+                            )}
                         </div>
+
+                        {/* Start Navigation Action Button */}
+                        {!isSimulating && simulatedProgress === 0 && (
+                            <button
+                                type="button"
+                                onClick={() => setIsSimulating(true)}
+                                className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl text-xs uppercase tracking-wider transition-colors shadow-lg shadow-emerald-500/20"
+                            >
+                                Start Navigation
+                            </button>
+                        )}
+
+                        {isSimulating && (
+                            <div className="py-2 text-xs text-slate-500 font-bold animate-pulse uppercase tracking-widest font-black">
+                                Simulating movement...
+                            </div>
+                        )}
 
                         {/* Close button */}
                         <button
                             type="button"
                             onClick={() => setShowNavigationModal(false)}
-                            className="w-full py-3 bg-slate-800 hover:bg-slate-755 text-slate-200 font-black rounded-xl text-xs uppercase tracking-wider transition-colors"
+                            className="w-full py-3 bg-slate-800 hover:bg-slate-750 border border-slate-700/50 text-slate-200 font-black rounded-xl text-xs uppercase tracking-wider transition-colors"
                         >
                             Close Directions
                         </button>
