@@ -179,7 +179,9 @@ export const appendOrderItems = async (req, res) => {
 // @route   GET /api/orders/:id
 // @access  Private
 export const getOrderById = async (req, res) => {
-    const order = await Order.findById(req.params.id).populate('user', 'name email');
+    const order = await Order.findById(req.params.id)
+        .populate('user', 'name email')
+        .populate('deliveryPartner', 'name email phoneNumber');
 
     if (order) {
         res.json(order);

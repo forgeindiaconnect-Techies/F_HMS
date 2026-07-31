@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { CheckCircle, ChefHat, Bike, PackageOpen, ChevronLeft, Phone, MapPin, Store } from 'lucide-react';
+import { CheckCircle, ChefHat, Bike, PackageOpen, ChevronLeft, Phone, MapPin, Store, User } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 
 const OrderTracking = () => {
@@ -8,6 +8,7 @@ const OrderTracking = () => {
     const { api } = useCustomerAuth();
     const [order, setOrder] = useState(null);
     const [progress, setProgress] = useState(1); // 1: Received, 2: Preparing, 3: Next Step, 4: Final Step
+    const [riderProgress, setRiderProgress] = useState(0);
 
     useEffect(() => {
         const fetchOrder = async () => {
@@ -38,6 +39,27 @@ const OrderTracking = () => {
         return () => clearInterval(interval);
     }, [id, api]);
 
+    useEffect(() => {
+        if (!order) return;
+        
+        const isSelf = order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup';
+        const isMoving = !isSelf && ['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status);
+        
+        if (!isMoving) {
+            setRiderProgress(0);
+            return;
+        }
+
+        const timer = setInterval(() => {
+            setRiderProgress(p => {
+                if (p >= 95) return 10;
+                return p + 2;
+            });
+        }, 800);
+
+        return () => clearInterval(timer);
+    }, [order?.status, order?.orderType]);
+
     const isSelfPickup = order && (order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup');
 
     const steps = isSelfPickup ? [
@@ -65,7 +87,9 @@ const OrderTracking = () => {
                         <h1 className="text-2xl font-bold text-gray-900 font-sans tracking-tight">Track Order #{id ? id.substring(id.length - 6).toUpperCase() : 'ORD-8824'}</h1>
                         <p className="text-gray-500">
                             {isSelfPickup ? 'Order Method: ' : 'Estimated Delivery: '}
-                            <span className="font-bold text-gray-900">{isSelfPickup ? 'Self-Pickup at Counter' : '45 mins'}</span>
+                            <span className="font-bold text-gray-900">
+                                {isSelfPickup ? 'Self-Pickup at Counter' : `${order?.deliveryDistance ? Math.max(5, Math.ceil(order.deliveryDistance * 3)) : 15} mins`}
+                            </span>
                         </p>
                     </div>
                 </div>
@@ -75,79 +99,112 @@ const OrderTracking = () => {
                 ) : (
                 <>
 
-                {/* Progress Map Area (Visual flair) */}
-                <div className="bg-gray-900 rounded-3xl h-64 mb-8 relative overflow-hidden shadow-lg flex flex-col items-center justify-center">
-                    <style>{`
-                        @keyframes bikeRide {
-                            0% { left: 10%; transform: scaleX(1) translateY(-50%); }
-                            45% { left: 82%; transform: scaleX(1) translateY(-50%); }
-                            50% { left: 82%; transform: scaleX(-1) translateY(-50%); }
-                            95% { left: 10%; transform: scaleX(-1) translateY(-50%); }
-                            100% { left: 10%; transform: scaleX(1) translateY(-50%); }
-                        }
-                        @keyframes dash {
-                            to { stroke-dashoffset: -20; }
-                        }
-                    `}</style>
-                    <div className="absolute inset-0 opacity-30">
-                        {/* Mock Map Background */}
-                        <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1000&auto=format&fit=crop" alt="Map" className="w-full h-full object-cover" />
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
+                {/* Progress Map Area (Live Zomato/Swiggy visual style) */}
+                <div className="bg-slate-950 rounded-3xl h-80 mb-8 relative overflow-hidden shadow-lg flex flex-col border border-slate-900">
+                    {/* Grid Background */}
+                    <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:25px_25px]"></div>
                     
-                    {!isSelfPickup && progress === 3 ? (
-                        <div className="w-full max-w-lg px-8 relative h-28 flex items-center justify-between z-10">
-                            {/* Route Path (dashed line) */}
-                            <div className="absolute left-12 right-12 h-1.5 bg-gray-700/60 rounded-full overflow-hidden">
-                                <div 
-                                    className="h-full bg-gradient-to-r from-orange-500 to-green-500 rounded-full animate-pulse" 
-                                    style={{ 
-                                        backgroundImage: 'linear-gradient(90deg, #f97316 50%, transparent 50%)',
-                                        backgroundSize: '15px 100%',
-                                        animation: 'dash 1.2s linear infinite'
-                                    }}
+                    {!isSelfPickup ? (
+                        <>
+                            {/* SVG Route lines */}
+                            <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                                {/* Dotted route path */}
+                                <line x1="20%" y1="40%" x2="80%" y2="70%" stroke="#334155" strokeWidth="3" strokeDasharray="6,6" strokeLinecap="round" />
+                                {/* Traversed path (glowing green line) */}
+                                <line 
+                                    x1="20%" 
+                                    y1="40%" 
+                                    x2={`${20 + (['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) ? riderProgress : 0) * 0.6}%`} 
+                                    y2={`${40 + (['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) ? riderProgress : 0) * 0.3}%`} 
+                                    stroke="#10b981" 
+                                    strokeWidth="3" 
+                                    strokeLinecap="round" 
                                 />
-                            </div>
+                            </svg>
 
-                            {/* Restaurant Starting Node */}
-                            <div className="flex flex-col items-center gap-1 z-10">
-                                <div className="w-10 h-10 rounded-full bg-orange-600 text-white flex items-center justify-center shadow-lg shadow-orange-500/20">
+                            {/* Restaurant Store Hub Pin */}
+                            <div className="absolute top-[40%] left-[20%] -translate-x-1/2 -translate-y-1/2 text-center group z-10">
+                                <div className="relative flex h-10 w-10 items-center justify-center bg-gradient-to-tr from-amber-500 to-orange-500 text-white rounded-2xl shadow-xl border-2 border-slate-900 cursor-pointer hover:scale-110 transition-transform">
+                                    <div className="absolute inset-0 rounded-2xl bg-orange-500 animate-ping opacity-25"></div>
                                     <Store size={18} />
                                 </div>
-                                <span className="text-[10px] font-black text-white bg-orange-650 px-2 py-0.5 rounded-full uppercase tracking-wider">Restaurant</span>
+                                <span className="block text-[8px] font-black text-white bg-slate-900/90 border border-slate-800 px-2 py-0.5 rounded shadow-md mt-2 uppercase tracking-widest leading-none">Hub Shop</span>
                             </div>
 
-                            {/* Moving Delivery Partner (Bike) */}
-                            <div 
-                                className="absolute w-12 h-12 bg-white text-orange-600 rounded-full shadow-xl flex items-center justify-center border border-orange-200 z-20"
-                                style={{
-                                    animation: 'bikeRide 8s linear infinite',
-                                    top: '50%'
-                                }}
-                            >
-                                <Bike size={24} className="animate-bounce" />
-                            </div>
-
-                            {/* Customer Ending Node */}
-                            <div className="flex flex-col items-center gap-1 z-10">
-                                <div className="w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center shadow-lg shadow-green-500/20">
+                            {/* Customer Home Pin */}
+                            <div className="absolute top-[70%] left-[80%] -translate-x-1/2 -translate-y-1/2 text-center group z-10">
+                                <div className="relative flex h-10 w-10 items-center justify-center bg-purple-600 text-white rounded-full shadow-xl border-2 border-slate-900 cursor-pointer hover:scale-110 transition-transform">
+                                    <div className="absolute inset-0 rounded-full bg-purple-500 animate-ping opacity-25"></div>
                                     <MapPin size={18} />
                                 </div>
-                                <span className="text-[10px] font-black text-white bg-green-650 px-2 py-0.5 rounded-full uppercase tracking-wider">Home</span>
+                                <span className="block text-[8px] font-black text-white bg-slate-900/90 border border-slate-800 px-2 py-0.5 rounded shadow-md mt-2 uppercase tracking-widest leading-none">Home</span>
                             </div>
-                        </div>
+
+                            {/* Moving Delivery Partner (Bike) with overlay profile photo */}
+                            {['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) ? (
+                                <div 
+                                    className="absolute -translate-x-1/2 -translate-y-1/2 text-center z-25 transition-all duration-300 ease-out"
+                                    style={{
+                                        left: `${20 + riderProgress * 0.6}%`,
+                                        top: `${40 + riderProgress * 0.3}%`
+                                    }}
+                                >
+                                    <div className="relative flex h-12 w-12 items-center justify-center bg-emerald-500 text-white rounded-full shadow-2xl border-2 border-slate-950">
+                                        {/* Pulser */}
+                                        <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-35"></div>
+                                        
+                                        <Bike size={20} className="animate-bounce" />
+
+                                        {/* Avatar Mini Icon */}
+                                        <div className="absolute -bottom-1 -right-1 bg-slate-900 border border-slate-800 rounded-full p-0.5 text-emerald-400 shadow-md">
+                                            <User size={10} className="fill-emerald-400/20" />
+                                        </div>
+                                    </div>
+                                    <span className="block text-[8px] font-black text-emerald-400 bg-slate-900 border border-slate-800 px-2 py-1 rounded shadow-lg mt-1 whitespace-nowrap leading-none">
+                                        {order.deliveryPartner?.name || 'Partner'} (Out for Delivery)
+                                    </span>
+                                </div>
+                            ) : (
+                                /* Waiting/Assigning Rider Floating Overlay */
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-slate-900/90 border border-slate-800 p-4 rounded-2xl flex items-center gap-3 backdrop-blur shadow-xl">
+                                    <span className="relative flex h-3 w-3">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
+                                    </span>
+                                    <span className="text-xs text-slate-350 font-black uppercase tracking-wider">
+                                        {order.status === 'Preparing' ? 'Preparing Food in Kitchen' : 'Awaiting Delivery Assignment'}
+                                    </span>
+                                </div>
+                            )}
+
+                            {/* Live HUD Card (Top‑Left) */}
+                            {['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) && (
+                                <div className="absolute top-4 left-4 z-20 bg-slate-900/90 border border-slate-800 p-3 rounded-2xl backdrop-blur text-left shadow-lg flex flex-col gap-1 min-w-[140px]">
+                                    <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest leading-none">Live Tracking</span>
+                                    <h4 className="text-base font-extrabold text-white leading-none mt-1">
+                                        {Math.max(1, Math.ceil(((order.deliveryDistance || 3.2) * 3) * (1 - riderProgress / 100)))} mins
+                                    </h4>
+                                    <p className="text-[9px] font-semibold text-slate-400 mt-0.5">
+                                        {Math.max(0.1, Number(((order.deliveryDistance || 3.2) * (1 - riderProgress / 100)).toFixed(1)))} km remaining
+                                    </p>
+                                </div>
+                            )}
+                        </>
                     ) : (
-                        /* Floating Tracker Card */
-                        <div className="relative z-10 bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl flex items-center gap-6">
-                            <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center text-white shadow-[0_0_30px_rgba(249,115,22,0.6)] animate-pulse">
-                                {progress === 1 && <PackageOpen size={32} />}
-                                {progress === 2 && <ChefHat size={32} />}
-                                {progress === 3 && <Bike size={32} />}
-                                {progress === 4 && <CheckCircle size={32} />}
-                            </div>
-                            <div className="text-white">
-                                <p className="text-sm font-medium opacity-80 uppercase tracking-widest mb-1">Current Status</p>
-                                <h2 className="text-2xl font-bold font-sans">{steps[progress - 1].title}</h2>
+                        /* Self-Pickup Tracking Area */
+                        <div className="absolute inset-0 flex items-center justify-center p-6 bg-slate-950/40 backdrop-blur-sm">
+                            <div className="bg-slate-900/90 border border-slate-800 p-6 rounded-3xl flex items-center gap-6 max-w-sm">
+                                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center text-white shadow-[0_0_30px_rgba(249,115,22,0.6)] animate-pulse shrink-0">
+                                    {progress === 1 && <PackageOpen size={32} />}
+                                    {progress === 2 && <ChefHat size={32} />}
+                                    {progress === 3 && <Store size={32} />}
+                                    {progress === 4 && <CheckCircle size={32} />}
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Self-Pickup Status</p>
+                                    <h2 className="text-xl font-bold text-white font-sans">{steps[progress - 1].title}</h2>
+                                    <p className="text-xs text-slate-400 mt-1">{steps[progress - 1].desc}</p>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -189,8 +246,8 @@ const OrderTracking = () => {
                     </div>
                 </div>
 
-                {/* Delivery Driver (Only shows if on the way) */}
-                {!isSelfPickup && progress >= 3 && (
+                {/* Delivery Driver Info Card */}
+                {!isSelfPickup && order.deliveryPartner && (
                     <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex items-center justify-between animate-in slide-in-from-bottom-4">
                         <div className="flex items-center gap-4">
                             <div className="w-16 h-16 bg-gray-200 rounded-full overflow-hidden border-2 border-orange-500 p-1">
@@ -200,13 +257,16 @@ const OrderTracking = () => {
                             </div>
                             <div>
                                 <p className="text-sm font-bold text-gray-400 uppercase tracking-wider">Your Rider</p>
-                                <h4 className="font-bold text-gray-900 text-lg">Michael T.</h4>
-                                <p className="text-sm text-gray-500">Honda Vision • 4.9 ★</p>
+                                <h4 className="font-bold text-gray-900 text-lg">{order.deliveryPartner.name}</h4>
+                                <p className="text-sm text-gray-500">Vehicle: Bike • 4.9 ★</p>
                             </div>
                         </div>
-                        <button className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center text-green-600 hover:bg-green-100 transition-colors">
+                        <a 
+                            href={`tel:${order.deliveryPartner.phoneNumber || '1234567890'}`}
+                            className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center text-green-600 hover:bg-green-100 transition-colors"
+                        >
                             <Phone size={20} />
-                        </button>
+                        </a>
                     </div>
                 )}
                 </>

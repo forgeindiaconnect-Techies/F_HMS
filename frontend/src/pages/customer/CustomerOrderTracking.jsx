@@ -3,7 +3,8 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
     Clock, RefreshCw, ChevronLeft, PhoneCall, Coffee, Utensils, 
-    FileText, CheckCircle2, AlertCircle, ShoppingBag, BellRing, Star
+    FileText, CheckCircle2, AlertCircle, ShoppingBag, BellRing, Star,
+    Bike, MapPin, Store, User
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -19,6 +20,7 @@ const CustomerOrderTracking = () => {
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const [requestLoading, setRequestLoading] = useState(null); // requestType or null
+    const [riderProgress, setRiderProgress] = useState(0);
 
     // Delivery Rating States
     const [speedRating, setSpeedRating] = useState(5);
@@ -120,6 +122,27 @@ const CustomerOrderTracking = () => {
             if (ws) ws.close();
         };
     }, [orderId]);
+
+    useEffect(() => {
+        if (!order) return;
+        
+        const isSelf = order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup';
+        const isMoving = !isSelf && ['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status);
+        
+        if (!isMoving) {
+            setRiderProgress(0);
+            return;
+        }
+
+        const timer = setInterval(() => {
+            setRiderProgress(p => {
+                if (p >= 95) return 10;
+                return p + 2;
+            });
+        }, 800);
+
+        return () => clearInterval(timer);
+    }, [order?.status, order?.orderType]);
 
     const handleServiceRequest = async (requestType) => {
         if (!restaurantId) {
@@ -242,6 +265,98 @@ const CustomerOrderTracking = () => {
             {/* Tracking Status Timeline */}
             <main className="flex-1 px-6 py-6 max-w-md mx-auto w-full space-y-6">
                 
+                {/* Progress Map Area (Live Zomato/Swiggy visual style) */}
+                {isDelivery && (
+                    <div className="bg-slate-950 rounded-3xl h-72 relative overflow-hidden shadow-lg flex flex-col border border-slate-900 w-full">
+                        {/* Grid Background */}
+                        <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:25px_25px]"></div>
+                        
+                        {/* SVG Route lines */}
+                        <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                            {/* Dotted route path */}
+                            <line x1="20%" y1="40%" x2="80%" y2="70%" stroke="#334155" strokeWidth="3" strokeDasharray="6,6" strokeLinecap="round" />
+                            {/* Traversed path (glowing green line) */}
+                            <line 
+                                x1="20%" 
+                                y1="40%" 
+                                x2={`${20 + (['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) ? riderProgress : 0) * 0.6}%`} 
+                                y2={`${40 + (['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) ? riderProgress : 0) * 0.3}%`} 
+                                stroke="#10b981" 
+                                strokeWidth="3" 
+                                strokeLinecap="round" 
+                            />
+                        </svg>
+
+                        {/* Restaurant Store Hub Pin */}
+                        <div className="absolute top-[40%] left-[20%] -translate-x-1/2 -translate-y-1/2 text-center group z-10">
+                            <div className="relative flex h-9 w-9 items-center justify-center bg-gradient-to-tr from-amber-500 to-orange-500 text-white rounded-2xl shadow-xl border-2 border-slate-900 cursor-pointer hover:scale-110 transition-transform">
+                                <div className="absolute inset-0 rounded-2xl bg-orange-500 animate-ping opacity-25"></div>
+                                <Store size={16} />
+                            </div>
+                            <span className="block text-[8px] font-black text-white bg-slate-900/90 border border-slate-800 px-2 py-0.5 rounded shadow-md mt-2 uppercase tracking-widest leading-none">Hub Shop</span>
+                        </div>
+
+                        {/* Customer Home Pin */}
+                        <div className="absolute top-[70%] left-[80%] -translate-x-1/2 -translate-y-1/2 text-center group z-10">
+                            <div className="relative flex h-9 w-9 items-center justify-center bg-purple-600 text-white rounded-full shadow-xl border-2 border-slate-900 cursor-pointer hover:scale-110 transition-transform">
+                                <div className="absolute inset-0 rounded-full bg-purple-500 animate-ping opacity-25"></div>
+                                <MapPin size={16} />
+                            </div>
+                            <span className="block text-[8px] font-black text-white bg-slate-900/90 border border-slate-800 px-2 py-0.5 rounded shadow-md mt-2 uppercase tracking-widest leading-none">Home</span>
+                        </div>
+
+                        {/* Moving Delivery Partner (Bike) with overlay profile photo */}
+                        {['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) ? (
+                            <div 
+                                className="absolute -translate-x-1/2 -translate-y-1/2 text-center z-25 transition-all duration-300 ease-out"
+                                style={{
+                                    left: `${20 + riderProgress * 0.6}%`,
+                                    top: `${40 + riderProgress * 0.3}%`
+                                }}
+                            >
+                                <div className="relative flex h-11 w-11 items-center justify-center bg-emerald-500 text-white rounded-full shadow-2xl border-2 border-slate-950">
+                                    {/* Pulser */}
+                                    <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-35"></div>
+                                    
+                                    <Bike size={18} className="animate-bounce" />
+
+                                    {/* Avatar Mini Icon */}
+                                    <div className="absolute -bottom-1 -right-1 bg-slate-900 border border-slate-800 rounded-full p-0.5 text-emerald-400 shadow-md">
+                                        <User size={8} className="fill-emerald-400/20" />
+                                    </div>
+                                </div>
+                                <span className="block text-[8px] font-black text-emerald-400 bg-slate-900 border border-slate-800 px-2 py-1 rounded shadow-lg mt-1 whitespace-nowrap leading-none">
+                                    {order.deliveryPartner?.name || 'Partner'} (Out for Delivery)
+                                </span>
+                            </div>
+                        ) : (
+                            /* Waiting/Assigning Rider Floating Overlay */
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-slate-900/90 border border-slate-800 p-4 rounded-2xl flex items-center gap-3 backdrop-blur shadow-xl">
+                                <span className="relative flex h-3 w-3">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
+                                </span>
+                                <span className="text-xs text-slate-350 font-black uppercase tracking-wider">
+                                    {order.status === 'Preparing' ? 'Preparing Food in Kitchen' : 'Awaiting Delivery Assignment'}
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Live HUD Card (Top‑Left) */}
+                        {['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) && (
+                            <div className="absolute top-4 left-4 z-20 bg-slate-900/90 border border-slate-800 p-3 rounded-2xl backdrop-blur text-left shadow-lg flex flex-col gap-1 min-w-[140px]">
+                                <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest leading-none">Live Tracking</span>
+                                <h4 className="text-base font-extrabold text-white leading-none mt-1">
+                                    {Math.max(1, Math.ceil(((order.deliveryDistance || 3.2) * 3) * (1 - riderProgress / 100)))} mins
+                                </h4>
+                                <p className="text-[9px] font-semibold text-slate-400 mt-0.5">
+                                    {Math.max(0.1, Number(((order.deliveryDistance || 3.2) * (1 - riderProgress / 100)).toFixed(1)))} km remaining
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {/* Timeline Box */}
                 <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-6">
                     <div className="flex justify-between items-center pb-4 border-b border-gray-100">
@@ -362,81 +477,25 @@ const CustomerOrderTracking = () => {
 
                 {/* Delivery Driver Info Card */}
                 {isDelivery && order.deliveryPartner && (
-                    <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
-                        <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                    <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex items-center justify-between animate-in slide-in-from-bottom-4">
+                        <div className="flex items-center gap-4">
+                            <div className="w-16 h-16 bg-gray-200 rounded-full overflow-hidden border-2 border-orange-500 p-1">
+                                <div className="w-full h-full rounded-full bg-gray-300 overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=200&auto=format&fit=crop" alt="Driver" className="w-full h-full object-cover" />
+                                </div>
+                            </div>
                             <div>
-                                <p className="text-xs text-gray-400 font-black tracking-wider uppercase">Delivery Driver</p>
-                                <h4 className="font-extrabold text-gray-900 text-sm mt-1">{order.deliveryPartner.name || 'Assigned Driver'}</h4>
-                                <p className="text-[10px] text-gray-400 mt-0.5">Vehicle: Bike</p>
+                                <p className="text-sm font-bold text-gray-400 uppercase tracking-wider">Your Rider</p>
+                                <h4 className="font-bold text-gray-900 text-lg">{order.deliveryPartner.name}</h4>
+                                <p className="text-sm text-gray-500">Vehicle: Bike • 4.9 ★</p>
                             </div>
-                            <a 
-                                href={`tel:${order.deliveryPartner.phoneNumber || '12345'}`}
-                                className="bg-green-50 text-green-700 p-3 rounded-2xl border border-green-100 hover:scale-105 active:scale-95 transition-transform"
-                            >
-                                <PhoneCall size={18} />
-                            </a>
                         </div>
-                        
-                        {/* Mock Maps Tracking visual */}
-                        {order.status === 'Out for Delivery' ? (
-                            <div className="relative h-28 bg-slate-900 rounded-2xl overflow-hidden flex items-center justify-between px-8">
-                                <style>{`
-                                    @keyframes bikeRideMap {
-                                        0% { left: 15%; transform: scaleX(1) translateY(-50%); }
-                                        45% { left: 75%; transform: scaleX(1) translateY(-50%); }
-                                        50% { left: 75%; transform: scaleX(-1) translateY(-50%); }
-                                        95% { left: 15%; transform: scaleX(-1) translateY(-50%); }
-                                        100% { left: 15%; transform: scaleX(1) translateY(-50%); }
-                                    }
-                                    @keyframes dashMap {
-                                        to { stroke-dashoffset: -20; }
-                                    }
-                                `}</style>
-                                <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:15px_15px]"></div>
-                                
-                                {/* Dashed Route Line */}
-                                <div className="absolute left-16 right-16 h-1 bg-gray-700/60 rounded-full overflow-hidden">
-                                    <div 
-                                        className="h-full bg-gradient-to-r from-orange-500 to-green-500 rounded-full" 
-                                        style={{ 
-                                            backgroundImage: 'linear-gradient(90deg, #f97316 50%, transparent 50%)',
-                                            backgroundSize: '10px 100%',
-                                            animation: 'dashMap 1s linear infinite'
-                                        }}
-                                    />
-                                </div>
-
-                                {/* Restaurant Icon */}
-                                <div className="w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center shadow-lg shadow-orange-500/20 z-10">
-                                    <ShoppingBag size={14} />
-                                </div>
-
-                                {/* Animated Motorbike Rider */}
-                                <div 
-                                    className="absolute w-9 h-9 bg-white text-orange-600 rounded-full shadow-lg flex items-center justify-center border border-orange-200 z-20"
-                                    style={{
-                                        animation: 'bikeRideMap 8s linear infinite',
-                                        top: '50%'
-                                    }}
-                                >
-                                    <span className="text-sm">🏍️</span>
-                                </div>
-
-                                {/* House Icon */}
-                                <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center shadow-lg shadow-green-500/20 z-10">
-                                    <span className="text-xs">🏠</span>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="relative h-24 bg-slate-50 border border-slate-100 rounded-2xl overflow-hidden flex items-center justify-center">
-                                <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:15px_15px]"></div>
-                                <span className="relative flex h-2 w-2 mr-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                                </span>
-                                <span className="text-[10px] font-extrabold text-blue-600 uppercase tracking-widest">Driver en route</span>
-                            </div>
-                        )}
+                        <a 
+                            href={`tel:${order.deliveryPartner.phoneNumber || '1234567890'}`}
+                            className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center text-green-600 hover:bg-green-100 transition-colors"
+                        >
+                            <PhoneCall size={20} />
+                        </a>
                     </div>
                 )}
 
