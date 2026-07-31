@@ -193,6 +193,20 @@ const DeliveryPartnerDashboard = () => {
                     <div className="space-y-4">
                         <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Assigned Tasks</h2>
 
+                        {/* Ready Orders Glowing Notifications */}
+                        {assignedOrders.filter(o => o.deliveryStatus === 'Accepted' && (o.status === 'Ready' || o.status === 'Ready for Pickup')).map(order => (
+                            <div key={`ready-alert-${order._id}`} className="bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-2xl flex items-center gap-3 animate-pulse shadow-md shadow-emerald-500/5">
+                                <span className="relative flex h-3.5 w-3.5 shrink-0">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
+                                </span>
+                                <div className="flex-1 text-xs">
+                                    <p className="font-extrabold text-emerald-400 uppercase tracking-wider text-[9px]">Kitchen Ready Notification</p>
+                                    <p className="text-slate-200 mt-0.5 font-bold">Order <span className="text-emerald-400">#{order._id.substring(order._id.length - 4).toUpperCase()}</span> is prepared! Head to the counter to collect the food.</p>
+                                </div>
+                            </div>
+                        ))}
+
                         {assignedOrders.length === 0 ? (
                             <div className="bg-slate-900 border border-slate-800 p-12 rounded-[2rem] text-center text-slate-400 flex flex-col items-center gap-3">
                                 <ListTodo size={32} className="text-slate-600" />
@@ -207,6 +221,13 @@ const DeliveryPartnerDashboard = () => {
                                         <div>
                                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Order</p>
                                             <h3 className="text-base font-black text-white mt-1">#{order._id.substring(order._id.length - 4).toUpperCase()}</h3>
+                                            <span className={`inline-block text-[9px] font-black px-2 py-0.5 rounded mt-2 border ${
+                                                order.status === 'Ready' || order.status === 'Ready for Pickup'
+                                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                                : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                            }`}>
+                                                Kitchen: {order.status}
+                                            </span>
                                         </div>
                                         <div className="text-right">
                                             <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full font-bold uppercase">
@@ -270,12 +291,18 @@ const DeliveryPartnerDashboard = () => {
                                         )}
 
                                         {order.deliveryStatus === 'Accepted' && (
-                                            <button
-                                                onClick={() => handleUpdateOrderStatus(order._id, 'Picked Up')}
-                                                className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl text-xs font-black tracking-wider uppercase transition-colors"
-                                            >
-                                                Mark Picked Up
-                                            </button>
+                                            (order.status === 'Ready' || order.status === 'Ready for Pickup') ? (
+                                                <button
+                                                    onClick={() => handleUpdateOrderStatus(order._id, 'Picked Up')}
+                                                    className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl text-xs font-black tracking-wider uppercase transition-colors"
+                                                >
+                                                    Collect Food (Mark Picked Up)
+                                                </button>
+                                            ) : (
+                                                <div className="text-center p-3.5 bg-slate-800/40 border border-slate-700/50 rounded-2xl text-xs font-black text-slate-400 tracking-wide">
+                                                    ⏳ Kitchen is preparing your food...
+                                                </div>
+                                            )
                                         )}
 
                                         {order.deliveryStatus === 'Picked Up' && (

@@ -216,7 +216,10 @@ export const getOrders = async (req, res) => {
         filter.restaurantId = req.user.restaurantId;
     }
 
-    const orders = await Order.find(filter).populate('user', 'id name').sort({ createdAt: -1 });
+    const orders = await Order.find(filter)
+        .populate('user', 'id name')
+        .populate('deliveryPartner', 'id name')
+        .sort({ createdAt: -1 });
     res.json(orders);
 };
 
@@ -237,6 +240,24 @@ export const updateOrderStatus = async (req, res) => {
                 timestamp: Date.now(),
                 updatedBy: req.user ? req.user._id : null
             });
+
+            if (newStatus === 'Ready') {
+                // Delivery partner notification
+                if (order.orderType === 'Delivery' && order.deliveryPartner) {
+                    try {
+                        const Notification = (await import('../models/Notification.js')).default;
+                        await Notification.create({
+                            title: `Delivery Order Ready`,
+                            desc: `Order #${order._id.toString().substring(order._id.toString().length - 4).toUpperCase()} is prepared. Pick it up from the kitchen.`,
+                            type: 'Order',
+                            restaurantId: order.restaurantId,
+                            read: false
+                        });
+                    } catch (err) {
+                        console.error('Failed to create delivery partner notification', err);
+                    }
+                }
+            }
 
             if (newStatus === 'Ready for Pickup') {
                 // Waiter notification

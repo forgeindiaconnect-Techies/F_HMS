@@ -559,7 +559,16 @@ const DeliveryManagement = () => {
                                                 <p>Address: <strong>{o.shippingAddress?.address || 'Any'}</strong></p>
                                                 <p>Distance: <strong>{o.deliveryDistance || 0} km</strong></p>
                                                 {o.deliveryPartner ? (
-                                                    <p className="text-emerald-700 font-bold">Partner Assigned</p>
+                                                    <div className="space-y-1 mt-2 pt-2 border-t border-gray-200/60 text-[10px] font-semibold text-gray-600">
+                                                        <div className="flex justify-between">
+                                                            <span>Partner:</span>
+                                                            <strong className="text-emerald-700">{typeof o.deliveryPartner === 'object' ? o.deliveryPartner.name : 'Assigned'}</strong>
+                                                        </div>
+                                                        <div className="flex justify-between items-center">
+                                                            <span>Delivery Status:</span>
+                                                            <span className="text-[9px] font-extrabold uppercase bg-blue-50 text-blue-600 border border-blue-100 px-2 py-0.5 rounded-full">{o.deliveryStatus || 'Pending'}</span>
+                                                        </div>
+                                                    </div>
                                                 ) : (
                                                     <p className="text-orange-500 font-bold">Awaiting Assignment</p>
                                                 )}
