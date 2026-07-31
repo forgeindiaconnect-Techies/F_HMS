@@ -1,5 +1,5 @@
 import express from 'express';
-import { getRestaurants, createRestaurant, getBranches, createBranch, getMyRestaurant, updateMyRestaurant, updateSubscription, selfSubscribe, logoUpload } from '../controllers/restaurantController.js';
+import { getRestaurants, getRestaurantById, createRestaurant, getBranches, createBranch, getMyRestaurant, updateMyRestaurant, updateSubscription, selfSubscribe, logoUpload } from '../controllers/restaurantController.js';
 import { submitVerification, getMyVerification, getAllVerifications, getVerificationById, reviewVerification, verificationUpload } from '../controllers/verificationController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
@@ -30,6 +30,9 @@ router.route('/subscribe')
 router.route('/')
     .get(getRestaurants)
     .post(protect, authorize('SuperAdmin'), createRestaurant);
+
+router.route('/:id')
+    .get(getRestaurantById);
 
 router.route('/:id/subscription')
     .put(protect, authorize('SuperAdmin'), updateSubscription);

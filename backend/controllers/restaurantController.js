@@ -1,6 +1,7 @@
 import Restaurant from '../models/Restaurant.js';
 import Branch from '../models/Branch.js';
 import Notification from '../models/Notification.js';
+import DeliveryPartner from '../models/DeliveryPartner.js';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -31,13 +32,39 @@ export const logoUpload = multer({
     fileFilter: logoFileFilter
 }).single('logo');
 
-// @desc    Get all restaurants (SuperAdmin only)
+// @desc    Get all restaurants
 // @route   GET /api/restaurants
-// @access  Private/SuperAdmin
+// @access  Public
 export const getRestaurants = async (req, res) => {
     try {
-        const restaurants = await Restaurant.find({}).populate('ownerId', 'name email');
-        res.json(restaurants);
+        const restaurants = await Restaurant.find({}).populate('ownerId', 'name email').lean();
+        
+        // Dynamically enable delivery if there are registered delivery partners
+        const populatedRestaurants = await Promise.all(restaurants.map(async (rest) => {
+            const hasPartners = await DeliveryPartner.exists({ restaurantId: rest._id });
+            if (hasPartners) {
+                if (!rest.deliverySettings) {
+                    rest.deliverySettings = { 
+                        deliveryType: 'Both',
+                        enabled: true,
+                        radius: 5,
+                        freeRadius: 2,
+                        baseFee: 30,
+                        perKmCharge: 10,
+                        peakHourFee: 15,
+                        rainSurcharge: 20,
+                        minOrderAmountForFreeDelivery: 300,
+                        minOrderAmountForDelivery: 0,
+                        deliveryOperatingHours: { start: '09:00', end: '22:00' }
+                    };
+                } else {
+                    rest.deliverySettings.enabled = true;
+                }
+            }
+            return rest;
+        }));
+        
+        res.json(populatedRestaurants);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -239,5 +266,43 @@ export const createBranch = async (req, res) => {
         res.status(201).json(branch);
     } catch (error) {
         res.status(400).json({ message: error.message });
+    }
+};
+
+// @desc    Get a restaurant by ID
+// @route   GET /api/restaurants/:id
+// @access  Public
+export const getRestaurantById = async (req, res) => {
+    try {
+        const restaurant = await Restaurant.findById(req.params.id).lean();
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+        
+        // Dynamically enable delivery if there are registered delivery partners
+        const hasPartners = await DeliveryPartner.exists({ restaurantId: restaurant._id });
+        if (hasPartners) {
+            if (!restaurant.deliverySettings) {
+                restaurant.deliverySettings = { 
+                    deliveryType: 'Both',
+                    enabled: true,
+                    radius: 5,
+                    freeRadius: 2,
+                    baseFee: 30,
+                    perKmCharge: 10,
+                    peakHourFee: 15,
+                    rainSurcharge: 20,
+                    minOrderAmountForFreeDelivery: 300,
+                    minOrderAmountForDelivery: 0,
+                    deliveryOperatingHours: { start: '09:00', end: '22:00' }
+                };
+            } else {
+                restaurant.deliverySettings.enabled = true;
+            }
+        }
+        
+        res.json(restaurant);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };

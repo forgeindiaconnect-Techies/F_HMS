@@ -340,6 +340,17 @@ export const addDeliveryPartner = async (req, res) => {
             }
         });
 
+        // Automatically enable delivery settings on the restaurant
+        const restaurantDoc = await Restaurant.findById(req.user.restaurantId);
+        if (restaurantDoc) {
+            if (!restaurantDoc.deliverySettings) {
+                restaurantDoc.deliverySettings = { enabled: true };
+            } else {
+                restaurantDoc.deliverySettings.enabled = true;
+            }
+            await restaurantDoc.save();
+        }
+
         res.status(201).json(partner);
     } catch (error) {
         res.status(500).json({ message: error.message });

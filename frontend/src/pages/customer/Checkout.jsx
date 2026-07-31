@@ -50,8 +50,11 @@ const Checkout = () => {
                 const finalRestaurants = activeList.length > 0 ? activeList : dummyRestaurants;
                 setRestaurantsList(finalRestaurants);
                 
+                const cartRestId = cartItems.length > 0 ? (cartItems[0].restaurantId || cartItems[0].restaurant) : null;
                 if (location.state?.restaurantId) {
                     setSelectedRestaurantId(location.state.restaurantId);
+                } else if (cartRestId && finalRestaurants.some(r => r._id === cartRestId)) {
+                    setSelectedRestaurantId(cartRestId);
                 } else if (finalRestaurants.length > 0 && !selectedRestaurantId) {
                     setSelectedRestaurantId(finalRestaurants[0]._id);
                 }

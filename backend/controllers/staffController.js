@@ -79,6 +79,17 @@ export const updateStaff = async (req, res) => {
                     }
                 });
             }
+
+            // Automatically enable delivery settings on the restaurant
+            const restaurantDoc = await Restaurant.findById(req.user.restaurantId);
+            if (restaurantDoc) {
+                if (!restaurantDoc.deliverySettings) {
+                    restaurantDoc.deliverySettings = { enabled: true };
+                } else {
+                    restaurantDoc.deliverySettings.enabled = true;
+                }
+                await restaurantDoc.save();
+            }
         }
         
         const updatedStaff = await User.findById(staff._id).populate('branchId', 'name').select('-password');
@@ -168,6 +179,17 @@ export const createStaff = async (req, res) => {
                     aadhaarProof: ''
                 }
             });
+
+            // Automatically enable delivery settings on the restaurant
+            const restaurantDoc = await Restaurant.findById(req.user.restaurantId);
+            if (restaurantDoc) {
+                if (!restaurantDoc.deliverySettings) {
+                    restaurantDoc.deliverySettings = { enabled: true };
+                } else {
+                    restaurantDoc.deliverySettings.enabled = true;
+                }
+                await restaurantDoc.save();
+            }
         }
 
         // Fetch populated
