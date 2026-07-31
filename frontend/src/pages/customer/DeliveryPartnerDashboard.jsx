@@ -27,6 +27,11 @@ const DeliveryPartnerDashboard = () => {
 
     // Mock maps modal
     const [showNavigationModal, setShowNavigationModal] = useState(false);
+    const [simulatedProgress, setSimulatedProgress] = useState(0);
+    const [simLat, setSimLat] = useState(13.0827);
+    const [simLng, setSimLng] = useState(80.2707);
+    const [simEta, setSimEta] = useState(15);
+    const [simDistance, setSimDistance] = useState(3.5);
 
     const getApiUrl = () => {
         let baseURL = import.meta.env.VITE_API_URL;
@@ -97,6 +102,43 @@ const DeliveryPartnerDashboard = () => {
         setUser(JSON.parse(stored));
         loadData();
     }, []);
+
+    useEffect(() => {
+        if (!showNavigationModal) {
+            setSimulatedProgress(0);
+            return;
+        }
+
+        // Initialize simulation coordinates and initial distance
+        const baseLat = 13.0827 + (Math.random() - 0.5) * 0.01;
+        const baseLng = 80.2707 + (Math.random() - 0.5) * 0.01;
+        setSimLat(baseLat);
+        setSimLng(baseLng);
+        setSimEta(15);
+        setSimDistance(3.5);
+
+        const interval = setInterval(() => {
+            setSimulatedProgress(prev => {
+                if (prev >= 100) {
+                    clearInterval(interval);
+                    return 100;
+                }
+                const next = prev + 5; // 5% progress per second (20 seconds total)
+                
+                // Slightly adjust GPS coordinates
+                setSimLat(l => l + (Math.random() - 0.2) * 0.0008);
+                setSimLng(g => g + (Math.random() - 0.2) * 0.0008);
+                
+                // Decrement ETA and distance proportionally
+                setSimEta(Math.max(1, Math.ceil(15 * (1 - next / 100))));
+                setSimDistance(Number((3.5 * (1 - next / 100)).toFixed(1)));
+
+                return next;
+            });
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [showNavigationModal]);
 
     const handleToggleStatus = async () => {
         if (!client || !profile) return;
@@ -506,18 +548,82 @@ const DeliveryPartnerDashboard = () => {
             {/* MOCK MAPS / DIRECTIONS MODAL */}
             {showNavigationModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-slate-900 border border-slate-850 p-6 rounded-[2rem] shadow-2xl w-full max-w-sm relative text-center space-y-4">
-                        <div className="inline-flex p-3 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                            <Navigation size={24} className="animate-spin" />
+                    <div className="bg-slate-900 border border-slate-800 p-6 rounded-[2rem] shadow-2xl w-full max-w-sm relative text-center space-y-5">
+                        
+                        {/* Simulated Route Header */}
+                        <div className="flex justify-between items-center bg-slate-950/60 p-3 rounded-2xl border border-slate-850">
+                            <div className="flex items-center gap-2 text-emerald-400 font-extrabold text-xs uppercase tracking-widest">
+                                <Navigation size={14} className="animate-bounce" />
+                                <span>GPS Active</span>
+                            </div>
+                            <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded font-black text-slate-400 uppercase tracking-widest">
+                                {simulatedProgress === 100 ? 'Arrived' : `${simulatedProgress}% Transit`}
+                            </span>
                         </div>
-                        <div>
-                            <h3 className="font-black text-white text-lg">Simulating Route Navigation</h3>
-                            <p className="text-xs text-slate-400 mt-1 leading-normal">Dispatching real-time geo-coordinates coordinates for dispatch run monitoring.</p>
+
+                        {/* Coordinates Box (matches screenshot style, filled dynamically) */}
+                        <div className="bg-slate-950 border border-emerald-500/20 p-4 rounded-2xl flex items-center gap-3 text-left">
+                            <Navigation size={18} className="text-emerald-400 shrink-0 transform rotate-45" />
+                            <div className="font-semibold text-xs space-y-1">
+                                <p className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Simulated Geolocation</p>
+                                <p className="text-slate-100 font-black font-mono">
+                                    Lat: {simLat.toFixed(6)}° N
+                                </p>
+                                <p className="text-slate-100 font-black font-mono">
+                                    Lng: {simLng.toFixed(6)}° E
+                                </p>
+                            </div>
                         </div>
+
+                        {/* Progress Route */}
+                        <div className="space-y-2 text-left">
+                            <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                <span>Restaurant Hub</span>
+                                <span>Delivery Address</span>
+                            </div>
+                            
+                            {/* Visual Progress Bar */}
+                            <div className="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
+                                <div 
+                                    className="bg-gradient-to-r from-emerald-500 to-green-400 h-full rounded-full transition-all duration-500" 
+                                    style={{ width: `${simulatedProgress}%` }}
+                                />
+                            </div>
+
+                            {/* Journey stats */}
+                            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-800/60 text-center">
+                                <div>
+                                    <span className="text-[8px] text-slate-500 uppercase tracking-wider block">Remaining</span>
+                                    <strong className="text-xs font-black text-slate-200">{simDistance} km</strong>
+                                </div>
+                                <div>
+                                    <span className="text-[8px] text-slate-500 uppercase tracking-wider block">Est. Time</span>
+                                    <strong className="text-xs font-black text-slate-200">{simEta} Mins</strong>
+                                </div>
+                                <div>
+                                    <span className="text-[8px] text-slate-500 uppercase tracking-wider block">Speed</span>
+                                    <strong className="text-xs font-black text-emerald-400">
+                                        {simulatedProgress === 100 ? '0 km/h' : '32 km/h'}
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Leg description */}
+                        <div className="text-[10px] bg-slate-950/40 p-2.5 rounded-xl text-slate-400 font-bold border border-slate-850">
+                            {simulatedProgress === 0 && "📍 Starting navigation run..."}
+                            {simulatedProgress > 0 && simulatedProgress <= 25 && "🛵 Departing Hub. Navigating main bypass road."}
+                            {simulatedProgress > 25 && simulatedProgress <= 60 && "🛵 Cruising. Traffic flow normal."}
+                            {simulatedProgress > 60 && simulatedProgress <= 90 && "🛵 Entering customer neighborhood zone."}
+                            {simulatedProgress > 90 && simulatedProgress < 100 && "🛵 Searching for building block & door number."}
+                            {simulatedProgress === 100 && "🎉 Arrived! Deliver order to customer counter."}
+                        </div>
+
+                        {/* Close button */}
                         <button
                             type="button"
                             onClick={() => setShowNavigationModal(false)}
-                            className="w-full py-3 bg-slate-800 hover:bg-slate-755 text-slate-200 font-bold rounded-xl text-xs transition-colors"
+                            className="w-full py-3 bg-slate-800 hover:bg-slate-755 text-slate-200 font-black rounded-xl text-xs uppercase tracking-wider transition-colors"
                         >
                             Close Directions
                         </button>
