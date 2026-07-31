@@ -13,6 +13,7 @@ const DeliveryManagement = () => {
     const [partners, setPartners] = useState([]);
     const [analytics, setAnalytics] = useState(null);
     const [activeOrders, setActiveOrders] = useState([]);
+    const [selectedTrackingOrder, setSelectedTrackingOrder] = useState(null);
     const [loading, setLoading] = useState(true);
 
     // Modal state
@@ -72,10 +73,30 @@ const DeliveryManagement = () => {
                 ['Pending', 'Preparing', 'Ready', 'Out for Delivery'].includes(o.status)
             );
             setActiveOrders(active);
+            
+            // Set default or update tracking order state
+            setSelectedTrackingOrder(prev => {
+                if (!prev && active.length > 0) return active[0];
+                if (prev) {
+                    const stillActive = active.find(o => o._id === prev._id);
+                    return stillActive || (active.length > 0 ? active[0] : null);
+                }
+                return null;
+            });
         } catch (error) {
             console.error('Failed to fetch active orders', error);
         }
     };
+
+    const getTrackingPartnerDetails = () => {
+        if (!selectedTrackingOrder || !selectedTrackingOrder.deliveryPartner) return null;
+        const partnerId = typeof selectedTrackingOrder.deliveryPartner === 'object' 
+            ? selectedTrackingOrder.deliveryPartner._id 
+            : selectedTrackingOrder.deliveryPartner;
+        return partners.find(p => p.userId?._id === partnerId || p._id === partnerId);
+    };
+
+    const trackingPartner = getTrackingPartnerDetails();
 
     const initData = async () => {
         setLoading(true);
@@ -96,6 +117,14 @@ const DeliveryManagement = () => {
 
     useEffect(() => {
         initData();
+
+        // Poll every 10 seconds to keep order status and partner status fresh
+        const interval = setInterval(() => {
+            fetchActiveOrders();
+            fetchPartners();
+        }, 10000);
+
+        return () => clearInterval(interval);
     }, [restaurant]);
 
     const handleSaveSettings = async (e) => {
@@ -549,7 +578,15 @@ const DeliveryManagement = () => {
                                     </div>
                                 ) : (
                                     activeOrders.map(o => (
-                                        <div key={o._id} className="p-4 bg-gray-50 rounded-2xl border border-gray-200 space-y-3">
+                                        <div 
+                                            key={o._id} 
+                                            onClick={() => setSelectedTrackingOrder(o)}
+                                            className={`p-4 rounded-2xl border cursor-pointer transition-all space-y-3 ${
+                                                selectedTrackingOrder?._id === o._id 
+                                                ? 'bg-blue-50/70 border-blue-400 shadow-md ring-2 ring-blue-400/10' 
+                                                : 'bg-gray-50 border-gray-200 hover:bg-gray-100/75'
+                                            }`}
+                                        >
                                             <div className="flex justify-between items-center">
                                                 <span className="text-xs font-black text-gray-900">#{o._id.substring(o._id.length - 4).toUpperCase()}</span>
                                                 <span className="text-[10px] bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded-full uppercase">{o.status}</span>
@@ -575,7 +612,7 @@ const DeliveryManagement = () => {
                                             </div>
 
                                             {!o.deliveryPartner && (
-                                                <div className="flex gap-2">
+                                                <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                                                     <button
                                                         onClick={() => handleAutoAssign(o._id)}
                                                         className="flex-1 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-[10px] font-black tracking-wider uppercase transition-colors"
@@ -622,20 +659,30 @@ const DeliveryManagement = () => {
                                     <span className="block text-[9px] font-black text-gray-800 bg-white/80 px-1 py-0.5 rounded shadow mt-1">Restaurant</span>
                                 </div>
 
-                                <div className="absolute top-2/3 left-2/3 text-center">
-                                    <div className="bg-blue-500 text-white p-1.5 rounded-full inline-block shadow-md animate-bounce">
-                                        <Navigation size={16} />
+                                {selectedTrackingOrder && selectedTrackingOrder.deliveryPartner && (
+                                    <div className="absolute top-2/3 left-2/3 text-center">
+                                        <div className="bg-blue-500 text-white p-1.5 rounded-full inline-block shadow-md animate-bounce">
+                                            <Navigation size={16} />
+                                        </div>
+                                        <span className="block text-[9px] font-black text-gray-800 bg-white/80 px-1 py-0.5 rounded shadow mt-1">
+                                            {typeof selectedTrackingOrder.deliveryPartner === 'object' ? selectedTrackingOrder.deliveryPartner.name : 'Partner'}: {selectedTrackingOrder.deliveryStatus || 'Pending'}
+                                        </span>
                                     </div>
-                                    <span className="block text-[9px] font-black text-gray-800 bg-white/80 px-1 py-0.5 rounded shadow mt-1">On the Way</span>
-                                </div>
+                                )}
 
-                                <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm p-4 rounded-xl border border-gray-200 shadow-lg text-[10px] space-y-1.5 max-w-[200px]">
-                                    <p className="font-extrabold text-gray-900 uppercase tracking-widest text-[9px]">Route Details</p>
-                                    <p>Assigned Partner: <strong className="text-green-700">Ravi Kumar</strong></p>
-                                    <p>Vehicle: <strong>Honda Activa (KA-01-3829)</strong></p>
-                                    <p>Speed: <strong>32 km/h</strong></p>
-                                    <p>ETA: <strong className="text-blue-600">12 Mins</strong></p>
-                                </div>
+                                {selectedTrackingOrder ? (
+                                    <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm p-4 rounded-xl border border-gray-200 shadow-lg text-[10px] space-y-1.5 max-w-[220px]">
+                                        <p className="font-extrabold text-gray-900 uppercase tracking-widest text-[9px]">Route Details (Order #{selectedTrackingOrder._id.substring(selectedTrackingOrder._id.length - 4).toUpperCase()})</p>
+                                        <p>Assigned Partner: <strong className="text-green-700">{typeof selectedTrackingOrder.deliveryPartner === 'object' ? selectedTrackingOrder.deliveryPartner.name : 'Assigned Partner'}</strong></p>
+                                        <p>Vehicle: <strong>{trackingPartner ? `${trackingPartner.vehicleDetails?.type} (${trackingPartner.vehicleDetails?.model || 'Generic'})` : '—'}</strong></p>
+                                        <p>Speed: <strong>{['Accepted', 'Picked Up', 'On the Way'].includes(selectedTrackingOrder.deliveryStatus) ? '32 km/h' : '0 km/h (Idle)'}</strong></p>
+                                        <p>ETA: <strong className="text-blue-600">{selectedTrackingOrder.deliveryDistance ? `${Math.ceil(selectedTrackingOrder.deliveryDistance * 3)} mins` : '—'}</strong></p>
+                                    </div>
+                                ) : (
+                                    <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm p-4 rounded-xl border border-gray-250 shadow-lg text-[10px] text-gray-400 font-bold text-center">
+                                        Select an active order on the left to track its live route.
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

@@ -216,6 +216,9 @@ export const getOrders = async (req, res) => {
         filter.restaurantId = req.user.restaurantId;
     }
 
+    console.log('GET /api/orders called. User:', req.user?._id, 'Role:', req.user?.role, 'branchId:', req.user?.branchId, 'restaurantId:', req.user?.restaurantId);
+    console.log('Constructed filter:', filter);
+
     const orders = await Order.find(filter)
         .populate('user', 'id name')
         .populate('deliveryPartner', 'id name')
