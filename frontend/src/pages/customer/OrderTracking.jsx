@@ -250,10 +250,8 @@ const OrderTracking = () => {
                 {!isSelfPickup && order.deliveryPartner && (
                     <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex items-center justify-between animate-in slide-in-from-bottom-4">
                         <div className="flex items-center gap-4">
-                            <div className="w-16 h-16 bg-gray-200 rounded-full overflow-hidden border-2 border-orange-500 p-1">
-                                <div className="w-full h-full rounded-full bg-gray-300 overflow-hidden">
-                                    <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=200&auto=format&fit=crop" alt="Driver" className="w-full h-full object-cover" />
-                                </div>
+                            <div className="w-16 h-16 bg-orange-50 rounded-full border-2 border-orange-500 flex items-center justify-center text-orange-500 shrink-0 shadow-inner">
+                                <User size={28} className="fill-orange-500/10" />
                             </div>
                             <div>
                                 <p className="text-sm font-bold text-gray-400 uppercase tracking-wider">Your Rider</p>
