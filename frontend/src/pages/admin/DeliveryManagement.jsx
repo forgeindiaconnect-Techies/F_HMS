@@ -15,6 +15,7 @@ const DeliveryManagement = () => {
     const [activeOrders, setActiveOrders] = useState([]);
     const [selectedTrackingOrder, setSelectedTrackingOrder] = useState(null);
     const [totalOrdersCount, setTotalOrdersCount] = useState(0);
+    const [riderProgress, setRiderProgress] = useState(0);
     const [loading, setLoading] = useState(true);
 
     // Modal state
@@ -131,6 +132,32 @@ const DeliveryManagement = () => {
 
         return () => clearInterval(interval);
     }, [restaurant]);
+
+    useEffect(() => {
+        if (!selectedTrackingOrder) return;
+        
+        // Reset progress when selecting a new order
+        setRiderProgress(0);
+
+        // If the order is out for delivery, simulate live movement!
+        const isMoving = ['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) || 
+                         ['Picked Up', 'On the Way'].includes(selectedTrackingOrder.deliveryStatus);
+        
+        if (!isMoving) {
+            setRiderProgress(0);
+            return;
+        }
+
+        // Loop simulation progress from 10% to 95% repeatedly to show live movement!
+        const timer = setInterval(() => {
+            setRiderProgress(p => {
+                if (p >= 95) return 10; // Reset to simulate next leg
+                return p + 2;
+            });
+        }, 800);
+
+        return () => clearInterval(timer);
+    }, [selectedTrackingOrder]);
 
     const handleSaveSettings = async (e) => {
         e.preventDefault();
@@ -643,49 +670,135 @@ const DeliveryManagement = () => {
 
                         {/* Interactive Tracking Map Visualizer */}
                         <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col h-[580px] space-y-4">
-                            <div>
-                                <h3 className="text-lg font-black text-gray-900">Live Delivery Route Tracker</h3>
-                                <p className="text-xs text-gray-400">Map simulation of active delivery partner coordinates.</p>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h3 className="text-lg font-black text-gray-900">Live Delivery Route Tracker</h3>
+                                    <p className="text-xs text-gray-400">Map simulation of active delivery partner coordinates.</p>
+                                </div>
+                                {selectedTrackingOrder && (
+                                    <span className="text-[10px] font-extrabold uppercase bg-emerald-50 text-emerald-600 border border-emerald-100 px-2.5 py-1 rounded-full">
+                                        Status: {selectedTrackingOrder.status}
+                                    </span>
+                                )}
                             </div>
 
-                            <div className="relative flex-1 bg-slate-100 rounded-2xl border border-slate-200 overflow-hidden flex flex-col">
-                                {/* Map Grid lines */}
-                                <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:30px_30px]"></div>
-                                
-                                {/* Mock Map elements */}
-                                <div className="absolute left-1/3 top-1/4 w-32 h-1 bg-gray-300 transform rotate-12"></div>
-                                <div className="absolute left-1/2 top-1/2 w-48 h-1.5 bg-green-500/40 border-t border-b border-green-500 transform -rotate-45"></div>
-                                
-                                {/* Markers */}
-                                <div className="absolute top-1/3 left-1/4 text-center">
-                                    <div className="bg-red-500 text-white p-1.5 rounded-full inline-block shadow-md">
-                                        <MapPin size={16} />
-                                    </div>
-                                    <span className="block text-[9px] font-black text-gray-800 bg-white/80 px-1 py-0.5 rounded shadow mt-1">Restaurant</span>
-                                </div>
-
-                                {selectedTrackingOrder && selectedTrackingOrder.deliveryPartner && (
-                                    <div className="absolute top-2/3 left-2/3 text-center">
-                                        <div className="bg-blue-500 text-white p-1.5 rounded-full inline-block shadow-md animate-bounce">
-                                            <Navigation size={16} />
+                            {/* Stepper Milestones (Zomato/Swiggy Style) */}
+                            {selectedTrackingOrder ? (
+                                <div className="grid grid-cols-4 gap-2 bg-slate-50 p-3 rounded-2xl border border-slate-100 text-center text-[10px] font-bold text-gray-500">
+                                    {[
+                                        { label: 'Accepted', active: ['Accepted', 'Preparing', 'Ready', 'Out for Delivery', 'Delivered'].includes(selectedTrackingOrder.status) },
+                                        { label: 'Preparing', active: ['Preparing', 'Ready', 'Out for Delivery', 'Delivered'].includes(selectedTrackingOrder.status) },
+                                        { label: 'Ready', active: ['Ready', 'Out for Delivery', 'Delivered'].includes(selectedTrackingOrder.status) },
+                                        { label: 'Out for Delivery', active: ['Out for Delivery', 'Delivered'].includes(selectedTrackingOrder.status) }
+                                    ].map((step, index) => (
+                                        <div key={index} className="flex flex-col items-center gap-1">
+                                            <div className={`w-4 h-4 rounded-full flex items-center justify-center border text-[8px] font-black ${
+                                                step.active 
+                                                ? 'bg-emerald-500 border-emerald-600 text-white shadow-sm shadow-emerald-500/20' 
+                                                : 'bg-white border-gray-200 text-gray-300'
+                                            }`}>
+                                                {step.active ? '✓' : index + 1}
+                                            </div>
+                                            <span className={step.active ? 'text-emerald-700 font-extrabold' : 'text-gray-400'}>{step.label}</span>
                                         </div>
-                                        <span className="block text-[9px] font-black text-gray-800 bg-white/80 px-1 py-0.5 rounded shadow mt-1">
-                                            {typeof selectedTrackingOrder.deliveryPartner === 'object' ? selectedTrackingOrder.deliveryPartner.name : 'Partner'}: {selectedTrackingOrder.deliveryStatus || 'Pending'}
-                                        </span>
-                                    </div>
-                                )}
+                                    ))}
+                                </div>
+                            ) : null}
 
+                            <div className="relative flex-1 bg-slate-950 rounded-2xl border border-slate-900 overflow-hidden flex flex-col">
+                                {/* Map Grid lines (Dark Zomato/Swiggy styled theme) */}
+                                <div className="absolute inset-0 opacity-5 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:30px_30px]"></div>
+                                
                                 {selectedTrackingOrder ? (
-                                    <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm p-4 rounded-xl border border-gray-200 shadow-lg text-[10px] space-y-1.5 max-w-[220px]">
-                                        <p className="font-extrabold text-gray-900 uppercase tracking-widest text-[9px]">Route Details (Order #{selectedTrackingOrder._id.substring(selectedTrackingOrder._id.length - 4).toUpperCase()})</p>
-                                        <p>Assigned Partner: <strong className="text-green-700">{typeof selectedTrackingOrder.deliveryPartner === 'object' ? selectedTrackingOrder.deliveryPartner.name : 'Assigned Partner'}</strong></p>
-                                        <p>Vehicle: <strong>{trackingPartner ? `${trackingPartner.vehicleDetails?.type} (${trackingPartner.vehicleDetails?.model || 'Generic'})` : '—'}</strong></p>
-                                        <p>Speed: <strong>{['Accepted', 'Picked Up', 'On the Way'].includes(selectedTrackingOrder.deliveryStatus) ? '32 km/h' : '0 km/h (Idle)'}</strong></p>
-                                        <p>ETA: <strong className="text-blue-600">{selectedTrackingOrder.deliveryDistance ? `${Math.ceil(selectedTrackingOrder.deliveryDistance * 3)} mins` : '—'}</strong></p>
-                                    </div>
+                                    <>
+                                        {/* SVG Route Lines */}
+                                        <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                                            {/* Dotted grey route */}
+                                            <line x1="20%" y1="40%" x2="80%" y2="70%" stroke="#334155" strokeWidth="3" strokeDasharray="6,6" strokeLinecap="round" />
+                                            {/* Traversed green path */}
+                                            <line x1="20%" y1="40%" x2={`${20 + (['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) ? riderProgress : 0) * 0.6}%`} y2={`${40 + (['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) ? riderProgress : 0) * 0.3}%`} stroke="#10b981" strokeWidth="3" strokeLinecap="round" />
+                                        </svg>
+
+                                        {/* Restaurant Pin Marker */}
+                                        <div className="absolute top-[40%] left-[20%] -translate-x-1/2 -translate-y-1/2 text-center group z-10">
+                                            <div className="relative flex h-8 w-8 items-center justify-center bg-red-500 text-white rounded-full shadow-lg border-2 border-white cursor-pointer transition-transform group-hover:scale-110">
+                                                <div className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-25"></div>
+                                                <MapPin size={16} />
+                                            </div>
+                                            <span className="block text-[8px] font-black text-white bg-slate-900/90 border border-slate-880 px-1.5 py-0.5 rounded shadow mt-1 uppercase tracking-widest leading-none">Hub</span>
+                                        </div>
+
+                                        {/* Customer Destination Marker */}
+                                        <div className="absolute top-[70%] left-[80%] -translate-x-1/2 -translate-y-1/2 text-center group z-10">
+                                            <div className="relative flex h-8 w-8 items-center justify-center bg-purple-500 text-white rounded-full shadow-lg border-2 border-white cursor-pointer transition-transform group-hover:scale-110">
+                                                <div className="absolute inset-0 rounded-full bg-purple-500 animate-ping opacity-25"></div>
+                                                <MapPin size={16} />
+                                            </div>
+                                            <span className="block text-[8px] font-black text-white bg-slate-900/90 border border-slate-880 px-1.5 py-0.5 rounded shadow mt-1 uppercase tracking-widest leading-none">Home</span>
+                                        </div>
+
+                                        {/* Dynamic Rider Pin Marker */}
+                                        {selectedTrackingOrder.deliveryPartner && (
+                                            <div 
+                                                className="absolute -translate-x-1/2 -translate-y-1/2 text-center group z-20 transition-all duration-300 ease-out"
+                                                style={{
+                                                    left: `${20 + (['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) ? riderProgress : 0) * 0.6}%`,
+                                                    top: `${40 + (['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) ? riderProgress : 0) * 0.3}%`
+                                                }}
+                                            >
+                                                <div className="relative flex h-10 w-10 items-center justify-center bg-emerald-500 text-white rounded-full shadow-2xl border-2 border-white cursor-pointer transition-transform group-hover:scale-110">
+                                                    <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-40"></div>
+                                                    <Navigation size={18} className="transform rotate-45 animate-pulse text-white" />
+                                                </div>
+                                                <span className="block text-[8px] font-black text-emerald-400 bg-slate-950 border border-slate-880 px-2 py-1 rounded shadow-lg mt-1 whitespace-nowrap leading-none">
+                                                    {typeof selectedTrackingOrder.deliveryPartner === 'object' ? selectedTrackingOrder.deliveryPartner.name : 'Rider'} ({selectedTrackingOrder.deliveryStatus || 'Transit'})
+                                                </span>
+                                            </div>
+                                        )}
+
+                                        {/* Route Details overlay card */}
+                                        <div className="absolute bottom-4 right-4 bg-slate-900/95 backdrop-blur-md p-4 rounded-2xl border border-slate-800 shadow-2xl text-[10px] space-y-1.5 max-w-[240px] text-slate-300 z-10">
+                                            <p className="font-extrabold text-white uppercase tracking-widest text-[9px] border-b border-slate-800 pb-1 flex justify-between">
+                                                <span>Route Stats</span>
+                                                <span className="text-emerald-400">Order #{selectedTrackingOrder._id.substring(selectedTrackingOrder._id.length - 4).toUpperCase()}</span>
+                                            </p>
+                                            <p className="flex justify-between">
+                                                <span className="text-slate-500">Assigned Partner:</span>
+                                                <strong className="text-emerald-400">{typeof selectedTrackingOrder.deliveryPartner === 'object' ? selectedTrackingOrder.deliveryPartner.name : 'Assigned Partner'}</strong>
+                                            </p>
+                                            <p className="flex justify-between">
+                                                <span className="text-slate-500">Vehicle:</span>
+                                                <strong className="text-slate-200">{trackingPartner ? `${trackingPartner.vehicleDetails?.type} (${trackingPartner.vehicleDetails?.model || 'Generic'})` : '—'}</strong>
+                                            </p>
+                                            <p className="flex justify-between">
+                                                <span className="text-slate-500">Simulated Speed:</span>
+                                                <strong className="text-slate-200">
+                                                    {['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) ? '32 km/h' : '0 km/h (Idle)'}
+                                                </strong>
+                                            </p>
+                                            <p className="flex justify-between">
+                                                <span className="text-slate-500">Distance Remaining:</span>
+                                                <strong className="text-slate-200">
+                                                    {['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) 
+                                                        ? `${Number((selectedTrackingOrder.deliveryDistance * (1 - riderProgress / 100)).toFixed(1))} km` 
+                                                        : `${selectedTrackingOrder.deliveryDistance || 0} km`
+                                                    }
+                                                </strong>
+                                            </p>
+                                            <p className="flex justify-between border-t border-slate-800/60 pt-1">
+                                                <span className="text-slate-500">Estimated ETA:</span>
+                                                <strong className="text-emerald-400 font-extrabold">
+                                                    {['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status)
+                                                        ? `${Math.max(1, Math.ceil((selectedTrackingOrder.deliveryDistance * 3) * (1 - riderProgress / 100)))} mins`
+                                                        : `${selectedTrackingOrder.deliveryDistance ? selectedTrackingOrder.deliveryDistance * 3 : 15} mins`
+                                                    }
+                                                </strong>
+                                            </p>
+                                        </div>
+                                    </>
                                 ) : (
-                                    <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm p-4 rounded-xl border border-gray-250 shadow-lg text-[10px] text-gray-400 font-bold text-center">
-                                        Select an active order on the left to track its live route.
+                                    <div className="absolute inset-0 flex items-center justify-center bg-slate-900/90 backdrop-blur-sm p-4 text-center text-xs text-slate-500 font-bold">
+                                        Select an active delivery order on the left to track its live route.
                                     </div>
                                 )}
                             </div>
