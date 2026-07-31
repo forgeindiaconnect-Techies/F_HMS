@@ -14,6 +14,7 @@ const DeliveryManagement = () => {
     const [analytics, setAnalytics] = useState(null);
     const [activeOrders, setActiveOrders] = useState([]);
     const [selectedTrackingOrder, setSelectedTrackingOrder] = useState(null);
+    const [totalOrdersCount, setTotalOrdersCount] = useState(0);
     const [loading, setLoading] = useState(true);
 
     // Modal state
@@ -67,10 +68,11 @@ const DeliveryManagement = () => {
     const fetchActiveOrders = async () => {
         try {
             const res = await api.get('/orders');
+            setTotalOrdersCount(res.data.length);
             // Filter only delivery orders that are active
             const active = res.data.filter(o => 
                 o.orderType === 'Delivery' && 
-                ['Pending', 'Preparing', 'Ready', 'Out for Delivery'].includes(o.status)
+                !['Delivered', 'Cancelled', 'Completed'].includes(o.status)
             );
             setActiveOrders(active);
             
@@ -91,9 +93,12 @@ const DeliveryManagement = () => {
     const getTrackingPartnerDetails = () => {
         if (!selectedTrackingOrder || !selectedTrackingOrder.deliveryPartner) return null;
         const partnerId = typeof selectedTrackingOrder.deliveryPartner === 'object' 
-            ? selectedTrackingOrder.deliveryPartner._id 
+            ? (selectedTrackingOrder.deliveryPartner._id || selectedTrackingOrder.deliveryPartner.id)
             : selectedTrackingOrder.deliveryPartner;
-        return partners.find(p => p.userId?._id === partnerId || p._id === partnerId);
+        return partners.find(p => {
+            const pUserId = p.userId?._id || p.userId?.id || p.userId;
+            return String(pUserId) === String(partnerId) || String(p._id) === String(partnerId);
+        });
     };
 
     const trackingPartner = getTrackingPartnerDetails();
@@ -574,7 +579,7 @@ const DeliveryManagement = () => {
                             <div className="space-y-3 overflow-y-auto max-h-[500px]">
                                 {activeOrders.length === 0 ? (
                                     <div className="py-12 text-center text-gray-400 font-bold text-sm">
-                                        No active delivery orders.
+                                        No active delivery orders{totalOrdersCount > 0 ? ` (out of ${totalOrdersCount} total branch orders)` : ''}.
                                     </div>
                                 ) : (
                                     activeOrders.map(o => (
