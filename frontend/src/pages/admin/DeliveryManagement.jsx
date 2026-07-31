@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { 
     Truck, Plus, Search, Check, X, ShieldAlert, Ban, User, MapPin, 
     DollarSign, Clock, CheckCircle2, AlertTriangle, Star, Navigation, 
-    Award, Shield, FileText, ToggleLeft, ToggleRight
+    Award, Shield, FileText, ToggleLeft, ToggleRight, Store, Bike
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
@@ -719,13 +719,13 @@ const DeliveryManagement = () => {
                                             <line x1="20%" y1="40%" x2={`${20 + (['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) ? riderProgress : 0) * 0.6}%`} y2={`${40 + (['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) ? riderProgress : 0) * 0.3}%`} stroke="#10b981" strokeWidth="3" strokeLinecap="round" />
                                         </svg>
 
-                                        {/* Restaurant Pin Marker */}
+                                        {/* Restaurant Store Marker */}
                                         <div className="absolute top-[40%] left-[20%] -translate-x-1/2 -translate-y-1/2 text-center group z-10">
-                                            <div className="relative flex h-8 w-8 items-center justify-center bg-red-500 text-white rounded-full shadow-lg border-2 border-white cursor-pointer transition-transform group-hover:scale-110">
-                                                <div className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-25"></div>
-                                                <MapPin size={16} />
+                                            <div className="relative flex h-9 w-9 items-center justify-center bg-gradient-to-tr from-amber-500 to-orange-400 text-white rounded-2xl shadow-xl border-2 border-white cursor-pointer transition-all group-hover:scale-110">
+                                                <div className="absolute inset-0 rounded-2xl bg-orange-500 animate-ping opacity-20"></div>
+                                                <Store size={18} />
                                             </div>
-                                            <span className="block text-[8px] font-black text-white bg-slate-900/90 border border-slate-880 px-1.5 py-0.5 rounded shadow mt-1 uppercase tracking-widest leading-none">Hub</span>
+                                            <span className="block text-[8px] font-black text-white bg-slate-900/90 border border-slate-800 px-1.5 py-0.5 rounded shadow mt-1.5 uppercase tracking-widest leading-none">Hub Shop</span>
                                         </div>
 
                                         {/* Customer Destination Marker */}
@@ -734,10 +734,10 @@ const DeliveryManagement = () => {
                                                 <div className="absolute inset-0 rounded-full bg-purple-500 animate-ping opacity-25"></div>
                                                 <MapPin size={16} />
                                             </div>
-                                            <span className="block text-[8px] font-black text-white bg-slate-900/90 border border-slate-880 px-1.5 py-0.5 rounded shadow mt-1 uppercase tracking-widest leading-none">Home</span>
+                                            <span className="block text-[8px] font-black text-white bg-slate-900/90 border border-slate-800 px-1.5 py-0.5 rounded shadow mt-1 uppercase tracking-widest leading-none">Home</span>
                                         </div>
 
-                                        {/* Dynamic Rider Pin Marker */}
+                                        {/* Dynamic Rider Bike & Driver Avatar Marker */}
                                         {selectedTrackingOrder.deliveryPartner && (
                                             <div 
                                                 className="absolute -translate-x-1/2 -translate-y-1/2 text-center group z-20 transition-all duration-300 ease-out"
@@ -746,11 +746,19 @@ const DeliveryManagement = () => {
                                                     top: `${40 + (['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) ? riderProgress : 0) * 0.3}%`
                                                 }}
                                             >
-                                                <div className="relative flex h-10 w-10 items-center justify-center bg-emerald-500 text-white rounded-full shadow-2xl border-2 border-white cursor-pointer transition-transform group-hover:scale-110">
-                                                    <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-40"></div>
-                                                    <Navigation size={18} className="transform rotate-45 animate-pulse text-white" />
+                                                <div className="relative flex h-11 w-11 items-center justify-center bg-emerald-500 text-white rounded-full shadow-2xl border-2 border-white cursor-pointer transition-all group-hover:scale-110">
+                                                    {/* Outer pulsing ping wave */}
+                                                    <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-35"></div>
+                                                    
+                                                    {/* Bike animation */}
+                                                    <Bike size={20} className="animate-bounce" />
+                                                    
+                                                    {/* Small driver user overlay badge */}
+                                                    <div className="absolute -bottom-1 -right-1 bg-slate-900 border border-slate-800 rounded-full p-0.5 text-emerald-400 shadow-md">
+                                                        <User size={10} className="fill-emerald-400/20" />
+                                                    </div>
                                                 </div>
-                                                <span className="block text-[8px] font-black text-emerald-400 bg-slate-950 border border-slate-880 px-2 py-1 rounded shadow-lg mt-1 whitespace-nowrap leading-none">
+                                                <span className="block text-[8px] font-black text-emerald-400 bg-slate-950 border border-slate-800 px-2 py-1 rounded shadow-lg mt-1 whitespace-nowrap leading-none">
                                                     {typeof selectedTrackingOrder.deliveryPartner === 'object' ? selectedTrackingOrder.deliveryPartner.name : 'Rider'} ({selectedTrackingOrder.deliveryStatus || 'Transit'})
                                                 </span>
                                             </div>
