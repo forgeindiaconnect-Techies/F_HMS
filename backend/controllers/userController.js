@@ -5,7 +5,12 @@ import User from '../models/User.js';
 // @access  Private
 export const getUsers = async (req, res) => {
     try {
-        const users = await User.find({ restaurantId: req.user.restaurantId })
+        let query = {};
+        if (req.user.role !== 'SuperAdmin' && req.user.role !== 'SupportAgent') {
+            query.restaurantId = req.user.restaurantId;
+        }
+
+        const users = await User.find(query)
             .populate('branchId', 'name')
             .select('-password');
         
@@ -56,7 +61,7 @@ export const deleteUser = async (req, res) => {
         const targetUser = await User.findById(req.params.id);
 
         if (targetUser) {
-            if (targetUser.restaurantId?.toString() !== req.user.restaurantId.toString()) {
+            if (req.user.role !== 'SuperAdmin' && req.user.role !== 'SupportAgent' && targetUser.restaurantId?.toString() !== req.user.restaurantId?.toString()) {
                 return res.status(403).json({ message: 'Not authorized to delete this user' });
             }
             
