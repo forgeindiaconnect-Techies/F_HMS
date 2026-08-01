@@ -44,34 +44,51 @@ const Explore = () => {
 
         toast.loading("Detecting location...", { id: "gps" });
 
+        const options = {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        };
+
         navigator.geolocation.getCurrentPosition(
             async (position) => {
+                const { latitude, longitude } = position.coords;
+                let newLoc = "";
+                
                 try {
-                    const { latitude, longitude } = position.coords;
                     const res = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-                    
                     if (res.data && res.data.address) {
-                        const city = res.data.address.city || res.data.address.town || res.data.address.village || "";
+                        const city = res.data.address.city || res.data.address.town || res.data.address.village || res.data.address.suburb || "";
                         const state = res.data.address.state || "";
                         const country = res.data.address.country || "";
-                        
-                        let newLoc = city ? `${city}, ${state || country}` : country;
-                        
-                        setLocation(newLoc);
-                        localStorage.setItem('userLocation', newLoc);
-                        toast.success("Location updated!", { id: "gps" });
-                        setIsLocationOpen(false);
-                    } else {
-                        toast.error("Could not determine city", { id: "gps" });
+                        newLoc = city ? `${city}, ${state || country}` : country;
                     }
                 } catch (error) {
-                    console.error(error);
-                    toast.error("Failed to fetch location data", { id: "gps" });
+                    console.warn("Reverse geocoding failed, using coordinates fallback:", error);
                 }
+
+                if (!newLoc) {
+                    newLoc = `${latitude.toFixed(4)}° N, ${longitude.toFixed(4)}° E`;
+                }
+
+                setLocation(newLoc);
+                localStorage.setItem('userLocation', newLoc);
+                toast.success("Location updated!", { id: "gps" });
+                setIsLocationOpen(false);
             },
             (error) => {
-                toast.error("Location permission denied", { id: "gps" });
-            }
+                console.error("GPS error details:", error);
+                if (error.code === error.PERMISSION_DENIED) {
+                    toast.error("Location permission denied", { id: "gps" });
+                } else if (error.code === error.POSITION_UNAVAILABLE) {
+                    toast.error("Location is currently unavailable", { id: "gps" });
+                } else if (error.code === error.TIMEOUT) {
+                    toast.error("Location request timed out. Please try again.", { id: "gps" });
+                } else {
+                    toast.error("Failed to detect location", { id: "gps" });
+                }
+            },
+            options
         );
     };
 
