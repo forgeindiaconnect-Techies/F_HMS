@@ -89,13 +89,13 @@ const Home = () => {
     return (
         <div className="flex flex-col min-h-screen bg-white font-sans text-gray-900">
             {/* SaaS Header */}
-            <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm py-4 px-4 lg:px-8">
+            <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm py-3.5 px-3 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between max-w-7xl mx-auto w-full">
-                    <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2 cursor-pointer group">
-                        <div className="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/20 text-white group-hover:scale-105 transition-transform">
-                            <Utensils size={24} />
+                    <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-1.5 sm:gap-2 cursor-pointer group shrink-0">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg shadow-red-500/20 text-white group-hover:scale-105 transition-transform shrink-0">
+                            <Utensils size={18} className="sm:w-6 sm:h-6" />
                         </div>
-                        <h1 className="text-2xl font-black tracking-tight text-gray-900 group-hover:text-red-500 transition-colors">RestaurantHub</h1>
+                        <h1 className="text-lg sm:text-2xl font-black tracking-tight text-gray-900 group-hover:text-red-500 transition-colors">RestaurantHub</h1>
                     </Link>
                     
                     <nav className="hidden md:flex gap-8 font-medium text-sm text-gray-600">
@@ -104,9 +104,9 @@ const Home = () => {
                         <a href="#pricing" className="hover:text-red-500 transition-colors">Pricing</a>
                     </nav>
 
-                    <div className="flex items-center gap-3 md:gap-4 text-sm font-bold">
-                        <Link to="/staff/login" className="text-gray-600 hover:text-gray-900 transition-colors">Log in</Link>
-                        <Link to="/staff/register" className="bg-gray-900 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl hover:bg-gray-800 shadow-lg shadow-gray-900/20 transition-all active:scale-95">
+                    <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm font-bold shrink-0">
+                        <Link to="/staff/login" className="text-gray-650 hover:text-gray-950 transition-colors whitespace-nowrap px-1">Log in</Link>
+                        <Link to="/staff/register" className="bg-gray-900 text-white px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-xl hover:bg-gray-800 shadow-lg shadow-gray-900/20 transition-all active:scale-95 whitespace-nowrap">
                             <span className="md:hidden">Sign Up</span>
                             <span className="hidden md:inline">Get Started Free</span>
                         </Link>
