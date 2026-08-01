@@ -15,6 +15,7 @@ const SuperAdminDashboard = () => {
     });
     const [restaurants, setRestaurants] = useState([]);
     const [inquiries, setInquiries] = useState([]);
+    const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [viewingRestaurant, setViewingRestaurant] = useState(null);
 
@@ -31,14 +32,16 @@ const SuperAdminDashboard = () => {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const [statsRes, restsRes, inquiriesRes] = await Promise.all([
+                const [statsRes, restsRes, inquiriesRes, ticketsRes] = await Promise.all([
                     api.get('/super-admin/stats'),
                     api.get('/super-admin/restaurants'),
-                    api.get('/inquiries/admin')
+                    api.get('/inquiries/admin'),
+                    api.get('/super-admin/tickets')
                 ]);
                 setStats(statsRes.data);
                 setRestaurants(restsRes.data);
                 setInquiries(inquiriesRes.data);
+                setTickets(ticketsRes.data);
             } catch (error) {
                 console.error("Failed to fetch super admin data", error);
             } finally {
@@ -58,6 +61,19 @@ const SuperAdminDashboard = () => {
             toast.success(`Inquiry status updated to ${nextStatus}!`);
         } catch (error) {
             toast.error('Failed to update inquiry status');
+        }
+    };
+
+    const handleUpdateTicketStatus = async (id, currentStatus) => {
+        const nextStatus = currentStatus === 'Open' ? 'In Progress' : currentStatus === 'In Progress' ? 'Resolved' : 'Open';
+        try {
+            await api.put(`/super-admin/tickets/${id}`, { status: nextStatus });
+            setTickets(tickets.map(tkt => 
+                tkt._id === id ? { ...tkt, status: nextStatus } : tkt
+            ));
+            toast.success(`Ticket status updated to ${nextStatus}!`);
+        } catch (error) {
+            toast.error('Failed to update ticket status');
         }
     };
 
@@ -313,6 +329,98 @@ const SuperAdminDashboard = () => {
                                 <td colSpan="5" className="p-10 text-center">
                                     <MessageSquare className="mx-auto text-gray-300 mb-3" size={40} />
                                     <p className="text-gray-500 font-medium text-lg">No inquiries received yet.</p>
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {/* Customer Support Enquiries (Tickets) */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <div>
+                    <h2 className="text-xl font-bold text-gray-900 font-sans tracking-tight">Customer Support Enquiries (Tickets)</h2>
+                    <p className="text-sm text-gray-500 mt-1">Support tickets submitted by registered restaurant partners/customers.</p>
+                </div>
+                <Link to="/super-admin/support" className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl">
+                    Open Support Console <ArrowRight size={16} />
+                </Link>
+            </div>
+            <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                    <thead>
+                        <tr className="bg-white border-b border-gray-100 text-xs text-gray-400 uppercase tracking-wider">
+                            <th className="p-5 font-bold">Ticket ID / Restaurant</th>
+                            <th className="p-5 font-bold">Category</th>
+                            <th className="p-5 font-bold">Priority</th>
+                            <th className="p-5 font-bold">Subject / Description</th>
+                            <th className="p-5 font-bold">Status</th>
+                            <th className="p-5 font-bold text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                        {tickets.slice(0, 10).map(tkt => (
+                            <tr key={tkt._id} className="hover:bg-gray-50/80 transition-colors text-sm">
+                                <td className="p-5">
+                                    <div>
+                                        <span className="font-bold text-blue-600 block">{tkt.ticketId}</span>
+                                        <span className="text-xs text-gray-900 block font-semibold">{tkt.restaurantId?.name || 'Platform Customer'}</span>
+                                        <span className="text-[11px] text-gray-450 block">{tkt.restaurantId?.email || 'N/A'}</span>
+                                    </div>
+                                </td>
+                                <td className="p-5">
+                                    <span className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg border border-slate-200">
+                                        {tkt.category}
+                                    </span>
+                                </td>
+                                <td className="p-5">
+                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black tracking-wider uppercase border ${
+                                        tkt.priority === 'Critical' ? 'bg-red-100 text-red-700 border-red-200' :
+                                        tkt.priority === 'High' ? 'bg-orange-100 text-orange-700 border-orange-200' :
+                                        tkt.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
+                                        'bg-green-100 text-green-700 border-green-200'
+                                    }`}>
+                                        {tkt.priority}
+                                    </span>
+                                </td>
+                                <td className="p-5 max-w-xs">
+                                    <div>
+                                        <span className="font-bold text-gray-900 block truncate">{tkt.subject}</span>
+                                        <span className="text-xs text-gray-500 line-clamp-2 mt-0.5" title={tkt.description}>{tkt.description}</span>
+                                    </div>
+                                </td>
+                                <td className="p-5">
+                                    <span className={`px-3 py-1.5 text-xs font-bold rounded-lg border ${
+                                        tkt.status === 'Resolved' || tkt.status === 'Closed' ? 'bg-green-50 text-green-700 border-green-100' :
+                                        tkt.status === 'In Progress' ? 'bg-orange-50 text-orange-700 border-orange-100' :
+                                        'bg-blue-50 text-blue-700 border-blue-100'
+                                    }`}>
+                                        {tkt.status}
+                                    </span>
+                                </td>
+                                <td className="p-5 text-right whitespace-nowrap space-x-2">
+                                    <button 
+                                        onClick={() => handleUpdateTicketStatus(tkt._id, tkt.status)}
+                                        className="px-3 py-1 text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-all active:scale-[0.97]"
+                                    >
+                                        {tkt.status === 'Open' ? 'In Progress' : tkt.status === 'In Progress' ? 'Resolve' : 'Reopen'}
+                                    </button>
+                                    <Link 
+                                        to={`/super-admin/support/tickets/${tkt._id}`}
+                                        className="px-3 py-1 text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl transition-all active:scale-[0.97] inline-block"
+                                    >
+                                        View Details
+                                    </Link>
+                                </td>
+                            </tr>
+                        ))}
+                        {tickets.length === 0 && (
+                            <tr>
+                                <td colSpan="6" className="p-10 text-center">
+                                    <MessageSquare className="mx-auto text-gray-300 mb-3" size={40} />
+                                    <p className="text-gray-500 font-medium text-lg">No support enquiries received yet.</p>
                                 </td>
                             </tr>
                         )}
