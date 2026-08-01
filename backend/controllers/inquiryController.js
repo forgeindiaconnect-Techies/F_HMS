@@ -5,15 +5,16 @@ import Inquiry from '../models/Inquiry.js';
 // @access  Public
 export const createInquiry = async (req, res) => {
     try {
-        const { name, email, restaurantName, subject, message } = req.body;
+        const { name, email, phone, restaurantName, subject, message } = req.body;
 
-        if (!name || !email || !restaurantName || !subject || !message) {
+        if (!name || !email || !phone || !restaurantName || !subject || !message) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
         const inquiry = new Inquiry({
             name,
             email,
+            phone,
             restaurantName,
             subject,
             message

@@ -288,6 +288,7 @@ const SuperAdminDashboard = () => {
                                         <span className="font-bold text-gray-900 block">{inq.name}</span>
                                         <span className="text-xs text-gray-500 block font-semibold">{inq.restaurantName}</span>
                                         <span className="text-[11px] text-gray-400 block">{inq.email}</span>
+                                        <span className="text-[11px] text-gray-500 block font-semibold">📞 {inq.phone}</span>
                                     </div>
                                 </td>
                                 <td className="p-5">

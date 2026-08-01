@@ -8,6 +8,7 @@ const Contact = () => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
+        phone: '',
         restaurantName: '',
         subject: 'Sales',
         message: ''
@@ -28,7 +29,7 @@ const Contact = () => {
         try {
             await axios.post(`${API_URL}/inquiries`, formData);
             toast.success("Thank you! Your message has been sent successfully.");
-            setFormData({ name: '', email: '', restaurantName: '', subject: 'Sales', message: '' });
+            setFormData({ name: '', email: '', phone: '', restaurantName: '', subject: 'Sales', message: '' });
         } catch (error) {
             console.error(error);
             toast.error(error.response?.data?.message || "Failed to send message. Please try again.");
@@ -169,6 +170,17 @@ const Contact = () => {
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                     <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-gray-600">Phone Number</label>
+                                        <input
+                                            type="tel"
+                                            required
+                                            value={formData.phone}
+                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                            placeholder="Your Phone Number"
+                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-100 transition-all font-medium"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-gray-600">Restaurant Name</label>
                                         <input
                                             type="text"
@@ -179,19 +191,20 @@ const Contact = () => {
                                             className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-100 transition-all font-medium"
                                         />
                                     </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-gray-600">Subject</label>
-                                        <select
-                                            value={formData.subject}
-                                            onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-100 transition-all font-medium"
-                                        >
-                                            <option value="Sales">Sales & Pricing</option>
-                                            <option value="Support">Technical Support</option>
-                                            <option value="Demo">Schedule a Live Demo</option>
-                                            <option value="General">General Inquiry</option>
-                                        </select>
-                                    </div>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-gray-600">Subject</label>
+                                    <select
+                                        value={formData.subject}
+                                        onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-100 transition-all font-medium"
+                                    >
+                                        <option value="Sales">Sales & Pricing</option>
+                                        <option value="Support">Technical Support</option>
+                                        <option value="Demo">Schedule a Live Demo</option>
+                                        <option value="General">General Inquiry</option>
+                                    </select>
                                 </div>
 
                                 <div className="space-y-1.5">
