@@ -125,16 +125,6 @@ const Contact = () => {
                             </div>
                         </div>
 
-                        {/* Interactive FAQ Prompt */}
-                        <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 flex items-center justify-between">
-                            <div>
-                                <h4 className="font-bold text-gray-900 text-sm">Looking for quick answers?</h4>
-                                <p className="text-xs text-gray-500 mt-1">Check out our frequently asked questions.</p>
-                            </div>
-                            <a href="/#faq" className="text-xs font-bold text-red-500 hover:text-red-600 flex items-center gap-1">
-                                View FAQ <ArrowRight size={14} />
-                            </a>
-                        </div>
                     </div>
 
                     {/* Right Column: Form */}
