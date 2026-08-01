@@ -248,7 +248,11 @@ const Home = () => {
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                             {restaurants.slice(0,6).map((restaurant, idx) => (
-                                <Link to={`/restaurant/${restaurant._id}`} key={idx} className="group cursor-pointer block hover:scale-105 transition-transform duration-200">
+                                <div 
+                                    key={idx} 
+                                    onClick={() => toast.success(`Storefront preview of "${restaurant.name}"`)}
+                                    className="group cursor-pointer block hover:scale-105 transition-transform duration-200"
+                                >
                                     <div className="relative rounded-2xl overflow-hidden aspect-square mb-3 shadow-sm">
                                         <img 
                                             src={
@@ -268,7 +272,7 @@ const Home = () => {
                                             <h3 className="text-sm font-bold truncate">{restaurant.name}</h3>
                                         </div>
                                     </div>
-                                </Link>
+                                </div>
                             ))}
                         </div>
                     )}
