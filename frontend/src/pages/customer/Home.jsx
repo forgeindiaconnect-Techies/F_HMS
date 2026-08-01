@@ -102,6 +102,7 @@ const Home = () => {
                         <a href="#features" className="hover:text-red-500 transition-colors">Features</a>
                         <a href="#workflow" className="hover:text-red-500 transition-colors">Workflow</a>
                         <a href="#pricing" className="hover:text-red-500 transition-colors">Pricing</a>
+                        <Link to="/contact" className="hover:text-red-500 transition-colors">Contact</Link>
                     </nav>
 
                     <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm font-bold shrink-0">
@@ -588,7 +589,7 @@ const Home = () => {
                             <h4 className="font-bold text-white mb-4">Company</h4>
                             <ul className="space-y-3 text-sm text-slate-400 text-center md:text-left">
                                 <li><a href="#about" className="hover:text-red-400 transition-colors">About Us</a></li>
-                                <li><a href="#pricing" onClick={() => setShowContact(true)} className="hover:text-red-400 transition-colors">Contact</a></li>
+                                <li><Link to="/contact" className="hover:text-red-400 transition-colors">Contact</Link></li>
                             </ul>
                         </div>
                     </div>

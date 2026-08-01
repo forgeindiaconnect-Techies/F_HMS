@@ -88,6 +88,7 @@ import CustomerOrderTracking from './pages/customer/CustomerOrderTracking';
 import DeliveryManagement from './pages/admin/DeliveryManagement';
 import DeliveryPartnerLogin from './pages/customer/DeliveryPartnerLogin';
 import DeliveryPartnerDashboard from './pages/customer/DeliveryPartnerDashboard';
+import Contact from './pages/customer/Contact';
 
 import { Toaster } from 'react-hot-toast';
 
@@ -100,6 +101,7 @@ function App() {
         <Route path="/" element={<CustomerAuthProvider><PublicLayout /></CustomerAuthProvider>}>
           <Route index element={<Home />} />
           <Route path="explore" element={<Explore />} />
+          <Route path="contact" element={<Contact />} />
         </Route>
         <Route path="/" element={<CustomerAuthProvider><CartProvider><CustomerLayout /></CartProvider></CustomerAuthProvider>}>
           <Route path="menu" element={<Menu />} />
