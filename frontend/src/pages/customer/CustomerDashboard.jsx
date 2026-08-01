@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Gift, Clock, Star, MapPin, ChevronRight, ShoppingBag, Heart, LogOut, Crown, Sparkles, ArrowLeft, Wallet, Bookmark, Train, Settings, CreditCard } from 'lucide-react';
+import { Gift, Clock, Star, MapPin, ChevronRight, ShoppingBag, LogOut, Crown, Sparkles } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
