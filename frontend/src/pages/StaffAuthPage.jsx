@@ -269,13 +269,10 @@ const StaffAuthPage = () => {
             <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-4 relative overflow-hidden bg-gray-900 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] group"
+                className="w-full mt-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 active:scale-[0.98] text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-green-600/10 flex items-center justify-center gap-2 text-base cursor-pointer"
             >
-                <div className="absolute inset-0 w-0 bg-green-500 transition-all duration-300 ease-out group-hover:w-full opacity-100"></div>
-                <span className="relative flex items-center justify-center gap-2 text-base">
-                    {loading ? 'Please wait...' : 'Sign In'}
-                    {!loading && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
-                </span>
+                {loading ? 'Please wait...' : 'Sign In'}
+                {!loading && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
             </button>
         </form>
     );
@@ -379,7 +376,7 @@ const StaffAuthPage = () => {
             <button
                 type="button"
                 onClick={handleNextStep}
-                className="w-full mt-6 bg-gray-900 hover:bg-black text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2"
+                className="w-full mt-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 active:scale-[0.98] text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-green-600/10 flex items-center justify-center gap-2 cursor-pointer"
             >
                 Next Step <ArrowRight size={18} />
             </button>
@@ -452,7 +449,7 @@ const StaffAuthPage = () => {
             <button
                 type="button"
                 onClick={handleNextStep}
-                className="w-full mt-6 bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-500/30"
+                className="w-full mt-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 active:scale-[0.98] text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-green-600/10 flex items-center justify-center gap-2 cursor-pointer"
             >
                 Continue to KYC Upload <ArrowRight size={18} />
             </button>

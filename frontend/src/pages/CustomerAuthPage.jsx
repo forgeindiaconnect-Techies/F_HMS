@@ -218,26 +218,23 @@ const CustomerAuthPage = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full mt-2 relative overflow-hidden bg-gray-900 text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98] group"
+                            className="w-full mt-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 active:scale-[0.98] text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-orange-600/10 flex items-center justify-center gap-2 text-base cursor-pointer"
                             style={{ fontFamily: 'Outfit, sans-serif' }}
                         >
-                            <div className="absolute inset-0 w-0 bg-orange-500 transition-all duration-300 ease-out group-hover:w-full opacity-100"></div>
-                            <span className="relative flex items-center justify-center gap-2 text-base">
-                                {loading ? (
-                                    <>
-                                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                        </svg>
-                                        Please wait...
-                                    </>
-                                ) : (
-                                    <>
-                                        {mode === 'login' ? 'Sign In' : 'Create Account'}
-                                        <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                                    </>
-                                )}
-                            </span>
+                            {loading ? (
+                                <>
+                                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                    </svg>
+                                    Please wait...
+                                </>
+                            ) : (
+                                <>
+                                    {mode === 'login' ? 'Sign In' : 'Create Account'}
+                                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                                </>
+                            )}
                         </button>
                     </form>
                 </div>
