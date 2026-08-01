@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Store, Users, CreditCard, ShoppingBag, TrendingUp, AlertCircle, ArrowRight, X } from 'lucide-react';
+import { Store, Users, CreditCard, ShoppingBag, TrendingUp, AlertCircle, ArrowRight, X, MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -14,6 +14,7 @@ const SuperAdminDashboard = () => {
         totalOrders: 0
     });
     const [restaurants, setRestaurants] = useState([]);
+    const [inquiries, setInquiries] = useState([]);
     const [loading, setLoading] = useState(true);
     const [viewingRestaurant, setViewingRestaurant] = useState(null);
 
@@ -30,12 +31,14 @@ const SuperAdminDashboard = () => {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const [statsRes, restsRes] = await Promise.all([
+                const [statsRes, restsRes, inquiriesRes] = await Promise.all([
                     api.get('/super-admin/stats'),
-                    api.get('/super-admin/restaurants')
+                    api.get('/super-admin/restaurants'),
+                    api.get('/inquiries/admin')
                 ]);
                 setStats(statsRes.data);
                 setRestaurants(restsRes.data);
+                setInquiries(inquiriesRes.data);
             } catch (error) {
                 console.error("Failed to fetch super admin data", error);
             } finally {
@@ -44,6 +47,19 @@ const SuperAdminDashboard = () => {
         };
         fetchDashboardData();
     }, [api]);
+
+    const handleUpdateInquiryStatus = async (id, currentStatus) => {
+        const nextStatus = currentStatus === 'New' ? 'In Progress' : currentStatus === 'In Progress' ? 'Resolved' : 'New';
+        try {
+            await api.put(`/inquiries/admin/${id}`, { status: nextStatus });
+            setInquiries(inquiries.map(inq => 
+                inq._id === id ? { ...inq, status: nextStatus } : inq
+            ));
+            toast.success(`Inquiry status updated to ${nextStatus}!`);
+        } catch (error) {
+            toast.error('Failed to update inquiry status');
+        }
+    };
 
     const handleFreezeAccount = async (id, currentStatus) => {
         const newStatus = currentStatus === 'Active' ? 'Frozen' : 'Active';
@@ -230,6 +246,80 @@ const SuperAdminDashboard = () => {
                     </table>
                 </div>
             </div>
+
+        {/* Public Inquiries Section */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+                <h2 className="text-xl font-bold text-gray-900 font-sans tracking-tight">Public Inquiries & Leads</h2>
+                <p className="text-sm text-gray-500 mt-1">Inquiries submitted from the landing page contact form.</p>
+            </div>
+            <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                    <thead>
+                        <tr className="bg-white border-b border-gray-100 text-xs text-gray-400 uppercase tracking-wider">
+                            <th className="p-5 font-bold">Contact Details</th>
+                            <th className="p-5 font-bold">Subject</th>
+                            <th className="p-5 font-bold">Message</th>
+                            <th className="p-5 font-bold">Status</th>
+                            <th className="p-5 font-bold text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                        {inquiries.map(inq => (
+                            <tr key={inq._id} className="hover:bg-gray-50/80 transition-colors text-sm">
+                                <td className="p-5">
+                                    <div>
+                                        <span className="font-bold text-gray-900 block">{inq.name}</span>
+                                        <span className="text-xs text-gray-500 block font-semibold">{inq.restaurantName}</span>
+                                        <span className="text-[11px] text-gray-400 block">{inq.email}</span>
+                                    </div>
+                                </td>
+                                <td className="p-5">
+                                    <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${
+                                        inq.subject === 'Sales' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                                        inq.subject === 'Support' ? 'bg-red-50 text-red-700 border-red-100' :
+                                        inq.subject === 'Demo' ? 'bg-purple-50 text-purple-700 border-purple-100' :
+                                        'bg-gray-50 text-gray-700 border-gray-100'
+                                    }`}>
+                                        {inq.subject}
+                                    </span>
+                                </td>
+                                <td className="p-5 max-w-xs">
+                                    <p className="text-xs text-gray-600 font-medium leading-relaxed line-clamp-3" title={inq.message}>
+                                        {inq.message}
+                                    </p>
+                                </td>
+                                <td className="p-5">
+                                    <span className={`px-3 py-1.5 text-xs font-bold rounded-lg border ${
+                                        inq.status === 'Resolved' ? 'bg-green-50 text-green-700 border-green-100' :
+                                        inq.status === 'In Progress' ? 'bg-orange-50 text-orange-700 border-orange-100' :
+                                        'bg-blue-50 text-blue-700 border-blue-100'
+                                    }`}>
+                                        {inq.status}
+                                    </span>
+                                </td>
+                                <td className="p-5 text-right whitespace-nowrap">
+                                    <button 
+                                        onClick={() => handleUpdateInquiryStatus(inq._id, inq.status)}
+                                        className="px-3.5 py-1.5 text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-all active:scale-[0.97]"
+                                    >
+                                        {inq.status === 'New' ? 'Start Progress' : inq.status === 'In Progress' ? 'Resolve' : 'Reopen'}
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                        {inquiries.length === 0 && (
+                            <tr>
+                                <td colSpan="5" className="p-10 text-center">
+                                    <MessageSquare className="mx-auto text-gray-300 mb-3" size={40} />
+                                    <p className="text-gray-500 font-medium text-lg">No inquiries received yet.</p>
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
             {/* View Details Modal */}
             {viewingRestaurant && (

@@ -50,6 +50,7 @@ import planRoutes from './routes/planRoutes.js';
 import serviceRequestRoutes from './routes/serviceRequestRoutes.js';
 import supportRoutes from './routes/supportRoutes.js';
 import deliveryRoutes from './routes/deliveryRoutes.js';
+import inquiryRoutes from './routes/inquiryRoutes.js';
 import Plan from './models/Plan.js';
 
 
@@ -79,6 +80,7 @@ app.use('/api/plans', planRoutes);
 app.use('/api/service-requests', serviceRequestRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/delivery', deliveryRoutes);
+app.use('/api/inquiries', inquiryRoutes);
 
 import path from 'path';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
