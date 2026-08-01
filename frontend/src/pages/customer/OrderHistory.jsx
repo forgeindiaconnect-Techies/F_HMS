@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Star, ShoppingBag, MessageSquare, ExternalLink, Receipt, X, Printer } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 
 const OrderHistory = () => {
     const { api } = useCustomerAuth();
+    const navigate = useNavigate();
     const [pastOrders, setPastOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [reviewingId, setReviewingId] = useState(null);
@@ -122,7 +123,16 @@ const OrderHistory = () => {
                     ) : pastOrders.length === 0 ? (
                         <div className="text-center py-20 text-gray-500">You haven't placed any orders yet.</div>
                     ) : pastOrders.map((order) => (
-                        <div key={order._id} className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 transition-all hover:border-orange-200">
+                        <div 
+                            key={order._id} 
+                            onClick={(e) => {
+                                if (e.target.closest('button') || e.target.closest('a') || e.target.tagName === 'BUTTON' || e.target.tagName === 'A') {
+                                    return;
+                                }
+                                navigate(`/track/${order._id}?restaurantId=${order.restaurantId?._id || order.restaurantId || ''}&branchId=${order.branchId || ''}`);
+                            }}
+                            className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 transition-all hover:border-orange-200 cursor-pointer hover:shadow-md hover:scale-[1.005]"
+                        >
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6 pb-6 border-b border-gray-100">
                                 <div className="flex items-center gap-5">
                                     <div className="w-16 h-16 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600 shrink-0">
