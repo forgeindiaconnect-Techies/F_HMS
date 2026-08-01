@@ -33,26 +33,26 @@ const CustomerLayout = () => {
                         <Link to="/reservations" className="text-gray-600 hover:text-orange-600 font-medium transition-colors">Reservations</Link>
                     </nav>
 
-                    <div className="flex items-center gap-4 sm:gap-6">
-                        <div className="flex items-center gap-0 sm:gap-4">
+                    <div className="flex items-center gap-3 sm:gap-6">
+                        <div className="flex items-center gap-2 sm:gap-4">
                             <button 
                                 onClick={() => setIsWishlistOpen(true)}
-                                className="relative p-1 sm:p-2 text-gray-600 hover:text-orange-600 transition-colors cursor-pointer animate-in fade-in"
+                                className="relative p-1.5 sm:p-2 text-gray-600 hover:text-orange-600 transition-colors cursor-pointer animate-in fade-in"
                             >
-                                <Heart size={24} />
+                                <Heart size={22} />
                                 {wishlist && wishlist.length > 0 && (
-                                    <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white animate-in zoom-in duration-200">
+                                    <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-white animate-in zoom-in duration-200">
                                         {wishlist.length}
                                     </span>
                                 )}
                             </button>
                             <button 
                                 onClick={() => setIsCartOpen(true)}
-                                className="relative p-1 sm:p-2 text-gray-600 hover:text-orange-600 transition-colors cursor-pointer"
+                                className="relative p-1.5 sm:p-2 text-gray-600 hover:text-orange-600 transition-colors cursor-pointer"
                             >
-                                <ShoppingCart size={24} />
+                                <ShoppingCart size={22} />
                                 {cartCount > 0 && (
-                                    <span className="absolute top-0 right-0 w-5 h-5 bg-orange-600 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white animate-in zoom-in duration-200">
+                                    <span className="absolute top-0 right-0 w-4 h-4 bg-orange-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-white animate-in zoom-in duration-200">
                                         {cartCount}
                                     </span>
                                 )}
@@ -63,14 +63,14 @@ const CustomerLayout = () => {
                             <div className="relative">
                                 <button 
                                     onClick={() => setIsProfileOpen(!isProfileOpen)} 
-                                    className="flex items-center gap-2 bg-orange-50 hover:bg-orange-100 text-orange-700 px-4 py-2 rounded-full font-bold transition-colors"
+                                    className="flex items-center gap-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 p-2 sm:px-4 sm:py-2 rounded-full font-bold transition-colors"
                                 >
-                                    <User size={16} />
-                                    {user.name}
+                                    <User size={16} className="shrink-0" />
+                                    <span className="hidden sm:inline truncate max-w-[80px]">{user.name}</span>
                                 </button>
                                 
                                 {isProfileOpen && (
-                                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50">
+                                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                                         <Link 
                                             to="/profile" 
                                             onClick={() => setIsProfileOpen(false)}
@@ -92,18 +92,16 @@ const CustomerLayout = () => {
                                         >
                                             Table Booking History
                                         </Link>
-
                                     </div>
                                 )}
                             </div>
                         ) : (
                             <>
-                                <Link to="/register" className="text-sm font-bold text-gray-600 hover:text-orange-600 transition-colors">
-                                    <span className="md:hidden">Sign Up</span>
-                                    <span className="hidden md:inline">Register</span>
+                                <Link to="/register" className="hidden sm:inline text-sm font-bold text-gray-650 hover:text-orange-600 transition-colors">
+                                    Register
                                 </Link>
-                                <Link to="/login" className="flex items-center gap-1.5 md:gap-2 bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 md:px-5 md:py-2 rounded-full font-bold transition-colors shadow-sm shadow-orange-600/20 text-sm md:text-base" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                                    <User size={14} className="md:w-4 md:h-4" />
+                                <Link to="/login" className="flex items-center gap-1 bg-orange-600 hover:bg-orange-750 text-white px-3 py-1.5 sm:px-5 sm:py-2 rounded-full font-bold transition-colors shadow-sm shadow-orange-600/20 text-xs sm:text-sm" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                                    <User size={12} className="shrink-0" />
                                     Sign In
                                 </Link>
                             </>
@@ -115,9 +113,9 @@ const CustomerLayout = () => {
             <main className="flex-grow pb-16 md:pb-0">
                 <Outlet />
             </main>
-
+ 
             {/* Mobile Bottom Navigation */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-2.5 px-6 flex justify-between items-center z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 px-2 flex justify-around items-center z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
                 <Link to="/explore" className="flex flex-col items-center text-gray-500 hover:text-orange-600 transition-colors">
                     <UtensilsCrossed size={20} />
                     <span className="text-[10px] font-bold mt-1">Explore</span>
