@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Gift, Clock, Star, MapPin, ChevronRight, ShoppingBag, Heart, LogOut } from 'lucide-react';
+import { Gift, Clock, Star, MapPin, ChevronRight, ShoppingBag, Heart, LogOut, Crown, Sparkles } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
@@ -121,23 +121,50 @@ const CustomerDashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column: Loyalty & Quick Stats */}
                 <div className="space-y-8">
-                    {/* Loyalty Card */}
-                    <div className="bg-gradient-to-br from-gray-900 to-black rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-orange-500/30 transition-colors"></div>
+                    {/* Loyalty Card - Premium Zomato Gold Edition */}
+                    <div className="bg-gradient-to-br from-[#111] via-[#1a1a1a] to-[#0a0a0a] rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-[#d4af37]/30 group transition-all duration-300 hover:shadow-2xl hover:shadow-[#d4af37]/5 hover:border-[#d4af37]/50">
+                        {/* Shimmering glass sheen overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.04] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
+                        {/* Gold ambient radial glows */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#d4af37]/15 transition-colors"></div>
+                        <div className="absolute bottom-0 left-0 w-28 h-28 bg-orange-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+                        
                         <div className="relative z-10">
-                            <div className="flex items-center gap-2 text-orange-400 mb-6 font-bold tracking-widest text-xs uppercase">
-                                <Star size={16} className="fill-orange-400" /> Gold Member
+                            {/* Zomato Gold Branded Tag */}
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#ffe07d] to-[#f3c056] text-black flex items-center justify-center shadow-lg shadow-yellow-500/20 shrink-0">
+                                        <Crown size={15} className="fill-black" />
+                                    </div>
+                                    <div>
+                                        <span className="block font-black tracking-[0.25em] text-[10px] text-transparent bg-clip-text bg-gradient-to-r from-[#ffe07d] via-[#f5c661] to-[#ffe07d]">
+                                            GOLD MEMBER
+                                        </span>
+                                        <span className="block text-[8px] text-gray-500 font-extrabold uppercase tracking-widest leading-none mt-0.5">
+                                            Resto Gold Edition
+                                        </span>
+                                    </div>
+                                </div>
+                                <Sparkles size={14} className="text-[#ffe07d] animate-pulse" />
                             </div>
-                            <h2 className="text-5xl font-bold font-sans tracking-tighter mb-2">2,450</h2>
-                            <p className="text-gray-400 text-sm">Resto Rewards Points</p>
                             
-                            <div className="mt-8 pt-6 border-t border-white/10">
-                                <p className="text-sm font-medium mb-3 flex justify-between">
-                                    <span>Progress to Platinum</span>
-                                    <span className="text-orange-400">550 pts needed</span>
-                                </p>
-                                <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                                    <div className="h-full bg-gradient-to-r from-orange-500 to-orange-400 w-[80%] rounded-full"></div>
+                            {/* Points Balance */}
+                            <div className="space-y-1">
+                                <span className="text-[10px] text-gray-400 font-black tracking-widest uppercase block">Points Balance</span>
+                                <h2 className="text-5xl font-black font-sans tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-[#fff2d1] to-[#f3c056]">
+                                    2,450
+                                </h2>
+                                <p className="text-gray-500 text-xs font-semibold">Active Resto Rewards Points</p>
+                            </div>
+                            
+                            {/* Progress bar to next VIP level */}
+                            <div className="mt-8 pt-6 border-t border-white/5">
+                                <div className="flex justify-between text-xs font-bold mb-3">
+                                    <span className="text-gray-400">Progress to Platinum</span>
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ffe07d] to-[#f3c056]">550 pts needed</span>
+                                </div>
+                                <div className="h-2.5 bg-white/5 rounded-full overflow-hidden border border-[#ffe07d]/10">
+                                    <div className="h-full bg-gradient-to-r from-[#f3c056] via-[#ffe07d] to-[#f3c056] w-[80%] rounded-full shadow-[0_0_8px_rgba(243,192,86,0.3)]"></div>
                                 </div>
                             </div>
                         </div>
