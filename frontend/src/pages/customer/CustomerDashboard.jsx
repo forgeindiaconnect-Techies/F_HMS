@@ -12,9 +12,6 @@ const CustomerDashboard = () => {
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [orders, setOrders] = useState([]);
     const [loadingOrders, setLoadingOrders] = useState(true);
-    const [activeTab, setActiveTab] = useState('profile'); // Default to Zomato Profile View
-    const [vegMode, setVegMode] = useState(false);
-    const [showRatings, setShowRatings] = useState(true);
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -66,253 +63,29 @@ const CustomerDashboard = () => {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 animate-in slide-in-from-bottom-4 duration-500">
-            {/* View Switcher Tabs (Zomato Style) */}
-            <div className="flex justify-center border-b border-gray-250 pb-1">
-                <div className="flex gap-8">
-                    <button 
-                        onClick={() => setActiveTab('profile')} 
-                        className={`pb-3 text-sm font-black uppercase tracking-widest transition-all ${
-                            activeTab === 'profile' 
-                                ? 'border-b-2 border-orange-600 text-orange-650 scale-105' 
-                                : 'text-gray-400 hover:text-gray-600 font-bold'
-                        }`}
+            {/* Ready for Pickup Alert Banner */}
+            {readySelfPickupOrders.map(order => (
+                <div key={order._id} className="bg-gradient-to-r from-orange-500 to-red-600 rounded-3xl p-6 text-white shadow-xl flex flex-col sm:flex-row justify-between items-center gap-4 animate-pulse relative overflow-hidden group">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white shrink-0">
+                            <span className="relative flex h-3 w-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+                            </span>
+                        </div>
+                        <div>
+                            <h3 className="font-extrabold text-lg" style={{ fontFamily: 'Poppins, sans-serif' }}>Your Order is Ready for Pickup!</h3>
+                            <p className="text-white/90 text-sm mt-0.5 font-medium">Please collect your Order <span className="font-bold font-mono">#{order._id.substring(order._id.length - 6).toUpperCase()}</span> from the Pickup Counter.</p>
+                        </div>
+                    </div>
+                    <Link 
+                        to={`/track/${order._id}?restaurantId=${order.restaurantId}`}
+                        className="px-6 py-2.5 bg-white text-orange-600 font-extrabold text-sm rounded-full hover:bg-orange-50 hover:scale-105 active:scale-95 transition-all shadow-md shrink-0 flex items-center gap-2"
                     >
-                        👤 Zomato Profile View
-                    </button>
-                    <button 
-                        onClick={() => setActiveTab('dashboard')} 
-                        className={`pb-3 text-sm font-black uppercase tracking-widest transition-all ${
-                            activeTab === 'dashboard' 
-                                ? 'border-b-2 border-orange-650 text-orange-650 scale-105' 
-                                : 'text-gray-400 hover:text-gray-600 font-bold'
-                        }`}
-                    >
-                        📊 Activity Dashboard
-                    </button>
+                        Track & View QR
+                    </Link>
                 </div>
-            </div>
-
-            {activeTab === 'profile' ? (
-                /* ZOMATO PROFILE DESKTOP-RESPONSIVE DESIGN */
-                <div className="w-full bg-[#0b0c0e] text-[#f5f5f7] rounded-3xl p-6 sm:p-8 border border-zinc-900 space-y-8 shadow-xl animate-in fade-in duration-300">
-                    
-                    {/* Navigation Header */}
-                    <div className="flex items-center gap-4 border-b border-zinc-800/60 pb-4">
-                        <button 
-                            onClick={() => setActiveTab('dashboard')} 
-                            className="p-2 text-white hover:bg-zinc-850 rounded-xl transition-colors border border-zinc-800"
-                        >
-                            <ArrowLeft size={20} />
-                        </button>
-                        <span className="font-extrabold text-xs uppercase tracking-widest text-zinc-400">Profile Settings</span>
-                    </div>
-
-                    {/* Top Row Grid: Name Card & Gold Membership card side-by-side */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Name Card */}
-                        <div className="bg-[#18191c] p-6 rounded-2xl flex items-center justify-between border border-zinc-800">
-                            <div className="flex items-center gap-4">
-                                <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white text-2xl font-black shadow-lg">
-                                    {(user?.name || 'Ruthralekha').charAt(0).toUpperCase()}
-                                </div>
-                                <div className="text-left">
-                                    <h2 className="text-xl font-bold text-white tracking-tight">{user?.name || 'Ruthralekha'}</h2>
-                                    <button className="text-[11px] font-semibold text-rose-500 hover:text-rose-400 mt-1 flex items-center gap-1">
-                                        Edit profile <ChevronRight size={10} />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Renew Gold Membership Banner */}
-                        <div className="bg-gradient-to-r from-[#201d16] to-[#14120e] border border-[#d4af37]/20 p-6 rounded-2xl flex items-center justify-between cursor-pointer hover:bg-zinc-800/80 transition-colors">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#ffe07d] to-[#f3c056] text-black flex items-center justify-center shadow-lg shadow-yellow-500/20 shrink-0">
-                                    <Crown size={18} className="fill-black text-black" />
-                                </div>
-                                <span className="font-bold text-base text-[#ffe07d] tracking-wide">
-                                    Renew your Gold Membership
-                                </span>
-                            </div>
-                            <ChevronRight size={18} className="text-[#ffe07d]" />
-                        </div>
-                    </div>
-
-                    {/* Quick Action Grid (Resto Money & Coupons) */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        {/* Zomato Money */}
-                        <div className="bg-[#18191c] p-5 rounded-2xl border border-zinc-800 flex items-center gap-4 hover:bg-zinc-850 transition-colors cursor-pointer text-left">
-                            <div className="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-400 shrink-0">
-                                <Wallet size={20} />
-                            </div>
-                            <div>
-                                <p className="text-[10px] text-zinc-400 font-extrabold uppercase tracking-wider">Resto Money</p>
-                                <p className="text-sm font-black text-white mt-0.5">₹0</p>
-                            </div>
-                        </div>
-
-                        {/* Coupons */}
-                        <div className="bg-[#18191c] p-5 rounded-2xl border border-zinc-800 flex items-center gap-4 hover:bg-zinc-850 transition-colors cursor-pointer text-left">
-                            <div className="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-400 shrink-0">
-                                <Gift size={20} />
-                            </div>
-                            <div>
-                                <p className="text-[10px] text-zinc-400 font-extrabold uppercase tracking-wider">Your coupons</p>
-                                <p className="text-xs text-zinc-500 font-bold mt-0.5">3 Available</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Preferences & Delivery Lists Side-By-Side Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        
-                        {/* PREFERENCES SECTION */}
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-2 pl-2">
-                                <div className="w-1 h-4 bg-rose-500 rounded-full"></div>
-                                <h3 className="text-xs font-black text-zinc-400 uppercase tracking-widest text-left">Your preferences</h3>
-                            </div>
-                            
-                            <div className="bg-[#18191c] rounded-2xl border border-zinc-800 divide-y divide-zinc-800/60 overflow-hidden text-left">
-                                {/* Veg Mode Row */}
-                                <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-zinc-850/50 transition-colors" onClick={() => setVegMode(!vegMode)}>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-5 h-5 border-2 border-green-600 flex items-center justify-center rounded shrink-0">
-                                            <div className="w-2.5 h-2.5 bg-green-600 rounded-full"></div>
-                                        </div>
-                                        <span className="text-sm font-bold text-white">Veg Mode</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`text-xs font-black uppercase ${vegMode ? 'text-green-500' : 'text-zinc-500'}`}>
-                                            {vegMode ? 'On' : 'Off'}
-                                        </span>
-                                        <ChevronRight size={16} className="text-zinc-500" />
-                                    </div>
-                                </div>
-
-                                {/* Show Personalized Ratings */}
-                                <div className="flex items-center justify-between p-4">
-                                    <div className="flex items-center gap-3">
-                                        <Star size={18} className="text-zinc-400 shrink-0" />
-                                        <span className="text-sm font-bold text-white">Show personalised ratings</span>
-                                    </div>
-                                    <button 
-                                        onClick={() => setShowRatings(!showRatings)}
-                                        className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-250 ${showRatings ? 'bg-green-500' : 'bg-zinc-700'}`}
-                                    >
-                                        <div className={`w-4 h-4 rounded-full bg-white transition-transform duration-250 shadow ${showRatings ? 'translate-x-4' : 'translate-x-0'}`}></div>
-                                    </button>
-                                </div>
-
-                                {/* Appearance */}
-                                <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-zinc-850/50 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <Settings size={18} className="text-zinc-400 shrink-0" />
-                                        <span className="text-sm font-bold text-white">Appearance</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs text-zinc-500 font-extrabold uppercase">Dark</span>
-                                        <ChevronRight size={16} className="text-zinc-500" />
-                                    </div>
-                                </div>
-
-                                {/* Payment Methods */}
-                                <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-zinc-850/50 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <CreditCard size={18} className="text-zinc-400 shrink-0" />
-                                        <span className="text-sm font-bold text-white">Payment methods</span>
-                                    </div>
-                                    <ChevronRight size={16} className="text-zinc-500" />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* FOOD DELIVERY SECTION */}
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-2 pl-2">
-                                <div className="w-1 h-4 bg-rose-500 rounded-full"></div>
-                                <h3 className="text-xs font-black text-zinc-400 uppercase tracking-widest text-left">Food delivery</h3>
-                            </div>
-                            
-                            <div className="bg-[#18191c] rounded-2xl border border-zinc-800 divide-y divide-zinc-800/60 overflow-hidden text-left">
-                                {/* Your orders */}
-                                <div 
-                                    onClick={() => setActiveTab('dashboard')}
-                                    className="flex items-center justify-between p-4 cursor-pointer hover:bg-zinc-850 transition-colors"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <ShoppingBag size={18} className="text-zinc-400 shrink-0" />
-                                        <span className="text-sm font-bold text-white">Your orders</span>
-                                    </div>
-                                    <ChevronRight size={16} className="text-zinc-500" />
-                                </div>
-
-                                {/* Address Book */}
-                                <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-zinc-850 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <MapPin size={18} className="text-zinc-400 shrink-0" />
-                                        <span className="text-sm font-bold text-white">Address book</span>
-                                    </div>
-                                    <ChevronRight size={16} className="text-zinc-500" />
-                                </div>
-
-                                {/* Your Collections */}
-                                <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-zinc-850 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <Bookmark size={18} className="text-zinc-400 shrink-0" />
-                                        <span className="text-sm font-bold text-white">Your collections</span>
-                                    </div>
-                                    <ChevronRight size={16} className="text-zinc-500" />
-                                </div>
-
-                                {/* Manage Recommendations */}
-                                <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-zinc-850 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <Settings size={18} className="text-zinc-400 shrink-0" />
-                                        <span className="text-sm font-bold text-white">Manage recommendations</span>
-                                    </div>
-                                    <ChevronRight size={16} className="text-zinc-500" />
-                                </div>
-
-                                {/* Order on Train */}
-                                <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-zinc-850 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <Train size={18} className="text-zinc-400 shrink-0" />
-                                        <span className="text-sm font-bold text-white">Order on train</span>
-                                    </div>
-                                    <ChevronRight size={16} className="text-zinc-500" />
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                </div>
-            ) : (
-                <>
-                    {/* Ready for Pickup Alert Banner */}
-                    {readySelfPickupOrders.map(order => (
-                        <div key={order._id} className="bg-gradient-to-r from-orange-500 to-red-600 rounded-3xl p-6 text-white shadow-xl flex flex-col sm:flex-row justify-between items-center gap-4 animate-pulse relative overflow-hidden group">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white shrink-0">
-                                    <span className="relative flex h-3 w-3">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
-                                    </span>
-                                </div>
-                                <div>
-                                    <h3 className="font-extrabold text-lg" style={{ fontFamily: 'Poppins, sans-serif' }}>Your Order is Ready for Pickup!</h3>
-                                    <p className="text-white/90 text-sm mt-0.5 font-medium">Please collect your Order <span className="font-bold font-mono">#{order._id.substring(order._id.length - 6).toUpperCase()}</span> from the Pickup Counter.</p>
-                                </div>
-                            </div>
-                            <Link 
-                                to={`/track/${order._id}?restaurantId=${order.restaurantId}`}
-                                className="px-6 py-2.5 bg-white text-orange-600 font-extrabold text-sm rounded-full hover:bg-orange-50 hover:scale-105 active:scale-95 transition-all shadow-md shrink-0 flex items-center gap-2"
-                            >
-                                Track & View QR
-                            </Link>
-                        </div>
-                    ))}
+            ))}
 
             {/* Header / Welcome */}
             <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
@@ -691,8 +464,6 @@ const CustomerDashboard = () => {
                         ))}
                 </div>
             </div>
-            </>
-            )}
         </div>
     );
 };
