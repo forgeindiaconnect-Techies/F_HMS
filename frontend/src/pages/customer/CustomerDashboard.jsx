@@ -49,11 +49,7 @@ const CustomerDashboard = () => {
 
     useEffect(() => {
         const localRes = JSON.parse(localStorage.getItem('customerReservations') || '[]');
-        const defaultReservations = [
-            { date: 'Oct 10, 2026', time: '8:00 PM', guests: 4, type: 'Outdoor', status: 'Completed', statusColor: 'bg-gray-100 text-gray-600 border-gray-200' },
-            { date: 'Sep 24, 2026', time: '1:00 PM', guests: 2, type: 'Bar', status: 'Completed', statusColor: 'bg-gray-100 text-gray-600 border-gray-200' }
-        ];
-        setReservations([...localRes, ...defaultReservations]);
+        setReservations(localRes);
     }, []);
 
     const readySelfPickupOrders = orders.filter(o => 
@@ -257,52 +253,9 @@ const CustomerDashboard = () => {
                             {loadingOrders ? (
                                 <p className="text-center text-gray-400 py-4 text-xs font-medium">Loading recent orders...</p>
                             ) : orders.length === 0 ? (
-                                [
-                                    { 
-                                        id: '#ORD-8821', 
-                                        date: 'Yesterday', 
-                                        items: 'Ribeye Steak, Craft IPA', 
-                                        total: '₹848.00', 
-                                        status: 'Delivered',
-                                        itemsList: [
-                                            { id: 'm_ribeye', name: 'Ribeye Steak', price: 599, image: 'https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800' },
-                                            { id: 'm_ipa', name: 'Craft IPA', price: 249, image: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?q=80&w=800' }
-                                        ]
-                                    },
-                                    { 
-                                        id: '#ORD-8805', 
-                                        date: 'Oct 12, 2026', 
-                                        items: 'Paneer Tikka, Green Wrap', 
-                                        total: '₹460.00', 
-                                        status: 'Delivered',
-                                        itemsList: [
-                                            { id: 'm12', name: 'Paneer Tikka', price: 280, image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=800' },
-                                            { id: 'm_wrap', name: 'Green Salad Wrap', price: 180, image: 'https://images.unsplash.com/photo-1626700051175-6518c4793f4f?q=80&w=800' }
-                                        ]
-                                    }
-                                ].map((order, idx) => (
-                                    <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border border-gray-100 hover:border-orange-200 transition-colors gap-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 shrink-0">
-                                                <ShoppingBag size={20} />
-                                            </div>
-                                            <div>
-                                                <p className="font-bold text-gray-900">{order.items}</p>
-                                                <p className="text-sm text-gray-500 mt-0.5">{order.id} • {order.date}</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2">
-                                            <span className="font-bold text-gray-900">{order.total}</span>
-                                            <button 
-                                                type="button"
-                                                onClick={() => handleReorder(order.itemsList)}
-                                                className="text-xs font-bold text-orange-600 bg-orange-50 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors"
-                                            >
-                                                Reorder
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))
+                                <div className="text-center py-10 text-sm text-gray-400 font-medium bg-gray-50 rounded-2xl border border-gray-100 border-dashed">
+                                    No recent orders placed yet.
+                                </div>
                             ) : (
                                 orders.slice(0, 5).map((order) => (
                                     <div key={order._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border border-gray-100 hover:border-orange-200 transition-colors gap-4">
