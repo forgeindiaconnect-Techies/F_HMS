@@ -120,18 +120,26 @@ const Home = () => {
                                     </div>
                                     <ArrowRight size={16} className="text-red-600 group-hover/item:translate-x-1 transition-transform" />
                                 </Link>
-                                <a 
-                                    href="#workflow" 
-                                    className="flex items-center justify-between p-3.5 rounded-xl hover:bg-gray-50 text-gray-700 font-semibold transition-all"
+                                <Link 
+                                    to="/features/details?module=orders" 
+                                    className="flex items-center justify-between p-3.5 mt-1 rounded-xl bg-cyan-50/60 hover:bg-cyan-100/70 text-cyan-900 font-bold transition-all group/item-kds"
                                 >
-                                    <span>Kitchen Workflow (KDS)</span>
-                                </a>
-                                <a 
-                                    href="#features" 
-                                    className="flex items-center justify-between p-3.5 rounded-xl hover:bg-gray-50 text-gray-700 font-semibold transition-all"
+                                    <div className="flex items-center gap-2.5">
+                                        <span className="text-base">🍳</span>
+                                        <span>Kitchen Workflow (KDS)</span>
+                                    </div>
+                                    <ArrowRight size={16} className="text-cyan-600 group-hover/item-kds:translate-x-1 transition-transform" />
+                                </Link>
+                                <Link 
+                                    to="/features/details?module=intelligence" 
+                                    className="flex items-center justify-between p-3.5 mt-1 rounded-xl bg-emerald-50/60 hover:bg-emerald-100/70 text-emerald-900 font-bold transition-all group/item-pos"
                                 >
-                                    <span>POS Billing</span>
-                                </a>
+                                    <div className="flex items-center gap-2.5">
+                                        <span className="text-base">💳</span>
+                                        <span>POS Billing</span>
+                                    </div>
+                                    <ArrowRight size={16} className="text-emerald-600 group-hover/item-pos:translate-x-1 transition-transform" />
+                                </Link>
                             </div>
                         </div>
 
