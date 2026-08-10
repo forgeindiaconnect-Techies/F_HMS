@@ -3,7 +3,7 @@ import {
     getStats, getRestaurants, updateSubscription, deleteRestaurant, 
     getSuperAdminNotifications, markSuperAdminNotificationAsRead, 
     getPlans, createPlan, updatePlan, deletePlan, getTickets, 
-    updateTicket, updateApprovalStatus, getAllUsers, updateUserStatus, deleteUser,
+    updateTicket, deleteTicket, updateApprovalStatus, getAllUsers, updateUserStatus, deleteUser,
     broadcastNotification, deleteSuperAdminNotification,
     getSubscriptionPayments, getSubscriptionAnalytics
 } from '../controllers/superAdminController.js';
@@ -41,7 +41,8 @@ router.route('/plans/:id')
 router.route('/tickets')
     .get(getTickets);
 router.route('/tickets/:id')
-    .put(updateTicket);
+    .put(updateTicket)
+    .delete(deleteTicket);
 
 router.route('/billing-history')
     .get(getSubscriptionPayments);

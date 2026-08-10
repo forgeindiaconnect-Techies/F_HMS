@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { ShieldCheck, Eye, Check, X, Clock, AlertTriangle, FileText, Download, CheckCircle, XCircle, ArrowUpRight, History } from 'lucide-react';
+import { ShieldCheck, Eye, Check, X, Clock, AlertTriangle, FileText, Download, CheckCircle, XCircle, ArrowUpRight, History, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const VerificationManagement = () => {
@@ -15,6 +15,7 @@ const VerificationManagement = () => {
     const [overallReason, setOverallReason] = useState('');
     const [docReviews, setDocReviews] = useState({}); // { fssai: { status: 'Approved', reason: '' } }
     const [submittingReview, setSubmittingReview] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
 
     const loadVerifications = async () => {
         try {
@@ -108,6 +109,23 @@ const VerificationManagement = () => {
         }
     };
 
+    const handleDeleteVerification = async (id, restaurantName) => {
+        if (!window.confirm(`Are you sure you want to permanently delete the verification record for "${restaurantName}"? This action cannot be undone.`)) {
+            return;
+        }
+        setDeletingId(id);
+        try {
+            await api.delete(`/restaurants/verification/${id}`);
+            setVerifications(verifications.filter(v => v._id !== id));
+            if (selectedReview?._id === id) setSelectedReview(null);
+            toast.success('Verification record deleted successfully!');
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to delete verification record');
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
     const getFullUrl = (filePath) => {
         if (!filePath) return '';
         const base = api.defaults.baseURL.replace('/api', '');
@@ -193,13 +211,23 @@ const VerificationManagement = () => {
                                             </span>
                                         </td>
                                         <td className="p-4 text-right">
-                                            <button
-                                                onClick={() => handleSelectReview(v)}
-                                                className="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold text-xs rounded-xl border border-blue-100 hover:border-blue-200 transition-all flex items-center gap-1 ml-auto"
-                                            >
-                                                <Eye size={12} />
-                                                Review Details
-                                            </button>
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => handleSelectReview(v)}
+                                                    className="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold text-xs rounded-xl border border-blue-100 hover:border-blue-200 transition-all flex items-center gap-1"
+                                                >
+                                                    <Eye size={12} />
+                                                    Review Details
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteVerification(v._id, v.restaurantId?.name || 'Unknown')}
+                                                    disabled={deletingId === v._id}
+                                                    className="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl border border-red-100 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center shrink-0"
+                                                    title="Delete Verification Record"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}

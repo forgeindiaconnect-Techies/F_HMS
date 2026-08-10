@@ -5,7 +5,7 @@ import {
     selfSubscribe, logoUpload, getMyBillingHistory, upgradeSubscription, 
     downgradeSubscription, renewSubscription 
 } from '../controllers/restaurantController.js';
-import { submitVerification, getMyVerification, getAllVerifications, getVerificationById, reviewVerification, verificationUpload } from '../controllers/verificationController.js';
+import { submitVerification, getMyVerification, getAllVerifications, getVerificationById, reviewVerification, verificationUpload, deleteVerification } from '../controllers/verificationController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -20,7 +20,8 @@ router.route('/verification/all')
     .get(protect, authorize('SuperAdmin'), getAllVerifications);
 
 router.route('/verification/:id')
-    .get(protect, authorize('SuperAdmin'), getVerificationById);
+    .get(protect, authorize('SuperAdmin'), getVerificationById)
+    .delete(protect, authorize('SuperAdmin'), deleteVerification);
 
 router.route('/verification/:id/review')
     .put(protect, authorize('SuperAdmin'), reviewVerification);

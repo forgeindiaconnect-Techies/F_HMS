@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { MessageSquare, Clock, CheckCircle } from 'lucide-react';
+import { MessageSquare, Clock, CheckCircle, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const SupportTickets = () => {
     const { api } = useAuth();
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [deletingId, setDeletingId] = useState(null);
 
     useEffect(() => {
         const fetchTickets = async () => {
@@ -29,6 +30,22 @@ const SupportTickets = () => {
             toast.success('Ticket marked as resolved successfully!');
         } catch (error) {
             toast.error('Failed to update ticket');
+        }
+    };
+
+    const handleDeleteTicket = async (id, subject) => {
+        if (!window.confirm(`Are you sure you want to permanently delete the ticket "${subject}"? This action cannot be undone.`)) {
+            return;
+        }
+        setDeletingId(id);
+        try {
+            await api.delete(`/super-admin/tickets/${id}`);
+            setTickets(tickets.filter(t => t._id !== id));
+            toast.success('Ticket deleted successfully!');
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to delete ticket');
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -78,14 +95,24 @@ const SupportTickets = () => {
                                         </span>
                                     </td>
                                     <td className="p-4 text-right">
-                                        {ticket.status !== 'Resolved' && ticket.status !== 'Closed' && (
-                                            <button 
-                                                onClick={() => handleUpdateStatus(ticket._id, 'Resolved')}
-                                                className="px-3 py-1 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg text-xs font-bold"
+                                        <div className="flex items-center justify-end gap-2">
+                                            {ticket.status !== 'Resolved' && ticket.status !== 'Closed' && (
+                                                <button 
+                                                    onClick={() => handleUpdateStatus(ticket._id, 'Resolved')}
+                                                    className="px-3 py-1 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg text-xs font-bold transition-colors"
+                                                >
+                                                    Mark Resolved
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={() => handleDeleteTicket(ticket._id, ticket.subject)}
+                                                disabled={deletingId === ticket._id}
+                                                className="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center shrink-0"
+                                                title="Delete Ticket"
                                             >
-                                                Mark Resolved
+                                                <Trash2 size={15} />
                                             </button>
-                                        )}
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

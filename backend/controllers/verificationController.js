@@ -393,3 +393,16 @@ export const reviewVerification = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+export const deleteVerification = async (req, res) => {
+    try {
+        const verification = await RestaurantVerification.findById(req.params.id);
+        if (!verification) {
+            return res.status(404).json({ message: 'Verification record not found' });
+        }
+        await RestaurantVerification.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Verification record deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

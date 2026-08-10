@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Percent, PercentCircle, Search, Edit2, Check, X, ShieldAlert, Award } from 'lucide-react';
+import { Percent, PercentCircle, Search, Edit2, Check, X, ShieldAlert, Award, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const CommissionManagement = () => {
@@ -10,6 +10,7 @@ const CommissionManagement = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [editingId, setEditingId] = useState(null);
     const [editingRate, setEditingRate] = useState(0);
+    const [deletingId, setDeletingId] = useState(null);
 
     const fetchRestaurants = async () => {
         try {
@@ -47,6 +48,22 @@ const CommissionManagement = () => {
         } catch (error) {
             console.error("Failed to update commission rate", error);
             toast.error('Failed to update commission rate');
+        }
+    };
+
+    const handleDeleteRestaurant = async (id, name) => {
+        if (!window.confirm(`Are you sure you want to permanently delete restaurant "${name}"? This action cannot be undone.`)) {
+            return;
+        }
+        setDeletingId(id);
+        try {
+            await api.delete(`/super-admin/restaurants/${id}`);
+            setRestaurants(restaurants.filter(r => r._id !== id));
+            toast.success(`Restaurant "${name}" deleted successfully!`);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to delete restaurant');
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -192,12 +209,22 @@ const CommissionManagement = () => {
                                                 </button>
                                             </div>
                                         ) : (
-                                            <button
-                                                onClick={() => handleStartEditing(restaurant)}
-                                                className="px-3.5 py-1.5 text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl transition-all flex items-center gap-1.5 ml-auto active:scale-[0.97]"
-                                            >
-                                                <Edit2 size={12} /> Edit Rate
-                                            </button>
+                                            <div className="flex justify-end gap-2">
+                                                <button
+                                                    onClick={() => handleStartEditing(restaurant)}
+                                                    className="px-3.5 py-1.5 text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl transition-all flex items-center gap-1.5 active:scale-[0.97]"
+                                                >
+                                                    <Edit2 size={12} /> Edit Rate
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteRestaurant(restaurant._id, restaurant.name)}
+                                                    disabled={deletingId === restaurant._id}
+                                                    className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all active:scale-[0.97] disabled:opacity-50"
+                                                    title="Delete Restaurant"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
                                         )}
                                     </td>
                                 </tr>
