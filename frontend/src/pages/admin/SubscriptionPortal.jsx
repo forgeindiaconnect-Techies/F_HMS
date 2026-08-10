@@ -283,7 +283,7 @@ const SubscriptionPortal = () => {
                             <div className="flex items-center justify-between border-b border-slate-50 pb-2">
                                 <span className="text-xs font-semibold text-slate-500">Branch Limit</span>
                                 <span className="text-sm font-black text-slate-900">
-                                    {sub.plan === 'Basic' ? '1 Branch' : sub.plan === 'Pro' ? '5 Branches' : 'Unlimited'}
+                                    {(sub.plan === 'Basic' || sub.plan === 'Starter') ? '1 Branch' : (sub.plan === 'Pro' || sub.plan === 'Professional') ? '3 Branches' : 'Unlimited'}
                                 </span>
                             </div>
                             <div className="flex items-center justify-between border-b border-slate-50 pb-2">

@@ -21,7 +21,7 @@ const ROUTE_PLAN_REQUIREMENTS = [
     { path: '/admin/developer-config', minPlan: 'Enterprise', feature: 'Developer APIs & White Label' },
     { path: '/admin/audit-logs',       minPlan: 'Enterprise', feature: 'Security Audit Logs' },
     { path: '/admin/bi',               minPlan: 'Enterprise', feature: 'Business Intelligence Console' },
-    { path: '/admin/support',          minPlan: 'Enterprise', feature: '24/7 Premium Support' },
+    // NOTE: /admin/support is available to ALL plans — no gating
 ];
 
 const PLAN_ORDER = { Basic: 0, Starter: 0, Pro: 1, Professional: 1, Enterprise: 2 };
@@ -38,7 +38,8 @@ const DashboardLayout = () => {
     const isVerificationPage = location.pathname === '/admin/verification';
 
     const plan = restaurant?.subscription?.plan || 'Basic';
-    const status = restaurant?.subscription?.status || 'Inactive';
+    // Default to 'Active' so features aren't locked if subscription status isn't set yet
+    const status = restaurant?.subscription?.status || 'Active';
 
     // Find the first matching route requirement for the current path
     const routeBlock = ROUTE_PLAN_REQUIREMENTS.find(r => location.pathname.startsWith(r.path));

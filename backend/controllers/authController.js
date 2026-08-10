@@ -51,10 +51,11 @@ export const registerUser = async (req, res) => {
                 name: req.body.restaurantName,
                 ownerId: user._id,
                 subscription: {
-                    status: 'Inactive',
+                    status: 'Active',
                     plan: req.body.plan || 'Basic',
                     billingCycle: req.body.billingCycle || 'monthly',
-                    trialActive: false
+                    trialActive: true,
+                    expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
                 },
                 approvalStatus: 'Pending',
                 verificationStatus: hasVerificationFiles ? 'Under Review' : 'Pending'

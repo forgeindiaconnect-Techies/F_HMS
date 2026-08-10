@@ -5,7 +5,9 @@ import { Link } from 'react-router-dom';
 import dummyQrPayment from '../assets/dummy_qr_payment.png';
 /* ─── Plan styling helpers ───────────────────────────────────────── */
 const PLAN_META = {
+    Basic:        { bg: 'bg-blue-100',   text: 'text-blue-700',   border: 'border-blue-300',   ring: 'ring-blue-400',   grad: 'from-blue-500 to-blue-600',   icon: Zap   },
     Starter:      { bg: 'bg-blue-100',   text: 'text-blue-700',   border: 'border-blue-300',   ring: 'ring-blue-400',   grad: 'from-blue-500 to-blue-600',   icon: Zap   },
+    Pro:          { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-300', ring: 'ring-purple-400', grad: 'from-purple-500 to-purple-600', icon: Star  },
     Professional: { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-300', ring: 'ring-purple-400', grad: 'from-purple-500 to-purple-600', icon: Star  },
     Enterprise:   { bg: 'bg-amber-100',  text: 'text-amber-700',  border: 'border-amber-300',  ring: 'ring-amber-400',  grad: 'from-amber-500 to-amber-600',  icon: Crown },
 };
@@ -200,8 +202,8 @@ const PlanUpgradeModal = ({ currentPlan, plans, api, restaurant, onClose, onUpgr
     };
 
     const displayPlans = plans.length > 0 ? plans : [
-        { _id: 'p1', name: 'Starter',      monthlyPrice: 49,  features: ['1 Branch', 'Basic Reporting', 'Email Support'] },
-        { _id: 'p2', name: 'Professional', monthlyPrice: 99,  features: ['3 Branches', 'Advanced Analytics', 'Priority Support'] },
+        { _id: 'p1', name: 'Basic',      monthlyPrice: 49,  features: ['1 Branch', 'Basic Reporting', 'Email Support'] },
+        { _id: 'p2', name: 'Pro',        monthlyPrice: 129, features: ['3 Branches', 'Advanced Analytics', 'Priority Support'] },
         { _id: 'p3', name: 'Enterprise',   monthlyPrice: 299, features: ['Unlimited Branches', 'Custom Features', '24/7 Support'] },
     ];
 
