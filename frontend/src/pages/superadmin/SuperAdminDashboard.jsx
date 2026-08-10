@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Store, Users, CreditCard, ShoppingBag, TrendingUp, AlertCircle, ArrowRight, X, MessageSquare } from 'lucide-react';
+import { Store, Users, CreditCard, ShoppingBag, TrendingUp, AlertCircle, ArrowRight, X, MessageSquare, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -61,6 +61,19 @@ const SuperAdminDashboard = () => {
             toast.success(`Inquiry status updated to ${nextStatus}!`);
         } catch (error) {
             toast.error('Failed to update inquiry status');
+        }
+    };
+
+    const handleDeleteInquiry = async (id, name) => {
+        if (!window.confirm(`Are you sure you want to permanently delete the inquiry from "${name}"? This action cannot be undone.`)) {
+            return;
+        }
+        try {
+            await api.delete(`/inquiries/admin/${id}`);
+            setInquiries(inquiries.filter(inq => inq._id !== id));
+            toast.success('Inquiry deleted successfully!');
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to delete inquiry');
         }
     };
 
@@ -316,12 +329,21 @@ const SuperAdminDashboard = () => {
                                     </span>
                                 </td>
                                 <td className="p-5 text-right whitespace-nowrap">
-                                    <button 
-                                        onClick={() => handleUpdateInquiryStatus(inq._id, inq.status)}
-                                        className="px-3.5 py-1.5 text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-all active:scale-[0.97]"
-                                    >
-                                        {inq.status === 'New' ? 'Start Progress' : inq.status === 'In Progress' ? 'Resolve' : 'Reopen'}
-                                    </button>
+                                    <div className="flex items-center justify-end gap-2">
+                                        <button 
+                                            onClick={() => handleUpdateInquiryStatus(inq._id, inq.status)}
+                                            className="px-3.5 py-1.5 text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-all active:scale-[0.97]"
+                                        >
+                                            {inq.status === 'New' ? 'Start Progress' : inq.status === 'In Progress' ? 'Resolve' : 'Reopen'}
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteInquiry(inq._id, inq.name)}
+                                            className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all active:scale-[0.97]"
+                                            title="Delete Inquiry"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}

@@ -1,5 +1,5 @@
 import express from 'express';
-import { createInquiry, getInquiries, updateInquiryStatus } from '../controllers/inquiryController.js';
+import { createInquiry, getInquiries, updateInquiryStatus, deleteInquiry } from '../controllers/inquiryController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -12,6 +12,8 @@ router.route('/admin')
     .get(protect, authorize('SuperAdmin'), getInquiries);
 
 router.route('/admin/:id')
-    .put(protect, authorize('SuperAdmin'), updateInquiryStatus);
+    .put(protect, authorize('SuperAdmin'), updateInquiryStatus)
+    .delete(protect, authorize('SuperAdmin'), deleteInquiry);
 
 export default router;
+
