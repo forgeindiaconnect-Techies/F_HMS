@@ -242,8 +242,10 @@ export const updateMyRestaurant = async (req, res) => {
                 };
             }
 
-            // Handle logo upload
-            if (req.file) {
+            // Handle logo upload (Base64 data URL or uploaded file)
+            if (req.body.logoBase64) {
+                restaurant.logo = req.body.logoBase64;
+            } else if (req.file) {
                 restaurant.logo = `/uploads/logos/${req.file.filename}`;
             }
             

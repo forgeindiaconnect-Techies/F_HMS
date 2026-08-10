@@ -60,6 +60,8 @@ const Settings = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const [logoBase64, setLogoBase64] = useState(null);
+
     const handleLogoChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -69,12 +71,19 @@ const Settings = () => {
             return;
         }
         setLogoFile(file);
-        setLogoPreview(URL.createObjectURL(file));
+        
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setLogoBase64(reader.result);
+            setLogoPreview(reader.result);
+        };
+        reader.readAsDataURL(file);
     };
 
     const clearLogoSelection = () => {
         setLogoFile(null);
         setLogoPreview(null);
+        setLogoBase64(null);
         if (logoInputRef.current) logoInputRef.current.value = '';
     };
 
@@ -82,12 +91,14 @@ const Settings = () => {
         e.preventDefault();
         setSaving(true);
         try {
-            // Always use FormData so we can attach the file if present
             const data = new FormData();
             data.append('name', formData.name);
             data.append('contactEmail', formData.contactEmail);
             data.append('phone', formData.phone);
             data.append('address', formData.address);
+            if (logoBase64) {
+                data.append('logoBase64', logoBase64);
+            }
             if (logoFile) {
                 data.append('logo', logoFile);
             }
@@ -102,6 +113,7 @@ const Settings = () => {
                 setCurrentLogo(savedUrl);
                 setLogoPreview(null);
                 setLogoFile(null);
+                setLogoBase64(null);
             }
 
             // Refresh global restaurant context so sidebar logo updates
