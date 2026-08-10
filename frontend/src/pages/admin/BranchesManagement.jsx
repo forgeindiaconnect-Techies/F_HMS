@@ -83,7 +83,8 @@ const BranchesManagement = () => {
             handleCloseModal();
         } catch (error) {
             console.error('Failed to save branch', error);
-            toast.error('Error saving branch');
+            const errMsg = error.response?.data?.message || 'Error saving branch';
+            toast.error(errMsg);
         }
     };
 

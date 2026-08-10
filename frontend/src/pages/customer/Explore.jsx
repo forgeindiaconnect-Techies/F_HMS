@@ -182,43 +182,15 @@ const Explore = () => {
                         </div>
 
                         {user ? (
-                            <div className="relative">
-                                <button 
-                                    onClick={() => setIsProfileOpen(!isProfileOpen)} 
-                                    className="flex items-center gap-2 hover:bg-gray-50 p-2 md:px-3 md:py-2 rounded-xl transition-colors font-bold text-gray-700"
-                                >
-                                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 shrink-0">
-                                        <User size={18} />
-                                    </div>
-                                    <span className="hidden md:inline">{user.name}</span>
-                                </button>
-                                
-                                {isProfileOpen && (
-                                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50">
-                                        <Link 
-                                            to="/profile" 
-                                            onClick={() => setIsProfileOpen(false)}
-                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 font-bold transition-colors text-left"
-                                        >
-                                            Profile
-                                        </Link>
-                                        <Link 
-                                            to="/profile/orders" 
-                                            onClick={() => setIsProfileOpen(false)}
-                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 font-bold transition-colors text-left"
-                                        >
-                                            Orders
-                                        </Link>
-                                        <Link 
-                                            to="/profile/reservations" 
-                                            onClick={() => setIsProfileOpen(false)}
-                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 font-bold transition-colors text-left"
-                                        >
-                                            Table Booking History
-                                        </Link>
-                                    </div>
-                                )}
-                            </div>
+                            <Link 
+                                to="/profile" 
+                                className="flex items-center gap-2 hover:bg-gray-50 p-2 md:px-3 md:py-2 rounded-xl transition-colors font-bold text-gray-700"
+                            >
+                                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 shrink-0">
+                                    <User size={18} />
+                                </div>
+                                <span className="hidden md:inline">{user.name}</span>
+                            </Link>
                         ) : (
                             <div className="flex items-center gap-2 md:gap-3 text-sm shrink-0">
                                 <Link to="/login?type=customer" className="text-gray-600 hover:text-red-500 font-medium px-2 py-1.5 md:px-4 md:py-2 rounded-xl hover:bg-red-50 transition-colors">

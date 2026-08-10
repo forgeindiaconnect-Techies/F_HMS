@@ -6,7 +6,9 @@ import {
     updateOrderToPaid, 
     getMyOrders, 
     getOrders, 
-    updateOrderStatus 
+    updateOrderStatus,
+    mergeOrders,
+    refundOrder
 } from '../controllers/orderController.js';
 import { protect, optionalProtect } from '../middleware/authMiddleware.js';
 
@@ -25,5 +27,8 @@ router.route('/:id/items').put(optionalProtect, appendOrderItems);
 router.route('/:id/pay').put(protect, updateOrderToPaid);
 
 router.route('/:id/status').put(protect, updateOrderStatus);
+
+router.route('/merge').post(protect, mergeOrders);
+router.route('/:id/refund').put(protect, refundOrder);
 
 export default router;

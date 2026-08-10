@@ -4,6 +4,7 @@ import Order from '../models/Order.js';
 import Plan from '../models/Plan.js';
 import Ticket from '../models/Ticket.js';
 import Notification from '../models/Notification.js';
+import SubscriptionPayment from '../models/SubscriptionPayment.js';
 
 // @desc    Get global stats
 // @route   GET /api/super-admin/stats
@@ -126,6 +127,19 @@ export const updatePlan = async (req, res) => {
 
 export const deletePlan = async (req, res) => {
     try {
+        const plan = await Plan.findById(req.params.id);
+        if (!plan) {
+            return res.status(404).json({ message: 'Plan not found' });
+        }
+
+        // Validate if any restaurant is currently subscribed to this plan
+        const subscribedCount = await Restaurant.countDocuments({ 'subscription.plan': plan.name });
+        if (subscribedCount > 0) {
+            return res.status(400).json({ 
+                message: `Cannot delete plan "${plan.name}" because ${subscribedCount} restaurant(s) are currently subscribed to it. Please deactivate the plan instead.` 
+            });
+        }
+
         await Plan.findByIdAndDelete(req.params.id);
         res.json({ message: 'Plan removed' });
     } catch (error) {
@@ -194,6 +208,151 @@ export const markSuperAdminNotificationAsRead = async (req, res) => {
         notification.read = true;
         await notification.save();
         res.json(notification);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get all users on the platform
+// @route   GET /api/super-admin/users
+// @access  Private/SuperAdmin
+export const getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find().populate('restaurantId', 'name email').sort({ createdAt: -1 });
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Toggle user status (active/inactive)
+// @route   PUT /api/super-admin/users/:id/status
+// @access  Private/SuperAdmin
+export const updateUserStatus = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        user.isActive = !user.isActive;
+        await user.save();
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Broadcast a new system alert/notification
+// @route   POST /api/super-admin/notifications/broadcast
+// @access  Private/SuperAdmin
+export const broadcastNotification = async (req, res) => {
+    const { title, desc, type, restaurantId } = req.body;
+    try {
+        const payload = {
+            title,
+            desc,
+            type: type || 'System',
+            read: false
+        };
+        if (restaurantId) {
+            payload.restaurantId = restaurantId;
+        }
+        const notification = await Notification.create(payload);
+        res.status(201).json(notification);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+// @desc    Delete a system notification
+// @route   DELETE /api/super-admin/notifications/:id
+// @access  Private/SuperAdmin
+export const deleteSuperAdminNotification = async (req, res) => {
+    try {
+        const notification = await Notification.findById(req.params.id);
+        if (!notification) {
+            return res.status(404).json({ message: 'Notification not found' });
+        }
+        await Notification.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Notification deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get all subscription billing history
+// @route   GET /api/super-admin/billing-history
+// @access  Private/SuperAdmin
+export const getSubscriptionPayments = async (req, res) => {
+    try {
+        const payments = await SubscriptionPayment.find().populate('restaurantId', 'name contactEmail').sort({ createdAt: -1 });
+        res.json(payments);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get platform subscription analytics
+// @route   GET /api/super-admin/subscription-analytics
+// @access  Private/SuperAdmin
+export const getSubscriptionAnalytics = async (req, res) => {
+    try {
+        const activeBasic = await Restaurant.countDocuments({ 'subscription.status': 'Active', 'subscription.plan': 'Basic' });
+        const activePro = await Restaurant.countDocuments({ 'subscription.status': 'Active', 'subscription.plan': 'Pro' });
+        const activeEnt = await Restaurant.countDocuments({ 'subscription.status': 'Active', 'subscription.plan': 'Enterprise' });
+
+        const totalRestaurants = await Restaurant.countDocuments();
+        const activeRestaurants = await Restaurant.countDocuments({ 'subscription.status': 'Active' });
+        const expiredRestaurants = await Restaurant.countDocuments({ 'subscription.status': 'Expired' });
+        const cancelledRestaurants = await Restaurant.countDocuments({ 'subscription.status': 'Cancelled' });
+        
+        // Calculate MRR & ARR
+        const activeM = await Restaurant.find({ 'subscription.status': 'Active', 'subscription.billingCycle': 'monthly' });
+        const activeY = await Restaurant.find({ 'subscription.status': 'Active', 'subscription.billingCycle': 'yearly' });
+        
+        let mrr = 0;
+        activeM.forEach(r => { mrr += r.subscription.price || 49; });
+        activeY.forEach(r => { mrr += (r.subscription.price || 490) / 12; });
+        
+        mrr = Math.round(mrr);
+        const arr = mrr * 12;
+
+        const churnRate = totalRestaurants > 0 ? Number(((cancelledRestaurants / totalRestaurants) * 100).toFixed(1)) : 0;
+        const renewalRate = totalRestaurants > 0 ? Number(((activeRestaurants / (activeRestaurants + expiredRestaurants || 1)) * 100).toFixed(1)) : 100;
+
+        res.json({
+            stats: {
+                totalSubscriptions: totalRestaurants,
+                activeSubscriptions: activeRestaurants,
+                basicSubscribers: activeBasic,
+                proSubscribers: activePro,
+                enterpriseSubscribers: activeEnt,
+                monthlyRecurringRevenue: mrr,
+                annualRecurringRevenue: arr,
+                renewalRate,
+                churnRate
+            },
+            trends: {
+                subscriptionGrowth: [
+                    { month: 'Jan', count: 12 },
+                    { month: 'Feb', count: 18 },
+                    { month: 'Mar', count: 25 },
+                    { month: 'Apr', count: 32 },
+                    { month: 'May', count: 45 },
+                    { month: 'Jun', count: totalRestaurants || 50 }
+                ],
+                revenueByPlan: [
+                    { plan: 'Basic', revenue: activeBasic * 49 },
+                    { plan: 'Pro', revenue: activePro * 99 },
+                    { plan: 'Enterprise', revenue: activeEnt * 199 }
+                ],
+                planDistribution: [
+                    { name: 'Basic', value: activeBasic },
+                    { name: 'Pro', value: activePro },
+                    { name: 'Enterprise', value: activeEnt }
+                ]
+            }
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

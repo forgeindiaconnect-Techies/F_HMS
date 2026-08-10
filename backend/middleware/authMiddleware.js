@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import Role from '../models/Role.js';
 import Restaurant from '../models/Restaurant.js';
+import Plan from '../models/Plan.js';
 
 export const protect = async (req, res, next) => {
     let token;
@@ -147,4 +148,56 @@ export const checkVerification = async (req, res, next) => {
     } catch (error) {
         res.status(500).json({ message: 'Failed to check verification status' });
     }
+};
+
+// Check if subscription plan supports a specific feature
+export const checkFeature = (featureName) => {
+    return async (req, res, next) => {
+        // Skip check for super admins, customers, or delivery partners
+        if (!req.user || req.user.role === 'SuperAdmin' || req.user.role === 'DeliveryPartner') {
+            return next();
+        }
+
+        try {
+            const restaurant = await Restaurant.findById(req.user.restaurantId);
+            if (!restaurant) {
+                return res.status(404).json({ message: 'Restaurant not found' });
+            }
+
+            const planName = restaurant.subscription?.plan || 'Basic';
+            const plan = await Plan.findOne({ name: planName });
+            
+            // If the plan exists and features are configured, verify permission
+            if (plan) {
+                const hasFeature = plan.features.some(f => f.toLowerCase() === featureName.toLowerCase());
+                if (!hasFeature) {
+                    return res.status(403).json({
+                        message: `The feature "${featureName}" is not included in your current "${planName}" plan. Please upgrade your subscription to unlock it.`,
+                        requiresUpgrade: true,
+                        requiredPlan: 'Pro'
+                    });
+                }
+            } else {
+                // Fallback rules in case seeds aren't fully loaded
+                const fallbackFeatures = {
+                    Basic: ['Restaurant Management', 'Menu Management', 'QR Digital Menu', 'Order Management', 'Basic Inventory', 'Basic Reports', 'Customer Support'],
+                    Pro: ['Restaurant Management', 'Menu Management', 'QR Digital Menu', 'Order Management', 'Multi Branch', 'Basic Inventory', 'Advanced Inventory', 'Purchase Orders', 'Vendor Management', 'Waste Management', 'Basic Reports', 'Profit & Loss', 'Advanced Analytics', 'PDF Export', 'Excel Export', 'Customer Support'],
+                    Enterprise: ['Restaurant Management', 'Menu Management', 'QR Digital Menu', 'Order Management', 'Multi Branch', 'Basic Inventory', 'Advanced Inventory', 'Purchase Orders', 'Vendor Management', 'Waste Management', 'Basic Reports', 'Profit & Loss', 'Advanced Analytics', 'PDF Export', 'Excel Export', 'Customer Support', 'Advanced Support', 'Live Chat', 'Priority Support', 'AI Insights', 'Sales Prediction', 'Inventory Forecast', 'Demand Forecast', 'Menu Recommendations', 'Business Health Score']
+                };
+                
+                const allowed = fallbackFeatures[planName] || fallbackFeatures['Basic'];
+                const hasFeature = allowed.some(f => f.toLowerCase() === featureName.toLowerCase());
+                
+                if (!hasFeature) {
+                    return res.status(403).json({
+                        message: `The feature "${featureName}" is not included in your current "${planName}" plan. Please upgrade your subscription to unlock it.`,
+                        requiresUpgrade: true
+                    });
+                }
+            }
+            next();
+        } catch (error) {
+            res.status(500).json({ message: 'Failed to verify feature access permission' });
+        }
+    };
 };

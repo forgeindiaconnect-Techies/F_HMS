@@ -3,14 +3,6 @@ import { Search, Plus, Calendar, Clock, UserCheck, UserX, AlertTriangle, Message
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
-const mockShift = [
-    { name: 'Marcus Wong', role: 'Head Chef', status: 'Active', timeIn: '08:00 AM', hours: '4h 30m', alert: false },
-    { name: 'Elena Rodriguez', role: 'Senior Waiter', status: 'Active', timeIn: '09:00 AM', hours: '3h 30m', alert: false },
-    { name: 'Jessica Lee', role: 'Line Cook', status: 'Break', timeIn: '08:30 AM', hours: '4h 00m', alert: true }, // approaching OT
-    { name: 'David Smith', role: 'Cashier', status: 'Active', timeIn: '10:00 AM', hours: '2h 30m', alert: false },
-    { name: 'Tom Hardy', role: 'Waiter', status: 'Late', timeIn: 'Expected 12:00 PM', hours: '-', alert: true },
-];
-
 const ManagerStaff = () => {
     const { api, user } = useAuth();
     const [staffList, setStaffList] = useState([]);
@@ -45,17 +37,26 @@ const ManagerStaff = () => {
         fetchStaff();
     }, []);
 
-    const displayStaff = staffList.map((staff, index) => ({
-        ...staff,
-        status: index % 3 === 0 ? 'Active' : index % 3 === 1 ? 'Break' : 'Active',
-        timeIn: '09:00 AM',
-        hours: '8h 00m',
-        alert: false
-    })).filter(s => 
+    const displayStaff = staffList.map((staff, index) => {
+        const isUserActive = staff.isActive !== false;
+        const simulatedStatus = !isUserActive ? 'Absent' : (index % 3 === 0 ? 'Active' : index % 3 === 1 ? 'Break' : 'Active');
+        return {
+            ...staff,
+            status: simulatedStatus,
+            timeIn: isUserActive ? '09:00 AM' : '-',
+            hours: isUserActive ? '8h 00m' : '-',
+            alert: isUserActive && index % 5 === 2
+        };
+    }).filter(s => 
         !searchQuery || 
         (s.name && s.name.toLowerCase().includes(searchQuery.toLowerCase())) || 
         (s.role && s.role.toLowerCase().includes(searchQuery.toLowerCase()))
     );
+
+    const clockedInCount = displayStaff.filter(s => s.status === 'Active').length;
+    const onBreakCount = displayStaff.filter(s => s.status === 'Break').length;
+    const absentCount = displayStaff.filter(s => s.status === 'Absent' || s.status === 'Late').length;
+    const laborCostToday = (clockedInCount * 120 + onBreakCount * 60).toFixed(2);
 
     const exportPDF = () => {
         // Load jsPDF from CDN dynamically
@@ -176,20 +177,20 @@ const ManagerStaff = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
                     <div className="p-3 bg-green-50 text-green-600 rounded-lg"><UserCheck size={20} /></div>
-                    <div><p className="text-xs text-gray-500 font-bold uppercase">Clocked In</p><h3 className="text-xl font-bold text-gray-900">12</h3></div>
+                    <div><p className="text-xs text-gray-500 font-bold uppercase">Clocked In</p><h3 className="text-xl font-bold text-gray-900">{clockedInCount}</h3></div>
                 </div>
                 <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
                     <div className="p-3 bg-orange-50 text-orange-600 rounded-lg"><Clock size={20} /></div>
-                    <div><p className="text-xs text-gray-500 font-bold uppercase">On Break</p><h3 className="text-xl font-bold text-gray-900">3</h3></div>
+                    <div><p className="text-xs text-gray-500 font-bold uppercase">On Break</p><h3 className="text-xl font-bold text-gray-900">{onBreakCount}</h3></div>
                 </div>
                 <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
                     <div className="p-3 bg-red-50 text-red-600 rounded-lg"><UserX size={20} /></div>
-                    <div><p className="text-xs text-gray-500 font-bold uppercase">Late / Absent</p><h3 className="text-xl font-bold text-gray-900">1</h3></div>
+                    <div><p className="text-xs text-gray-500 font-bold uppercase">Late / Absent</p><h3 className="text-xl font-bold text-gray-900">{absentCount}</h3></div>
                 </div>
                 <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-4 rounded-xl shadow-sm text-white flex items-center justify-between">
                     <div>
                         <p className="text-xs text-gray-400 font-bold uppercase">Labor Cost (Today)</p>
-                        <h3 className="text-xl font-bold mt-1">₹485.00</h3>
+                        <h3 className="text-xl font-bold mt-1">₹{laborCostToday}</h3>
                     </div>
                     <div className="text-right">
                         <p className="text-xs text-green-400 font-bold">Optimal</p>

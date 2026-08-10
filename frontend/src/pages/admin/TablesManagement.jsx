@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Plus, Search, Trash2, Store, QrCode, X, Printer, Download, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -6,6 +7,8 @@ import { useAuth } from '../../context/AuthContext';
 
 const TablesManagement = () => {
     const { api } = useAuth();
+    const location = useLocation();
+    const activeTab = new URLSearchParams(location.search).get('tab') === 'qr' ? 'qr' : 'tables';
     const [tables, setTables] = useState([]);
     const [branches, setBranches] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -217,18 +220,27 @@ const TablesManagement = () => {
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>QR Table Management</h2>
-                    <p className="text-gray-500 text-sm mt-1">Manage restaurant tables and generate customer QR menu access points.</p>
+                    <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        {activeTab === 'qr' ? 'QR Digital Menu' : 'Table Management'}
+                    </h2>
+                    <p className="text-gray-500 text-sm mt-1">
+                        {activeTab === 'qr'
+                            ? 'Scan & share QR codes for contactless customer menu ordering.'
+                            : 'Manage restaurant tables and generate customer QR menu access points.'}
+                    </p>
                 </div>
-                <button 
-                    onClick={handleAddClick}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2 text-sm shadow-sm"
-                >
-                    <Plus size={18} /> Add Table
-                </button>
+                {activeTab === 'tables' && (
+                    <button 
+                        onClick={handleAddClick}
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2 text-sm shadow-sm"
+                    >
+                        <Plus size={18} /> Add Table
+                    </button>
+                )}
             </div>
 
-            {/* Controls */}
+            {/* Controls (only for Tables tab) */}
+            {activeTab === 'tables' && (
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-wrap gap-4 justify-between items-center">
                 <div className="relative w-full md:w-96">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
@@ -241,9 +253,52 @@ const TablesManagement = () => {
                     />
                 </div>
             </div>
+            )}
 
-            {/* Grid display */}
-            {loading ? (
+            {/* QR Digital Menu Tab */}
+            {activeTab === 'qr' && (
+            <div className="space-y-6">
+                {loading ? (
+                    <div className="flex justify-center p-20">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                    </div>
+                ) : tables.length === 0 ? (
+                    <div className="bg-white rounded-2xl border border-gray-100 p-20 text-center text-gray-500">
+                        <QrCode size={48} className="mx-auto text-gray-300 mb-4" />
+                        <p className="text-lg font-bold">No Tables Set Up</p>
+                        <p className="text-sm mt-1">Go to <strong>Table Management</strong> to add tables first.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {tables.map((table) => (
+                            <div key={table._id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col p-5 space-y-4 hover:shadow-md transition-shadow items-center text-center">
+                                <div className="bg-green-50 border border-green-100 rounded-xl p-3 w-full">
+                                    <p className="text-xs font-bold text-green-600 uppercase tracking-widest">Table {table.tableNumber}</p>
+                                    <div className="bg-white p-2 rounded-lg mt-2 inline-block shadow-sm">
+                                        <img
+                                            src={getQrImageSrc(table)}
+                                            alt={`Table ${table.tableNumber} QR`}
+                                            className="w-28 h-28"
+                                        />
+                                    </div>
+                                </div>
+                                <p className="text-xs text-gray-400 font-semibold flex items-center gap-1"><Store size={12}/>{table.branchId?.name || 'Main Branch'}</p>
+                                <button
+                                    onClick={() => openQrModal(table)}
+                                    className="w-full py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                                >
+                                    <QrCode size={14} /> View Full QR
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+            )}
+
+            {/* Tables Grid (only for Table Management tab) */}
+            {activeTab === 'tables' && (
+            loading ? (
                 <div className="flex justify-center p-20">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
                 </div>
@@ -292,7 +347,7 @@ const TablesManagement = () => {
                         </div>
                     ))}
                 </div>
-            )}
+            ))}
 
             {/* New Table Modal */}
             {isModalOpen && (

@@ -78,5 +78,330 @@ h1, h2, h3, h4, h5, h6 {
   flex: 1 1 auto !important;
 }
 
+/* ─── Premium Dark Mode Overrides ─── */
+html.dark {
+  background-color: #0b0f19 !important;
+}
 
-/* Trigger Vercel Rebuild - v1.0.1 */
+html.dark body {
+  background-color: #0b0f19 !important;
+  color: #f3f4f6 !important;
+}
+
+/* Backgrounds */
+html.dark .bg-gray-50, 
+html.dark .bg-slate-50, 
+html.dark .bg-gray-100\/50,
+html.dark .bg-slate-100\/50 {
+  background-color: #0b0f19 !important;
+}
+
+html.dark .bg-white,
+html.dark .bg-slate-900\/60 {
+  background-color: #111827 !important;
+}
+
+html.dark .bg-gray-100,
+html.dark .bg-slate-100 {
+  background-color: #1e293b !important;
+}
+
+/* Header & Sidebar */
+html.dark header, 
+html.dark .topbar,
+html.dark .sidebar,
+html.dark aside {
+  background-color: #0f172a !important;
+  border-color: #1e293b !important;
+}
+
+/* Texts */
+html.dark .text-gray-900,
+html.dark .text-slate-900,
+html.dark .text-gray-850,
+html.dark .text-gray-800,
+html.dark .text-slate-800 {
+  color: #f9fafb !important;
+}
+
+html.dark .text-gray-700,
+html.dark .text-slate-750,
+html.dark .text-slate-700 {
+  color: #e2e8f0 !important;
+}
+
+html.dark .text-gray-600,
+html.dark .text-slate-600,
+html.dark .text-gray-500,
+html.dark .text-slate-500,
+html.dark .text-gray-405,
+html.dark .text-gray-400,
+html.dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+/* Card Borders */
+html.dark .border-gray-100, 
+html.dark .border-gray-150,
+html.dark .border-gray-200, 
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-gray-200\/60 {
+  border-color: #1e293b !important;
+}
+
+html.dark .divide-gray-100 > * + * {
+  border-color: #1e293b !important;
+}
+
+/* Tables & Forms */
+html.dark tr, html.dark td, html.dark th {
+  border-color: #1e293b !important;
+}
+
+html.dark input, 
+html.dark select, 
+html.dark textarea {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+html.dark select option {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+/* Specific elements & overlays */
+html.dark .bg-blue-50 {
+  background-color: #1e293b !important;
+  color: #38bdf8 !important;
+}
+
+html.dark .bg-emerald-500\/10 {
+  background-color: rgba(16, 185, 129, 0.08) !important;
+}
+
+html.dark .bg-green-50 {
+  background-color: rgba(16, 185, 129, 0.08) !important;
+  color: #34d399 !important;
+  border-color: rgba(16, 185, 129, 0.15) !important;
+}
+
+/* Glassmorphism transparent white cards in Dark Mode */
+html.dark [class*="bg-white/"] {
+  background-color: rgba(17, 24, 39, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark .border-gray-100,
+html.dark .border-slate-100,
+html.dark .border-gray-150 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Specific status overlays and badges */
+html.dark .bg-amber-50 {
+  background-color: rgba(245, 158, 11, 0.08) !important;
+  color: #fbbf24 !important;
+  border-color: rgba(245, 158, 11, 0.15) !important;
+}
+
+html.dark .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.08) !important;
+  color: #fca5a5 !important;
+  border-color: rgba(239, 68, 68, 0.15) !important;
+}
+
+html.dark .bg-orange-50 {
+  background-color: rgba(249, 115, 22, 0.08) !important;
+  color: #fdba74 !important;
+  border-color: rgba(249, 115, 22, 0.15) !important;
+}
+
+html.dark .bg-blue-50 {
+  background-color: rgba(59, 130, 246, 0.08) !important;
+  color: #93c5fd !important;
+  border-color: rgba(59, 130, 246, 0.15) !important;
+}
+
+html.dark .bg-purple-50 {
+  background-color: rgba(168, 85, 247, 0.08) !important;
+  color: #d8b4fe !important;
+  border-color: rgba(168, 85, 247, 0.15) !important;
+}
+
+html.dark .border-purple-100,
+html.dark .border-blue-100,
+html.dark .border-green-100,
+html.dark .border-red-100,
+html.dark .border-orange-100,
+html.dark .border-amber-100,
+html.dark .border-gray-50,
+html.dark .border-gray-100,
+html.dark .border-gray-150,
+html.dark .border-gray-200,
+html.dark .border-slate-55,
+html.dark .border-slate-100,
+html.dark .border-slate-200 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark .border-white {
+  border-color: #111827 !important;
+}
+
+/* Global clean-ups */
+html.dark .bg-gray-50,
+html.dark .bg-slate-50 {
+  background-color: #0b0f19 !important;
+}
+
+html.dark .text-slate-800,
+html.dark .text-slate-900,
+html.dark .text-gray-900 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-slate-400,
+html.dark .text-slate-500,
+html.dark .text-gray-500 {
+  color: #94a3b8 !important;
+}
+
+/* Premium dark overrides for bg-100 status badges */
+html.dark .bg-blue-100 {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: #93c5fd !important;
+}
+
+html.dark .bg-orange-100 {
+  background-color: rgba(249, 115, 22, 0.15) !important;
+  color: #fdba74 !important;
+}
+
+html.dark .bg-red-100 {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  color: #fca5a5 !important;
+}
+
+html.dark .bg-amber-100 {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  color: #fbbf24 !important;
+}
+
+html.dark .bg-green-100 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #34d399 !important;
+}
+
+html.dark .bg-purple-100 {
+  background-color: rgba(168, 85, 247, 0.15) !important;
+  color: #d8b4fe !important;
+}
+
+/* Table and list hover states in Dark Mode */
+html.dark .hover\:bg-gray-50\/80:hover,
+html.dark .hover\:bg-gray-50:hover,
+html.dark .hover\:bg-slate-50:hover,
+html.dark .hover\:bg-gray-150:hover,
+html.dark .hover\:bg-gray-100\/80:hover,
+html.dark .hover\:bg-slate-100\/80:hover,
+html.dark tr:hover {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+html.dark .hover\:bg-gray-100:hover,
+html.dark .hover\:bg-slate-100:hover,
+html.dark .hover\:bg-gray-200:hover,
+html.dark .hover\:bg-slate-200:hover {
+  background-color: #1e293b !important;
+}
+
+/* Custom background helper overrides with opacity modifiers in Dark Mode */
+html.dark [class*="bg-gray-50/"],
+html.dark [class*="bg-slate-50/"],
+html.dark [class*="bg-gray-100/"],
+html.dark [class*="bg-slate-100/"] {
+  background-color: rgba(17, 24, 39, 0.7) !important;
+}
+
+html.dark [class*="hover:bg-gray-50/"]:hover,
+html.dark [class*="hover:bg-slate-50/"]:hover {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Premium dark overrides for hover states on colored buttons & text links */
+html.dark .hover\:bg-blue-100:hover,
+html.dark .hover\:bg-blue-50:hover {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+}
+
+html.dark .hover\:bg-red-100:hover,
+html.dark .hover\:bg-red-50:hover {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+}
+
+html.dark .hover\:bg-orange-100:hover,
+html.dark .hover\:bg-orange-50:hover {
+  background-color: rgba(249, 115, 22, 0.15) !important;
+}
+
+html.dark .hover\:bg-purple-100:hover,
+html.dark .hover\:bg-purple-50:hover {
+  background-color: rgba(168, 85, 247, 0.15) !important;
+}
+
+html.dark .hover\:bg-green-100:hover,
+html.dark .hover\:bg-green-50:hover {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+}
+
+/* Glassmorphic light/color overlays with opacity slash modifiers in Dark Mode */
+html.dark [class*="bg-blue-50/"] {
+  background-color: rgba(59, 130, 246, 0.08) !important;
+}
+html.dark [class*="bg-green-50/"] {
+  background-color: rgba(16, 185, 129, 0.08) !important;
+}
+html.dark [class*="bg-red-50/"] {
+  background-color: rgba(239, 68, 68, 0.08) !important;
+}
+html.dark [class*="bg-purple-50/"] {
+  background-color: rgba(168, 85, 247, 0.08) !important;
+}
+html.dark [class*="bg-orange-50/"] {
+  background-color: rgba(249, 115, 22, 0.08) !important;
+}
+html.dark [class*="bg-amber-50/"] {
+  background-color: rgba(245, 158, 11, 0.08) !important;
+}
+html.dark [class*="bg-sky-50/"] {
+  background-color: rgba(56, 189, 248, 0.08) !important;
+}
+
+/* Custom Scrollbar for Dark Mode */
+html.dark ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+html.dark ::-webkit-scrollbar-track {
+  background: #0f172a !important;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: #1e293b !important;
+  border-radius: 9999px;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155 !important;
+}
+
+/* Remove top (header) and bottom (footer) separator lines from all sidebars in both themes */
+aside > div:first-child,
+aside > header,
+aside > div:last-child {
+  border-bottom-width: 0px !important;
+  border-top-width: 0px !important;
+}
+
+/* Trigger Vercel Rebuild - v1.0.7 */

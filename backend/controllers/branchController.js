@@ -1,4 +1,7 @@
 import Branch from '../models/Branch.js';
+import Restaurant from '../models/Restaurant.js';
+import Plan from '../models/Plan.js';
+
 
 // @desc    Get all branches for a restaurant
 // @route   GET /api/branches
@@ -19,6 +22,36 @@ export const createBranch = async (req, res) => {
     const { name, location, contact, isActive } = req.body;
 
     try {
+        const restaurant = req.restaurant || await Restaurant.findById(req.user.restaurantId);
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        const planName = restaurant.subscription?.plan || 'Basic';
+        const planDoc = await Plan.findOne({ name: planName });
+        let branchLimit = 1; // Default to 1 (Basic limit)
+        
+        if (planDoc && planDoc.branchesLimit !== undefined) {
+            branchLimit = planDoc.branchesLimit;
+        } else {
+            // Fallbacks
+            if (planName === 'Pro' || planName === 'Professional') {
+                branchLimit = 5;
+            } else if (planName === 'Enterprise') {
+                branchLimit = Infinity;
+            }
+        }
+
+        // Count existing branches
+        const currentBranchesCount = await Branch.countDocuments({ restaurantId: req.user.restaurantId });
+        
+        if (currentBranchesCount >= branchLimit) {
+            return res.status(403).json({ 
+                message: `Your current plan (${planName}) only allows up to ${branchLimit} branch${branchLimit > 1 ? 'es' : ''}. Please upgrade your subscription plan to add more branches.`,
+                limitExceeded: true
+            });
+        }
+
         const branch = await Branch.create({
             restaurantId: req.user.restaurantId,
             name,
@@ -32,6 +65,7 @@ export const createBranch = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
 
 // @desc    Update a branch
 // @route   PUT /api/branches/:id

@@ -98,8 +98,43 @@ const Home = () => {
                         <h1 className="text-lg sm:text-2xl font-black tracking-tight text-gray-900 group-hover:text-red-500 transition-colors">RestaurantHub</h1>
                     </Link>
                     
-                    <nav className="hidden md:flex gap-8 font-medium text-sm text-gray-600">
-                        <a href="#features" className="hover:text-red-500 transition-colors">Features</a>
+                    <nav className="hidden md:flex gap-8 font-medium text-sm text-gray-600 relative items-center">
+                        {/* Features Dropdown (matching screenshot style) */}
+                        <div className="relative group py-2">
+                            <a 
+                                href="#features" 
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-gray-800 hover:text-red-500 hover:bg-red-50/50 transition-all cursor-pointer"
+                            >
+                                Features <ChevronDown size={14} className="group-hover:rotate-180 transition-transform text-red-500" />
+                            </a>
+
+                            {/* Dropdown Menu Box */}
+                            <div className="absolute top-full left-0 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                <Link 
+                                    to="/features/management" 
+                                    className="flex items-center justify-between p-3.5 rounded-xl bg-red-50/60 hover:bg-red-100/70 text-red-900 font-bold transition-all group/item"
+                                >
+                                    <div className="flex items-center gap-2.5">
+                                        <span className="text-base">📊</span>
+                                        <span>Management</span>
+                                    </div>
+                                    <ArrowRight size={16} className="text-red-600 group-hover/item:translate-x-1 transition-transform" />
+                                </Link>
+                                <a 
+                                    href="#workflow" 
+                                    className="flex items-center justify-between p-3.5 rounded-xl hover:bg-gray-50 text-gray-700 font-semibold transition-all"
+                                >
+                                    <span>Kitchen Workflow (KDS)</span>
+                                </a>
+                                <a 
+                                    href="#features" 
+                                    className="flex items-center justify-between p-3.5 rounded-xl hover:bg-gray-50 text-gray-700 font-semibold transition-all"
+                                >
+                                    <span>POS Billing</span>
+                                </a>
+                            </div>
+                        </div>
+
                         <a href="#workflow" className="hover:text-red-500 transition-colors">Workflow</a>
                         <a href="#pricing" className="hover:text-red-500 transition-colors">Pricing</a>
                         <Link to="/contact" className="hover:text-red-500 transition-colors">Contact</Link>

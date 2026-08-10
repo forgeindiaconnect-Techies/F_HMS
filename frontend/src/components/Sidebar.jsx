@@ -4,11 +4,43 @@ import {
     LayoutDashboard, Store, Users, UtensilsCrossed, Settings, LogOut, 
     Activity, UserCheck, Key, ListTree, PackageSearch, Truck, Heart, 
     CalendarCheck, ShoppingBag, CreditCard, Tag, FileText, PieChart, 
-    Bell, ReceiptText, Lock, QrCode, MessageSquare, HelpCircle, Volume2, LifeBuoy
+    Bell, ReceiptText, Lock, QrCode, MessageSquare, HelpCircle, Volume2, LifeBuoy,
+    Network, ChefHat
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+
+// Same config as DashboardLayout — single source of truth for plan gating
+const ROUTE_PLAN_REQUIREMENTS = [
+    // Pro features
+    { path: '/admin/analytics',    minPlan: 'Pro',        feature: 'Sales Analytics' },
+    { path: '/admin/branches',     minPlan: 'Pro',        feature: 'Multi-Branch Management' },
+    { path: '/admin/inventory',    minPlan: 'Pro',        feature: 'Inventory Management' },
+    { path: '/admin/suppliers',    minPlan: 'Pro',        feature: 'Vendor Management' },
+    { path: '/admin/reservations', minPlan: 'Pro',        feature: 'Reservation Management' },
+    { path: '/admin/offers',       minPlan: 'Pro',        feature: 'Coupons & Promotions' },
+    { path: '/admin/delivery',     minPlan: 'Pro',        feature: 'Delivery Management' },
+
+    // Enterprise features
+    { path: '/admin/franchise',        minPlan: 'Enterprise', feature: 'Franchise Management' },
+    { path: '/admin/central-kitchen',  minPlan: 'Enterprise', feature: 'Central Kitchen Ops' },
+    { path: '/admin/developer-config', minPlan: 'Enterprise', feature: 'Developer APIs & White Label' },
+    { path: '/admin/audit-logs',       minPlan: 'Enterprise', feature: 'Security Audit Logs' },
+    { path: '/admin/bi',               minPlan: 'Enterprise', feature: 'Business Intelligence Console' },
+    { path: '/admin/support',          minPlan: 'Enterprise', feature: '24/7 Premium Support' },
+];
+const PLAN_ORDER = { Basic: 0, Starter: 0, Pro: 1, Professional: 1, Enterprise: 2 };
+const planMeetsRequirement = (current, min) =>
+    (PLAN_ORDER[current] ?? 0) >= (PLAN_ORDER[min] ?? 99);
+const getItemLock = (path, plan, status) => {
+    const rule = ROUTE_PLAN_REQUIREMENTS.find(r => path.startsWith(r.path));
+    if (!rule) return null;
+    if (status !== 'Active' || !planMeetsRequirement(plan, rule.minPlan)) {
+        return rule;
+    }
+    return null;
+};
 
 const Sidebar = () => {
     const navigate = useNavigate();
@@ -30,37 +62,42 @@ const Sidebar = () => {
         {
             title: 'Overview',
             items: [
-                { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
+                { name: 'Business Overview', path: '/admin', icon: LayoutDashboard },
+                { name: 'Sales Analytics', path: '/admin/analytics', icon: PieChart },
             ]
         },
         {
-            title: 'Organization',
+            title: 'Management',
             items: [
-                { name: 'Branches', path: '/admin/branches', icon: Store },
-                { name: 'Tables', path: '/admin/tables', icon: QrCode },
-            ]
-        },
-        {
-            title: 'People',
-            items: [
-                { name: 'Staff', path: '/admin/staff', icon: UserCheck },
+                { name: 'Branch Management', path: '/admin/branches', icon: Store },
+                { name: 'Menu Management', path: '/admin/menu', icon: UtensilsCrossed },
+                { name: 'Inventory Management', path: '/admin/inventory', icon: PackageSearch },
+                { name: 'Staff Management', path: '/admin/staff', icon: UserCheck },
+                { name: 'Customer Management', path: '/admin/customers', icon: Users },
             ]
         },
         {
             title: 'Operations',
             items: [
+                { name: 'Order Management', path: '/admin/orders', icon: ShoppingBag },
+                { name: 'Table Management', path: '/admin/tables', icon: QrCode },
+                { name: 'QR Digital Menu', path: '/admin/tables?tab=qr', icon: QrCode },
+                { name: 'Reservation Management', path: '/admin/reservations', icon: CalendarCheck },
+                { name: 'Offers & Promotions', path: '/admin/offers', icon: Tag },
                 { name: 'Delivery Management', path: '/admin/delivery', icon: Truck },
             ]
         },
         {
-            title: 'Kitchen & Catalog',
+            title: 'Enterprise Suite',
             items: [
-                { name: 'Menu', path: '/admin/menu', icon: UtensilsCrossed },
-                { name: 'Inventory', path: '/admin/inventory', icon: PackageSearch },
-                { name: 'Suppliers', path: '/admin/suppliers', icon: Truck },
+                { name: 'Franchise Management', path: '/admin/franchise', icon: Network },
+                { name: 'Central Kitchen Ops', path: '/admin/central-kitchen', icon: ChefHat },
+                { name: 'Developer Config', path: '/admin/developer-config', icon: Key },
+                { name: 'Audit Logs', path: '/admin/audit-logs', icon: ReceiptText },
+                { name: 'BI Console', path: '/admin/bi', icon: Activity },
             ]
         },
-        ...(isEnterprise ? [{
+        {
             title: 'Customer Care',
             items: [
                 { name: 'Support Dashboard', path: '/admin/support', icon: LayoutDashboard },
@@ -69,17 +106,11 @@ const Sidebar = () => {
                 { name: 'Knowledge Base', path: '/admin/support/knowledge-base', icon: HelpCircle },
                 { name: 'Announcements', path: '/admin/support/announcements', icon: Volume2 },
             ]
-        }] : []),
-        {
-            title: 'Insights',
-            items: [
-                { name: 'Reports', path: '/admin/reports', icon: FileText },
-                { name: 'Analytics', path: '/admin/analytics', icon: PieChart },
-            ]
         },
         {
-            title: 'System',
+            title: 'Reports & Config',
             items: [
+                { name: 'Reports', path: '/admin/reports', icon: FileText },
                 { name: 'Settings', path: '/admin/settings', icon: Settings },
                 { name: 'Notifications', path: '/admin/notifications', icon: Bell },
                 { name: 'Verification', path: '/admin/verification', icon: FileText },
@@ -131,31 +162,19 @@ const Sidebar = () => {
                             {group.items.map((item) => {
                                 const Icon = item.icon;
                                 
-                                const getPlanName = () => {
-                                    if (!restaurant || !restaurant.subscription || !restaurant.subscription.plan) {
-                                        return 'Basic';
-                                    }
-                                    return restaurant.subscription.plan;
-                                };
+                                const lock = getItemLock(item.path, plan, status);
 
-                                const plan = getPlanName();
-                                let isAllowed = true;
-                                if (item.name === 'Delivery Management') {
-                                    isAllowed = isEnterprise;
-                                } else if (plan === 'Basic' || plan === 'Starter') {
-                                    isAllowed = !['Suppliers', 'Analytics'].includes(item.name);
-                                }
-
-                                if (!isAllowed) {
+                                if (lock) {
                                     return (
                                         <button
                                             key={item.name}
                                             type="button"
                                             onClick={() => {
-                                                toast.error(`Upgrade Plan Required: Please upgrade your subscription to access the ${item.name} module.`);
+                                                toast.error(`${lock.feature} requires the ${lock.minPlan} Plan or above. Please upgrade your subscription.`);
                                                 navigate('/admin/billing');
                                             }}
                                             className="flex items-center justify-between w-full px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm text-gray-400 hover:bg-gray-50 hover:text-gray-600 font-medium"
+                                            title={`Requires ${lock.minPlan} Plan`}
                                         >
                                             <div className="flex items-center gap-3">
                                                 <Icon size={18} className="shrink-0 opacity-70" />
@@ -167,6 +186,12 @@ const Sidebar = () => {
                                 }
 
                                 const checkActive = () => {
+                                    if (item.name === 'Table Management') {
+                                        return location.pathname === '/admin/tables' && location.search !== '?tab=qr';
+                                    }
+                                    if (item.name === 'QR Digital Menu') {
+                                        return location.pathname === '/admin/tables' && location.search === '?tab=qr';
+                                    }
                                     if (item.path === '/admin') {
                                         return location.pathname === '/admin';
                                     }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
-    Store, ShoppingBag, UserCheck, PackageSearch, FileText, Settings, LogOut, UtensilsCrossed, ChefHat, CalendarCheck, MessageSquare, DollarSign, PieChart, QrCode, Truck
+    Store, ShoppingBag, UserCheck, PackageSearch, FileText, Settings, LogOut, UtensilsCrossed, ChefHat, MessageSquare, DollarSign, PieChart, QrCode, Truck, Bell
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../context/AuthContext';
@@ -19,31 +19,40 @@ const ManagerSidebar = () => {
 
     const navGroups = [
         {
-            title: 'Overview',
+            title: 'Overview & Orders',
             items: [
-                { name: 'Dashboard', path: '/manager', icon: Store },
+                { name: 'Branch Overview', path: '/manager', icon: Store },
+                { name: 'Daily Orders', path: '/manager/orders', icon: ShoppingBag },
+                { name: 'Table Status', path: '/manager/tables', icon: QrCode },
             ]
         },
         {
-            title: 'Operations',
+            title: 'Kitchen & Ops',
             items: [
                 { name: 'Kitchen Status', path: '/manager/kitchen', icon: ChefHat },
-                { name: 'Staff Schedule', path: '/manager/staff', icon: UserCheck },
-                { name: 'Branch Inventory', path: '/manager/inventory', icon: PackageSearch },
-                { name: 'Branch Tables', path: '/manager/tables', icon: QrCode },
-                { name: 'Delivery Management', path: '/manager/delivery', icon: Truck },
+                { name: 'Delivery Dispatch', path: '/manager/delivery', icon: Truck },
             ]
         },
         {
-            title: 'Insights',
+            title: 'Management',
             items: [
-                { name: 'Today\'s Sales', path: '/manager/sales', icon: DollarSign },
+                { name: 'Staff Monitoring', path: '/manager/staff', icon: UserCheck },
+                { name: 'Inventory Status', path: '/manager/inventory', icon: PackageSearch },
+                { name: 'Expense Tracking', path: '/manager/expenses', icon: DollarSign },
+            ]
+        },
+        {
+            title: 'Feedback & Analytics',
+            items: [
+                { name: 'Customer Feedback', path: '/manager/feedback', icon: MessageSquare },
                 { name: 'Branch Analytics', path: '/manager/analytics', icon: PieChart },
+                { name: 'Reports', path: '/manager/reports', icon: FileText },
             ]
         },
         {
             title: 'System',
             items: [
+                { name: 'Notifications', path: '/manager/notifications', icon: Bell },
                 { name: 'Settings', path: '/manager/settings', icon: Settings },
             ]
         }

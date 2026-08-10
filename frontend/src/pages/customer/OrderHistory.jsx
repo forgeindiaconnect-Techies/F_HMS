@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Star, ShoppingBag, MessageSquare, ExternalLink, Receipt, X, Printer } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import toast from 'react-hot-toast';
 
 const OrderHistory = () => {
     const { api } = useCustomerAuth();
@@ -98,7 +99,7 @@ const OrderHistory = () => {
 
     const handleSubmitReview = (e, id) => {
         e.preventDefault();
-        alert(`Review submitted for order ${id}! Thank you for your feedback.`);
+        toast.success(`Review submitted for order ${id}! Thank you for your feedback.`);
         setReviewingId(null);
     };
 

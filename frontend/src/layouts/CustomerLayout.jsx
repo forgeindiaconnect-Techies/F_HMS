@@ -60,41 +60,13 @@ const CustomerLayout = () => {
                         </div>
                         
                         {user ? (
-                            <div className="relative">
-                                <button 
-                                    onClick={() => setIsProfileOpen(!isProfileOpen)} 
-                                    className="flex items-center gap-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 p-2 sm:px-4 sm:py-2 rounded-full font-bold transition-colors"
-                                >
-                                    <User size={16} className="shrink-0" />
-                                    <span className="hidden sm:inline truncate max-w-[80px]">{user.name}</span>
-                                </button>
-                                
-                                {isProfileOpen && (
-                                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                                        <Link 
-                                            to="/profile" 
-                                            onClick={() => setIsProfileOpen(false)}
-                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 font-bold transition-colors"
-                                        >
-                                            Profile
-                                        </Link>
-                                        <Link 
-                                            to="/profile/orders" 
-                                            onClick={() => setIsProfileOpen(false)}
-                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 font-bold transition-colors"
-                                        >
-                                            Orders
-                                        </Link>
-                                        <Link 
-                                            to="/profile/reservations" 
-                                            onClick={() => setIsProfileOpen(false)}
-                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 font-bold transition-colors"
-                                        >
-                                            Table Booking History
-                                        </Link>
-                                    </div>
-                                )}
-                            </div>
+                            <Link 
+                                to="/profile" 
+                                className="flex items-center gap-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 p-2 sm:px-4 sm:py-2 rounded-full font-bold transition-colors"
+                            >
+                                <User size={16} className="shrink-0" />
+                                <span className="hidden sm:inline truncate max-w-[80px]">{user.name}</span>
+                            </Link>
                         ) : (
                             <>
                                 <Link to="/register" className="hidden sm:inline text-sm font-bold text-gray-650 hover:text-orange-600 transition-colors">

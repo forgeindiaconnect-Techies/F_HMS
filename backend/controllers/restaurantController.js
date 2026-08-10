@@ -2,6 +2,8 @@ import Restaurant from '../models/Restaurant.js';
 import Branch from '../models/Branch.js';
 import Notification from '../models/Notification.js';
 import DeliveryPartner from '../models/DeliveryPartner.js';
+import SubscriptionPayment from '../models/SubscriptionPayment.js';
+import Plan from '../models/Plan.js';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -172,6 +174,23 @@ export const getMyRestaurant = async (req, res) => {
             const expiry = new Date(restaurant.subscription.expiryDate);
             const now = new Date();
             
+            // Auto apply scheduled downgrade if downgrade date has passed
+            if (restaurant.subscription.downgradeScheduledPlan && now >= new Date(restaurant.subscription.downgradeScheduledDate)) {
+                const targetPlan = restaurant.subscription.downgradeScheduledPlan;
+                restaurant.subscription.plan = targetPlan;
+                restaurant.subscription.price = targetPlan === 'Pro' ? 99 : 49;
+                restaurant.subscription.downgradeScheduledPlan = '';
+                restaurant.subscription.downgradeScheduledDate = null;
+                await restaurant.save();
+
+                await Notification.create({
+                    title: 'Subscription Downgraded',
+                    desc: `Your scheduled downgrade to the ${targetPlan} plan has been processed.`,
+                    type: 'System',
+                    restaurantId: restaurant._id
+                });
+            }
+
             // If subscription is expired, check if we've already notified them
             if (expiry < now && restaurant.subscription.status !== 'Cancelled') {
                 const existingNotif = await Notification.findOne({
@@ -304,5 +323,201 @@ export const getRestaurantById = async (req, res) => {
         res.json(restaurant);
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get my billing/payment history
+// @route   GET /api/restaurants/mine/billing-history
+// @access  Private/RestaurantAdmin
+export const getMyBillingHistory = async (req, res) => {
+    try {
+        const history = await SubscriptionPayment.find({ restaurantId: req.user.restaurantId }).sort({ createdAt: -1 });
+        res.json(history);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Upgrade subscription plan
+// @route   POST /api/restaurants/mine/upgrade
+// @access  Private/RestaurantAdmin
+export const upgradeSubscription = async (req, res) => {
+    try {
+        const { planName, billingCycle } = req.body;
+        const restaurant = await Restaurant.findById(req.user.restaurantId);
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        const targetPlan = await Plan.findOne({ name: planName });
+        const targetPrice = targetPlan 
+            ? (billingCycle === 'yearly' ? targetPlan.yearlyPrice : targetPlan.monthlyPrice)
+            : (planName === 'Pro' ? (billingCycle === 'yearly' ? 990 : 99) : (billingCycle === 'yearly' ? 1990 : 199));
+
+        const currentPlanName = restaurant.subscription?.plan || 'Basic';
+        const currentPlan = await Plan.findOne({ name: currentPlanName });
+        const currentPrice = currentPlan
+            ? (restaurant.subscription.billingCycle === 'yearly' ? currentPlan.yearlyPrice : currentPlan.monthlyPrice)
+            : 0;
+
+        // Calculate remaining credit from current subscription
+        const now = new Date();
+        const expiry = restaurant.subscription.expiryDate ? new Date(restaurant.subscription.expiryDate) : now;
+        const totalDuration = restaurant.subscription.billingCycle === 'yearly' ? 365 : 30;
+        const remainingDays = Math.max(0, Math.ceil((expiry - now) / (1000 * 60 * 60 * 24)));
+        const remainingCredit = Math.floor((currentPrice / totalDuration) * remainingDays);
+
+        const chargeAmount = Math.max(0, targetPrice - remainingCredit);
+
+        // Set new expiry date
+        const newExpiry = new Date();
+        if (billingCycle === 'yearly') {
+            newExpiry.setDate(newExpiry.getDate() + 365);
+        } else {
+            newExpiry.setDate(newExpiry.getDate() + 30);
+        }
+
+        // Update Restaurant Subscription
+        restaurant.subscription = {
+            status: 'Active',
+            plan: planName,
+            billingCycle: billingCycle,
+            trialActive: false,
+            expiryDate: newExpiry,
+            startDate: new Date(),
+            price: targetPrice,
+            downgradeScheduledPlan: '',
+            downgradeScheduledDate: null
+        };
+        await restaurant.save();
+
+        // Record Completed Subscription Payment
+        const transactionId = 'TXN-UPG-' + Date.now().toString().slice(-8).toUpperCase();
+        await SubscriptionPayment.create({
+            restaurantId: restaurant._id,
+            planName,
+            amount: chargeAmount,
+            billingCycle,
+            paymentMethod: 'Card',
+            transactionId,
+            status: 'Completed',
+            effectiveDate: new Date(),
+            expiryDate: newExpiry
+        });
+
+        // Broadcast System Notification
+        await Notification.create({
+            title: 'Subscription Upgraded',
+            desc: `Your restaurant has been successfully upgraded to the ${planName} plan.`,
+            type: 'System',
+            restaurantId: restaurant._id
+        });
+
+        res.json({
+            message: `Your restaurant has been upgraded to ${planName}.`,
+            restaurant,
+            chargeAmount,
+            transactionId
+        });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+// @desc    Schedule downgrade subscription plan
+// @route   POST /api/restaurants/mine/downgrade
+// @access  Private/RestaurantAdmin
+export const downgradeSubscription = async (req, res) => {
+    try {
+        const { planName } = req.body;
+        const restaurant = await Restaurant.findById(req.user.restaurantId);
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        const expiryDate = restaurant.subscription?.expiryDate || new Date();
+
+        restaurant.subscription.downgradeScheduledPlan = planName;
+        restaurant.subscription.downgradeScheduledDate = expiryDate;
+        await restaurant.save();
+
+        await Notification.create({
+            title: 'Downgrade Scheduled',
+            desc: `Your downgrade request to ${planName} has been scheduled to take effect on ${new Date(expiryDate).toLocaleDateString()}.`,
+            type: 'System',
+            restaurantId: restaurant._id
+        });
+
+        res.json({
+            message: `Downgrade to ${planName} scheduled successfully. Access remains active until ${new Date(expiryDate).toLocaleDateString()}.`,
+            restaurant
+        });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+// @desc    Renew subscription plan
+// @route   POST /api/restaurants/mine/renew
+// @access  Private/RestaurantAdmin
+export const renewSubscription = async (req, res) => {
+    try {
+        const restaurant = await Restaurant.findById(req.user.restaurantId);
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        const planName = restaurant.subscription?.plan || 'Basic';
+        const billingCycle = restaurant.subscription?.billingCycle || 'monthly';
+
+        const plan = await Plan.findOne({ name: planName });
+        const price = plan 
+            ? (billingCycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice)
+            : (planName === 'Pro' ? (billingCycle === 'yearly' ? 990 : 99) : (billingCycle === 'yearly' ? 1990 : 199));
+
+        let currentExpiry = restaurant.subscription.expiryDate ? new Date(restaurant.subscription.expiryDate) : new Date();
+        if (currentExpiry < new Date()) {
+            currentExpiry = new Date();
+        }
+
+        if (billingCycle === 'yearly') {
+            currentExpiry.setDate(currentExpiry.getDate() + 365);
+        } else {
+            currentExpiry.setDate(currentExpiry.getDate() + 30);
+        }
+
+        restaurant.subscription.status = 'Active';
+        restaurant.subscription.expiryDate = currentExpiry;
+        restaurant.subscription.price = price;
+        await restaurant.save();
+
+        const transactionId = 'TXN-REN-' + Date.now().toString().slice(-8).toUpperCase();
+        await SubscriptionPayment.create({
+            restaurantId: restaurant._id,
+            planName,
+            amount: price,
+            billingCycle,
+            paymentMethod: 'Card',
+            transactionId,
+            status: 'Completed',
+            effectiveDate: new Date(),
+            expiryDate: currentExpiry
+        });
+
+        await Notification.create({
+            title: 'Subscription Renewed',
+            desc: `Your subscription to the ${planName} plan has been renewed until ${currentExpiry.toLocaleDateString()}.`,
+            type: 'System',
+            restaurantId: restaurant._id
+        });
+
+        res.json({
+            message: `Subscription successfully renewed.`,
+            restaurant,
+            expiryDate: currentExpiry,
+            transactionId
+        });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
     }
 };

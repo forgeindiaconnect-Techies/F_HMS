@@ -1,4 +1,6 @@
 import Order from '../models/Order.js';
+import Restaurant from '../models/Restaurant.js';
+import Plan from '../models/Plan.js';
 
 // @desc    Generate report data
 // @route   POST /api/reports/generate
@@ -7,6 +9,34 @@ export const generateReport = async (req, res) => {
     const { reportType, startDate, endDate, branch } = req.body;
 
     try {
+        const restaurant = await Restaurant.findById(req.user.restaurantId);
+        const planName = restaurant?.subscription?.plan || 'Basic';
+        const plan = await Plan.findOne({ name: planName });
+        
+        let hasPermission = true;
+        if (plan) {
+            if ([3, 4].includes(Number(reportType))) {
+                hasPermission = plan.features.some(f => 
+                    f.toLowerCase() === 'advanced analytics' || 
+                    f.toLowerCase() === 'profit & loss' || 
+                    f.toLowerCase() === 'staff performance' ||
+                    f.toLowerCase() === 'basic reports'
+                );
+            }
+        } else {
+            // Fallback checking
+            if (planName === 'Basic' && [3, 4].includes(Number(reportType))) {
+                hasPermission = false;
+            }
+        }
+
+        if (!hasPermission) {
+            return res.status(403).json({
+                message: `This report is not available in your current ${planName} plan. Please upgrade your subscription.`,
+                requiresUpgrade: true
+            });
+        }
+
         let matchStage = { status: 'Completed' };
         
         if (startDate && endDate) {

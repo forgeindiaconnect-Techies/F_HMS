@@ -70,9 +70,10 @@ const DashboardHome = () => {
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-2xl font-bold text-gray-800" style={{ fontFamily: 'Poppins, sans-serif' }}>Dashboard Overview</h2>
-                <p className="text-gray-500 text-sm mt-1">Welcome back, here's what's happening today.</p>
+                <h2 className="text-2xl font-bold text-gray-800" style={{ fontFamily: 'Poppins, sans-serif' }}>Business Overview</h2>
+                <p className="text-gray-500 text-sm mt-1">Welcome back! Manage your overall business operations, sales, staff, and customer orders.</p>
             </div>
+
 
             {/* KPI Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

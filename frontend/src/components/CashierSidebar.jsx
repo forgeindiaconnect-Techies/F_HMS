@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Calculator, ReceiptText, LayoutGrid, LogOut } from 'lucide-react';
+import { 
+    Calculator, Receipt, LogOut, Split, ArrowLeftRight, Tag, Coins, Undo2, Landmark, History 
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import clsx from 'clsx';
 
@@ -19,13 +21,14 @@ const CashierSidebar = () => {
             title: 'POINT OF SALE',
             items: [
                 { name: 'POS Billing', icon: Calculator, path: '/cashier/billing' },
-                { name: 'Payment History', icon: ReceiptText, path: '/cashier/history' },
-            ]
-        },
-        {
-            title: 'DASHBOARDS',
-            items: [
-                { name: 'Restaurant Overview', icon: LayoutGrid, path: '/cashier' },
+                { name: 'Generate Invoices', icon: Receipt, path: '/cashier/invoices' },
+                { name: 'Split Bill', icon: Split, path: '/cashier/split' },
+                { name: 'Merge Bill', icon: ArrowLeftRight, path: '/cashier/merge' },
+                { name: 'Apply Discounts', icon: Tag, path: '/cashier/discounts' },
+                { name: 'Payment Collection', icon: Coins, path: '/cashier/collection' },
+                { name: 'Refund Management', icon: Undo2, path: '/cashier/refunds' },
+                { name: 'Daily Cash Summary', icon: Landmark, path: '/cashier/summary' },
+                { name: 'Transaction History', icon: History, path: '/cashier/history' },
             ]
         }
     ];

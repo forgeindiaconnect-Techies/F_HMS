@@ -48,6 +48,7 @@ import reportRoutes from './routes/reportRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import planRoutes from './routes/planRoutes.js';
 import serviceRequestRoutes from './routes/serviceRequestRoutes.js';
+import expenseRoutes from './routes/expenseRoutes.js';
 import supportRoutes from './routes/supportRoutes.js';
 import deliveryRoutes from './routes/deliveryRoutes.js';
 import inquiryRoutes from './routes/inquiryRoutes.js';
@@ -81,6 +82,7 @@ app.use('/api/service-requests', serviceRequestRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/delivery', deliveryRoutes);
 app.use('/api/inquiries', inquiryRoutes);
+app.use('/api/expenses', expenseRoutes);
 
 import path from 'path';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';

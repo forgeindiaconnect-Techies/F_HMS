@@ -4,6 +4,7 @@ import axios from 'axios';
 import { MapPin, Star, Clock, Info, ShoppingBag, Plus, Minus, CheckCircle } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { getItemImage } from '../../utils/imageHelper';
+import toast from 'react-hot-toast';
 
 const dummyRestaurants = [
     { _id: 'demo1', name: 'Pizza Palace', logo: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
@@ -69,7 +70,7 @@ const RestaurantDetails = () => {
     const handleBookTable = (e) => {
         e.preventDefault();
         if (!bookingDate || !bookingTime) {
-            alert('Please select a date and time.');
+            toast.error('Please select a date and time.');
             return;
         }
         setBookingLoading(true);

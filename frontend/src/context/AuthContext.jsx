@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 const AuthContext = createContext();
@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }) => {
     const [restaurant, setRestaurant] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    const fetchRestaurant = async (currentUser = user) => {
+    const fetchRestaurant = useCallback(async (currentUser = user) => {
         if (!currentUser || !currentUser.restaurantId || currentUser.role === 'SuperAdmin' || currentUser.role === 'DeliveryPartner') {
             setRestaurant(null);
             return null;
@@ -79,7 +79,7 @@ export const AuthProvider = ({ children }) => {
             console.error('Failed to fetch restaurant in context:', error);
             return null;
         }
-    };
+    }, [user]);
 
     useEffect(() => {
         const initializeAuth = async () => {
@@ -97,6 +97,25 @@ export const AuthProvider = ({ children }) => {
         };
         initializeAuth();
     }, []);
+
+    // Auto-refresh restaurant subscription data every 30s and on window focus
+    // so super admin plan changes are immediately visible in the dashboard without logout/login
+    useEffect(() => {
+        if (!user || user.role === 'SuperAdmin' || user.role === 'DeliveryPartner' || !user.restaurantId) return;
+
+        const refresh = () => fetchRestaurant(user);
+
+        // Re-fetch when user switches back to this tab
+        window.addEventListener('focus', refresh);
+
+        // Also poll every 30 seconds in background
+        const interval = setInterval(refresh, 30000);
+
+        return () => {
+            window.removeEventListener('focus', refresh);
+            clearInterval(interval);
+        };
+    }, [user, fetchRestaurant]);
 
     const login = async (email, password) => {
         try {

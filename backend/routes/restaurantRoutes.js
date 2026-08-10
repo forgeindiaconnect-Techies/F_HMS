@@ -1,5 +1,10 @@
 import express from 'express';
-import { getRestaurants, getRestaurantById, createRestaurant, getBranches, createBranch, getMyRestaurant, updateMyRestaurant, updateSubscription, selfSubscribe, logoUpload } from '../controllers/restaurantController.js';
+import { 
+    getRestaurants, getRestaurantById, createRestaurant, getBranches, 
+    createBranch, getMyRestaurant, updateMyRestaurant, updateSubscription, 
+    selfSubscribe, logoUpload, getMyBillingHistory, upgradeSubscription, 
+    downgradeSubscription, renewSubscription 
+} from '../controllers/restaurantController.js';
 import { submitVerification, getMyVerification, getAllVerifications, getVerificationById, reviewVerification, verificationUpload } from '../controllers/verificationController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
@@ -23,6 +28,18 @@ router.route('/verification/:id/review')
 router.route('/mine')
     .get(protect, getMyRestaurant)
     .put(protect, authorize('RestaurantAdmin'), logoUpload, updateMyRestaurant);
+
+router.route('/mine/billing-history')
+    .get(protect, authorize('RestaurantAdmin'), getMyBillingHistory);
+
+router.route('/mine/upgrade')
+    .post(protect, authorize('RestaurantAdmin'), upgradeSubscription);
+
+router.route('/mine/downgrade')
+    .post(protect, authorize('RestaurantAdmin'), downgradeSubscription);
+
+router.route('/mine/renew')
+    .post(protect, authorize('RestaurantAdmin'), renewSubscription);
 
 router.route('/subscribe')
     .put(protect, authorize('RestaurantAdmin'), selfSubscribe);

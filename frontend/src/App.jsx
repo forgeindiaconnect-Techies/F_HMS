@@ -24,6 +24,11 @@ import ActivityLogs from './pages/admin/ActivityLogs';
 import Settings from './pages/admin/Settings';
 import SubscriptionPortal from './pages/admin/SubscriptionPortal';
 import RestaurantVerification from './pages/admin/RestaurantVerification';
+import FranchiseManagement from './pages/admin/FranchiseManagement';
+import CentralKitchen from './pages/admin/CentralKitchen';
+import DeveloperConfig from './pages/admin/DeveloperConfig';
+import AuditLogs from './pages/admin/AuditLogs';
+import BusinessIntelligence from './pages/admin/BusinessIntelligence';
 import VerificationManagement from './pages/superadmin/VerificationManagement';
 import CustomerCareDashboard from './pages/admin/CustomerCareDashboard';
 import CreateTicket from './pages/admin/CreateTicket';
@@ -48,6 +53,7 @@ import ManagerSales from './pages/staff/ManagerSales';
 import ManagerReports from './pages/staff/ManagerReports';
 import ManagerAnalytics from './pages/staff/ManagerAnalytics';
 import ManagerSettings from './pages/staff/ManagerSettings';
+import ManagerExpenses from './pages/staff/ManagerExpenses';
 import CustomerLayout from './layouts/CustomerLayout';
 import ManagerLayout from './layouts/ManagerLayout';
 import ChefLayout from './layouts/ChefLayout';
@@ -80,6 +86,12 @@ import PlanManagement from './pages/superadmin/PlanManagement';
 import SupportTickets from './pages/superadmin/SupportTickets';
 import GlobalReports from './pages/superadmin/GlobalReports';
 import SuperAdminSupportConsole from './pages/superadmin/SuperAdminSupportConsole';
+import CommissionManagement from './pages/superadmin/CommissionManagement';
+import RevenueAnalytics from './pages/superadmin/RevenueAnalytics';
+import UserManagement from './pages/superadmin/UserManagement';
+import FeatureManagement from './pages/superadmin/FeatureManagement';
+import SystemSettings from './pages/superadmin/SystemSettings';
+import NotificationManagement from './pages/superadmin/NotificationManagement';
 
 import PublicLayout from './layouts/PublicLayout';
 import TablesManagement from './pages/admin/TablesManagement';
@@ -89,6 +101,9 @@ import DeliveryManagement from './pages/admin/DeliveryManagement';
 import DeliveryPartnerLogin from './pages/customer/DeliveryPartnerLogin';
 import DeliveryPartnerDashboard from './pages/customer/DeliveryPartnerDashboard';
 import Contact from './pages/customer/Contact';
+import ManagementFeatures from './pages/ManagementFeatures';
+import ModuleDetails from './pages/ModuleDetails';
+import ThemeToggle from './components/ThemeToggle';
 
 import { Toaster } from 'react-hot-toast';
 
@@ -96,12 +111,15 @@ function App() {
   return (
     <>
       <Toaster position="top-right" />
+      <ThemeToggle />
       <Routes>
         {/* Customer Facing Application */}
         <Route path="/" element={<CustomerAuthProvider><PublicLayout /></CustomerAuthProvider>}>
           <Route index element={<Home />} />
           <Route path="explore" element={<Explore />} />
           <Route path="contact" element={<Contact />} />
+          <Route path="features/management" element={<ManagementFeatures />} />
+          <Route path="features/details" element={<ModuleDetails />} />
         </Route>
         <Route path="/" element={<CustomerAuthProvider><CartProvider><CustomerLayout /></CartProvider></CustomerAuthProvider>}>
           <Route path="menu" element={<Menu />} />
@@ -133,7 +151,13 @@ function App() {
           <Route index element={<SuperAdminDashboard />} />
           <Route path="restaurants" element={<PlatformRestaurants />} />
           <Route path="plans" element={<PlanManagement />} />
+          <Route path="commissions" element={<CommissionManagement />} />
+          <Route path="revenue" element={<RevenueAnalytics />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="features" element={<FeatureManagement />} />
+          <Route path="settings" element={<SystemSettings />} />
           <Route path="reports" element={<GlobalReports />} />
+          <Route path="notifications" element={<NotificationManagement />} />
           <Route path="verifications" element={<VerificationManagement />} />
           <Route path="support" element={<SuperAdminSupportConsole />} />
           <Route path="support/tickets/:id" element={<TicketDetails />} />
@@ -180,6 +204,13 @@ function App() {
           <Route path="billing" element={<SubscriptionPortal />} />
           <Route path="notifications" element={<NotificationCenter />} />
 
+          {/* Enterprise Modules */}
+          <Route path="franchise" element={<FranchiseManagement />} />
+          <Route path="central-kitchen" element={<CentralKitchen />} />
+          <Route path="developer-config" element={<DeveloperConfig />} />
+          <Route path="audit-logs" element={<AuditLogs />} />
+          <Route path="bi" element={<BusinessIntelligence />} />
+
           {/* Customer Care */}
           <Route path="support" element={<CustomerCareDashboard />} />
           <Route path="support/tickets" element={<TicketList />} />
@@ -198,6 +229,7 @@ function App() {
           <Route path="tables" element={<TablesManagement />} />
           <Route path="reservations" element={<ManagerReservations />} />
           <Route path="feedback" element={<ManagerFeedback />} />
+          <Route path="expenses" element={<ManagerExpenses />} />
           <Route path="sales" element={<ManagerSales />} />
           <Route path="reports" element={<ManagerReports />} />
           <Route path="analytics" element={<ManagerAnalytics />} />
@@ -222,9 +254,16 @@ function App() {
         </Route>
         
         <Route path="/cashier" element={<ProtectedRoute allowedRoles={['Cashier', 'RestaurantAdmin', 'BranchManager']}><CashierLayout /></ProtectedRoute>}>
-          <Route index element={<CashierOverview />} />
+          <Route index element={<Navigate to="/cashier/billing" replace />} />
           <Route path="billing" element={<CashierDashboard />} />
-          <Route path="history" element={<CashierHistory />} />
+          <Route path="invoices" element={<CashierDashboard />} />
+          <Route path="split" element={<CashierDashboard />} />
+          <Route path="merge" element={<CashierDashboard />} />
+          <Route path="discounts" element={<CashierDashboard />} />
+          <Route path="collection" element={<CashierDashboard />} />
+          <Route path="refunds" element={<CashierDashboard />} />
+          <Route path="summary" element={<CashierDashboard />} />
+          <Route path="history" element={<CashierDashboard />} />
         </Route>
 
         {/* Delivery Staff App */}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Filter, Clock, CheckCircle2, ChefHat, Motorbike, Eye, Package } from 'lucide-react';
+import { Search, Clock, CheckCircle2, ChefHat, Motorbike, Eye, Package } from 'lucide-react';
 
 const activeOrders = [
     { id: '#ORD-092', type: 'Dine-in', table: 'T-04', items: 3, total: '₹45.00', status: 'New', time: '10 mins ago', customer: 'Walk-in' },
@@ -50,9 +50,6 @@ const OrderManagement = () => {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     <input type="text" placeholder="Search order ID or customer..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
                 </div>
-                <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
-                    <Filter size={16} /> Filters
-                </button>
             </div>
 
             {/* Kanban Board */}
@@ -140,7 +137,7 @@ const OrderCard = ({ order }) => (
         </div>
 
         {/* Hover action */}
-        <div className="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-xl transition-opacity flex items-center justify-center gap-3 border border-green-500">
+        <div className="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 border border-green-500">
              <button className="bg-gray-100 p-2 rounded-full text-gray-600 hover:bg-gray-200 transition-colors" title="View Details"><Eye size={18} /></button>
              <button className="bg-yellow-600 p-2 rounded-full text-white hover:bg-yellow-700 transition-colors" title="Self Pickup" onClick={() => {/* TODO: implement self-pickup logic */}}><Package size={18} /></button>
              <button className="bg-green-600 p-2 rounded-full text-white hover:bg-green-700 transition-colors" title="Advance Status"><CheckCircle2 size={18} /></button>

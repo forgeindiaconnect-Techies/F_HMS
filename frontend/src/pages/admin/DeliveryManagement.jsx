@@ -123,14 +123,6 @@ const DeliveryManagement = () => {
 
     useEffect(() => {
         initData();
-
-        // Poll every 10 seconds to keep order status and partner status fresh
-        const interval = setInterval(() => {
-            fetchActiveOrders();
-            fetchPartners();
-        }, 10000);
-
-        return () => clearInterval(interval);
     }, [restaurant]);
 
     useEffect(() => {
@@ -913,127 +905,129 @@ const DeliveryManagement = () => {
                             </button>
                         </div>
                         
-                        <form onSubmit={handleAddPartner} className="p-6 space-y-4 overflow-y-auto max-h-[80vh]">
-                            <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Full Name</label>
-                                <input 
-                                    type="text" 
-                                    required
-                                    value={newPartner.name}
-                                    onChange={(e) => setNewPartner({...newPartner, name: e.target.value})}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                                    placeholder="e.g. Ramesh Singh"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Email Address</label>
-                                <input 
-                                    type="email" 
-                                    required
-                                    value={newPartner.email}
-                                    onChange={(e) => setNewPartner({...newPartner, email: e.target.value})}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                                    placeholder="e.g. ramesh@gmail.com"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Phone Number</label>
-                                <input 
-                                    type="text" 
-                                    required
-                                    value={newPartner.phoneNumber}
-                                    onChange={(e) => setNewPartner({...newPartner, phoneNumber: e.target.value})}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                                    placeholder="e.g. 9876543210"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
+                        <form onSubmit={handleAddPartner} className="flex flex-col min-h-0 overflow-hidden">
+                            <div className="p-6 space-y-4 overflow-y-auto max-h-[60vh] custom-scrollbar text-left">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Vehicle Type</label>
-                                    <select
-                                        value={newPartner.vehicleType}
-                                        onChange={(e) => setNewPartner({...newPartner, vehicleType: e.target.value})}
-                                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500"
-                                    >
-                                        <option value="Bike">Bike</option>
-                                        <option value="Scooter">Scooter</option>
-                                        <option value="Car">Car</option>
-                                        <option value="Bicycle">Bicycle</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Vehicle Model</label>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Full Name</label>
                                     <input 
-                                        type="text"
-                                        value={newPartner.vehicleModel}
-                                        onChange={(e) => setNewPartner({...newPartner, vehicleModel: e.target.value})}
+                                        type="text" 
+                                        required
+                                        value={newPartner.name}
+                                        onChange={(e) => setNewPartner({...newPartner, name: e.target.value})}
                                         className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                                        placeholder="e.g. Activa 6G"
+                                        placeholder="e.g. Ramesh Singh"
                                     />
                                 </div>
-                            </div>
 
-                            <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">RC Book Number</label>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Email Address</label>
                                     <input 
-                                        type="text"
-                                        value={newPartner.rcNumber}
-                                        onChange={(e) => setNewPartner({...newPartner, rcNumber: e.target.value})}
+                                        type="email" 
+                                        required
+                                        value={newPartner.email}
+                                        onChange={(e) => setNewPartner({...newPartner, email: e.target.value})}
                                         className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                                        placeholder="RC-XXXX"
+                                        placeholder="e.g. ramesh@gmail.com"
                                     />
                                 </div>
+
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">License Number</label>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Phone Number</label>
+                                    <input 
+                                        type="text" 
+                                        required
+                                        value={newPartner.phoneNumber}
+                                        onChange={(e) => setNewPartner({...newPartner, phoneNumber: e.target.value})}
+                                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                                        placeholder="e.g. 9876543210"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Vehicle Type</label>
+                                        <select
+                                            value={newPartner.vehicleType}
+                                            onChange={(e) => setNewPartner({...newPartner, vehicleType: e.target.value})}
+                                            className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500"
+                                        >
+                                            <option value="Bike">Bike</option>
+                                            <option value="Scooter">Scooter</option>
+                                            <option value="Car">Car</option>
+                                            <option value="Bicycle">Bicycle</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Vehicle Model</label>
+                                        <input 
+                                            type="text"
+                                            value={newPartner.vehicleModel}
+                                            onChange={(e) => setNewPartner({...newPartner, vehicleModel: e.target.value})}
+                                            className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                                            placeholder="e.g. Activa 6G"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">RC Book Number</label>
+                                        <input 
+                                            type="text"
+                                            value={newPartner.rcNumber}
+                                            onChange={(e) => setNewPartner({...newPartner, rcNumber: e.target.value})}
+                                            className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                                            placeholder="RC-XXXX"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">License Number</label>
+                                        <input 
+                                            type="text"
+                                            value={newPartner.licenseNumber}
+                                            onChange={(e) => setNewPartner({...newPartner, licenseNumber: e.target.value})}
+                                            className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                                            placeholder="DL-XXXX"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Profile Photo (URL)</label>
                                     <input 
                                         type="text"
-                                        value={newPartner.licenseNumber}
-                                        onChange={(e) => setNewPartner({...newPartner, licenseNumber: e.target.value})}
+                                        value={newPartner.profilePhoto}
+                                        onChange={(e) => setNewPartner({...newPartner, profilePhoto: e.target.value})}
                                         className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                                        placeholder="DL-XXXX"
+                                        placeholder="https://example.com/avatar.jpg"
                                     />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Driving License (URL)</label>
+                                        <input 
+                                            type="text"
+                                            value={newPartner.drivingLicense}
+                                            onChange={(e) => setNewPartner({...newPartner, drivingLicense: e.target.value})}
+                                            className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                                            placeholder="https://example.com/dl.pdf"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">ID Proof (URL)</label>
+                                        <input 
+                                            type="text"
+                                            value={newPartner.idProof}
+                                            onChange={(e) => setNewPartner({...newPartner, idProof: e.target.value})}
+                                            className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                                            placeholder="https://example.com/id.pdf"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Profile Photo (URL)</label>
-                                <input 
-                                    type="text"
-                                    value={newPartner.profilePhoto}
-                                    onChange={(e) => setNewPartner({...newPartner, profilePhoto: e.target.value})}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                                    placeholder="https://example.com/avatar.jpg"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Driving License (URL)</label>
-                                    <input 
-                                        type="text"
-                                        value={newPartner.drivingLicense}
-                                        onChange={(e) => setNewPartner({...newPartner, drivingLicense: e.target.value})}
-                                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                                        placeholder="https://example.com/dl.pdf"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">ID Proof (URL)</label>
-                                    <input 
-                                        type="text"
-                                        value={newPartner.idProof}
-                                        onChange={(e) => setNewPartner({...newPartner, idProof: e.target.value})}
-                                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                                        placeholder="https://example.com/id.pdf"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="px-6 py-4 border-t border-gray-100 flex gap-3 bg-gray-50/50 shrink-0 mt-6 -mx-6 -mb-6">
+                            <div className="px-6 py-4 border-t border-gray-100 flex gap-3 bg-gray-50/50 shrink-0">
                                 <button 
                                     type="button" 
                                     onClick={() => setIsAddModalOpen(false)}

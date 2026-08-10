@@ -24,8 +24,17 @@ export const sendOtp = async (req, res) => {
             return res.status(400).json({ message: 'Phone number is required' });
         }
 
-        // Find user by phoneNumber with DeliveryPartner role
-        const user = await User.findOne({ phoneNumber, role: 'DeliveryPartner' });
+        const cleanPhone = String(phoneNumber).replace(/\D/g, '');
+        const last10Digits = cleanPhone.slice(-10);
+
+        console.log(`[OTP Request] Input Phone: "${phoneNumber}" | Normalized: "${last10Digits}"`);
+
+        // Find user by phoneNumber suffix with DeliveryPartner role
+        const user = await User.findOne({ 
+            phoneNumber: { $regex: last10Digits + '$' }, 
+            role: 'DeliveryPartner' 
+        });
+        
         if (!user) {
             return res.status(404).json({ message: 'Delivery partner not registered. Please contact restaurant admin.' });
         }
@@ -52,7 +61,14 @@ export const verifyOtp = async (req, res) => {
             return res.status(400).json({ message: 'Invalid OTP' });
         }
 
-        const user = await User.findOne({ phoneNumber, role: 'DeliveryPartner' });
+        const cleanPhone = String(phoneNumber).replace(/\D/g, '');
+        const last10Digits = cleanPhone.slice(-10);
+
+        const user = await User.findOne({ 
+            phoneNumber: { $regex: last10Digits + '$' }, 
+            role: 'DeliveryPartner' 
+        });
+        
         if (!user) {
             return res.status(404).json({ message: 'Delivery partner not found' });
         }

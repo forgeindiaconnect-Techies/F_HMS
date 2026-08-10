@@ -21,7 +21,7 @@ import {
     getSupportAnalytics,
     upload
 } from '../controllers/supportController.js';
-import { protect, authorize } from '../middleware/authMiddleware.js';
+import { protect, authorize, checkFeature } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -29,7 +29,7 @@ const router = express.Router();
 router.use(protect);
 
 // Support Analytics route
-router.route('/analytics').get(getSupportAnalytics);
+router.route('/analytics').get(checkFeature('Advanced Support'), getSupportAnalytics);
 
 // Support Tickets endpoints
 router.route('/tickets')

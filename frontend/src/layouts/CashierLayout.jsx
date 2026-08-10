@@ -14,9 +14,9 @@ const CashierLayout = () => {
             <SubscriptionBanner />
             <div className="flex flex-1 overflow-hidden bg-gray-50">
                 <CashierSidebar />
-            <div className="flex-1 flex flex-col h-screen overflow-hidden">
+            <div className="flex-1 flex flex-col h-full overflow-hidden">
                 <CashierTopbar />
-                <main className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
+                <main className="flex-1 overflow-hidden p-6">
                     <div className="h-full">
                         {isUnverified ? (
                             <VerificationBlockedOverlay />

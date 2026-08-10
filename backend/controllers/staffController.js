@@ -2,6 +2,7 @@ import User from '../models/User.js';
 import Branch from '../models/Branch.js';
 import Restaurant from '../models/Restaurant.js';
 import DeliveryPartner from '../models/DeliveryPartner.js';
+import Plan from '../models/Plan.js';
 
 // @desc    Update a staff member
 // @route   PUT /api/staff/:id
@@ -21,7 +22,7 @@ export const updateStaff = async (req, res) => {
         }
 
         const restaurant = await Restaurant.findById(req.user.restaurantId);
-        const hasEnterprise = restaurant && (restaurant.plan === 'Enterprise' || restaurant.plan?.toLowerCase() === 'enterprise');
+        const hasEnterprise = restaurant?.subscription?.plan === 'Enterprise';
 
         const validRoles = hasEnterprise
             ? ['BranchManager', 'Chef', 'Waiter', 'Cashier', 'DeliveryPartner']
@@ -105,7 +106,7 @@ export const updateStaff = async (req, res) => {
 export const getStaff = async (req, res) => {
     try {
         const restaurant = await Restaurant.findById(req.user.restaurantId);
-        const hasEnterprise = restaurant && (restaurant.plan === 'Enterprise' || restaurant.plan?.toLowerCase() === 'enterprise');
+        const hasEnterprise = restaurant?.subscription?.plan === 'Enterprise';
 
         const staffRoles = hasEnterprise
             ? ['BranchManager', 'Chef', 'Waiter', 'Cashier', 'DeliveryPartner']
@@ -135,7 +136,36 @@ export const createStaff = async (req, res) => {
         }
 
         const restaurant = await Restaurant.findById(req.user.restaurantId);
-        const hasEnterprise = restaurant && (restaurant.plan === 'Enterprise' || restaurant.plan?.toLowerCase() === 'enterprise');
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        const planName = restaurant.subscription?.plan || 'Basic';
+        const planDoc = await Plan.findOne({ name: planName });
+        let staffLimit = 5; // Default for Basic
+        
+        if (planDoc && planDoc.staffLimit !== undefined) {
+            staffLimit = planDoc.staffLimit;
+        } else {
+            // Fallbacks
+            if (planName === 'Pro' || planName === 'Professional' || planName === 'Enterprise') {
+                staffLimit = Infinity;
+            }
+        }
+
+        const currentStaffCount = await User.countDocuments({
+            restaurantId: req.user.restaurantId,
+            role: { $in: ['BranchManager', 'Chef', 'Waiter', 'Cashier', 'DeliveryPartner'] }
+        });
+
+        if (currentStaffCount >= staffLimit) {
+            return res.status(403).json({ 
+                message: `Your current plan (${planName}) only allows up to ${staffLimit} staff users. Please upgrade your subscription plan to add more staff.`,
+                limitExceeded: true
+            });
+        }
+        
+        const hasEnterprise = restaurant.subscription?.plan === 'Enterprise';
 
         const validRoles = hasEnterprise
             ? ['BranchManager', 'Chef', 'Waiter', 'Cashier', 'DeliveryPartner']

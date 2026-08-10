@@ -5,6 +5,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { CreditCard, MapPin, Ticket, ChevronRight, Utensils, CheckCircle, ShieldCheck, ArrowRight, Store, AlertTriangle } from 'lucide-react';
 import axios from 'axios';
 import { getItemImage } from '../../utils/imageHelper';
+import toast from 'react-hot-toast';
 
 const Checkout = () => {
     const { cartItems, cartTotal, clearCart } = useCart();
@@ -188,7 +189,7 @@ const Checkout = () => {
         if (coupon.toUpperCase() === 'WELCOME20') {
             setDiscount(cartTotal * 0.20);
         } else {
-            alert('Invalid coupon code');
+            toast.error('Invalid coupon code');
             setDiscount(0);
         }
     };
@@ -196,17 +197,17 @@ const Checkout = () => {
     const handlePlaceOrder = async (e) => {
         e.preventDefault();
         if (!selectedRestaurantId && !restaurantId) {
-            alert('Please select a restaurant from the dropdown list before proceeding.');
+            toast.error('Please select a restaurant from the dropdown list before proceeding.');
             return;
         }
 
         if (orderType === 'Delivery') {
             if (!deliveryValidation.isValid) {
-                alert(`Cannot place delivery order: ${deliveryValidation.error}`);
+                toast.error(`Cannot place delivery order: ${deliveryValidation.error}`);
                 return;
             }
             if (!address.trim()) {
-                alert('Please enter a delivery address.');
+                toast.error('Please enter a delivery address.');
                 return;
             }
         }
@@ -243,7 +244,7 @@ const Checkout = () => {
             clearCart();
         } catch (error) {
             console.error('Order failed', error);
-            alert('Failed to place order: ' + (error.response?.data?.message || error.message));
+            toast.error('Failed to place order: ' + (error.response?.data?.message || error.message));
         } finally {
             setIsPlacingOrder(false);
         }

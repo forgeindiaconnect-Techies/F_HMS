@@ -17,6 +17,14 @@ const planSchema = new mongoose.Schema({
     features: [{
         type: String
     }],
+    branchesLimit: {
+        type: Number,
+        default: 1
+    },
+    staffLimit: {
+        type: Number,
+        default: 5
+    },
     isActive: {
         type: Boolean,
         default: true

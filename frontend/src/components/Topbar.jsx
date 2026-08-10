@@ -19,6 +19,7 @@ const getPlanMeta = (name) => {
 
 const UpiModal = ({ plan, planPrice, restaurantId, api, onClose, onSuccess }) => {
     const [step, setStep] = useState('scan');
+    const [activating, setActivating] = useState(false);
 
     useEffect(() => {
         if (step !== 'scan') return;
@@ -56,21 +57,24 @@ const UpiModal = ({ plan, planPrice, restaurantId, api, onClose, onSuccess }) =>
         return `https://rms-backend.onrender.com/api/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`;
     };
 
-    const getClickUrl = () => {
-        let base = api.defaults.baseURL;
-        if (!base.startsWith('http')) {
-            return `${window.location.origin}/api/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`;
-        }
+    const handleQrClick = async () => {
+        if (activating) return;
+        setActivating(true);
         try {
-            const urlObj = new URL(base);
-            return `${urlObj.origin}/api/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`;
-        } catch (e) {
-            return `${base}/api/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`;
+            await api.get(`/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`);
+            setStep('processing');
+            setTimeout(() => {
+                setStep('success');
+                setTimeout(() => onSuccess(), 2000);
+            }, 1500);
+        } catch (err) {
+            alert('Failed to activate subscription. Please try again.');
+        } finally {
+            setActivating(false);
         }
     };
 
     const scanUrl = getScanUrl();
-    const clickUrl = getClickUrl();
     const qrDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(scanUrl)}`;
 
     return (
@@ -103,21 +107,22 @@ const UpiModal = ({ plan, planPrice, restaurantId, api, onClose, onSuccess }) =>
                     {/* STEP 1 — Scan QR */}
                     {step === 'scan' && (
                         <div className="w-full flex flex-col items-center gap-4 text-center">
-                            <a 
-                                href={clickUrl} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="w-56 h-56 flex items-center justify-center rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-inner hover:opacity-90 transition-opacity cursor-pointer"
-                                title="Click to simulate scan / activate directly"
+                            <button
+                                onClick={handleQrClick}
+                                disabled={activating}
+                                className="w-56 h-56 flex items-center justify-center rounded-2xl overflow-hidden bg-gray-50 border-2 border-gray-100 shadow-inner hover:border-green-400 hover:scale-[1.02] transition-all cursor-pointer disabled:opacity-60 relative"
+                                title="Click to activate plan instantly"
                             >
                                 <img src={qrDataUrl} alt="QR Code" className="w-full h-full object-contain p-4 bg-white" />
-                            </a>
+                                {activating && (
+                                    <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-2xl">
+                                        <Loader2 size={32} className="animate-spin text-green-500" />
+                                    </div>
+                                )}
+                            </button>
                             <div>
-                                <p className="text-sm font-semibold text-gray-800">Scan to Activate Subscription</p>
-                                <p className="text-xs text-gray-400 mt-1">Scan this QR code with your phone camera or payment app.</p>
-                                <p className="text-[10px] text-blue-500 font-bold mt-2 hover:underline cursor-pointer">
-                                    Tip: Or click the QR code to activate directly
-                                </p>
+                                <p className="text-sm font-semibold text-gray-800">Click QR to Activate Instantly</p>
+                                <p className="text-xs text-gray-400 mt-1">Or scan with your phone on the same WiFi network.</p>
                             </div>
                         </div>
                     )}

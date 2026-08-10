@@ -1,35 +1,72 @@
 import { useState, useEffect } from 'react';
-import { Gift, Clock, Star, MapPin, ChevronRight, ShoppingBag, LogOut, Crown, Sparkles } from 'lucide-react';
+import { 
+    LayoutGrid, BookOpen, QrCode, ShoppingBag, 
+    Calendar, Heart, MessageSquare, Settings, 
+    Crown, Sparkles, Plus, Trash2, CheckCircle, 
+    ChevronRight, LogOut, Wallet, Star, ShieldAlert,
+    MapPin, Phone, Mail, Lock, Clock, Gift, User
+} from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { getItemImage } from '../../utils/imageHelper';
+import toast from 'react-hot-toast';
 
 const CustomerDashboard = () => {
     const { user, logout, api } = useCustomerAuth();
-    const { wishlist, addToCart } = useCart();
-    const [reservations, setReservations] = useState([]);
-    const [selectedCategory, setSelectedCategory] = useState('All');
+    
+    // Safely get Cart context values with fallbacks
+    const cartContext = useCart() || {};
+    const wishlist = cartContext.wishlist || [];
+    const addToCart = cartContext.addToCart || (() => {});
+    const toggleWishlist = cartContext.toggleWishlist || (() => {});
+    
+    // Core states
+    const [activeTab, setActiveTab] = useState('overview');
     const [orders, setOrders] = useState([]);
     const [loadingOrders, setLoadingOrders] = useState(true);
-
-    useEffect(() => {
-        const fetchOrders = async () => {
-            try {
-                const { data } = await api.get('/orders/myorders');
-                setOrders(data);
-            } catch (error) {
-                console.error("Failed to fetch customer orders", error);
-            } finally {
-                setLoadingOrders(false);
-            }
-        };
-        if (api) {
-            fetchOrders();
+    const [reservations, setReservations] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState('All');
+    
+    // Add Funds Modal States
+    const [isAddFundsOpen, setIsAddFundsOpen] = useState(false);
+    const [addFundsAmount, setAddFundsAmount] = useState('500');
+    
+    // Wallet State
+    const [walletBalance, setWalletBalance] = useState(() => {
+        try {
+            return parseFloat(localStorage.getItem('customerWalletBalance') || '500.00');
+        } catch (e) {
+            return 500.00;
         }
-    }, [api]);
+    });
 
-    const activeSubscriptions = orders.filter(o => o.subscriptionPlan && o.subscriptionPlan !== 'One-time Order');
+    // Reservations Form State
+    const [resDate, setResDate] = useState('');
+    const [resTime, setResTime] = useState('19:00');
+    const [resGuests, setResGuests] = useState('2');
+    const [resType, setResType] = useState('Dine In');
+
+    // Feedback Form State
+    const [feedbackSubject, setFeedbackSubject] = useState('');
+    const [feedbackMessage, setFeedbackMessage] = useState('');
+    const [feedbackType, setFeedbackType] = useState('Feedback');
+
+    // Profile Form State
+    const [profileName, setProfileName] = useState(user?.name || '');
+    const [profilePhone, setProfilePhone] = useState(user?.phoneNumber || '');
+    const [profileAddress, setProfileAddress] = useState(user?.address || '');
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+
+    // Synchronize profile name fields if user object loads late
+    useEffect(() => {
+        if (user) {
+            if (user.name) setProfileName(user.name);
+            if (user.phoneNumber) setProfilePhone(user.phoneNumber);
+            if (user.address) setProfileAddress(user.address);
+        }
+    }, [user]);
 
     const dashboardFoods = [
         { id: 'd_m1', name: 'Margherita Pizza', price: 299, category: 'Mains', description: 'Classic cheese and tomato pizza with basil.', image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80&w=800' },
@@ -37,28 +74,166 @@ const CustomerDashboard = () => {
         { id: 'd_m4', name: 'Greek Salad', price: 199, category: 'Salads', description: 'Fresh cucumbers, tomatoes, olives, and feta cheese.', image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=800' },
         { id: 'd_m5', name: 'Chocolate Lava Cake', price: 159, category: 'Desserts', description: 'Rich chocolate cake with a molten center.', image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=800' },
         { id: 'd_m6', name: 'Mango Smoothie', price: 129, category: 'Beverages', description: 'Creamy yogurt smoothie with fresh mango pulp.', image: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?q=80&w=800' },
-        { id: 'd_m7', name: 'Paneer Tikka', price: 280, category: 'Starters', description: 'Spiced cottage cheese cubes grilled to perfection.', image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=800' },
-        { id: 'd_m8', name: 'Veg Hakka Noodles', price: 220, category: 'Mains', description: 'Stir-fried noodles with fresh vegetables and soy sauce.', image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?q=80&w=800' }
+        { id: 'd_m7', name: 'Paneer Tikka', price: 280, category: 'Starters', description: 'Spiced cottage cheese cubes grilled to perfection.', image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=800' }
     ];
 
-    const handleReorder = (itemsList) => {
-        itemsList.forEach(item => {
-            addToCart(item);
-        });
+    // Safe short ID helper
+    const getShortId = (id) => {
+        if (!id || typeof id !== 'string') return '';
+        return id.substring(id.length - 6).toUpperCase();
+    };
+
+    // Fetch user orders on mount
+    const fetchOrders = async () => {
+        try {
+            const { data } = await api.get('/orders/myorders');
+            if (Array.isArray(data)) {
+                setOrders(data);
+            } else {
+                setOrders([]);
+            }
+        } catch (error) {
+            console.error("Failed to fetch customer orders", error);
+            setOrders([]);
+        } finally {
+            setLoadingOrders(false);
+        }
     };
 
     useEffect(() => {
-        const localRes = JSON.parse(localStorage.getItem('customerReservations') || '[]');
-        setReservations(localRes);
+        if (api) {
+            fetchOrders();
+        }
+    }, [api]);
+
+    // Load reservations from localStorage
+    useEffect(() => {
+        try {
+            const localRes = JSON.parse(localStorage.getItem('customerReservations') || '[]');
+            setReservations(Array.isArray(localRes) ? localRes : []);
+        } catch (e) {
+            setReservations([]);
+        }
     }, []);
 
-    const readySelfPickupOrders = orders.filter(o => 
+    // Save Wallet balance to local storage when changed
+    useEffect(() => {
+        try {
+            localStorage.setItem('customerWalletBalance', walletBalance.toString());
+        } catch (e) {
+            console.error("Failed to save wallet balance", e);
+        }
+    }, [walletBalance]);
+
+    const handleReorder = (itemsList) => {
+        if (!Array.isArray(itemsList)) return;
+        itemsList.forEach(item => {
+            addToCart(item);
+        });
+        toast.success('Items added to cart!');
+    };
+
+    // Add Funds to Wallet
+    const handleAddFunds = () => {
+        setAddFundsAmount('500');
+        setIsAddFundsOpen(true);
+    };
+
+    // Book table reservation
+    const handleBookReservation = (e) => {
+        e.preventDefault();
+        if (!resDate) {
+            toast.error("Please pick a reservation date");
+            return;
+        }
+        const newRes = {
+            date: resDate,
+            time: resTime,
+            guests: resGuests,
+            type: resType,
+            status: 'Confirmed',
+            statusColor: 'bg-green-50 text-green-700 border-green-200'
+        };
+        const updated = [newRes, ...reservations];
+        setReservations(updated);
+        try {
+            localStorage.setItem('customerReservations', JSON.stringify(updated));
+        } catch (err) {
+            console.error(err);
+        }
+        toast.success(`Table booked for ${resGuests} guests on ${resDate} at ${resTime}!`);
+        setResDate('');
+    };
+
+    // Submit Feedback/Inquiry
+    const handleSubmitFeedback = async (e) => {
+        e.preventDefault();
+        if (!feedbackSubject.trim() || !feedbackMessage.trim()) {
+            toast.error("Please fill in all feedback fields");
+            return;
+        }
+        try {
+            await api.post('/inquiries', {
+                name: user?.name || 'Guest User',
+                email: user?.email || 'guest@example.com',
+                subject: `[${feedbackType}] ${feedbackSubject}`,
+                message: feedbackMessage
+            });
+            toast.success("Feedback submitted successfully! Thank you.");
+            setFeedbackSubject('');
+            setFeedbackMessage('');
+        } catch (error) {
+            console.error("Failed to submit inquiry", error);
+            toast.error("Failed to submit feedback. Please try again.");
+        }
+    };
+
+    // Update Profile Settings
+    const handleUpdateProfile = async (e) => {
+        e.preventDefault();
+        if (!profileName.trim()) {
+            toast.error("Name cannot be empty");
+            return;
+        }
+        try {
+            await api.put('/users/profile', {
+                name: profileName,
+                phoneNumber: profilePhone,
+                address: profileAddress,
+                password: newPassword || undefined
+            });
+            toast.success("Profile updated successfully!");
+            setCurrentPassword('');
+            setNewPassword('');
+        } catch (error) {
+            console.error("Profile update failed", error);
+            toast.error("Failed to update profile details");
+        }
+    };
+
+    const safeOrders = Array.isArray(orders) ? orders : [];
+
+    const readySelfPickupOrders = safeOrders.filter(o => 
         (o.orderType === 'Self-Pickup' || o.orderType === 'Self Pickup') && 
         (['Ready for Pickup', 'Ready'].includes(o.status))
     );
 
+    // Sidebar navigation tabs definitions
+    const tabsList = [
+        { id: 'overview', name: 'Overview', icon: <LayoutGrid size={18} /> },
+        { id: 'orders', name: 'Orders & Tracking', icon: <ShoppingBag size={18} /> },
+        { id: 'reservations', name: 'Reservations', icon: <Calendar size={18} /> },
+        { id: 'favorites', name: 'Favorite Items', icon: <Heart size={18} /> },
+        { id: 'loyalty', name: 'Loyalty & Rewards', icon: <Crown size={18} /> },
+        { id: 'wallet', name: 'Wallet', icon: <Wallet size={18} /> },
+        { id: 'offers', name: 'Offers & Coupons', icon: <Gift size={18} /> },
+        { id: 'feedback', name: 'Feedback & Inquiries', icon: <MessageSquare size={18} /> },
+        { id: 'profile', name: 'Profile & Settings', icon: <Settings size={18} /> }
+    ];
+
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 animate-in fade-in duration-500 text-gray-800">
+            
             {/* Ready for Pickup Alert Banner */}
             {readySelfPickupOrders.map(order => (
                 <div key={order._id} className="bg-gradient-to-r from-orange-500 to-red-600 rounded-3xl p-6 text-white shadow-xl flex flex-col sm:flex-row justify-between items-center gap-4 animate-pulse relative overflow-hidden group">
@@ -71,11 +246,11 @@ const CustomerDashboard = () => {
                         </div>
                         <div>
                             <h3 className="font-extrabold text-lg" style={{ fontFamily: 'Poppins, sans-serif' }}>Your Order is Ready for Pickup!</h3>
-                            <p className="text-white/90 text-sm mt-0.5 font-medium">Please collect your Order <span className="font-bold font-mono">#{order._id.substring(order._id.length - 6).toUpperCase()}</span> from the Pickup Counter.</p>
+                            <p className="text-white/90 text-sm mt-0.5 font-medium">Please collect your Order <span className="font-bold font-mono">#{getShortId(order._id)}</span> from the Pickup Counter.</p>
                         </div>
                     </div>
                     <Link 
-                        to={`/track/${order._id}?restaurantId=${order.restaurantId}`}
+                        to={`/track/${order._id}?restaurantId=${order.restaurantId?._id || order.restaurantId}`}
                         className="px-6 py-2.5 bg-white text-orange-600 font-extrabold text-sm rounded-full hover:bg-orange-50 hover:scale-105 active:scale-95 transition-all shadow-md shrink-0 flex items-center gap-2"
                     >
                         Track & View QR
@@ -83,7 +258,7 @@ const CustomerDashboard = () => {
                 </div>
             ))}
 
-            {/* Header / Welcome */}
+            {/* Header Welcome banner */}
             <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
                 <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-center sm:text-left">
                     <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center border-4 border-white shadow-lg shrink-0">
@@ -95,7 +270,7 @@ const CustomerDashboard = () => {
                         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 font-sans tracking-tight">
                             Welcome back, {user?.name || 'Foodie'}!
                         </h1>
-                        <p className="text-gray-500 mt-1 text-sm sm:text-base">Ready for your next culinary adventure?</p>
+                        <p className="text-gray-500 mt-1 text-sm sm:text-base">Track your orders, view loyalty scores, and reserve tables.</p>
                     </div>
                 </div>
                 <div className="flex gap-3 sm:gap-4 flex-wrap justify-center sm:justify-start">
@@ -114,309 +289,774 @@ const CustomerDashboard = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left Column: Loyalty & Quick Stats */}
-                <div className="space-y-8">
-                    {/* Loyalty Card - Premium Zomato Gold Edition */}
-                    <div className="bg-gradient-to-br from-[#111] via-[#1a1a1a] to-[#0a0a0a] rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-[#d4af37]/30 group transition-all duration-300 hover:shadow-2xl hover:shadow-[#d4af37]/5 hover:border-[#d4af37]/50">
-                        {/* Shimmering glass sheen overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.04] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
-                        {/* Gold ambient radial glows */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#d4af37]/15 transition-colors"></div>
-                        <div className="absolute bottom-0 left-0 w-28 h-28 bg-orange-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
-                        
-                        <div className="relative z-10">
-                            {/* Zomato Gold Branded Tag */}
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#ffe07d] to-[#f3c056] text-black flex items-center justify-center shadow-lg shadow-yellow-500/20 shrink-0">
-                                        <Crown size={15} className="fill-black" />
-                                    </div>
-                                    <div>
-                                        <span className="block font-black tracking-[0.25em] text-[10px] text-transparent bg-clip-text bg-gradient-to-r from-[#ffe07d] via-[#f5c661] to-[#ffe07d]">
-                                            GOLD MEMBER
-                                        </span>
-                                        <span className="block text-[8px] text-gray-500 font-extrabold uppercase tracking-widest leading-none mt-0.5">
-                                            Resto Gold Edition
-                                        </span>
-                                    </div>
-                                </div>
-                                <Sparkles size={14} className="text-[#ffe07d] animate-pulse" />
-                            </div>
-                            
-                            {/* Points Balance */}
-                            <div className="space-y-1">
-                                <span className="text-[10px] text-gray-400 font-black tracking-widest uppercase block">Points Balance</span>
-                                <h2 className="text-5xl font-black font-sans tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-[#fff2d1] to-[#f3c056]">
-                                    2,450
-                                </h2>
-                                <p className="text-gray-500 text-xs font-semibold">Active Resto Rewards Points</p>
-                            </div>
-                            
-                            {/* Progress bar to next VIP level */}
-                            <div className="mt-8 pt-6 border-t border-white/5">
-                                <div className="flex justify-between text-xs font-bold mb-3">
-                                    <span className="text-gray-400">Progress to Platinum</span>
-                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ffe07d] to-[#f3c056]">550 pts needed</span>
-                                </div>
-                                <div className="h-2.5 bg-white/5 rounded-full overflow-hidden border border-[#ffe07d]/10">
-                                    <div className="h-full bg-gradient-to-r from-[#f3c056] via-[#ffe07d] to-[#f3c056] w-[80%] rounded-full shadow-[0_0_8px_rgba(243,192,86,0.3)]"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Active Meal Subscriptions */}
-                    <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                        <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <Clock size={20} className="text-purple-600" /> Active Meal Subscriptions
-                        </h3>
-                        <div className="space-y-3">
-                            {loadingOrders ? (
-                                <div className="text-center py-6 text-xs text-gray-400 font-medium">
-                                    Loading subscriptions...
-                                </div>
-                            ) : activeSubscriptions.length === 0 ? (
-                                <div className="text-center py-6 text-xs text-gray-400 font-medium bg-gray-50 rounded-2xl">
-                                    No active meal subscriptions. Subscribe during checkout!
-                                </div>
-                            ) : (
-                                activeSubscriptions.map((sub, idx) => (
-                                    <div key={idx} className="border border-purple-100 bg-purple-50/30 rounded-2xl p-4 space-y-2 text-left">
-                                        <div className="flex justify-between items-center flex-wrap gap-2">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200">
-                                                    {sub.subscriptionPlan}
-                                                </span>
-                                                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 border border-orange-200">
-                                                    📍 {sub.restaurantId?.name || 'Platform Restaurant'}
-                                                </span>
-                                            </div>
-                                            <span className="text-[10px] text-gray-500 font-semibold">
-                                                {new Date(sub.createdAt).toLocaleDateString()}
-                                            </span>
-                                        </div>
-                                        <p className="font-bold text-gray-900 text-sm truncate">
-                                            {sub.orderItems.map(i => i.name).join(', ')}
-                                        </p>
-                                        <div className="flex justify-between items-center text-xs text-gray-500">
-                                            <span>Paid via: {sub.paymentMethod}</span>
-                                            <span className="font-bold text-purple-700">₹{sub.totalPrice.toFixed(2)}</span>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Active Coupons */}
-                    <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                        <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <Gift size={20} className="text-orange-500" /> Available Offers
-                        </h3>
-                        <div className="space-y-3">
-                            <div className="border border-orange-100 bg-orange-50/50 rounded-2xl p-4 flex justify-between items-center border-dashed">
-                                <div>
-                                    <p className="font-bold text-orange-900">20% OFF WEEKEND</p>
-                                    <p className="text-xs text-orange-700/70 mt-1">Valid until Sunday</p>
-                                </div>
-                                <button className="text-xs font-bold bg-white text-orange-600 px-3 py-1.5 rounded-lg border border-orange-200 shadow-sm">
-                                    Copy
-                                </button>
-                            </div>
-                            <div className="border border-gray-100 bg-gray-50 rounded-2xl p-4 flex justify-between items-center border-dashed">
-                                <div>
-                                    <p className="font-bold text-gray-900">FREE DESSERT</p>
-                                    <p className="text-xs text-gray-500 mt-1">On orders over ₹50</p>
-                                </div>
-                                <button className="text-xs font-bold bg-white text-gray-600 px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm">
-                                    Copy
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+            {/* Portal Layout Container */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+                
+                {/* Sidebar Navigation Options */}
+                <div className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 space-y-1">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-3 mb-2">Customer Account</p>
+                    {tabsList.map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-colors ${
+                                activeTab === tab.id
+                                ? 'bg-orange-50 text-orange-600'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                        >
+                            {tab.icon}
+                            <span>{tab.name}</span>
+                        </button>
+                    ))}
                 </div>
 
-                {/* Middle & Right Column: Orders & Activity */}
-                <div className="lg:col-span-2 space-y-8">
+                {/* Main Dynamic Viewport Panel */}
+                <div className="lg:col-span-3">
                     
-                    {/* Recent Orders */}
-                    <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-gray-900 font-sans">Recent Orders</h3>
-                            <Link to="/profile/orders" className="text-sm font-bold text-orange-600 hover:text-orange-700 flex items-center gap-1">
-                                View All <ChevronRight size={16} />
-                            </Link>
-                        </div>
-
-                        <div className="space-y-4">
-                            {loadingOrders ? (
-                                <p className="text-center text-gray-400 py-4 text-xs font-medium">Loading recent orders...</p>
-                            ) : orders.length === 0 ? (
-                                <div className="text-center py-10 text-sm text-gray-400 font-medium bg-gray-50 rounded-2xl border border-gray-100 border-dashed">
-                                    No recent orders placed yet.
-                                </div>
-                            ) : (
-                                orders.slice(0, 5).map((order) => (
-                                    <div key={order._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border border-gray-100 hover:border-orange-200 transition-colors gap-4">
-                                        <div className="flex items-center gap-4 min-w-0">
-                                            <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-orange-600 shrink-0 border border-orange-100 font-bold text-sm">
-                                                {order.orderType === 'Delivery' ? '🏍️' : '📦'}
-                                            </div>
-                                            <div className="min-w-0">
-                                                <p className="font-bold text-gray-900 truncate max-w-[200px] sm:max-w-xs">
-                                                    {order.orderItems.map(i => `${i.qty}x ${i.name}`).join(', ')}
-                                                </p>
-                                                <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1.5 flex-wrap">
-                                                    <span className="font-bold font-mono">#{order._id.substring(order._id.length - 6).toUpperCase()}</span>
-                                                    <span>•</span>
-                                                    <span>{new Date(order.createdAt).toLocaleDateString()}</span>
-                                                    <span>•</span>
-                                                    <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] flex items-center gap-1 ${
-                                                        order.status === 'Completed' || order.status === 'Delivered' || order.status === 'Picked Up'
-                                                        ? 'bg-green-50 text-green-700' 
-                                                        : ['Ready', 'Ready for Pickup'].includes(order.status)
-                                                        ? 'bg-orange-500 text-white animate-bounce shadow-sm shadow-orange-500/30'
-                                                        : 'bg-orange-50 text-orange-700 animate-pulse'
-                                                    }`}>
-                                                        {['Ready', 'Ready for Pickup'].includes(order.status) && (
-                                                            <span className="relative flex h-2 w-2">
-                                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-                                                            </span>
-                                                        )}
-                                                        {order.status}
+                    {/* Tab: Overview */}
+                    {activeTab === 'overview' && (
+                        <div className="space-y-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {/* Loyalty Points Balance */}
+                                <div className="bg-gradient-to-br from-[#111] via-[#1a1a1a] to-[#0a0a0a] rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-[#d4af37]/30 group transition-all duration-300 hover:shadow-2xl hover:shadow-[#d4af37]/5 hover:border-[#d4af37]/50">
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.04] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#d4af37]/15"></div>
+                                    
+                                    <div className="relative z-10 space-y-6">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#ffe07d] to-[#f3c056] text-black flex items-center justify-center shadow-lg shrink-0">
+                                                    <Crown size={15} className="fill-black" />
+                                                </div>
+                                                <div>
+                                                    <span className="block font-black tracking-[0.25em] text-[10px] text-transparent bg-clip-text bg-gradient-to-r from-[#ffe07d] via-[#f5c661] to-[#ffe07d]">
+                                                        GOLD MEMBER
                                                     </span>
-                                                </p>
+                                                    <span className="block text-[8px] text-gray-500 font-extrabold uppercase tracking-widest leading-none mt-0.5">
+                                                        Resto Loyalty Points
+                                                    </span>
+                                                </div>
                                             </div>
+                                            <Sparkles size={14} className="text-[#ffe07d] animate-pulse" />
                                         </div>
-                                        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2">
-                                            <span className="font-bold text-gray-950">₹{order.totalPrice.toFixed(2)}</span>
-                                            
-                                            <div className="flex gap-2">
-                                                {order.status !== 'Completed' && order.status !== 'Delivered' && order.status !== 'Served' && (
-                                                    <Link 
-                                                        to={`/track/${order._id}?restaurantId=${order.restaurantId}&branchId=${order.branchId || ''}`}
-                                                        className="text-xs font-bold text-white bg-orange-600 px-3 py-1.5 rounded-lg hover:bg-orange-750 transition-colors"
-                                                    >
-                                                        Track
-                                                    </Link>
-                                                )}
-                                                <button 
-                                                    type="button"
-                                                    onClick={() => handleReorder(order.orderItems.map(i => ({ _id: i.product, name: i.name, price: i.price, quantity: i.qty })))}
-                                                    className="text-xs font-bold text-orange-600 bg-orange-50 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors"
-                                                >
-                                                    Reorder
-                                                </button>
-                                            </div>
+                                        
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] text-gray-400 font-black tracking-widest uppercase block">Points Balance</span>
+                                            <h2 className="text-5xl font-black font-sans tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-[#fff2d1] to-[#f3c056]">
+                                                2,450
+                                            </h2>
+                                            <p className="text-gray-500 text-xs font-semibold">Convert points to cash discount at checkout</p>
+                                        </div>
+                                        
+                                        <div className="h-2.5 bg-white/5 rounded-full overflow-hidden border border-[#ffe07d]/10">
+                                            <div className="h-full bg-gradient-to-r from-[#f3c056] via-[#ffe07d] to-[#f3c056] w-[80%] rounded-full shadow-[0_0_8px_rgba(243,192,86,0.3)]"></div>
                                         </div>
                                     </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
+                                </div>
 
-                    <div className="grid grid-cols-1 gap-8">
-                        {/* Reservation History */}
-                        <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="font-bold text-gray-900">Reservation History</h3>
-                            </div>
-                            <div className="space-y-3 flex-1 overflow-y-auto max-h-[220px] pr-1">
-                                {reservations.length === 0 ? (
-                                    <div className="text-center py-8 text-sm text-gray-400 font-medium bg-gray-50 rounded-2xl">
-                                        No reservations made yet.
-                                    </div>
-                                ) : (
-                                    reservations.map((res, i) => (
-                                        <div key={i} className="p-3 rounded-xl border border-gray-100 bg-gray-50 flex items-center justify-between text-xs sm:text-sm">
-                                            <div>
-                                                <p className="font-bold text-gray-900">{res.date} • {res.time}</p>
-                                                <p className="text-xs text-gray-500 mt-0.5">Table for {res.guests} ({res.type})</p>
+                                {/* Wallet Component */}
+                                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 flex flex-col justify-between relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-orange-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                                    <div className="relative z-10 space-y-6">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shadow-sm">
+                                                    <Wallet size={20} />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-extrabold text-gray-900 text-sm">Customer Wallet</h3>
+                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Fast & Secure Payments</p>
+                                                </div>
                                             </div>
-                                            <span className={`px-2 py-0.5 text-xs font-bold border rounded-lg ${res.statusColor}`}>
-                                                {res.status}
-                                            </span>
+                                            <span className="text-xs font-extrabold text-green-600 bg-green-50 px-2 py-0.5 rounded border border-green-150">Active</span>
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider block">Wallet Balance</span>
+                                            <h2 className="text-4xl font-black font-sans text-gray-900">
+                                                ₹{walletBalance.toFixed(2)}
+                                            </h2>
+                                            <p className="text-gray-500 text-xs font-semibold">Skip credit cards & settle bills in 1-click</p>
+                                        </div>
+
+                                        <button 
+                                            onClick={handleAddFunds}
+                                            className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-orange-600/10 flex items-center justify-center gap-1.5 transition-all"
+                                        >
+                                            <Plus size={16} /> Add Funds
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Quick Order Section (Browse Menu & Place Order) */}
+                            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
+                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                    <div>
+                                        <h3 className="text-xl font-bold text-gray-900 font-sans">Quick Order Menu</h3>
+                                        <p className="text-gray-500 text-sm mt-0.5">Order your favorite types directly from your dashboard</p>
+                                    </div>
+                                    
+                                    {/* Categories Row */}
+                                    <div className="flex flex-wrap gap-2">
+                                        {['All', 'Starters', 'Salads', 'Mains', 'Desserts'].map(cat => (
+                                            <button
+                                                key={cat}
+                                                onClick={() => setSelectedCategory(cat)}
+                                                className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-all shadow-sm ${
+                                                    selectedCategory === cat
+                                                        ? 'bg-orange-600 text-white'
+                                                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                                }`}
+                                            >
+                                                {cat}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Foods Grid */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 pt-2">
+                                    {dashboardFoods
+                                        .filter(food => selectedCategory === 'All' || food.category === selectedCategory)
+                                        .map(food => (
+                                            <div 
+                                                key={food.id}
+                                                className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all group flex flex-col justify-between"
+                                            >
+                                                <div className="relative aspect-[4/3] w-full overflow-hidden">
+                                                    <img 
+                                                        src={getItemImage(food)} 
+                                                        onError={(e) => { e.target.onerror = null; e.target.src = getItemImage({ ...food, image: '' }); }}
+                                                        alt={food.name} 
+                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                    />
+                                                    <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[10px] font-bold text-gray-800 px-2.5 py-1 rounded-lg uppercase tracking-wider">
+                                                        {food.category}
+                                                    </span>
+                                                </div>
+                                                <div className="p-4 flex flex-col flex-1 justify-between gap-3">
+                                                    <div>
+                                                        <h4 className="font-bold text-gray-900 font-sans text-base line-clamp-1 group-hover:text-orange-600 transition-colors">
+                                                            {food.name}
+                                                        </h4>
+                                                        <p className="text-gray-500 text-xs mt-1 line-clamp-2 leading-relaxed">
+                                                            {food.description}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex justify-between items-center pt-2 border-t border-gray-50">
+                                                        <span className="font-bold text-gray-900 text-base">₹{food.price}</span>
+                                                        <button 
+                                                            onClick={() => { addToCart(food); toast.success(`${food.name} added to cart!`); }}
+                                                            className="px-4 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 text-xs font-bold rounded-xl transition-colors"
+                                                        >
+                                                            Add
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Tab: Orders & Tracking */}
+                    {activeTab === 'orders' && (
+                        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
+                            <div className="flex justify-between items-center border-b border-gray-100 pb-4">
+                                <h3 className="text-lg font-bold text-gray-900">Your Order History & Tracking</h3>
+                                <div className="flex gap-2">
+                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-150">Delivery</span>
+                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-orange-50 text-orange-700 border border-orange-150">Self Pickup</span>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                {loadingOrders ? (
+                                    <p className="text-center text-gray-400 py-6 text-xs">Loading orders...</p>
+                                ) : safeOrders.length === 0 ? (
+                                    <p className="text-center text-gray-400 py-10 text-xs">No orders found. Settle a new order from the Menu!</p>
+                                ) : (
+                                    safeOrders.map(order => (
+                                        <div key={order._id} className="border border-gray-100 hover:border-orange-150 p-5 rounded-2xl transition-all space-y-4 bg-white">
+                                            <div className="flex justify-between items-center flex-wrap gap-2 border-b border-gray-50 pb-3">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-extrabold text-sm text-gray-900 font-mono">#{getShortId(order._id)}</span>
+                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                                        order.orderType === 'Delivery' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-orange-50 text-orange-700 border border-orange-200'
+                                                    }`}>
+                                                        {order.orderType}
+                                                    </span>
+                                                </div>
+                                                <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
+                                                    order.status === 'Completed' || order.status === 'Delivered' || order.status === 'Picked Up'
+                                                    ? 'bg-green-50 text-green-700 border border-green-200' 
+                                                    : 'bg-orange-50 text-orange-700 border border-orange-200'
+                                                }`}>{order.status}</span>
+                                            </div>
+
+                                            <div className="flex justify-between items-center flex-wrap gap-4 text-xs">
+                                                <div>
+                                                    <p className="font-bold text-gray-900">{order.orderItems?.map(i => `${i.qty}x ${i.name}`).join(', ') || ''}</p>
+                                                    <p className="text-[10px] text-gray-400 mt-1">{order.createdAt ? new Date(order.createdAt).toLocaleString() : ''}</p>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <span className="font-extrabold text-gray-950 text-sm">₹{order.totalPrice ? order.totalPrice.toFixed(2) : '0.00'}</span>
+                                                    
+                                                    {/* Tracking button */}
+                                                    {order.status !== 'Completed' && order.status !== 'Delivered' && order.status !== 'Served' && (
+                                                        <Link 
+                                                            to={`/track/${order._id}?restaurantId=${order.restaurantId?._id || order.restaurantId}&branchId=${order.branchId?._id || order.branchId || ''}`}
+                                                            className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg transition-colors text-xs shadow-sm"
+                                                        >
+                                                            Track Live
+                                                        </Link>
+                                                    )}
+                                                    
+                                                    <button 
+                                                        onClick={() => handleReorder(order.orderItems?.map(i => ({ _id: i.product, name: i.name, price: i.price, quantity: i.qty })) || [])}
+                                                        className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-lg transition-colors text-xs"
+                                                    >
+                                                        Reorder
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     ))
                                 )}
                             </div>
                         </div>
-                    </div>
+                    )}
 
-                </div>
-            </div>
-
-            {/* Quick Order Section */}
-            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <h3 className="text-xl font-bold text-gray-900 font-sans">Quick Order Menu</h3>
-                        <p className="text-gray-500 text-sm mt-0.5">Order your favorite types directly from your dashboard</p>
-                    </div>
-                    
-                    {/* Categories Row */}
-                    <div className="flex flex-wrap gap-2">
-                        {['All', 'Starters', 'Salads', 'Mains', 'Desserts', 'Beverages'].map(cat => (
-                            <button
-                                key={cat}
-                                onClick={() => setSelectedCategory(cat)}
-                                className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-all shadow-sm ${
-                                    selectedCategory === cat
-                                        ? 'bg-orange-600 text-white'
-                                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                                }`}
-                            >
-                                {cat}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Foods Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pt-2">
-                    {dashboardFoods
-                        .filter(food => selectedCategory === 'All' || food.category === selectedCategory)
-                        .map(food => (
-                            <div 
-                                key={food.id}
-                                className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all group flex flex-col justify-between"
-                            >
-                                <div className="relative aspect-[4/3] w-full overflow-hidden">
-                                    <img 
-                                        src={getItemImage(food)} 
-                                        onError={(e) => { e.target.onerror = null; e.target.src = getItemImage({ ...food, image: '' }); }}
-                                        alt={food.name} 
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                    />
-                                    <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[10px] font-bold text-gray-800 px-2.5 py-1 rounded-lg uppercase tracking-wider">
-                                        {food.category}
-                                    </span>
+                    {/* Tab: Reservations */}
+                    {activeTab === 'reservations' && (
+                        <div className="space-y-8">
+                            {/* Book Table Form */}
+                            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
+                                <div>
+                                    <h3 className="text-lg font-bold text-gray-900">Book A Table Reservation</h3>
+                                    <p className="text-gray-500 text-xs mt-0.5">Pick table, schedule date, and book instant tables</p>
                                 </div>
-                                <div className="p-4 flex flex-col flex-1 justify-between gap-3">
-                                    <div>
-                                        <h4 className="font-bold text-gray-900 font-sans text-base line-clamp-1 group-hover:text-orange-600 transition-colors">
-                                            {food.name}
-                                        </h4>
-                                        <p className="text-gray-500 text-xs mt-1 line-clamp-2 leading-relaxed">
-                                            {food.description}
-                                        </p>
+
+                                <form onSubmit={handleBookReservation} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Reservation Date</label>
+                                        <input 
+                                            type="date"
+                                            value={resDate}
+                                            onChange={(e) => setResDate(e.target.value)}
+                                            className="w-full bg-gray-50 border border-gray-150 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                        />
                                     </div>
-                                    <div className="flex justify-between items-center pt-2">
-                                        <span className="font-bold text-gray-900 text-base">₹{food.price}</span>
-                                        <button 
-                                            onClick={() => addToCart(food)}
-                                            className="px-4 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 text-xs font-bold rounded-xl transition-colors"
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Time Slot</label>
+                                        <input 
+                                            type="time"
+                                            value={resTime}
+                                            onChange={(e) => setResTime(e.target.value)}
+                                            className="w-full bg-gray-50 border border-gray-150 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Guests Count</label>
+                                        <select 
+                                            value={resGuests}
+                                            onChange={(e) => setResGuests(e.target.value)}
+                                            className="w-full bg-gray-50 border border-gray-150 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
                                         >
-                                            Add
+                                            {[1, 2, 3, 4, 5, 6, 8, 10].map(n => (
+                                                <option key={n} value={n}>{n} Guests</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Seating Preference</label>
+                                        <select 
+                                            value={resType}
+                                            onChange={(e) => setResType(e.target.value)}
+                                            className="w-full bg-gray-50 border border-gray-150 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                        >
+                                            <option value="Dine In">Dine-In Dining Hall</option>
+                                            <option value="Rooftop">Rooftop Sky Lounge</option>
+                                            <option value="Window Seat">Window view booth</option>
+                                            <option value="Private Cabin">Private family cabin</option>
+                                        </select>
+                                    </div>
+                                    <button 
+                                        type="submit"
+                                        className="col-span-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-orange-600/10 transition-all flex items-center justify-center gap-1.5"
+                                    >
+                                        <Calendar size={16} /> Confirm Reservation Table
+                                    </button>
+                                </form>
+                            </div>
+
+                            {/* Reservation History List */}
+                            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-4">
+                                <h3 className="font-bold text-gray-900">Your Booking History</h3>
+                                <div className="space-y-3">
+                                    {reservations.length === 0 ? (
+                                        <p className="text-center py-6 text-xs text-gray-400 bg-gray-50 rounded-2xl border border-dashed border-gray-200">No table bookings scheduled.</p>
+                                    ) : (
+                                        reservations.map((res, i) => (
+                                            <div key={i} className="border border-gray-100 p-4 rounded-xl flex justify-between items-center bg-gray-50/50 text-xs sm:text-sm">
+                                                <div>
+                                                    <p className="font-extrabold text-gray-900">{res.date} • {res.time}</p>
+                                                    <p className="text-[11px] text-gray-500 mt-1">Table for {res.guests} ({res.type})</p>
+                                                </div>
+                                                <span className={`px-2.5 py-0.5 rounded-lg text-xs font-bold border ${res.statusColor}`}>{res.status}</span>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Tab: Favorite Items */}
+                    {activeTab === 'favorites' && (
+                        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900">Your Favorite Items</h3>
+                                <p className="text-gray-500 text-xs mt-0.5">Quick order your saved favorites</p>
+                            </div>
+
+                            {wishlist.length === 0 ? (
+                                <div className="text-center py-12 text-gray-400 bg-gray-50 rounded-3xl border border-dashed border-gray-200 flex flex-col items-center justify-center gap-2">
+                                    <Heart size={32} className="text-gray-300" />
+                                    <p className="text-xs font-semibold">No favorite items saved.</p>
+                                    <p className="text-[10px] text-gray-500">Go to Menu and heart foods to add them here!</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    {wishlist.map(item => (
+                                        <div key={item._id || item.id} className="border border-gray-100 hover:border-orange-200 p-4 rounded-2xl transition-all flex items-center justify-between gap-4 bg-white shadow-sm">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-14 h-14 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shrink-0">
+                                                    <img src={getItemImage(item)} alt={item.name} className="w-full h-full object-cover" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-extrabold text-sm text-gray-900">{item.name}</h4>
+                                                    <span className="font-black text-xs text-orange-600 block mt-1">₹{item.price}</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <button 
+                                                    onClick={() => { addToCart(item); toast.success(`${item.name} added to cart!`); }}
+                                                    className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all"
+                                                >
+                                                    Add
+                                                </button>
+                                                <button 
+                                                    onClick={() => { toggleWishlist(item); toast.success('Removed from favorites'); }}
+                                                    className="p-2 hover:bg-red-50 text-red-500 hover:text-red-600 rounded-xl transition-all border border-transparent hover:border-red-100"
+                                                    title="Remove"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Tab: Loyalty & Rewards */}
+                    {activeTab === 'loyalty' && (
+                        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900 font-sans">Loyalty & Rewards Program</h3>
+                                <p className="text-gray-500 text-xs mt-0.5">Track your points, redeem rewards, and view membership tiers</p>
+                            </div>
+
+                            <div className="space-y-8 animate-in fade-in duration-300">
+                                <div className="bg-gradient-to-br from-[#111] via-[#1a1a1a] to-[#0a0a0a] rounded-3xl p-8 text-white shadow-xl relative overflow-hidden border border-[#d4af37]/30">
+                                    <div className="absolute top-0 right-0 w-36 h-36 bg-[#d4af37]/10 rounded-full blur-3xl"></div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#ffe07d] to-[#f3c056] text-black flex items-center justify-center shadow-lg shadow-yellow-500/10">
+                                                <Crown size={18} className="fill-black" />
+                                            </div>
+                                            <div>
+                                                <span className="block font-black tracking-widest text-[11px] text-[#ffe07d]">GOLD MEMBERSHIP</span>
+                                                <span className="block text-[9px] text-gray-500">RestoSys Rewards</span>
+                                            </div>
+                                        </div>
+                                        <Sparkles size={16} className="text-[#ffe07d] animate-pulse" />
+                                    </div>
+
+                                    <div className="mt-8 space-y-1">
+                                        <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider block">Available Balance</span>
+                                        <h2 className="text-5xl font-black font-sans text-transparent bg-clip-text bg-gradient-to-r from-white via-[#fff2d1] to-[#f3c056]">2,450 Pts</h2>
+                                        <p className="text-xs text-gray-500 font-semibold mt-1">Value: ₹245.00 (Redeemable at checkout)</p>
+                                    </div>
+
+                                    <div className="mt-8 pt-6 border-t border-white/5 space-y-3">
+                                        <div className="flex justify-between text-xs font-bold">
+                                            <span className="text-gray-400">Resto Platinum Tier Progress</span>
+                                            <span className="text-[#ffe07d]">80% Complete</span>
+                                        </div>
+                                        <div className="h-2.5 bg-white/5 rounded-full overflow-hidden border border-[#ffe07d]/10">
+                                            <div className="h-full bg-gradient-to-r from-[#f3c056] via-[#ffe07d] to-[#f3c056] w-[80%] rounded-full shadow-[0_0_8px_rgba(243,192,86,0.2)]"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Rewards redemption catalog */}
+                                <div className="space-y-4">
+                                    <h4 className="font-extrabold text-sm text-gray-900">Available Redemptions</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="border border-gray-150 p-4 rounded-2xl flex justify-between items-center bg-gray-50/50">
+                                            <div>
+                                                <p className="font-bold text-gray-900 text-sm">₹100 Store Credit</p>
+                                                <p className="text-xs text-gray-500 mt-1">Requires 1000 points</p>
+                                            </div>
+                                            <button className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-xl shadow-sm">Redeem</button>
+                                        </div>
+                                        <div className="border border-gray-150 p-4 rounded-2xl flex justify-between items-center bg-gray-50/50">
+                                            <div>
+                                                <p className="font-bold text-gray-900 text-sm">Free Double Cheese Pizza</p>
+                                                <p className="text-xs text-gray-500 mt-1">Requires 2000 points</p>
+                                            </div>
+                                            <button className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-xl shadow-sm">Redeem</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Tab: Wallet */}
+                    {activeTab === 'wallet' && (
+                        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900">Customer Wallet</h3>
+                                <p className="text-gray-500 text-xs mt-0.5">Add credits, check transactions, and manage 1-click checkout options</p>
+                            </div>
+
+                            <div className="space-y-8 animate-in fade-in duration-300">
+                                <div className="bg-white rounded-3xl p-8 border border-gray-150 shadow-sm relative overflow-hidden flex flex-col justify-between min-h-[200px]">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-orange-50 rounded-full blur-3xl"></div>
+                                    <div className="flex justify-between items-center relative z-10">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                                                <Wallet size={20} />
+                                            </div>
+                                            <span className="font-extrabold text-sm text-gray-900">RestoSys Secure Wallet</span>
+                                        </div>
+                                        <span className="text-[10px] font-black text-green-700 bg-green-50 border border-green-150 px-2 py-0.5 rounded-full">ACTIVE</span>
+                                    </div>
+
+                                    <div className="relative z-10 space-y-1 my-6">
+                                        <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider block">Wallet Balance</span>
+                                        <h2 className="text-5xl font-black font-sans text-gray-950">₹{walletBalance.toFixed(2)}</h2>
+                                    </div>
+
+                                    <div className="flex gap-3 relative z-10">
+                                        <button 
+                                            onClick={handleAddFunds}
+                                            className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-colors flex items-center gap-1.5"
+                                        >
+                                            <Plus size={16} /> Add Funds
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Mock ledger records */}
+                                <div className="space-y-3">
+                                    <h4 className="font-extrabold text-sm text-gray-900">Recent Transactions</h4>
+                                    <div className="border border-gray-100 rounded-2xl p-4 bg-gray-50/50 flex justify-between items-center text-xs">
+                                        <div>
+                                            <p className="font-bold text-gray-900">Wallet Load (UPI transaction)</p>
+                                            <p className="text-[10px] text-gray-400 mt-0.5">Aug 07, 2026 • Ref #WLT-240</p>
+                                        </div>
+                                        <span className="font-black text-green-600">+₹500.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Tab: Offers & Coupons */}
+                    {activeTab === 'offers' && (
+                        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900">Offers & Coupons</h3>
+                                <p className="text-gray-500 text-xs mt-0.5">Apply promotional codes and get menu item discounts</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-300">
+                                <div className="border border-orange-100 bg-orange-50/50 p-6 rounded-2xl space-y-4 border-dashed relative overflow-hidden flex flex-col justify-between">
+                                    <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full blur-2xl"></div>
+                                    <div>
+                                        <span className="bg-orange-600 text-white font-extrabold text-[9px] px-2 py-0.5 rounded tracking-wide uppercase">Active Promo</span>
+                                        <h4 className="font-black text-gray-900 text-lg mt-3">20% OFF WEEKEND</h4>
+                                        <p className="text-xs text-gray-600 mt-1">Get 20% discount on food bills above ₹300.</p>
+                                    </div>
+                                    <div className="flex justify-between items-center pt-4 border-t border-orange-100/50 text-xs">
+                                        <span className="font-bold text-orange-950 font-mono tracking-wider bg-orange-100 px-2.5 py-1 rounded-lg">RESTOWEEKEND20</span>
+                                        <button 
+                                            onClick={() => { navigator.clipboard.writeText('RESTOWEEKEND20'); toast.success('Coupon copied!'); }}
+                                            className="text-xs font-bold text-orange-600 hover:text-orange-700"
+                                        >
+                                            Copy Code
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="border border-purple-100 bg-purple-50/50 p-6 rounded-2xl space-y-4 border-dashed relative overflow-hidden flex flex-col justify-between">
+                                    <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-full blur-2xl"></div>
+                                    <div>
+                                        <span className="bg-purple-600 text-white font-extrabold text-[9px] px-2 py-0.5 rounded tracking-wide uppercase">Active Promo</span>
+                                        <h4 className="font-black text-gray-900 text-lg mt-3">FREE DESSERT DELIGHT</h4>
+                                        <p className="text-xs text-gray-600 mt-1">Unlock one free chocolate fudge cake dessert.</p>
+                                    </div>
+                                    <div className="flex justify-between items-center pt-4 border-t border-purple-100/50 text-xs">
+                                        <span className="font-bold text-purple-950 font-mono tracking-wider bg-purple-100 px-2.5 py-1 rounded-lg">FREEDESSERT</span>
+                                        <button 
+                                            onClick={() => { navigator.clipboard.writeText('FREEDESSERT'); toast.success('Coupon copied!'); }}
+                                            className="text-xs font-bold text-purple-600 hover:text-purple-700"
+                                        >
+                                            Copy Code
                                         </button>
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                        </div>
+                    )}
+
+                    {/* Tab: Feedback & Inquiries */}
+                    {activeTab === 'feedback' && (
+                        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900">Feedback & Inquiries</h3>
+                                <p className="text-gray-500 text-xs mt-0.5">Submit inquiries, complaints, or restaurant feedback directly to administration</p>
+                            </div>
+
+                            <form onSubmit={handleSubmitFeedback} className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Submission Type</label>
+                                        <select 
+                                            value={feedbackType}
+                                            onChange={(e) => setFeedbackType(e.target.value)}
+                                            className="w-full bg-gray-50 border border-gray-150 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                        >
+                                            <option value="Feedback">General Feedback & Reviews</option>
+                                            <option value="Complaint">Complaint / Bug Report</option>
+                                            <option value="Support">Support Ticket inquiry</option>
+                                            <option value="Franchise">Franchise request</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Subject Summary</label>
+                                        <input 
+                                            type="text"
+                                            placeholder="E.g. Food quality, delivery delay, table service..."
+                                            value={feedbackSubject}
+                                            onChange={(e) => setFeedbackSubject(e.target.value)}
+                                            className="w-full bg-gray-50 border border-gray-150 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Message Details</label>
+                                    <textarea 
+                                        rows={4}
+                                        placeholder="Write your review, support question, or complaint detail here. We review every ticket within 24 hours..."
+                                        value={feedbackMessage}
+                                        onChange={(e) => setFeedbackMessage(e.target.value)}
+                                        className="w-full bg-gray-50 border border-gray-150 rounded-xl p-4 text-xs focus:outline-none focus:border-orange-500 resize-none"
+                                    />
+                                </div>
+                                <button 
+                                    type="submit"
+                                    className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-orange-600/10 transition-colors"
+                                >
+                                    Submit Ticket
+                                </button>
+                            </form>
+                        </div>
+                    )}
+
+                    {/* Tab: Profile & Settings */}
+                    {activeTab === 'profile' && (
+                        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900">Profile & Settings</h3>
+                                <p className="text-gray-500 text-xs mt-0.5">Manage your contact name, phone, address, and password settings</p>
+                            </div>
+
+                            <form onSubmit={handleUpdateProfile} className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Full Name</label>
+                                        <div className="relative">
+                                            <span className="absolute left-3.5 top-3 text-gray-400"><User size={14} /></span>
+                                            <input 
+                                                type="text"
+                                                value={profileName}
+                                                onChange={(e) => setProfileName(e.target.value)}
+                                                className="w-full bg-gray-50 border border-gray-150 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-orange-500 font-bold"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Phone Number</label>
+                                        <div className="relative">
+                                            <span className="absolute left-3.5 top-3 text-gray-400"><Phone size={14} /></span>
+                                            <input 
+                                                type="text"
+                                                value={profilePhone}
+                                                onChange={(e) => setProfilePhone(e.target.value)}
+                                                className="w-full bg-gray-50 border border-gray-150 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1 col-span-full">
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Default Delivery Address</label>
+                                        <div className="relative">
+                                            <span className="absolute left-3.5 top-3 text-gray-400"><MapPin size={14} /></span>
+                                            <input 
+                                                type="text"
+                                                placeholder="Street name, floor, city, postal code..."
+                                                value={profileAddress}
+                                                onChange={(e) => setProfileAddress(e.target.value)}
+                                                className="w-full bg-gray-50 border border-gray-150 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="border-t border-gray-100 pt-5 space-y-4">
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Security Update (Optional)</p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Current Password</label>
+                                            <div className="relative">
+                                                <span className="absolute left-3.5 top-3 text-gray-400"><Lock size={14} /></span>
+                                                <input 
+                                                    type="password"
+                                                    value={currentPassword}
+                                                    onChange={(e) => setCurrentPassword(e.target.value)}
+                                                    placeholder="••••••••"
+                                                    className="w-full bg-gray-50 border border-gray-150 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">New Password</label>
+                                            <div className="relative">
+                                                <span className="absolute left-3.5 top-3 text-gray-400"><Lock size={14} /></span>
+                                                <input 
+                                                    type="password"
+                                                    value={newPassword}
+                                                    onChange={(e) => setNewPassword(e.target.value)}
+                                                    placeholder="Minimum 6 characters"
+                                                    className="w-full bg-gray-50 border border-gray-150 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end pt-2">
+                                    <button 
+                                        type="submit"
+                                        className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-orange-600/10 transition-colors"
+                                    >
+                                        Save Profile Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    )}
+
                 </div>
+
             </div>
+
+            {/* Beautiful Custom Add Funds Modal */}
+            {isAddFundsOpen && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full border border-gray-100 shadow-2xl space-y-6 animate-in zoom-in-95 duration-200 text-left">
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                                    <Wallet size={20} />
+                                </div>
+                                <div>
+                                    <h3 className="font-extrabold text-gray-950 text-base">Add Funds to Wallet</h3>
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Fast & Secure Deposit</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Deposit Amount (₹)</label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-3 text-gray-450 font-bold text-sm">₹</span>
+                                    <input 
+                                        type="number"
+                                        value={addFundsAmount}
+                                        onChange={(e) => setAddFundsAmount(e.target.value)}
+                                        className="w-full bg-gray-50 border border-gray-150 rounded-xl pl-8 pr-4 py-2.5 text-sm font-bold focus:outline-none focus:border-orange-500"
+                                        placeholder="500"
+                                        autoFocus
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Quick Amount Suggestion Tags */}
+                            <div className="flex gap-2">
+                                {[100, 200, 500, 1000].map(amt => (
+                                    <button
+                                        key={amt}
+                                        type="button"
+                                        onClick={() => setAddFundsAmount(amt.toString())}
+                                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg border transition-all ${
+                                            addFundsAmount === amt.toString()
+                                            ? 'bg-orange-50 text-orange-600 border-orange-200 shadow-sm'
+                                            : 'bg-gray-50 text-gray-650 border-gray-150 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        +₹{amt}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 pt-2">
+                            <button
+                                onClick={() => setIsAddFundsOpen(false)}
+                                className="flex-1 py-2.5 border border-gray-200 text-gray-700 font-bold text-xs rounded-xl hover:bg-gray-50 transition-all cursor-pointer text-center"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    const val = parseFloat(addFundsAmount);
+                                    if (val > 0) {
+                                        setWalletBalance(prev => prev + val);
+                                        toast.success(`₹${val.toFixed(2)} added to your wallet!`);
+                                        setIsAddFundsOpen(false);
+                                    } else {
+                                        toast.error("Please enter a valid positive amount");
+                                    }
+                                }}
+                                className="flex-1 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-orange-600/10 transition-all cursor-pointer text-center"
+                            >
+                                Deposit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };

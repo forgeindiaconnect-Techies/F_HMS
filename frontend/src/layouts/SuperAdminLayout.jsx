@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
-    LayoutDashboard, Store, Users, CreditCard, 
-    Settings, Bell, LogOut, User, Menu, X, ShieldCheck, MessageSquare
+    LayoutDashboard, Store, CreditCard, Percent, TrendingUp, 
+    Users, MessageSquare, SlidersHorizontal, Settings, BarChart3, 
+    Bell, ShieldCheck, LogOut, User, Menu, X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -48,9 +49,15 @@ const SuperAdminLayout = () => {
             { name: 'Overview', href: '/super-admin', icon: LayoutDashboard, roles: ['SuperAdmin'] },
             { name: 'Restaurants', href: '/super-admin/restaurants', icon: Store, roles: ['SuperAdmin'] },
             { name: 'Plans', href: '/super-admin/plans', icon: CreditCard, roles: ['SuperAdmin'] },
+            { name: 'Commissions', href: '/super-admin/commissions', icon: Percent, roles: ['SuperAdmin'] },
+            { name: 'Revenue Analytics', href: '/super-admin/revenue', icon: TrendingUp, roles: ['SuperAdmin'] },
+            { name: 'Users', href: '/super-admin/users', icon: Users, roles: ['SuperAdmin'] },
+            { name: 'Support Tickets', href: '/super-admin/support', icon: MessageSquare, roles: ['SuperAdmin', 'SupportAgent'] },
+            { name: 'Features', href: '/super-admin/features', icon: SlidersHorizontal, roles: ['SuperAdmin'] },
+            { name: 'System Settings', href: '/super-admin/settings', icon: Settings, roles: ['SuperAdmin'] },
+            { name: 'Reports & Analytics', href: '/super-admin/reports', icon: BarChart3, roles: ['SuperAdmin'] },
+            { name: 'Notifications', href: '/super-admin/notifications', icon: Bell, roles: ['SuperAdmin'] },
             { name: 'Verifications', href: '/super-admin/verifications', icon: ShieldCheck, roles: ['SuperAdmin'] },
-            { name: 'Support Console', href: '/super-admin/support', icon: MessageSquare, roles: ['SuperAdmin', 'SupportAgent'] },
-            { name: 'Global Reports', href: '/super-admin/reports', icon: Settings, roles: ['SuperAdmin'] },
         ];
         return fullNavigation.filter(item => item.roles.includes(user?.role));
     };

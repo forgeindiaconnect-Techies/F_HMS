@@ -393,3 +393,73 @@ export const updateOrderToPaid = async (req, res) => {
         res.status(404).json({ message: 'Order not found' });
     }
 };
+
+// @desc    Merge source order into target order
+// @route   POST /api/orders/merge
+// @access  Private (Cashier)
+export const mergeOrders = async (req, res) => {
+    const { sourceOrderId, targetOrderId } = req.body;
+
+    try {
+        const sourceOrder = await Order.findById(sourceOrderId);
+        const targetOrder = await Order.findById(targetOrderId);
+
+        if (!sourceOrder || !targetOrder) {
+            return res.status(404).json({ message: 'One or both orders not found' });
+        }
+
+        // Push source order items into target order
+        targetOrder.orderItems.push(...sourceOrder.orderItems);
+        targetOrder.totalPrice += sourceOrder.totalPrice;
+        targetOrder.taxPrice += sourceOrder.taxPrice;
+        targetOrder.notes = targetOrder.notes 
+            ? `${targetOrder.notes}\nMerged from table ${sourceOrder.tableNumber || 'Any'}` 
+            : `Merged from table ${sourceOrder.tableNumber || 'Any'}`;
+
+        await targetOrder.save();
+
+        // Release the source table
+        if (sourceOrder.orderType === 'Dine In' && sourceOrder.tableNumber) {
+            const Table = mongoose.model('Table');
+            const table = await Table.findOne({
+                tableNumber: sourceOrder.tableNumber,
+                restaurantId: sourceOrder.restaurantId,
+                branchId: sourceOrder.branchId
+            });
+            if (table) {
+                table.status = 'Available';
+                table.customers = 0;
+                table.activeOrder = null;
+                await table.save();
+            }
+        }
+
+        // Delete the source order
+        await Order.findByIdAndDelete(sourceOrderId);
+
+        res.json({ message: 'Orders merged successfully', mergedOrder: targetOrder });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to merge orders', error: error.message });
+    }
+};
+
+// @desc    Refund transaction
+// @route   PUT /api/orders/:id/refund
+// @access  Private (Cashier)
+export const refundOrder = async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        order.status = 'Refunded';
+        order.paymentMethod = 'Refunded';
+        order.isPaid = false;
+        
+        await order.save();
+        res.json({ message: 'Order refunded successfully', order });
+    } catch (error) {
+        res.status(500).json({ message: 'Refund failed', error: error.message });
+    }
+};
