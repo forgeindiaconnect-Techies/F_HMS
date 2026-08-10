@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Users, Search, ShieldOff, ShieldCheck, UserCog } from 'lucide-react';
+import { Users, Search, ShieldOff, ShieldCheck, UserCog, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const ROLE_COLORS = {
@@ -22,6 +22,7 @@ const UserManagement = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState('All');
     const [togglingId, setTogglingId] = useState(null);
+    const [deletingId, setDeletingId] = useState(null);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -48,6 +49,23 @@ const UserManagement = () => {
             toast.error('Failed to update user status');
         } finally {
             setTogglingId(null);
+        }
+    };
+
+    const handleDeleteUser = async (userId, userName) => {
+        if (!window.confirm(`Are you sure you want to permanently delete user "${userName}"? This action cannot be undone.`)) {
+            return;
+        }
+        setDeletingId(userId);
+        try {
+            await api.delete(`/super-admin/users/${userId}`);
+            setUsers(users.filter(u => u._id !== userId));
+            toast.success(`User "${userName}" deleted successfully!`);
+        } catch (error) {
+            const errMsg = error.response?.data?.message || 'Failed to delete user';
+            toast.error(errMsg);
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -165,7 +183,7 @@ const UserManagement = () => {
                                             {user.isActive ? 'Active' : 'Inactive'}
                                         </span>
                                     </td>
-                                    <td className="p-5 text-right">
+                                    <td className="p-5 text-right flex items-center justify-end gap-2.5">
                                         <button
                                             onClick={() => handleToggleStatus(user._id, user.isActive)}
                                             disabled={togglingId === user._id}
@@ -176,6 +194,14 @@ const UserManagement = () => {
                                             }`}
                                         >
                                             {togglingId === user._id ? '...' : user.isActive ? 'Deactivate' : 'Activate'}
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteUser(user._id, user.name)}
+                                            disabled={deletingId === user._id}
+                                            className="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl transition-all active:scale-[0.95] disabled:opacity-50 flex items-center justify-center shrink-0"
+                                            title="Delete User"
+                                        >
+                                            <Trash2 size={15} />
                                         </button>
                                     </td>
                                 </tr>
