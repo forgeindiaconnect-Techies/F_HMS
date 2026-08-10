@@ -8,7 +8,20 @@ import Plan from '../models/Plan.js';
 // @access  Private
 export const getBranches = async (req, res) => {
     try {
-        const branches = await Branch.find({ restaurantId: req.user.restaurantId }).populate('manager', 'name email');
+        let branches = await Branch.find({ restaurantId: req.user.restaurantId }).populate('manager', 'name email');
+        if (branches.length === 0 && req.user.restaurantId) {
+            const restaurant = await Restaurant.findById(req.user.restaurantId);
+            if (restaurant) {
+                const mainBranch = await Branch.create({
+                    restaurantId: req.user.restaurantId,
+                    name: `${restaurant.name || 'Main'} Branch`,
+                    location: { address: 'Primary Location' },
+                    contact: { phone: '' },
+                    isActive: true
+                });
+                branches = await Branch.find({ restaurantId: req.user.restaurantId }).populate('manager', 'name email');
+            }
+        }
         res.json(branches);
     } catch (error) {
         res.status(500).json({ message: error.message });

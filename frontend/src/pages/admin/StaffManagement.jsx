@@ -149,7 +149,7 @@ const StaffManagement = () => {
                     <button 
                         onClick={() => {
                             setEditingStaffId(null);
-                            setFormData({ name: '', email: '', phone: '', password: '', role: 'Waiter', branchId: '' });
+                            setFormData({ name: '', email: '', phone: '', password: '', role: 'Waiter', branchId: branches[0]?._id || '' });
                             setIsModalOpen(true);
                         }}
                         className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold transition-colors flex items-center gap-2 text-sm shadow-md shadow-green-900/10" 

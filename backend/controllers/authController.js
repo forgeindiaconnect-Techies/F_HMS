@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import Role from '../models/Role.js';
 import Restaurant from '../models/Restaurant.js';
+import Branch from '../models/Branch.js';
 import Notification from '../models/Notification.js';
 import RestaurantVerification from '../models/RestaurantVerification.js';
 
@@ -61,6 +62,16 @@ export const registerUser = async (req, res) => {
                 verificationStatus: hasVerificationFiles ? 'Under Review' : 'Pending'
             });
             user.restaurantId = restaurant._id;
+
+            // Create initial main branch
+            const initialBranch = await Branch.create({
+                restaurantId: restaurant._id,
+                name: `${restaurant.name} Branch`,
+                location: { address: 'Primary Location' },
+                contact: { phone: phoneNumber || '' },
+                isActive: true
+            });
+            user.branchId = initialBranch._id;
             await user.save();
 
             if (hasVerificationFiles) {
