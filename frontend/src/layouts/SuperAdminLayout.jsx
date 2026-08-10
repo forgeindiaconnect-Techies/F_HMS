@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
     LayoutDashboard, Store, CreditCard, Percent, TrendingUp, 
     Users, MessageSquare, SlidersHorizontal, Settings, BarChart3, 
-    Bell, ShieldCheck, LogOut, User, Menu, X
+    Bell, ShieldCheck, LogOut, User, Menu, X, ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -14,6 +14,23 @@ const SuperAdminLayout = () => {
     const [notifications, setNotifications] = useState([]);
     const [showDropdown, setShowDropdown] = useState(false);
     const [activeNotification, setActiveNotification] = useState(null);
+
+    // Close sidebar & dropdown on route change
+    useEffect(() => {
+        setIsOpen(false);
+        setShowDropdown(false);
+    }, [location.pathname]);
+
+    // Close dropdown on outside click
+    useEffect(() => {
+        const handler = (e) => {
+            if (showDropdown && !e.target.closest('[data-notif-trigger]') && !e.target.closest('[data-notif-dropdown]')) {
+                setShowDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [showDropdown]);
 
     const fetchNotifications = async () => {
         try {
@@ -27,7 +44,7 @@ const SuperAdminLayout = () => {
     useEffect(() => {
         if (api) {
             fetchNotifications();
-            const interval = setInterval(fetchNotifications, 10000); // Check every 10 seconds for live notifications
+            const interval = setInterval(fetchNotifications, 10000);
             return () => clearInterval(interval);
         }
     }, [api]);
@@ -43,107 +60,154 @@ const SuperAdminLayout = () => {
 
     const unreadCount = notifications.filter(n => !n.read).length;
 
-    // Dynamically filter navigation links based on user role
     const getNavigation = () => {
         const fullNavigation = [
-            { name: 'Overview', href: '/super-admin', icon: LayoutDashboard, roles: ['SuperAdmin'] },
-            { name: 'Restaurants', href: '/super-admin/restaurants', icon: Store, roles: ['SuperAdmin'] },
-            { name: 'Plans', href: '/super-admin/plans', icon: CreditCard, roles: ['SuperAdmin'] },
-            { name: 'Commissions', href: '/super-admin/commissions', icon: Percent, roles: ['SuperAdmin'] },
-            { name: 'Revenue Analytics', href: '/super-admin/revenue', icon: TrendingUp, roles: ['SuperAdmin'] },
-            { name: 'Users', href: '/super-admin/users', icon: Users, roles: ['SuperAdmin'] },
-            { name: 'Support Tickets', href: '/super-admin/support', icon: MessageSquare, roles: ['SuperAdmin', 'SupportAgent'] },
-            { name: 'Features', href: '/super-admin/features', icon: SlidersHorizontal, roles: ['SuperAdmin'] },
-            { name: 'System Settings', href: '/super-admin/settings', icon: Settings, roles: ['SuperAdmin'] },
-            { name: 'Reports & Analytics', href: '/super-admin/reports', icon: BarChart3, roles: ['SuperAdmin'] },
-            { name: 'Notifications', href: '/super-admin/notifications', icon: Bell, roles: ['SuperAdmin'] },
-            { name: 'Verifications', href: '/super-admin/verifications', icon: ShieldCheck, roles: ['SuperAdmin'] },
+            { name: 'Overview',            href: '/super-admin',               icon: LayoutDashboard, roles: ['SuperAdmin'] },
+            { name: 'Restaurants',         href: '/super-admin/restaurants',   icon: Store,           roles: ['SuperAdmin'] },
+            { name: 'Plans',               href: '/super-admin/plans',         icon: CreditCard,      roles: ['SuperAdmin'] },
+            { name: 'Commissions',         href: '/super-admin/commissions',   icon: Percent,         roles: ['SuperAdmin'] },
+            { name: 'Revenue Analytics',   href: '/super-admin/revenue',       icon: TrendingUp,      roles: ['SuperAdmin'] },
+            { name: 'Users',               href: '/super-admin/users',         icon: Users,           roles: ['SuperAdmin'] },
+            { name: 'Support Tickets',     href: '/super-admin/support',       icon: MessageSquare,   roles: ['SuperAdmin', 'SupportAgent'] },
+            { name: 'Features',            href: '/super-admin/features',      icon: SlidersHorizontal, roles: ['SuperAdmin'] },
+            { name: 'System Settings',     href: '/super-admin/settings',      icon: Settings,        roles: ['SuperAdmin'] },
+            { name: 'Reports & Analytics', href: '/super-admin/reports',       icon: BarChart3,       roles: ['SuperAdmin'] },
+            { name: 'Notifications',       href: '/super-admin/notifications', icon: Bell,            roles: ['SuperAdmin'] },
+            { name: 'Verifications',       href: '/super-admin/verifications', icon: ShieldCheck,     roles: ['SuperAdmin'] },
         ];
         return fullNavigation.filter(item => item.roles.includes(user?.role));
     };
 
     const navigation = getNavigation();
 
+    // Build a nice page title from the URL
+    const getPageTitle = () => {
+        const segments = location.pathname.replace('/super-admin', '').split('/').filter(Boolean);
+        if (segments.length === 0) return 'Overview';
+        return segments[segments.length - 1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    };
+
     return (
-        <div className="flex h-screen bg-gray-50 relative">
-            {/* Mobile Overlay */}
+        <div className="flex h-screen bg-gray-50 overflow-hidden">
+            {/* ── Mobile Overlay ─────────────────────────────────── */}
             {isOpen && (
                 <div 
-                    className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-30 md:hidden" 
+                    className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-30 md:hidden" 
                     onClick={() => setIsOpen(false)}
                 />
             )}
             
-            {/* Sidebar */}
-            <div className={`w-64 bg-slate-900 text-white flex flex-col fixed inset-y-0 left-0 md:sticky md:top-0 h-screen transition-transform duration-300 z-40 border-r border-slate-800 ${
-                isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-            }`}>
-                <div className="h-16 flex items-center px-6 border-b border-slate-800">
-                    <h1 className="text-xl font-bold font-sans tracking-tight">RestaurantHub<span className="text-blue-500">SaaS</span></h1>
+            {/* ── Sidebar ─────────────────────────────────────────── */}
+            <aside className={`
+                w-64 shrink-0 bg-slate-900 text-white flex flex-col
+                fixed inset-y-0 left-0 z-40
+                md:relative md:translate-x-0
+                transition-transform duration-300 ease-in-out
+                ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'}
+            `}>
+                {/* Sidebar Header */}
+                <div className="h-16 flex items-center justify-between px-5 border-b border-slate-800 shrink-0">
+                    <h1 className="text-lg font-bold tracking-tight truncate">
+                        RestaurantHub<span className="text-blue-400">SaaS</span>
+                    </h1>
+                    <button 
+                        onClick={() => setIsOpen(false)} 
+                        className="md:hidden p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors shrink-0"
+                    >
+                        <X size={18} />
+                    </button>
                 </div>
                 
-                <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-                    <p className="px-2 text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Super Admin</p>
-                    {navigation.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = location.pathname === item.href;
-                        return (
-                            <Link
-                                key={item.name}
-                                to={item.href}
-                                onClick={() => setIsOpen(false)}
-                                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all ${
-                                    isActive 
-                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' 
-                                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                                }`}
-                            >
-                                <Icon size={18} />
-                                {item.name}
-                            </Link>
-                        );
-                    })}
+                {/* Navigation */}
+                <nav className="flex-1 px-3 py-5 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
+                    <p className="px-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">
+                        Super Admin
+                    </p>
+                    <div className="space-y-0.5">
+                        {navigation.map((item) => {
+                            const Icon = item.icon;
+                            const isActive = location.pathname === item.href || 
+                                (item.href !== '/super-admin' && location.pathname.startsWith(item.href));
+                            return (
+                                <Link
+                                    key={item.name}
+                                    to={item.href}
+                                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm group ${
+                                        isActive 
+                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30' 
+                                        : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                                    }`}
+                                >
+                                    <Icon size={17} className="shrink-0" />
+                                    <span className="truncate">{item.name}</span>
+                                    {isActive && <ChevronRight size={14} className="ml-auto shrink-0 opacity-60" />}
+                                </Link>
+                            );
+                        })}
+                    </div>
                 </nav>
                 
-                <div className="p-4 border-t border-slate-800">
-                    <button onClick={logout} className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl font-medium text-slate-300 hover:bg-red-500/10 hover:text-red-400 transition-all">
-                        <LogOut size={18} />
+                {/* Sidebar Footer */}
+                <div className="p-3 border-t border-slate-800 shrink-0">
+                    <div className="px-3 py-2 mb-2 rounded-xl bg-slate-800/60">
+                        <p className="text-xs font-bold text-white truncate">{user?.name || 'Super Admin'}</p>
+                        <p className="text-[10px] text-blue-400 font-medium">System Administrator</p>
+                    </div>
+                    <button 
+                        onClick={logout} 
+                        className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all text-sm"
+                    >
+                        <LogOut size={17} />
                         Logout
                     </button>
                 </div>
-            </div>
+            </aside>
 
-            {/* Main Content */}
+            {/* ── Main Content ─────────────────────────────────────── */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                {/* Header */}
-                <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 md:px-8 shrink-0">
-                    <div className="flex items-center gap-2">
+                
+                {/* ── Header ─────────────────────────────────────── */}
+                <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 md:px-6 shrink-0 gap-3">
+                    
+                    {/* Left: Hamburger + Page Title */}
+                    <div className="flex items-center gap-3 min-w-0">
                         <button 
                             onClick={() => setIsOpen(!isOpen)} 
-                            className="md:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg shrink-0"
+                            className="md:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-xl transition-colors shrink-0"
+                            aria-label="Toggle menu"
                         >
-                            <Menu size={24} />
+                            <Menu size={22} />
                         </button>
-                        <h2 className="text-lg font-bold text-gray-900 font-sans capitalize">
-                            {location.pathname.split('/').pop().replace('-', ' ') || 'Overview'}
+                        <h2 className="text-base font-bold text-gray-900 capitalize truncate">
+                            {getPageTitle()}
                         </h2>
                     </div>
-                    <div className="flex items-center gap-4">
+
+                    {/* Right: Notifications + Avatar */}
+                    <div className="flex items-center gap-2 md:gap-4 shrink-0">
+                        
+                        {/* Notifications Bell */}
                         <div className="relative">
                             <button 
+                                data-notif-trigger="true"
                                 onClick={() => setShowDropdown(!showDropdown)}
-                                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-all relative"
-                                title="Notifications"
+                                className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all relative"
+                                aria-label="Notifications"
                             >
                                 <Bell size={20} />
                                 {unreadCount > 0 && (
-                                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></span>
+                                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                                 )}
                             </button>
                             
+                            {/* Notification Dropdown */}
                             {showDropdown && (
-                                <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-3 duration-200">
-                                    <div className="px-5 py-4 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
+                                <div 
+                                    data-notif-dropdown="true"
+                                    className="absolute right-0 mt-2 w-72 sm:w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+                                    style={{ maxWidth: 'calc(100vw - 2rem)' }}
+                                >
+                                    <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/60">
                                         <h3 className="font-bold text-gray-900 text-sm">System Notifications</h3>
                                         {unreadCount > 0 && (
                                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-600">
@@ -151,13 +215,13 @@ const SuperAdminLayout = () => {
                                             </span>
                                         )}
                                     </div>
-                                    <div className="max-h-72 overflow-y-auto divide-y divide-gray-50 custom-scrollbar">
+                                    <div className="max-h-64 overflow-y-auto divide-y divide-gray-50">
                                         {notifications.length === 0 ? (
-                                            <div className="px-5 py-8 text-center text-gray-400 text-xs font-medium">
-                                                No new signups or system alerts.
+                                            <div className="px-4 py-8 text-center text-gray-400 text-xs font-medium">
+                                                No notifications yet.
                                             </div>
                                         ) : (
-                                            notifications.map(n => (
+                                            notifications.slice(0, 10).map(n => (
                                                 <div 
                                                     key={n._id} 
                                                     onClick={() => {
@@ -165,12 +229,12 @@ const SuperAdminLayout = () => {
                                                         if (!n.read) handleMarkAsRead(n._id);
                                                         setShowDropdown(false);
                                                     }}
-                                                    className={`px-5 py-3.5 transition-colors flex flex-col gap-1 text-left cursor-pointer hover:bg-gray-50 ${
-                                                        !n.read ? 'bg-blue-50/10' : ''
+                                                    className={`px-4 py-3 transition-colors flex flex-col gap-0.5 cursor-pointer hover:bg-gray-50 ${
+                                                        !n.read ? 'bg-blue-50/30 border-l-2 border-blue-400' : ''
                                                     }`}
                                                 >
                                                     <div className="flex justify-between items-start gap-2">
-                                                        <span className="font-bold text-gray-900 text-xs leading-normal">
+                                                        <span className="font-bold text-gray-900 text-xs leading-normal line-clamp-1">
                                                             {n.title}
                                                         </span>
                                                         {!n.read && (
@@ -185,51 +249,65 @@ const SuperAdminLayout = () => {
                                                             </button>
                                                         )}
                                                     </div>
-                                                    <p className="text-gray-500 text-[11px] leading-relaxed">
+                                                    <p className="text-gray-400 text-[11px] leading-relaxed line-clamp-2">
                                                         {n.desc}
                                                     </p>
-                                                    <span className="text-[9px] text-gray-400 mt-1">
+                                                    <span className="text-[10px] text-gray-300 mt-0.5">
                                                         {new Date(n.createdAt).toLocaleString()}
                                                     </span>
                                                 </div>
                                             ))
                                         )}
                                     </div>
+                                    <Link 
+                                        to="/super-admin/notifications"
+                                        className="block text-center text-xs font-bold text-blue-600 hover:text-blue-700 py-3 border-t border-gray-100 hover:bg-gray-50 transition-colors"
+                                    >
+                                        View All Notifications →
+                                    </Link>
                                 </div>
                             )}
                         </div>
-                        <div className="flex items-center gap-3 pl-4 border-l border-gray-200 cursor-pointer group">
-                            <div className="text-right hidden md:block group-hover:opacity-80 transition-opacity">
-                                <p className="text-sm font-bold text-gray-900 capitalize">{user?.name || 'Super Admin'}</p>
-                                <p className="text-xs font-medium text-blue-600 capitalize">System Admin</p>
+
+                        {/* User Avatar */}
+                        <div className="flex items-center gap-2.5 pl-3 border-l border-gray-100">
+                            <div className="hidden md:block text-right">
+                                <p className="text-sm font-bold text-gray-900 leading-none">{user?.name || 'Admin'}</p>
+                                <p className="text-[10px] font-semibold text-blue-500 mt-0.5">System Admin</p>
                             </div>
-                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold border border-blue-200 group-hover:bg-blue-200 transition-colors">
-                                <User size={20} />
+                            <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md shrink-0">
+                                {user?.name?.charAt(0)?.toUpperCase() || <User size={16} />}
                             </div>
                         </div>
                     </div>
                 </header>
                 
-                {/* Page Content */}
-                <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+                {/* ── Page Content ─────────────────────────────────── */}
+                <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8">
                     <Outlet />
                 </main>
             </div>
 
-            {/* Active Notification Details Modal */}
+            {/* ── Notification Detail Modal ─────────────────────── */}
             {activeNotification && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onClick={() => setActiveNotification(null)}></div>
+                    <div 
+                        className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" 
+                        onClick={() => setActiveNotification(null)} 
+                    />
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md relative z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                            <h3 className="font-bold text-gray-900 text-lg">System Notification</h3>
-                            <button onClick={() => setActiveNotification(null)} className="text-gray-400 hover:text-gray-600 transition-colors">
-                                <X size={20} />
+                            <h3 className="font-bold text-gray-900 text-base">System Notification</h3>
+                            <button 
+                                onClick={() => setActiveNotification(null)} 
+                                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                                <X size={18} />
                             </button>
                         </div>
-                        <div className="p-6 space-y-4 text-left">
-                            <div className="bg-blue-50/30 p-4 rounded-xl border border-blue-100/30">
-                                <h4 className="text-base font-bold text-blue-800">{activeNotification.title}</h4>
+                        <div className="p-6 space-y-4">
+                            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                                <h4 className="text-sm font-bold text-blue-800">{activeNotification.title}</h4>
                                 <p className="text-xs text-gray-400 mt-1">{new Date(activeNotification.createdAt).toLocaleString()}</p>
                             </div>
                             <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
@@ -239,7 +317,7 @@ const SuperAdminLayout = () => {
                             </div>
                             <button 
                                 onClick={() => setActiveNotification(null)}
-                                className="w-full mt-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-xl transition-colors text-sm shadow-sm"
+                                className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-xl transition-colors text-sm"
                             >
                                 Close
                             </button>

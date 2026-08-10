@@ -183,7 +183,8 @@ const UserManagement = () => {
                                             {user.isActive ? 'Active' : 'Inactive'}
                                         </span>
                                     </td>
-                                    <td className="p-5 text-right flex items-center justify-end gap-2.5">
+                                    <td className="p-5 text-right">
+                                        <div className="flex items-center justify-end gap-2.5">
                                         <button
                                             onClick={() => handleToggleStatus(user._id, user.isActive)}
                                             disabled={togglingId === user._id}
@@ -203,7 +204,9 @@ const UserManagement = () => {
                                         >
                                             <Trash2 size={15} />
                                         </button>
+                                        </div>
                                     </td>
+
                                 </tr>
                             ))}
                             {filtered.length === 0 && (
