@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bell, User, Menu, Crown, Zap, Star, X, CheckCircle2, Loader2, AlertCircle, ArrowUpRight, Check, QrCode } from 'lucide-react';
+import { Bell, User, Menu, Crown, Zap, Star, X, CheckCircle2, Loader2, AlertCircle, ArrowUpRight, Check, QrCode, MapPin, ChevronDown, Store } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import dummyQrPayment from '../assets/dummy_qr_payment.png';
@@ -357,22 +357,34 @@ const Topbar = () => {
         return () => clearInterval(intervalId);
     }, []);
 
-    // Fetch restaurant subscription plan + all available plans
+    const [branches, setBranches] = useState([]);
+    const [selectedBranch, setSelectedBranch] = useState(null);
+
+    // Fetch restaurant subscription plan + all available plans + branches
     useEffect(() => {
-        const isAdmin = user?.role === 'RestaurantAdmin' || user?.role === 'Admin';
+        const isAdmin = user?.role === 'RestaurantAdmin' || user?.role === 'Admin' || user?.role === 'BranchManager';
         if (!isAdmin) return;
 
         const fetchData = async () => {
             try {
-                const [restaurantRes, plansRes] = await Promise.all([
+                const [restaurantRes, plansRes, branchesRes] = await Promise.allSettled([
                     api.get('/restaurants/mine'),
                     api.get('/plans'),
+                    api.get('/branches')
                 ]);
-                const plan = restaurantRes.data?.subscription?.plan;
-                if (plan) setSubscriptionPlan(plan);
-                if (plansRes.data?.length > 0) setPlans(plansRes.data);
+                if (restaurantRes.status === 'fulfilled') {
+                    const plan = restaurantRes.value.data?.subscription?.plan;
+                    if (plan) setSubscriptionPlan(plan);
+                }
+                if (plansRes.status === 'fulfilled' && plansRes.value.data?.length > 0) {
+                    setPlans(plansRes.value.data);
+                }
+                if (branchesRes.status === 'fulfilled' && branchesRes.value.data?.length > 0) {
+                    setBranches(branchesRes.value.data);
+                    setSelectedBranch(branchesRes.value.data[0]);
+                }
             } catch (error) {
-                console.error('Failed to fetch plan data', error);
+                console.error('Failed to fetch topbar data', error);
             }
         };
         fetchData();
@@ -392,6 +404,31 @@ const Topbar = () => {
                     >
                         <Menu size={24} />
                     </button>
+
+                    {/* Branch Badge / Name display */}
+                    {isAdmin && (
+                        <div className="flex items-center gap-2 bg-emerald-50/80 border border-emerald-100 text-emerald-800 px-3 py-1.5 rounded-xl text-xs font-bold shadow-xs">
+                            <Store size={14} className="text-emerald-600 shrink-0" />
+                            <span className="truncate max-w-[140px] md:max-w-[200px]">
+                                {selectedBranch?.name ? selectedBranch.name : 'Main Branch'}
+                            </span>
+                            {branches.length > 1 ? (
+                                <select 
+                                    value={selectedBranch?._id || ''}
+                                    onChange={(e) => setSelectedBranch(branches.find(b => b._id === e.target.value))}
+                                    className="bg-transparent text-emerald-800 font-bold text-xs outline-none cursor-pointer border-none pl-1"
+                                >
+                                    {branches.map(b => (
+                                        <option key={b._id} value={b._id} className="text-gray-800 font-semibold">{b.name}</option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <Link to="/admin/branches" className="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-2 py-0.5 rounded-md transition-colors ml-1">
+                                    Branches
+                                </Link>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-2 md:gap-6 ml-2 md:ml-0 shrink-0">
