@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, MapPin, Phone, Edit2, Trash2, X, AlertTriangle } from 'lucide-react';
+import { Plus, Search, MapPin, Phone, Edit2, Trash2, X, AlertTriangle, Sparkles, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
@@ -43,7 +44,15 @@ const BranchesManagement = () => {
         fetchBranches();
     }, []);
 
+    const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+
+    const isLimitReached = typeof maxBranches === 'number' && branches.length >= maxBranches;
+
     const handleOpenModal = (branch = null) => {
+        if (!branch && isLimitReached) {
+            setIsUpgradeModalOpen(true);
+            return;
+        }
         if (branch) {
             setEditingBranch(branch);
             setFormData({
@@ -328,6 +337,55 @@ const BranchesManagement = () => {
                                 </button>
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Upgrade Subscription Modal */}
+            {isUpgradeModalOpen && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsUpgradeModalOpen(false)}></div>
+                    <div className="bg-white/95 backdrop-blur-md rounded-[2.5rem] p-8 shadow-2xl border border-white/50 max-w-md w-full text-center flex flex-col items-center gap-5 relative z-10 animate-in zoom-in-95 duration-200">
+                        <button 
+                            onClick={() => setIsUpgradeModalOpen(false)}
+                            className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 rounded-full transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 animate-pulse">
+                            <Sparkles size={28} />
+                        </div>
+
+                        <div className="space-y-2">
+                            <h3 className="text-xl font-black text-slate-900">Branch Limit Reached</h3>
+                            <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+                                Your current <strong>{planName}</strong> plan allows up to <strong>{maxBranches} branch{maxBranches === 1 ? '' : 'es'}</strong>. Upgrade your subscription to create more locations.
+                            </p>
+                        </div>
+
+                        <div className="w-full bg-slate-50 rounded-2xl p-4 border border-slate-100 text-left space-y-2 text-xs">
+                            <div className="flex justify-between items-center font-semibold text-slate-600">
+                                <span>Basic Plan:</span>
+                                <span className="font-bold text-slate-900">1 Branch</span>
+                            </div>
+                            <div className="flex justify-between items-center font-semibold text-slate-600">
+                                <span>Pro Plan:</span>
+                                <span className="font-bold text-indigo-600">Up to 3 Branches</span>
+                            </div>
+                            <div className="flex justify-between items-center font-semibold text-slate-600">
+                                <span>Enterprise Plan:</span>
+                                <span className="font-bold text-purple-600">Unlimited Branches</span>
+                            </div>
+                        </div>
+
+                        <Link
+                            to="/admin/billing"
+                            onClick={() => setIsUpgradeModalOpen(false)}
+                            className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                        >
+                            Upgrade Subscription <ArrowRight size={16} />
+                        </Link>
                     </div>
                 </div>
             )}
