@@ -63,7 +63,7 @@ const importData = async () => {
                 name: 'Pro',
                 monthlyPrice: 129,
                 yearlyPrice: 990,
-                branchesLimit: 5,
+                branchesLimit: 3,
                 staffLimit: 9999,
                 features: [
                     'Restaurant Management',

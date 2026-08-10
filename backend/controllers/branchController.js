@@ -28,17 +28,18 @@ export const createBranch = async (req, res) => {
         }
 
         const planName = restaurant.subscription?.plan || 'Basic';
-        const planDoc = await Plan.findOne({ name: planName });
-        let branchLimit = 1; // Default to 1 (Basic limit)
+        let branchLimit = 1;
         
-        if (planDoc && planDoc.branchesLimit !== undefined) {
-            branchLimit = planDoc.branchesLimit;
+        if (planName === 'Basic' || planName === 'Starter') {
+            branchLimit = 1;
+        } else if (planName === 'Pro' || planName === 'Professional') {
+            branchLimit = 3;
+        } else if (planName === 'Enterprise') {
+            branchLimit = Infinity;
         } else {
-            // Fallbacks
-            if (planName === 'Pro' || planName === 'Professional') {
-                branchLimit = 5;
-            } else if (planName === 'Enterprise') {
-                branchLimit = Infinity;
+            const planDoc = await Plan.findOne({ name: planName });
+            if (planDoc && planDoc.branchesLimit !== undefined) {
+                branchLimit = planDoc.branchesLimit;
             }
         }
 
@@ -46,8 +47,11 @@ export const createBranch = async (req, res) => {
         const currentBranchesCount = await Branch.countDocuments({ restaurantId: req.user.restaurantId });
         
         if (currentBranchesCount >= branchLimit) {
+            const nextPlanMessage = (planName === 'Basic' || planName === 'Starter') 
+                ? 'Please upgrade to the Pro plan for up to 3 branches.' 
+                : 'Please upgrade to the Enterprise plan for unlimited branches.';
             return res.status(403).json({ 
-                message: `Your current plan (${planName}) only allows up to ${branchLimit} branch${branchLimit > 1 ? 'es' : ''}. Please upgrade your subscription plan to add more branches.`,
+                message: `Your current plan (${planName}) allows up to ${branchLimit} branch${branchLimit > 1 ? 'es' : ''}. ${nextPlanMessage}`,
                 limitExceeded: true
             });
         }

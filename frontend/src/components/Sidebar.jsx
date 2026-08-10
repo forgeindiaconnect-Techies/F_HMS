@@ -15,7 +15,6 @@ import toast from 'react-hot-toast';
 const ROUTE_PLAN_REQUIREMENTS = [
     // Pro features
     { path: '/admin/analytics',    minPlan: 'Pro',        feature: 'Sales Analytics' },
-    { path: '/admin/branches',     minPlan: 'Pro',        feature: 'Multi-Branch Management' },
     { path: '/admin/inventory',    minPlan: 'Pro',        feature: 'Inventory Management' },
     { path: '/admin/suppliers',    minPlan: 'Pro',        feature: 'Vendor Management' },
     { path: '/admin/reservations', minPlan: 'Pro',        feature: 'Reservation Management' },

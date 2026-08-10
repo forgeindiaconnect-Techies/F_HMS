@@ -4,9 +4,12 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
 const BranchesManagement = () => {
-    const { api } = useAuth();
+    const { api, restaurant } = useAuth();
     const [branches, setBranches] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    const planName = restaurant?.subscription?.plan || 'Basic';
+    const maxBranches = (planName === 'Basic' || planName === 'Starter') ? 1 : (planName === 'Pro' || planName === 'Professional') ? 3 : 'Unlimited';
     
     // Filter State
     const [searchQuery, setSearchQuery] = useState('');
@@ -120,7 +123,9 @@ const BranchesManagement = () => {
             <div className="flex justify-between items-center">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800" style={{ fontFamily: 'Poppins, sans-serif' }}>Branches</h2>
-                    <p className="text-gray-500 text-sm mt-1">Manage your restaurant locations across the city.</p>
+                    <p className="text-gray-500 text-sm mt-1">
+                        Manage your restaurant locations ({branches.length} / {maxBranches} branch{maxBranches === 1 ? '' : 'es'} used on <span className="font-semibold text-green-700">{planName}</span> plan).
+                    </p>
                 </div>
                 <button 
                     onClick={() => handleOpenModal()}
