@@ -198,7 +198,7 @@ const Home = () => {
                 {/* About the Platform (Abstract) & Why Choose Us */}
                 <div className="space-y-24 mb-24">
                     {/* About the Platform (Abstract) */}
-                    <section id="about" className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center bg-gradient-to-br from-red-50 to-orange-50/20 dark:from-slate-900/90 dark:to-slate-800/30 rounded-[3rem] p-8 md:p-16 border border-red-100/50 dark:border-slate-800 relative overflow-hidden">
+                    <section id="about" className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center rounded-[3rem] p-8 md:p-16 border relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-80 h-80 bg-red-500/5 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3"></div>
                         
                         <div className="space-y-6 relative z-10">
