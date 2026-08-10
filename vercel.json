@@ -4,14 +4,5 @@
       "source": "/(.*)",
       "destination": "/frontend/dist/index.html"
     }
-  ],
-  "services": {
-    "rms-backend": {
-      "type": "web",
-      "root": "backend",
-      "entrypoint": "index.js",
-      "routePrefix": "/",
-      "buildCommand": "npm install"
-    }
-  }
+  ]
 }
