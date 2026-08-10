@@ -15,7 +15,7 @@ export const protect = async (req, res, next) => {
 
     if (token) {
         try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret123');
+            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'supersecretjwtkey123');
             req.user = await User.findById(decoded.id).select('-password');
             if (!req.user) {
                 return res.status(401).json({ message: 'Not authorized, user not found' });
@@ -59,7 +59,7 @@ export const optionalProtect = async (req, res, next) => {
 
     if (token) {
         try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret123');
+            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'supersecretjwtkey123');
             req.user = await User.findById(decoded.id).select('-password');
         } catch (error) {
             // Token failed, but optional so ignore

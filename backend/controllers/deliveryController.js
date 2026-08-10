@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 
 // Helper to generate JWT Token
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET || 'secret123', {
+    return jwt.sign({ id }, process.env.JWT_SECRET || 'supersecretjwtkey123', {
         expiresIn: '30d',
     });
 };

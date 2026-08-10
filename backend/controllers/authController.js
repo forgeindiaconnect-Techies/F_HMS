@@ -7,7 +7,7 @@ import RestaurantVerification from '../models/RestaurantVerification.js';
 
 // Generate JWT
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET || 'secret123', {
+    return jwt.sign({ id }, process.env.JWT_SECRET || 'supersecretjwtkey123', {
         expiresIn: '30d',
     });
 };
