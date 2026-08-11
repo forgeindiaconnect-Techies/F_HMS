@@ -60,6 +60,8 @@ const RestaurantVerification = () => {
         loadVerification();
     }, [api]);
 
+    const [logoBase64, setLogoBase64] = useState(null);
+
     const handleFileChange = (field, e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -72,9 +74,17 @@ const RestaurantVerification = () => {
 
         // Extension check
         const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-        if (!['.pdf', '.jpg', '.jpeg', '.png'].includes(ext)) {
-            toast.error("Only PDF, JPG, JPEG, and PNG files are allowed");
+        if (!['.pdf', '.jpg', '.jpeg', '.png', '.webp'].includes(ext)) {
+            toast.error("Only PDF, JPG, JPEG, PNG, and WEBP files are allowed");
             return;
+        }
+
+        if (field === 'logo') {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setLogoBase64(reader.result);
+            };
+            reader.readAsDataURL(file);
         }
 
         setFiles(prev => ({ ...prev, [field]: file }));
@@ -160,6 +170,9 @@ const RestaurantVerification = () => {
         formData.append('addressText', addressText);
         if (fssaiExpiryDate) {
             formData.append('fssaiExpiryDate', fssaiExpiryDate);
+        }
+        if (logoBase64) {
+            formData.append('logoBase64', logoBase64);
         }
 
         try {
@@ -410,19 +423,30 @@ const RestaurantVerification = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                         {/* Logo upload */}
                         <div className="space-y-2">
-                            <label className="text-xs font-black text-gray-500 uppercase tracking-wider block">Restaurant Logo</label>
-                            {verification?.documents?.logo?.filePath && (
-                                <div className="mb-3 w-16 h-16 rounded-xl border border-gray-200 overflow-hidden shadow-sm bg-white">
-                                    <img src={`${api.defaults.baseURL.replace('/api', '')}${verification.documents.logo.filePath}`} alt="Logo" className="w-full h-full object-cover" />
-                                </div>
-                            )}
+                            <label className="text-xs font-black text-gray-500 uppercase tracking-wider block">Restaurant Logo (Image / PDF)</label>
+                            {verification?.documents?.logo?.filePath && (() => {
+                                const rawPath = verification.documents.logo.filePath;
+                                const docUrl = (rawPath.startsWith('http') || rawPath.startsWith('data:'))
+                                    ? rawPath
+                                    : `${api.defaults.baseURL.replace('/api', '')}${rawPath.startsWith('/') ? '' : '/'}${rawPath}`;
+                                const isPdf = docUrl.includes('application/pdf') || docUrl.toLowerCase().endsWith('.pdf');
+                                return isPdf ? (
+                                    <div className="mb-3 p-3 bg-red-50 text-red-600 rounded-xl font-bold text-xs flex items-center gap-2 border border-red-100 max-w-xs shadow-sm">
+                                        <FileText size={16} /> PDF Logo Document Uploaded
+                                    </div>
+                                ) : (
+                                    <div className="mb-3 w-16 h-16 rounded-xl border border-gray-200 overflow-hidden shadow-sm bg-white">
+                                        <img src={docUrl} alt="Logo" className="w-full h-full object-cover" />
+                                    </div>
+                                );
+                            })()}
                             <input
                                 type="file"
                                 ref={fileInputRefs.logo}
                                 onChange={(e) => handleFileChange('logo', e)}
                                 disabled={isUnderReview}
                                 className="hidden"
-                                accept=".jpg,.jpeg,.png"
+                                accept=".jpg,.jpeg,.png,.webp,.pdf"
                             />
                             <button
                                 type="button"

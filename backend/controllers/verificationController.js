@@ -151,10 +151,23 @@ export const submitVerification = async (req, res) => {
             };
         }
 
-        // Optional Logo
-        if (files.logo) {
-            documents.logo = { filePath: getFileUrl(files.logo[0]) };
-            restaurant.logo = getFileUrl(files.logo[0]); // Update logo on restaurant schema too
+        // Optional Logo (Supports image & PDF converted to Base64)
+        if (req.body.logoBase64) {
+            documents.logo = { filePath: req.body.logoBase64 };
+            restaurant.logo = req.body.logoBase64;
+            await restaurant.save();
+        } else if (files.logo && files.logo.length > 0) {
+            const logoFile = files.logo[0];
+            documents.logo = { filePath: getFileUrl(logoFile) };
+            try {
+                const fileBuffer = fs.readFileSync(logoFile.path);
+                const ext = path.extname(logoFile.originalname || logoFile.filename || '').toLowerCase();
+                const mimeType = ext === '.pdf' ? 'application/pdf' : (logoFile.mimetype || 'image/png');
+                restaurant.logo = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+            } catch (e) {
+                restaurant.logo = getFileUrl(logoFile);
+            }
+            await restaurant.save();
         }
 
         // Optional Menu PDF
