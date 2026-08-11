@@ -134,8 +134,8 @@ export const checkVerification = async (req, res, next) => {
 // Check if subscription plan supports a specific feature
 export const checkFeature = (featureName) => {
     return async (req, res, next) => {
-        // Skip check for super admins, customers, or delivery partners
-        if (!req.user || req.user.role === 'SuperAdmin' || req.user.role === 'DeliveryPartner') {
+        // Skip check for super admins, support agents, customers, or delivery partners
+        if (!req.user || req.user.role === 'SuperAdmin' || req.user.role === 'SupportAgent' || req.user.role === 'DeliveryPartner') {
             return next();
         }
 

@@ -1,16 +1,13 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { getApiUrl } from '../utils/axiosInstance';
 
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
-let API_URL_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-if (API_URL_BASE.endsWith('/')) API_URL_BASE = API_URL_BASE.slice(0, -1);
-if (!API_URL_BASE.endsWith('/api')) API_URL_BASE += '/api';
-
 const api = axios.create({
-    baseURL: API_URL_BASE,
+    baseURL: getApiUrl(),
     withCredentials: true,
 });
 
@@ -99,16 +96,11 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     // Auto-refresh restaurant subscription data every 30s and on window focus
-    // so super admin plan changes are immediately visible in the dashboard without logout/login
     useEffect(() => {
         if (!user || user.role === 'SuperAdmin' || user.role === 'DeliveryPartner' || !user.restaurantId) return;
 
         const refresh = () => fetchRestaurant(user);
-
-        // Re-fetch when user switches back to this tab
         window.addEventListener('focus', refresh);
-
-        // Also poll every 30 seconds in background
         const interval = setInterval(refresh, 30000);
 
         return () => {

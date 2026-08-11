@@ -1,16 +1,13 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { getApiUrl } from '../utils/axiosInstance';
 
 const CustomerAuthContext = createContext();
 
 export const useCustomerAuth = () => useContext(CustomerAuthContext);
 
-let API_URL_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-if (API_URL_BASE.endsWith('/')) API_URL_BASE = API_URL_BASE.slice(0, -1);
-if (!API_URL_BASE.endsWith('/api')) API_URL_BASE += '/api';
-
 const api = axios.create({
-    baseURL: API_URL_BASE,
+    baseURL: getApiUrl(),
     withCredentials: true,
 });
 
@@ -69,7 +66,6 @@ export const CustomerAuthProvider = ({ children }) => {
             return { success: true, data };
         } catch (error) {
             const errorMsg = error.response?.data?.message || 'Login failed';
-            // Only log actual network errors, not standard 401 unauthorized errors
             if (!error.response || error.response.status !== 401) {
                 console.error('Login error:', errorMsg);
             }

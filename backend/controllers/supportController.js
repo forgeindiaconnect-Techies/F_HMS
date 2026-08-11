@@ -210,9 +210,8 @@ export const getTickets = async (req, res) => {
         if (!isSuperAdminOrAgent) {
             const isEnterprise = await checkEnterprisePlan(req.user.restaurantId);
             if (!isEnterprise) {
-                return res.status(403).json({
-                    message: '24/7 Customer Care is available only for Enterprise Plan subscribers.'
-                });
+                // Return empty list gracefully so frontend doesn't throw 403 network error
+                return res.json([]);
             }
         }
 

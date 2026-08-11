@@ -1,26 +1,44 @@
 import axios from 'axios';
 
+export const getApiUrl = () => {
+    let url = import.meta.env.VITE_API_URL;
+    if (url && (url.includes('f-hms') || url.includes('ERR_NAME_NOT_RESOLVED'))) {
+        url = 'https://rms-backend.onrender.com/api';
+    }
+    if (url) {
+        if (url.endsWith('/')) url = url.slice(0, -1);
+        if (!url.endsWith('/api')) url += '/api';
+        return url;
+    }
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+    if (hostname.includes('vercel.app') || hostname.includes('onrender.com')) {
+        return 'https://rms-backend.onrender.com/api';
+    }
+    const isLocalIp = hostname.startsWith('192.168.') || hostname.startsWith('10.') || hostname.startsWith('172.');
+    if (isLocalIp) {
+        return `http://${hostname}:5000/api`;
+    }
+    return 'http://localhost:5000/api';
+};
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
-    withCredentials: true, // Important for cookies (refresh tokens) if we use them
+    baseURL: getApiUrl(),
+    withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
     },
 });
 
-// Request interceptor to add token from local storage or context if not using cookies
+// Request interceptor to attach Bearer token from localStorage
 api.interceptors.request.use(
     (config) => {
-        // We will add token logic here later if we use localStorage
-        // const token = localStorage.getItem('token');
-        // if (token) {
-        //     config.headers.Authorization = `Bearer ${token}`;
-        // }
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
         return config;
     },
-    (error) => {
-        return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
 );
 
 export default api;
