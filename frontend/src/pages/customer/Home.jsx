@@ -1,36 +1,30 @@
 import { useState, useEffect } from 'react';
 import { 
-    Search, MapPin, Star, ChevronDown, User, ShoppingBag, Clock, Percent, 
-    Store, Calculator, QrCode, Boxes, CalendarDays, LineChart, Monitor, Users, 
-    Smartphone, BookOpen, ShoppingCart, ChefHat, Utensils, CreditCard, ArrowRight, 
-    ShieldCheck, Lock, Database, FileText, Globe, CheckCircle2, PlayCircle, Plus, 
-    Minus, Mail, Phone, Map, Shield, X
+    Utensils, ArrowRight, Star, ChevronDown, CheckCircle2, 
+    Monitor, QrCode, Boxes, Users, LineChart, Store, Calculator, CalendarDays, 
+    PlayCircle, ChefHat, Clock, Globe, Plus, Minus, X
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
-import Restaurant3DHero from '../../components/Restaurant3DHero';
 
 const Home = () => {
-    const { user } = useAuth();
     const [restaurants, setRestaurants] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [isYearly, setIsYearly] = useState(false);
-    const [openFaq, setOpenFaq] = useState(0);
-    const [showContact, setShowContact] = useState(false);
-    const [showDemoModal, setShowDemoModal] = useState(false);
     const [plans, setPlans] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [plansLoading, setPlansLoading] = useState(true);
+    const [isYearly, setIsYearly] = useState(false);
+    const [openFaq, setOpenFaq] = useState(null);
+    const [showDemoModal, setShowDemoModal] = useState(false);
 
-    // Dummy data for the landing page grid (just in case they need to see demo restaurants)
+    // Dummy data fallback
     const dummyRestaurants = [
-        { _id: 'demo1', name: 'Pizza Palace', rating: 4.8, time: '20-25', tags: 'Italian, Pizzas, Fast Food', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
-        { _id: 'demo2', name: 'Burger Hub', rating: 4.5, time: '15-20', tags: 'American, Burgers, Beverages', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
-        { _id: 'demo3', name: 'South Indian Cafe', rating: 4.9, time: '10-15', tags: 'South Indian, Breakfast', img: 'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
-        { _id: 'demo4', name: 'Chinese Bowl', rating: 4.2, time: '25-30', tags: 'Chinese, Asian, Noodles', img: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
-        { _id: 'demo5', name: 'BBQ Nation', rating: 4.7, time: '30-40', tags: 'BBQ, Grilled, Non-Veg', img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
-        { _id: 'demo6', name: 'Juice Corner', rating: 4.6, time: '5-10', tags: 'Beverages, Healthy, Shakes', img: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' }
+        { _id: 'demo1', name: 'Pizza Palace', rating: 4.8, time: '20-25', tags: 'Italian, Fast Food', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60' },
+        { _id: 'demo2', name: 'Burger Hub', rating: 4.5, time: '15-20', tags: 'American, Beverages', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60' },
+        { _id: 'demo3', name: 'South Indian Cafe', rating: 4.9, time: '10-15', tags: 'South Indian, Breakfast', img: 'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60' },
+        { _id: 'demo4', name: 'Chinese Bowl', rating: 4.2, time: '25-30', tags: 'Chinese, Asian', img: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60' },
+        { _id: 'demo5', name: 'BBQ Nation', rating: 4.7, time: '30-40', tags: 'BBQ, Non-Veg', img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60' },
+        { _id: 'demo6', name: 'Juice Corner', rating: 4.6, time: '5-10', tags: 'Beverages, Healthy', img: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60' }
     ];
 
     useEffect(() => {
@@ -50,33 +44,34 @@ const Home = () => {
                 console.error("Failed to load restaurants", error);
                 setRestaurants(dummyRestaurants);
             } finally {
-                setTimeout(() => setLoading(false), 500);
+                setLoading(false);
             }
         };
-        fetchRestaurants();
-    }, []);
 
-    // Fetch subscription plans from backend
-    useEffect(() => {
         const fetchPlans = async () => {
             try {
                 let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
                 if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
                 if (!API_URL.endsWith('/api')) API_URL += '/api';
-                const res = await axios.get(`${API_URL}/plans`);
-                if (res.data && res.data.length > 0) {
-                    setPlans(res.data);
-                }
+                const res = await axios.get(`${API_URL}/superadmin/plans/public`);
+                setPlans(res.data);
             } catch (error) {
-                console.error("Failed to load plans", error);
+                console.error("Failed to fetch public pricing plans", error);
+                // Fallback default plans
+                setPlans([
+                    { _id: 'p1', name: 'Starter', monthlyPrice: 4999, yearlyPrice: 3999, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'] },
+                    { _id: 'p2', name: 'Professional', monthlyPrice: 9999, yearlyPrice: 7999, features: ['Up to 3 Branches', 'Kitchen Display System', 'Online Ordering', 'Advanced Analytics', 'Priority Support'] },
+                    { _id: 'p3', name: 'Enterprise', monthlyPrice: 19999, yearlyPrice: 15999, features: ['Unlimited Branches', 'Custom APIs & Webhooks', 'Dedicated Account Manager', '24/7 Phone Support'] }
+                ]);
             } finally {
                 setPlansLoading(false);
             }
         };
+
+        fetchRestaurants();
         fetchPlans();
     }, []);
 
-    // Core SaaS Features
     const coreFeatures = [
         { name: 'Multi Branch', icon: <Store size={28} />, color: 'text-blue-500 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-950/50' },
         { name: 'POS Billing', icon: <Calculator size={28} />, color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-950/50' },
@@ -201,9 +196,8 @@ const Home = () => {
                     </div>
                 </section>
 
-                {/* About the Platform (Abstract) & Why Choose Us */}
+                {/* About the Platform & Why Choose Us */}
                 <div className="space-y-24 mb-24">
-                    {/* About the Platform (Abstract) */}
                     <section id="about" className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center rounded-[3rem] p-8 md:p-16 border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900/60 relative overflow-hidden shadow-sm">
                         <div className="absolute top-0 right-0 w-80 h-80 bg-red-500/5 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3"></div>
                         
@@ -290,7 +284,7 @@ const Home = () => {
                     </section>
                 </div>
 
-                {/* Optional: Demo Customer View (Grid) */}
+                {/* Demo Customer View */}
                 <section id="demo" className="mb-24">
                     <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight mb-8">See how your restaurant will look to customers</h2>
                     {loading ? (
@@ -303,7 +297,7 @@ const Home = () => {
                                     onClick={() => toast.success(`Storefront preview of "${restaurant.name}"`)}
                                     className="group cursor-pointer block hover:scale-105 transition-transform duration-200"
                                 >
-                                    <div className="relative rounded-2xl overflow-hidden aspect-square mb-3 shadow-sm">
+                                    <div className="relative rounded-2xl overflow-hidden aspect-square mb-3 shadow-sm bg-slate-100 dark:bg-slate-900">
                                         <img 
                                             src={
                                                 restaurant.img 
@@ -328,7 +322,7 @@ const Home = () => {
                     )}
                 </section>
 
-                {/* 3. Core Features */}
+                {/* Core Features */}
                 <section id="features" className="mb-24">
                     <h2 className="text-3xl font-black text-center text-gray-900 dark:text-white mb-12">Everything you need in one platform</h2>
                     <div className="flex overflow-x-auto gap-4 pb-8 pt-2 no-scrollbar justify-start lg:justify-center">
@@ -343,36 +337,9 @@ const Home = () => {
                     </div>
                 </section>
 
-                {/* 5. Order Types */}
-                <section className="mb-24 text-center">
-                    <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight mb-4">Manage every channel effortlessly</h2>
-                    <p className="text-gray-500 dark:text-slate-400 max-w-2xl mx-auto mb-12">Whether customers dine in, take out, or order online, everything flows into one centralized dashboard.</p>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Dine-In */}
-                        <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-shadow group text-left">
-                            <div className="w-14 h-14 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-500 dark:text-indigo-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><Utensils size={28} /></div>
-                            <h3 className="text-xl font-black text-gray-900 dark:text-white mb-3">Dine-In Management</h3>
-                            <p className="text-gray-500 dark:text-slate-400 font-medium text-sm">Visual floor plans, table status tracking, and split billing capabilities built right in.</p>
-                        </div>
-                        {/* Takeaway */}
-                        <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-shadow group text-left">
-                            <div className="w-14 h-14 bg-amber-50 dark:bg-amber-950/50 text-amber-500 dark:text-amber-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><ShoppingBag size={28} /></div>
-                            <h3 className="text-xl font-black text-gray-900 dark:text-white mb-3">Takeaway & Pickup</h3>
-                            <p className="text-gray-500 dark:text-slate-400 font-medium text-sm">Scheduled pickups, auto-notifications for customers, and dedicated bagging workflows.</p>
-                        </div>
-                        {/* Delivery */}
-                        <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-shadow group text-left">
-                            <div className="w-14 h-14 bg-rose-50 dark:bg-rose-950/50 text-rose-500 dark:text-rose-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"><Globe size={28} /></div>
-                            <h3 className="text-xl font-black text-gray-900 dark:text-white mb-3">Online Delivery</h3>
-                            <p className="text-gray-500 dark:text-slate-400 font-medium text-sm">Your own white-labeled ordering website to skip 30% third-party commission fees.</p>
-                        </div>
-                    </div>
-                </section>
-
-                {/* 6. Kitchen Workflow */}
-                <section id="workflow" className="mb-24 bg-gray-900 dark:bg-slate-900/90 rounded-[3rem] p-8 md:p-16 text-white overflow-hidden relative shadow-2xl border border-gray-800 dark:border-slate-800">
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-red-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+                {/* Kitchen Workflow */}
+                <section id="workflow" className="mb-24 bg-gradient-to-br from-slate-900 to-slate-950 dark:from-slate-900 dark:to-slate-950 rounded-[3rem] p-8 md:p-16 text-white overflow-hidden relative shadow-2xl border border-slate-800">
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-red-500/20 rounded-full blur-3xl animate-pulse"></div>
                     <div className="text-center mb-16 relative z-10">
                         <h2 className="text-4xl font-black tracking-tight mb-6 text-white">Seamless Kitchen Workflow (KDS)</h2>
                         <p className="text-gray-400 font-medium max-w-2xl mx-auto text-lg">Digitize your kitchen. Route orders directly to the right stations and never miss a beat.</p>
@@ -401,77 +368,62 @@ const Home = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-gray-800 dark:bg-slate-950 p-6 rounded-3xl border border-gray-700 dark:border-slate-800 shadow-2xl transform lg:rotate-2">
-                            <div className="flex justify-between items-center mb-6 border-b border-gray-700 dark:border-slate-800 pb-4">
-                                <span className="text-xl font-black text-gray-100 flex items-center gap-2"><ChefHat className="text-gray-400"/> Grill Station</span>
-                                <span className="px-3 py-1.5 bg-red-500/20 text-red-400 rounded-lg text-sm font-bold border border-red-500/20">12 Pending</span>
-                            </div>
-                            <div className="space-y-4">
-                                <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-2xl">
-                                    <div className="flex justify-between text-sm mb-3"><span className="font-black text-red-400 text-lg">Table 12</span><span className="text-red-300 font-bold flex items-center gap-1"><Clock size={14}/> 14m ago</span></div>
-                                    <div className="text-white font-bold text-lg">2x Truffle Burger</div>
-                                    <div className="text-gray-300 text-sm mt-1 bg-gray-900/50 inline-block px-2 py-1 rounded">No onions, extra cheese</div>
+
+                        {/* Interactive Live KDS Card Display Mockup */}
+                        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-2xl backdrop-blur-md space-y-4">
+                            <div className="flex justify-between items-center pb-4 border-b border-slate-800">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
+                                    <span className="font-black text-sm text-white uppercase tracking-wider">Kitchen Display Feed</span>
                                 </div>
-                                <div className="bg-yellow-500/10 border border-yellow-500/30 p-4 rounded-2xl">
-                                    <div className="flex justify-between text-sm mb-3"><span className="font-black text-yellow-400 text-lg">Takeaway #104</span><span className="text-yellow-300 font-bold flex items-center gap-1"><Clock size={14}/> 5m ago</span></div>
-                                    <div className="text-white font-bold text-lg">1x Classic Cheeseburger</div>
+                                <span className="text-xs bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full font-bold">3 Active Orders</span>
+                            </div>
+                            
+                            <div className="space-y-3">
+                                <div className="bg-slate-800/80 p-4 rounded-2xl border-l-4 border-red-500 flex justify-between items-center">
+                                    <div>
+                                        <div className="font-bold text-white text-sm">Table 04 • #ORD-9912</div>
+                                        <div className="text-xs text-slate-400 mt-1">1x Truffle Pizza, 2x Fresh Lemonade</div>
+                                    </div>
+                                    <span className="text-xs bg-red-500/20 text-red-400 font-bold px-2.5 py-1 rounded-lg">Cooking • 4m</span>
+                                </div>
+                                
+                                <div className="bg-slate-800/80 p-4 rounded-2xl border-l-4 border-amber-500 flex justify-between items-center">
+                                    <div>
+                                        <div className="font-bold text-white text-sm">Table 09 • #ORD-9915</div>
+                                        <div className="text-xs text-slate-400 mt-1">2x Wagyu Smash Burger, 1x Fries</div>
+                                    </div>
+                                    <span className="text-xs bg-amber-500/20 text-amber-400 font-bold px-2.5 py-1 rounded-lg">Received • 1m</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                {/* 7. Reports & Analytics */}
-                <section className="mb-24">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight mb-4">Powerful Analytics</h2>
-                        <p className="text-gray-500 dark:text-slate-400 font-medium max-w-2xl mx-auto">Data-driven insights to help your restaurant grow. Make decisions based on real-time metrics.</p>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col justify-between h-48">
-                            <h4 className="text-sm font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Total Revenue</h4>
-                            <div className="text-4xl font-black text-gray-900 dark:text-white">₹24,592</div>
-                            <div className="flex items-center gap-2 text-emerald-500 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/50 w-fit px-3 py-1 rounded-lg"><LineChart size={16}/> +12% this week</div>
-                        </div>
-                        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col justify-between h-48">
-                            <h4 className="text-sm font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Orders</h4>
-                            <div className="text-4xl font-black text-gray-900 dark:text-white">1,248</div>
-                            <div className="flex items-center gap-2 text-emerald-500 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/50 w-fit px-3 py-1 rounded-lg"><ShoppingBag size={16}/> +8% this week</div>
-                        </div>
-                        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col justify-between h-48">
-                            <h4 className="text-sm font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Best Selling</h4>
-                            <div className="text-2xl font-black text-gray-900 dark:text-white truncate">Truffle Burger</div>
-                            <div className="w-full h-2 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden mt-4">
-                                <div className="h-full bg-orange-500 rounded-full w-[85%]"></div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* 9. Mobile App Preview */}
-                <section className="mb-24 flex flex-col md:flex-row items-center gap-12 bg-gradient-to-br from-indigo-900 to-slate-900 rounded-[3rem] p-8 md:p-16 text-white overflow-hidden shadow-2xl border border-slate-800">
+                {/* Mobile App Preview */}
+                <section className="mb-24 flex flex-col md:flex-row items-center gap-12 bg-gradient-to-br from-red-50 via-orange-50 to-amber-50 dark:from-indigo-950/80 dark:to-slate-900 rounded-[3rem] p-8 md:p-16 text-slate-900 dark:text-white overflow-hidden shadow-xl border border-red-100 dark:border-slate-800">
                     <div className="flex-1 space-y-6 relative z-10">
-                        <div className="inline-block px-4 py-2 bg-indigo-500/20 text-indigo-300 rounded-lg font-bold text-sm border border-indigo-500/30">Native iOS & Android</div>
-                        <h2 className="text-4xl font-black tracking-tight text-white">Your Restaurant, in Their Pocket</h2>
-                        <p className="text-lg text-indigo-200 font-medium">Launch your own branded mobile app. Increase customer loyalty, send push notifications, and drive repeat orders.</p>
-                        <Link to="/explore" className="inline-block bg-white text-indigo-900 font-bold px-8 py-3 rounded-xl mt-4 hover:bg-gray-100 transition-colors">Learn More</Link>
+                        <div className="inline-block px-4 py-2 bg-red-500/10 text-red-600 dark:bg-indigo-500/20 dark:text-indigo-300 rounded-lg font-bold text-sm border border-red-500/20 dark:border-indigo-500/30">Native iOS & Android</div>
+                        <h2 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">Your Restaurant, in Their Pocket</h2>
+                        <p className="text-lg text-slate-600 dark:text-indigo-200 font-medium">Launch your own branded mobile app. Increase customer loyalty, send push notifications, and drive repeat orders.</p>
+                        <Link to="/explore" className="inline-block bg-red-500 hover:bg-red-600 text-white font-bold px-8 py-3 rounded-xl mt-4 shadow-lg shadow-red-500/20 transition-colors">Learn More</Link>
                     </div>
                     <div className="flex-1 flex justify-center relative">
-                        <div className="w-64 h-[500px] bg-gray-900 rounded-[3rem] border-8 border-gray-800 shadow-2xl relative overflow-hidden flex flex-col z-10 transform rotate-[-5deg]">
-                            <div className="h-6 w-32 bg-gray-800 absolute top-0 left-1/2 -translate-x-1/2 rounded-b-xl z-20"></div>
+                        <div className="w-64 h-[500px] bg-slate-900 rounded-[3rem] border-8 border-slate-800 shadow-2xl relative overflow-hidden flex flex-col z-10 transform rotate-[-5deg]">
+                            <div className="h-6 w-32 bg-slate-800 absolute top-0 left-1/2 -translate-x-1/2 rounded-b-xl z-20"></div>
                             <div className="p-4 pt-8 bg-red-500 text-white font-black text-xl text-center">MyRestaurant</div>
-                            <div className="flex-1 bg-gray-50 p-4">
-                                <div className="w-full h-32 bg-gray-200 rounded-xl mb-4"></div>
+                            <div className="flex-1 bg-slate-50 p-4">
+                                <div className="w-full h-32 bg-slate-200 rounded-xl mb-4"></div>
                                 <div className="space-y-3">
-                                    <div className="h-4 w-3/4 bg-gray-200 rounded"></div>
-                                    <div className="h-4 w-1/2 bg-gray-200 rounded"></div>
+                                    <div className="h-4 w-3/4 bg-slate-200 rounded"></div>
+                                    <div className="h-4 w-1/2 bg-slate-200 rounded"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                {/* 10. Testimonials */}
+                {/* Testimonials */}
                 <section className="mb-24 text-center">
                     <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight mb-12">Loved by owners and managers</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -492,7 +444,7 @@ const Home = () => {
                     </div>
                 </section>
 
-                {/* 11. Pricing Plans */}
+                {/* Pricing Plans */}
                 <section id="pricing" className="mb-24 pt-12 border-t border-gray-100 dark:border-slate-800">
                     <div className="text-center mb-12">
                         <h2 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight mb-4">Simple, Transparent Pricing</h2>
@@ -517,11 +469,11 @@ const Home = () => {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                             {(plans.length > 0 ? plans : [
-                                { _id: 'p1', name: 'Starter', monthlyPrice: 49, yearlyPrice: 39, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'] },
-                                { _id: 'p2', name: 'Professional', monthlyPrice: 99, yearlyPrice: 79, features: ['Up to 3 Branches', 'Kitchen Display System', 'Online Ordering', 'Advanced Analytics', 'Priority Support'] },
-                                { _id: 'p3', name: 'Enterprise', monthlyPrice: 199, yearlyPrice: 159, features: ['Unlimited Branches', 'Custom APIs & Webhooks', 'Dedicated Account Manager', '24/7 Support'] }
+                                { _id: 'p1', name: 'Starter', monthlyPrice: 4999, yearlyPrice: 3999, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'] },
+                                { _id: 'p2', name: 'Professional', monthlyPrice: 9999, yearlyPrice: 7999, features: ['Up to 3 Branches', 'Kitchen Display System', 'Online Ordering', 'Advanced Analytics', 'Priority Support'] },
+                                { _id: 'p3', name: 'Enterprise', monthlyPrice: 19999, yearlyPrice: 15999, features: ['Unlimited Branches', 'Custom APIs & Webhooks', 'Dedicated Account Manager', '24/7 Support'] }
                             ]).map((plan, idx) => {
-                                const isPopular = idx === 1; // Highlight the middle plan
+                                const isPopular = idx === 1;
                                 const mPrice = plan.monthlyPrice || plan.price || 0;
                                 const yPrice = plan.yearlyPrice || mPrice;
                                 const price = isYearly ? yPrice : mPrice;
@@ -531,29 +483,29 @@ const Home = () => {
                                 return (
                                     <div key={plan._id || idx} className={`p-8 rounded-3xl relative flex flex-col justify-between ${
                                         isPopular
-                                            ? 'bg-gray-900 dark:bg-slate-900 text-white border border-gray-800 dark:border-slate-750 shadow-2xl transform md:-translate-y-4'
+                                            ? 'bg-gradient-to-br from-red-500 to-orange-600 text-white border border-red-400 shadow-2xl transform md:-translate-y-4'
                                             : 'bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 text-gray-900 dark:text-white shadow-sm'
                                     }`}>
                                         {isPopular && (
-                                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider">Most Popular</div>
+                                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-md">Most Popular</div>
                                         )}
                                         <div>
                                             <h3 className={`text-xl font-bold mb-2 ${isPopular ? 'text-white' : 'text-gray-900 dark:text-white'}`}>{plan.name}</h3>
                                             <div className={`text-4xl font-black mb-1 ${isPopular ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
                                                 ₹{(price || 0).toLocaleString('en-IN')}
-                                                <span className={`text-lg font-medium ${isPopular ? 'text-gray-400' : 'text-gray-400 dark:text-slate-400'}`}>/mo</span>
+                                                <span className={`text-lg font-medium ${isPopular ? 'text-red-100' : 'text-gray-400 dark:text-slate-400'}`}>/mo</span>
                                             </div>
                                             {isYearly && savings > 0 && (
-                                                <p className={`text-xs font-bold mb-6 ${isPopular ? 'text-green-400' : 'text-green-600 dark:text-green-400'}`}>
+                                                <p className={`text-xs font-bold mb-6 ${isPopular ? 'text-yellow-200' : 'text-green-600 dark:text-green-400'}`}>
                                                     Save {savings}% vs monthly billing
                                                 </p>
                                             )}
-                                            {!isYearly && <p className={`text-xs mb-6 ${isPopular ? 'text-gray-400' : 'text-gray-400 dark:text-slate-400'}`}>Billed monthly. Cancel anytime.</p>}
+                                            {!isYearly && <p className={`text-xs mb-6 ${isPopular ? 'text-red-100' : 'text-gray-400 dark:text-slate-400'}`}>Billed monthly. Cancel anytime.</p>}
                                             <Link 
                                                 to={`/staff/register?plan=${encodeURIComponent(plan.name)}&billing=${isYearly ? 'yearly' : 'monthly'}`}
                                                 className={`w-full py-3 rounded-xl font-bold mb-8 flex justify-center items-center transition-colors ${
                                                     isPopular
-                                                        ? 'bg-white text-gray-900 hover:bg-gray-100 shadow-lg shadow-white/10'
+                                                        ? 'bg-white text-red-600 hover:bg-gray-100 shadow-lg'
                                                         : 'border-2 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 hover:border-gray-900 dark:hover:border-white'
                                                 }`}
                                             >
@@ -562,8 +514,8 @@ const Home = () => {
                                             <div className="space-y-4">
                                                 {(plan.features || []).map((f, i) => (
                                                     <div key={i} className="flex items-center gap-3">
-                                                        <CheckCircle2 size={18} className={isPopular ? 'text-red-400' : 'text-green-500 dark:text-green-400'} />
-                                                        <span className={`font-medium text-sm ${isPopular ? 'text-gray-300' : 'text-gray-600 dark:text-slate-300'}`}>{f}</span>
+                                                        <CheckCircle2 size={18} className={isPopular ? 'text-white' : 'text-green-500 dark:text-green-400'} />
+                                                        <span className={`font-medium text-sm ${isPopular ? 'text-white' : 'text-gray-600 dark:text-slate-300'}`}>{f}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -575,7 +527,7 @@ const Home = () => {
                     )}
                 </section>
 
-                {/* 12. FAQ */}
+                {/* FAQ */}
                 <section id="faq" className="mb-24 max-w-3xl mx-auto">
                     <div className="text-center mb-12">
                         <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight mb-4">Frequently Asked Questions</h2>
@@ -599,7 +551,7 @@ const Home = () => {
 
             </main>
 
-            {/* 13. Footer */}
+            {/* Footer */}
             <footer className="bg-slate-900 dark:bg-slate-950 pt-16 pb-8 border-t border-slate-800">
                 <div className="max-w-[1200px] mx-auto px-4 w-full">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12 text-center md:text-left">
@@ -615,14 +567,6 @@ const Home = () => {
                             <p className="text-slate-400 text-sm mb-6 max-w-sm leading-relaxed text-center md:text-left">
                                 The all-in-one operating system for modern restaurants. POS, inventory, online ordering, and analytics all perfectly synced.
                             </p>
-                            <div className="flex gap-4 justify-center md:justify-start">
-                                <a href="https://facebook.com" className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-red-500 transition-all">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
-                                </a>
-                                <a href="https://twitter.com" className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-red-500 transition-all">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg>
-                                </a>
-                            </div>
                         </div>
                         <div className="flex flex-col items-center md:items-start">
                             <h4 className="font-bold text-white mb-4">Product</h4>
@@ -648,37 +592,47 @@ const Home = () => {
 
             {/* Interactive 3D Restaurant Demo Modal */}
             {showDemoModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
-                    {/* Backdrop */}
-                    <div 
-                        className="absolute inset-0 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-300"
-                        onClick={() => setShowDemoModal(false)}
-                    />
-                    
-                    {/* Modal Window */}
-                    <div className="relative z-10 w-full max-w-5xl bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
-                        {/* Modal Header */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/80 shrink-0">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-red-500 text-white rounded-xl shadow-sm">
-                                    <PlayCircle size={20} />
-                                </div>
-                                <div>
-                                    <h3 className="text-base font-black text-slate-900 dark:text-white">Interactive 3D Restaurant Ecosystem Demo</h3>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Move mouse to tilt & rotate 3D model · Real-time order flow simulation</p>
-                                </div>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+                    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl relative text-white space-y-6">
+                        <button 
+                            onClick={() => setShowDemoModal(false)}
+                            className="absolute top-4 right-4 p-2 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors cursor-pointer"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <div className="flex items-center gap-3">
+                            <div className="p-3 bg-red-500/20 text-red-500 rounded-2xl">
+                                <PlayCircle size={32} />
                             </div>
-                            <button
-                                onClick={() => setShowDemoModal(false)}
-                                className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
-                            >
-                                <X size={20} />
-                            </button>
+                            <div>
+                                <h3 className="text-xl font-black tracking-tight text-white">Interactive 3D Restaurant Demo</h3>
+                                <p className="text-xs text-slate-400 font-medium">Explore live POS, KDS & QR Ordering in action</p>
+                            </div>
                         </div>
 
-                        {/* Modal Body: 3D Scene */}
-                        <div className="p-4 md:p-6 overflow-y-auto flex-1 bg-slate-50 dark:bg-slate-950">
-                            <Restaurant3DHero />
+                        <div className="aspect-video bg-slate-950 rounded-2xl border border-slate-800 flex flex-col items-center justify-center p-6 text-center space-y-3 relative overflow-hidden group">
+                            <div className="w-16 h-16 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-red-500/30 group-hover:scale-110 transition-transform">
+                                <Utensils size={32} />
+                            </div>
+                            <h4 className="font-bold text-lg text-white">Live Platform Environment</h4>
+                            <p className="text-xs text-slate-400 max-w-sm">Test order routing from customer QR menu to kitchen display display screens with real-time audio alerts.</p>
+                        </div>
+
+                        <div className="flex gap-3 justify-end pt-2">
+                            <button 
+                                onClick={() => setShowDemoModal(false)}
+                                className="px-5 py-2.5 rounded-xl border border-slate-700 text-slate-300 font-bold text-sm hover:bg-slate-800 transition-colors cursor-pointer"
+                            >
+                                Close Preview
+                            </button>
+                            <Link 
+                                to="/explore"
+                                onClick={() => setShowDemoModal(false)}
+                                className="px-6 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold text-sm shadow-lg shadow-red-500/20 transition-all flex items-center gap-2 cursor-pointer"
+                            >
+                                Explore Live App <ArrowRight size={16} />
+                            </Link>
                         </div>
                     </div>
                 </div>

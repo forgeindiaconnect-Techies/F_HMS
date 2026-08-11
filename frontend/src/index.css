@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-primary: #16A34A;
   --color-primary-dark: #15803D;
@@ -15,11 +17,22 @@
   box-sizing: border-box;
 }
 
+html {
+  background-color: #ffffff;
+  color: #0f172a;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+html.dark {
+  background-color: #020617 !important;
+  color: #f8fafc !important;
+}
+
 body {
   margin: 0;
   font-family: 'Inter', system-ui, sans-serif;
-  background-color: #F3F4F6;
-  color: #1F2937;
+  background-color: inherit;
+  color: inherit;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -58,326 +71,125 @@ h1, h2, h3, h4, h5, h6 {
 .fixed.inset-0.z-50.flex > div:not(.absolute) {
   margin-top: auto !important;
   margin-bottom: auto !important;
-  max-height: 90vh !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: hidden !important;
-}
-
-.fixed.inset-0.z-50.flex > div:not(.absolute) > form {
-  display: flex !important;
-  flex-direction: column !important;
-  min-height: 0 !important;
-  overflow: hidden !important;
-}
-
-/* Apply scroll to the form body while keeping the header and footer sticky */
-.fixed.inset-0.z-50.flex > div:not(.absolute) > form > div:first-of-type:not(.border-t) {
+  max-height: calc(100vh - 2rem) !important;
   overflow-y: auto !important;
-  min-height: 0 !important;
-  flex: 1 1 auto !important;
 }
 
-/* ─── Premium Dark Mode Overrides ─── */
-html.dark {
-  background-color: #0b0f19 !important;
+/* Ensure native scrollbar works cleanly in long dashboard tables */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
 }
 
-html.dark body {
-  background-color: #0b0f19 !important;
-  color: #f3f4f6 !important;
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
-/* Backgrounds */
-html.dark .bg-gray-50, 
-html.dark .bg-slate-50, 
-html.dark .bg-gray-100\/50,
-html.dark .bg-slate-100\/50 {
-  background-color: #0b0f19 !important;
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
 
-html.dark .bg-white,
-html.dark .bg-slate-900\/60 {
-  background-color: #111827 !important;
+/* Ensure glassmorphism cards do not obscure input fields on small screens */
+@media (max-height: 700px) {
+  .fixed.inset-0.z-50.flex > div:not(.absolute) {
+    max-height: calc(100vh - 1rem) !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
 }
 
-html.dark .bg-gray-100,
-html.dark .bg-slate-100 {
-  background-color: #1e293b !important;
+/* Standardized responsive layout container for admin pages */
+.admin-page-container {
+  width: 100%;
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1.5rem;
 }
 
-/* Header & Sidebar */
-html.dark header, 
-html.dark .topbar,
-html.dark .sidebar,
-html.dark aside {
-  background-color: #0f172a !important;
-  border-color: #1e293b !important;
+/* Form input standardization across admin modules */
+.admin-input {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background-color: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #111827;
+  transition: all 0.15s ease-in-out;
 }
 
-/* Texts */
-html.dark .text-gray-900,
-html.dark .text-slate-900,
-html.dark .text-gray-850,
-html.dark .text-gray-800,
-html.dark .text-slate-800 {
-  color: #f9fafb !important;
+.admin-input:focus {
+  outline: none;
+  background-color: #FFFFFF;
+  border-color: #16A34A;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
 }
 
-html.dark .text-gray-700,
-html.dark .text-slate-750,
-html.dark .text-slate-700 {
-  color: #e2e8f0 !important;
+.dark .admin-input {
+  background-color: #0f172a;
+  border-color: #1e293b;
+  color: #f8fafc;
 }
 
-html.dark .text-gray-600,
-html.dark .text-slate-600,
-html.dark .text-gray-500,
-html.dark .text-slate-500,
-html.dark .text-gray-405,
-html.dark .text-gray-400,
-html.dark .text-slate-400 {
-  color: #94a3b8 !important;
+.dark .admin-input:focus {
+  background-color: #020617;
+  border-color: #16A34A;
 }
 
-/* Card Borders */
-html.dark .border-gray-100, 
-html.dark .border-gray-150,
-html.dark .border-gray-200, 
-html.dark .border-slate-100,
-html.dark .border-slate-200,
-html.dark .border-gray-200\/60 {
-  border-color: #1e293b !important;
+/* Status Badges */
+.badge-active {
+  background-color: #DCFCE7;
+  color: #15803D;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
-html.dark .divide-gray-100 > * + * {
-  border-color: #1e293b !important;
+.badge-inactive {
+  background-color: #FEE2E2;
+  color: #B91C1C;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
-/* Tables & Forms */
-html.dark tr, html.dark td, html.dark th {
-  border-color: #1e293b !important;
+.badge-pending {
+  background-color: #FEF3C7;
+  color: #B45309;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
-html.dark input, 
-html.dark select, 
-html.dark textarea {
-  background-color: #0f172a !important;
-  border-color: #334155 !important;
-  color: #f8fafc !important;
+/* Clean up card transitions */
+.dashboard-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
-html.dark select option {
-  background-color: #0f172a !important;
-  color: #f8fafc !important;
+.dark .dashboard-card {
+  background-color: #0f172a;
+  border-color: #1e293b;
+  color: #f8fafc;
 }
 
-/* Specific elements & overlays */
-html.dark .bg-blue-50 {
-  background-color: #1e293b !important;
-  color: #38bdf8 !important;
+/* Animation utilities for smooth state transitions */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-html.dark .bg-emerald-500\/10 {
-  background-color: rgba(16, 185, 129, 0.08) !important;
-}
-
-html.dark .bg-green-50 {
-  background-color: rgba(16, 185, 129, 0.08) !important;
-  color: #34d399 !important;
-  border-color: rgba(16, 185, 129, 0.15) !important;
-}
-
-/* Glassmorphism transparent white cards in Dark Mode */
-html.dark [class*="bg-white/"] {
-  background-color: rgba(17, 24, 39, 0.8) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-html.dark .border-gray-100,
-html.dark .border-slate-100,
-html.dark .border-gray-150 {
-  border-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-/* Specific status overlays and badges */
-html.dark .bg-amber-50 {
-  background-color: rgba(245, 158, 11, 0.08) !important;
-  color: #fbbf24 !important;
-  border-color: rgba(245, 158, 11, 0.15) !important;
-}
-
-html.dark .bg-red-50 {
-  background-color: rgba(239, 68, 68, 0.08) !important;
-  color: #fca5a5 !important;
-  border-color: rgba(239, 68, 68, 0.15) !important;
-}
-
-html.dark .bg-orange-50 {
-  background-color: rgba(249, 115, 22, 0.08) !important;
-  color: #fdba74 !important;
-  border-color: rgba(249, 115, 22, 0.15) !important;
-}
-
-html.dark .bg-blue-50 {
-  background-color: rgba(59, 130, 246, 0.08) !important;
-  color: #93c5fd !important;
-  border-color: rgba(59, 130, 246, 0.15) !important;
-}
-
-html.dark .bg-purple-50 {
-  background-color: rgba(168, 85, 247, 0.08) !important;
-  color: #d8b4fe !important;
-  border-color: rgba(168, 85, 247, 0.15) !important;
-}
-
-html.dark .border-purple-100,
-html.dark .border-blue-100,
-html.dark .border-green-100,
-html.dark .border-red-100,
-html.dark .border-orange-100,
-html.dark .border-amber-100,
-html.dark .border-gray-50,
-html.dark .border-gray-100,
-html.dark .border-gray-150,
-html.dark .border-gray-200,
-html.dark .border-slate-55,
-html.dark .border-slate-100,
-html.dark .border-slate-200 {
-  border-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-html.dark .border-white {
-  border-color: #111827 !important;
-}
-
-/* Global clean-ups */
-html.dark .bg-gray-50,
-html.dark .bg-slate-50 {
-  background-color: #0b0f19 !important;
-}
-
-html.dark .text-slate-800,
-html.dark .text-slate-900,
-html.dark .text-gray-900 {
-  color: #f8fafc !important;
-}
-
-html.dark .text-slate-400,
-html.dark .text-slate-500,
-html.dark .text-gray-500 {
-  color: #94a3b8 !important;
-}
-
-/* Premium dark overrides for bg-100 status badges */
-html.dark .bg-blue-100 {
-  background-color: rgba(59, 130, 246, 0.15) !important;
-  color: #93c5fd !important;
-}
-
-html.dark .bg-orange-100 {
-  background-color: rgba(249, 115, 22, 0.15) !important;
-  color: #fdba74 !important;
-}
-
-html.dark .bg-red-100 {
-  background-color: rgba(239, 68, 68, 0.15) !important;
-  color: #fca5a5 !important;
-}
-
-html.dark .bg-amber-100 {
-  background-color: rgba(245, 158, 11, 0.15) !important;
-  color: #fbbf24 !important;
-}
-
-html.dark .bg-green-100 {
-  background-color: rgba(16, 185, 129, 0.15) !important;
-  color: #34d399 !important;
-}
-
-html.dark .bg-purple-100 {
-  background-color: rgba(168, 85, 247, 0.15) !important;
-  color: #d8b4fe !important;
-}
-
-/* Table and list hover states in Dark Mode */
-html.dark .hover\:bg-gray-50\/80:hover,
-html.dark .hover\:bg-gray-50:hover,
-html.dark .hover\:bg-slate-50:hover,
-html.dark .hover\:bg-gray-150:hover,
-html.dark .hover\:bg-gray-100\/80:hover,
-html.dark .hover\:bg-slate-100\/80:hover,
-html.dark tr:hover {
-  background-color: rgba(255, 255, 255, 0.03) !important;
-}
-
-html.dark .hover\:bg-gray-100:hover,
-html.dark .hover\:bg-slate-100:hover,
-html.dark .hover\:bg-gray-200:hover,
-html.dark .hover\:bg-slate-200:hover {
-  background-color: #1e293b !important;
-}
-
-/* Custom background helper overrides with opacity modifiers in Dark Mode */
-html.dark [class*="bg-gray-50/"],
-html.dark [class*="bg-slate-50/"],
-html.dark [class*="bg-gray-100/"],
-html.dark [class*="bg-slate-100/"] {
-  background-color: rgba(17, 24, 39, 0.7) !important;
-}
-
-html.dark [class*="hover:bg-gray-50/"]:hover,
-html.dark [class*="hover:bg-slate-50/"]:hover {
-  background-color: rgba(255, 255, 255, 0.03) !important;
-}
-
-/* Premium dark overrides for hover states on colored buttons & text links */
-html.dark .hover\:bg-blue-100:hover,
-html.dark .hover\:bg-blue-50:hover {
-  background-color: rgba(59, 130, 246, 0.15) !important;
-}
-
-html.dark .hover\:bg-red-100:hover,
-html.dark .hover\:bg-red-50:hover {
-  background-color: rgba(239, 68, 68, 0.15) !important;
-}
-
-html.dark .hover\:bg-orange-100:hover,
-html.dark .hover\:bg-orange-50:hover {
-  background-color: rgba(249, 115, 22, 0.15) !important;
-}
-
-html.dark .hover\:bg-purple-100:hover,
-html.dark .hover\:bg-purple-50:hover {
-  background-color: rgba(168, 85, 247, 0.15) !important;
-}
-
-html.dark .hover\:bg-green-100:hover,
-html.dark .hover\:bg-green-50:hover {
-  background-color: rgba(16, 185, 129, 0.15) !important;
-}
-
-/* Glassmorphic light/color overlays with opacity slash modifiers in Dark Mode */
-html.dark [class*="bg-blue-50/"] {
-  background-color: rgba(59, 130, 246, 0.08) !important;
-}
-html.dark [class*="bg-green-50/"] {
-  background-color: rgba(16, 185, 129, 0.08) !important;
-}
-html.dark [class*="bg-red-50/"] {
-  background-color: rgba(239, 68, 68, 0.08) !important;
-}
-html.dark [class*="bg-purple-50/"] {
-  background-color: rgba(168, 85, 247, 0.08) !important;
-}
-html.dark [class*="bg-orange-50/"] {
-  background-color: rgba(249, 115, 22, 0.08) !important;
-}
-html.dark [class*="bg-amber-50/"] {
-  background-color: rgba(245, 158, 11, 0.08) !important;
-}
-html.dark [class*="bg-sky-50/"] {
-  background-color: rgba(56, 189, 248, 0.08) !important;
+.animate-fade-in {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Custom Scrollbar for Dark Mode */
@@ -396,7 +208,7 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   background: #334155 !important;
 }
 
-/* Remove top (header) and bottom (footer) separator lines from all sidebars in both themes */
+/* Remove top and bottom separator lines from all sidebars */
 aside > div:first-child,
 aside > header,
 aside > div:last-child {
@@ -406,96 +218,11 @@ aside > div:last-child {
 
 /* About Section Landing Page Styling */
 #about {
-  background: linear-gradient(to bottom right, #fef2f2, rgba(255, 247, 237, 0.2)) !important;
-  border-color: rgba(254, 226, 226, 0.5) !important;
+  background: linear-gradient(to bottom right, #fef2f2, rgba(255, 247, 237, 0.2));
+  border-color: rgba(254, 226, 226, 0.5);
 }
 
 html.dark #about {
   background: linear-gradient(to bottom right, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.3)) !important;
   border-color: #1e293b !important;
 }
-
-/* ─── Global Light Mode Theme Engine (html:not(.dark)) ─── */
-html:not(.dark) {
-  background-color: #f8fafc !important;
-  color: #0f172a !important;
-}
-
-html:not(.dark) body {
-  background-color: #f8fafc !important;
-  color: #0f172a !important;
-}
-
-/* Invert Slate & Dark Card Containers into Crisp Light Cards */
-html:not(.dark) .bg-slate-900,
-html:not(.dark) .bg-slate-950,
-html:not(.dark) .bg-\[\#1e2330\],
-html:not(.dark) .bg-\[\#151923\],
-html:not(.dark) .bg-\[\#1a1e2a\],
-html:not(.dark) .bg-\[\#0b0f19\],
-html:not(.dark) .bg-\[\#0f172a\] {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
-  color: #0f172a !important;
-}
-
-html:not(.dark) .bg-slate-900\/90,
-html:not(.dark) .bg-slate-900\/80,
-html:not(.dark) .bg-slate-900\/70,
-html:not(.dark) .bg-slate-950\/80,
-html:not(.dark) .bg-slate-950\/70,
-html:not(.dark) .bg-slate-950\/60,
-html:not(.dark) .bg-slate-950\/50,
-html:not(.dark) .bg-slate-950\/40,
-html:not(.dark) .bg-slate-950\/30 {
-  background-color: rgba(255, 255, 255, 0.95) !important;
-  border-color: #e2e8f0 !important;
-}
-
-/* Light Mode Borders */
-html:not(.dark) .border-slate-800,
-html:not(.dark) .border-slate-800\/90,
-html:not(.dark) .border-slate-800\/80,
-html:not(.dark) .border-slate-700,
-html:not(.dark) .border-\[\#2a3040\] {
-  border-color: #e2e8f0 !important;
-}
-
-/* Light Mode Text Overrides */
-html:not(.dark) .text-slate-100,
-html:not(.dark) .text-slate-200,
-html:not(.dark) .text-slate-300 {
-  color: #1e293b !important;
-}
-
-html:not(.dark) .text-slate-400,
-html:not(.dark) .text-slate-500 {
-  color: #64748b !important;
-}
-
-html:not(.dark) .text-white:not(button *):not([class*="bg-"]):not([class*="from-"]) {
-  color: #0f172a !important;
-}
-
-/* Keep action buttons with bright text clean */
-html:not(.dark) button.bg-orange-600,
-html:not(.dark) button.bg-orange-500,
-html:not(.dark) button.bg-green-600,
-html:not(.dark) button.bg-emerald-600,
-html:not(.dark) button.bg-blue-600,
-html:not(.dark) button.bg-red-600 {
-  color: #ffffff !important;
-}
-
-/* Form inputs & selects in Light Mode */
-html:not(.dark) input.bg-slate-950,
-html:not(.dark) select.bg-slate-950,
-html:not(.dark) textarea.bg-slate-950,
-html:not(.dark) input.bg-slate-900,
-html:not(.dark) select.bg-slate-900,
-html:not(.dark) textarea.bg-slate-900 {
-  background-color: #ffffff !important;
-  border-color: #cbd5e1 !important;
-  color: #0f172a !important;
-}
-

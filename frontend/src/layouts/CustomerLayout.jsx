@@ -12,11 +12,11 @@ const CustomerLayout = () => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col font-sans relative">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col font-sans relative text-slate-900 dark:text-slate-100 transition-colors">
             <CartDrawer />
             <WishlistDrawer />
             
-            <header className="bg-white shadow-sm sticky top-0 z-40">
+            <header className="bg-white dark:bg-slate-900 shadow-sm border-b border-slate-100 dark:border-slate-800 sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
                     <Link to="/explore" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2 sm:gap-3 group mr-3 sm:mr-0 shrink-0">
                         <div className="bg-orange-500 text-white p-2 rounded-lg group-hover:scale-105 transition-transform">
@@ -28,31 +28,31 @@ const CustomerLayout = () => {
                     </Link>
 
                     <nav className="hidden md:flex gap-8">
-                        <Link to="/explore" className="text-gray-600 hover:text-orange-600 font-medium transition-colors">Home</Link>
-                        <Link to="/menu" className="text-gray-600 hover:text-orange-600 font-medium transition-colors">Menu</Link>
-                        <Link to="/reservations" className="text-gray-600 hover:text-orange-600 font-medium transition-colors">Reservations</Link>
+                        <Link to="/explore" className="text-slate-600 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 font-medium transition-colors">Home</Link>
+                        <Link to="/menu" className="text-slate-600 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 font-medium transition-colors">Menu</Link>
+                        <Link to="/reservations" className="text-slate-600 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 font-medium transition-colors">Reservations</Link>
                     </nav>
 
                     <div className="flex items-center gap-3 sm:gap-6">
                         <div className="flex items-center gap-2 sm:gap-4">
                             <button 
                                 onClick={() => setIsWishlistOpen(true)}
-                                className="relative p-1.5 sm:p-2 text-gray-600 hover:text-orange-600 transition-colors cursor-pointer animate-in fade-in"
+                                className="relative p-1.5 sm:p-2 text-slate-600 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors cursor-pointer animate-in fade-in"
                             >
                                 <Heart size={22} />
                                 {wishlist && wishlist.length > 0 && (
-                                    <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-white animate-in zoom-in duration-200">
+                                    <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-white dark:border-slate-900 animate-in zoom-in duration-200">
                                         {wishlist.length}
                                     </span>
                                 )}
                             </button>
                             <button 
                                 onClick={() => setIsCartOpen(true)}
-                                className="relative p-1.5 sm:p-2 text-gray-600 hover:text-orange-600 transition-colors cursor-pointer"
+                                className="relative p-1.5 sm:p-2 text-slate-600 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors cursor-pointer"
                             >
                                 <ShoppingCart size={22} />
                                 {cartCount > 0 && (
-                                    <span className="absolute top-0 right-0 w-4 h-4 bg-orange-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-white animate-in zoom-in duration-200">
+                                    <span className="absolute top-0 right-0 w-4 h-4 bg-orange-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-white dark:border-slate-900 animate-in zoom-in duration-200">
                                         {cartCount}
                                     </span>
                                 )}
@@ -62,14 +62,14 @@ const CustomerLayout = () => {
                         {user ? (
                             <Link 
                                 to="/profile" 
-                                className="flex items-center gap-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 p-2 sm:px-4 sm:py-2 rounded-full font-bold transition-colors"
+                                className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-950/50 hover:bg-orange-100 dark:hover:bg-orange-900/60 text-orange-700 dark:text-orange-300 p-2 sm:px-4 sm:py-2 rounded-full font-bold transition-colors"
                             >
                                 <User size={16} className="shrink-0" />
                                 <span className="hidden sm:inline truncate max-w-[80px]">{user.name}</span>
                             </Link>
                         ) : (
                             <>
-                                <Link to="/register" className="hidden sm:inline text-sm font-bold text-gray-650 hover:text-orange-600 transition-colors">
+                                <Link to="/register" className="hidden sm:inline text-sm font-bold text-slate-650 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
                                     Register
                                 </Link>
                                 <Link to="/login" className="flex items-center gap-1 bg-orange-600 hover:bg-orange-750 text-white px-3 py-1.5 sm:px-5 sm:py-2 rounded-full font-bold transition-colors shadow-sm shadow-orange-600/20 text-xs sm:text-sm" style={{ fontFamily: 'Outfit, sans-serif' }}>
@@ -85,28 +85,28 @@ const CustomerLayout = () => {
             <main className="flex-grow pb-16 md:pb-0">
                 <Outlet />
             </main>
- 
+
             {/* Mobile Bottom Navigation */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 px-2 flex justify-around items-center z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
-                <Link to="/explore" className="flex flex-col items-center text-gray-500 hover:text-orange-600 transition-colors">
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-3 px-2 flex justify-around items-center z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+                <Link to="/explore" className="flex flex-col items-center text-slate-500 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
                     <UtensilsCrossed size={20} />
                     <span className="text-[10px] font-bold mt-1">Explore</span>
                 </Link>
-                <Link to="/menu" className="flex flex-col items-center text-gray-500 hover:text-orange-600 transition-colors">
+                <Link to="/menu" className="flex flex-col items-center text-slate-500 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
                     <ShoppingBag size={20} />
                     <span className="text-[10px] font-bold mt-1">Menu</span>
                 </Link>
-                <Link to="/reservations" className="flex flex-col items-center text-gray-500 hover:text-orange-600 transition-colors">
+                <Link to="/reservations" className="flex flex-col items-center text-slate-500 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
                     <CalendarDays size={20} />
                     <span className="text-[10px] font-bold mt-1">Booking</span>
                 </Link>
-                <Link to="/profile" className="flex flex-col items-center text-gray-500 hover:text-orange-600 transition-colors">
+                <Link to="/profile" className="flex flex-col items-center text-slate-500 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
                     <User size={20} />
                     <span className="text-[10px] font-bold mt-1">Account</span>
                 </Link>
             </div>
 
-            <footer className="bg-gray-900 text-gray-300 py-12">
+            <footer className="bg-slate-900 dark:bg-slate-950 text-slate-300 py-12 border-t border-slate-800">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div>
                         <Link 
@@ -116,7 +116,7 @@ const CustomerLayout = () => {
                         >
                             <UtensilsCrossed className="text-green-500" /> RestoSys
                         </Link>
-                        <p className="text-gray-400">The premium dining experience delivered directly to your table or doorstep.</p>
+                        <p className="text-slate-400">The premium dining experience delivered directly to your table or doorstep.</p>
                     </div>
                     <div>
                         <h4 className="text-lg font-bold text-white mb-4">Quick Links</h4>
@@ -127,9 +127,9 @@ const CustomerLayout = () => {
                     </div>
                     <div>
                         <h4 className="text-lg font-bold text-white mb-4">Contact Us</h4>
-                        <p className="text-gray-400">123 Culinary Ave, Food District</p>
-                        <p className="text-gray-400">support@restosys.com</p>
-                        <p className="text-gray-400">+1 234 567 8900</p>
+                        <p className="text-slate-400">123 Culinary Ave, Food District</p>
+                        <p className="text-slate-400">support@restosys.com</p>
+                        <p className="text-slate-400">+1 234 567 8900</p>
                     </div>
                 </div>
             </footer>
