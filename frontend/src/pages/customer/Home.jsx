@@ -4,12 +4,13 @@ import {
     Store, Calculator, QrCode, Boxes, CalendarDays, LineChart, Monitor, Users, 
     Smartphone, BookOpen, ShoppingCart, ChefHat, Utensils, CreditCard, ArrowRight, 
     ShieldCheck, Lock, Database, FileText, Globe, CheckCircle2, PlayCircle, Plus, 
-    Minus, Mail, Phone, Map, Shield 
+    Minus, Mail, Phone, Map, Shield, X
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import Restaurant3DHero from '../../components/Restaurant3DHero';
 
 const Home = () => {
     const { user } = useAuth();
@@ -18,6 +19,7 @@ const Home = () => {
     const [isYearly, setIsYearly] = useState(false);
     const [openFaq, setOpenFaq] = useState(0);
     const [showContact, setShowContact] = useState(false);
+    const [showDemoModal, setShowDemoModal] = useState(false);
     const [plans, setPlans] = useState([]);
     const [plansLoading, setPlansLoading] = useState(true);
 
@@ -161,7 +163,7 @@ const Home = () => {
             <main className="max-w-[1200px] mx-auto w-full px-4 pt-16 pb-24">
                 
                 {/* 1. Hero Banner */}
-                <section className="text-center max-w-4xl mx-auto mb-20">
+                <section id="demo" className="text-center max-w-4xl mx-auto mb-20">
                     <div className="inline-block mb-6 px-4 py-1.5 rounded-full bg-red-50 border border-red-100 text-red-600 font-bold text-sm shadow-sm">
                         <span className="flex items-center gap-2"><Star size={14} className="fill-red-600" /> Rated #1 POS System 2026</span>
                     </div>
@@ -172,12 +174,16 @@ const Home = () => {
                         Streamline your operations, boost your sales, and delight your customers with our all-in-one POS, inventory, and online ordering platform.
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Link to="/staff/register" className="w-full sm:w-auto bg-red-500 text-white font-bold text-lg px-8 py-4 rounded-2xl hover:bg-red-600 shadow-xl shadow-red-500/30 transition-all flex items-center justify-center gap-2 group">
+                        <Link to="/staff/register" className="w-full sm:w-auto bg-red-500 text-white font-bold text-lg px-8 py-4 rounded-2xl hover:bg-red-600 shadow-xl shadow-red-500/30 transition-all flex items-center justify-center gap-2 group cursor-pointer">
                             Subscribe Now <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                         </Link>
-                        <a href="#demo" className="w-full sm:w-auto bg-white text-gray-800 border border-gray-200 font-bold text-lg px-8 py-4 rounded-2xl hover:bg-gray-50 shadow-sm transition-all flex items-center justify-center gap-2">
-                            <PlayCircle size={20} className="text-gray-400" /> View Demo
-                        </a>
+                        <button 
+                            onClick={() => setShowDemoModal(true)} 
+                            className="w-full sm:w-auto bg-white text-gray-800 border border-gray-200 font-bold text-lg px-8 py-4 rounded-2xl hover:bg-gray-50 shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer group"
+                        >
+                            <PlayCircle size={22} className="text-red-500 group-hover:scale-110 transition-transform" /> 
+                            <span>View Interactive 3D Demo</span>
+                        </button>
                     </div>
                 </section>
 
@@ -641,6 +647,44 @@ const Home = () => {
                     </div>
                 </div>
             </footer>
+
+            {/* Interactive 3D Restaurant Demo Modal */}
+            {showDemoModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+                    {/* Backdrop */}
+                    <div 
+                        className="absolute inset-0 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-300"
+                        onClick={() => setShowDemoModal(false)}
+                    />
+                    
+                    {/* Modal Window */}
+                    <div className="relative z-10 w-full max-w-5xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/80 shrink-0">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-red-500 text-white rounded-xl shadow-sm">
+                                    <PlayCircle size={20} />
+                                </div>
+                                <div>
+                                    <h3 className="text-base font-black text-slate-900">Interactive 3D Restaurant Ecosystem Demo</h3>
+                                    <p className="text-xs text-slate-500 font-medium">Move mouse to tilt & rotate 3D model · Real-time order flow simulation</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowDemoModal(false)}
+                                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200/50 rounded-xl transition-colors cursor-pointer"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Modal Body: 3D Scene */}
+                        <div className="p-4 md:p-6 overflow-y-auto flex-1 bg-slate-50">
+                            <Restaurant3DHero />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

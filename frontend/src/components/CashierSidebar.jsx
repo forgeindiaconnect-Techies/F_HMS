@@ -9,12 +9,32 @@ import clsx from 'clsx';
 const CashierSidebar = () => {
     const { logout, restaurant } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
+    const [logoError, setLogoError] = useState(false);
+
+    useEffect(() => {
+        setLogoError(false);
+    }, [restaurant?.logo]);
 
     useEffect(() => {
         const handleToggle = () => setIsOpen(prev => !prev);
         window.addEventListener('toggle-sidebar', handleToggle);
         return () => window.removeEventListener('toggle-sidebar', handleToggle);
     }, []);
+
+    const getLogoUrl = () => {
+        if (!restaurant?.logo) return null;
+        if (restaurant.logo.startsWith('http') || restaurant.logo.startsWith('data:')) {
+            return restaurant.logo;
+        }
+        const apiBase = import.meta.env.VITE_API_URL || 'https://rms-backend.onrender.com/api';
+        try {
+            const origin = new URL(apiBase).origin;
+            return `${origin}${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`;
+        } catch (e) {
+            return restaurant.logo;
+        }
+    };
+    const logoSrc = getLogoUrl();
 
     const menuGroups = [
         {
@@ -49,11 +69,12 @@ const CashierSidebar = () => {
             {/* Logo area */}
             <div className="h-20 flex items-center px-6 border-b border-gray-50">
                 <div className="flex items-center gap-3">
-                    {restaurant && restaurant.logo ? (
+                    {logoSrc && !logoError ? (
                         <div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center shrink-0">
                             <img 
-                                src={restaurant.logo.startsWith('http') ? restaurant.logo : `${new URL(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').origin}${restaurant.logo}`} 
+                                src={logoSrc} 
                                 alt="Logo" 
+                                onError={() => setLogoError(true)}
                                 className="w-full h-full object-cover" 
                             />
                         </div>
