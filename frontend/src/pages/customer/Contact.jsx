@@ -39,18 +39,18 @@ const Contact = () => {
     };
 
     return (
-        <div className="flex flex-col min-h-screen bg-white font-sans text-gray-900">
+        <div className="flex flex-col min-h-screen bg-white dark:bg-slate-950 font-sans text-gray-900 dark:text-slate-100 transition-colors">
             {/* SaaS Header */}
-            <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm py-3.5 px-3 sm:px-6 lg:px-8">
+            <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 shadow-sm py-3.5 px-3 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between max-w-7xl mx-auto w-full">
                     <Link to="/" className="flex items-center gap-1.5 sm:gap-2 cursor-pointer group shrink-0">
                         <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg shadow-red-500/20 text-white group-hover:scale-105 transition-transform shrink-0">
                             <Utensils size={18} className="sm:w-6 sm:h-6" />
                         </div>
-                        <h1 className="text-lg sm:text-2xl font-black tracking-tight text-gray-900 group-hover:text-red-500 transition-colors">RestaurantHub</h1>
+                        <h1 className="text-lg sm:text-2xl font-black tracking-tight text-gray-900 dark:text-white group-hover:text-red-500 transition-colors">RestaurantHub</h1>
                     </Link>
                     
-                    <nav className="hidden md:flex gap-8 font-medium text-sm text-gray-600">
+                    <nav className="hidden md:flex gap-8 font-medium text-sm text-gray-600 dark:text-slate-300">
                         <a href="/#features" className="hover:text-red-500 transition-colors">Features</a>
                         <a href="/#workflow" className="hover:text-red-500 transition-colors">Workflow</a>
                         <a href="/#pricing" className="hover:text-red-500 transition-colors">Pricing</a>
@@ -58,8 +58,8 @@ const Contact = () => {
                     </nav>
 
                     <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm font-bold shrink-0">
-                        <Link to="/staff/login" className="text-gray-650 hover:text-gray-950 transition-colors whitespace-nowrap px-1">Log in</Link>
-                        <Link to="/staff/register" className="bg-gray-900 text-white px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-xl hover:bg-gray-800 shadow-lg shadow-gray-900/20 transition-all active:scale-95 whitespace-nowrap">
+                        <Link to="/staff/login" className="text-gray-600 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white transition-colors whitespace-nowrap px-1">Log in</Link>
+                        <Link to="/staff/register" className="bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-500 text-white px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-xl shadow-lg shadow-red-500/20 transition-all active:scale-95 whitespace-nowrap">
                             <span className="md:hidden">Sign Up</span>
                             <span className="hidden md:inline">Get Started Free</span>
                         </Link>
@@ -70,13 +70,13 @@ const Contact = () => {
             {/* Main Section */}
             <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-16">
                 <div className="text-center max-w-3xl mx-auto mb-16">
-                    <div className="inline-block mb-4 px-3 py-1 rounded-full bg-red-50 border border-red-100 text-red-600 font-bold text-xs uppercase tracking-wider">
+                    <div className="inline-block mb-4 px-3 py-1 rounded-full bg-red-50 dark:bg-red-950/60 border border-red-100 dark:border-red-900/50 text-red-600 dark:text-red-400 font-bold text-xs uppercase tracking-wider">
                         Get In Touch
                     </div>
-                    <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-4">
+                    <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight mb-4">
                         We'd Love to Hear From You
                     </h2>
-                    <p className="text-lg text-gray-500 font-medium">
+                    <p className="text-lg text-gray-500 dark:text-slate-400 font-medium">
                         Have questions about plans, custom integrations, or scheduling a live demo? Send us a message and our team will reach out.
                     </p>
                 </div>
@@ -84,10 +84,10 @@ const Contact = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
                     {/* Left Column: Details */}
                     <div className="lg:col-span-5 space-y-6">
-                        <div className="bg-slate-900 text-white p-8 rounded-[2rem] relative overflow-hidden border border-slate-800 shadow-xl">
+                        <div className="bg-slate-900 dark:bg-slate-900/90 text-white p-8 rounded-[2rem] relative overflow-hidden border border-slate-800 shadow-xl">
                             <div className="absolute top-0 right-0 w-48 h-48 bg-red-500/10 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3"></div>
                             
-                            <h3 className="text-xl font-bold mb-6 relative z-10">Contact Information</h3>
+                            <h3 className="text-xl font-bold mb-6 relative z-10 text-white">Contact Information</h3>
                             
                             <div className="space-y-6 relative z-10">
                                 <div className="flex gap-4 items-start">
@@ -129,66 +129,66 @@ const Contact = () => {
 
                     {/* Right Column: Form */}
                     <div className="lg:col-span-7">
-                        <div className="bg-white p-8 sm:p-10 rounded-[2rem] border border-gray-150 shadow-sm relative">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-6">Send Us a Message</h3>
+                        <div className="bg-white dark:bg-slate-900 p-8 sm:p-10 rounded-[2rem] border border-gray-150 dark:border-slate-800 shadow-sm relative">
+                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Send Us a Message</h3>
                             
                             <form onSubmit={handleSubmit} className="space-y-5">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-gray-600">Full Name</label>
+                                        <label className="text-xs font-bold text-gray-600 dark:text-slate-300">Full Name</label>
                                         <input
                                             type="text"
                                             required
                                             value={formData.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                             placeholder="Your Name"
-                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-100 transition-all font-medium"
+                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl text-sm outline-none focus:border-red-500 focus:bg-white dark:focus:bg-slate-900 text-gray-900 dark:text-white transition-all font-medium"
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-gray-600">Business Email</label>
+                                        <label className="text-xs font-bold text-gray-600 dark:text-slate-300">Business Email</label>
                                         <input
                                             type="email"
                                             required
                                             value={formData.email}
                                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                             placeholder="name@restaurant.com"
-                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-100 transition-all font-medium"
+                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl text-sm outline-none focus:border-red-500 focus:bg-white dark:focus:bg-slate-900 text-gray-900 dark:text-white transition-all font-medium"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-gray-600">Phone Number</label>
+                                        <label className="text-xs font-bold text-gray-600 dark:text-slate-300">Phone Number</label>
                                         <input
                                             type="tel"
                                             required
                                             value={formData.phone}
                                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                             placeholder="Your Phone Number"
-                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-100 transition-all font-medium"
+                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl text-sm outline-none focus:border-red-500 focus:bg-white dark:focus:bg-slate-900 text-gray-900 dark:text-white transition-all font-medium"
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-gray-600">Restaurant Name</label>
+                                        <label className="text-xs font-bold text-gray-600 dark:text-slate-300">Restaurant Name</label>
                                         <input
                                             type="text"
                                             required
                                             value={formData.restaurantName}
                                             onChange={(e) => setFormData({ ...formData, restaurantName: e.target.value })}
                                             placeholder="E.g. Bistro Central"
-                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-100 transition-all font-medium"
+                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl text-sm outline-none focus:border-red-500 focus:bg-white dark:focus:bg-slate-900 text-gray-900 dark:text-white transition-all font-medium"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-gray-600">Subject</label>
+                                    <label className="text-xs font-bold text-gray-600 dark:text-slate-300">Subject</label>
                                     <select
                                         value={formData.subject}
                                         onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-100 transition-all font-medium"
+                                        className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl text-sm outline-none focus:border-red-500 focus:bg-white dark:focus:bg-slate-900 text-gray-900 dark:text-white transition-all font-medium"
                                     >
                                         <option value="Sales">Sales & Pricing</option>
                                         <option value="Support">Technical Support</option>
@@ -198,14 +198,14 @@ const Contact = () => {
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-gray-600">How can we help?</label>
+                                    <label className="text-xs font-bold text-gray-600 dark:text-slate-300">How can we help?</label>
                                     <textarea
                                         required
                                         rows="4"
                                         value={formData.message}
                                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                                         placeholder="Tell us about your restaurant branches, seating capacity, or specific feature requests..."
-                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-red-500 focus:bg-white focus:ring-4 focus:ring-red-100 transition-all font-medium resize-none"
+                                        className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl text-sm outline-none focus:border-red-500 focus:bg-white dark:focus:bg-slate-900 text-gray-900 dark:text-white transition-all font-medium resize-none"
                                     />
                                 </div>
 
@@ -227,7 +227,7 @@ const Contact = () => {
             </main>
 
             {/* SaaS Footer */}
-            <footer className="bg-slate-900 pt-16 pb-8 border-t border-slate-800">
+            <footer className="bg-slate-900 dark:bg-slate-950 pt-16 pb-8 border-t border-slate-800">
                 <div className="max-w-[1200px] mx-auto px-4 w-full">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12 text-center md:text-left">
                         <div className="md:col-span-2 lg:col-span-2 flex flex-col items-center md:items-start">
