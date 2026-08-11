@@ -415,4 +415,87 @@ html.dark #about {
   border-color: #1e293b !important;
 }
 
-/* Trigger Vercel Rebuild - v1.0.8 */
+/* ─── Global Light Mode Theme Engine (html:not(.dark)) ─── */
+html:not(.dark) {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+html:not(.dark) body {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* Invert Slate & Dark Card Containers into Crisp Light Cards */
+html:not(.dark) .bg-slate-900,
+html:not(.dark) .bg-slate-950,
+html:not(.dark) .bg-\[\#1e2330\],
+html:not(.dark) .bg-\[\#151923\],
+html:not(.dark) .bg-\[\#1a1e2a\],
+html:not(.dark) .bg-\[\#0b0f19\],
+html:not(.dark) .bg-\[\#0f172a\] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+html:not(.dark) .bg-slate-900\/90,
+html:not(.dark) .bg-slate-900\/80,
+html:not(.dark) .bg-slate-900\/70,
+html:not(.dark) .bg-slate-950\/80,
+html:not(.dark) .bg-slate-950\/70,
+html:not(.dark) .bg-slate-950\/60,
+html:not(.dark) .bg-slate-950\/50,
+html:not(.dark) .bg-slate-950\/40,
+html:not(.dark) .bg-slate-950\/30 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Light Mode Borders */
+html:not(.dark) .border-slate-800,
+html:not(.dark) .border-slate-800\/90,
+html:not(.dark) .border-slate-800\/80,
+html:not(.dark) .border-slate-700,
+html:not(.dark) .border-\[\#2a3040\] {
+  border-color: #e2e8f0 !important;
+}
+
+/* Light Mode Text Overrides */
+html:not(.dark) .text-slate-100,
+html:not(.dark) .text-slate-200,
+html:not(.dark) .text-slate-300 {
+  color: #1e293b !important;
+}
+
+html:not(.dark) .text-slate-400,
+html:not(.dark) .text-slate-500 {
+  color: #64748b !important;
+}
+
+html:not(.dark) .text-white:not(button *):not([class*="bg-"]):not([class*="from-"]) {
+  color: #0f172a !important;
+}
+
+/* Keep action buttons with bright text clean */
+html:not(.dark) button.bg-orange-600,
+html:not(.dark) button.bg-orange-500,
+html:not(.dark) button.bg-green-600,
+html:not(.dark) button.bg-emerald-600,
+html:not(.dark) button.bg-blue-600,
+html:not(.dark) button.bg-red-600 {
+  color: #ffffff !important;
+}
+
+/* Form inputs & selects in Light Mode */
+html:not(.dark) input.bg-slate-950,
+html:not(.dark) select.bg-slate-950,
+html:not(.dark) textarea.bg-slate-950,
+html:not(.dark) input.bg-slate-900,
+html:not(.dark) select.bg-slate-900,
+html:not(.dark) textarea.bg-slate-900 {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
