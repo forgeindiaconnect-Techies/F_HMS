@@ -3,8 +3,7 @@ import {
     ChefHat, Timer, CheckCircle, AlertTriangle, 
     Flame, AlertOctagon, Check, MessageSquare, 
     Sliders, Star, Plus, Trash2, LayoutGrid, Columns,
-    Volume2, VolumeX, Search, RefreshCw, Clock, ArrowRight,
-    Utensils, Layers, AlertCircle, Sparkles, Filter
+    Search, Clock, ArrowRight, Utensils, Sparkles
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -20,7 +19,6 @@ const ChefDashboard = () => {
     const [selectedStation, setSelectedStation] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState('priority'); // 'priority' | 'oldest' | 'newest'
-    const [soundEnabled, setSoundEnabled] = useState(true);
     
     // 86 List (Out of Stock Ingredients)
     const [outOfStock, setOutOfStock] = useState(['Avocado (Haas)', 'Fresh Basil', 'Truffle Oil']);
@@ -31,8 +29,6 @@ const ChefDashboard = () => {
     const [manualPriority, setManualPriority] = useState({}); // orderId -> boolean
     const [completedItems, setCompletedItems] = useState({}); // `${orderId}-${itemIdx}` -> boolean
     const [currentTime, setCurrentTime] = useState(new Date());
-
-    const audioRef = useRef(null);
 
     const stations = [
         'All',
@@ -199,26 +195,26 @@ const ChefDashboard = () => {
     };
 
     return (
-        <div className="w-full max-w-[1700px] mx-auto font-sans space-y-6 pb-24 text-slate-100">
+        <div className="w-full max-w-[1700px] mx-auto font-sans space-y-6 pb-24 text-slate-900 dark:text-slate-100 transition-colors">
             
             {/* 1. Live Ingredient 86-List Warning Banner */}
             {outOfStock.length > 0 && (
-                <div className="bg-gradient-to-r from-red-950 via-slate-900 to-red-950 border border-red-500/40 rounded-3xl p-4 md:p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl relative overflow-hidden">
+                <div className="bg-gradient-to-r from-red-50 via-white to-red-50 dark:from-red-950 dark:via-slate-900 dark:to-red-950 border border-red-200 dark:border-red-500/40 rounded-3xl p-4 md:p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl dark:shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
                     
                     <div className="flex items-center gap-3.5 z-10">
-                        <div className="p-3 bg-red-500/20 text-red-400 rounded-2xl border border-red-500/30 shrink-0">
+                        <div className="p-3 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-2xl border border-red-200 dark:border-red-500/30 shrink-0">
                             <AlertOctagon className="animate-bounce" size={26} />
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <span className="text-red-400 font-black text-xs uppercase tracking-widest bg-red-500/20 px-2.5 py-0.5 rounded-full border border-red-500/30">
+                                <span className="text-red-700 dark:text-red-400 font-black text-xs uppercase tracking-widest bg-red-100 dark:bg-red-500/20 px-2.5 py-0.5 rounded-full border border-red-200 dark:border-red-500/30">
                                     Active 86 List (Out of Stock)
                                 </span>
-                                <span className="text-slate-400 text-xs font-semibold">({outOfStock.length} items flagged)</span>
+                                <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold">({outOfStock.length} items flagged)</span>
                             </div>
-                            <p className="text-slate-200 font-bold text-sm mt-1">
-                                Flagged ingredients: <span className="text-red-300 font-extrabold">{outOfStock.join(' · ')}</span>
+                            <p className="text-slate-800 dark:text-slate-200 font-bold text-sm mt-1">
+                                Flagged ingredients: <span className="text-red-600 dark:text-red-300 font-extrabold">{outOfStock.join(' · ')}</span>
                             </p>
                         </div>
                     </div>
@@ -235,17 +231,17 @@ const ChefDashboard = () => {
             )}
 
             {/* 2. Top KDS Kitchen Command Header */}
-            <div className="bg-slate-900/90 backdrop-blur-md p-6 rounded-3xl shadow-2xl border border-slate-800 space-y-6">
+            <div className="bg-white dark:bg-slate-900/90 backdrop-blur-md p-6 rounded-3xl shadow-xl dark:shadow-2xl border border-slate-200 dark:border-slate-800 space-y-6">
                 
                 {/* Header Title & Station Selector */}
-                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 pb-6 border-b border-slate-800">
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 pb-6 border-b border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-4">
                         <div className="w-14 h-14 bg-gradient-to-tr from-orange-600 to-amber-500 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-orange-500/20 shrink-0">
                             <ChefHat size={32} />
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
+                                <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
                                     Kitchen Display System (KDS)
                                 </h1>
                                 <span className="relative flex h-3 w-3">
@@ -253,7 +249,7 @@ const ChefDashboard = () => {
                                     <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                                 </span>
                             </div>
-                            <p className="text-slate-400 text-xs md:text-sm font-semibold mt-0.5">
+                            <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm font-semibold mt-0.5">
                                 Real-time order routing, cooking timers, priority queueing, and station management.
                             </p>
                         </div>
@@ -261,15 +257,15 @@ const ChefDashboard = () => {
 
                     {/* Station Filter Pills */}
                     <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs font-black text-slate-400 uppercase tracking-wider mr-1 hidden sm:inline">Station:</span>
+                        <span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-1 hidden sm:inline">Station:</span>
                         {stations.map(st => (
                             <button
                                 key={st}
                                 onClick={() => setSelectedStation(st)}
-                                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all border ${
+                                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all border cursor-pointer ${
                                     selectedStation === st
                                     ? 'bg-orange-500 text-white border-orange-400 shadow-lg shadow-orange-500/25 scale-105'
-                                    : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-700 hover:text-white'
+                                    : 'bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
                                 }`}
                             >
                                 {st}
@@ -280,45 +276,45 @@ const ChefDashboard = () => {
 
                 {/* KPI Metrics Strip */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div className="bg-slate-950/70 p-4 rounded-2xl border border-slate-800/80 flex items-center gap-3.5">
-                        <div className="p-3 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20">
+                    <div className="bg-slate-50 dark:bg-slate-950/70 p-4 rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-3.5">
+                        <div className="p-3 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl border border-blue-500/20">
                             <Utensils size={20} />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Live Queue</p>
-                            <p className="text-2xl font-black text-white">{totalLive}</p>
+                            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Live Queue</p>
+                            <p className="text-2xl font-black text-slate-900 dark:text-white">{totalLive}</p>
                         </div>
                     </div>
 
-                    <div className="bg-slate-950/70 p-4 rounded-2xl border border-slate-800/80 flex items-center gap-3.5">
-                        <div className="p-3 bg-amber-500/10 text-amber-400 rounded-xl border border-amber-500/20">
+                    <div className="bg-slate-50 dark:bg-slate-950/70 p-4 rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-3.5">
+                        <div className="p-3 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl border border-amber-500/20">
                             <Clock size={20} />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">In Preparation</p>
-                            <p className="text-2xl font-black text-amber-400">{preparingCount}</p>
+                            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">In Preparation</p>
+                            <p className="text-2xl font-black text-amber-600 dark:text-amber-400">{preparingCount}</p>
                         </div>
                     </div>
 
-                    <div className="bg-slate-950/70 p-4 rounded-2xl border border-slate-800/80 flex items-center gap-3.5">
-                        <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
+                    <div className="bg-slate-50 dark:bg-slate-950/70 p-4 rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-3.5">
+                        <div className="p-3 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-500/20">
                             <CheckCircle size={20} />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Ready to Serve</p>
-                            <p className="text-2xl font-black text-emerald-400">{readyCount}</p>
+                            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">Ready to Serve</p>
+                            <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{readyCount}</p>
                         </div>
                     </div>
 
                     <div className={`p-4 rounded-2xl border flex items-center gap-3.5 transition-all ${
-                        overdueCount > 0 ? 'bg-red-950/40 border-red-500/40 animate-pulse' : 'bg-slate-950/70 border-slate-800/80'
+                        overdueCount > 0 ? 'bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-500/40 animate-pulse' : 'bg-slate-50 dark:bg-slate-950/70 border-slate-200 dark:border-slate-800/80'
                     }`}>
-                        <div className={`p-3 rounded-xl ${overdueCount > 0 ? 'bg-red-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                        <div className={`p-3 rounded-xl ${overdueCount > 0 ? 'bg-red-500 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}>
                             <Flame size={20} />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Rush / Overdue (&gt;15m)</p>
-                            <p className={`text-2xl font-black ${overdueCount > 0 ? 'text-red-400' : 'text-slate-300'}`}>{overdueCount}</p>
+                            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">Rush / Overdue (&gt;15m)</p>
+                            <p className={`text-2xl font-black ${overdueCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-slate-300'}`}>{overdueCount}</p>
                         </div>
                     </div>
                 </div>
@@ -327,7 +323,7 @@ const ChefDashboard = () => {
                 <div className="flex flex-col lg:flex-row items-center justify-between gap-4 pt-2">
                     
                     {/* Status Tabs */}
-                    <div className="flex flex-wrap bg-slate-950/80 p-1.5 rounded-2xl border border-slate-800/90 gap-1 w-full lg:w-auto">
+                    <div className="flex flex-wrap bg-slate-100 dark:bg-slate-950/80 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800/90 gap-1 w-full lg:w-auto">
                         {[
                             { id: 'All', label: 'All Orders', count: totalLive },
                             { id: 'Pending', label: '📥 Incoming', count: pendingCount },
@@ -341,13 +337,13 @@ const ChefDashboard = () => {
                                 className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
                                     activeTab === tab.id
                                     ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-lg shadow-orange-600/20'
-                                    : 'text-slate-400 hover:text-white hover:bg-slate-800/80'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-800/80'
                                 }`}
                             >
                                 <span>{tab.label}</span>
                                 {tab.count > 0 && (
                                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                                        activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-300'
+                                        activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-300'
                                     }`}>
                                         {tab.count}
                                     </span>
@@ -361,13 +357,13 @@ const ChefDashboard = () => {
                         
                         {/* Search Input */}
                         <div className="relative flex-1 sm:w-64">
-                            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+                            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                             <input
                                 type="text"
                                 placeholder="Search ticket #, table, dish..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500"
+                                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-orange-500"
                             />
                         </div>
 
@@ -375,7 +371,7 @@ const ChefDashboard = () => {
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value)}
-                            className="bg-slate-950 border border-slate-800 text-slate-300 text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-none focus:border-orange-500 cursor-pointer shrink-0"
+                            className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-300 text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-none focus:border-orange-500 cursor-pointer shrink-0"
                         >
                             <option value="priority">🔥 Priority Score</option>
                             <option value="oldest">⏱️ Oldest First</option>
@@ -383,17 +379,17 @@ const ChefDashboard = () => {
                         </select>
 
                         {/* View Switcher Buttons */}
-                        <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 shrink-0">
+                        <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-800 shrink-0">
                             <button
                                 onClick={() => setViewMode('grid')}
-                                className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-orange-500 text-white' : 'text-slate-400 hover:text-white'}`}
+                                className={`p-2 rounded-lg transition-colors cursor-pointer ${viewMode === 'grid' ? 'bg-orange-500 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                                 title="Grid View"
                             >
                                 <LayoutGrid size={16} />
                             </button>
                             <button
                                 onClick={() => setViewMode('kanban')}
-                                className={`p-2 rounded-lg transition-colors ${viewMode === 'kanban' ? 'bg-orange-500 text-white' : 'text-slate-400 hover:text-white'}`}
+                                className={`p-2 rounded-lg transition-colors cursor-pointer ${viewMode === 'kanban' ? 'bg-orange-500 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                                 title="Kanban Queue Columns View"
                             >
                                 <Columns size={16} />
@@ -408,9 +404,9 @@ const ChefDashboard = () => {
                 /* GRID VIEW */
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
                     {sortedOrders.length === 0 ? (
-                        <div className="col-span-full py-28 flex flex-col items-center justify-center text-slate-500 bg-slate-900/40 rounded-3xl border border-dashed border-slate-800">
-                            <CheckCircle size={52} className="text-slate-800 mb-4" />
-                            <p className="text-xl font-bold text-slate-300">No active kitchen tickets</p>
+                        <div className="col-span-full py-28 flex flex-col items-center justify-center text-slate-400 bg-white dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
+                            <CheckCircle size={52} className="text-slate-300 dark:text-slate-800 mb-4" />
+                            <p className="text-xl font-bold text-slate-700 dark:text-slate-300">No active kitchen tickets</p>
                             <p className="text-xs text-slate-500 mt-1">Waiting for incoming customer orders...</p>
                         </div>
                     ) : (
@@ -429,21 +425,21 @@ const ChefDashboard = () => {
                             return (
                                 <div 
                                     key={order._id} 
-                                    className={`bg-slate-900/90 rounded-3xl shadow-2xl flex flex-col overflow-hidden border-2 transition-all duration-300 ${
-                                        isPriority ? 'border-red-500 shadow-red-950/30' : 'border-slate-800/90'
+                                    className={`bg-white dark:bg-slate-900/90 rounded-3xl shadow-xl dark:shadow-2xl flex flex-col overflow-hidden border-2 transition-all duration-300 ${
+                                        isPriority ? 'border-red-500 shadow-red-500/10' : 'border-slate-200 dark:border-slate-800/90'
                                     }`}
                                 >
                                     {/* Ticket Top Header */}
                                     <div className={`px-5 py-4 flex justify-between items-center ${
-                                        isPriority ? 'bg-gradient-to-r from-red-700 to-rose-600 text-white' : 'bg-slate-950 text-slate-200 border-b border-slate-800'
+                                        isPriority ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white' : 'bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-800'
                                     }`}>
                                         <div className="space-y-1">
                                             <div className="flex items-center gap-2">
-                                                <span className="font-mono font-black text-lg">#{order._id.substring(order._id.length - 5).toUpperCase()}</span>
+                                                <span className="font-mono font-black text-lg text-slate-900 dark:text-white">#{order._id.substring(order._id.length - 5).toUpperCase()}</span>
                                                 <button 
                                                     onClick={() => togglePriority(order._id)}
                                                     className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                                                        isStarred ? 'text-amber-300 bg-white/20' : 'text-slate-400 hover:text-white'
+                                                        isStarred ? 'text-amber-500 dark:text-amber-300 bg-amber-100 dark:bg-white/20' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
                                                     }`}
                                                     title="Pin as VIP Priority"
                                                 >
@@ -452,7 +448,7 @@ const ChefDashboard = () => {
                                             </div>
 
                                             <div className="flex flex-wrap gap-1.5">
-                                                <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full">
+                                                <span className="text-[10px] font-black uppercase tracking-wider bg-slate-200 dark:bg-white/20 text-slate-800 dark:text-white px-2.5 py-0.5 rounded-full">
                                                     {order.orderType === 'Dine In' ? `📍 Table ${order.tableNumber || 'Any'}` : `🛵 ${order.orderType}`}
                                                 </span>
                                                 {isOverdue && (
@@ -471,7 +467,7 @@ const ChefDashboard = () => {
                                     </div>
 
                                     {/* Prep Checklist Progress Bar */}
-                                    <div className="w-full bg-slate-950 h-1.5">
+                                    <div className="w-full bg-slate-100 dark:bg-slate-950 h-1.5">
                                         <div 
                                             className="bg-gradient-to-r from-orange-500 to-emerald-500 h-full transition-all duration-500"
                                             style={{ width: `${progressPercent}%` }}
@@ -480,9 +476,9 @@ const ChefDashboard = () => {
 
                                     {/* Ticket Items Checklist Body */}
                                     <div className="flex-1 p-5 space-y-3.5">
-                                        <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase tracking-wider pb-1 border-b border-slate-800">
+                                        <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pb-1 border-b border-slate-200 dark:border-slate-800">
                                             <span>Dish Checklist ({doneItemsCount}/{totalItemsCount})</span>
-                                            <span className="text-orange-400 font-mono">{progressPercent}% Ready</span>
+                                            <span className="text-orange-600 dark:text-orange-400 font-mono">{progressPercent}% Ready</span>
                                         </div>
 
                                         <div className="space-y-2 max-h-72 overflow-y-auto custom-scrollbar pr-1">
@@ -500,24 +496,24 @@ const ChefDashboard = () => {
                                                         onClick={() => toggleItemDone(order._id, idx)}
                                                         className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
                                                             isItemDone 
-                                                            ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300' 
+                                                            ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-300' 
                                                             : hasIngredientAlert
-                                                            ? 'bg-red-950/40 border-red-500/50 text-red-200 animate-pulse'
-                                                            : 'bg-slate-950/60 border-slate-800/80 hover:border-slate-700 text-slate-200'
+                                                            ? 'bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-500/50 text-red-700 dark:text-red-200 animate-pulse'
+                                                            : 'bg-slate-50 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 text-slate-800 dark:text-slate-200'
                                                         }`}
                                                     >
                                                         <div className="flex items-start gap-2.5 flex-1 min-w-0">
                                                             <div className={`mt-0.5 w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
-                                                                isItemDone ? 'bg-emerald-500 border-emerald-400 text-slate-950' : 'border-slate-600'
+                                                                isItemDone ? 'bg-emerald-500 border-emerald-400 text-white dark:text-slate-950' : 'border-slate-300 dark:border-slate-600'
                                                             }`}>
                                                                 {isItemDone && <Check size={12} strokeWidth={3} />}
                                                             </div>
                                                             <div className="min-w-0">
-                                                                <p className={`font-extrabold text-xs truncate ${isItemDone ? 'line-through text-slate-400' : 'text-white'}`}>
+                                                                <p className={`font-extrabold text-xs truncate ${isItemDone ? 'line-through text-slate-400' : 'text-slate-900 dark:text-white'}`}>
                                                                     {item.qty}× {item.name}
                                                                 </p>
                                                                 {hasIngredientAlert && (
-                                                                    <p className="text-[10px] font-black text-red-400 mt-0.5 flex items-center gap-1">
+                                                                    <p className="text-[10px] font-black text-red-600 dark:text-red-400 mt-0.5 flex items-center gap-1">
                                                                         <AlertTriangle size={10} /> 86 Alert: Check Stock
                                                                     </p>
                                                                 )}
@@ -525,7 +521,7 @@ const ChefDashboard = () => {
                                                         </div>
 
                                                         {item.price && (
-                                                            <span className="text-[10px] font-mono text-slate-400 font-bold shrink-0">
+                                                            <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 font-bold shrink-0">
                                                                 ₹{item.price}
                                                             </span>
                                                         )}
@@ -536,8 +532,8 @@ const ChefDashboard = () => {
 
                                         {/* Notes Section */}
                                         {order.notes && (
-                                            <div className="p-3 rounded-2xl border border-amber-500/30 bg-amber-950/20 text-amber-300 text-xs space-y-1">
-                                                <p className="font-black flex items-center gap-1 text-[10px] uppercase tracking-wider text-amber-400">
+                                            <div className="p-3 rounded-2xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 text-xs space-y-1">
+                                                <p className="font-black flex items-center gap-1 text-[10px] uppercase tracking-wider text-amber-700 dark:text-amber-400">
                                                     <MessageSquare size={12} /> Chef Notes / Customization:
                                                 </p>
                                                 <p className="font-semibold">{order.notes}</p>
@@ -546,7 +542,7 @@ const ChefDashboard = () => {
                                     </div>
 
                                     {/* Action Buttons Footer */}
-                                    <div className="p-4 border-t border-slate-800/80 bg-slate-950/60 shrink-0">
+                                    <div className="p-4 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/60 shrink-0">
                                         {order.status === 'Pending' && (
                                             <button 
                                                 onClick={() => updateStatus(order._id, 'Accepted')} 
@@ -580,7 +576,7 @@ const ChefDashboard = () => {
                                         {['Ready', 'Ready for Pickup'].includes(order.status) && (
                                             <button 
                                                 onClick={() => updateStatus(order._id, 'Completed')}
-                                                className="w-full bg-slate-800 hover:bg-slate-700 text-emerald-400 font-extrabold py-3 rounded-2xl transition-all border border-emerald-500/30 text-xs flex justify-center items-center gap-2 cursor-pointer"
+                                                className="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-emerald-700 dark:text-emerald-400 font-extrabold py-3 rounded-2xl transition-all border border-emerald-500/30 text-xs flex justify-center items-center gap-2 cursor-pointer"
                                             >
                                                 <Sparkles size={14} /> Bump to Completed
                                             </button>
@@ -611,7 +607,7 @@ const ChefDashboard = () => {
                         });
 
                         return (
-                            <div key={column.statusKey} className="bg-slate-900/70 rounded-3xl border border-slate-800/90 flex flex-col min-h-[600px] overflow-hidden">
+                            <div key={column.statusKey} className="bg-white dark:bg-slate-900/70 rounded-3xl border border-slate-200 dark:border-slate-800/90 flex flex-col min-h-[600px] overflow-hidden shadow-lg">
                                 {/* Column Header */}
                                 <div className={`p-4 bg-gradient-to-r ${column.accent} text-white font-extrabold flex justify-between items-center shadow-md`}>
                                     <h3 className="text-sm tracking-wide">{column.title}</h3>
@@ -621,16 +617,16 @@ const ChefDashboard = () => {
                                 {/* Column Cards */}
                                 <div className="p-4 space-y-4 flex-1 overflow-y-auto custom-scrollbar">
                                     {colOrders.length === 0 ? (
-                                        <div className="py-16 text-center text-slate-500 text-xs font-bold border border-dashed border-slate-800 rounded-2xl">
+                                        <div className="py-16 text-center text-slate-400 text-xs font-bold border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
                                             Queue empty
                                         </div>
                                     ) : (
                                         colOrders.map(order => {
                                             const timeDiffMinutes = Math.floor((currentTime - new Date(order.createdAt)) / 60000);
                                             return (
-                                                <div key={order._id} className="bg-slate-950/80 rounded-2xl p-4 border border-slate-800 space-y-3 shadow-lg">
+                                                <div key={order._id} className="bg-slate-50 dark:bg-slate-950/80 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 space-y-3 shadow-md">
                                                     <div className="flex justify-between items-center">
-                                                        <span className="font-mono font-black text-sm text-white">#{order._id.substring(order._id.length - 4).toUpperCase()}</span>
+                                                        <span className="font-mono font-black text-sm text-slate-900 dark:text-white">#{order._id.substring(order._id.length - 4).toUpperCase()}</span>
                                                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${getTimerColorClass(timeDiffMinutes)}`}>
                                                             {timeDiffMinutes}m
                                                         </span>
@@ -638,7 +634,7 @@ const ChefDashboard = () => {
                                                     
                                                     <div className="space-y-1">
                                                         {order.orderItems?.slice(0, 3).map((it, idx) => (
-                                                            <p key={idx} className="text-xs text-slate-300 font-bold truncate">
+                                                            <p key={idx} className="text-xs text-slate-800 dark:text-slate-300 font-bold truncate">
                                                                 {it.qty}× {it.name}
                                                             </p>
                                                         ))}
@@ -647,24 +643,24 @@ const ChefDashboard = () => {
                                                         )}
                                                     </div>
 
-                                                    <div className="pt-2 border-t border-slate-800/80">
+                                                    <div className="pt-2 border-t border-slate-200 dark:border-slate-800/80">
                                                         {column.statusKey === 'Pending' && (
-                                                            <button onClick={() => updateStatus(order._id, 'Accepted')} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded-xl text-xs">
+                                                            <button onClick={() => updateStatus(order._id, 'Accepted')} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded-xl text-xs cursor-pointer">
                                                                 Accept
                                                             </button>
                                                         )}
                                                         {column.statusKey === 'Accepted' && (
-                                                            <button onClick={() => updateStatus(order._id, 'Preparing')} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-xl text-xs">
+                                                            <button onClick={() => updateStatus(order._id, 'Preparing')} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-xl text-xs cursor-pointer">
                                                                 Start Cooking
                                                             </button>
                                                         )}
                                                         {column.statusKey === 'Preparing' && (
-                                                            <button onClick={() => updateStatus(order._id, 'Ready')} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs">
+                                                            <button onClick={() => updateStatus(order._id, 'Ready')} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs cursor-pointer">
                                                                 Mark Ready
                                                             </button>
                                                         )}
                                                         {column.statusKey === 'Ready' && (
-                                                            <button onClick={() => updateStatus(order._id, 'Completed')} className="w-full bg-slate-800 hover:bg-slate-700 text-emerald-400 font-bold py-2 rounded-xl text-xs">
+                                                            <button onClick={() => updateStatus(order._id, 'Completed')} className="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-emerald-600 dark:text-emerald-400 font-bold py-2 rounded-xl text-xs cursor-pointer">
                                                                 Bump Complete
                                                             </button>
                                                         )}
@@ -683,19 +679,19 @@ const ChefDashboard = () => {
             {/* 4. Manage 86 List (Out-of-Stock Ingredients) Modal */}
             {isAlertModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setIsAlertModalOpen(false)}></div>
-                    <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl w-full max-w-lg relative z-10 overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
-                        <div className="px-6 py-5 border-b border-slate-800 flex justify-between items-center bg-slate-950/80">
+                    <div className="absolute inset-0 bg-black/60 dark:bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setIsAlertModalOpen(false)}></div>
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-lg relative z-10 overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+                        <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950/80">
                             <div className="flex items-center gap-3">
-                                <div className="p-2.5 bg-red-500/20 text-red-400 rounded-xl border border-red-500/30">
+                                <div className="p-2.5 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-xl border border-red-200 dark:border-red-500/30">
                                     <Sliders size={20} />
                                 </div>
                                 <div>
-                                    <h3 className="font-extrabold text-white text-base">Kitchen 86-List Management</h3>
-                                    <p className="text-xs text-slate-400 font-medium">Flag items out-of-stock to warn kitchen staff on incoming tickets.</p>
+                                    <h3 className="font-extrabold text-slate-900 dark:text-white text-base">Kitchen 86-List Management</h3>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Flag items out-of-stock to warn kitchen staff on incoming tickets.</p>
                                 </div>
                             </div>
-                            <button onClick={() => setIsAlertModalOpen(false)} className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer">
+                            <button onClick={() => setIsAlertModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
                                 ✕
                             </button>
                         </div>
@@ -708,7 +704,7 @@ const ChefDashboard = () => {
                                     placeholder="Enter ingredient name (e.g. Cheese, Truffle Oil)..." 
                                     value={newIngredient}
                                     onChange={(e) => setNewIngredient(e.target.value)}
-                                    className="flex-1 bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-500"
+                                    className="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-red-500"
                                 />
                                 <button type="submit" className="bg-red-600 hover:bg-red-500 text-white font-extrabold rounded-2xl px-5 flex items-center justify-center transition-colors shadow-lg shadow-red-600/30 cursor-pointer">
                                     <Plus size={18} /> Add
@@ -717,21 +713,21 @@ const ChefDashboard = () => {
 
                             {/* List of currently stockout ingredients */}
                             <div className="space-y-2.5 max-h-64 overflow-y-auto custom-scrollbar pr-1">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Flagged Ingredients</p>
+                                <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Active Flagged Ingredients</p>
                                 {outOfStock.length === 0 ? (
-                                    <div className="py-8 text-center text-slate-500 text-xs font-semibold bg-slate-950/50 rounded-2xl border border-slate-800/80">
+                                    <div className="py-8 text-center text-slate-500 text-xs font-semibold bg-slate-50 dark:bg-slate-950/50 rounded-2xl border border-slate-200 dark:border-slate-800/80">
                                         All ingredients are currently in stock!
                                     </div>
                                 ) : (
                                     outOfStock.map((ing) => (
-                                        <div key={ing} className="flex justify-between items-center p-3.5 bg-slate-950/60 rounded-2xl border border-slate-800 text-xs">
+                                        <div key={ing} className="flex justify-between items-center p-3.5 bg-slate-50 dark:bg-slate-950/60 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs">
                                             <div className="flex items-center gap-2.5">
                                                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                                                <span className="font-extrabold text-slate-200">{ing}</span>
+                                                <span className="font-extrabold text-slate-800 dark:text-slate-200">{ing}</span>
                                             </div>
                                             <button 
                                                 onClick={() => handleRemoveIngredient(ing)}
-                                                className="px-3 py-1.5 bg-slate-800 hover:bg-red-500/20 text-slate-300 hover:text-red-400 rounded-xl transition-all font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                                                className="px-3 py-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-red-500/20 text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 rounded-xl transition-all font-bold text-[11px] flex items-center gap-1 cursor-pointer"
                                                 title="Mark Restored In-Stock"
                                             >
                                                 <Trash2 size={13} /> Restored
@@ -742,7 +738,7 @@ const ChefDashboard = () => {
                             </div>
                         </div>
 
-                        <div className="p-6 bg-slate-950/80 border-t border-slate-800 flex justify-end">
+                        <div className="p-6 bg-slate-50 dark:bg-slate-950/80 border-t border-slate-200 dark:border-slate-800 flex justify-end">
                             <button 
                                 onClick={() => setIsAlertModalOpen(false)}
                                 className="bg-slate-800 hover:bg-slate-700 text-white font-extrabold text-xs px-6 py-3 rounded-2xl transition-all cursor-pointer"
