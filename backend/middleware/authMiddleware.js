@@ -21,25 +21,6 @@ export const protect = async (req, res, next) => {
                 return res.status(401).json({ message: 'Not authorized, user not found' });
             }
 
-            // Verification Check for Restaurant users
-            if (req.user.restaurantId && req.user.role !== 'SuperAdmin' && req.user.role !== 'DeliveryPartner') {
-                const isBypassUrl = req.originalUrl.includes('/verification') || 
-                                    (req.method === 'GET' && req.originalUrl.includes('/restaurants/mine')) ||
-                                    req.originalUrl.includes('/notifications') ||
-                                    req.originalUrl.includes('/auth/logout');
-
-                if (!isBypassUrl) {
-                    const restaurant = await Restaurant.findById(req.user.restaurantId);
-                    if (restaurant && restaurant.verificationStatus !== 'Verified') {
-                        return res.status(403).json({
-                            message: 'Restaurant verification is pending or incomplete.',
-                            requiresVerification: true,
-                            verificationStatus: restaurant.verificationStatus
-                        });
-                    }
-                }
-            }
-
             next();
         } catch (error) {
             res.status(401).json({ message: 'Not authorized, token failed' });

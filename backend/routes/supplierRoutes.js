@@ -7,14 +7,13 @@ const router = express.Router();
 router.use(protect);
 router.use(authorize('RestaurantAdmin', 'BranchManager'));
 router.use(checkSubscription);
-router.use(checkFeature('Vendor Management'));
 
 router.route('/')
     .get(getSuppliers)
-    .post(createSupplier);
+    .post(checkFeature('Vendor Management'), createSupplier);
 
 router.route('/:id')
-    .put(updateSupplier)
-    .delete(deleteSupplier);
+    .put(checkFeature('Vendor Management'), updateSupplier)
+    .delete(checkFeature('Vendor Management'), deleteSupplier);
 
 export default router;
