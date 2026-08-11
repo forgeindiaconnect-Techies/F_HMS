@@ -118,10 +118,10 @@ const Explore = () => {
     const filtered = restaurants.filter(r => r.name.toLowerCase().includes(search.toLowerCase()));
 
     return (
-        <div className="flex flex-col min-h-screen bg-white dark:bg-slate-950 font-sans text-gray-900 dark:text-slate-100 transition-colors">
+        <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 transition-colors">
             
             {/* Header */}
-            <header className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 shadow-sm py-3 px-4 lg:px-20">
+            <header className="sticky top-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 shadow-sm py-3 px-4 lg:px-20">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4 max-w-[1200px] mx-auto w-full">
                     
                     {/* Logo & Location */}
@@ -134,11 +134,11 @@ const Explore = () => {
                         <div className="relative">
                             <div 
                                 onClick={() => setIsLocationOpen(!isLocationOpen)}
-                                className="flex items-center gap-1.5 sm:gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800 px-1.5 sm:px-2 py-1.5 rounded-lg transition-colors border-b-2 border-transparent hover:border-gray-200 dark:hover:border-slate-700"
+                                className="flex items-center gap-1.5 sm:gap-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 px-2 py-1.5 rounded-lg transition-colors border-b-2 border-transparent hover:border-slate-300 dark:hover:border-slate-700"
                             >
                                 <MapPin size={18} className="text-red-500 shrink-0" />
                                 <div className="flex flex-col">
-                                    <span className="text-xs sm:text-sm font-bold text-gray-800 dark:text-slate-200 line-clamp-1 border-b border-dashed border-gray-400 dark:border-slate-600 max-w-[80px] xs:max-w-[120px] sm:max-w-none">
+                                    <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white line-clamp-1 border-b border-dashed border-slate-400 dark:border-slate-500 max-w-[80px] xs:max-w-[120px] sm:max-w-none">
                                         {location}
                                     </span>
                                 </div>
@@ -146,7 +146,7 @@ const Explore = () => {
                             </div>
 
                             {isLocationOpen && (
-                                <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-lg py-2 z-50">
+                                <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg py-2 z-50">
                                     <div 
                                         onClick={fetchLocation}
                                         className="px-4 py-2 text-sm cursor-pointer hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 transition-colors font-bold flex items-center gap-2"
@@ -157,7 +157,7 @@ const Explore = () => {
                                         <div 
                                             key={loc}
                                             onClick={() => { setLocation(loc); localStorage.setItem('userLocation', loc); setIsLocationOpen(false); }}
-                                            className={`px-4 py-2 text-sm cursor-pointer hover:bg-red-50 dark:hover:bg-slate-800 hover:text-red-600 transition-colors ${location === loc ? 'font-bold text-red-500 bg-red-50/50 dark:bg-slate-800' : 'text-gray-700 dark:text-slate-300'}`}
+                                            className={`px-4 py-2 text-sm cursor-pointer hover:bg-red-50 dark:hover:bg-slate-800 hover:text-red-600 transition-colors ${location === loc ? 'font-bold text-red-500 bg-red-50/50 dark:bg-slate-800' : 'text-slate-700 dark:text-slate-300'}`}
                                         >
                                             {loc}
                                         </div>
@@ -170,12 +170,12 @@ const Explore = () => {
                     {/* Search & Auth */}
                     <div className="flex items-center gap-4 w-full md:w-auto flex-1 md:flex-none justify-end">
                         {/* Search Bar */}
-                        <div className="flex-1 md:w-80 lg:w-[400px] bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl flex items-center px-4 py-2.5 focus-within:bg-white dark:focus-within:bg-slate-900 focus-within:shadow-md focus-within:border-gray-300 dark:focus-within:border-slate-700 transition-all">
-                            <Search className="text-gray-400 dark:text-slate-500 shrink-0 mr-3" size={18} />
+                        <div className="flex-1 md:w-80 lg:w-[400px] bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center px-4 py-2.5 focus-within:bg-white dark:focus-within:bg-slate-900 focus-within:shadow-md focus-within:border-slate-300 dark:focus-within:border-slate-700 transition-all">
+                            <Search className="text-slate-400 dark:text-slate-500 shrink-0 mr-3" size={18} />
                             <input 
                                 type="text" 
                                 placeholder="Search for restaurant, cuisine or a dish" 
-                                className="w-full bg-transparent outline-none text-gray-700 dark:text-slate-200 text-sm font-light placeholder-gray-400 dark:placeholder-slate-500"
+                                className="w-full bg-transparent outline-none text-slate-900 dark:text-white text-sm font-medium placeholder-slate-400 dark:placeholder-slate-500"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                             />
@@ -184,19 +184,19 @@ const Explore = () => {
                         {user ? (
                             <Link 
                                 to="/profile" 
-                                className="flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-slate-800 p-2 md:px-3 md:py-2 rounded-xl transition-colors font-bold text-gray-700 dark:text-slate-200"
+                                className="flex items-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-800 p-2 md:px-3 md:py-2 rounded-xl transition-colors font-bold text-slate-800 dark:text-slate-200"
                             >
-                                <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-800 flex items-center justify-center text-gray-600 dark:text-slate-300 shrink-0">
+                                <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 shrink-0">
                                     <User size={18} />
                                 </div>
                                 <span className="hidden md:inline">{user.name}</span>
                             </Link>
                         ) : (
                             <div className="flex items-center gap-2 md:gap-3 text-sm shrink-0">
-                                <Link to="/login?type=customer" className="text-gray-600 dark:text-slate-300 hover:text-red-500 font-medium px-2 py-1.5 md:px-4 md:py-2 rounded-xl hover:bg-red-50 dark:hover:bg-slate-800 transition-colors">
+                                <Link to="/login?type=customer" className="text-slate-700 dark:text-slate-300 hover:text-red-500 font-bold px-2 py-1.5 md:px-4 md:py-2 rounded-xl hover:bg-red-50 dark:hover:bg-slate-800 transition-colors">
                                     Log in
                                 </Link>
-                                <Link to="/register?type=customer" className="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-1.5 md:px-6 md:py-2 rounded-xl shadow-sm hover:shadow transition-all text-xs md:text-sm">
+                                <Link to="/register?type=customer" className="bg-red-500 hover:bg-red-600 text-white font-black px-3 py-1.5 md:px-6 md:py-2 rounded-xl shadow-sm hover:shadow transition-all text-xs md:text-sm">
                                     Sign up
                                 </Link>
                             </div>
@@ -218,17 +218,18 @@ const Explore = () => {
                         <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
                             Special Offer
                         </span>
-                        <h2 className="text-3xl md:text-4xl font-black font-sans tracking-tight">
+                        <h2 className="text-3xl md:text-4xl font-black font-sans tracking-tight text-white">
                             Delicious food, delivered right to your table!
                         </h2>
-                        <p className="text-white/80 text-sm font-medium leading-relaxed">
+                        <p className="text-white/90 text-sm font-medium leading-relaxed">
                             Order online for contactless table service, schedule a quick pickup, or reserve your favorite table in advance. Get 50% discount on your first order.
                         </p>
                     </div>
                     <div className="relative z-10 shrink-0">
                         <Link 
                             to="/menu" 
-                            className="bg-white text-red-600 font-bold px-6 py-3.5 rounded-xl shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                            style={{ backgroundColor: '#ffffff', color: '#dc2626' }}
+                            className="font-bold px-6 py-3.5 rounded-xl shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shrink-0 cursor-pointer"
                         >
                             Explore Menu <ArrowRight size={18} />
                         </Link>
@@ -238,7 +239,7 @@ const Explore = () => {
                 {/* Food Items Section: "Inspiration for your first order" */}
                 <section className="mb-14">
                     <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">What's on your mind?</h2>
+                        <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">What's on your mind?</h2>
                     </div>
                     
                     <div className="flex overflow-x-auto gap-6 pb-6 pt-2 custom-scrollbar no-scrollbar scroll-smooth">
@@ -251,19 +252,19 @@ const Explore = () => {
                                 }}
                                 className="flex flex-col items-center gap-3 min-w-[130px] cursor-pointer group shrink-0"
                             >
-                                <div className="w-32 h-32 rounded-full bg-transparent overflow-hidden transform group-hover:scale-105 transition-transform duration-300">
-                                    <img src={item.img} alt={item.name} className="w-full h-full object-cover mix-blend-multiply" />
+                                <div className="w-32 h-32 rounded-full bg-white dark:bg-slate-800 shadow-md border-2 border-slate-100 dark:border-slate-800 overflow-hidden transform group-hover:scale-105 transition-transform duration-300">
+                                    <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
                                 </div>
-                                <span className="text-lg font-medium text-gray-700 dark:text-slate-300 group-hover:text-gray-900 dark:group-hover:text-white">{item.name}</span>
+                                <span className="text-lg font-bold text-slate-800 dark:text-slate-100 group-hover:text-red-500 transition-colors">{item.name}</span>
                             </div>
                         ))}
                     </div>
-                    <div className="w-full h-[1px] bg-gray-200 dark:bg-slate-800 mt-4"></div>
+                    <div className="w-full h-[1px] bg-slate-200 dark:bg-slate-800 mt-4"></div>
                 </section>
 
                 {/* Restaurant Grid Section */}
                 <section id="restaurant-grid" className="scroll-mt-24">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8 tracking-tight">Restaurants with Self-Pickup near you</h2>
+                    <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-8 tracking-tight">Restaurants with Self-Pickup near you</h2>
 
                     {loading ? (
                         <div className="flex justify-center py-20">
@@ -273,7 +274,7 @@ const Explore = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                             {filtered.map(restaurant => (
                                 <Link to={`/restaurant/${restaurant._id}`} key={restaurant._id} className="group cursor-pointer block hover:scale-[0.98] transition-transform duration-200">
-                                    <div className="relative rounded-2xl overflow-hidden aspect-[4/3] mb-3 shadow-sm group-hover:shadow-md transition-shadow bg-gray-100 dark:bg-slate-900">
+                                    <div className="relative rounded-2xl overflow-hidden aspect-[4/3] mb-3 shadow-sm group-hover:shadow-md transition-shadow bg-slate-100 dark:bg-slate-900">
                                         <img 
                                             src={
                                                 restaurant.img 
@@ -301,7 +302,7 @@ const Explore = () => {
                                     
                                     <div className="px-1">
                                         <div className="flex justify-between items-start mb-1">
-                                            <h3 className="text-[1.15rem] font-bold text-gray-900 dark:text-white truncate">
+                                            <h3 className="text-[1.15rem] font-black text-slate-900 dark:text-white truncate">
                                                 {restaurant.name}
                                             </h3>
                                         </div>
@@ -310,15 +311,15 @@ const Explore = () => {
                                             <div className="bg-green-700 text-white px-1.5 py-0.5 rounded text-xs font-bold flex items-center gap-1 shadow-sm">
                                                 <Star size={10} className="fill-white" /> 4.{Math.floor(Math.random() * 5) + 1}
                                             </div>
-                                            <span className="w-1 h-1 rounded-full bg-gray-400 dark:bg-slate-600"></span>
-                                            <span className="text-sm font-bold text-gray-700 dark:text-slate-300">{restaurant.time || '15-20'} mins</span>
+                                            <span className="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600"></span>
+                                            <span className="text-sm font-extrabold text-slate-800 dark:text-slate-200">{restaurant.time || '15-20'} mins</span>
                                         </div>
                                         
-                                        <div className="text-[14px] text-gray-500 dark:text-slate-400 font-light truncate mb-2">
+                                        <div className="text-[14px] text-slate-500 dark:text-slate-400 font-medium truncate mb-2">
                                             {restaurant.tags || 'North Indian, Fast Food, Beverages'}
                                         </div>
                                         
-                                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400 pt-2 border-t border-gray-100 dark:border-slate-800 border-dashed">
+                                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800 border-dashed font-semibold">
                                             <ShoppingBag size={14} className="text-orange-500" />
                                             <span>Multiple self-pickup locations available</span>
                                         </div>
@@ -331,8 +332,8 @@ const Explore = () => {
                     {!loading && filtered.length === 0 && (
                         <div className="text-center py-20 flex flex-col items-center">
                             <img src="https://b.zmtcdn.com/web/assets/not-found.svg" alt="Not found" className="w-64 h-64 opacity-50 mb-6" />
-                            <h3 className="text-2xl font-bold text-gray-700 dark:text-slate-300">No restaurants found</h3>
-                            <p className="text-gray-500 dark:text-slate-400 mt-2 font-light">Try searching for something else.</p>
+                            <h3 className="text-2xl font-bold text-slate-700 dark:text-slate-300">No restaurants found</h3>
+                            <p className="text-slate-500 dark:text-slate-400 mt-2 font-light">Try searching for something else.</p>
                         </div>
                     )}
                 </section>

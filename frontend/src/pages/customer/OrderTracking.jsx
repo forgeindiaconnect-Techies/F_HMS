@@ -75,19 +75,19 @@ const OrderTracking = () => {
     ];
 
     return (
-        <div className="bg-gray-50 min-h-screen py-10 pb-24">
+        <div className="bg-gray-50 dark:bg-slate-950 min-h-screen py-10 pb-24 text-gray-800 dark:text-slate-100 transition-colors">
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
                 
                 {/* Header */}
                 <div className="flex items-center gap-4 mb-8">
-                    <Link to="/profile" className="p-2 bg-white rounded-xl shadow-sm hover:text-orange-600 transition-colors">
+                    <Link to="/profile" className="p-2 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
                         <ChevronLeft size={24} />
                     </Link>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 font-sans tracking-tight">Track Order #{id ? id.substring(id.length - 6).toUpperCase() : 'ORD-8824'}</h1>
-                        <p className="text-gray-500">
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white font-sans tracking-tight">Track Order #{id ? id.substring(id.length - 6).toUpperCase() : 'ORD-8824'}</h1>
+                        <p className="text-gray-500 dark:text-slate-400">
                             {isSelfPickup ? 'Order Method: ' : 'Estimated Delivery: '}
-                            <span className="font-bold text-gray-900">
+                            <span className="font-bold text-gray-900 dark:text-white">
                                 {isSelfPickup ? 'Self-Pickup at Counter' : `${order?.deliveryDistance ? Math.max(5, Math.ceil(order.deliveryDistance * 3)) : 15} mins`}
                             </span>
                         </p>
@@ -95,11 +95,11 @@ const OrderTracking = () => {
                 </div>
 
                 {!order ? (
-                    <div className="text-center py-20 text-gray-500">Loading tracking data...</div>
+                    <div className="text-center py-20 text-gray-500 dark:text-slate-400">Loading tracking data...</div>
                 ) : (
                 <>
 
-                {/* Progress Map Area (Live Zomato/Swiggy visual style) */}
+                {/* Progress Map Area */}
                 <div className="bg-slate-950 rounded-3xl h-80 mb-8 relative overflow-hidden shadow-lg flex flex-col border border-slate-900">
                     {/* Grid Background */}
                     <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:25px_25px]"></div>
@@ -108,9 +108,7 @@ const OrderTracking = () => {
                         <>
                             {/* SVG Route lines */}
                             <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                                {/* Dotted route path */}
                                 <line x1="20%" y1="40%" x2="80%" y2="70%" stroke="#334155" strokeWidth="3" strokeDasharray="6,6" strokeLinecap="round" />
-                                {/* Traversed path (glowing green line) */}
                                 <line 
                                     x1="20%" 
                                     y1="40%" 
@@ -140,7 +138,7 @@ const OrderTracking = () => {
                                 <span className="block text-[8px] font-black text-white bg-slate-900/90 border border-slate-800 px-2 py-0.5 rounded shadow-md mt-2 uppercase tracking-widest leading-none">Home</span>
                             </div>
 
-                            {/* Moving Delivery Partner (Bike) with overlay profile photo */}
+                            {/* Moving Delivery Partner (Bike) */}
                             {['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) ? (
                                 <div 
                                     className="absolute -translate-x-1/2 -translate-y-1/2 text-center z-25 transition-all duration-300 ease-out"
@@ -150,12 +148,8 @@ const OrderTracking = () => {
                                     }}
                                 >
                                     <div className="relative flex h-12 w-12 items-center justify-center bg-emerald-500 text-white rounded-full shadow-2xl border-2 border-slate-950">
-                                        {/* Pulser */}
                                         <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-35"></div>
-                                        
                                         <Bike size={20} className="animate-bounce" />
-
-                                        {/* Avatar Mini Icon */}
                                         <div className="absolute -bottom-1 -right-1 bg-slate-900 border border-slate-800 rounded-full p-0.5 text-emerald-400 shadow-md">
                                             <User size={10} className="fill-emerald-400/20" />
                                         </div>
@@ -165,7 +159,6 @@ const OrderTracking = () => {
                                     </span>
                                 </div>
                             ) : (
-                                /* Waiting/Assigning Rider Floating Overlay */
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-slate-900/90 border border-slate-800 p-4 rounded-2xl flex items-center gap-3 backdrop-blur shadow-xl">
                                     <span className="relative flex h-3 w-3">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
@@ -211,10 +204,10 @@ const OrderTracking = () => {
                 </div>
 
                 {/* Timeline */}
-                <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 mb-8">
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-slate-800 mb-8">
                     <div className="relative">
                         {/* Connecting Line */}
-                        <div className="absolute left-[23px] top-[40px] bottom-[40px] w-1 bg-gray-100 rounded-full"></div>
+                        <div className="absolute left-[23px] top-[40px] bottom-[40px] w-1 bg-gray-100 dark:bg-slate-800 rounded-full"></div>
                         <div 
                             className="absolute left-[23px] top-[40px] w-1 bg-orange-500 rounded-full transition-all duration-1000 ease-in-out"
                             style={{ height: `${(progress - 1) * 33}%` }}
@@ -229,15 +222,15 @@ const OrderTracking = () => {
                                 return (
                                     <div key={idx} className={`relative flex gap-6 ${isCompleted ? 'opacity-100' : 'opacity-40'}`}>
                                         <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative z-10 transition-colors duration-500 ${
-                                            isCompleted ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30' : 'bg-gray-100 text-gray-400'
+                                            isCompleted ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30' : 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500'
                                         }`}>
                                             <Icon size={24} />
                                         </div>
                                         <div>
-                                            <h3 className={`text-lg font-bold font-sans ${isCurrent ? 'text-orange-600' : 'text-gray-900'}`}>
+                                            <h3 className={`text-lg font-bold font-sans ${isCurrent ? 'text-orange-600 dark:text-orange-400' : 'text-gray-900 dark:text-white'}`}>
                                                 {step.title}
                                             </h3>
-                                            <p className="text-gray-500 mt-1">{step.desc}</p>
+                                            <p className="text-gray-500 dark:text-slate-400 mt-1">{step.desc}</p>
                                         </div>
                                     </div>
                                 );
@@ -248,20 +241,20 @@ const OrderTracking = () => {
 
                 {/* Delivery Driver Info Card */}
                 {!isSelfPickup && order.deliveryPartner && (
-                    <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex items-center justify-between animate-in slide-in-from-bottom-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-slate-800 flex items-center justify-between animate-in slide-in-from-bottom-4">
                         <div className="flex items-center gap-4">
-                            <div className="w-16 h-16 bg-orange-50 rounded-full border-2 border-orange-500 flex items-center justify-center text-orange-500 shrink-0 shadow-inner">
+                            <div className="w-16 h-16 bg-orange-50 dark:bg-orange-950/40 rounded-full border-2 border-orange-500 flex items-center justify-center text-orange-500 shrink-0 shadow-inner">
                                 <User size={28} className="fill-orange-500/10" />
                             </div>
                             <div>
-                                <p className="text-sm font-bold text-gray-400 uppercase tracking-wider">Your Rider</p>
-                                <h4 className="font-bold text-gray-900 text-lg">{order.deliveryPartner.name}</h4>
-                                <p className="text-sm text-gray-500">Vehicle: Bike • 4.9 ★</p>
+                                <p className="text-sm font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Your Rider</p>
+                                <h4 className="font-bold text-gray-900 dark:text-white text-lg">{order.deliveryPartner.name}</h4>
+                                <p className="text-sm text-gray-500 dark:text-slate-400">Vehicle: Bike • 4.9 ★</p>
                             </div>
                         </div>
                         <a 
                             href={`tel:${order.deliveryPartner.phoneNumber || '1234567890'}`}
-                            className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center text-green-600 hover:bg-green-100 transition-colors"
+                            className="w-12 h-12 bg-green-50 dark:bg-green-950/60 rounded-full flex items-center justify-center text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/60 transition-colors"
                         >
                             <Phone size={20} />
                         </a>
