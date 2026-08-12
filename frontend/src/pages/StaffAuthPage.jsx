@@ -67,6 +67,16 @@ const StaffAuthPage = () => {
                 }
             } catch (err) {
                 console.error('Failed to fetch plans', err);
+                const fallbackPlans = [
+                    { _id: 'p1', name: 'Starter', monthlyPrice: 2999, yearlyPrice: 2399, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'] },
+                    { _id: 'p2', name: 'Professional', monthlyPrice: 5999, yearlyPrice: 4799, features: ['Up to 3 Branches', 'Kitchen Display System', 'Online Ordering', 'Advanced Analytics', 'Priority Support'] },
+                    { _id: 'p3', name: 'Enterprise', monthlyPrice: 12999, yearlyPrice: 10399, features: ['Unlimited Branches', 'Custom APIs & Webhooks', 'Dedicated Account Manager', 'SLA Guarantee', 'White-label Branding'] }
+                ];
+                setPlans(fallbackPlans);
+                const urlPlan = searchParams.get('plan');
+                if (!urlPlan || !fallbackPlans.find(p => p.name === urlPlan)) {
+                    reset({ plan: fallbackPlans[0].name, billingCycle: searchParams.get('billing') || 'monthly' });
+                }
             } finally {
                 setPlansLoading(false);
             }

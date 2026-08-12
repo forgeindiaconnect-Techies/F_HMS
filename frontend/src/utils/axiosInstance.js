@@ -41,4 +41,25 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
+// Response interceptor to handle automatic retries for Render cold-starts
+api.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const config = error.config;
+        if (!config || config._retryCount >= 3) {
+            return Promise.reject(error);
+        }
+
+        const status = error.response ? error.response.status : 0;
+        if (status === 502 || status === 503 || !error.response || error.code === 'ERR_NETWORK') {
+            config._retryCount = (config._retryCount || 0) + 1;
+            console.log(`Render cold-start detected (${status || 'Network Error'}). Retrying in 2s... (attempt ${config._retryCount}/3)`);
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            return api(config);
+        }
+
+        return Promise.reject(error);
+    }
+);
+
 export default api;
