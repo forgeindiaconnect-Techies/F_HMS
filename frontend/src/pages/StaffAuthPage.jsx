@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-do
 import { useForm } from 'react-hook-form';
 import { Eye, EyeOff, UtensilsCrossed, ArrowRight, Mail, Lock, User as UserIcon, Tag, AlertCircle, Phone, CheckCircle2, QrCode, Loader2, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { getApiUrl } from '../utils/axiosInstance';
+import api, { getApiUrl } from '../utils/axiosInstance';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -54,8 +54,7 @@ const StaffAuthPage = () => {
     useEffect(() => {
         const fetchPlans = async () => {
             try {
-                const API_URL = getApiUrl();
-                const res = await axios.get(`${API_URL}/plans`);
+                const res = await api.get('/plans');
                 if (res.data && res.data.length > 0) {
                     setPlans(res.data);
                     // Auto-select the plan from URL params or first plan

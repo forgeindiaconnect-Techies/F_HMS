@@ -5,9 +5,8 @@ import {
     PlayCircle, ChefHat, Clock, Globe, Plus, Minus, X, Sparkles, Zap
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api, { getApiUrl } from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
-import { getApiUrl } from '../../utils/axiosInstance';
 import Restaurant3DHero from '../../components/Restaurant3DHero';
 
 const Home = () => {
@@ -33,8 +32,7 @@ const Home = () => {
     useEffect(() => {
         const fetchRestaurants = async () => {
             try {
-                const API_URL = getApiUrl();
-                const res = await axios.get(`${API_URL}/restaurants`);
+                const res = await api.get('/restaurants');
                 let realRest = res.data.filter(r => r.subscription?.status === 'Active' && r.isActive !== false);
                 let combined = [...realRest];
                 if (combined.length < 6) {
@@ -51,8 +49,7 @@ const Home = () => {
 
         const fetchPlans = async () => {
             try {
-                const API_URL = getApiUrl();
-                const res = await axios.get(`${API_URL}/plans`);
+                const res = await api.get('/plans');
                 setPlans(res.data);
             } catch (error) {
                 console.error("Failed to fetch public pricing plans", error);
