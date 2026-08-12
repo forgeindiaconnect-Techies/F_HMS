@@ -76,22 +76,22 @@ export const submitVerification = async (req, res) => {
         const files = req.files || {};
         const { addressText, fssaiExpiryDate } = req.body;
 
-        // Validation for new uploads
-        if (!verification) {
-            // Check mandatory fields
-            const mandatoryFields = ['fssai', 'businessRegistration', 'panCard', 'aadhaarCard', 'addressProof', 'bankProof'];
-            const missing = [];
-            mandatoryFields.forEach(field => {
-                if (!files[field]) {
-                    missing.push(field);
-                }
-            });
-
-            if (missing.length > 0 || !addressText) {
-                return res.status(400).json({
-                    message: `Missing required fields: ${missing.join(', ')} ${!addressText ? 'and addressText' : ''}`
-                });
+        // Check mandatory fields across existing documents + newly uploaded files
+        const mandatoryFields = ['fssai', 'businessRegistration', 'panCard', 'aadhaarCard', 'addressProof', 'bankProof'];
+        const existingDocs = verification?.documents || {};
+        const missing = [];
+        mandatoryFields.forEach(field => {
+            const hasNewFile = files[field] && files[field].length > 0;
+            const hasExistingFile = existingDocs[field] && (existingDocs[field].filePath || (field === 'addressProof' && (existingDocs[field].addressText || addressText)));
+            if (!hasNewFile && !hasExistingFile) {
+                missing.push(field);
             }
+        });
+
+        if (missing.length > 0) {
+            return res.status(400).json({
+                message: `Missing required mandatory documents: ${missing.join(', ')}`
+            });
         }
 
         // Validate FSSAI expiry date if FSSAI is being uploaded

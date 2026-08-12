@@ -11,7 +11,15 @@ import { protect, authorize } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 router.route('/verification/submit')
-    .post(protect, authorize('RestaurantAdmin'), verificationUpload, submitVerification);
+    .post(protect, authorize('RestaurantAdmin'), (req, res, next) => {
+        verificationUpload(req, res, (err) => {
+            if (err) {
+                console.error("Verification upload error:", err);
+                return res.status(400).json({ message: err.message || 'File upload failed.' });
+            }
+            next();
+        });
+    }, submitVerification);
 
 router.route('/verification/mine')
     .get(protect, authorize('RestaurantAdmin'), getMyVerification);
