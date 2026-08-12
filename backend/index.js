@@ -11,20 +11,7 @@ dotenv.config();
 
 const app = express();
 
-// Comprehensive CORS setup
-const corsOptions = {
-    origin: function (origin, callback) {
-        if (!origin) return callback(null, true);
-        return callback(null, origin);
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Access-Control-Request-Method', 'Access-Control-Request-Headers']
-};
-
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
-
+// Comprehensive Universal CORS setup (Guarantees exact origin reflection and no wildcard *)
 app.use((req, res, next) => {
     const origin = req.headers.origin || 'https://f-hms.vercel.app';
     res.setHeader('Access-Control-Allow-Origin', origin);
