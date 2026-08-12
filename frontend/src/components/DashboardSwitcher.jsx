@@ -20,14 +20,7 @@ const DashboardSwitcher = () => {
     const API_URL = getApiUrl();
 
     const roles = [
-        { name: 'Super Admin', path: '/super-admin', role: 'SuperAdmin', email: 'admin@restauranthub.com', type: 'staff' },
-        { name: 'Restaurant Admin', path: '/admin', role: 'RestaurantAdmin', email: 'owner@pizzapalace.com', type: 'staff' },
-        { name: 'Branch Manager', path: '/manager', role: 'BranchManager', email: 'branchmanager1@pizzapalace.com', type: 'staff' },
-        { name: 'Chef Dashboard', path: '/chef', role: 'Chef', email: 'chef1@pizzapalace.com', type: 'staff' },
-        { name: 'Waiter Dashboard', path: '/waiter', role: 'Waiter', email: 'waiter1@pizzapalace.com', type: 'staff' },
-        { name: 'Cashier Dashboard', path: '/cashier', role: 'Cashier', email: 'cashier1@pizzapalace.com', type: 'staff' },
-        { name: 'Delivery Partner', path: '/delivery/dashboard', role: 'DeliveryPartner', phone: '8765432190', type: 'delivery' },
-        { name: 'Customer Portal', path: '/profile', role: 'Customer', email: 'customer@example.com', type: 'customer' }
+        { name: 'Super Admin', path: '/super-admin', role: 'SuperAdmin', email: 'admin@restauranthub.com', type: 'staff' }
     ];
 
     const getActiveRole = () => {
