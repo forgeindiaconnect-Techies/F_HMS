@@ -118,24 +118,17 @@ const __dirname = path.resolve();
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
-// Serve frontend in production if dist directory exists
-if (process.env.NODE_ENV === 'production') {
-    const frontendDistPath = path.join(__dirname, '../frontend/dist');
-    if (fs.existsSync(frontendDistPath)) {
-        app.use(express.static(frontendDistPath));
-        app.get('*', (req, res, next) => {
-            if (req.originalUrl.startsWith('/api')) return next();
-            res.sendFile(path.resolve(frontendDistPath, 'index.html'));
-        });
-    } else {
-        app.get('/', (req, res) => {
-            res.status(200).json({ status: 'ok', message: 'Restaurant SaaS API is running live' });
-        });
-    }
-} else {
-    // Basic route for development
-    app.get('/', (req, res) => {
-        res.send('API is running...');
+app.get('/', (req, res) => {
+    res.status(200).json({ status: 'ok', message: 'Restaurant SaaS API is running live' });
+});
+
+// Serve frontend dist fallback ONLY if non-API route and dist exists
+const frontendDistPath = path.join(__dirname, '../frontend/dist');
+if (fs.existsSync(frontendDistPath)) {
+    app.use(express.static(frontendDistPath));
+    app.get('*', (req, res, next) => {
+        if (req.originalUrl.startsWith('/api')) return next();
+        res.sendFile(path.resolve(frontendDistPath, 'index.html'));
     });
 }
 
