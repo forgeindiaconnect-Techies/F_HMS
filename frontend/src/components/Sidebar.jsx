@@ -68,7 +68,7 @@ const Sidebar = () => {
         if (restaurant.logo.startsWith('http') || restaurant.logo.startsWith('data:')) {
             return restaurant.logo;
         }
-        const apiBase = import.meta.env.VITE_API_URL || 'https://rms-backend.onrender.com/api';
+        const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms.onrender.com/api';
         try {
             const origin = new URL(apiBase).origin;
             return `${origin}${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`;

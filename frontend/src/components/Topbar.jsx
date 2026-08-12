@@ -57,7 +57,7 @@ const UpiModal = ({ plan, planPrice, restaurantId, api, onClose, onSuccess }) =>
                 return `${urlObj.origin}/api/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`;
             } catch (e) {}
         }
-        return `https://rms-backend.onrender.com/api/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`;
+        return `https://f-hms.onrender.com/api/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`;
     };
 
     const handleQrClick = async () => {

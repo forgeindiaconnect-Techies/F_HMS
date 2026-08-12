@@ -514,7 +514,7 @@ const SubscriptionPortal = () => {
                                         title="Click QR Code to process mock checkout"
                                     >
                                         <img 
-                                            src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://rms-backend.onrender.com/api/plans/scan-activate?restaurantId=${restaurant._id}%26plan=${selectedPlanToBuy.name}`} 
+                                            src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://f-hms.onrender.com/api/plans/scan-activate?restaurantId=${restaurant._id}%26plan=${selectedPlanToBuy.name}`} 
                                             alt="Mock checkout QR code"
                                             className="w-full h-full object-contain"
                                         />
