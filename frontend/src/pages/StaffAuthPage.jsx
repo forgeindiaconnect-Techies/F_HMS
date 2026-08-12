@@ -189,7 +189,7 @@ const StaffAuthPage = () => {
 
             await axios.post(`${API_URL}/auth/register`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
-                timeout: 60000
+                timeout: 180000
             });
 
             setRegStatusMessage('Signing into admin portal...');
