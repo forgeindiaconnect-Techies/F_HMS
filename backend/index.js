@@ -14,7 +14,7 @@ connectDB();
 
 const app = express();
 
-// Comprehensive CORS setup
+// Comprehensive Universal CORS setup
 app.use((req, res, next) => {
     const origin = req.headers.origin || 'https://f-hms.vercel.app';
     res.setHeader('Access-Control-Allow-Origin', origin);
@@ -28,14 +28,6 @@ app.use((req, res, next) => {
     }
     next();
 });
-
-app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin) return callback(null, true);
-        return callback(null, origin);
-    },
-    credentials: true
-}));
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
