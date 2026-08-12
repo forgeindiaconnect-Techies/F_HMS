@@ -148,9 +148,12 @@ const StaffAuthPage = () => {
         }, 1500);
     };
 
+    const [regStatusMessage, setRegStatusMessage] = useState('Connecting to server...');
+
     const submitRegistration = async () => {
         setLoading(true);
         setAuthError('');
+        setRegStatusMessage('Uploading KYC documents & restaurant info...');
         const data = getValues();
         
         const formData = new FormData();
@@ -182,14 +185,18 @@ const StaffAuthPage = () => {
 
         try {
             const API_URL = getApiUrl();
+            setRegStatusMessage('Processing registration on server...');
 
             await axios.post(`${API_URL}/auth/register`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+                headers: { 'Content-Type': 'multipart/form-data' },
+                timeout: 60000
             });
 
+            setRegStatusMessage('Signing into admin portal...');
             const loginRes = await login(data.email, data.password);
             setLoading(false);
             if (loginRes.success) {
+                toast.success('Registration & KYC Submitted Successfully!');
                 navigate('/admin');
             } else {
                 setAuthError('Account registered but auto-login failed. Please sign in manually.');
@@ -197,7 +204,24 @@ const StaffAuthPage = () => {
             }
         } catch (err) {
             setLoading(false);
-            setAuthError(err.response?.data?.message || 'Registration and KYC submission failed. Please try again.');
+            const errMsg = err.response?.data?.message || err.message || '';
+
+            // Handle case where account was already registered in a previous click
+            if (errMsg.toLowerCase().includes('already exists') || errMsg.toLowerCase().includes('user exists')) {
+                setRegStatusMessage('Account already registered. Logging you in...');
+                const loginRes = await login(data.email, data.password);
+                if (loginRes.success) {
+                    toast.success('Signed in successfully!');
+                    navigate('/admin');
+                    return;
+                } else {
+                    toast.error('An account with this email already exists. Please sign in with your password.');
+                    switchMode('login');
+                    return;
+                }
+            }
+
+            setAuthError(errMsg || 'Registration and KYC submission failed. Please try again.');
             setStep(6);
         }
     };
@@ -716,7 +740,19 @@ const StaffAuthPage = () => {
                 <Loader2 className="animate-spin text-green-500" size={40} />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Creating your account...</h2>
-            <p className="text-gray-500 font-medium">Registering and uploading KYC for {getValues('restaurantName')}</p>
+            <p className="text-sm font-semibold text-green-700 bg-green-50 py-1.5 px-4 rounded-full inline-block mb-3 border border-green-200 animate-pulse">
+                {regStatusMessage}
+            </p>
+            <p className="text-xs text-gray-500 font-medium max-w-xs mx-auto mb-6">
+                Registering and uploading KYC for <span className="font-bold text-gray-800">{getValues('restaurantName')}</span>. This may take a few seconds while server initializes.
+            </p>
+            <button
+                type="button"
+                onClick={() => switchMode('login')}
+                className="text-xs font-bold text-gray-500 hover:text-green-600 underline cursor-pointer"
+            >
+                Taking too long? Click here to Sign In
+            </button>
         </div>
     );
 
