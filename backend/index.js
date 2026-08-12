@@ -19,11 +19,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
     origin: function (origin, callback) {
-        callback(null, true);
+        if (!origin) return callback(null, true);
+        return callback(null, origin);
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
 }));
+app.options('*', cors());
 app.use(cookieParser());
 
 import authRoutes from './routes/authRoutes.js';

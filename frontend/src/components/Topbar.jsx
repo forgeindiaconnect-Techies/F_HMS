@@ -341,6 +341,15 @@ const Topbar = () => {
     const [subscriptionPlan, setSubscriptionPlan] = useState(null);
     const [plans, setPlans] = useState([]);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+    const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+
+    useEffect(() => {
+        const handleThemeToggle = () => {
+            setIsDark(document.documentElement.classList.contains('dark'));
+        };
+        window.addEventListener('toggle-theme', handleThemeToggle);
+        return () => window.removeEventListener('toggle-theme', handleThemeToggle);
+    }, []);
 
     // Fetch notifications
     useEffect(() => {
@@ -396,11 +405,11 @@ const Topbar = () => {
 
     return (
         <>
-            <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-4 md:px-8 sticky top-0 z-10">
+            <header className="h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-4 md:px-8 sticky top-0 z-10">
                 <div className="flex items-center gap-2 md:gap-4 w-full md:w-auto flex-1">
                     <button
                         onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))}
-                        className="md:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg"
+                        className="md:hidden p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg"
                     >
                         <Menu size={24} />
                     </button>
