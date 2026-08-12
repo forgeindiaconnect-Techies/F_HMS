@@ -93,11 +93,7 @@ const TicketDetails = () => {
         });
 
         try {
-            const res = await api.post(`/support/tickets/${id}/replies`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
+            const res = await api.post(`/support/tickets/${id}/replies`, formData);
             
             // Append new reply and reset form
             setReplies([...replies, {

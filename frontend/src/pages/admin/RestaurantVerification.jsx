@@ -176,9 +176,7 @@ const RestaurantVerification = () => {
         }
 
         try {
-            await api.post('/restaurants/verification/submit', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            await api.post('/restaurants/verification/submit', formData);
             
             toast.success("Verification documents submitted successfully!");
             // Refresh context and local details

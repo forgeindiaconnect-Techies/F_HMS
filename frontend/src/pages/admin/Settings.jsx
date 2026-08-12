@@ -103,9 +103,7 @@ const Settings = () => {
                 data.append('logo', logoFile);
             }
 
-            const res = await api.put('/restaurants/mine', data, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            const res = await api.put('/restaurants/mine', data);
 
             // Update local preview to the saved logo
             if (res.data?.logo) {

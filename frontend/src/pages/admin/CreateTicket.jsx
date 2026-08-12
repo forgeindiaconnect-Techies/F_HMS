@@ -85,11 +85,7 @@ const CreateTicket = () => {
         });
 
         try {
-            await api.post('/support/tickets', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
+            await api.post('/support/tickets', formData);
             toast.success('Ticket created successfully!');
             navigate('/admin/support/tickets');
         } catch (error) {
