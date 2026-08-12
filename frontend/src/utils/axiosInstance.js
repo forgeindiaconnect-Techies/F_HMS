@@ -46,15 +46,15 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const config = error.config;
-        if (!config || config._retryCount >= 3) {
+        if (!config || config._retryCount >= 6) {
             return Promise.reject(error);
         }
 
         const status = error.response ? error.response.status : 0;
         if (status === 502 || status === 503 || !error.response || error.code === 'ERR_NETWORK') {
             config._retryCount = (config._retryCount || 0) + 1;
-            console.log(`Render cold-start detected (${status || 'Network Error'}). Retrying in 2s... (attempt ${config._retryCount}/3)`);
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+            console.log(`Render backend waking up (${status || 'Network Error'}). Retrying in 3s... (attempt ${config._retryCount}/6)`);
+            await new Promise((resolve) => setTimeout(resolve, 3000));
             return api(config);
         }
 
