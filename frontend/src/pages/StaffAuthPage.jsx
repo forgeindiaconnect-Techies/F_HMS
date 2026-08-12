@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { Eye, EyeOff, UtensilsCrossed, ArrowRight, Mail, Lock, User as UserIcon, Tag, AlertCircle, Phone, CheckCircle2, QrCode, Loader2, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const StaffAuthPage = () => {
     const navigate = useNavigate();
@@ -461,12 +462,12 @@ const StaffAuthPage = () => {
             const file = e.target.files[0];
             if (file) {
                 if (file.size > 5 * 1024 * 1024) {
-                    alert("Maximum file size allowed is 5 MB per document.");
+                    toast.error("Maximum file size allowed is 5 MB per document.");
                     return;
                 }
                 const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
                 if (!['.pdf', '.jpg', '.jpeg', '.png'].includes(ext)) {
-                    alert("Only PDF, JPG, JPEG, and PNG files are allowed.");
+                    toast.error("Only PDF, JPG, JPEG, and PNG files are allowed.");
                     return;
                 }
                 setter(file);
@@ -475,42 +476,42 @@ const StaffAuthPage = () => {
 
         const handleDocsSubmit = () => {
             if (!fssaiFile) {
-                alert("Please upload your FSSAI License document (Required).");
+                toast.error("Please upload your FSSAI License document (Required).");
                 return;
             }
             if (!fssaiExpiryDate) {
-                alert("Please select the FSSAI License expiry date (Required).");
+                toast.error("Please select the FSSAI License expiry date (Required).");
                 return;
             }
             const expiry = new Date(fssaiExpiryDate);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             if (isNaN(expiry.getTime()) || expiry < today) {
-                alert("FSSAI License expiry date must be today or a future date.");
+                toast.error("FSSAI License expiry date must be today or a future date.");
                 return;
             }
             if (!bizFile) {
-                alert("Please upload your Business Registration Certificate (Required).");
+                toast.error("Please upload your Business Registration Certificate (Required).");
                 return;
             }
             if (!panFile) {
-                alert("Please upload your Business/Owner PAN Card (Required).");
+                toast.error("Please upload your Business/Owner PAN Card (Required).");
                 return;
             }
             if (!aadhaarFile) {
-                alert("Please upload the Owner Aadhaar Card (Required).");
+                toast.error("Please upload the Owner Aadhaar Card (Required).");
                 return;
             }
             if (!addressText.trim()) {
-                alert("Please enter the restaurant's physical address (Required).");
+                toast.error("Please enter the restaurant's physical address (Required).");
                 return;
             }
             if (!addressFile) {
-                alert("Please upload the Business Address Proof document (Required).");
+                toast.error("Please upload the Business Address Proof document (Required).");
                 return;
             }
             if (!bankFile) {
-                alert("Please upload your Bank Account Proof (Required).");
+                toast.error("Please upload your Bank Account Proof (Required).");
                 return;
             }
             

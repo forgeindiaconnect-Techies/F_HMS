@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Bell, User, Menu, Crown, Zap, Star, X, CheckCircle2, Loader2, AlertCircle, ArrowUpRight, Check, QrCode, MapPin, ChevronDown, Store, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import dummyQrPayment from '../assets/dummy_qr_payment.png';
 /* ─── Plan styling helpers ───────────────────────────────────────── */
 const PLAN_META = {
@@ -70,7 +71,7 @@ const UpiModal = ({ plan, planPrice, restaurantId, api, onClose, onSuccess }) =>
                 setTimeout(() => onSuccess(), 2000);
             }, 1500);
         } catch (err) {
-            alert('Failed to activate subscription. Please try again.');
+            toast.error('Failed to activate subscription. Please try again.');
         } finally {
             setActivating(false);
         }
@@ -194,7 +195,7 @@ const PlanUpgradeModal = ({ currentPlan, plans, api, restaurant, onClose, onUpgr
             onClose();
         } catch (err) {
             console.error('Subscription update failed', err);
-            alert(err.response?.data?.message || 'Failed to update subscription');
+            toast.error(err.response?.data?.message || 'Failed to update subscription');
         } finally {
             setSubscribing(null);
             setSelectedPlan(null);
