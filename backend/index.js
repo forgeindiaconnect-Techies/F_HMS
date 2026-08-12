@@ -111,13 +111,20 @@ const __dirname = path.resolve();
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
-// Serve frontend in production
+// Serve frontend in production if dist directory exists
 if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, '../frontend/dist')));
-
-    app.get('*', (req, res) =>
-        res.sendFile(path.resolve(__dirname, '../frontend', 'dist', 'index.html'))
-    );
+    const frontendDistPath = path.join(__dirname, '../frontend/dist');
+    if (fs.existsSync(frontendDistPath)) {
+        app.use(express.static(frontendDistPath));
+        app.get('*', (req, res, next) => {
+            if (req.originalUrl.startsWith('/api')) return next();
+            res.sendFile(path.resolve(frontendDistPath, 'index.html'));
+        });
+    } else {
+        app.get('/', (req, res) => {
+            res.status(200).json({ status: 'ok', message: 'Restaurant SaaS API is running live' });
+        });
+    }
 } else {
     // Basic route for development
     app.get('/', (req, res) => {
