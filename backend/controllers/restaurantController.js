@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Restaurant from '../models/Restaurant.js';
 import Branch from '../models/Branch.js';
 import Notification from '../models/Notification.js';
@@ -39,6 +40,9 @@ export const logoUpload = multer({
 // @access  Public
 export const getRestaurants = async (req, res) => {
     try {
+        if (mongoose.connection.readyState !== 1) {
+            return res.json([]);
+        }
         const restaurants = await Restaurant.find({}).populate('ownerId', 'name email').lean();
         
         // Dynamically enable delivery if there are registered delivery partners
@@ -165,6 +169,9 @@ export const createRestaurant = async (req, res) => {
 // @access  Private
 export const getMyRestaurant = async (req, res) => {
     try {
+        if (mongoose.connection.readyState !== 1) {
+            return res.json(null);
+        }
         if (!req.user.restaurantId) {
             return res.status(404).json({ message: 'No restaurant associated with this user' });
         }
