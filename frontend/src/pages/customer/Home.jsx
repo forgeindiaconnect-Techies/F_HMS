@@ -7,6 +7,7 @@ import {
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { getApiUrl } from '../../utils/axiosInstance';
 import Restaurant3DHero from '../../components/Restaurant3DHero';
 
 const Home = () => {
@@ -32,9 +33,7 @@ const Home = () => {
     useEffect(() => {
         const fetchRestaurants = async () => {
             try {
-                let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-                if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
-                if (!API_URL.endsWith('/api')) API_URL += '/api';
+                const API_URL = getApiUrl();
                 const res = await axios.get(`${API_URL}/restaurants`);
                 let realRest = res.data.filter(r => r.subscription?.status === 'Active' && r.isActive !== false);
                 let combined = [...realRest];
@@ -52,9 +51,7 @@ const Home = () => {
 
         const fetchPlans = async () => {
             try {
-                let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-                if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
-                if (!API_URL.endsWith('/api')) API_URL += '/api';
+                const API_URL = getApiUrl();
                 const res = await axios.get(`${API_URL}/plans`);
                 setPlans(res.data);
             } catch (error) {

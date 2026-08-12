@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-do
 import { useForm } from 'react-hook-form';
 import { Eye, EyeOff, UtensilsCrossed, ArrowRight, Mail, Lock, User as UserIcon, Tag, AlertCircle, Phone, CheckCircle2, QrCode, Loader2, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { getApiUrl } from '../utils/axiosInstance';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -53,9 +54,7 @@ const StaffAuthPage = () => {
     useEffect(() => {
         const fetchPlans = async () => {
             try {
-                let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-                if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
-                if (!API_URL.endsWith('/api')) API_URL += '/api';
+                const API_URL = getApiUrl();
                 const res = await axios.get(`${API_URL}/plans`);
                 if (res.data && res.data.length > 0) {
                     setPlans(res.data);
@@ -182,9 +181,7 @@ const StaffAuthPage = () => {
         }
 
         try {
-            let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-            if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
-            if (!API_URL.endsWith('/api')) API_URL += '/api';
+            const API_URL = getApiUrl();
 
             await axios.post(`${API_URL}/auth/register`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
