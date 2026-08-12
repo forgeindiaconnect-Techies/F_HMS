@@ -416,8 +416,8 @@ const Topbar = () => {
 
                     {/* Branch Badge / Name display */}
                     {isAdmin && (
-                        <div className="flex items-center gap-2 bg-emerald-50/80 border border-emerald-100 text-emerald-800 px-3 py-1.5 rounded-xl text-xs font-bold shadow-xs">
-                            <Store size={14} className="text-emerald-600 shrink-0" />
+                        <div className="flex items-center gap-2 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-300 px-3 py-1.5 rounded-xl text-xs font-bold shadow-xs">
+                            <Store size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                             <span className="truncate max-w-[140px] md:max-w-[200px]">
                                 {selectedBranch?.name ? selectedBranch.name : 'Main Branch'}
                             </span>
@@ -425,10 +425,10 @@ const Topbar = () => {
                                 <select 
                                     value={selectedBranch?._id || ''}
                                     onChange={(e) => setSelectedBranch(branches.find(b => b._id === e.target.value))}
-                                    className="bg-transparent text-emerald-800 font-bold text-xs outline-none cursor-pointer border-none pl-1"
+                                    className="bg-transparent text-emerald-800 dark:text-emerald-300 font-bold text-xs outline-none cursor-pointer border-none pl-1"
                                 >
                                     {branches.map(b => (
-                                        <option key={b._id} value={b._id} className="text-gray-800 font-semibold">{b.name}</option>
+                                        <option key={b._id} value={b._id} className="bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 font-semibold">{b.name}</option>
                                     ))}
                                 </select>
                             ) : (
@@ -455,7 +455,7 @@ const Topbar = () => {
                             }
                             window.dispatchEvent(new Event('toggle-theme'));
                         }}
-                        className="p-2 text-gray-500 hover:text-amber-500 dark:hover:text-emerald-400 transition-colors cursor-pointer rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800"
+                        className="p-2 text-gray-500 dark:text-slate-400 hover:text-amber-500 dark:hover:text-emerald-400 transition-colors cursor-pointer rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800"
                         title="Toggle Light / Dark Mode"
                     >
                         <Sun size={20} className="hidden dark:block text-amber-400" />
@@ -470,25 +470,25 @@ const Topbar = () => {
                             user?.role === 'BranchManager'    ? '/manager/notifications' :
                             '/admin/notifications'
                         }
-                        className="relative p-2 text-gray-500 hover:text-green-500 transition-colors"
+                        className="relative p-2 text-gray-500 dark:text-slate-400 hover:text-green-500 transition-colors"
                     >
                         <Bell size={22} />
                         {hasUnread && (
-                            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-orange-500 rounded-full border-2 border-white" />
+                            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-orange-500 rounded-full border-2 border-white dark:border-slate-900" />
                         )}
                     </Link>
 
                     {/* Profile corner */}
-                    <div className="flex items-center gap-3 pl-6 border-l border-gray-200">
+                    <div className="flex items-center gap-3 pl-6 border-l border-gray-200 dark:border-slate-800">
                         <div className="text-right hidden md:block">
-                            <p className="text-sm font-semibold text-gray-800 capitalize">{user?.name || 'User'}</p>
+                            <p className="text-sm font-semibold text-gray-800 dark:text-slate-100 capitalize">{user?.name || 'User'}</p>
                             <div className="flex items-center justify-end gap-1.5 mt-0.5">
-                                <p className="text-xs text-gray-500 capitalize">{user?.role || 'Staff'}</p>
+                                <p className="text-xs text-gray-500 dark:text-slate-400 capitalize">{user?.role || 'Staff'}</p>
 
                                 {/* Plan badge — clickable for admins */}
                                 {meta && isAdmin && (
                                     <>
-                                        <span className="text-gray-300">·</span>
+                                        <span className="text-gray-300 dark:text-slate-600">·</span>
                                         <button
                                             onClick={() => setShowUpgradeModal(true)}
                                             title="Click to upgrade your plan"

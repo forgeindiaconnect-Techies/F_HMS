@@ -88,13 +88,13 @@ const ManagerSidebar = () => {
             />
         )}
         <aside className={clsx(
-            "w-64 bg-white shadow-xl h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-transform duration-300 z-40 border-r border-gray-100",
+            "w-64 bg-white dark:bg-slate-900 shadow-xl h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-transform duration-300 z-40 border-r border-gray-100 dark:border-slate-800",
             isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}>
             {/* Header */}
-            <div className="p-6 border-b border-gray-100 flex items-center gap-3 shrink-0">
+            <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex items-center gap-3 shrink-0">
                 {logoSrc && !logoError ? (
-                    <div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 flex items-center justify-center shrink-0">
                         <img 
                             src={logoSrc} 
                             alt="Logo" 
@@ -111,7 +111,7 @@ const ManagerSidebar = () => {
                     <h1 className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-400 leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
                         {restaurant && restaurant.name ? restaurant.name : 'RestoSys'}
                     </h1>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mt-0.5">Manager</span>
+                    <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block mt-0.5">Manager</span>
                 </div>
             </div>
             
@@ -119,7 +119,7 @@ const ManagerSidebar = () => {
             <nav className="flex-1 px-4 py-4 overflow-y-auto custom-scrollbar">
                 {navGroups.map((group, index) => (
                     <div key={index} className="mb-6">
-                        <h3 className="px-3 mb-2 text-xs font-bold text-gray-400 uppercase tracking-wider" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        <h3 className="px-3 mb-2 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider" style={{ fontFamily: 'Poppins, sans-serif' }}>
                             {group.title}
                         </h3>
                         <div className="space-y-1">
@@ -133,8 +133,8 @@ const ManagerSidebar = () => {
                                         className={({ isActive }) => clsx(
                                             "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm",
                                             isActive 
-                                            ? "bg-green-50 text-green-700 font-bold shadow-sm" 
-                                            : "text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium"
+                                            ? "bg-green-50 dark:bg-green-950/50 text-green-700 dark:text-green-400 font-bold shadow-sm" 
+                                            : "text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-100 font-medium"
                                         )}
                                     >
                                         <Icon size={18} className={clsx("transition-transform group-hover:scale-110", "shrink-0")} />
@@ -148,10 +148,10 @@ const ManagerSidebar = () => {
             </nav>
 
             {/* Footer Logout */}
-            <div className="p-4 border-t border-gray-100 shrink-0 bg-gray-50/50">
+            <div className="p-4 border-t border-gray-100 dark:border-slate-800 shrink-0 bg-gray-50/50 dark:bg-slate-900/50">
                 <button 
                     onClick={logout}
-                    className="flex items-center gap-3 px-4 py-2.5 w-full rounded-xl text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors text-sm font-bold"
+                    className="flex items-center gap-3 px-4 py-2.5 w-full rounded-xl text-gray-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-400 transition-colors text-sm font-bold"
                 >
                     <LogOut size={18} />
                     <span>Logout</span>

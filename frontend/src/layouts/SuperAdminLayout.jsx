@@ -88,7 +88,7 @@ const SuperAdminLayout = () => {
     };
 
     return (
-        <div className="flex h-screen bg-gray-50 overflow-hidden">
+        <div className="flex h-screen bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden">
             {/* ── Mobile Overlay ─────────────────────────────────── */}
             {isOpen && (
                 <div 
@@ -167,18 +167,18 @@ const SuperAdminLayout = () => {
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 
                 {/* ── Header ─────────────────────────────────────── */}
-                <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 md:px-6 shrink-0 gap-3">
+                <header className="h-16 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-4 md:px-6 shrink-0 gap-3">
                     
                     {/* Left: Hamburger + Page Title */}
                     <div className="flex items-center gap-3 min-w-0">
                         <button 
                             onClick={() => setIsOpen(!isOpen)} 
-                            className="md:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-xl transition-colors shrink-0"
+                            className="md:hidden p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors shrink-0"
                             aria-label="Toggle menu"
                         >
                             <Menu size={22} />
                         </button>
-                        <h2 className="text-base font-bold text-gray-900 capitalize truncate">
+                        <h2 className="text-base font-bold text-gray-900 dark:text-slate-100 capitalize truncate">
                             {getPageTitle()}
                         </h2>
                     </div>
@@ -191,7 +191,7 @@ const SuperAdminLayout = () => {
                             <button 
                                 data-notif-trigger="true"
                                 onClick={() => setShowDropdown(!showDropdown)}
-                                className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all relative"
+                                className="p-2 text-gray-400 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all relative"
                                 aria-label="Notifications"
                             >
                                 <Bell size={20} />
@@ -204,20 +204,20 @@ const SuperAdminLayout = () => {
                             {showDropdown && (
                                 <div 
                                     data-notif-dropdown="true"
-                                    className="absolute right-0 mt-2 w-72 sm:w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+                                    className="absolute right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-800 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
                                     style={{ maxWidth: 'calc(100vw - 2rem)' }}
                                 >
-                                    <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/60">
-                                        <h3 className="font-bold text-gray-900 text-sm">System Notifications</h3>
+                                    <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-gray-50/60 dark:bg-slate-800/60">
+                                        <h3 className="font-bold text-gray-900 dark:text-slate-100 text-sm">System Notifications</h3>
                                         {unreadCount > 0 && (
                                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-600">
                                                 {unreadCount} New
                                             </span>
                                         )}
                                     </div>
-                                    <div className="max-h-64 overflow-y-auto divide-y divide-gray-50">
+                                    <div className="max-h-64 overflow-y-auto divide-y divide-gray-50 dark:divide-slate-800">
                                         {notifications.length === 0 ? (
-                                            <div className="px-4 py-8 text-center text-gray-400 text-xs font-medium">
+                                            <div className="px-4 py-8 text-center text-gray-400 dark:text-slate-500 text-xs font-medium">
                                                 No notifications yet.
                                             </div>
                                         ) : (
@@ -229,12 +229,12 @@ const SuperAdminLayout = () => {
                                                         if (!n.read) handleMarkAsRead(n._id);
                                                         setShowDropdown(false);
                                                     }}
-                                                    className={`px-4 py-3 transition-colors flex flex-col gap-0.5 cursor-pointer hover:bg-gray-50 ${
-                                                        !n.read ? 'bg-blue-50/30 border-l-2 border-blue-400' : ''
+                                                    className={`px-4 py-3 transition-colors flex flex-col gap-0.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800 ${
+                                                        !n.read ? 'bg-blue-50/30 dark:bg-blue-950/30 border-l-2 border-blue-400' : ''
                                                     }`}
                                                 >
                                                     <div className="flex justify-between items-start gap-2">
-                                                        <span className="font-bold text-gray-900 text-xs leading-normal line-clamp-1">
+                                                        <span className="font-bold text-gray-900 dark:text-slate-100 text-xs leading-normal line-clamp-1">
                                                             {n.title}
                                                         </span>
                                                         {!n.read && (
@@ -243,16 +243,16 @@ const SuperAdminLayout = () => {
                                                                     e.stopPropagation();
                                                                     handleMarkAsRead(n._id);
                                                                 }}
-                                                                className="text-[10px] text-blue-600 hover:text-blue-700 font-bold shrink-0"
+                                                                className="text-[10px] text-blue-600 dark:text-blue-400 hover:text-blue-700 font-bold shrink-0"
                                                             >
                                                                 Mark read
                                                             </button>
                                                         )}
                                                     </div>
-                                                    <p className="text-gray-400 text-[11px] leading-relaxed line-clamp-2">
+                                                    <p className="text-gray-400 dark:text-slate-400 text-[11px] leading-relaxed line-clamp-2">
                                                         {n.desc}
                                                     </p>
-                                                    <span className="text-[10px] text-gray-300 mt-0.5">
+                                                    <span className="text-[10px] text-gray-300 dark:text-slate-500 mt-0.5">
                                                         {new Date(n.createdAt).toLocaleString()}
                                                     </span>
                                                 </div>
@@ -261,7 +261,7 @@ const SuperAdminLayout = () => {
                                     </div>
                                     <Link 
                                         to="/super-admin/notifications"
-                                        className="block text-center text-xs font-bold text-blue-600 hover:text-blue-700 py-3 border-t border-gray-100 hover:bg-gray-50 transition-colors"
+                                        className="block text-center text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 py-3 border-t border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
                                     >
                                         View All Notifications →
                                     </Link>
@@ -270,9 +270,9 @@ const SuperAdminLayout = () => {
                         </div>
 
                         {/* User Avatar */}
-                        <div className="flex items-center gap-2.5 pl-3 border-l border-gray-100">
+                        <div className="flex items-center gap-2.5 pl-3 border-l border-gray-100 dark:border-slate-800">
                             <div className="hidden md:block text-right">
-                                <p className="text-sm font-bold text-gray-900 leading-none">{user?.name || 'Admin'}</p>
+                                <p className="text-sm font-bold text-gray-900 dark:text-slate-100 leading-none">{user?.name || 'Admin'}</p>
                                 <p className="text-[10px] font-semibold text-blue-500 mt-0.5">System Admin</p>
                             </div>
                             <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md shrink-0">
@@ -283,7 +283,7 @@ const SuperAdminLayout = () => {
                 </header>
                 
                 {/* ── Page Content ─────────────────────────────────── */}
-                <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8">
+                <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8 bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
                     <Outlet />
                 </main>
             </div>

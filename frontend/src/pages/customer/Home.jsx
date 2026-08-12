@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { 
     Utensils, ArrowRight, Star, ChevronDown, CheckCircle2, 
     Monitor, QrCode, Boxes, Users, LineChart, Store, Calculator, CalendarDays, 
-    PlayCircle, ChefHat, Clock, Globe, Plus, Minus, X
+    PlayCircle, ChefHat, Clock, Globe, Plus, Minus, X, Sparkles, Zap
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import Restaurant3DHero from '../../components/Restaurant3DHero';
 
 const Home = () => {
     const [restaurants, setRestaurants] = useState([]);
@@ -16,6 +17,7 @@ const Home = () => {
     const [isYearly, setIsYearly] = useState(false);
     const [openFaq, setOpenFaq] = useState(null);
     const [showDemoModal, setShowDemoModal] = useState(false);
+    const [demoStep, setDemoStep] = useState(1);
 
     // Dummy data fallback
     const dummyRestaurants = [
@@ -53,7 +55,7 @@ const Home = () => {
                 let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
                 if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
                 if (!API_URL.endsWith('/api')) API_URL += '/api';
-                const res = await axios.get(`${API_URL}/superadmin/plans/public`);
+                const res = await axios.get(`${API_URL}/plans`);
                 setPlans(res.data);
             } catch (error) {
                 console.error("Failed to fetch public pricing plans", error);
@@ -140,6 +142,9 @@ const Home = () => {
                             </div>
                         </div>
 
+                        <Link to="/3d-demo" className="hover:text-red-500 transition-colors flex items-center gap-1 font-bold text-red-500">
+                            <Sparkles size={14} className="animate-pulse" /> 3D Demo
+                        </Link>
                         <a href="#workflow" className="hover:text-red-500 transition-colors">Workflow</a>
                         <a href="#pricing" className="hover:text-red-500 transition-colors">Pricing</a>
                         <Link to="/contact" className="hover:text-red-500 transition-colors">Contact</Link>
@@ -172,13 +177,13 @@ const Home = () => {
                         <Link to="/staff/register" className="w-full sm:w-auto bg-red-500 text-white font-bold text-lg px-8 py-4 rounded-2xl hover:bg-red-600 shadow-xl shadow-red-500/30 transition-all flex items-center justify-center gap-2 group cursor-pointer">
                             Subscribe Now <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                         </Link>
-                        <button 
-                            onClick={() => setShowDemoModal(true)} 
+                        <Link 
+                            to="/3d-demo" 
                             className="w-full sm:w-auto bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-200 border border-gray-200 dark:border-slate-800 font-bold text-lg px-8 py-4 rounded-2xl hover:bg-gray-50 dark:hover:bg-slate-800 shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer group"
                         >
                             <PlayCircle size={22} className="text-red-500 group-hover:scale-110 transition-transform" /> 
                             <span>View Interactive 3D Demo</span>
-                        </button>
+                        </Link>
                     </div>
                 </section>
 
@@ -592,47 +597,158 @@ const Home = () => {
 
             {/* Interactive 3D Restaurant Demo Modal */}
             {showDemoModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
-                    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl relative text-white space-y-6">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-xl animate-in fade-in duration-300">
+                    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-3xl w-full shadow-2xl relative text-white space-y-6 overflow-hidden">
+                        {/* Background Ambient Glow */}
+                        <div className="absolute -right-20 -top-20 w-80 h-80 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
+                        <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+
                         <button 
                             onClick={() => setShowDemoModal(false)}
-                            className="absolute top-4 right-4 p-2 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors cursor-pointer"
+                            className="absolute top-4 right-4 p-2.5 bg-slate-800/80 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-all cursor-pointer z-20 border border-slate-700/50"
                         >
                             <X size={20} />
                         </button>
 
-                        <div className="flex items-center gap-3">
-                            <div className="p-3 bg-red-500/20 text-red-500 rounded-2xl">
-                                <PlayCircle size={32} />
+                        <div className="flex items-center gap-3.5 relative z-10">
+                            <div className="p-3.5 bg-gradient-to-br from-red-500 to-orange-600 text-white rounded-2xl shadow-lg shadow-red-500/25">
+                                <Sparkles size={28} />
                             </div>
                             <div>
-                                <h3 className="text-xl font-black tracking-tight text-white">Interactive 3D Restaurant Demo</h3>
-                                <p className="text-xs text-slate-400 font-medium">Explore live POS, KDS & QR Ordering in action</p>
+                                <h3 className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
+                                    Interactive 3D Restaurant Simulator
+                                    <span className="text-[10px] uppercase font-black tracking-widest px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
+                                        LIVE 3D VIEW
+                                    </span>
+                                </h3>
+                                <p className="text-xs text-slate-400 font-medium">Real-time Order Packet Transmission across POS, KDS & QR Ordering</p>
                             </div>
                         </div>
 
-                        <div className="aspect-video bg-slate-950 rounded-2xl border border-slate-800 flex flex-col items-center justify-center p-6 text-center space-y-3 relative overflow-hidden group">
-                            <div className="w-16 h-16 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-red-500/30 group-hover:scale-110 transition-transform">
-                                <Utensils size={32} />
+                        {/* 3D Isometric Simulation Arena */}
+                        <div className="relative aspect-video sm:aspect-[16/9] bg-slate-950 rounded-2xl border border-slate-800/80 overflow-hidden flex flex-col items-center justify-between p-6 shadow-inner group">
+                            
+                            {/* 3D Grid Overlay */}
+                            <div 
+                                className="absolute inset-0 opacity-20 pointer-events-none"
+                                style={{
+                                    backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)`,
+                                    backgroundSize: '24px 24px'
+                                }}
+                            />
+
+                            {/* Top Status Bar inside 3D Canvas */}
+                            <div className="w-full flex justify-between items-center z-10">
+                                <div className="flex items-center gap-2 bg-slate-900/90 border border-slate-800 px-3 py-1.5 rounded-xl text-xs font-mono text-emerald-400 shadow-md">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                                    SYSTEM_STATUS: 3D_ONLINE (SYNC 60FPS)
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        setDemoStep((prev) => (prev % 4) + 1);
+                                    }}
+                                    className="px-3.5 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95"
+                                >
+                                    <Zap size={14} className="animate-bounce" /> Simulate Step {demoStep}/4
+                                </button>
                             </div>
-                            <h4 className="font-bold text-lg text-white">Live Platform Environment</h4>
-                            <p className="text-xs text-slate-400 max-w-sm">Test order routing from customer QR menu to kitchen display display screens with real-time audio alerts.</p>
+
+                            {/* 3D Isometric Interactive Stage */}
+                            <div className="relative w-full flex-1 flex items-center justify-around my-2 z-10">
+                                
+                                {/* Node 1: Customer QR Phone */}
+                                <div className={`relative flex flex-col items-center transition-all duration-500 transform ${demoStep === 1 ? 'scale-110 -translate-y-2' : 'scale-95 opacity-80'}`}>
+                                    <div className={`w-20 h-28 sm:w-24 sm:h-32 rounded-2xl p-2 bg-gradient-to-b from-slate-800 to-slate-900 border-2 shadow-2xl flex flex-col justify-between items-center transform transition-all ${demoStep === 1 ? 'border-red-500 shadow-red-500/30 ring-4 ring-red-500/20' : 'border-slate-700'}`}>
+                                        <div className="w-full bg-slate-950 rounded-lg p-1.5 flex flex-col items-center gap-1">
+                                            <QrCode size={18} className="text-red-400 animate-pulse" />
+                                            <span className="text-[8px] font-black text-slate-300">Table #04</span>
+                                        </div>
+                                        <div className="w-full bg-red-500/20 border border-red-500/30 rounded-md py-1 text-center text-[9px] font-bold text-red-400">
+                                            Order Sent
+                                        </div>
+                                    </div>
+                                    <span className="mt-2 text-xs font-bold text-slate-300">1. Customer QR</span>
+                                </div>
+
+                                {/* Beam Line 1 -> 2 */}
+                                <div className="relative flex-1 max-w-[60px] sm:max-w-[100px] h-1 bg-slate-800 overflow-hidden rounded-full">
+                                    <div className={`h-full bg-gradient-to-r from-red-500 to-orange-500 transition-all duration-700 ${demoStep >= 2 ? 'w-full' : 'w-0'}`} />
+                                </div>
+
+                                {/* Node 2: Central POS Hub */}
+                                <div className={`relative flex flex-col items-center transition-all duration-500 transform ${demoStep === 2 ? 'scale-110 -translate-y-2' : 'scale-95 opacity-80'}`}>
+                                    <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-slate-900 border-2 flex flex-col items-center justify-center p-3 shadow-2xl transition-all ${demoStep === 2 ? 'border-orange-500 shadow-orange-500/40 ring-4 ring-orange-500/20' : 'border-slate-700'}`}>
+                                        <div className="p-2.5 rounded-xl bg-orange-500/20 text-orange-400 mb-1">
+                                            <Store size={24} className="animate-spin" style={{ animationDuration: '8s' }} />
+                                        </div>
+                                        <span className="text-[9px] font-extrabold text-slate-200">POS Core Hub</span>
+                                    </div>
+                                    <span className="mt-2 text-xs font-bold text-slate-300">2. Realtime POS</span>
+                                </div>
+
+                                {/* Beam Line 2 -> 3 */}
+                                <div className="relative flex-1 max-w-[60px] sm:max-w-[100px] h-1 bg-slate-800 overflow-hidden rounded-full">
+                                    <div className={`h-full bg-gradient-to-r from-orange-500 to-emerald-500 transition-all duration-700 ${demoStep >= 3 ? 'w-full' : 'w-0'}`} />
+                                </div>
+
+                                {/* Node 3: Kitchen Display (KDS) */}
+                                <div className={`relative flex flex-col items-center transition-all duration-500 transform ${demoStep === 3 ? 'scale-110 -translate-y-2' : 'scale-95 opacity-80'}`}>
+                                    <div className={`w-24 h-20 sm:w-28 sm:h-24 rounded-2xl bg-slate-900 border-2 flex flex-col items-center justify-center p-2.5 shadow-2xl transition-all ${demoStep === 3 ? 'border-emerald-500 shadow-emerald-500/40 ring-4 ring-emerald-500/20' : 'border-slate-700'}`}>
+                                        <div className="w-full bg-slate-950 rounded-lg p-1.5 flex justify-between items-center mb-1">
+                                            <ChefHat size={16} className="text-emerald-400" />
+                                            <span className="text-[8px] font-mono text-emerald-400 font-bold">KDS KITCHEN</span>
+                                        </div>
+                                        <div className="w-full bg-emerald-500/20 border border-emerald-500/30 rounded py-0.5 text-center text-[8px] font-bold text-emerald-300">
+                                            🍳 Preparing...
+                                        </div>
+                                    </div>
+                                    <span className="mt-2 text-xs font-bold text-slate-300">3. Kitchen KDS</span>
+                                </div>
+                            </div>
+
+                            {/* Interactive Step Description */}
+                            <div className="w-full bg-slate-900/90 border border-slate-800 rounded-xl p-3 text-center z-10">
+                                <p className="text-xs text-slate-300 font-medium">
+                                    {demoStep === 1 && "📱 Customer scans table QR code -> Selects items -> Places order instantly."}
+                                    {demoStep === 2 && "📡 Central POS receives instant order payload -> Generates KOT & updates inventory."}
+                                    {demoStep === 3 && "👨‍🍳 Kitchen Display Screen (KDS) rings audio alert -> Chef marks items as Preparing/Ready."}
+                                    {demoStep === 4 && "🛵 Order is dispatched to customer table or delivery partner in real-time."}
+                                </p>
+                            </div>
                         </div>
 
-                        <div className="flex gap-3 justify-end pt-2">
-                            <button 
-                                onClick={() => setShowDemoModal(false)}
-                                className="px-5 py-2.5 rounded-xl border border-slate-700 text-slate-300 font-bold text-sm hover:bg-slate-800 transition-colors cursor-pointer"
-                            >
-                                Close Preview
-                            </button>
-                            <Link 
-                                to="/explore"
-                                onClick={() => setShowDemoModal(false)}
-                                className="px-6 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold text-sm shadow-lg shadow-red-500/20 transition-all flex items-center gap-2 cursor-pointer"
-                            >
-                                Explore Live App <ArrowRight size={16} />
-                            </Link>
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+                            <div className="flex gap-2">
+                                {[1, 2, 3, 4].map(stepNum => (
+                                    <button
+                                        key={stepNum}
+                                        onClick={() => setDemoStep(stepNum)}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                                            demoStep === stepNum 
+                                            ? 'bg-red-500 text-white shadow-md' 
+                                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                                        }`}
+                                    >
+                                        Step {stepNum}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="flex gap-3 w-full sm:w-auto justify-end">
+                                <button 
+                                    onClick={() => setShowDemoModal(false)}
+                                    className="px-5 py-2.5 rounded-xl border border-slate-700 text-slate-300 font-bold text-xs hover:bg-slate-800 transition-colors cursor-pointer"
+                                >
+                                    Close Preview
+                                </button>
+                                <Link 
+                                    to="/explore"
+                                    onClick={() => setShowDemoModal(false)}
+                                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white font-bold text-xs shadow-lg shadow-red-500/25 transition-all flex items-center gap-2 cursor-pointer"
+                                >
+                                    Explore Live App <ArrowRight size={14} />
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </div>

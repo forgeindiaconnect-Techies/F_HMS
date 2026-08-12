@@ -103,33 +103,33 @@ const CreateTicket = () => {
     return (
         <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-500">
             {/* Breadcrumb / Navigation */}
-            <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                <span className="cursor-pointer hover:text-gray-600" onClick={() => navigate('/admin/support')}>Support Dashboard</span>
+            <div className="flex items-center gap-2 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
+                <span className="cursor-pointer hover:text-gray-600 dark:hover:text-slate-300" onClick={() => navigate('/admin/support')}>Support Dashboard</span>
                 <ChevronRight size={14} />
-                <span className="text-gray-900">Create Support Ticket</span>
+                <span className="text-gray-900 dark:text-slate-100">Create Support Ticket</span>
             </div>
 
-            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 md:p-8 space-y-8">
-                <div className="flex items-center gap-4 border-b border-gray-50 pb-6">
-                    <div className="p-3 bg-green-50 text-green-600 rounded-2xl">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm p-6 md:p-8 space-y-8">
+                <div className="flex items-center gap-4 border-b border-gray-50 dark:border-slate-800 pb-6">
+                    <div className="p-3 bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400 rounded-2xl">
                         <LifeBuoy size={28} />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-black text-gray-900">Create Support Ticket</h2>
-                        <p className="text-xs text-gray-400 font-semibold mt-0.5">Fill in the fields to report an issue or request assistance.</p>
+                        <h2 className="text-2xl font-black text-gray-900 dark:text-slate-100">Create Support Ticket</h2>
+                        <p className="text-xs text-gray-400 dark:text-slate-400 font-semibold mt-0.5">Fill in the fields to report an issue or request assistance.</p>
                     </div>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Subject */}
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-700">Subject</label>
+                        <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Subject</label>
                         <input 
                             type="text" 
                             value={subject}
                             onChange={(e) => setSubject(e.target.value)}
                             placeholder="Brief summary of the issue (e.g. Printer not printing POS slips)"
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm font-medium transition-all"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm font-medium transition-all"
                             required
                         />
                     </div>
@@ -137,11 +137,11 @@ const CreateTicket = () => {
                     {/* Category and Priority */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-700">Category</label>
+                            <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Category</label>
                             <select 
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm font-medium transition-all bg-white"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm font-medium transition-all"
                                 required
                             >
                                 <option value="">Select Category...</option>
@@ -152,11 +152,11 @@ const CreateTicket = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-700">Priority Level</label>
+                            <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Priority Level</label>
                             <select 
                                 value={priority}
                                 onChange={(e) => setPriority(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm font-medium transition-all bg-white"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm font-medium transition-all"
                             >
                                 {priorities.map(p => (
                                     <option key={p.name} value={p.name}>{p.name} - {p.desc}</option>
@@ -167,11 +167,11 @@ const CreateTicket = () => {
 
                     {/* Show critical warning if Critical priority selected */}
                     {priority === 'Critical' && (
-                        <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                            <AlertCircle className="text-red-600 shrink-0 mt-0.5" size={20} />
+                        <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/50 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <AlertCircle className="text-red-600 dark:text-red-400 shrink-0 mt-0.5" size={20} />
                             <div className="space-y-1">
-                                <h4 className="text-sm font-bold text-red-900">🚨 SLA Emergency Support Trigger</h4>
-                                <p className="text-xs text-red-700 leading-relaxed font-semibold">
+                                <h4 className="text-sm font-bold text-red-900 dark:text-red-300">🚨 SLA Emergency Support Trigger</h4>
+                                <p className="text-xs text-red-700 dark:text-red-400 leading-relaxed font-semibold">
                                     Selecting **Critical** priority will immediately flag this ticket in the platform queue and notify on-duty technicians. Use only if operations are completely halted.
                                 </p>
                             </div>
@@ -180,45 +180,45 @@ const CreateTicket = () => {
 
                     {/* Description */}
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-700">Describe the Issue</label>
+                        <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Describe the Issue</label>
                         <textarea 
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="Provide details about the issue. Please include steps to reproduce, order IDs, table numbers or error messages if applicable."
                             rows={6}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm font-medium transition-all"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm font-medium transition-all"
                             required
                         />
                     </div>
 
                     {/* File Upload / Attachments */}
                     <div className="space-y-3">
-                        <label className="text-sm font-bold text-gray-700 block">Screenshots or Log Files <span className="text-gray-400 font-medium">(Optional)</span></label>
+                        <label className="text-sm font-bold text-gray-700 dark:text-slate-300 block">Screenshots or Log Files <span className="text-gray-400 dark:text-slate-500 font-medium">(Optional)</span></label>
                         
-                        <div className="border-2 border-dashed border-gray-200 hover:border-green-500/50 rounded-2xl p-6 transition-all text-center relative flex flex-col items-center justify-center cursor-pointer bg-gray-50/20 hover:bg-gray-50/50">
+                        <div className="border-2 border-dashed border-gray-200 dark:border-slate-800 hover:border-green-500/50 rounded-2xl p-6 transition-all text-center relative flex flex-col items-center justify-center cursor-pointer bg-gray-50/20 dark:bg-slate-950/40 hover:bg-gray-50/50 dark:hover:bg-slate-800/50">
                             <input 
                                 type="file" 
                                 multiple
                                 onChange={handleFileChange}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                             />
-                            <Upload className="text-gray-400 mb-3" size={28} />
-                            <span className="text-sm font-bold text-gray-700">Drag files here or click to upload</span>
-                            <span className="text-[10px] text-gray-400 font-semibold mt-1">PDF, PNG, JPG, DOCX, XLSX (Max 10MB per file)</span>
+                            <Upload className="text-gray-400 dark:text-slate-500 mb-3" size={28} />
+                            <span className="text-sm font-bold text-gray-700 dark:text-slate-200">Drag files here or click to upload</span>
+                            <span className="text-[10px] text-gray-400 dark:text-slate-500 font-semibold mt-1">PDF, PNG, JPG, DOCX, XLSX (Max 10MB per file)</span>
                         </div>
 
                         {/* File preview list */}
                         {files.length > 0 && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
                                 {files.map((file, i) => (
-                                    <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 bg-white shadow-sm text-xs font-semibold">
-                                        <span className="text-gray-700 truncate max-w-[200px]">{file.name}</span>
+                                    <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm text-xs font-semibold">
+                                        <span className="text-gray-700 dark:text-slate-300 truncate max-w-[200px]">{file.name}</span>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-gray-400">{(file.size / (1024 * 1024)).toFixed(2)} MB</span>
+                                            <span className="text-gray-400 dark:text-slate-500">{(file.size / (1024 * 1024)).toFixed(2)} MB</span>
                                             <button 
                                                 type="button" 
                                                 onClick={() => handleRemoveFile(i)}
-                                                className="text-gray-400 hover:text-red-600 transition-colors p-1"
+                                                className="text-gray-400 dark:text-slate-500 hover:text-red-600 transition-colors p-1"
                                             >
                                                 <X size={14} />
                                             </button>
@@ -230,18 +230,18 @@ const CreateTicket = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="pt-6 border-t border-gray-50 flex items-center justify-end gap-3">
+                    <div className="pt-6 border-t border-gray-50 dark:border-slate-800 flex items-center justify-end gap-3">
                         <button 
                             type="button" 
                             onClick={() => navigate('/admin/support')}
-                            className="px-6 py-3 border border-gray-200 text-gray-700 font-bold rounded-xl text-sm hover:bg-gray-50 transition-colors"
+                            className="px-6 py-3 border border-gray-200 dark:border-slate-800 text-gray-700 dark:text-slate-300 font-bold rounded-xl text-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
                         >
                             Cancel
                         </button>
                         <button 
                             type="submit" 
                             disabled={submitting}
-                            className="px-8 py-3 bg-gray-900 hover:bg-black text-white font-bold rounded-xl text-sm shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
+                            className="px-8 py-3 bg-gray-900 dark:bg-emerald-600 hover:bg-black dark:hover:bg-emerald-500 text-white font-bold rounded-xl text-sm shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
                         >
                             {submitting ? (
                                 <>

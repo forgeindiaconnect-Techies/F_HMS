@@ -63,14 +63,14 @@ const CashierSidebar = () => {
             />
         )}
         <aside className={clsx(
-            "w-64 bg-white border-r border-gray-100 flex flex-col h-screen fixed inset-y-0 left-0 md:sticky md:top-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-40 transition-transform duration-300",
+            "w-64 bg-white dark:bg-slate-900 border-r border-gray-100 dark:border-slate-800 flex flex-col h-screen fixed inset-y-0 left-0 md:sticky md:top-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-40 transition-transform duration-300",
             isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}>
             {/* Logo area */}
-            <div className="h-20 flex items-center px-6 border-b border-gray-50">
+            <div className="h-20 flex items-center px-6 border-b border-gray-50 dark:border-slate-800">
                 <div className="flex items-center gap-3">
                     {logoSrc && !logoError ? (
-                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center shrink-0">
+                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 flex items-center justify-center shrink-0">
                             <img 
                                 src={logoSrc} 
                                 alt="Logo" 
@@ -84,10 +84,10 @@ const CashierSidebar = () => {
                         </div>
                     )}
                     <div>
-                        <h1 className="text-lg font-bold text-gray-900 tracking-tight leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        <h1 className="text-lg font-bold text-gray-900 dark:text-slate-100 tracking-tight leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
                             {restaurant && restaurant.name ? restaurant.name : 'RestoSys'}
                         </h1>
-                        <p className="text-[10px] font-bold text-purple-600 uppercase tracking-widest mt-1">Billing</p>
+                        <p className="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest mt-1">Billing</p>
                     </div>
                 </div>
             </div>
@@ -96,7 +96,7 @@ const CashierSidebar = () => {
             <div className="flex-1 overflow-y-auto py-6 px-4 space-y-8 custom-scrollbar">
                 {menuGroups.map((group) => (
                     <div key={group.title}>
-                        <h2 className="text-xs font-bold text-gray-400 mb-3 px-3 uppercase tracking-wider">
+                        <h2 className="text-xs font-bold text-gray-400 dark:text-slate-500 mb-3 px-3 uppercase tracking-wider">
                             {group.title}
                         </h2>
                         <ul className="space-y-1">
@@ -110,13 +110,13 @@ const CashierSidebar = () => {
                                             className={({ isActive }) => clsx(
                                                 "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm",
                                                 isActive 
-                                                ? "bg-purple-50 text-purple-700 font-bold" 
-                                                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 font-medium"
+                                                ? "bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 font-bold" 
+                                                : "text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-100 font-medium"
                                             )}
                                         >
                                             {({ isActive }) => (
                                                 <>
-                                                    <Icon size={18} className={clsx("transition-transform group-hover:scale-110", "shrink-0", isActive ? "text-purple-600" : "text-gray-400")} />
+                                                    <Icon size={18} className={clsx("transition-transform group-hover:scale-110", "shrink-0", isActive ? "text-purple-600 dark:text-purple-400" : "text-gray-400 dark:text-slate-500")} />
                                                     <span>{item.name}</span>
                                                 </>
                                             )}
@@ -130,12 +130,12 @@ const CashierSidebar = () => {
             </div>
 
             {/* Logout section */}
-            <div className="p-4 border-t border-gray-50">
+            <div className="p-4 border-t border-gray-50 dark:border-slate-800">
                 <button 
                     onClick={logout}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors group"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-400 transition-colors group"
                 >
-                    <LogOut size={18} className="text-gray-400 group-hover:text-red-500 transition-colors" />
+                    <LogOut size={18} className="text-gray-400 dark:text-slate-500 group-hover:text-red-500 transition-colors" />
                     <span>Close Register</span>
                 </button>
             </div>

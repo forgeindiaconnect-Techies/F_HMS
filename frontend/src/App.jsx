@@ -66,6 +66,7 @@ import CashierOverview from './pages/staff/CashierOverview';
 import CashierDashboard from './pages/staff/CashierDashboard';
 import CashierHistory from './pages/staff/CashierHistory';
 import Home from './pages/customer/Home';
+import ThreeDemoShowcase from './pages/customer/ThreeDemoShowcase';
 import Explore from './pages/customer/Explore';
 import Menu from './pages/customer/Menu';
 import RestaurantDetails from './pages/customer/RestaurantDetails';
@@ -138,6 +139,9 @@ function App() {
         
         <Route path="/staff/login" element={<StaffAuthPage />} />
         <Route path="/staff/register" element={<StaffAuthPage />} />
+
+        {/* Standalone 3D Interactive Showcase Page */}
+        <Route path="/3d-demo" element={<ThreeDemoShowcase />} />
 
         {/* Public QR ordering flow */}
         <Route path="/customer/menu" element={<CustomerMenu />} />

@@ -29,7 +29,7 @@ const router = express.Router();
 router.use(protect);
 
 // Support Analytics route
-router.route('/analytics').get(checkFeature('Advanced Support'), getSupportAnalytics);
+router.route('/analytics').get(checkFeature('Customer Support'), getSupportAnalytics);
 
 // Support Tickets endpoints
 router.route('/tickets')
