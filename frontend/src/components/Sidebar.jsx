@@ -126,6 +126,12 @@ const Sidebar = () => {
             ]
         },
         {
+            title: 'SaaS Portal',
+            items: [
+                { name: 'SaaS Subscription', path: '/admin/billing', icon: CreditCard },
+            ]
+        },
+        {
             title: 'Reports & Config',
             items: [
                 { name: 'Reports', path: '/admin/reports', icon: FileText },
