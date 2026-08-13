@@ -27,7 +27,7 @@ const ROUTE_PLAN_REQUIREMENTS = [
     { path: '/admin/developer-config', minPlan: 'Enterprise', feature: 'Developer APIs & White Label' },
     { path: '/admin/audit-logs',       minPlan: 'Enterprise', feature: 'Security Audit Logs' },
     { path: '/admin/bi',               minPlan: 'Enterprise', feature: 'Business Intelligence Console' },
-    // NOTE: /admin/support is available to ALL plans — no gating
+    { path: '/admin/support',          minPlan: 'Enterprise', feature: 'Customer Care & Priority Support' },
 ];
 const PLAN_ORDER = { Basic: 0, Starter: 0, Pro: 1, Professional: 1, Enterprise: 2 };
 const planMeetsRequirement = (current, min) =>
@@ -123,8 +123,6 @@ const Sidebar = () => {
                 { name: 'Support Dashboard', path: '/admin/support', icon: LayoutDashboard },
                 { name: 'Support Tickets', path: '/admin/support/tickets', icon: MessageSquare },
                 { name: 'Create Ticket', path: '/admin/support/tickets/create', icon: LifeBuoy },
-                { name: 'Knowledge Base', path: '/admin/support/knowledge-base', icon: HelpCircle },
-                { name: 'Announcements', path: '/admin/support/announcements', icon: Volume2 },
             ]
         },
         {

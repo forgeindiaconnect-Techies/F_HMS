@@ -91,19 +91,18 @@ const Settings = () => {
         e.preventDefault();
         setSaving(true);
         try {
-            const data = new FormData();
-            data.append('name', formData.name);
-            data.append('contactEmail', formData.contactEmail);
-            data.append('phone', formData.phone);
-            data.append('address', formData.address);
+            // Send as JSON — the backend accepts logoBase64 as a string in req.body
+            const payload = {
+                name: formData.name,
+                contactEmail: formData.contactEmail,
+                phone: formData.phone,
+                address: formData.address,
+            };
             if (logoBase64) {
-                data.append('logoBase64', logoBase64);
-            }
-            if (logoFile) {
-                data.append('logo', logoFile);
+                payload.logoBase64 = logoBase64;
             }
 
-            const res = await api.put('/restaurants/mine', data);
+            const res = await api.put('/restaurants/mine', payload);
 
             // Update local preview to the saved logo
             if (res.data?.logo) {
@@ -120,7 +119,7 @@ const Settings = () => {
             toast.success('Settings saved successfully!');
         } catch (error) {
             console.error('Failed to save settings', error);
-            toast.error('Failed to save settings');
+            toast.error(error.response?.data?.message || 'Failed to save settings');
         } finally {
             setSaving(false);
         }
