@@ -137,11 +137,11 @@ const Home = () => {
 
                     <div className="flex items-center gap-4 text-xs sm:text-sm font-bold shrink-0">
                         <Link to="/staff/login" className="text-gray-600 dark:text-[#94A3B8] hover:text-gray-900 dark:hover:text-white transition-colors px-2 py-1">Log In</Link>
-                        <Link to="/staff/register" className="relative group overflow-hidden rounded-xl p-[1px] font-extrabold focus:outline-none">
-                            <span className="absolute inset-0 bg-gradient-to-r from-[#FF2D55] via-[#FF6A00] to-[#FF2D55] rounded-xl group-hover:opacity-100 transition-opacity" />
-                            <span className="relative block px-5 py-2.5 bg-white dark:bg-[#050816] text-gray-900 dark:text-white group-hover:bg-transparent group-hover:text-white transition-colors">
-                                Get Started Free
-                            </span>
+                        <Link 
+                            to="/staff/register" 
+                            className="bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] text-white font-extrabold px-5 py-2.5 rounded-xl shadow-lg shadow-[#FF2D55]/30 hover:scale-[1.03] active:scale-95 transition-all focus:outline-none"
+                        >
+                            Get Started Free
                         </Link>
                     </div>
                 </div>
@@ -151,23 +151,70 @@ const Home = () => {
             {/* Hero Section */}
             <section id="demo" className="min-h-[calc(100vh-80px)] flex flex-col justify-between items-center text-center px-4 pt-12 pb-16 relative z-10 overflow-hidden">
                 
-                {/* Red glowing curved wave lines overlay at bottom */}
+                {/* Red glowing curved wave lines overlay at bottom — animated */}
                 <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center">
-                    <svg className="w-full h-full opacity-70" viewBox="0 0 1440 600" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M-100 460 C 350 260, 1090 260, 1540 460" stroke="url(#hero-red-wave)" strokeWidth="3" />
-                        <path d="M-100 480 C 350 280, 1090 280, 1540 480" stroke="url(#hero-red-glow)" strokeWidth="24" opacity="0.35" />
+                    <svg className="w-full h-full" viewBox="0 0 1440 600" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
                         <defs>
                             <linearGradient id="hero-red-wave" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stopColor="#FF2D55" stopOpacity="0.2" />
+                                <stop offset="0%" stopColor="#FF2D55" stopOpacity="0.15" />
                                 <stop offset="50%" stopColor="#FF2D55" stopOpacity="1" />
-                                <stop offset="100%" stopColor="#FF6A00" stopOpacity="0.2" />
+                                <stop offset="100%" stopColor="#FF6A00" stopOpacity="0.15" />
                             </linearGradient>
                             <linearGradient id="hero-red-glow" x1="0%" y1="0%" x2="100%" y2="0%">
                                 <stop offset="0%" stopColor="#FF2D55" stopOpacity="0" />
-                                <stop offset="50%" stopColor="#FF2D55" stopOpacity="0.9" />
+                                <stop offset="50%" stopColor="#FF2D55" stopOpacity="0.85" />
                                 <stop offset="100%" stopColor="#FF6A00" stopOpacity="0" />
                             </linearGradient>
                         </defs>
+
+                        {/* Thin animated wave line */}
+                        <path stroke="url(#hero-red-wave)" strokeWidth="2.5" fill="none">
+                            <animate
+                                attributeName="d"
+                                dur="6s"
+                                repeatCount="indefinite"
+                                calcMode="spline"
+                                keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+                                values="
+                                    M-100 460 C 350 240, 1090 240, 1540 460;
+                                    M-100 440 C 350 270, 1090 230, 1540 440;
+                                    M-100 460 C 350 240, 1090 240, 1540 460
+                                "
+                            />
+                        </path>
+
+                        {/* Second wave line — slightly offset phase */}
+                        <path stroke="url(#hero-red-wave)" strokeWidth="1.5" fill="none" opacity="0.5">
+                            <animate
+                                attributeName="d"
+                                dur="8s"
+                                repeatCount="indefinite"
+                                calcMode="spline"
+                                keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+                                values="
+                                    M-100 480 C 350 260, 1090 260, 1540 480;
+                                    M-100 500 C 350 250, 1090 280, 1540 500;
+                                    M-100 480 C 350 260, 1090 260, 1540 480
+                                "
+                            />
+                        </path>
+
+                        {/* Wide glow path — animated */}
+                        <path fill="none" stroke="url(#hero-red-glow)" strokeWidth="36">
+                            <animate
+                                attributeName="d"
+                                dur="6s"
+                                repeatCount="indefinite"
+                                calcMode="spline"
+                                keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+                                values="
+                                    M-100 460 C 350 240, 1090 240, 1540 460;
+                                    M-100 440 C 350 270, 1090 230, 1540 440;
+                                    M-100 460 C 350 240, 1090 240, 1540 460
+                                "
+                            />
+                            <animate attributeName="opacity" dur="4s" repeatCount="indefinite" values="0.25;0.5;0.25" />
+                        </path>
                     </svg>
                 </div>
 
