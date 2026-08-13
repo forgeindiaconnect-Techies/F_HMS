@@ -133,6 +133,14 @@ export const checkVerification = async (req, res, next) => {
 
 // Check if subscription plan supports a specific feature
 export const checkFeature = (featureName) => {
+    const normalizeFeatureName = (name) => {
+        return name
+            .toLowerCase()
+            .replace(/management/g, '')
+            .replace(/[^a-z0-9]/g, '')
+            .trim();
+    };
+
     return async (req, res, next) => {
         // Skip check for super admins, support agents, customers, or delivery partners
         if (!req.user || req.user.role === 'SuperAdmin' || req.user.role === 'SupportAgent' || req.user.role === 'DeliveryPartner') {
@@ -148,9 +156,11 @@ export const checkFeature = (featureName) => {
             const planName = restaurant.subscription?.plan || 'Basic';
             const plan = await Plan.findOne({ name: planName });
             
+            const targetNorm = normalizeFeatureName(featureName);
+
             // If the plan exists and features are configured, verify permission
             if (plan) {
-                const hasFeature = plan.features.some(f => f.toLowerCase() === featureName.toLowerCase());
+                const hasFeature = plan.features.some(f => normalizeFeatureName(f) === targetNorm);
                 if (!hasFeature) {
                     return res.status(403).json({
                         message: `The feature "${featureName}" is not included in your current "${planName}" plan. Please upgrade your subscription to unlock it.`,
@@ -167,7 +177,7 @@ export const checkFeature = (featureName) => {
                 };
                 
                 const allowed = fallbackFeatures[planName] || fallbackFeatures['Basic'];
-                const hasFeature = allowed.some(f => f.toLowerCase() === featureName.toLowerCase());
+                const hasFeature = allowed.some(f => normalizeFeatureName(f) === targetNorm);
                 
                 if (!hasFeature) {
                     return res.status(403).json({
