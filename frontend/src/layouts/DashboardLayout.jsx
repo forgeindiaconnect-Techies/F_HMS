@@ -6,30 +6,30 @@ import { useAuth } from '../context/AuthContext';
 import VerificationBlockedOverlay from '../components/VerificationBlockedOverlay';
 import { Sparkles, ArrowRight, X, CheckCircle, ShieldCheck, Zap } from 'lucide-react';
 
-// ─── Central Plan Feature Access Config ───────────────────────────────────────
-const ROUTE_PLAN_REQUIREMENTS = [
-    // Pro features
-    { path: '/admin/analytics',    minPlan: 'Pro',        feature: 'Sales Analytics' },
-    { path: '/admin/inventory',    minPlan: 'Pro',        feature: 'Inventory Management' },
-    { path: '/admin/suppliers',    minPlan: 'Pro',        feature: 'Vendor Management' },
-    { path: '/admin/reservations', minPlan: 'Pro',        feature: 'Reservation Management' },
-    { path: '/admin/offers',       minPlan: 'Pro',        feature: 'Coupons & Promotions' },
-    { path: '/admin/delivery',     minPlan: 'Pro',        feature: 'Delivery Management' },
+// ─── Route → Feature Key Mapping ──────────────────────────────────────────────
+// Maps each gated route path to the exact feature key string stored in
+// Plan.features in MongoDB (as set by SuperAdmin in FeatureManagement).
+// fallbackMinPlan is used ONLY while DB plans are still loading.
+const ROUTE_FEATURE_MAP = [
+    // Pro-tier features
+    { path: '/admin/analytics',    featureKey: 'Sales Reports',                 fallbackMinPlan: 'Pro' },
+    { path: '/admin/inventory',    featureKey: 'Stock Levels',                   fallbackMinPlan: 'Pro' },
+    { path: '/admin/suppliers',    featureKey: 'Vendor Management',              fallbackMinPlan: 'Pro' },
+    { path: '/admin/reservations', featureKey: 'Advanced Table Management',      fallbackMinPlan: 'Pro' },
+    { path: '/admin/offers',       featureKey: 'Customer Segmentation',          fallbackMinPlan: 'Pro' },
+    { path: '/admin/delivery',     featureKey: 'Delivery Partner Management',    fallbackMinPlan: 'Pro' },
 
-    // Enterprise features
-    { path: '/admin/franchise',        minPlan: 'Enterprise', feature: 'Franchise Management' },
-    { path: '/admin/central-kitchen',  minPlan: 'Enterprise', feature: 'Central Kitchen Ops' },
-    { path: '/admin/developer-config', minPlan: 'Enterprise', feature: 'Developer APIs & White Label' },
-    { path: '/admin/audit-logs',       minPlan: 'Enterprise', feature: 'Security Audit Logs' },
-    { path: '/admin/bi',               minPlan: 'Enterprise', feature: 'Business Intelligence Console' },
+    // Enterprise-tier features
+    { path: '/admin/franchise',        featureKey: 'Multi-Branch Management',   fallbackMinPlan: 'Enterprise' },
+    { path: '/admin/central-kitchen',  featureKey: 'Stock Transfer',            fallbackMinPlan: 'Enterprise' },
+    { path: '/admin/developer-config', featureKey: 'Advanced AI Insights',      fallbackMinPlan: 'Enterprise' },
+    { path: '/admin/audit-logs',       featureKey: 'Business Health Score',     fallbackMinPlan: 'Enterprise' },
+    { path: '/admin/bi',               featureKey: 'Sales Prediction',          fallbackMinPlan: 'Enterprise' },
     // NOTE: /admin/support is available to ALL plans — no gating
 ];
 
-const PLAN_ORDER = { Basic: 0, Starter: 0, Pro: 1, Professional: 1, Enterprise: 2 };
-
-const planMeetsRequirement = (currentPlan, minPlan) => {
-    return (PLAN_ORDER[currentPlan] ?? 0) >= (PLAN_ORDER[minPlan] ?? 99);
-};
+// Fallback static hierarchy used only when DB plans haven't loaded yet
+const PLAN_ORDER_FALLBACK = { Basic: 0, Starter: 0, Pro: 1, Professional: 1, Enterprise: 2 };
 
 const DashboardLayout = () => {
     const { restaurant, api } = useAuth();
@@ -46,6 +46,37 @@ const DashboardLayout = () => {
     const [paymentStatus, setPaymentStatus] = useState('idle'); // 'idle' | 'scanning' | 'processing' | 'success' | 'failed'
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // ── Dynamic plan feature data loaded from DB ────────────────────────────────
+    // `allPlans` holds the live plan objects (including .features arrays) from MongoDB.
+    // This is the source of truth for feature gating — SuperAdmin changes here
+    // are immediately reflected on next render after this fetch completes.
+    const [allPlans, setAllPlans] = useState([]);
+    const [plansDataLoaded, setPlansDataLoaded] = useState(false);
+
+    // Load plan feature configs from DB once on mount
+    useEffect(() => {
+        api.get('/plans')
+            .then(res => { setAllPlans(res.data || []); setPlansDataLoaded(true); })
+            .catch(() => { setPlansDataLoaded(true); /* use fallback gating */ });
+    }, [api]);
+
+    // ── Dynamic feature gating check ───────────────────────────────────────────
+    // Returns true if the restaurant's current plan grants access to a given feature.
+    // When DB plans have loaded: checks plan.features array (DB-driven, respects SuperAdmin config).
+    // While loading or if plan not found: falls back to static PLAN_ORDER_FALLBACK hierarchy.
+    const planHasFeature = (planName, featureKey, fallbackMinPlan) => {
+        if (plansDataLoaded && allPlans.length > 0) {
+            const planObj = allPlans.find(
+                p => p.name && planName && p.name.toLowerCase() === planName.toLowerCase()
+            );
+            if (planObj) {
+                return Array.isArray(planObj.features) && planObj.features.includes(featureKey);
+            }
+        }
+        // Fallback: use static plan hierarchy while data loads or if plan name not found in DB
+        return (PLAN_ORDER_FALLBACK[planName] ?? 0) >= (PLAN_ORDER_FALLBACK[fallbackMinPlan] ?? 99);
+    };
+
     const isUnverified = restaurant && restaurant.verificationStatus !== 'Verified';
     const isVerificationPage = location.pathname === '/admin/verification';
 
@@ -53,34 +84,58 @@ const DashboardLayout = () => {
     // Default to 'Active' so features aren't locked if subscription status isn't set yet
     const status = restaurant?.subscription?.status || 'Active';
 
-    // Find the first matching route requirement for the current path
-    const routeBlock = ROUTE_PLAN_REQUIREMENTS.find(r => location.pathname.startsWith(r.path));
+    // Find the first matching route in our feature map for the current path
+    const routeBlock = ROUTE_FEATURE_MAP.find(r => location.pathname.startsWith(r.path));
+
+    // isPathBlocked is true when:
+    // 1. Subscription is not Active, OR
+    // 2. The restaurant's plan does NOT have the required feature (checked against live DB)
     const isPathBlocked = routeBlock
-        ? (status !== 'Active' || !planMeetsRequirement(plan, routeBlock.minPlan))
+        ? (status !== 'Active' || !planHasFeature(plan, routeBlock.featureKey, routeBlock.fallbackMinPlan))
         : false;
-    const blockedFeature = routeBlock?.feature || '';
-    const requiredPlan = routeBlock?.minPlan || 'Pro';
+
+    // Human-readable display: show the featureKey as the locked feature name
+    const blockedFeature = routeBlock?.featureKey || '';
+    // For display purposes, determine what plan tier unlocks this feature
+    const requiredPlan = (() => {
+        if (!routeBlock) return 'Pro';
+        if (plansDataLoaded && allPlans.length > 0) {
+            // Find the lowest-tier plan that has this feature
+            const sorted = [...allPlans].sort(
+                (a, b) => (a.monthlyPrice || 0) - (b.monthlyPrice || 0)
+            );
+            const lowestUnlockingPlan = sorted.find(
+                p => Array.isArray(p.features) && p.features.includes(routeBlock.featureKey)
+            );
+            return lowestUnlockingPlan?.name || routeBlock.fallbackMinPlan;
+        }
+        return routeBlock.fallbackMinPlan;
+    })();
 
     const handleOpenPlans = async () => {
         setShowPlansModal(true);
         setSelectedPlanToBuy(null);
         setPaymentStatus('idle');
-        if (plans.length === 0) {
-            setPlansLoading(true);
-            try {
-                const res = await api.get('/plans');
-                setPlans(res.data || []);
-            } catch (err) {
-                console.error("Failed to load plans modal data", err);
-                // Fallback plan list
+        // Always refresh plans from DB when opening the modal, and sync to allPlans too
+        setPlansLoading(true);
+        try {
+            const res = await api.get('/plans');
+            const freshPlans = res.data || [];
+            setPlans(freshPlans);
+            // Also keep allPlans (used for gating) in sync with latest DB data
+            setAllPlans(freshPlans);
+        } catch (err) {
+            console.error("Failed to load plans modal data", err);
+            // Only set fallback plans for the modal display if we have no data at all
+            if (plans.length === 0) {
                 setPlans([
                     { _id: 'p1', name: 'Basic', monthlyPrice: 4999, yearlyPrice: 3999, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'] },
                     { _id: 'p2', name: 'Pro', monthlyPrice: 9999, yearlyPrice: 7999, features: ['Up to 3 Branches', 'Inventory & Waste Ops', 'Delivery Management', 'Sales Analytics', '24/7 Support'] },
                     { _id: 'p3', name: 'Enterprise', monthlyPrice: 19999, yearlyPrice: 15999, features: ['Unlimited Branches', 'Business Intelligence AI', 'Franchise & Central Kitchen', 'White-Label APIs', 'Dedicated Support'] }
                 ]);
-            } finally {
-                setPlansLoading(false);
             }
+        } finally {
+            setPlansLoading(false);
         }
     };
 
