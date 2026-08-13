@@ -265,8 +265,8 @@ const Home = () => {
             </section>
 
             {/* Trusted By Brands Ribbon */}
-            <section className="py-12 border-y border-gray-100 dark:border-white/[0.08] bg-gray-50/50 dark:bg-white/[0.01] backdrop-blur-md relative z-10">
-                <div className="max-w-7xl mx-auto px-4 text-center">
+            <section className="py-12 border-y border-gray-100 dark:border-transparent bg-gray-50/50 dark:bg-transparent relative z-10">
+                <div className="w-full px-4 sm:px-6 text-center">
                     <p className="text-xs font-black text-gray-500 dark:text-[#94A3B8] uppercase tracking-widest mb-8">Trusted by 10,000+ Hospitality Leaders Worldwide</p>
                     <div className="flex flex-wrap justify-center items-center gap-10 md:gap-20 opacity-80">
                         <div className="text-2xl font-black text-gray-600 dark:text-[#94A3B8] flex items-center gap-2 tracking-tight"><Utensils size={26} className="text-[#FF2D55]" /> Pizza Hut</div>
@@ -279,10 +279,10 @@ const Home = () => {
             </section>
 
             {/* Main Content Area */}
-            <main className="max-w-7xl mx-auto px-4 sm:px-8 py-24 space-y-32 relative z-10">
+            <main className="w-full px-4 sm:px-6 py-20 space-y-28 relative z-10">
 
                 {/* About Platform */}
-                <section id="about" className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center rounded-[20px] p-8 sm:p-14 bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/[0.08] shadow-xl dark:shadow-2xl relative overflow-hidden">
+                <section id="about" className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center rounded-[20px] p-8 sm:p-14 bg-gray-50 dark:bg-transparent border border-gray-100 dark:border-transparent shadow-xl dark:shadow-none relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-96 h-96 bg-[#FF2D55]/10 rounded-full blur-3xl pointer-events-none" />
                     
                     <div className="space-y-6 relative z-10">
@@ -322,12 +322,12 @@ const Home = () => {
 
                 {/* Full Platform Capabilities Grid */}
                 <section id="features" className="space-y-12">
-                    <div className="text-center space-y-4 max-w-3xl mx-auto">
+                    <div className="text-center space-y-4 max-w-2xl mx-auto">
                         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#FF2D55]/10 border border-[#FF2D55]/20 text-[#FF2D55] font-bold text-xs uppercase tracking-wider">
                             <Flame size={14} /> Full Platform Capability
                         </div>
-                        <h2 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white tracking-tight">Everything You Need in One Unified Stack</h2>
-                        <p className="text-gray-500 dark:text-[#94A3B8] font-medium text-base sm:text-lg">No third-party add-ons required. Designed to eliminate operational friction.</p>
+                        <h2 className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white tracking-tight">Everything You Need in One Unified Stack</h2>
+                        <p className="text-gray-500 dark:text-[#94A3B8] font-medium text-sm sm:text-base">No third-party add-ons required. Designed to eliminate operational friction.</p>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
@@ -346,7 +346,7 @@ const Home = () => {
                 </section>
 
                 {/* Kitchen KDS Showcase */}
-                <section id="workflow" className="rounded-[20px] p-8 sm:p-14 bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/[0.08] shadow-xl dark:shadow-2xl relative overflow-hidden">
+                <section id="workflow" className="rounded-[20px] p-8 sm:p-12 bg-gray-50 dark:bg-transparent border border-gray-100 dark:border-transparent shadow-xl dark:shadow-none relative overflow-hidden">
                     <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#FF2D55]/10 rounded-full blur-3xl pointer-events-none" />
                     
                     <div className="text-center mb-16 relative z-10 max-w-3xl mx-auto">
@@ -461,7 +461,7 @@ const Home = () => {
 
                 {/* Pricing Plans Section */}
                 <section id="pricing" className="space-y-12">
-                    <div className="text-center space-y-4 max-w-3xl mx-auto">
+                    <div className="text-center space-y-4 max-w-2xl mx-auto">
                         <h2 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white tracking-tight">Transparent, Predictable Pricing</h2>
                         <p className="text-gray-500 dark:text-[#94A3B8] font-medium text-base sm:text-lg">Zero hidden fees, zero commission markups. Upgrade or downgrade anytime.</p>
                         
@@ -549,7 +549,7 @@ const Home = () => {
                 </section>
 
                 {/* FAQ Section */}
-                <section id="faq" className="max-w-3xl mx-auto space-y-8">
+                <section id="faq" className="max-w-2xl mx-auto space-y-8">
                     <div className="text-center space-y-2">
                         <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Frequently Asked Questions</h2>
                         <p className="text-gray-500 dark:text-[#94A3B8] text-sm font-medium">Clear answers to help you get onboarded seamlessly.</p>
@@ -583,7 +583,7 @@ const Home = () => {
 
             {/* Footer */}
             <footer className="border-t border-gray-100 dark:border-white/[0.08] bg-gray-50 dark:bg-[#050816] py-16 relative z-10">
-                <div className="max-w-7xl mx-auto px-4 sm:px-8 space-y-12">
+                <div className="w-full px-4 sm:px-6 space-y-12">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                         <div className="md:col-span-2 space-y-4">
                             <div 
