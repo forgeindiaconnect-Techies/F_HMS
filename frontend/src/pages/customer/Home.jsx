@@ -82,7 +82,7 @@ const Home = () => {
     return (
         <div className="flex flex-col min-h-screen bg-white dark:bg-[#0b0f19] font-sans text-gray-900 dark:text-slate-100 transition-colors">
             {/* SaaS Header */}
-            <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 shadow-sm py-3.5 px-3 sm:px-6 lg:px-8">
+            <header className="sticky top-0 z-50 bg-white/80 dark:bg-[#0b0f19]/90 backdrop-blur-md border-b border-gray-100 dark:border-slate-800/80 shadow-sm py-3.5 px-3 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between max-w-7xl mx-auto w-full">
                     <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-1.5 sm:gap-2 cursor-pointer group shrink-0">
                         <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg shadow-red-500/20 text-white group-hover:scale-105 transition-transform shrink-0">
