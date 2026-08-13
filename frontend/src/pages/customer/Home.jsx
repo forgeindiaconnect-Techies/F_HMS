@@ -147,70 +147,111 @@ const Home = () => {
                 </div>
             </header>
 
-            {/* 1. Full Screen Hero Section */}
-            <section id="demo" className="min-h-[calc(100vh-80px)] flex flex-col justify-center items-center text-center px-4 py-20 relative z-10">
+            {/* 1. Full Screen Hero Section with Neon Arc Overlay */}
+            <section id="demo" className="min-h-[calc(100vh-80px)] flex flex-col justify-between items-center text-center px-4 pt-12 pb-16 relative z-10 overflow-hidden">
                 
-                {/* Badge */}
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-white/[0.1] text-red-400 font-bold text-xs sm:text-sm mb-8 shadow-xl backdrop-blur-md animate-in fade-in duration-500">
-                    <Star size={14} className="fill-red-500 text-red-500" />
-                    <span>Rated #1 POS System 2026</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                    <span className="text-slate-400">Next-Gen SaaS</span>
+                {/* Neon Red Curved Wave / Arc SVG in background */}
+                <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center">
+                    <svg className="w-full h-full opacity-60" viewBox="0 0 1440 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M-100 450 C 350 250, 1090 250, 1540 450" stroke="url(#red-neon-grad)" strokeWidth="3" />
+                        <path d="M-100 470 C 350 270, 1090 270, 1540 470" stroke="url(#red-neon-glow)" strokeWidth="20" opacity="0.3" />
+                        <defs>
+                            <linearGradient id="red-neon-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor="#FF1E1E" stopOpacity="0.2" />
+                                <stop offset="50%" stopColor="#FF3B3B" stopOpacity="1" />
+                                <stop offset="100%" stopColor="#FF6B35" stopOpacity="0.2" />
+                            </linearGradient>
+                            <linearGradient id="red-neon-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor="#FF1E1E" stopOpacity="0" />
+                                <stop offset="50%" stopColor="#FF3B3B" stopOpacity="0.8" />
+                                <stop offset="100%" stopColor="#FF6B35" stopOpacity="0" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
                 </div>
 
-                {/* Hero Title */}
-                <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black tracking-tight text-white max-w-5xl leading-[1.08] mb-8">
-                    The Ultimate <br className="hidden sm:inline" />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-400 to-amber-500">
-                        Operating System
-                    </span> <br className="hidden sm:inline" />
-                    for Restaurants
-                </h1>
+                <div className="flex flex-col items-center justify-center my-auto relative z-10 max-w-5xl mx-auto pt-6">
+                    {/* Badge */}
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-950/40 border border-red-500/30 text-red-400 font-bold text-xs sm:text-sm mb-8 shadow-2xl backdrop-blur-md">
+                        <Star size={14} className="fill-red-500 text-red-500" />
+                        <span>Rated #1 POS System 2026</span>
+                    </div>
 
-                {/* Subtitle */}
-                <p className="text-lg sm:text-2xl text-slate-400 font-medium max-w-3xl leading-relaxed mb-12">
-                    Streamline your operations, boost your sales, and delight your customers with our all-in-one POS, inventory, and online ordering platform.
-                </p>
+                    {/* Hero Title - Exact Match to Screenshot */}
+                    <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black tracking-tight text-white leading-[1.08] mb-8">
+                        The Ultimate <span className="text-[#FF4D30]">Operating</span> <br />
+                        <span className="text-[#FF5722]">System</span> for Restaurants
+                    </h1>
 
-                {/* CTA Action Buttons */}
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-5 w-full max-w-md sm:max-w-none">
-                    <Link 
-                        to="/staff/register" 
-                        className="w-full sm:w-auto bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-extrabold text-lg px-9 py-4 rounded-2xl shadow-2xl shadow-red-500/35 hover:shadow-red-500/50 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 group"
-                    >
-                        Subscribe Now 
-                        <ArrowRight size={20} className="group-hover:translate-x-1.5 transition-transform" />
-                    </Link>
+                    {/* Subtitle */}
+                    <p className="text-lg sm:text-xl text-slate-400 font-medium max-w-2xl leading-relaxed mb-10">
+                        Streamline your operations, boost your sales, and delight your customers with our all-in-one POS, inventory, and online ordering platform.
+                    </p>
 
-                    <button 
-                        onClick={() => setShowDemoModal(true)}
-                        className="w-full sm:w-auto bg-white/[0.04] hover:bg-white/[0.08] text-white border border-white/[0.12] font-extrabold text-lg px-8 py-4 rounded-2xl shadow-lg hover:border-white/[0.25] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 cursor-pointer group"
-                    >
-                        <PlayCircle size={22} className="text-red-400 group-hover:scale-110 transition-transform" /> 
-                        <span>View Interactive 3D Demo</span>
-                    </button>
+                    {/* CTA Action Buttons */}
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-5 w-full max-w-md sm:max-w-none">
+                        <Link 
+                            to="/staff/register" 
+                            className="w-full sm:w-auto bg-[#EE2737] hover:bg-[#D61E2E] text-white font-black text-lg px-9 py-4 rounded-2xl shadow-2xl shadow-red-600/40 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 group"
+                        >
+                            Subscribe Now 
+                            <ArrowRight size={20} className="group-hover:translate-x-1.5 transition-transform" />
+                        </Link>
+
+                        <button 
+                            onClick={() => setShowDemoModal(true)}
+                            className="w-full sm:w-auto bg-[#070B18]/80 hover:bg-white/[0.06] text-white border border-white/[0.15] font-black text-lg px-8 py-4 rounded-2xl shadow-lg hover:border-white/[0.3] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 cursor-pointer group"
+                        >
+                            <PlayCircle size={22} className="text-red-400 group-hover:scale-110 transition-transform" /> 
+                            <span>View Interactive 3D Demo</span>
+                        </button>
+                    </div>
                 </div>
 
-                {/* Hero Stat Pill Bar */}
-                <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-4xl pt-8 border-t border-white/[0.08]">
-                    <div className="p-4 text-center">
-                        <div className="text-2xl sm:text-3xl font-black text-white">99.9%</div>
-                        <div className="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-1">Uptime SLA</div>
+                {/* 4 Feature Columns Banner below Hero (Matches Screenshot) */}
+                <div className="w-full max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-12 z-10">
+                    <div className="bg-[#080D1D]/90 border border-white/[0.08] p-5 rounded-2xl flex items-start gap-4 text-left backdrop-blur-md">
+                        <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl shrink-0">
+                            <Calculator size={22} />
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-white text-sm mb-1">All-in-One POS</h4>
+                            <p className="text-xs text-slate-400 font-medium leading-relaxed">Manage orders, payments, and tables seamlessly.</p>
+                        </div>
                     </div>
-                    <div className="p-4 text-center">
-                        <div className="text-2xl sm:text-3xl font-black text-orange-400">30%</div>
-                        <div className="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-1">Faster Kitchen Prep</div>
+
+                    <div className="bg-[#080D1D]/90 border border-white/[0.08] p-5 rounded-2xl flex items-start gap-4 text-left backdrop-blur-md">
+                        <div className="p-3 bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-xl shrink-0">
+                            <Boxes size={22} />
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-white text-sm mb-1">Smart Inventory</h4>
+                            <p className="text-xs text-slate-400 font-medium leading-relaxed">Track stock in real-time and reduce waste.</p>
+                        </div>
                     </div>
-                    <div className="p-4 text-center">
-                        <div className="text-2xl sm:text-3xl font-black text-red-400">Zero</div>
-                        <div className="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-1">Proprietary Hardware</div>
+
+                    <div className="bg-[#080D1D]/90 border border-white/[0.08] p-5 rounded-2xl flex items-start gap-4 text-left backdrop-blur-md">
+                        <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl shrink-0">
+                            <LineChart size={22} />
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-white text-sm mb-1">Boost Sales</h4>
+                            <p className="text-xs text-slate-400 font-medium leading-relaxed">Optimize operations and increase profitability.</p>
+                        </div>
                     </div>
-                    <div className="p-4 text-center">
-                        <div className="text-2xl sm:text-3xl font-black text-amber-400">10,000+</div>
-                        <div className="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-1">Active Branches</div>
+
+                    <div className="bg-[#080D1D]/90 border border-white/[0.08] p-5 rounded-2xl flex items-start gap-4 text-left backdrop-blur-md">
+                        <div className="p-3 bg-orange-500/10 border border-orange-500/20 text-orange-400 rounded-xl shrink-0">
+                            <Users size={22} />
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-white text-sm mb-1">Happy Customers</h4>
+                            <p className="text-xs text-slate-400 font-medium leading-relaxed">Fast service, accurate orders, and better experience.</p>
+                        </div>
                     </div>
                 </div>
             </section>
+
 
             {/* 2. Trusted By Brands Ribbon */}
             <section className="py-12 border-y border-white/[0.08] bg-[#0A0F1F]/60 backdrop-blur-md relative z-10">
