@@ -11,8 +11,6 @@ import {
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
-import { useAuth } from '../../context/AuthContext';
-
 const BusinessIntelligence = () => {
     const { api } = useAuth();
     const [rawOutletsData, setRawOutletsData] = useState([]);
