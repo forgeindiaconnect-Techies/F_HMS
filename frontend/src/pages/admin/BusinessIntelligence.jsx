@@ -11,34 +11,11 @@ import {
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
-const PIE_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-
-const DEMO_OUTLETS_DATA = [
-    { outlet: "Mumbai Downtown", region: "West", sales: 1850000, profit: 777000, margins: 42.0, footfall: 3420, topCategory: "Pizzas & Pastas" },
-    { outlet: "IGI Airport T3", region: "North", sales: 3420000, profit: 1641600, margins: 48.0, footfall: 6850, topCategory: "Combos & Bundles" },
-    { outlet: "CyberHub Gurugram", region: "North", sales: 2210000, profit: 994500, margins: 45.0, footfall: 4120, topCategory: "Pizzas & Pastas" },
-    { outlet: "Indiranagar Bengaluru", region: "South", sales: 1540000, profit: 600600, margins: 39.0, footfall: 2900, topCategory: "Beverages & Desserts" },
-    { outlet: "Park Street Kolkata", region: "East", sales: 1280000, profit: 473600, margins: 37.0, footfall: 2400, topCategory: "Appetizers" }
-];
-
-const CATEGORY_DISTRIBUTION = [
-    { name: "Pizzas & Pastas", value: 42, revenue: 4326000 },
-    { name: "Combos & Meals", value: 28, revenue: 2884000 },
-    { name: "Beverages & Drinks", value: 16, revenue: 1648000 },
-    { name: "Appetizers & Sides", value: 9, revenue: 927000 },
-    { name: "Desserts", value: 5, revenue: 515000 }
-];
-
-const TOP_DISH_PERFORMANCE = [
-    { rank: 1, name: "Truffle Mushroom Pizza", salesCount: 1420, revenue: 852000, marginPct: "64.2%" },
-    { rank: 2, name: "Peri Peri Chicken Combo", salesCount: 1890, revenue: 1039500, marginPct: "58.0%" },
-    { rank: 3, name: "Artisanal Cold Brew", salesCount: 2450, revenue: 465500, marginPct: "78.5%" },
-    { rank: 4, name: "Four Cheese Lasagna", salesCount: 980, revenue: 539000, marginPct: "52.1%" }
-];
+import { useAuth } from '../../context/AuthContext';
 
 const BusinessIntelligence = () => {
     const { api } = useAuth();
-    const [rawOutletsData, setRawOutletsData] = useState(DEMO_OUTLETS_DATA);
+    const [rawOutletsData, setRawOutletsData] = useState([]);
     const [loading, setLoading] = useState(true);
 
     // Filter states
@@ -65,29 +42,41 @@ const BusinessIntelligence = () => {
                     });
 
                     const completedOrders = branchOrders.filter(o => o.isPaid || o.status === 'Completed');
-                    const sales = completedOrders.reduce((sum, o) => sum + (o.totalPrice || 0), 0) || (1500000 + idx * 400000);
-                    const margins = 38 + (idx * 3) % 12;
+                    const sales = completedOrders.reduce((sum, o) => sum + (o.totalPrice || 0), 0) || 0;
+                    const margins = sales > 0 ? 38 + (idx * 3) % 12 : 0;
                     const profit = Math.round(sales * (margins / 100));
-                    const footfall = branchOrders.length || (2000 + idx * 800);
+                    const footfall = completedOrders.length || 0;
+
+                    // Derive top category from real orders if available
+                    let topCat = 'N/A';
+                    if (completedOrders.length > 0) {
+                        const cats = {};
+                        completedOrders.forEach(o => o.orderItems?.forEach(i => {
+                            cats[i.name] = (cats[i.name] || 0) + i.qty;
+                        }));
+                        if (Object.keys(cats).length > 0) {
+                            topCat = Object.keys(cats).reduce((a, b) => cats[a] > cats[b] ? a : b);
+                        }
+                    }
 
                     return {
                         outlet: branch.name,
-                        region: idx % 2 === 0 ? 'North' : 'West',
+                        region: 'N/A', // Update later to use actual branch region if added
                         sales,
                         profit,
                         margins,
                         footfall,
-                        topCategory: idx % 2 === 0 ? 'Pizzas & Pastas' : 'Combos & Bundles'
+                        topCategory: topCat
                     };
                 });
 
                 setRawOutletsData(computedData);
             } else {
-                setRawOutletsData(DEMO_OUTLETS_DATA);
+                setRawOutletsData([]);
             }
         } catch (err) {
             console.error('Failed to load live BI metrics', err);
-            setRawOutletsData(DEMO_OUTLETS_DATA);
+            setRawOutletsData([]);
         } finally {
             setLoading(false);
         }
@@ -346,57 +335,23 @@ const BusinessIntelligence = () => {
                         </div>
                     </div>
 
-                    {/* Donut Chart: Category Mix */}
+                    {/* Donut Chart: Category Mix (Placeholder if no data) */}
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-4">
                         <h3 className="text-sm font-black text-gray-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
                             <PieIcon size={18} className="text-amber-500" /> Category Revenue Share (%)
                         </h3>
-                        <div className="h-64 flex items-center justify-center">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={CATEGORY_DISTRIBUTION}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={60}
-                                        outerRadius={85}
-                                        paddingAngle={4}
-                                        dataKey="value"
-                                    >
-                                        {CATEGORY_DISTRIBUTION.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '16px', color: '#fff', fontSize: '12px' }} />
-                                    <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
-                                </PieChart>
-                            </ResponsiveContainer>
+                        <div className="h-64 flex items-center justify-center text-gray-400 text-sm">
+                            Real category distribution data will appear here once orders are processed.
                         </div>
                     </div>
 
-                    {/* Top Performing Dishes Table */}
+                    {/* Top Performing Dishes Table (Placeholder if no data) */}
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-4">
                         <h3 className="text-sm font-black text-gray-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
                             <Sparkles size={18} className="text-purple-500" /> Top Margin Dishes
                         </h3>
-                        <div className="divide-y divide-gray-100 dark:divide-slate-800">
-                            {TOP_DISH_PERFORMANCE.map(dish => (
-                                <div key={dish.rank} className="py-3 flex items-center justify-between text-xs">
-                                    <div className="flex items-center gap-3">
-                                        <span className="w-6 h-6 rounded-lg bg-gray-100 dark:bg-slate-800 flex items-center justify-center font-mono font-black text-gray-700 dark:text-slate-300">
-                                            #{dish.rank}
-                                        </span>
-                                        <div>
-                                            <p className="font-bold text-gray-900 dark:text-slate-100">{dish.name}</p>
-                                            <p className="text-[10px] text-gray-400">{dish.salesCount} orders sold</p>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="font-black text-gray-900 dark:text-white">₹{dish.revenue.toLocaleString('en-IN')}</p>
-                                        <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-400">{dish.marginPct} Margin</p>
-                                    </div>
-                                </div>
-                            ))}
+                        <div className="flex items-center justify-center h-40 text-gray-400 text-sm">
+                            Real dish performance metrics will populate here.
                         </div>
                     </div>
                 </div>

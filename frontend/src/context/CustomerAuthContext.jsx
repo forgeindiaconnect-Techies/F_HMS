@@ -73,9 +73,9 @@ export const CustomerAuthProvider = ({ children }) => {
         }
     };
 
-    const register = async (name, email, password, roleName) => {
+    const register = async (name, email, password, roleName, phoneNumber) => {
         try {
-            const { data } = await api.post('/auth/register', { name, email, password, roleName: 'Customer', loginType: 'customer' });
+            const { data } = await api.post('/auth/register', { name, email, password, phoneNumber, roleName: 'Customer', loginType: 'customer' });
             setUser(data);
             localStorage.setItem('restosys_customer_user', JSON.stringify(data));
             return { success: true, data };

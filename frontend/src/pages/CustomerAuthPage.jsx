@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Eye, EyeOff, UtensilsCrossed, ArrowRight, Mail, Lock, User as UserIcon, Tag, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, UtensilsCrossed, ArrowRight, Mail, Lock, User as UserIcon, Tag, AlertCircle, Phone, X } from 'lucide-react';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 
 const CustomerAuthPage = () => {
@@ -29,7 +29,7 @@ const CustomerAuthPage = () => {
         if (mode === 'login') {
             result = await login(data.email, data.password);
         } else {
-            result = await registerUser(data.name, data.email, data.password, 'Customer');
+            result = await registerUser(data.name, data.email, data.password, 'Customer', data.phoneNumber);
         }
         
         setLoading(false);
@@ -69,6 +69,9 @@ const CustomerAuthPage = () => {
                     <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2"></div>
                     <div className="absolute bottom-0 right-0 w-40 h-40 bg-orange-900/20 rounded-full blur-2xl translate-x-1/3 translate-y-1/3"></div>
                     
+                    <Link to="/" className="absolute top-4 right-4 text-white/80 hover:text-white bg-black/10 hover:bg-black/20 p-2 rounded-full transition-all z-20">
+                        <X size={20} />
+                    </Link>
                     <Link to="/" className="inline-flex items-center gap-2 mb-2 relative z-10">
                         <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
                             <UtensilsCrossed size={28} className="text-white" />
@@ -144,6 +147,28 @@ const CustomerAuthPage = () => {
                             </div>
                             {errors.email && <p className="text-red-500 text-xs mt-1.5 ml-1 font-medium">{errors.email.message}</p>}
                         </div>
+
+                        {/* Phone Number - Register only */}
+                        {mode === 'register' && (
+                            <div>
+                                <div className="relative group">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-orange-500 transition-colors">
+                                        <Phone size={18} />
+                                    </div>
+                                    <input
+                                        type="tel"
+                                        placeholder="Mobile Number (10 digits)"
+                                        {...register('phoneNumber', { 
+                                            required: 'Mobile number is required',
+                                            pattern: { value: /^[0-9]{10}$/, message: 'Phone number must be exactly 10 digits' }
+                                        })}
+                                        onInput={(e) => { e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10); }}
+                                        className={`w-full pl-11 pr-4 py-3.5 bg-gray-50 border rounded-xl text-sm outline-none transition-all ${errors.phoneNumber ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-gray-200 hover:border-gray-300 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-100'}`}
+                                    />
+                                </div>
+                                {errors.phoneNumber && <p className="text-red-500 text-xs mt-1.5 ml-1 font-medium">{errors.phoneNumber.message}</p>}
+                            </div>
+                        )}
 
                         {/* Role selector removed for customers */}
 

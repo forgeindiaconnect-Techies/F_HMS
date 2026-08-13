@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Eye, EyeOff, UtensilsCrossed, ArrowRight, Mail, Lock, User as UserIcon, Tag, AlertCircle, Phone, CheckCircle2, QrCode, Loader2, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, UtensilsCrossed, ArrowRight, Mail, Lock, User as UserIcon, Tag, AlertCircle, Phone, CheckCircle2, QrCode, Loader2, ShieldCheck, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api, { getApiUrl } from '../utils/axiosInstance';
 import axios from 'axios';
@@ -215,7 +215,7 @@ const StaffAuthPage = () => {
             const errMsg = err.response?.data?.message || err.message || '';
 
             // Handle case where account was already registered in a previous click
-            if (errMsg.toLowerCase().includes('already exists') || errMsg.toLowerCase().includes('user exists')) {
+            if (errMsg.toLowerCase().includes('already exists') || errMsg.toLowerCase().includes('user exists') || errMsg.toLowerCase().includes('duplicate') || errMsg.toLowerCase().includes('e11000')) {
                 setRegStatusMessage('Account already registered. Logging you in...');
                 const loginRes = await login(data.email, data.password);
                 if (loginRes.success) {
@@ -223,7 +223,7 @@ const StaffAuthPage = () => {
                     navigate('/admin');
                     return;
                 } else {
-                    toast.error('An account with this email already exists. Please sign in with your password.');
+                    toast.error('An account with this email already exists. Please sign in.');
                     switchMode('login');
                     return;
                 }
@@ -346,8 +346,12 @@ const StaffAuthPage = () => {
                 </div>
                 <input
                     type="tel"
-                    placeholder="Phone Number"
-                    {...register('phoneNumber', { required: 'Phone number is required' })}
+                    placeholder="Phone Number (10 digits)"
+                    {...register('phoneNumber', { 
+                        required: 'Phone number is required',
+                        pattern: { value: /^[0-9]{10}$/, message: 'Phone number must be exactly 10 digits' }
+                    })}
+                    onInput={(e) => { e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10); }}
                     className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100 transition-all"
                 />
                 {errors.phoneNumber && <p className="text-xs text-red-500 mt-1 pl-1">{errors.phoneNumber.message}</p>}
@@ -798,6 +802,9 @@ const StaffAuthPage = () => {
                 
                 {/* Branding Header */}
                 <div className="bg-gradient-to-br from-green-500 to-green-600 p-8 text-center relative overflow-hidden">
+                    <Link to="/" className="absolute top-4 right-4 text-white/80 hover:text-white bg-black/10 hover:bg-black/20 p-2 rounded-full transition-all z-20">
+                        <X size={20} />
+                    </Link>
                     <Link to="/" className="inline-flex items-center gap-2 mb-2 relative z-10">
                         <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
                             <UtensilsCrossed size={28} className="text-white" />

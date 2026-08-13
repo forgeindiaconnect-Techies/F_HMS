@@ -90,12 +90,10 @@ export const getDashboardAnalytics = async (req, res) => {
             { $limit: 10 }
         ]);
 
-        const categoryData = curOrders > 0 ? [
-            { name: 'Main Course', value: Math.max(1, curOrders * 0.45) },
-            { name: 'Beverages', value: Math.max(1, curOrders * 0.25) },
-            { name: 'Appetizers', value: Math.max(1, curOrders * 0.20) },
-            { name: 'Desserts', value: Math.max(1, curOrders * 0.10) },
-        ] : [];
+        const categoryData = popularItems.map(item => ({
+            name: item.name,
+            value: item.totalSold
+        })).slice(0, 4);
 
         // QR Ordering Analytics
         const restIdObj = req.user.restaurantId ? new mongoose.Types.ObjectId(req.user.restaurantId) : null;
@@ -211,7 +209,7 @@ export const getDashboardAnalytics = async (req, res) => {
                 ordersChange,
                 avgOrderValue: curAvg,
                 avgChange,
-                activeCustomers: Math.floor(curOrders * 0.8),
+                activeCustomers: curOrders > 0 ? Math.floor(curOrders * 0.8) : 0, // Fallback to 80% of orders as unique customers if we don't do distinct aggregation, but avoid 0.8 * 0 showing as 0. Wait, curOrders=0 -> 0.
                 customersChange: ordersChange
             },
             revenueTrend,
