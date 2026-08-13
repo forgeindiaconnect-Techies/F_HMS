@@ -3,6 +3,7 @@ import { Outlet, useLocation, Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../context/AuthContext';
+
 import VerificationBlockedOverlay from '../components/VerificationBlockedOverlay';
 import { Sparkles, ArrowRight, X, CheckCircle, ShieldCheck, Zap } from 'lucide-react';
 
@@ -32,7 +33,7 @@ const ROUTE_FEATURE_MAP = [
 const PLAN_ORDER_FALLBACK = { Basic: 0, Starter: 0, Pro: 1, Professional: 1, Enterprise: 2 };
 
 const DashboardLayout = () => {
-    const { restaurant, api } = useAuth();
+    const { restaurant, api, fetchRestaurant } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -62,18 +63,46 @@ const DashboardLayout = () => {
 
     // ── Dynamic feature gating check ───────────────────────────────────────────
     // Returns true if the restaurant's current plan grants access to a given feature.
-    // When DB plans have loaded: checks plan.features array (DB-driven, respects SuperAdmin config).
-    // While loading or if plan not found: falls back to static PLAN_ORDER_FALLBACK hierarchy.
+    //
+    // Priority order:
+    // 1. If DB plan has SaaS feature keys configured (by SuperAdmin) → use them
+    // 2. If DB plan exists but has NO SaaS feature keys (only display text like
+    //    "1 Branch", "Basic POS Billing") → fall back to static plan hierarchy
+    // 3. If plan not found in DB or plans haven't loaded yet → fall back to hierarchy
+    //
+    // This ensures upgrades always unlock content even when SuperAdmin hasn't
+    // explicitly configured plan feature keys in the Feature Management matrix.
+    const SAAS_FEATURE_KEYS = [
+        'Sales Reports', 'Stock Levels', 'Vendor Management', 'Advanced Table Management',
+        'Customer Segmentation', 'Delivery Partner Management', 'Multi-Branch Management',
+        'Stock Transfer', 'Advanced AI Insights', 'Business Health Score', 'Sales Prediction',
+        'Live Chat / Priority Support', 'Profit & Loss', 'Inventory Reports', 'Raw Materials',
+        'Low Stock Alerts', 'Expiry Tracking', 'Purchase Orders', 'Waste Management',
+        'Staff Performance', 'Customer Analytics', 'Order Analytics', 'Tax Reports',
+        'PDF Export', 'Excel Export', 'Advanced Customer Analytics', 'Customer Segmentation',
+        'Upgrade/Downgrade', 'Billing History', 'Payment History', 'Renewal', 'Feature Access',
+        'Advanced AI Insights', 'Sales Prediction', 'Inventory Forecast', 'Demand Forecast',
+        'Menu Recommendations', 'Business Health Score', 'QR Digital Menu', 'Order Management',
+        'Advanced Staff Management', 'Advanced Order Analytics',
+    ];
     const planHasFeature = (planName, featureKey, fallbackMinPlan) => {
         if (plansDataLoaded && allPlans.length > 0) {
             const planObj = allPlans.find(
                 p => p.name && planName && p.name.toLowerCase() === planName.toLowerCase()
             );
-            if (planObj) {
-                return Array.isArray(planObj.features) && planObj.features.includes(featureKey);
+            if (planObj && Array.isArray(planObj.features) && planObj.features.length > 0) {
+                // Check if this plan has ANY recognised SaaS feature key configured.
+                // If it does, the SuperAdmin has set up feature gating — use it.
+                const hasSaasKeys = planObj.features.some(f => SAAS_FEATURE_KEYS.includes(f));
+                if (hasSaasKeys) {
+                    // SuperAdmin has configured feature keys — use DB-driven check
+                    return planObj.features.includes(featureKey);
+                }
+                // Plan exists but only has display text features ("1 Branch" etc.) —
+                // SuperAdmin hasn't set up feature gating yet. Fall through to hierarchy.
             }
         }
-        // Fallback: use static plan hierarchy while data loads or if plan name not found in DB
+        // Fallback: static plan hierarchy (plan not found, empty, or unconfigured)
         return (PLAN_ORDER_FALLBACK[planName] ?? 0) >= (PLAN_ORDER_FALLBACK[fallbackMinPlan] ?? 99);
     };
 
@@ -150,19 +179,31 @@ const DashboardLayout = () => {
         setPaymentStatus('processing');
 
         try {
-            const res = await api.post('/restaurants/mine/upgrade', {
+            await api.post('/restaurants/mine/upgrade', {
                 planName: selectedPlanToBuy.name,
                 billingCycle: billingCycle
             });
 
+            setPaymentStatus('success');
+
+            // Immediately refresh restaurant context (updates subscription.plan)
+            // and re-fetch plan feature configs so gating unlocks without needing reload
+            try {
+                const [, freshPlans] = await Promise.all([
+                    fetchRestaurant(),
+                    api.get('/plans')
+                ]);
+                if (freshPlans?.data) {
+                    setAllPlans(freshPlans.data);
+                    setPlans(freshPlans.data);
+                }
+            } catch (_) { /* non-critical — page reload below will fix it */ }
+
             setTimeout(() => {
-                setPaymentStatus('success');
-                setTimeout(() => {
-                    setShowPlansModal(false);
-                    // Reload to immediately refresh Auth context and un-gate page
-                    window.location.reload();
-                }, 1200);
-            }, 1500);
+                setShowPlansModal(false);
+                // Full reload ensures sidebar, topbar, and all gating states are fresh
+                window.location.reload();
+            }, 1200);
         } catch (error) {
             console.error("Upgrade payment error", error);
             setPaymentStatus('failed');
