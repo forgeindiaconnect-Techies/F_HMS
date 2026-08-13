@@ -78,51 +78,51 @@ const Home = () => {
     ];
 
     return (
-        <div className="w-full min-h-screen bg-[#050816] text-[#FFFFFF] font-sans selection:bg-[#FF2D55] selection:text-white relative overflow-x-hidden animate-in fade-in duration-700">
+        <div className="w-full min-h-screen bg-white dark:bg-[#050816] text-[#0F172A] dark:text-[#FFFFFF] font-sans selection:bg-[#FF2D55] selection:text-white relative overflow-x-hidden transition-colors duration-300">
             
-            {/* Ambient Background Radial Glows */}
-            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-gradient-to-b from-[#FF2D55]/15 via-[#FF6A00]/10 to-transparent blur-[160px] pointer-events-none z-0" />
-            <div className="fixed bottom-0 right-0 w-[700px] h-[700px] bg-[#FF2D55]/5 blur-[180px] pointer-events-none z-0" />
+            {/* Ambient Background Radial Glows (Visible in dark mode) */}
+            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-gradient-to-b from-[#FF2D55]/10 via-[#FF6A00]/5 to-transparent blur-[160px] pointer-events-none z-0 hidden dark:block" />
+            <div className="fixed bottom-0 right-0 w-[700px] h-[700px] bg-[#FF2D55]/5 blur-[180px] pointer-events-none z-0 hidden dark:block" />
 
             {/* Sticky Glassmorphism Navbar */}
-            <header className="sticky top-0 z-50 bg-[#050816]/70 backdrop-blur-xl border-b border-white/[0.08] py-4 px-4 sm:px-8 transition-all">
+            <header className="sticky top-0 z-50 bg-white/80 dark:bg-[#050816]/70 backdrop-blur-xl border-b border-gray-100 dark:border-white/[0.08] py-4 px-4 sm:px-8 transition-all">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-3 group cursor-pointer">
                         <div className="w-10 h-10 bg-gradient-to-tr from-[#FF2D55] to-[#FF6A00] rounded-xl flex items-center justify-center shadow-lg shadow-[#FF2D55]/25 text-white group-hover:scale-105 transition-transform">
                             <Utensils size={20} />
                         </div>
-                        <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white group-hover:text-[#FF2D55] transition-colors">
+                        <h1 className="text-xl sm:text-2xl font-black tracking-tight text-gray-900 dark:text-white group-hover:text-[#FF2D55] transition-colors">
                             Restaurant<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF2D55] to-[#FF6A00]">Hub</span>
                         </h1>
                     </Link>
                     
-                    <nav className="hidden md:flex gap-8 font-semibold text-sm text-[#94A3B8] items-center">
+                    <nav className="hidden md:flex gap-8 font-semibold text-sm text-gray-600 dark:text-[#94A3B8] items-center">
                         <div className="relative group py-2">
-                            <a href="#features" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:text-white hover:bg-white/[0.05] transition-all cursor-pointer">
+                            <a href="#features" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/[0.05] transition-all cursor-pointer">
                                 Features <ChevronDown size={14} className="group-hover:rotate-180 transition-transform text-[#FF2D55]" />
                             </a>
 
-                            <div className="absolute top-full left-0 w-64 bg-[#050816] rounded-2xl shadow-2xl border border-white/[0.08] p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                                <Link to="/features/management" className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] hover:bg-[#FF2D55]/10 text-white font-bold transition-all group/item">
+                            <div className="absolute top-full left-0 w-64 bg-white dark:bg-[#050816] rounded-2xl shadow-2xl border border-gray-100 dark:border-white/[0.08] p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                <Link to="/features/management" className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-white/[0.03] hover:bg-[#FF2D55]/10 text-gray-900 dark:text-white font-bold transition-all group/item">
                                     <div className="flex items-center gap-2.5">
                                         <span className="text-base">📊</span>
                                         <span>Management</span>
                                     </div>
                                     <ArrowRight size={16} className="text-[#FF2D55] group-hover/item:translate-x-1 transition-transform" />
                                 </Link>
-                                <Link to="/features/details?module=orders" className="flex items-center justify-between p-3 mt-1 rounded-xl bg-white/[0.03] hover:bg-[#FF6A00]/10 text-white font-bold transition-all group/item-kds">
+                                <Link to="/features/details?module=orders" className="flex items-center justify-between p-3 mt-1 rounded-xl bg-gray-50 dark:bg-white/[0.03] hover:bg-[#FF6A00]/10 text-gray-900 dark:text-white font-bold transition-all group/item-kds">
                                     <div className="flex items-center gap-2.5">
                                         <span className="text-base">🍳</span>
                                         <span>Kitchen Workflow</span>
                                     </div>
                                     <ArrowRight size={16} className="text-[#FF6A00] group-hover/item-kds:translate-x-1 transition-transform" />
                                 </Link>
-                                <Link to="/features/details?module=intelligence" className="flex items-center justify-between p-3 mt-1 rounded-xl bg-white/[0.03] hover:bg-emerald-500/10 text-white font-bold transition-all group/item-pos">
+                                <Link to="/features/details?module=intelligence" className="flex items-center justify-between p-3 mt-1 rounded-xl bg-gray-50 dark:bg-white/[0.03] hover:bg-emerald-500/10 text-gray-900 dark:text-white font-bold transition-all group/item-pos">
                                     <div className="flex items-center gap-2.5">
                                         <span className="text-base">💳</span>
                                         <span>POS Billing</span>
                                     </div>
-                                    <ArrowRight size={16} className="text-emerald-400 group-hover/item-pos:translate-x-1 transition-transform" />
+                                    <ArrowRight size={16} className="text-emerald-500 dark:text-emerald-400 group-hover/item-pos:translate-x-1 transition-transform" />
                                 </Link>
                             </div>
                         </div>
@@ -130,22 +130,23 @@ const Home = () => {
                         <Link to="/3d-demo" className="hover:text-[#FF2D55] transition-colors flex items-center gap-1.5 font-bold text-[#FF2D55]">
                             <Sparkles size={14} className="animate-pulse" /> 3D Demo
                         </Link>
-                        <a href="#workflow" className="hover:text-white transition-colors">Workflow</a>
-                        <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-                        <Link to="/contact" className="hover:text-white transition-colors">Contact</Link>
+                        <a href="#workflow" className="hover:text-gray-900 dark:hover:text-white transition-colors">Workflow</a>
+                        <a href="#pricing" className="hover:text-gray-900 dark:hover:text-white transition-colors">Pricing</a>
+                        <Link to="/contact" className="hover:text-gray-900 dark:hover:text-white transition-colors">Contact</Link>
                     </nav>
 
                     <div className="flex items-center gap-4 text-xs sm:text-sm font-bold shrink-0">
-                        <Link to="/staff/login" className="text-[#94A3B8] hover:text-white transition-colors px-2 py-1">Log In</Link>
+                        <Link to="/staff/login" className="text-gray-600 dark:text-[#94A3B8] hover:text-gray-900 dark:hover:text-white transition-colors px-2 py-1">Log In</Link>
                         <Link to="/staff/register" className="relative group overflow-hidden rounded-xl p-[1px] font-extrabold focus:outline-none">
                             <span className="absolute inset-0 bg-gradient-to-r from-[#FF2D55] via-[#FF6A00] to-[#FF2D55] rounded-xl group-hover:opacity-100 transition-opacity" />
-                            <span className="relative block px-5 py-2.5 bg-[#050816] rounded-[11px] text-white group-hover:bg-transparent transition-colors">
+                            <span className="relative block px-5 py-2.5 bg-white dark:bg-[#050816] text-gray-900 dark:text-white group-hover:bg-transparent group-hover:text-white transition-colors">
                                 Get Started Free
                             </span>
                         </Link>
                     </div>
                 </div>
             </header>
+
 
             {/* Hero Section */}
             <section id="demo" className="min-h-[calc(100vh-80px)] flex flex-col justify-between items-center text-center px-4 pt-12 pb-16 relative z-10 overflow-hidden">
@@ -172,13 +173,13 @@ const Home = () => {
 
                 <div className="flex flex-col items-center justify-center my-auto relative z-10 max-w-4xl mx-auto pt-4">
                     {/* Small Badge */}
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] text-[#FF2D55] font-bold text-xs sm:text-sm mb-6 shadow-2xl backdrop-blur-md">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-50 dark:bg-white/[0.03] border border-red-100 dark:border-white/[0.08] text-[#FF2D55] font-bold text-xs sm:text-sm mb-6 shadow-sm dark:shadow-2xl backdrop-blur-md">
                         <Star size={14} className="fill-[#FF2D55] text-[#FF2D55]" />
                         <span>Rated #1 Restaurant POS Platform 2026</span>
                     </div>
 
                     {/* Large Heading */}
-                    <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.12] mb-6">
+                    <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-gray-900 dark:text-white leading-[1.12] mb-6">
                         The Ultimate <br className="hidden sm:inline" />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF2D55] via-[#FF551C] to-[#FF6A00]">
                             Operating System
@@ -187,7 +188,7 @@ const Home = () => {
                     </h1>
 
                     {/* Subtitle */}
-                    <p className="text-base sm:text-lg text-[#94A3B8] font-medium max-w-2xl leading-relaxed mb-8">
+                    <p className="text-base sm:text-lg text-gray-600 dark:text-[#94A3B8] font-medium max-w-2xl leading-relaxed mb-8">
                         Streamline your restaurant operations, increase revenue, manage inventory, and delight customers with our all-in-one Restaurant POS platform.
                     </p>
 
@@ -195,7 +196,7 @@ const Home = () => {
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md sm:max-w-none">
                         <Link 
                             to="/staff/register" 
-                            className="w-full sm:w-auto bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] text-white font-extrabold text-base px-8 py-3.5 rounded-2xl shadow-2xl shadow-[#FF2D55]/35 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2.5 group"
+                            className="w-full sm:w-auto bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] text-white font-extrabold text-base px-8 py-3.5 rounded-2xl shadow-xl shadow-[#FF2D55]/25 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2.5 group"
                         >
                             Subscribe Now 
                             <ArrowRight size={18} className="group-hover:translate-x-1.5 transition-transform" />
@@ -203,7 +204,7 @@ const Home = () => {
 
                         <button 
                             onClick={() => setShowDemoModal(true)}
-                            className="w-full sm:w-auto bg-transparent hover:bg-white/[0.04] text-white border border-white/[0.12] font-extrabold text-base px-7 py-3.5 rounded-2xl hover:border-white/[0.25] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2.5 cursor-pointer group"
+                            className="w-full sm:w-auto bg-gray-50 dark:bg-transparent hover:bg-gray-100 dark:hover:bg-white/[0.04] text-gray-900 dark:text-white border border-gray-200 dark:border-white/[0.12] font-extrabold text-base px-7 py-3.5 rounded-2xl hover:border-gray-300 dark:hover:border-white/[0.25] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2.5 cursor-pointer group"
                         >
                             <PlayCircle size={20} className="text-[#FF2D55] group-hover:scale-110 transition-transform" /> 
                             <span>View Interactive 3D Demo</span>
@@ -215,48 +216,50 @@ const Home = () => {
                 <div className="w-full max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-10 z-10">
                     
                     {/* Card 1 */}
-                    <div className="bg-white/[0.03] border border-white/[0.08] p-5 rounded-[20px] flex items-start gap-4 text-left backdrop-blur-md hover:-translate-y-1 hover:border-[#FF2D55]/40 hover:shadow-xl hover:shadow-[#FF2D55]/5 transition-all duration-300 group cursor-pointer">
+                    <div className="bg-gray-50/80 dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.08] p-5 rounded-[20px] flex items-start gap-4 text-left backdrop-blur-md hover:-translate-y-1 hover:border-[#FF2D55]/40 hover:shadow-xl hover:shadow-[#FF2D55]/5 transition-all duration-300 group cursor-pointer">
                         <div className="p-3 bg-[#FF2D55]/10 border border-[#FF2D55]/20 text-[#FF2D55] rounded-xl shrink-0 group-hover:scale-110 transition-transform">
                             <Calculator size={22} />
                         </div>
                         <div>
-                            <h4 className="font-bold text-white text-sm mb-1">POS Management</h4>
-                            <p className="text-xs text-[#94A3B8] font-medium leading-relaxed">Manage orders, billing, and tables effortlessly.</p>
+                            <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-1">POS Management</h4>
+                            <p className="text-xs text-gray-600 dark:text-[#94A3B8] font-medium leading-relaxed">Manage orders, billing, and tables effortlessly.</p>
                         </div>
                     </div>
 
                     {/* Card 2 */}
-                    <div className="bg-white/[0.03] border border-white/[0.08] p-5 rounded-[20px] flex items-start gap-4 text-left backdrop-blur-md hover:-translate-y-1 hover:border-[#FF6A00]/40 hover:shadow-xl hover:shadow-[#FF6A00]/5 transition-all duration-300 group cursor-pointer">
+                    <div className="bg-gray-50/80 dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.08] p-5 rounded-[20px] flex items-start gap-4 text-left backdrop-blur-md hover:-translate-y-1 hover:border-[#FF6A00]/40 hover:shadow-xl hover:shadow-[#FF6A00]/5 transition-all duration-300 group cursor-pointer">
                         <div className="p-3 bg-[#FF6A00]/10 border border-[#FF6A00]/20 text-[#FF6A00] rounded-xl shrink-0 group-hover:scale-110 transition-transform">
                             <Boxes size={22} />
                         </div>
                         <div>
-                            <h4 className="font-bold text-white text-sm mb-1">Smart Inventory</h4>
-                            <p className="text-xs text-[#94A3B8] font-medium leading-relaxed">Track ingredients in real-time and reduce waste.</p>
+                            <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-1">Smart Inventory</h4>
+                            <p className="text-xs text-gray-600 dark:text-[#94A3B8] font-medium leading-relaxed">Track ingredients in real-time and reduce waste.</p>
                         </div>
                     </div>
 
                     {/* Card 3 */}
-                    <div className="bg-white/[0.03] border border-white/[0.08] p-5 rounded-[20px] flex items-start gap-4 text-left backdrop-blur-md hover:-translate-y-1 hover:border-[#FF2D55]/40 hover:shadow-xl hover:shadow-[#FF2D55]/5 transition-all duration-300 group cursor-pointer">
+                    <div className="bg-gray-50/80 dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.08] p-5 rounded-[20px] flex items-start gap-4 text-left backdrop-blur-md hover:-translate-y-1 hover:border-[#FF2D55]/40 hover:shadow-xl hover:shadow-[#FF2D55]/5 transition-all duration-300 group cursor-pointer">
                         <div className="p-3 bg-[#FF2D55]/10 border border-[#FF2D55]/20 text-[#FF2D55] rounded-xl shrink-0 group-hover:scale-110 transition-transform">
                             <LineChart size={22} />
                         </div>
                         <div>
-                            <h4 className="font-bold text-white text-sm mb-1">Boost Revenue</h4>
-                            <p className="text-xs text-[#94A3B8] font-medium leading-relaxed">Increase sales with analytics and customer insights.</p>
+                            <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-1">Boost Revenue</h4>
+                            <p className="text-xs text-gray-600 dark:text-[#94A3B8] font-medium leading-relaxed">Increase sales with analytics and customer insights.</p>
                         </div>
                     </div>
 
+
                     {/* Card 4 */}
-                    <div className="bg-white/[0.03] border border-white/[0.08] p-5 rounded-[20px] flex items-start gap-4 text-left backdrop-blur-md hover:-translate-y-1 hover:border-[#FF6A00]/40 hover:shadow-xl hover:shadow-[#FF6A00]/5 transition-all duration-300 group cursor-pointer">
+                    <div className="bg-gray-50/80 dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.08] p-5 rounded-[20px] flex items-start gap-4 text-left backdrop-blur-md hover:-translate-y-1 hover:border-[#FF6A00]/40 hover:shadow-xl hover:shadow-[#FF6A00]/5 transition-all duration-300 group cursor-pointer">
                         <div className="p-3 bg-[#FF6A00]/10 border border-[#FF6A00]/20 text-[#FF6A00] rounded-xl shrink-0 group-hover:scale-110 transition-transform">
                             <Users size={22} />
                         </div>
                         <div>
-                            <h4 className="font-bold text-white text-sm mb-1">Happy Customers</h4>
-                            <p className="text-xs text-[#94A3B8] font-medium leading-relaxed">Deliver faster service and improve customer experience.</p>
+                            <h4 className="font-bold text-gray-900 dark:text-white text-sm mb-1">Happy Customers</h4>
+                            <p className="text-xs text-gray-600 dark:text-[#94A3B8] font-medium leading-relaxed">Deliver faster service and improve customer experience.</p>
                         </div>
                     </div>
+
 
                 </div>
             </section>
