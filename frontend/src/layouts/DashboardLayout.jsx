@@ -25,7 +25,7 @@ const ROUTE_FEATURE_MAP = [
     { path: '/admin/developer-config', featureKey: 'Advanced AI Insights',      fallbackMinPlan: 'Enterprise' },
     { path: '/admin/audit-logs',       featureKey: 'Business Health Score',     fallbackMinPlan: 'Enterprise' },
     { path: '/admin/bi',               featureKey: 'Sales Prediction',          fallbackMinPlan: 'Enterprise' },
-    // NOTE: /admin/support is available to ALL plans — no gating
+    { path: '/admin/support',          featureKey: 'Live Chat / Priority Support', fallbackMinPlan: 'Enterprise' },
 ];
 
 // Fallback static hierarchy used only when DB plans haven't loaded yet
