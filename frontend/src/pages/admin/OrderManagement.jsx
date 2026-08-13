@@ -88,7 +88,10 @@ const OrderDetailModal = ({ order, onClose, onAdvance, onPickup }) => {
 const OrderCard = ({ order, onView, onAdvance, onPickup }) => {
     const nextStatus = getNextStatus(order.status);
     return (
-        <div className="relative bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 hover:shadow-md transition-all group">
+        <div 
+            onClick={() => onView(order)}
+            className="relative bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 hover:shadow-md transition-all group cursor-pointer"
+        >
             <div className="flex justify-between items-start mb-3">
                 <span className="font-bold text-gray-900 dark:text-white text-sm">
                     #{order.orderNumber || (order._id || '').slice(-6)}
@@ -123,37 +126,9 @@ const OrderCard = ({ order, onView, onAdvance, onPickup }) => {
                 </span>
                 <span className="font-bold text-green-600 text-sm">₹{(order.totalPrice || 0).toFixed(0)}</span>
             </div>
-
-            {/* Hover action overlay */}
-            <div className="absolute inset-0 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 border border-green-500">
-                <button
-                    onClick={() => onView(order)}
-                    className="bg-gray-100 dark:bg-slate-700 p-2.5 rounded-full text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
-                    title="View Details"
-                >
-                    <Eye size={17} />
-                </button>
-                {order.orderType === 'Takeaway' && order.status !== 'Delivered' && (
-                    <button
-                        onClick={() => onPickup(order)}
-                        className="bg-amber-500 p-2.5 rounded-full text-white hover:bg-amber-600 transition-colors"
-                        title="Mark as Picked Up"
-                    >
-                        <Package size={17} />
-                    </button>
-                )}
-                {nextStatus && (
-                    <button
-                        onClick={() => onAdvance(order, nextStatus)}
-                        className="bg-green-600 p-2.5 rounded-full text-white hover:bg-green-700 transition-colors"
-                        title={`Advance to ${nextStatus}`}
-                    >
-                        <CheckCircle2 size={17} />
-                    </button>
-                )}
-            </div>
         </div>
     );
+
 };
 
 /* ── Main Component ─────────────────────────────────────────────── */
