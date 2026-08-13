@@ -278,22 +278,22 @@ html.dark .text-gray-500, html.dark .text-slate-500, html.dark .text-gray-400 {
   color: #94a3b8 !important;
 }
 
-/* Container & Card Backgrounds */
+/* Container & Card Backgrounds - Single Unified Dark Theme */
 html.dark .bg-white,
 html.dark .bg-gray-50,
+html.dark .bg-gray-100,
+html.dark .bg-gray-200,
+html.dark .bg-slate-800,
 html.dark .bg-slate-900,
 html.dark .bg-slate-950,
-html.dark .bg-white\/80 {
-  background-color: #0A0F1F !important;
+html.dark .bg-white\/80,
+html.dark .bg-\[\#0A0F1F\],
+html.dark .bg-\[\#080D1D\],
+html.dark .bg-\[\#0E152B\] {
+  background-color: #050816 !important;
   color: #f8fafc !important;
 }
 
-html.dark .bg-gray-100,
-html.dark .bg-gray-200,
-html.dark .bg-slate-800 {
-  background-color: #0E152B !important;
-  color: #f8fafc !important;
-}
 
 /* Borders */
 html.dark .border-gray-100,

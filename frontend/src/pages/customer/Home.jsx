@@ -170,86 +170,87 @@ const Home = () => {
                     </svg>
                 </div>
 
-                <div className="flex flex-col items-center justify-center my-auto relative z-10 max-w-5xl mx-auto pt-6">
+                <div className="flex flex-col items-center justify-center my-auto relative z-10 max-w-4xl mx-auto pt-4">
                     {/* Badge */}
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-950/40 border border-red-500/30 text-red-400 font-bold text-xs sm:text-sm mb-8 shadow-2xl backdrop-blur-md">
+                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-950/40 border border-red-500/30 text-red-400 font-bold text-xs sm:text-sm mb-6 shadow-2xl backdrop-blur-md">
                         <Star size={14} className="fill-red-500 text-red-500" />
                         <span>Rated #1 POS System 2026</span>
                     </div>
 
-                    {/* Hero Title - Exact Match to Screenshot */}
-                    <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black tracking-tight text-white leading-[1.08] mb-8">
+                    {/* Hero Title - Reduced font size for clean balance */}
+                    <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.15] mb-6">
                         The Ultimate <span className="text-[#FF4D30]">Operating</span> <br />
                         <span className="text-[#FF5722]">System</span> for Restaurants
                     </h1>
 
                     {/* Subtitle */}
-                    <p className="text-lg sm:text-xl text-slate-400 font-medium max-w-2xl leading-relaxed mb-10">
+                    <p className="text-base sm:text-lg text-slate-400 font-medium max-w-xl leading-relaxed mb-8">
                         Streamline your operations, boost your sales, and delight your customers with our all-in-one POS, inventory, and online ordering platform.
                     </p>
 
                     {/* CTA Action Buttons */}
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-5 w-full max-w-md sm:max-w-none">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md sm:max-w-none">
                         <Link 
                             to="/staff/register" 
-                            className="w-full sm:w-auto bg-[#EE2737] hover:bg-[#D61E2E] text-white font-black text-lg px-9 py-4 rounded-2xl shadow-2xl shadow-red-600/40 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 group"
+                            className="w-full sm:w-auto bg-[#EE2737] hover:bg-[#D61E2E] text-white font-bold text-base px-8 py-3.5 rounded-2xl shadow-xl shadow-red-600/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2.5 group"
                         >
                             Subscribe Now 
-                            <ArrowRight size={20} className="group-hover:translate-x-1.5 transition-transform" />
+                            <ArrowRight size={18} className="group-hover:translate-x-1.5 transition-transform" />
                         </Link>
 
                         <button 
                             onClick={() => setShowDemoModal(true)}
-                            className="w-full sm:w-auto bg-[#070B18]/80 hover:bg-white/[0.06] text-white border border-white/[0.15] font-black text-lg px-8 py-4 rounded-2xl shadow-lg hover:border-white/[0.3] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 cursor-pointer group"
+                            className="w-full sm:w-auto bg-transparent hover:bg-white/[0.05] text-white border border-white/[0.15] font-bold text-base px-7 py-3.5 rounded-2xl hover:border-white/[0.3] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2.5 cursor-pointer group"
                         >
-                            <PlayCircle size={22} className="text-red-400 group-hover:scale-110 transition-transform" /> 
+                            <PlayCircle size={20} className="text-red-400 group-hover:scale-110 transition-transform" /> 
                             <span>View Interactive 3D Demo</span>
                         </button>
                     </div>
                 </div>
 
-                {/* 4 Feature Columns Banner below Hero (Matches Screenshot) */}
-                <div className="w-full max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-12 z-10">
-                    <div className="bg-[#080D1D]/90 border border-white/[0.08] p-5 rounded-2xl flex items-start gap-4 text-left backdrop-blur-md">
-                        <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl shrink-0">
-                            <Calculator size={22} />
+                {/* 4 Feature Columns Banner below Hero (Seamless - No Box Container Color) */}
+                <div className="w-full max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-10 z-10">
+                    <div className="bg-transparent border border-white/[0.08] p-4.5 rounded-2xl flex items-start gap-3.5 text-left backdrop-blur-sm">
+                        <div className="p-2.5 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl shrink-0">
+                            <Calculator size={20} />
                         </div>
                         <div>
-                            <h4 className="font-bold text-white text-sm mb-1">All-in-One POS</h4>
+                            <h4 className="font-bold text-white text-sm mb-0.5">All-in-One POS</h4>
                             <p className="text-xs text-slate-400 font-medium leading-relaxed">Manage orders, payments, and tables seamlessly.</p>
                         </div>
                     </div>
 
-                    <div className="bg-[#080D1D]/90 border border-white/[0.08] p-5 rounded-2xl flex items-start gap-4 text-left backdrop-blur-md">
-                        <div className="p-3 bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-xl shrink-0">
-                            <Boxes size={22} />
+                    <div className="bg-transparent border border-white/[0.08] p-4.5 rounded-2xl flex items-start gap-3.5 text-left backdrop-blur-sm">
+                        <div className="p-2.5 bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-xl shrink-0">
+                            <Boxes size={20} />
                         </div>
                         <div>
-                            <h4 className="font-bold text-white text-sm mb-1">Smart Inventory</h4>
+                            <h4 className="font-bold text-white text-sm mb-0.5">Smart Inventory</h4>
                             <p className="text-xs text-slate-400 font-medium leading-relaxed">Track stock in real-time and reduce waste.</p>
                         </div>
                     </div>
 
-                    <div className="bg-[#080D1D]/90 border border-white/[0.08] p-5 rounded-2xl flex items-start gap-4 text-left backdrop-blur-md">
-                        <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl shrink-0">
-                            <LineChart size={22} />
+                    <div className="bg-transparent border border-white/[0.08] p-4.5 rounded-2xl flex items-start gap-3.5 text-left backdrop-blur-sm">
+                        <div className="p-2.5 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl shrink-0">
+                            <LineChart size={20} />
                         </div>
                         <div>
-                            <h4 className="font-bold text-white text-sm mb-1">Boost Sales</h4>
+                            <h4 className="font-bold text-white text-sm mb-0.5">Boost Sales</h4>
                             <p className="text-xs text-slate-400 font-medium leading-relaxed">Optimize operations and increase profitability.</p>
                         </div>
                     </div>
 
-                    <div className="bg-[#080D1D]/90 border border-white/[0.08] p-5 rounded-2xl flex items-start gap-4 text-left backdrop-blur-md">
-                        <div className="p-3 bg-orange-500/10 border border-orange-500/20 text-orange-400 rounded-xl shrink-0">
-                            <Users size={22} />
+                    <div className="bg-transparent border border-white/[0.08] p-4.5 rounded-2xl flex items-start gap-3.5 text-left backdrop-blur-sm">
+                        <div className="p-2.5 bg-orange-500/10 border border-orange-500/20 text-orange-400 rounded-xl shrink-0">
+                            <Users size={20} />
                         </div>
                         <div>
-                            <h4 className="font-bold text-white text-sm mb-1">Happy Customers</h4>
+                            <h4 className="font-bold text-white text-sm mb-0.5">Happy Customers</h4>
                             <p className="text-xs text-slate-400 font-medium leading-relaxed">Fast service, accurate orders, and better experience.</p>
                         </div>
                     </div>
                 </div>
+
             </section>
 
 
