@@ -664,8 +664,9 @@ const Home = () => {
                             </ul>
                         </div>
                     </div>
-
+                    
                     <div className="pt-8 border-t border-gray-100 dark:border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500 dark:text-[#94A3B8] font-semibold">
+
                         <p>© 2026 RestaurantHub Inc. All rights reserved.</p>
                         <p className="flex items-center gap-4">
                             <span>Terms of Service</span>
@@ -677,37 +678,37 @@ const Home = () => {
 
             {/* Interactive 3D Demo Modal */}
             {showDemoModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#050816]/85 backdrop-blur-2xl animate-in fade-in duration-300">
-                    <div className="bg-[#050816] border border-white/[0.12] rounded-[20px] p-6 sm:p-8 max-w-3xl w-full shadow-2xl relative text-white space-y-6 overflow-hidden">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#050816]/90 backdrop-blur-2xl animate-in fade-in duration-300 overflow-y-auto">
+                    <div className="bg-[#050816] border border-white/[0.12] rounded-[20px] p-5 sm:p-8 max-w-3xl w-full shadow-2xl relative text-white space-y-6 my-auto overflow-hidden">
                         
                         <button 
                             onClick={() => setShowDemoModal(false)}
-                            className="absolute top-4 right-4 p-2.5 bg-white/[0.05] hover:bg-white/[0.1] rounded-full text-[#94A3B8] hover:text-white transition-all cursor-pointer z-20 border border-white/[0.1]"
+                            className="absolute top-4 right-4 p-2 bg-white/[0.05] hover:bg-white/[0.1] rounded-full text-[#94A3B8] hover:text-white transition-all cursor-pointer z-20 border border-white/[0.1]"
                         >
-                            <X size={20} />
+                            <X size={18} />
                         </button>
 
                         <div className="flex items-center gap-3.5 relative z-10">
-                            <div className="p-3 bg-gradient-to-br from-[#FF2D55] to-[#FF6A00] text-white rounded-2xl shadow-lg shadow-[#FF2D55]/25">
-                                <Sparkles size={26} />
+                            <div className="p-2.5 bg-gradient-to-br from-[#FF2D55] to-[#FF6A00] text-white rounded-xl shadow-lg shadow-[#FF2D55]/25">
+                                <Sparkles size={22} />
                             </div>
                             <div>
-                                <h3 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2">
+                                <h3 className="text-lg sm:text-2xl font-black tracking-tight text-white flex flex-wrap items-center gap-2">
                                     Interactive 3D Restaurant Simulator
-                                    <span className="text-[10px] uppercase font-black tracking-widest px-2.5 py-0.5 rounded-full bg-[#FF2D55]/20 text-[#FF2D55] border border-[#FF2D55]/30">
+                                    <span className="text-[9px] uppercase font-black tracking-widest px-2 py-0.5 rounded-full bg-[#FF2D55]/20 text-[#FF2D55] border border-[#FF2D55]/30">
                                         LIVE 3D VIEW
                                     </span>
                                 </h3>
-                                <p className="text-xs text-[#94A3B8] font-medium">Real-time Order Packet Transmission across POS, KDS & QR Ordering</p>
+                                <p className="text-xs text-[#94A3B8] font-medium">Real-time Order Packet Transmission across POS, KDS &amp; QR Ordering</p>
                             </div>
                         </div>
 
                         {/* 3D Simulation Stage */}
-                        <div className="relative aspect-video sm:aspect-[16/9] bg-white/[0.02] rounded-[20px] border border-white/[0.08] overflow-hidden flex flex-col items-center justify-between p-6 shadow-inner">
-                            <div className="w-full flex justify-between items-center z-10">
-                                <div className="flex items-center gap-2 bg-white/[0.03] border border-white/[0.08] px-3 py-1.5 rounded-xl text-xs font-mono text-emerald-400 shadow-md">
+                        <div className="relative min-h-[440px] md:min-h-0 md:aspect-[16/9] bg-white/[0.02] rounded-[20px] border border-white/[0.08] overflow-hidden flex flex-col items-center justify-between p-4 sm:p-6 shadow-inner">
+                            <div className="w-full flex flex-col sm:flex-row gap-2 justify-between items-center z-10">
+                                <div className="flex items-center gap-2 bg-white/[0.03] border border-white/[0.08] px-3 py-1 rounded-full text-[10px] font-mono text-emerald-400 shadow-md">
                                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                                    SYSTEM_STATUS: 3D_ONLINE (SYNC 60FPS)
+                                    SYSTEM_STATUS: 3D_ONLINE
                                 </div>
                                 <button
                                     onClick={() => setDemoStep((prev) => (prev % 4) + 1)}
@@ -717,49 +718,56 @@ const Home = () => {
                                 </button>
                             </div>
 
-                            <div className="relative w-full flex-1 flex items-center justify-around my-2 z-10">
-                                <div className={`relative flex flex-col items-center transition-all duration-500 transform ${demoStep === 1 ? 'scale-110 -translate-y-2' : 'scale-95 opacity-80'}`}>
-                                    <div className={`w-20 h-28 sm:w-24 sm:h-32 rounded-[20px] p-2 bg-white/[0.03] border-2 flex flex-col justify-between items-center transition-all ${demoStep === 1 ? 'border-[#FF2D55] shadow-[#FF2D55]/40 ring-4 ring-[#FF2D55]/20' : 'border-white/[0.1]'}`}>
-                                        <div className="w-full bg-[#050816] rounded-lg p-1.5 flex flex-col items-center gap-1">
-                                            <QrCode size={18} className="text-[#FF2D55] animate-pulse" />
-                                            <span className="text-[8px] font-black text-slate-300">Table #04</span>
+                            {/* Steps Content Area: column on mobile, row on desktop */}
+                            <div className="relative w-full flex-1 flex flex-col md:flex-row items-center justify-center md:justify-around gap-4 md:gap-2 my-4 z-10">
+                                
+                                {/* Step 1: Customer QR */}
+                                <div className={`relative flex flex-col items-center transition-all duration-500 transform ${demoStep === 1 ? 'scale-105 -translate-y-1 md:-translate-y-2' : 'scale-90 opacity-60'}`}>
+                                    <div className={`w-28 h-20 md:w-24 md:h-32 rounded-[20px] p-2 bg-white/[0.03] border-2 flex md:flex-col justify-between items-center gap-2 transition-all ${demoStep === 1 ? 'border-[#FF2D55] shadow-[#FF2D55]/40 ring-4 ring-[#FF2D55]/20' : 'border-white/[0.1]'}`}>
+                                        <div className="w-12 md:w-full bg-[#050816] rounded-lg p-1.5 flex flex-col items-center gap-0.5">
+                                            <QrCode size={14} className="text-[#FF2D55] animate-pulse" />
+                                            <span className="text-[7px] font-black text-slate-300">Table #04</span>
                                         </div>
-                                        <div className="w-full bg-[#FF2D55]/20 border border-[#FF2D55]/30 rounded py-1 text-center text-[9px] font-bold text-[#FF2D55]">
+                                        <div className="flex-1 md:w-full bg-[#FF2D55]/20 border border-[#FF2D55]/30 rounded py-1 text-center text-[9px] font-bold text-[#FF2D55]">
                                             Order Fired
                                         </div>
                                     </div>
-                                    <span className="mt-2 text-xs font-bold text-slate-300">1. Customer QR</span>
+                                    <span className="mt-1 text-[11px] font-bold text-slate-300">1. Customer QR</span>
                                 </div>
 
-                                <div className="relative flex-1 max-w-[60px] sm:max-w-[100px] h-1 bg-white/[0.08] overflow-hidden rounded-full">
-                                    <div className={`h-full bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] transition-all duration-700 ${demoStep >= 2 ? 'w-full' : 'w-0'}`} />
+                                {/* Divider Line 1: vertical on mobile, horizontal on desktop */}
+                                <div className="relative w-0.5 h-6 md:w-full md:max-w-[70px] md:h-1 bg-white/[0.08] overflow-hidden rounded-full shrink-0">
+                                    <div className={`h-full bg-gradient-to-b md:bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] transition-all duration-700 ${demoStep >= 2 ? 'w-full h-full scale-100' : 'w-0 h-0 scale-0'} origin-top md:origin-left`} />
                                 </div>
 
-                                <div className={`relative flex flex-col items-center transition-all duration-500 transform ${demoStep === 2 ? 'scale-110 -translate-y-2' : 'scale-95 opacity-80'}`}>
-                                    <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-[20px] bg-white/[0.03] border-2 flex flex-col items-center justify-center p-3 transition-all ${demoStep === 2 ? 'border-[#FF6A00] shadow-[#FF6A00]/40 ring-4 ring-[#FF6A00]/20' : 'border-white/[0.1]'}`}>
-                                        <div className="p-2 rounded-xl bg-[#FF6A00]/20 text-[#FF6A00] mb-1">
-                                            <Store size={22} className="animate-spin" style={{ animationDuration: '8s' }} />
+                                {/* Step 2: Realtime POS */}
+                                <div className={`relative flex flex-col items-center transition-all duration-500 transform ${demoStep === 2 ? 'scale-105 -translate-y-1 md:-translate-y-2' : 'scale-90 opacity-60'}`}>
+                                    <div className={`w-28 h-16 md:w-24 md:h-24 rounded-[20px] bg-white/[0.03] border-2 flex flex-col items-center justify-center p-2 transition-all ${demoStep === 2 ? 'border-[#FF6A00] shadow-[#FF6A00]/40 ring-4 ring-[#FF6A00]/20' : 'border-white/[0.1]'}`}>
+                                        <div className="p-1.5 rounded-lg bg-[#FF6A00]/20 text-[#FF6A00] mb-0.5">
+                                            <Store size={18} className="animate-spin" style={{ animationDuration: '8s' }} />
                                         </div>
                                         <span className="text-[9px] font-extrabold text-slate-200">POS Hub</span>
                                     </div>
-                                    <span className="mt-2 text-xs font-bold text-slate-300">2. Realtime POS</span>
+                                    <span className="mt-1 text-[11px] font-bold text-slate-300">2. Realtime POS</span>
                                 </div>
 
-                                <div className="relative flex-1 max-w-[60px] sm:max-w-[100px] h-1 bg-white/[0.08] overflow-hidden rounded-full">
-                                    <div className={`h-full bg-gradient-to-r from-[#FF6A00] to-emerald-500 transition-all duration-700 ${demoStep >= 3 ? 'w-full' : 'w-0'}`} />
+                                {/* Divider Line 2: vertical on mobile, horizontal on desktop */}
+                                <div className="relative w-0.5 h-6 md:w-full md:max-w-[70px] md:h-1 bg-white/[0.08] overflow-hidden rounded-full shrink-0">
+                                    <div className={`h-full bg-gradient-to-b md:bg-gradient-to-r from-[#FF6A00] to-emerald-500 transition-all duration-700 ${demoStep >= 3 ? 'w-full h-full scale-100' : 'w-0 h-0 scale-0'} origin-top md:origin-left`} />
                                 </div>
 
-                                <div className={`relative flex flex-col items-center transition-all duration-500 transform ${demoStep === 3 ? 'scale-110 -translate-y-2' : 'scale-95 opacity-80'}`}>
-                                    <div className={`w-24 h-20 sm:w-28 sm:h-24 rounded-[20px] bg-white/[0.03] border-2 flex flex-col items-center justify-center p-2.5 transition-all ${demoStep === 3 ? 'border-emerald-500 shadow-emerald-500/40 ring-4 ring-emerald-500/20' : 'border-white/[0.1]'}`}>
-                                        <div className="w-full bg-[#050816] rounded-lg p-1.5 flex justify-between items-center mb-1">
-                                            <ChefHat size={16} className="text-emerald-400" />
+                                {/* Step 3: Kitchen KDS */}
+                                <div className={`relative flex flex-col items-center transition-all duration-500 transform ${demoStep === 3 ? 'scale-105 -translate-y-1 md:-translate-y-2' : 'scale-90 opacity-60'}`}>
+                                    <div className={`w-28 h-16 md:w-28 md:h-24 rounded-[20px] bg-white/[0.03] border-2 flex flex-col items-center justify-center p-2 transition-all ${demoStep === 3 ? 'border-emerald-500 shadow-emerald-500/40 ring-4 ring-emerald-500/20' : 'border-white/[0.1]'}`}>
+                                        <div className="w-full bg-[#050816] rounded-lg p-1 flex justify-between items-center mb-1">
+                                            <ChefHat size={12} className="text-emerald-400" />
                                             <span className="text-[8px] font-mono text-emerald-400 font-bold">KDS</span>
                                         </div>
                                         <div className="w-full bg-emerald-500/20 border border-emerald-500/30 rounded py-0.5 text-center text-[8px] font-bold text-emerald-300">
                                             🍳 Preparing
                                         </div>
                                     </div>
-                                    <span className="mt-2 text-xs font-bold text-slate-300">3. Kitchen KDS</span>
+                                    <span className="mt-1 text-[11px] font-bold text-slate-300">3. Kitchen KDS</span>
                                 </div>
                             </div>
 
@@ -779,4 +787,8 @@ const Home = () => {
     );
 };
 
+
+
 export default Home;
+
+
