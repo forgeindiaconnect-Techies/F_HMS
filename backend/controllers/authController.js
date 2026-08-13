@@ -151,7 +151,8 @@ export const registerUser = async (req, res) => {
                     await Notification.create({
                         title: 'Verification Under Review',
                         desc: `Restaurant "${restaurant.name}" has submitted verification documents during signup.`,
-                        type: 'System'
+                        type: 'System',
+                        isSuperAdminOnly: true
                     });
                 } catch (notifErr) {
                     console.error("Failed to create signup verification notification", notifErr);
@@ -166,13 +167,15 @@ export const registerUser = async (req, res) => {
                     await Notification.create({
                         title: 'New Restaurant Registered',
                         desc: `New restaurant "${req.body.restaurantName || 'Unnamed'}" has registered. Owner: ${name} (${email})`,
-                        type: 'System'
+                        type: 'System',
+                        isSuperAdminOnly: true
                     });
                 } else if (role === 'Customer') {
                     await Notification.create({
                         title: 'New Customer Signup',
                         desc: `New customer "${name}" (${email}) registered on the platform.`,
-                        type: 'System'
+                        type: 'System',
+                        isSuperAdminOnly: true
                     });
                 }
             } catch (notifErr) {

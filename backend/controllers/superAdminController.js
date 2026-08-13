@@ -203,7 +203,15 @@ export const updateApprovalStatus = async (req, res) => {
 // @access  Private/SuperAdmin
 export const getSuperAdminNotifications = async (req, res) => {
     try {
-        const notifications = await Notification.find({ type: 'System' }).sort({ createdAt: -1 });
+        // Get notifications that are either flagged as super-admin-only,
+        // or are System type with no restaurantId (legacy support)
+        const notifications = await Notification.find({
+            $or: [
+                { isSuperAdminOnly: true },
+                { type: 'System', restaurantId: { $exists: false } },
+                { type: 'System', restaurantId: null }
+            ]
+        }).sort({ createdAt: -1 }).limit(200);
         res.json(notifications);
     } catch (error) {
         res.status(500).json({ message: error.message });

@@ -5,9 +5,40 @@ import Notification from '../models/Notification.js';
 // @access  Private
 export const getNotifications = async (req, res) => {
     try {
-        const query = { restaurantId: req.user.restaurantId };
-        
-        const notifications = await Notification.find(query).sort({ createdAt: -1 });
+        const { role, restaurantId } = req.user;
+
+        let query = {};
+
+        if (role === 'SuperAdmin') {
+            // SuperAdmin sees only system/global notifications (no restaurantId)
+            query = { isSuperAdminOnly: true };
+        } else if (role === 'RestaurantAdmin' || role === 'Admin') {
+            // RestaurantAdmin sees their restaurant notifications targeted at admins
+            // or broadcast notifications (no targetRole restriction)
+            query = {
+                restaurantId,
+                $or: [
+                    { targetRole: null },
+                    { targetRole: { $size: 0 } },
+                    { targetRole: { $in: ['RestaurantAdmin', 'Admin'] } }
+                ]
+            };
+        } else {
+            // Other staff (Waiter, Cashier, Kitchen, etc.) see notifications
+            // targeted at their specific role or with no role restriction
+            query = {
+                restaurantId,
+                $or: [
+                    { targetRole: null },
+                    { targetRole: { $size: 0 } },
+                    { targetRole: { $in: [role] } }
+                ],
+                // Don't show admin-only notifications to staff
+                'targetRole': { $not: { $in: ['RestaurantAdmin', 'Admin'] } }
+            };
+        }
+
+        const notifications = await Notification.find(query).sort({ createdAt: -1 }).limit(100);
         res.json(notifications);
     } catch (error) {
         res.status(500).json({ message: error.message });

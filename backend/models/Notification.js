@@ -25,7 +25,17 @@ const notificationSchema = new mongoose.Schema({
     branchId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Branch',
-    }
+    },
+    // Role-scoping: if set, only these roles can see this notification
+    targetRole: {
+        type: [String],
+        default: null,
+    },
+    // If true, only SuperAdmin can see this (no restaurantId needed)
+    isSuperAdminOnly: {
+        type: Boolean,
+        default: false,
+    },
 }, { timestamps: true });
 
 const Notification = mongoose.model('Notification', notificationSchema);

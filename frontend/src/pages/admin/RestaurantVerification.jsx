@@ -58,6 +58,9 @@ const RestaurantVerification = () => {
 
     useEffect(() => {
         loadVerification();
+        // Auto-poll every 30s so status updates when super admin reviews
+        const interval = setInterval(loadVerification, 30000);
+        return () => clearInterval(interval);
     }, [api]);
 
     const [logoBase64, setLogoBase64] = useState(null);
@@ -388,6 +391,30 @@ const RestaurantVerification = () => {
                         <p className="text-sm font-semibold text-red-600 leading-relaxed">{verification.rejectionReason}</p>
                         <p className="text-xs text-red-500 pt-2 font-bold">Please update and submit correct files for review.</p>
                     </div>
+                </div>
+            )}
+
+            {/* Under Review — clearly tell user NOT to re-upload */}
+            {isUnderReview && (
+                <div className="bg-blue-50 border-2 border-blue-100 p-6 rounded-3xl flex items-start gap-4">
+                    <Clock className="text-blue-500 shrink-0 mt-0.5" size={24} />
+                    <div className="space-y-1 flex-1">
+                        <h4 className="font-black text-blue-700">Documents Under Review</h4>
+                        <p className="text-sm font-semibold text-blue-600 leading-relaxed">
+                            Your documents have been submitted and are currently being reviewed by our team.
+                            <strong> You do not need to upload anything again.</strong>
+                        </p>
+                        <p className="text-xs text-blue-500 pt-1">
+                            This page auto-refreshes every 30 seconds. You will be notified once the review is complete.
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={loadVerification}
+                        className="shrink-0 flex items-center gap-1.5 text-xs font-bold text-blue-700 bg-blue-100 hover:bg-blue-200 px-3 py-2 rounded-xl transition-colors"
+                    >
+                        <RefreshCw size={13} /> Refresh
+                    </button>
                 </div>
             )}
 

@@ -26,16 +26,17 @@ const ThemeToggle = () => {
     }, [isDark]);
 
     useEffect(() => {
-        const handleExternalToggle = () => {
-            const stored = localStorage.getItem('theme');
-            if (stored) {
-                setIsDark(stored === 'dark');
-            } else {
-                setIsDark(document.documentElement.classList.contains('dark'));
-            }
+        // Sync when the Topbar's theme button fires either event
+        const syncFromDOM = () => {
+            const currentlyDark = document.documentElement.classList.contains('dark');
+            setIsDark(currentlyDark);
         };
-        window.addEventListener('toggle-theme', handleExternalToggle);
-        return () => window.removeEventListener('toggle-theme', handleExternalToggle);
+        window.addEventListener('toggle-theme', syncFromDOM);
+        window.addEventListener('theme-changed', syncFromDOM);
+        return () => {
+            window.removeEventListener('toggle-theme', syncFromDOM);
+            window.removeEventListener('theme-changed', syncFromDOM);
+        };
     }, []);
 
     return (

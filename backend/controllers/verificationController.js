@@ -211,11 +211,12 @@ export const submitVerification = async (req, res) => {
         restaurant.approvalStatus = 'Pending';
         await restaurant.save();
 
-        // Notify Super Admins
+        // Notify Super Admins only
         await Notification.create({
             title: 'Verification Under Review',
             desc: `Restaurant "${restaurant.name}" has submitted verification documents for review.`,
-            type: 'System'
+            type: 'System',
+            isSuperAdminOnly: true
         });
 
         res.status(200).json(verification);
@@ -358,12 +359,13 @@ export const reviewVerification = async (req, res) => {
                 }
             });
 
-            // Create notification for restaurant owner
+            // Create notification for restaurant owner only
             await Notification.create({
                 title: 'Verification Approved',
                 desc: `Congratulations! Your restaurant verification has been approved. Your plan "${restaurant.subscription.plan}" is now active until ${expiry.toLocaleDateString()}.`,
                 type: 'Alert',
-                restaurantId: restaurant._id
+                restaurantId: restaurant._id,
+                targetRole: ['RestaurantAdmin', 'Admin']
             });
         } else if (status === 'Rejected') {
             restaurant.approvalStatus = 'Rejected';
@@ -383,7 +385,8 @@ export const reviewVerification = async (req, res) => {
                 title: 'Verification Rejected',
                 desc: `Your restaurant verification was rejected. Reason: ${rejectionReason}. Please correct the issues and try again.`,
                 type: 'Alert',
-                restaurantId: restaurant._id
+                restaurantId: restaurant._id,
+                targetRole: ['RestaurantAdmin', 'Admin']
             });
         } else if (status === 'Re-upload Required') {
             restaurant.approvalStatus = 'Pending';
@@ -394,7 +397,8 @@ export const reviewVerification = async (req, res) => {
                 title: 'Re-upload Documents Required',
                 desc: `Verification review: Some documents require correction and re-uploading. Please check the verification panel for details.`,
                 type: 'Alert',
-                restaurantId: restaurant._id
+                restaurantId: restaurant._id,
+                targetRole: ['RestaurantAdmin', 'Admin']
             });
         }
 
