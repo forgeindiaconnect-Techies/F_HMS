@@ -265,15 +265,15 @@ const Home = () => {
             </section>
 
             {/* Trusted By Brands Ribbon */}
-            <section className="py-12 border-y border-white/[0.08] bg-white/[0.01] backdrop-blur-md relative z-10">
+            <section className="py-12 border-y border-gray-100 dark:border-white/[0.08] bg-gray-50/50 dark:bg-white/[0.01] backdrop-blur-md relative z-10">
                 <div className="max-w-7xl mx-auto px-4 text-center">
-                    <p className="text-xs font-black text-[#94A3B8] uppercase tracking-widest mb-8">Trusted by 10,000+ Hospitality Leaders Worldwide</p>
+                    <p className="text-xs font-black text-gray-500 dark:text-[#94A3B8] uppercase tracking-widest mb-8">Trusted by 10,000+ Hospitality Leaders Worldwide</p>
                     <div className="flex flex-wrap justify-center items-center gap-10 md:gap-20 opacity-80">
-                        <div className="text-2xl font-black text-[#94A3B8] flex items-center gap-2 tracking-tight"><Utensils size={26} className="text-[#FF2D55]" /> Pizza Hut</div>
-                        <div className="text-2xl font-black text-[#94A3B8] italic tracking-wider">Domino's</div>
-                        <div className="text-2xl font-black text-[#94A3B8] tracking-widest">SUBWAY</div>
-                        <div className="text-2xl font-black text-[#94A3B8] font-serif">KFC</div>
-                        <div className="text-2xl font-black text-[#94A3B8] tracking-tight">Burger King</div>
+                        <div className="text-2xl font-black text-gray-600 dark:text-[#94A3B8] flex items-center gap-2 tracking-tight"><Utensils size={26} className="text-[#FF2D55]" /> Pizza Hut</div>
+                        <div className="text-2xl font-black text-gray-600 dark:text-[#94A3B8] italic tracking-wider">Domino's</div>
+                        <div className="text-2xl font-black text-gray-600 dark:text-[#94A3B8] tracking-widest">SUBWAY</div>
+                        <div className="text-2xl font-black text-gray-600 dark:text-[#94A3B8] font-serif">KFC</div>
+                        <div className="text-2xl font-black text-gray-600 dark:text-[#94A3B8] tracking-tight">Burger King</div>
                     </div>
                 </div>
             </section>
@@ -282,40 +282,40 @@ const Home = () => {
             <main className="max-w-7xl mx-auto px-4 sm:px-8 py-24 space-y-32 relative z-10">
 
                 {/* About Platform */}
-                <section id="about" className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center rounded-[20px] p-8 sm:p-14 bg-white/[0.02] border border-white/[0.08] shadow-2xl relative overflow-hidden">
+                <section id="about" className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center rounded-[20px] p-8 sm:p-14 bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/[0.08] shadow-xl dark:shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-96 h-96 bg-[#FF2D55]/10 rounded-full blur-3xl pointer-events-none" />
                     
                     <div className="space-y-6 relative z-10">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FF2D55]/10 border border-[#FF2D55]/20 text-[#FF2D55] rounded-full font-extrabold text-xs uppercase tracking-wider">
                             <Shield size={14} /> Enterprise SaaS Architecture
                         </div>
-                        <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+                        <h2 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
                             One Unified Operating Ecosystem
                         </h2>
-                        <p className="text-slate-300 font-medium text-lg leading-relaxed">
+                        <p className="text-gray-700 dark:text-slate-300 font-medium text-lg leading-relaxed">
                             RestaurantHub functions as a centralized, high-performance SaaS infrastructure engineered to unify front-of-house hospitality and back-of-house kitchen workflows. 
                         </p>
-                        <p className="text-[#94A3B8] font-medium text-sm leading-relaxed">
+                        <p className="text-gray-500 dark:text-[#94A3B8] font-medium text-sm leading-relaxed">
                             By replacing fragmented legacy terminals with a real-time cloud database, our platform synchronizes order routing, stock replenishment cycles, table arrangements, and revenue analytics across all branches simultaneously.
                         </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 relative z-10">
-                        <div className="bg-white/[0.03] p-6 rounded-[20px] border border-white/[0.08] flex flex-col justify-between h-40">
+                        <div className="bg-white dark:bg-white/[0.03] p-6 rounded-[20px] border border-gray-100 dark:border-white/[0.08] shadow-sm dark:shadow-none flex flex-col justify-between h-40">
                             <span className="text-4xl font-black text-[#FF2D55]">99.9%</span>
-                            <span className="text-xs text-[#94A3B8] font-bold uppercase tracking-wider">Real-time Uptime</span>
+                            <span className="text-xs text-gray-500 dark:text-[#94A3B8] font-bold uppercase tracking-wider">Real-time Uptime</span>
                         </div>
-                        <div className="bg-white/[0.03] p-6 rounded-[20px] border border-white/[0.08] flex flex-col justify-between h-40">
+                        <div className="bg-white dark:bg-white/[0.03] p-6 rounded-[20px] border border-gray-100 dark:border-white/[0.08] shadow-sm dark:shadow-none flex flex-col justify-between h-40">
                             <span className="text-4xl font-black text-[#FF6A00]">30%</span>
-                            <span className="text-xs text-[#94A3B8] font-bold uppercase tracking-wider">Faster Kitchen Prep</span>
+                            <span className="text-xs text-gray-500 dark:text-[#94A3B8] font-bold uppercase tracking-wider">Faster Kitchen Prep</span>
                         </div>
-                        <div className="bg-white/[0.03] p-6 rounded-[20px] border border-white/[0.08] flex flex-col justify-between h-40">
-                            <span className="text-4xl font-black text-amber-400">Zero</span>
-                            <span className="text-xs text-[#94A3B8] font-bold uppercase tracking-wider">Proprietary Lock-ins</span>
+                        <div className="bg-white dark:bg-white/[0.03] p-6 rounded-[20px] border border-gray-100 dark:border-white/[0.08] shadow-sm dark:shadow-none flex flex-col justify-between h-40">
+                            <span className="text-4xl font-black text-amber-500 dark:text-amber-400">Zero</span>
+                            <span className="text-xs text-gray-500 dark:text-[#94A3B8] font-bold uppercase tracking-wider">Proprietary Lock-ins</span>
                         </div>
-                        <div className="bg-white/[0.03] p-6 rounded-[20px] border border-white/[0.08] flex flex-col justify-between h-40">
-                            <span className="text-4xl font-black text-emerald-400">2x</span>
-                            <span className="text-xs text-[#94A3B8] font-bold uppercase tracking-wider">Order Precision</span>
+                        <div className="bg-white dark:bg-white/[0.03] p-6 rounded-[20px] border border-gray-100 dark:border-white/[0.08] shadow-sm dark:shadow-none flex flex-col justify-between h-40">
+                            <span className="text-4xl font-black text-emerald-600 dark:text-emerald-400">2x</span>
+                            <span className="text-xs text-gray-500 dark:text-[#94A3B8] font-bold uppercase tracking-wider">Order Precision</span>
                         </div>
                     </div>
                 </section>
@@ -326,32 +326,32 @@ const Home = () => {
                         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#FF2D55]/10 border border-[#FF2D55]/20 text-[#FF2D55] font-bold text-xs uppercase tracking-wider">
                             <Flame size={14} /> Full Platform Capability
                         </div>
-                        <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight">Everything You Need in One Unified Stack</h2>
-                        <p className="text-[#94A3B8] font-medium text-base sm:text-lg">No third-party add-ons required. Designed to eliminate operational friction.</p>
+                        <h2 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white tracking-tight">Everything You Need in One Unified Stack</h2>
+                        <p className="text-gray-500 dark:text-[#94A3B8] font-medium text-base sm:text-lg">No third-party add-ons required. Designed to eliminate operational friction.</p>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
                         {coreFeatures.map((feature, idx) => (
                             <div 
                                 key={idx} 
-                                className="bg-white/[0.03] p-5 rounded-[20px] border border-white/[0.08] hover:border-[#FF2D55]/40 transition-all flex flex-col items-center gap-3 text-center group cursor-pointer"
+                                className="bg-white dark:bg-white/[0.03] p-5 rounded-[20px] border border-gray-100 dark:border-white/[0.08] hover:border-[#FF2D55]/40 shadow-sm dark:shadow-none transition-all flex flex-col items-center gap-3 text-center group cursor-pointer"
                             >
-                                <div className={`w-14 h-14 rounded-xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center ${feature.color} group-hover:scale-110 transition-transform`}>
+                                <div className={`w-14 h-14 rounded-xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.08] flex items-center justify-center ${feature.color} group-hover:scale-110 transition-transform`}>
                                     {feature.icon}
                                 </div>
-                                <span className="text-xs font-bold text-[#94A3B8] group-hover:text-white transition-colors">{feature.name}</span>
+                                <span className="text-xs font-bold text-gray-600 dark:text-[#94A3B8] group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{feature.name}</span>
                             </div>
                         ))}
                     </div>
                 </section>
 
                 {/* Kitchen KDS Showcase */}
-                <section id="workflow" className="rounded-[20px] p-8 sm:p-14 bg-white/[0.02] border border-white/[0.08] shadow-2xl relative overflow-hidden">
+                <section id="workflow" className="rounded-[20px] p-8 sm:p-14 bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/[0.08] shadow-xl dark:shadow-2xl relative overflow-hidden">
                     <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#FF2D55]/10 rounded-full blur-3xl pointer-events-none" />
                     
                     <div className="text-center mb-16 relative z-10 max-w-3xl mx-auto">
-                        <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight mb-4">Interactive Kitchen Workflow (KDS)</h2>
-                        <p className="text-[#94A3B8] font-medium text-lg">Digitize your kitchen line. Route orders directly to specific stations without paper tickets.</p>
+                        <h2 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white tracking-tight mb-4">Interactive Kitchen Workflow (KDS)</h2>
+                        <p className="text-gray-500 dark:text-[#94A3B8] font-medium text-lg">Digitize your kitchen line. Route orders directly to specific stations without paper tickets.</p>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 relative z-10 items-center">
@@ -359,53 +359,53 @@ const Home = () => {
                             <div className="flex items-start gap-5">
                                 <div className="w-14 h-14 bg-[#FF2D55]/10 border border-[#FF2D55]/20 rounded-2xl flex items-center justify-center text-[#FF2D55] shrink-0"><ChefHat size={28} /></div>
                                 <div>
-                                    <h4 className="font-bold text-xl text-white mb-1">Color-Coded Station Tickets</h4>
-                                    <p className="text-[#94A3B8] text-sm font-medium leading-relaxed">Orders dynamically change colors based on preparation timers to keep kitchen staff synchronized during peak rush hours.</p>
+                                    <h4 className="font-bold text-xl text-gray-900 dark:text-white mb-1">Color-Coded Station Tickets</h4>
+                                    <p className="text-gray-500 dark:text-[#94A3B8] text-sm font-medium leading-relaxed">Orders dynamically change colors based on preparation timers to keep kitchen staff synchronized during peak rush hours.</p>
                                 </div>
                             </div>
 
                             <div className="flex items-start gap-5">
                                 <div className="w-14 h-14 bg-[#FF6A00]/10 border border-[#FF6A00]/20 rounded-2xl flex items-center justify-center text-[#FF6A00] shrink-0"><Clock size={28} /></div>
                                 <div>
-                                    <h4 className="font-bold text-xl text-white mb-1">Preparation Time Analytics</h4>
-                                    <p className="text-[#94A3B8] text-sm font-medium leading-relaxed">Track precise prep durations per dish and resolve operational bottlenecks with real-time station metrics.</p>
+                                    <h4 className="font-bold text-xl text-gray-900 dark:text-white mb-1">Preparation Time Analytics</h4>
+                                    <p className="text-gray-500 dark:text-[#94A3B8] text-sm font-medium leading-relaxed">Track precise prep durations per dish and resolve operational bottlenecks with real-time station metrics.</p>
                                 </div>
                             </div>
 
                             <div className="flex items-start gap-5">
-                                <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-400 shrink-0"><Monitor size={28} /></div>
+                                <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0"><Monitor size={28} /></div>
                                 <div>
-                                    <h4 className="font-bold text-xl text-white mb-1">Multi-Station Auto Routing</h4>
-                                    <p className="text-[#94A3B8] text-sm font-medium leading-relaxed">Automatically dispatch drink orders to the bar terminal and hot food items directly to the grill display.</p>
+                                    <h4 className="font-bold text-xl text-gray-900 dark:text-white mb-1">Multi-Station Auto Routing</h4>
+                                    <p className="text-gray-500 dark:text-[#94A3B8] text-sm font-medium leading-relaxed">Automatically dispatch drink orders to the bar terminal and hot food items directly to the grill display.</p>
                                 </div>
                             </div>
                         </div>
 
                         {/* KDS Card Display */}
-                        <div className="bg-white/[0.03] border border-white/[0.08] rounded-[20px] p-6 shadow-2xl space-y-4">
-                            <div className="flex justify-between items-center pb-4 border-b border-white/[0.08]">
+                        <div className="bg-white dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.08] rounded-[20px] p-6 shadow-md dark:shadow-2xl space-y-4">
+                            <div className="flex justify-between items-center pb-4 border-b border-gray-100 dark:border-white/[0.08]">
                                 <div className="flex items-center gap-2.5">
                                     <span className="w-3 h-3 rounded-full bg-[#FF2D55] animate-ping" />
-                                    <span className="font-black text-xs text-white uppercase tracking-wider">KDS Live Feed</span>
+                                    <span className="font-black text-xs text-gray-800 dark:text-white uppercase tracking-wider">KDS Live Feed</span>
                                 </div>
-                                <span className="text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full font-bold">3 Active Tickets</span>
+                                <span className="text-xs bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded-full font-bold">3 Active Tickets</span>
                             </div>
                             
                             <div className="space-y-3">
-                                <div className="bg-white/[0.03] p-4 rounded-xl border-l-4 border-[#FF2D55] flex justify-between items-center border border-white/[0.05]">
+                                <div className="bg-red-50 dark:bg-white/[0.03] p-4 rounded-xl border-l-4 border-[#FF2D55] flex justify-between items-center border border-red-100 dark:border-white/[0.05]">
                                     <div>
-                                        <div className="font-bold text-white text-sm">Table 04 • #ORD-9912</div>
-                                        <div className="text-xs text-[#94A3B8] mt-1">1x Truffle Pizza, 2x Fresh Lemonade</div>
+                                        <div className="font-bold text-gray-900 dark:text-white text-sm">Table 04 • #ORD-9912</div>
+                                        <div className="text-xs text-gray-500 dark:text-[#94A3B8] mt-1">1x Truffle Pizza, 2x Fresh Lemonade</div>
                                     </div>
-                                    <span className="text-xs bg-[#FF2D55]/20 text-[#FF2D55] font-bold px-2.5 py-1 rounded-lg">Cooking • 4m</span>
+                                    <span className="text-xs bg-[#FF2D55]/10 dark:bg-[#FF2D55]/20 text-[#FF2D55] font-bold px-2.5 py-1 rounded-lg">Cooking • 4m</span>
                                 </div>
                                 
-                                <div className="bg-white/[0.03] p-4 rounded-xl border-l-4 border-[#FF6A00] flex justify-between items-center border border-white/[0.05]">
+                                <div className="bg-orange-50 dark:bg-white/[0.03] p-4 rounded-xl border-l-4 border-[#FF6A00] flex justify-between items-center border border-orange-100 dark:border-white/[0.05]">
                                     <div>
-                                        <div className="font-bold text-white text-sm">Table 09 • #ORD-9915</div>
-                                        <div className="text-xs text-[#94A3B8] mt-1">2x Wagyu Smash Burger, 1x Fries</div>
+                                        <div className="font-bold text-gray-900 dark:text-white text-sm">Table 09 • #ORD-9915</div>
+                                        <div className="text-xs text-gray-500 dark:text-[#94A3B8] mt-1">2x Wagyu Smash Burger, 1x Fries</div>
                                     </div>
-                                    <span className="text-xs bg-[#FF6A00]/20 text-[#FF6A00] font-bold px-2.5 py-1 rounded-lg">Received • 1m</span>
+                                    <span className="text-xs bg-[#FF6A00]/10 dark:bg-[#FF6A00]/20 text-[#FF6A00] font-bold px-2.5 py-1 rounded-lg">Received • 1m</span>
                                 </div>
                             </div>
                         </div>
@@ -416,8 +416,8 @@ const Home = () => {
                 <section className="space-y-8">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div>
-                            <h2 className="text-3xl font-black text-white tracking-tight">Active Restaurant Storefronts</h2>
-                            <p className="text-[#94A3B8] text-sm font-medium mt-1">Preview how your brand appears on our customer ordering web app</p>
+                            <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Active Restaurant Storefronts</h2>
+                            <p className="text-gray-500 dark:text-[#94A3B8] text-sm font-medium mt-1">Preview how your brand appears on our customer ordering web app</p>
                         </div>
                         <Link to="/explore" className="text-xs font-extrabold text-[#FF2D55] hover:text-[#FF2D55]/80 flex items-center gap-1.5 bg-[#FF2D55]/10 border border-[#FF2D55]/20 px-4 py-2 rounded-xl transition-all">
                             View All Brands <ArrowRight size={14} />
@@ -462,22 +462,22 @@ const Home = () => {
                 {/* Pricing Plans Section */}
                 <section id="pricing" className="space-y-12">
                     <div className="text-center space-y-4 max-w-3xl mx-auto">
-                        <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight">Transparent, Predictable Pricing</h2>
-                        <p className="text-[#94A3B8] font-medium text-base sm:text-lg">Zero hidden fees, zero commission markups. Upgrade or downgrade anytime.</p>
+                        <h2 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white tracking-tight">Transparent, Predictable Pricing</h2>
+                        <p className="text-gray-500 dark:text-[#94A3B8] font-medium text-base sm:text-lg">Zero hidden fees, zero commission markups. Upgrade or downgrade anytime.</p>
                         
-                        <div className="inline-flex items-center justify-center gap-3 p-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] mt-4">
+                        <div className="inline-flex items-center justify-center gap-3 p-1.5 rounded-full bg-gray-100 dark:bg-white/[0.03] border border-gray-200 dark:border-white/[0.08] mt-4">
                             <button
                                 onClick={() => setIsYearly(false)}
-                                className={`px-5 py-2 rounded-full text-xs font-extrabold transition-all cursor-pointer ${!isYearly ? 'bg-[#FF2D55] text-white shadow-md' : 'text-[#94A3B8] hover:text-white'}`}
+                                className={`px-5 py-2 rounded-full text-xs font-extrabold transition-all cursor-pointer ${!isYearly ? 'bg-[#FF2D55] text-white shadow-md' : 'text-gray-500 dark:text-[#94A3B8] hover:text-gray-900 dark:hover:text-white'}`}
                             >
                                 Monthly Billing
                             </button>
                             <button
                                 onClick={() => setIsYearly(true)}
-                                className={`px-5 py-2 rounded-full text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${isYearly ? 'bg-[#FF2D55] text-white shadow-md' : 'text-[#94A3B8] hover:text-white'}`}
+                                className={`px-5 py-2 rounded-full text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 ${isYearly ? 'bg-[#FF2D55] text-white shadow-md' : 'text-gray-500 dark:text-[#94A3B8] hover:text-gray-900 dark:hover:text-white'}`}
                             >
                                 Yearly Billing
-                                <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-black">
+                                <span className="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-black">
                                     Save 20%
                                 </span>
                             </button>
@@ -502,8 +502,8 @@ const Home = () => {
                                         key={plan._id || idx} 
                                         className={`p-8 rounded-[20px] relative flex flex-col justify-between transition-all duration-300 ${
                                             isPopular
-                                                ? 'bg-gradient-to-b from-white/[0.05] to-white/[0.02] border-2 border-[#FF2D55] shadow-2xl shadow-[#FF2D55]/20 transform md:-translate-y-4'
-                                                : 'bg-white/[0.03] border border-white/[0.08] shadow-xl hover:border-white/[0.18]'
+                                                ? 'bg-gradient-to-b from-[#FF2D55]/5 dark:from-white/[0.05] to-transparent dark:to-white/[0.02] border-2 border-[#FF2D55] shadow-2xl shadow-[#FF2D55]/10 dark:shadow-[#FF2D55]/20 transform md:-translate-y-4'
+                                                : 'bg-white dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.08] shadow-md dark:shadow-xl hover:border-gray-200 dark:hover:border-white/[0.18]'
                                         }`}
                                     >
                                         {isPopular && (
@@ -512,12 +512,12 @@ const Home = () => {
                                             </div>
                                         )}
                                         <div>
-                                            <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
-                                            <div className="text-4xl font-black text-white mb-2">
+                                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{plan.name}</h3>
+                                            <div className="text-4xl font-black text-gray-900 dark:text-white mb-2">
                                                 ₹{(price || 0).toLocaleString('en-IN')}
-                                                <span className="text-base font-medium text-[#94A3B8]">/mo</span>
+                                                <span className="text-base font-medium text-gray-500 dark:text-[#94A3B8]">/mo</span>
                                             </div>
-                                            <p className="text-xs text-[#94A3B8] mb-6 font-semibold">
+                                            <p className="text-xs text-gray-500 dark:text-[#94A3B8] mb-6 font-semibold">
                                                 {isYearly ? 'Billed annually. Includes all core updates.' : 'Billed monthly. Cancel anytime.'}
                                             </p>
 
@@ -526,7 +526,7 @@ const Home = () => {
                                                 className={`w-full py-3.5 rounded-xl font-extrabold text-sm mb-8 flex justify-center items-center transition-all ${
                                                     isPopular
                                                         ? 'bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] text-white hover:opacity-90 shadow-lg shadow-[#FF2D55]/30'
-                                                        : 'bg-white/[0.05] border border-white/[0.1] text-white hover:bg-white/[0.1]'
+                                                        : 'bg-gray-100 dark:bg-white/[0.05] border border-gray-200 dark:border-white/[0.1] text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-white/[0.1]'
                                                 }`}
                                             >
                                                 Subscribe Now
@@ -536,7 +536,7 @@ const Home = () => {
                                                 {(plan.features || []).map((f, i) => (
                                                     <div key={i} className="flex items-center gap-3">
                                                         <CheckCircle2 size={18} className="text-[#FF2D55] shrink-0" />
-                                                        <span className="font-medium text-xs text-slate-300">{f}</span>
+                                                        <span className="font-medium text-xs text-gray-600 dark:text-slate-300">{f}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -551,8 +551,8 @@ const Home = () => {
                 {/* FAQ Section */}
                 <section id="faq" className="max-w-3xl mx-auto space-y-8">
                     <div className="text-center space-y-2">
-                        <h2 className="text-3xl font-black text-white tracking-tight">Frequently Asked Questions</h2>
-                        <p className="text-[#94A3B8] text-sm font-medium">Clear answers to help you get onboarded seamlessly.</p>
+                        <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Frequently Asked Questions</h2>
+                        <p className="text-gray-500 dark:text-[#94A3B8] text-sm font-medium">Clear answers to help you get onboarded seamlessly.</p>
                     </div>
 
                     <div className="space-y-3">
@@ -561,16 +561,16 @@ const Home = () => {
                             { q: "Do I need proprietary hardware terminals?", a: "No. RestaurantHub is cloud-native and runs smoothly on standard iPads, Android tablets, smartphones, or Windows PCs." },
                             { q: "What happens if internet connectivity drops?", a: "Our POS includes an offline sync engine that continues accepting orders and printing receipts locally, syncing back to the cloud automatically when reconnected." }
                         ].map((faq, i) => (
-                            <div key={i} className="border border-white/[0.08] rounded-[20px] overflow-hidden bg-white/[0.03]">
+                            <div key={i} className="border border-gray-100 dark:border-white/[0.08] rounded-[20px] overflow-hidden bg-white dark:bg-white/[0.03] shadow-sm dark:shadow-none">
                                 <button 
                                     onClick={() => setOpenFaq(openFaq === i ? null : i)} 
-                                    className="w-full flex items-center justify-between p-5 text-left font-bold text-base text-white hover:bg-white/[0.02] transition-colors"
+                                    className="w-full flex items-center justify-between p-5 text-left font-bold text-base text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors"
                                 >
                                     {faq.q}
-                                    {openFaq === i ? <Minus size={18} className="text-[#FF2D55] shrink-0"/> : <Plus size={18} className="text-[#94A3B8] shrink-0"/>}
+                                    {openFaq === i ? <Minus size={18} className="text-[#FF2D55] shrink-0"/> : <Plus size={18} className="text-gray-400 dark:text-[#94A3B8] shrink-0"/>}
                                 </button>
                                 {openFaq === i && (
-                                    <div className="p-5 pt-0 text-slate-300 text-sm leading-relaxed border-t border-white/[0.05]">
+                                    <div className="p-5 pt-0 text-gray-600 dark:text-slate-300 text-sm leading-relaxed border-t border-gray-100 dark:border-white/[0.05]">
                                         {faq.a}
                                     </div>
                                 )}
@@ -582,7 +582,7 @@ const Home = () => {
             </main>
 
             {/* Footer */}
-            <footer className="border-t border-white/[0.08] bg-[#050816] py-16 relative z-10">
+            <footer className="border-t border-gray-100 dark:border-white/[0.08] bg-gray-50 dark:bg-[#050816] py-16 relative z-10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-8 space-y-12">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                         <div className="md:col-span-2 space-y-4">
@@ -593,16 +593,16 @@ const Home = () => {
                                 <div className="w-9 h-9 bg-gradient-to-tr from-[#FF2D55] to-[#FF6A00] rounded-xl flex items-center justify-center text-white shadow-md">
                                     <Utensils size={18} />
                                 </div>
-                                <h2 className="text-2xl font-black text-white tracking-tight">RestaurantHub</h2>
+                                <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">RestaurantHub</h2>
                             </div>
-                            <p className="text-[#94A3B8] text-sm max-w-sm leading-relaxed">
+                            <p className="text-gray-500 dark:text-[#94A3B8] text-sm max-w-sm leading-relaxed">
                                 The all-in-one operating system for modern hospitality. POS billing, inventory management, digital ordering, and KDS workflows perfectly synchronized.
                             </p>
                         </div>
 
                         <div className="space-y-3">
-                            <h4 className="font-bold text-white text-sm uppercase tracking-wider">Product</h4>
-                            <ul className="space-y-2 text-sm text-[#94A3B8]">
+                            <h4 className="font-bold text-gray-900 dark:text-white text-sm uppercase tracking-wider">Product</h4>
+                            <ul className="space-y-2 text-sm text-gray-500 dark:text-[#94A3B8]">
                                 <li><a href="#features" className="hover:text-[#FF2D55] transition-colors">Features</a></li>
                                 <li><a href="#pricing" className="hover:text-[#FF2D55] transition-colors">Pricing</a></li>
                                 <li><a href="#workflow" className="hover:text-[#FF2D55] transition-colors">Kitchen KDS</a></li>
@@ -610,15 +610,15 @@ const Home = () => {
                         </div>
 
                         <div className="space-y-3">
-                            <h4 className="font-bold text-white text-sm uppercase tracking-wider">Company</h4>
-                            <ul className="space-y-2 text-sm text-[#94A3B8]">
+                            <h4 className="font-bold text-gray-900 dark:text-white text-sm uppercase tracking-wider">Company</h4>
+                            <ul className="space-y-2 text-sm text-gray-500 dark:text-[#94A3B8]">
                                 <li><a href="#about" className="hover:text-[#FF2D55] transition-colors">About Platform</a></li>
                                 <li><Link to="/contact" className="hover:text-[#FF2D55] transition-colors">Support & Contact</Link></li>
                             </ul>
                         </div>
                     </div>
 
-                    <div className="pt-8 border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#94A3B8] font-semibold">
+                    <div className="pt-8 border-t border-gray-100 dark:border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500 dark:text-[#94A3B8] font-semibold">
                         <p>© 2026 RestaurantHub Inc. All rights reserved.</p>
                         <p className="flex items-center gap-4">
                             <span>Terms of Service</span>
