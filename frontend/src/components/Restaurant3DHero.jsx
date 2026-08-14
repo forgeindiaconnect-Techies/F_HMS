@@ -5,7 +5,7 @@ import {
     Sparkles, ArrowRight, Activity, Clock, Zap, Layers 
 } from 'lucide-react';
 
-const Restaurant3DHero = ({ isBackground = false }) => {
+const Restaurant3DHero = ({ isBackground = false, className = "" }) => {
     const containerRef = useRef(null);
     const canvasRef = useRef(null);
     
@@ -391,21 +391,60 @@ const Restaurant3DHero = ({ isBackground = false }) => {
         const pulseSphere = new THREE.Mesh(pulseSphereGeo, pulseSphereMat);
         rootGroup.add(pulseSphere);
 
-        // 13. Mouse Parallax & Animation Loop
-        let mouseX = 0;
-        let mouseY = 0;
-        let targetX = 0;
-        let targetY = 0;
+        // 13. Mouse / Touch Drag to Rotate & Parallax
+        let rotationX = 0;
+        let rotationY = 0;
+        let targetRotationX = 0;
+        let targetRotationY = 0;
 
-        const handleMouseMove = (e) => {
-            const rect = container.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / width - 0.5;
-            const y = (e.clientY - rect.top) / height - 0.5;
-            targetX = x * 0.35;
-            targetY = y * 0.25;
+        let isDragging = false;
+        let previousPointerPosition = { x: 0, y: 0 };
+
+        const handlePointerDown = (e) => {
+            isDragging = true;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            previousPointerPosition = { x: clientX, y: clientY };
         };
 
-        window.addEventListener('mousemove', handleMouseMove);
+        const handlePointerMove = (e) => {
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            if (isDragging) {
+                const deltaX = clientX - previousPointerPosition.x;
+                const deltaY = clientY - previousPointerPosition.y;
+
+                targetRotationX += deltaX * 0.005;
+                targetRotationY += deltaY * 0.005;
+
+                // Clamp vertical rotation
+                targetRotationY = Math.max(-0.4, Math.min(0.4, targetRotationY));
+
+                previousPointerPosition = { x: clientX, y: clientY };
+            } else {
+                // Gentle parallax fallback when not dragging
+                if (!e.touches) {
+                    const rect = container.getBoundingClientRect();
+                    const x = (clientX - rect.left) / width - 0.5;
+                    const y = (clientY - rect.top) / height - 0.5;
+                    targetRotationX = x * 0.35;
+                    targetRotationY = y * 0.25;
+                }
+            }
+        };
+
+        const handlePointerUp = () => {
+            isDragging = false;
+        };
+
+        container.addEventListener('mousedown', handlePointerDown);
+        container.addEventListener('mousemove', handlePointerMove);
+        window.addEventListener('mouseup', handlePointerUp);
+
+        container.addEventListener('touchstart', handlePointerDown, { passive: true });
+        container.addEventListener('touchmove', handlePointerMove, { passive: true });
+        window.addEventListener('touchend', handlePointerUp);
 
         let animationFrameId;
         let clock = new THREE.Clock();
@@ -415,12 +454,12 @@ const Restaurant3DHero = ({ isBackground = false }) => {
 
             const elapsedTime = clock.getElapsedTime();
 
-            // Smooth Lerp Mouse Parallax
-            mouseX += (targetX - mouseX) * 0.05;
-            mouseY += (targetY - mouseY) * 0.05;
+            // Smooth Lerp Rotations
+            rotationX += (targetRotationX - rotationX) * 0.05;
+            rotationY += (targetRotationY - rotationY) * 0.05;
 
-            rootGroup.rotation.y = mouseX;
-            rootGroup.rotation.x = mouseY;
+            rootGroup.rotation.y = rotationX;
+            rootGroup.rotation.x = rotationY;
 
             // Gentle Floating Motions
             phoneGroup.rotation.y = -0.4 + Math.sin(elapsedTime * 1.2) * 0.08;
@@ -465,7 +504,12 @@ const Restaurant3DHero = ({ isBackground = false }) => {
 
         return () => {
             cancelAnimationFrame(animationFrameId);
-            window.removeEventListener('mousemove', handleMouseMove);
+            container.removeEventListener('mousedown', handlePointerDown);
+            container.removeEventListener('mousemove', handlePointerMove);
+            window.removeEventListener('mouseup', handlePointerUp);
+            container.removeEventListener('touchstart', handlePointerDown);
+            container.removeEventListener('touchmove', handlePointerMove);
+            window.removeEventListener('touchend', handlePointerUp);
             window.removeEventListener('resize', handleResize);
             renderer.dispose();
         };
@@ -573,7 +617,7 @@ const Restaurant3DHero = ({ isBackground = false }) => {
     }
 
     return (
-        <div ref={containerRef} className="relative w-full h-[520px] md:h-[620px] rounded-[3rem] overflow-hidden bg-gradient-to-br from-slate-900/5 via-slate-50 to-red-50/20 border border-slate-100/80 shadow-2xl flex items-center justify-center">
+        <div ref={containerRef} className={className || "relative w-full h-[520px] md:h-[620px] rounded-[3rem] overflow-hidden bg-gradient-to-br from-slate-900/5 via-slate-50 to-red-50/20 border border-slate-100/80 shadow-2xl flex items-center justify-center"}>
             
             {/* Ambient Backlight Blur */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
