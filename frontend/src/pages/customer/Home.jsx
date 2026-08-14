@@ -462,14 +462,9 @@ const Home = () => {
 
                 {/* Customer Storefront Demo Section */}
                 <section className="space-y-8">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <div>
-                            <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Active Restaurant Storefronts</h2>
-                            <p className="text-gray-500 dark:text-[#94A3B8] text-sm font-medium mt-1">Preview how your brand appears on our customer ordering web app</p>
-                        </div>
-                        <Link to="/explore" className="text-xs font-extrabold text-[#FF2D55] hover:text-[#FF2D55]/80 flex items-center gap-1.5 bg-[#FF2D55]/10 border border-[#FF2D55]/20 px-4 py-2 rounded-xl transition-all">
-                            View All Brands <ArrowRight size={14} />
-                        </Link>
+                    <div className="flex flex-col items-start gap-1">
+                        <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Active Restaurant Storefronts</h2>
+                        <p className="text-gray-500 dark:text-[#94A3B8] text-sm font-medium">Preview how your brand appears on our customer ordering web app</p>
                     </div>
 
                     {loading ? (
