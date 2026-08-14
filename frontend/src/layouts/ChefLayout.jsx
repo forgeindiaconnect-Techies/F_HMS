@@ -10,7 +10,7 @@ const ChefLayout = () => {
     const isUnverified = restaurant && restaurant.verificationStatus !== 'Verified';
 
     return (
-        <div className="flex flex-col h-screen overflow-hidden font-sans text-gray-200 bg-[#151923]">
+        <div className="flex flex-col h-screen overflow-hidden font-sans text-slate-900 dark:text-gray-200 bg-gray-50 dark:bg-[#151923]">
             <SubscriptionBanner />
             <div className="flex flex-1 overflow-hidden">
                 <ChefSidebar />
@@ -18,7 +18,7 @@ const ChefLayout = () => {
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
                 <ChefTopbar />
                 
-                <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6 bg-[#151923]">
+                <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6 bg-gray-50 dark:bg-[#151923]">
                     {isUnverified ? (
                         <div className="text-gray-900">
                             <VerificationBlockedOverlay />

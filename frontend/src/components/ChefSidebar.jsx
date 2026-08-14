@@ -68,13 +68,13 @@ const ChefSidebar = () => {
             />
         )}
         <aside className={clsx(
-            "w-64 bg-[#1e2330] shadow-xl h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-transform duration-300 z-40 border-r border-[#2a3040]",
+            "w-64 bg-white dark:bg-[#1e2330] shadow-xl h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-transform duration-300 z-40 border-r border-gray-100 dark:border-[#2a3040]",
             isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}>
             {/* Header */}
-            <div className="p-6 border-b border-[#2a3040] flex items-center gap-3 shrink-0">
+            <div className="p-6 border-b border-gray-100 dark:border-[#2a3040] flex items-center gap-3 shrink-0">
                 {logoSrc && !logoError ? (
-                    <div className="w-10 h-10 rounded-xl overflow-hidden border border-[#2a3040] bg-gray-900 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-100 dark:border-[#2a3040] bg-gray-50 dark:bg-gray-900 flex items-center justify-center shrink-0">
                         <img 
                             src={logoSrc} 
                             alt="Logo" 
@@ -88,10 +88,10 @@ const ChefSidebar = () => {
                     </div>
                 )}
                 <div>
-                    <h1 className="text-lg font-bold text-white leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                    <h1 className="text-lg font-bold text-gray-900 dark:text-white leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
                         {restaurant && restaurant.name ? restaurant.name : 'RestoSys'}
                     </h1>
-                    <span className="text-[10px] font-bold text-orange-400 uppercase tracking-wider block mt-0.5">Kitchen</span>
+                    <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider block mt-0.5">Kitchen</span>
                 </div>
             </div>
             
@@ -99,7 +99,7 @@ const ChefSidebar = () => {
             <nav className="flex-1 px-4 py-4 overflow-y-auto custom-scrollbar">
                 {navGroups.map((group, index) => (
                     <div key={index} className="mb-6">
-                        <h3 className="px-3 mb-2 text-xs font-bold text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        <h3 className="px-3 mb-2 text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'Poppins, sans-serif' }}>
                             {group.title}
                         </h3>
                         <div className="space-y-1">
@@ -113,8 +113,8 @@ const ChefSidebar = () => {
                                         className={({ isActive }) => clsx(
                                             "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm",
                                             isActive 
-                                            ? "bg-orange-500/10 text-orange-400 font-bold" 
-                                            : "text-gray-400 hover:bg-[#2a3040] hover:text-white font-medium"
+                                            ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold" 
+                                            : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#2a3040] hover:text-gray-900 dark:hover:text-white font-medium"
                                         )}
                                     >
                                         <Icon size={18} className={clsx("transition-transform group-hover:scale-110", "shrink-0")} />
@@ -128,8 +128,8 @@ const ChefSidebar = () => {
             </nav>
 
             {/* Footer Logout */}
-            <div className="p-4 border-t border-[#2a3040] shrink-0 bg-[#1a1e2a]">
-                <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2.5 w-full rounded-xl text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-colors text-sm font-bold">
+            <div className="p-4 border-t border-gray-100 dark:border-[#2a3040] shrink-0 bg-gray-50 dark:bg-[#1a1e2a]">
+                <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2.5 w-full rounded-xl text-gray-500 dark:text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-colors text-sm font-bold">
                     <LogOut size={18} />
                     <span>Exit Kitchen</span>
                 </button>
