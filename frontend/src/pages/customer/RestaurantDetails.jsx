@@ -167,9 +167,9 @@ const RestaurantDetails = () => {
                 <img 
                     src={
                         restaurant.logo 
-                            ? (restaurant.logo.startsWith('http') 
+                            ? (restaurant.logo.startsWith('http') || restaurant.logo.startsWith('data:')
                                 ? restaurant.logo 
-                                : `${new URL(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').origin}${restaurant.logo}`)
+                                : `${new URL(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').origin}${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`)
                             : "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2000&auto=format&fit=crop"
                     } 
                     alt={restaurant.name}
