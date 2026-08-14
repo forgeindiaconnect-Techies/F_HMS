@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Sun, Moon } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 const ThemeToggle = () => {
+    const location = useLocation();
+    const isChefRoute = location.pathname.startsWith('/chef');
+
     const [isDark, setIsDark] = useState(() => {
         const stored = localStorage.getItem('theme');
         if (stored) {
@@ -38,6 +42,8 @@ const ThemeToggle = () => {
             window.removeEventListener('theme-changed', syncFromDOM);
         };
     }, []);
+
+    if (isChefRoute) return null;
 
     return (
         <div className="fixed bottom-6 right-6 z-[9999] font-sans">
