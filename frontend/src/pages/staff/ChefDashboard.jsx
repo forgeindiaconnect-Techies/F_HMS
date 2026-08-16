@@ -126,6 +126,50 @@ const ChefDashboard = () => {
         return score;
     };
 
+    // Station item classification helper
+    const isItemInStation = (item, stationName) => {
+        if (!stationName || stationName === 'All') return true;
+        
+        const sName = stationName.toLowerCase();
+        const itemName = (item.name || '').toLowerCase();
+        const category = (item.category || item.product?.category || item.categoryName || '').toLowerCase();
+        const station = (item.station || item.product?.station || '').toLowerCase();
+
+        // 1. Direct explicit station property match
+        if (station && (sName.includes(station) || station.includes(sName))) return true;
+
+        // 2. Category & Name Matchers
+        const isBeverage = 
+            category.includes('beverage') || category.includes('drink') || category.includes('bar') || category.includes('juice') || category.includes('coffee') || category.includes('tea') ||
+            /coffee|shake|latte|tea|drink|juice|soda|beverage|water|mocktail|cocktail|beer|chai|espresso|cappuccino|mojito|smoothie|coke|pepsi|lassi|lemonade|wine|whiskey|vodka|rum|brew|boba/i.test(itemName);
+
+        const isDessert = 
+            category.includes('dessert') || category.includes('sweet') || category.includes('bakery') || category.includes('cake') ||
+            /cake|brownie|ice cream|icecream|pie|sweet|dessert|halwa|jamun|pastry|waffle|pudding|kheer|cookie|chocolate|donut|tiramisu|sundae|custard|gulab/i.test(itemName);
+
+        const isPizzaOven = 
+            category.includes('pizza') || category.includes('oven') || category.includes('italian') || category.includes('baked') ||
+            /pizza|bread|calzone|pasta|baked|oven|garlic|lasagna|risotto|spaghetti|macaroni|panini/i.test(itemName);
+
+        const isColdSalad = 
+            category.includes('salad') || category.includes('cold') || category.includes('sushi') ||
+            /salad|roll|sushi|wrap|tacos|taco|cold|ice|soup|starter|appetizer|raita|curd|dip|hummus|kimchi|slaw/i.test(itemName);
+
+        const isGrillFryer = 
+            category.includes('grill') || category.includes('fry') || category.includes('main') || category.includes('chinese') || category.includes('indian') || category.includes('tandoor') || category.includes('bbq') ||
+            /burger|steak|fry|fries|chicken|bbq|grill|tikka|kebab|paneer|main|rice|biryani|noodle|curry|dal|roti|naan|thali|dosa|sandwich|manchurian|momos|bhatura|samosa|crispy|wings|patty/i.test(itemName);
+
+        if (sName.includes('beverage')) return isBeverage;
+        if (sName.includes('dessert')) return isDessert;
+        if (sName.includes('pizza')) return isPizzaOven;
+        if (sName.includes('cold')) return isColdSalad;
+        if (sName.includes('grill')) {
+            return isGrillFryer || (!isBeverage && !isDessert && !isPizzaOven && !isColdSalad);
+        }
+
+        return true;
+    };
+
     // Filter Logic
     const filterOrder = (order) => {
         // Tab Filter
@@ -146,16 +190,7 @@ const ChefDashboard = () => {
 
         // Station Filter
         if (selectedStation !== 'All') {
-            const sName = selectedStation.toLowerCase();
-            const hasStationItem = order.orderItems?.some(item => {
-                const name = item.name.toLowerCase();
-                if (sName.includes('grill') && (name.includes('burger') || name.includes('steak') || name.includes('fries') || name.includes('chicken') || name.includes('bbq'))) return true;
-                if (sName.includes('pizza') && (name.includes('pizza') || name.includes('bread') || name.includes('calzone') || name.includes('pasta'))) return true;
-                if (sName.includes('cold') && (name.includes('salad') || name.includes('roll') || name.includes('sushi') || name.includes('wrap') || name.includes('tacos'))) return true;
-                if (sName.includes('dessert') && (name.includes('cake') || name.includes('brownie') || name.includes('ice cream') || name.includes('pie'))) return true;
-                if (sName.includes('beverage') && (name.includes('coffee') || name.includes('shake') || name.includes('latte') || name.includes('tea') || name.includes('drink') || name.includes('juice'))) return true;
-                return false;
-            });
+            const hasStationItem = order.orderItems?.some(item => isItemInStation(item, selectedStation));
             if (!hasStationItem) return false;
         }
 
