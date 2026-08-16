@@ -4,18 +4,20 @@ import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const getStationForItem = (itemName) => {
-    const name = itemName.toLowerCase();
-    if (name.includes('burger') || name.includes('steak') || name.includes('beef') || name.includes('ribeye') || name.includes('grill') || name.includes('taco')) {
-        return 'Grill';
+    const name = (itemName || '').toLowerCase();
+    const isMilkDessert = /milk\s*(cake|peda|sweet|pudding|halwa|barfi)|tres\s*leches|rabri|rasmalai|basundi|kheer/i.test(name);
+    
+    if (isMilkDessert || name.includes('dessert') || name.includes('cake') || name.includes('ice cream') || name.includes('sweet') || name.includes('brownie') || name.includes('waffle')) {
+        return 'Dessert';
+    }
+    if (name.includes('milk') || name.includes('drink') || name.includes('soda') || name.includes('juice') || name.includes('tea') || name.includes('coffee') || name.includes('beverage') || name.includes('salad') || name.includes('cold') || name.includes('avocado') || name.includes('bruschetta')) {
+        return 'Salad/Cold';
     }
     if (name.includes('fries') || name.includes('fry') || name.includes('chicken wings') || name.includes('nuggets') || name.includes('chips')) {
         return 'Fryer';
     }
-    if (name.includes('salad') || name.includes('cold') || name.includes('avocado') || name.includes('bruschetta') || name.includes('drink') || name.includes('soda') || name.includes('juice')) {
-        return 'Salad/Cold';
-    }
-    if (name.includes('dessert') || name.includes('cake') || name.includes('ice cream') || name.includes('sweet') || name.includes('brownie') || name.includes('waffle')) {
-        return 'Dessert';
+    if (name.includes('burger') || name.includes('steak') || name.includes('beef') || name.includes('ribeye') || name.includes('grill') || name.includes('taco')) {
+        return 'Grill';
     }
     return 'Grill'; // Default station fallback
 };

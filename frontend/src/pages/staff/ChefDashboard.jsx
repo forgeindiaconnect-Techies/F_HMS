@@ -139,13 +139,18 @@ const ChefDashboard = () => {
         if (station && (sName.includes(station) || station.includes(sName))) return true;
 
         // 2. Category & Name Matchers
+        const isMilkDessert = /milk\s*(cake|peda|sweet|pudding|halwa|barfi)|tres\s*leches|rabri|rasmalai|basundi|kheer/i.test(itemName);
+        const isMilkDrink = /milk|milkshake|badam\s*milk|chocolate\s*milk|hot\s*milk|cold\s*milk|flavored\s*milk|turmeric\s*milk/i.test(itemName) && !isMilkDessert;
+
         const isBeverage = 
-            category.includes('beverage') || category.includes('drink') || category.includes('bar') || category.includes('juice') || category.includes('coffee') || category.includes('tea') ||
-            /coffee|shake|latte|tea|drink|juice|soda|beverage|water|mocktail|cocktail|beer|chai|espresso|cappuccino|mojito|smoothie|coke|pepsi|lassi|lemonade|wine|whiskey|vodka|rum|brew|boba/i.test(itemName);
+            category.includes('beverage') || category.includes('drink') || category.includes('bar') || category.includes('juice') || category.includes('coffee') || category.includes('tea') || (category.includes('milk') && !isMilkDessert) ||
+            isMilkDrink ||
+            /coffee|shake|latte|tea|drink|juice|soda|beverage|water|mocktail|cocktail|beer|chai|espresso|cappuccino|mojito|smoothie|coke|pepsi|lassi|lemonade|wine|whiskey|vodka|rum|brew|boba|milk/i.test(itemName);
 
         const isDessert = 
             category.includes('dessert') || category.includes('sweet') || category.includes('bakery') || category.includes('cake') ||
-            /cake|brownie|ice cream|icecream|pie|sweet|dessert|halwa|jamun|pastry|waffle|pudding|kheer|cookie|chocolate|donut|tiramisu|sundae|custard|gulab/i.test(itemName);
+            isMilkDessert ||
+            /cake|brownie|ice cream|icecream|pie|sweet|dessert|halwa|jamun|pastry|waffle|pudding|kheer|cookie|chocolate|donut|tiramisu|sundae|custard|gulab|peda|rasgulla|barfi|mithai|kulfi/i.test(itemName);
 
         const isPizzaOven = 
             category.includes('pizza') || category.includes('oven') || category.includes('italian') || category.includes('baked') ||
