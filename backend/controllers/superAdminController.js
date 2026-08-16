@@ -44,8 +44,20 @@ export const getStats = async (req, res) => {
 // @access  Private/SuperAdmin
 export const getRestaurants = async (req, res) => {
     try {
-        const restaurants = await Restaurant.find().populate('ownerId', 'name email');
-        res.json(restaurants);
+        const restaurants = await Restaurant.find().populate('ownerId', 'name email').lean();
+        const revenues = await Order.aggregate([
+            { $match: { isPaid: true } },
+            { $group: { _id: "$restaurantId", totalRevenue: { $sum: "$totalPrice" } } }
+        ]);
+        const revMap = {};
+        revenues.forEach(r => {
+            if (r._id) revMap[r._id.toString()] = r.totalRevenue;
+        });
+        const result = restaurants.map(r => ({
+            ...r,
+            totalRevenue: revMap[r._id.toString()] || 0
+        }));
+        res.json(result);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
