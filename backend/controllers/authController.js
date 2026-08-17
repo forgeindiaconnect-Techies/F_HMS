@@ -7,6 +7,7 @@ import Restaurant from '../models/Restaurant.js';
 import Branch from '../models/Branch.js';
 import Notification from '../models/Notification.js';
 import RestaurantVerification from '../models/RestaurantVerification.js';
+import { sendWelcomeEmail } from '../utils/emailService.js';
 
 // Generate JWT
 const generateToken = (id) => {
@@ -191,6 +192,20 @@ export const registerUser = async (req, res) => {
                 }
             } catch (notifErr) {
                 console.error("Failed to create signup notification", notifErr);
+            }
+
+            // Send Welcome Email to newly registered user
+            try {
+                const restName = restaurant ? restaurant.name : req.body.restaurantName || 'Your Account';
+                const restPlan = restaurant ? restaurant.subscription?.plan : req.body.plan || 'Basic';
+                await sendWelcomeEmail({
+                    email: user.email,
+                    name: user.name,
+                    restaurantName: restName,
+                    plan: restPlan
+                });
+            } catch (eErr) {
+                console.error("Welcome email dispatch error:", eErr.message);
             }
 
             const token = generateToken(user._id);

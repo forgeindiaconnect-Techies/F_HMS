@@ -1,6 +1,8 @@
 import RestaurantVerification from '../models/RestaurantVerification.js';
 import Restaurant from '../models/Restaurant.js';
 import Notification from '../models/Notification.js';
+import User from '../models/User.js';
+import { sendApprovalEmail } from '../utils/emailService.js';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -461,6 +463,21 @@ export const reviewVerification = async (req, res) => {
                 restaurantId: restaurant._id,
                 targetRole: ['RestaurantAdmin', 'Admin']
             });
+
+            // Send Approval Email to owner
+            try {
+                const ownerUser = await User.findById(restaurant.ownerId);
+                if (ownerUser && ownerUser.email) {
+                    await sendApprovalEmail({
+                        email: ownerUser.email,
+                        name: ownerUser.name,
+                        restaurantName: restaurant.name,
+                        plan: restaurant.subscription?.plan || 'Basic'
+                    });
+                }
+            } catch (aErr) {
+                console.error("Approval email error:", aErr.message);
+            }
         } else if (status === 'Rejected') {
             restaurant.approvalStatus = 'Rejected';
             restaurant.subscription.status = 'Inactive';

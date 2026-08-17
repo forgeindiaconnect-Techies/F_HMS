@@ -3,6 +3,7 @@ import User from '../models/User.js';
 import Role from '../models/Role.js';
 import Restaurant from '../models/Restaurant.js';
 import Plan from '../models/Plan.js';
+import { sendSubscriptionExpiredEmail } from '../utils/emailService.js';
 
 export const protect = async (req, res, next) => {
     let token;
@@ -82,6 +83,21 @@ export const checkSubscription = async (req, res, next) => {
         const expiry = restaurant.subscription?.expiryDate ? new Date(restaurant.subscription.expiryDate) : null;
 
         if (restaurant.subscription?.status === 'Frozen' || (expiry && now > expiry)) {
+            // Trigger Expiry Email Alert asynchronously
+            try {
+                if (req.user && req.user.email) {
+                    sendSubscriptionExpiredEmail({
+                        email: req.user.email,
+                        name: req.user.name,
+                        restaurantName: restaurant.name,
+                        plan: restaurant.subscription?.plan,
+                        expiryDate: expiry
+                    });
+                }
+            } catch (expErr) {
+                console.error("Expired email dispatch error:", expErr.message);
+            }
+
             return res.status(402).json({ 
                 message: 'Your subscription has expired or is frozen. Please renew your subscription to continue.',
                 requiresSubscription: true
