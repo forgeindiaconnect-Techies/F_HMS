@@ -141,31 +141,8 @@ const DashboardLayout = () => {
         return routeBlock.fallbackMinPlan;
     })();
 
-    const handleOpenPlans = async () => {
-        setShowPlansModal(true);
-        setSelectedPlanToBuy(null);
-        setPaymentStatus('idle');
-        // Always refresh plans from DB when opening the modal, and sync to allPlans too
-        setPlansLoading(true);
-        try {
-            const res = await api.get('/plans');
-            const freshPlans = res.data || [];
-            setPlans(freshPlans);
-            // Also keep allPlans (used for gating) in sync with latest DB data
-            setAllPlans(freshPlans);
-        } catch (err) {
-            console.error("Failed to load plans modal data", err);
-            // Only set fallback plans for the modal display if we have no data at all
-            if (plans.length === 0) {
-                setPlans([
-                    { _id: 'p1', name: 'Basic', monthlyPrice: 4999, yearlyPrice: 3999, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'] },
-                    { _id: 'p2', name: 'Pro', monthlyPrice: 9999, yearlyPrice: 7999, features: ['Up to 3 Branches', 'Inventory & Waste Ops', 'Delivery Management', 'Sales Analytics', '24/7 Support'] },
-                    { _id: 'p3', name: 'Enterprise', monthlyPrice: 19999, yearlyPrice: 15999, features: ['Unlimited Branches', 'Business Intelligence AI', 'Franchise & Central Kitchen', 'White-Label APIs', 'Dedicated Support'] }
-                ]);
-            }
-        } finally {
-            setPlansLoading(false);
-        }
+    const handleOpenPlans = () => {
+        navigate('/admin/billing');
     };
 
     const handleSelectPlanToUpgrade = (p) => {
