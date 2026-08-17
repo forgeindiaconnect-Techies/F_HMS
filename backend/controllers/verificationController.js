@@ -255,23 +255,17 @@ export const getAllVerifications = async (req, res) => {
             return res.json([]);
         }
 
-        // Self-heal: Ensure all unverified / unapproved restaurants have a RestaurantVerification record
+        // Self-heal: Ensure ALL restaurants in DB have a RestaurantVerification record
         try {
-            const unverifiedRestaurants = await Restaurant.find({
-                $or: [
-                    { verificationStatus: { $ne: 'Verified' } },
-                    { approvalStatus: { $ne: 'Approved' } }
-                ]
-            }).lean();
-
-            for (const rest of unverifiedRestaurants) {
+            const allRestaurants = await Restaurant.find().lean();
+            for (const rest of allRestaurants) {
                 try {
                     const existingVerif = await RestaurantVerification.findOne({ restaurantId: rest._id });
                     if (!existingVerif) {
                         await RestaurantVerification.create({
                             restaurantId: rest._id,
                             documents: {},
-                            status: rest.verificationStatus === 'Under Review' ? 'Under Review' : 'Pending'
+                            status: rest.approvalStatus === 'Approved' ? 'Verified' : 'Pending'
                         });
                     }
                 } catch (vErr) {
@@ -287,15 +281,22 @@ export const getAllVerifications = async (req, res) => {
                 path: 'restaurantId',
                 populate: { path: 'ownerId', select: 'name email' }
             })
-            .sort({ updatedAt: -1 })
+            .sort({ createdAt: -1 })
             .lean();
 
         // Ensure array is returned and null/broken restaurantId references are handled safely
         verifications = (verifications || []).map(v => {
             if (!v.restaurantId) {
-                v.restaurantId = { name: 'Unlinked Restaurant', ownerId: { name: 'N/A', email: 'N/A' } };
+                v.restaurantId = {
+                    _id: v._id,
+                    name: 'Registered Restaurant',
+                    approvalStatus: 'Pending',
+                    verificationStatus: v.status || 'Pending',
+                    subscription: { plan: 'Basic' },
+                    ownerId: { name: 'Owner', email: 'N/A' }
+                };
             } else if (!v.restaurantId.ownerId) {
-                v.restaurantId.ownerId = { name: 'N/A', email: 'N/A' };
+                v.restaurantId.ownerId = { name: 'Owner', email: 'N/A' };
             }
             return v;
         });
