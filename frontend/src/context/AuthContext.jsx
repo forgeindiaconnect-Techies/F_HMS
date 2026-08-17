@@ -59,13 +59,22 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     const fetchRestaurant = useCallback(async (currentUser = user) => {
-        if (!currentUser || !currentUser.restaurantId || currentUser.role === 'SuperAdmin' || currentUser.role === 'DeliveryPartner') {
+        if (!currentUser || currentUser.role === 'SuperAdmin' || currentUser.role === 'DeliveryPartner') {
             setRestaurant(null);
             return null;
         }
         try {
             const res = await api.get('/restaurants/mine');
-            setRestaurant(res.data);
+            if (res.data) {
+                setRestaurant(res.data);
+                if (currentUser && !currentUser.restaurantId && res.data._id) {
+                    const updatedUser = { ...currentUser, restaurantId: res.data._id, branchId: currentUser.branchId || res.data.mainBranchId };
+                    setUser(updatedUser);
+                    localStorage.setItem('restosys_staff_user', JSON.stringify(updatedUser));
+                }
+            } else {
+                setRestaurant(null);
+            }
             return res.data;
         } catch (error) {
             if (error.response && error.response.status === 403 && error.response.data.requiresVerification) {
@@ -97,7 +106,7 @@ export const AuthProvider = ({ children }) => {
 
     // Auto-refresh restaurant subscription data every 30s and on window focus
     useEffect(() => {
-        if (!user || user.role === 'SuperAdmin' || user.role === 'DeliveryPartner' || !user.restaurantId) return;
+        if (!user || user.role === 'SuperAdmin' || user.role === 'DeliveryPartner') return;
 
         const refresh = () => fetchRestaurant(user);
         window.addEventListener('focus', refresh);
