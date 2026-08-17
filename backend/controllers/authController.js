@@ -51,12 +51,22 @@ export const registerUser = async (req, res) => {
             const hasVerificationFiles = Object.keys(files).length > 0;
             const restaurantName = req.body.restaurantName || `${name}'s Restaurant`;
 
+            const sanitizePlan = (p) => {
+                if (!p) return 'Basic';
+                const lower = String(p).trim().toLowerCase();
+                if (lower === 'basic') return 'Basic';
+                if (lower === 'pro' || lower === 'professional') return 'Pro';
+                if (lower === 'enterprise') return 'Enterprise';
+                if (lower === 'starter') return 'Starter';
+                return p.charAt(0).toUpperCase() + p.slice(1);
+            };
+
             const restaurant = await Restaurant.create({
                 name: restaurantName,
                 ownerId: user._id,
                 subscription: {
                     status: 'Active',
-                    plan: req.body.plan || 'Basic',
+                    plan: sanitizePlan(req.body.plan),
                     billingCycle: req.body.billingCycle || 'monthly',
                     trialActive: true,
                     expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)

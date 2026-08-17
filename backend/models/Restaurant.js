@@ -40,7 +40,20 @@ const restaurantSchema = new mongoose.Schema({
     },
     subscription: {
         status: { type: String, enum: ['Active', 'Frozen', 'Cancelled', 'Inactive', 'Expiring Soon', 'Expired', 'Suspended'], default: 'Inactive' },
-        plan: { type: String, enum: ['Basic', 'Pro', 'Enterprise', 'Starter', 'Professional'], default: 'Basic' },
+        plan: {
+            type: String,
+            enum: ['Basic', 'Pro', 'Enterprise', 'Starter', 'Professional', 'basic', 'pro', 'enterprise', 'starter', 'professional'],
+            set: (v) => {
+                if (!v) return 'Basic';
+                const lower = String(v).trim().toLowerCase();
+                if (lower === 'basic') return 'Basic';
+                if (lower === 'pro' || lower === 'professional') return 'Pro';
+                if (lower === 'enterprise') return 'Enterprise';
+                if (lower === 'starter') return 'Starter';
+                return v.charAt(0).toUpperCase() + v.slice(1);
+            },
+            default: 'Basic'
+        },
         billingCycle: { type: String, enum: ['monthly', 'yearly'], default: 'monthly' },
         trialActive: { type: Boolean, default: true },
         expiryDate: { type: Date },
