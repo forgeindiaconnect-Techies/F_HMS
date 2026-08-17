@@ -1,9 +1,14 @@
 import nodemailer from 'nodemailer';
+import Notification from '../models/Notification.js';
 
-// Configure Transporter with Environment Variables or Fallback to Ethereal / Console logging
-const createTransporter = () => {
+let cachedTransporter = null;
+
+// Get or Create Transporter (supports live SMTP or dynamic Ethereal real-time test mailbox)
+const getTransporter = async () => {
+    if (cachedTransporter) return cachedTransporter;
+
     if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-        return nodemailer.createTransport({
+        cachedTransporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST,
             port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587,
             secure: process.env.SMTP_SECURE === 'true',
@@ -12,8 +17,27 @@ const createTransporter = () => {
                 pass: process.env.SMTP_PASS
             }
         });
+        return cachedTransporter;
     }
-    return null;
+
+    // Dynamic Real-Time Test Mailbox (Ethereal Email)
+    try {
+        const testAccount = await nodemailer.createTestAccount();
+        cachedTransporter = nodemailer.createTransport({
+            host: 'smtp.ethereal.email',
+            port: 587,
+            secure: false,
+            auth: {
+                user: testAccount.user,
+                pass: testAccount.pass
+            }
+        });
+        console.log(`[Email Service Initialized] Real-time Ethereal test inbox created: ${testAccount.user}`);
+        return cachedTransporter;
+    } catch (err) {
+        console.warn("Failed to create test email account, using console dispatch log:", err.message);
+        return null;
+    }
 };
 
 const getFromAddress = () => {
@@ -58,17 +82,19 @@ export const sendWelcomeEmail = async ({ email, name, restaurantName, plan }) =>
     `;
 
     try {
-        const transporter = createTransporter();
+        const transporter = await getTransporter();
         if (transporter) {
-            await transporter.sendMail({
+            const info = await transporter.sendMail({
                 from: getFromAddress(),
                 to: email,
                 subject,
                 html
             });
-            console.log(`Welcome email successfully sent to ${email}`);
-        } else {
-            console.log(`[Email Dispatch Log] WELCOME EMAIL TO: ${email} | Subject: ${subject}`);
+            const previewUrl = nodemailer.getTestMessageUrl(info);
+            console.log(`Welcome email dispatched to ${email}. Message ID: ${info.messageId}`);
+            if (previewUrl) {
+                console.log(`[Real-time Email Preview URL]: ${previewUrl}`);
+            }
         }
     } catch (error) {
         console.error(`Failed to send Welcome Email to ${email}:`, error.message);
@@ -114,17 +140,19 @@ export const sendSubscriptionExpiredEmail = async ({ email, name, restaurantName
     `;
 
     try {
-        const transporter = createTransporter();
+        const transporter = await getTransporter();
         if (transporter) {
-            await transporter.sendMail({
+            const info = await transporter.sendMail({
                 from: getFromAddress(),
                 to: email,
                 subject,
                 html
             });
-            console.log(`Subscription Expired email successfully sent to ${email}`);
-        } else {
-            console.log(`[Email Dispatch Log] SUBSCRIPTION EXPIRED EMAIL TO: ${email} | Subject: ${subject}`);
+            const previewUrl = nodemailer.getTestMessageUrl(info);
+            console.log(`Subscription Expired email dispatched to ${email}. Message ID: ${info.messageId}`);
+            if (previewUrl) {
+                console.log(`[Real-time Email Preview URL]: ${previewUrl}`);
+            }
         }
     } catch (error) {
         console.error(`Failed to send Subscription Expired Email to ${email}:`, error.message);
@@ -169,17 +197,19 @@ export const sendApprovalEmail = async ({ email, name, restaurantName, plan }) =
     `;
 
     try {
-        const transporter = createTransporter();
+        const transporter = await getTransporter();
         if (transporter) {
-            await transporter.sendMail({
+            const info = await transporter.sendMail({
                 from: getFromAddress(),
                 to: email,
                 subject,
                 html
             });
-            console.log(`Approval email successfully sent to ${email}`);
-        } else {
-            console.log(`[Email Dispatch Log] APPROVAL EMAIL TO: ${email} | Subject: ${subject}`);
+            const previewUrl = nodemailer.getTestMessageUrl(info);
+            console.log(`Approval email dispatched to ${email}. Message ID: ${info.messageId}`);
+            if (previewUrl) {
+                console.log(`[Real-time Email Preview URL]: ${previewUrl}`);
+            }
         }
     } catch (error) {
         console.error(`Failed to send Approval Email to ${email}:`, error.message);
