@@ -30,6 +30,15 @@ export const getDashboardAnalytics = async (req, res) => {
         if (req.user.restaurantId) {
             currentPeriodMatch.restaurantId = new mongoose.Types.ObjectId(req.user.restaurantId);
             previousPeriodMatch.restaurantId = new mongoose.Types.ObjectId(req.user.restaurantId);
+        } else if (req.user.role !== 'SuperAdmin') {
+            return res.json({
+                overview: { totalRevenue: 0, revenueChange: 0, totalOrders: 0, ordersChange: 0, avgOrderValue: 0, avgChange: 0, activeCustomers: 0, customersChange: 0 },
+                revenueTrend: [],
+                popularItems: [],
+                categoryData: [],
+                qrAnalytics: { activeTables: 0, currentOrders: 0, pendingOrders: 0, preparingOrders: 0, readyOrders: 0, servedOrders: 0, completedOrders: 0, avgPrepTime: 0 },
+                deliveryAnalytics: { onlinePartners: 0, activeDeliveries: 0, pendingAssignments: 0, completedDeliveries: 0, totalDeliveryEarnings: 0 }
+            });
         }
 
         // 1. Current Period Overview

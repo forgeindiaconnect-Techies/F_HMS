@@ -216,6 +216,8 @@ export const getOrders = async (req, res) => {
         filter.branchId = req.user.branchId;
     } else if (req.user && req.user.restaurantId) {
         filter.restaurantId = req.user.restaurantId;
+    } else if (req.user && req.user.role !== 'SuperAdmin') {
+        return res.json([]);
     }
 
     console.log('GET /api/orders called. User:', req.user?._id, 'Role:', req.user?.role, 'branchId:', req.user?.branchId, 'restaurantId:', req.user?.restaurantId);

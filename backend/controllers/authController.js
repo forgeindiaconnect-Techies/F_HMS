@@ -197,6 +197,8 @@ export const registerUser = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                restaurantId: user.restaurantId,
+                branchId: user.branchId,
                 token: token,
             });
         } else {

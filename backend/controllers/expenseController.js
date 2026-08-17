@@ -10,6 +10,8 @@ export const getExpenses = async (req, res) => {
             filter.branchId = req.user.branchId;
         } else if (req.user && req.user.restaurantId) {
             filter.restaurantId = req.user.restaurantId;
+        } else if (req.user && req.user.role !== 'SuperAdmin') {
+            return res.json([]);
         }
 
         const expenses = await Expense.find(filter).sort({ date: -1 });

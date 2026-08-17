@@ -39,9 +39,16 @@ export const getInventory = async (req, res) => {
     try {
         const filter = {};
         
-        // If staff is logged in, filter by their branch
-        if (req.user && req.user.branchId) {
-            filter.branch = req.user.branchId;
+        if (req.user && req.user.role !== 'SuperAdmin') {
+            if (req.user.branchId) {
+                filter.branch = req.user.branchId;
+            } else if (req.user.restaurantId) {
+                const Branch = (await import('../models/Branch.js')).default;
+                const branches = await Branch.find({ restaurantId: req.user.restaurantId }).select('_id');
+                filter.branch = { $in: branches.map(b => b._id) };
+            } else {
+                return res.json([]);
+            }
         } else if (req.query.branch) {
             filter.branch = req.query.branch;
         }
