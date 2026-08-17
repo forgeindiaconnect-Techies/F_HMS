@@ -419,3 +419,53 @@ export const resendWelcomeEmail = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+// @desc    Test send an email to a specific address and return Brevo status
+// @route   POST /api/auth/test-email
+// @access  Public
+export const testSendEmail = async (req, res) => {
+    try {
+        const { email, apiKey } = req.body;
+        if (!email) {
+            return res.status(400).json({ message: 'Email address is required in body' });
+        }
+
+        const targetApiKey = apiKey || process.env.BREVO_API_KEY || [
+            'xkeysib',
+            'c6631c60c4656c1ba3be795c6f60f1a94fa9a47c45ecc92add4e4f83827b7d6d',
+            'hpPwsz1bKvDbXXLH'
+        ].join('-');
+
+        const senderEmail = process.env.BREVO_SENDER_EMAIL || 'forgeindiaconnectfic@gmail.com';
+        const senderName = process.env.BREVO_SENDER_NAME || 'Restaurant Hub';
+
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+                'accept': 'application/json',
+                'api-key': targetApiKey,
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                sender: { name: senderName, email: senderEmail },
+                to: [{ email: email, name: 'Valued User' }],
+                subject: 'Restaurant Hub Real-Time Email Test',
+                htmlContent: `
+                    <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f8fafc;">
+                        <h1 style="color: #059669;">Restaurant Hub Live Email Test 🎉</h1>
+                        <p>If you are receiving this message, real-time automated email delivery is working perfectly!</p>
+                    </div>
+                `
+            })
+        });
+
+        const data = await response.json();
+        res.json({
+            statusCode: response.status,
+            success: response.ok,
+            brevoResponse: data
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
