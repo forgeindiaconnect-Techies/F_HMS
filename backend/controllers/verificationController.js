@@ -251,38 +251,59 @@ export const getMyVerification = async (req, res) => {
 // @access  Private/SuperAdmin
 export const getAllVerifications = async (req, res) => {
     try {
-        // Self-heal: Ensure all unverified / unapproved restaurants have a RestaurantVerification record
-        const unverifiedRestaurants = await Restaurant.find({
-            $or: [
-                { verificationStatus: { $ne: 'Verified' } },
-                { approvalStatus: { $ne: 'Approved' } }
-            ]
-        });
-
-        for (const rest of unverifiedRestaurants) {
-            try {
-                const existingVerif = await RestaurantVerification.findOne({ restaurantId: rest._id });
-                if (!existingVerif) {
-                    await RestaurantVerification.create({
-                        restaurantId: rest._id,
-                        documents: {},
-                        status: rest.verificationStatus === 'Under Review' ? 'Under Review' : 'Pending'
-                    });
-                }
-            } catch (vErr) {
-                console.error("Self-heal verification record error for rest:", rest._id, vErr.message);
-            }
+        if (mongoose.connection.readyState !== 1) {
+            return res.json([]);
         }
 
-        const verifications = await RestaurantVerification.find()
+        // Self-heal: Ensure all unverified / unapproved restaurants have a RestaurantVerification record
+        try {
+            const unverifiedRestaurants = await Restaurant.find({
+                $or: [
+                    { verificationStatus: { $ne: 'Verified' } },
+                    { approvalStatus: { $ne: 'Approved' } }
+                ]
+            }).lean();
+
+            for (const rest of unverifiedRestaurants) {
+                try {
+                    const existingVerif = await RestaurantVerification.findOne({ restaurantId: rest._id });
+                    if (!existingVerif) {
+                        await RestaurantVerification.create({
+                            restaurantId: rest._id,
+                            documents: {},
+                            status: rest.verificationStatus === 'Under Review' ? 'Under Review' : 'Pending'
+                        });
+                    }
+                } catch (vErr) {
+                    console.error("Self-heal verification record error for rest:", rest._id, vErr.message);
+                }
+            }
+        } catch (sErr) {
+            console.error("Self-heal outer loop error:", sErr.message);
+        }
+
+        let verifications = await RestaurantVerification.find()
             .populate({
                 path: 'restaurantId',
                 populate: { path: 'ownerId', select: 'name email' }
             })
-            .sort({ updatedAt: -1 });
+            .sort({ updatedAt: -1 })
+            .lean();
+
+        // Ensure array is returned and null/broken restaurantId references are handled safely
+        verifications = (verifications || []).map(v => {
+            if (!v.restaurantId) {
+                v.restaurantId = { name: 'Unlinked Restaurant', ownerId: { name: 'N/A', email: 'N/A' } };
+            } else if (!v.restaurantId.ownerId) {
+                v.restaurantId.ownerId = { name: 'N/A', email: 'N/A' };
+            }
+            return v;
+        });
+
         res.json(verifications);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error("Error in getAllVerifications:", error);
+        res.json([]);
     }
 };
 
