@@ -45,6 +45,8 @@ export const registerUser = async (req, res) => {
             role: role,
         });
 
+        let createdRestaurant = null;
+
         if (role === 'RestaurantAdmin' || req.body.restaurantName) {
             const files = req.files || {};
             const hasVerificationFiles = Object.keys(files).length > 0;
@@ -60,7 +62,7 @@ export const registerUser = async (req, res) => {
                 return p.charAt(0).toUpperCase() + p.slice(1);
             };
 
-            const restaurant = await Restaurant.create({
+            createdRestaurant = await Restaurant.create({
                 name: restaurantName,
                 ownerId: user._id,
                 subscription: {
@@ -73,12 +75,12 @@ export const registerUser = async (req, res) => {
                 approvalStatus: 'Pending',
                 verificationStatus: hasVerificationFiles ? 'Under Review' : 'Pending'
             });
-            user.restaurantId = restaurant._id;
+            user.restaurantId = createdRestaurant._id;
 
             // Create initial main branch
             const initialBranch = await Branch.create({
-                restaurantId: restaurant._id,
-                name: `${restaurant.name} Branch`,
+                restaurantId: createdRestaurant._id,
+                name: `${createdRestaurant.name} Branch`,
                 location: { address: 'Primary Location' },
                 contact: { phone: phoneNumber || '' },
                 isActive: true
@@ -125,8 +127,8 @@ export const registerUser = async (req, res) => {
 
             if (req.body.logoBase64) {
                 documents.logo = { filePath: req.body.logoBase64 };
-                restaurant.logo = req.body.logoBase64;
-                await restaurant.save();
+                createdRestaurant.logo = req.body.logoBase64;
+                await createdRestaurant.save();
             } else if (files.logo && files.logo.length > 0) {
                 const logoFile = files.logo[0];
                 documents.logo = { filePath: getFileUrl(logoFile) };
@@ -134,11 +136,11 @@ export const registerUser = async (req, res) => {
                     const fileBuffer = fs.readFileSync(logoFile.path);
                     const ext = path.extname(logoFile.originalname || logoFile.filename || '').toLowerCase();
                     const mimeType = ext === '.pdf' ? 'application/pdf' : (logoFile.mimetype || 'image/png');
-                    restaurant.logo = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+                    createdRestaurant.logo = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
                 } catch (e) {
-                    restaurant.logo = getFileUrl(logoFile);
+                    createdRestaurant.logo = getFileUrl(logoFile);
                 }
-                await restaurant.save();
+                await createdRestaurant.save();
             }
 
             if (files.menuPdf && files.menuPdf.length > 0) {
@@ -152,7 +154,7 @@ export const registerUser = async (req, res) => {
             // Always create RestaurantVerification document so Super Admin receives the verification request
             const verifStatus = hasVerificationFiles ? 'Under Review' : 'Pending';
             await RestaurantVerification.create({
-                restaurantId: restaurant._id,
+                restaurantId: createdRestaurant._id,
                 documents,
                 status: verifStatus
             });
@@ -161,7 +163,7 @@ export const registerUser = async (req, res) => {
             try {
                 await Notification.create({
                     title: 'Verification Under Review',
-                    desc: `Restaurant "${restaurant.name}" has submitted verification documents during signup.`,
+                    desc: `Restaurant "${createdRestaurant.name}" has submitted verification documents during signup.`,
                     type: 'System',
                     isSuperAdminOnly: true
                 });
@@ -192,16 +194,16 @@ export const registerUser = async (req, res) => {
                 console.error("Failed to create signup notification", notifErr);
             }
 
-            // Send Welcome Email to newly registered user
+            // Trigger Welcome Email in background
             try {
-                const restName = restaurant ? restaurant.name : req.body.restaurantName || 'Your Account';
-                const restPlan = restaurant ? restaurant.subscription?.plan : req.body.plan || 'Basic';
-                await sendWelcomeEmail({
+                const restName = createdRestaurant ? createdRestaurant.name : req.body.restaurantName || 'Your Account';
+                const restPlan = createdRestaurant ? createdRestaurant.subscription?.plan : req.body.plan || 'Basic';
+                sendWelcomeEmail({
                     email: user.email,
                     name: user.name,
                     restaurantName: restName,
                     plan: restPlan
-                });
+                }).catch(err => console.error("Welcome email background error:", err.message));
             } catch (eErr) {
                 console.error("Welcome email dispatch error:", eErr.message);
             }
