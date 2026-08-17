@@ -7,7 +7,7 @@ import Restaurant from '../models/Restaurant.js';
 import Branch from '../models/Branch.js';
 import Notification from '../models/Notification.js';
 import RestaurantVerification from '../models/RestaurantVerification.js';
-import { sendWelcomeEmail, sendLoginNotificationEmail } from '../utils/emailService.js';
+import { sendWelcomeEmail, sendLoginNotificationEmail, sendApprovalEmail } from '../utils/emailService.js';
 
 // Generate JWT
 const generateToken = (id) => {
@@ -338,4 +338,67 @@ export const logoutUser = (req, res) => {
     res.cookie('jwt_customer', '', cookieOptions);
     res.cookie('jwt', '', cookieOptions); // Clear old cookie just in case
     res.status(200).json({ message: 'Logged out successfully' });
+};
+
+// @desc    Resend Welcome / Registration Email for an existing user or all restaurant admins
+// @route   POST /api/auth/resend-welcome-email
+// @access  Public
+export const resendWelcomeEmail = async (req, res) => {
+    try {
+        const { email } = req.body;
+        let usersToNotify = [];
+
+        if (email) {
+            const normalizedEmail = String(email).trim().toLowerCase();
+            const user = await User.findOne({ email: { $regex: `^${normalizedEmail}$`, $options: 'i' } });
+            if (user) {
+                usersToNotify.push(user);
+            } else {
+                return res.status(404).json({ message: `No user account found for email: ${email}` });
+            }
+        } else {
+            // Find all RestaurantAdmin users in database
+            usersToNotify = await User.find({ role: { $in: ['RestaurantAdmin', 'Admin'] } });
+        }
+
+        let sentCount = 0;
+        for (const user of usersToNotify) {
+            let restaurant = null;
+            if (user.restaurantId) {
+                restaurant = await Restaurant.findById(user.restaurantId);
+            } else {
+                restaurant = await Restaurant.findOne({ ownerId: user._id });
+            }
+
+            const restName = restaurant ? restaurant.name : `${user.name}'s Restaurant`;
+            const restPlan = restaurant ? restaurant.subscription?.plan : 'Basic';
+
+            const success = await sendWelcomeEmail({
+                email: user.email,
+                name: user.name,
+                restaurantName: restName,
+                plan: restPlan
+            });
+
+            if (restaurant && restaurant.approvalStatus === 'Approved') {
+                await sendApprovalEmail({
+                    email: user.email,
+                    name: user.name,
+                    restaurantName: restName,
+                    plan: restPlan
+                });
+            }
+
+            if (success) sentCount++;
+        }
+
+        res.json({
+            success: true,
+            message: `Successfully dispatched real-time email notification(s) to ${sentCount} account(s)!`,
+            sentCount
+        });
+    } catch (error) {
+        console.error("Resend welcome email error:", error);
+        res.status(500).json({ message: error.message });
+    }
 };

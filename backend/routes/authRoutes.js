@@ -1,5 +1,5 @@
 import express from 'express';
-import { registerUser, loginUser, logoutUser } from '../controllers/authController.js';
+import { registerUser, loginUser, logoutUser, resendWelcomeEmail } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { verificationUpload } from '../controllers/verificationController.js';
 
@@ -16,6 +16,7 @@ router.post('/register', (req, res, next) => {
 }, registerUser);
 router.post('/login', loginUser);
 router.post('/logout', protect, logoutUser);
+router.post('/resend-welcome-email', resendWelcomeEmail);
 
 // Example of a protected route for testing
 router.get('/profile', protect, (req, res) => {
