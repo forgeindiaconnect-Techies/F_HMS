@@ -46,12 +46,13 @@ export const registerUser = async (req, res) => {
             role: role,
         });
 
-        if (role === 'RestaurantAdmin' && req.body.restaurantName) {
+        if (role === 'RestaurantAdmin' || req.body.restaurantName) {
             const files = req.files || {};
             const hasVerificationFiles = Object.keys(files).length > 0;
+            const restaurantName = req.body.restaurantName || `${name}'s Restaurant`;
 
             const restaurant = await Restaurant.create({
-                name: req.body.restaurantName,
+                name: restaurantName,
                 ownerId: user._id,
                 subscription: {
                     status: 'Active',

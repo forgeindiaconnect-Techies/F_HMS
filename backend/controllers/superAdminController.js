@@ -44,7 +44,46 @@ export const getStats = async (req, res) => {
 // @access  Private/SuperAdmin
 export const getRestaurants = async (req, res) => {
     try {
-        const restaurants = await Restaurant.find().populate('ownerId', 'name email').lean();
+        // Self-heal: Check for any RestaurantAdmin users who do NOT have a Restaurant created/linked yet
+        const unlinkedAdmins = await User.find({ role: 'RestaurantAdmin', restaurantId: { $in: [null, undefined] } });
+        for (const admin of unlinkedAdmins) {
+            const existingRest = await Restaurant.findOne({ ownerId: admin._id });
+            if (existingRest) {
+                admin.restaurantId = existingRest._id;
+                await admin.save();
+            } else {
+                const newRest = await Restaurant.create({
+                    name: `${admin.name}'s Restaurant`,
+                    ownerId: admin._id,
+                    subscription: {
+                        status: 'Active',
+                        plan: 'Basic',
+                        billingCycle: 'monthly',
+                        trialActive: true,
+                        expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                    },
+                    approvalStatus: 'Pending',
+                    verificationStatus: 'Pending'
+                });
+                admin.restaurantId = newRest._id;
+                await admin.save();
+
+                try {
+                    const Branch = (await import('../models/Branch.js')).default;
+                    await Branch.create({
+                        restaurantId: newRest._id,
+                        name: `${newRest.name} Branch`,
+                        location: { address: 'Primary Location' },
+                        contact: { phone: admin.phoneNumber || '' },
+                        isActive: true
+                    });
+                } catch (bErr) {
+                    console.error("Failed to create self-heal branch", bErr);
+                }
+            }
+        }
+
+        const restaurants = await Restaurant.find().populate('ownerId', 'name email').sort({ createdAt: -1 }).lean();
         const revenues = await Order.aggregate([
             { $match: { isPaid: true } },
             { $group: { _id: "$restaurantId", totalRevenue: { $sum: "$totalPrice" } } }
