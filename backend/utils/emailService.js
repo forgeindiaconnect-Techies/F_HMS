@@ -46,7 +46,11 @@ const sendEmail = async ({ to, toName, subject, html }) => {
                 console.log(`[Brevo API Email Sent Successfully] Delivered real-time to ${to}. Message ID:`, data.messageId);
                 return true;
             } else {
-                console.error('[Brevo API Error Details]:', JSON.stringify(data));
+                if (data.code === 'unauthorized' || (data.message && data.message.includes('unrecognised IP'))) {
+                    console.error('[Brevo IP Restriction Alert]: Brevo rejected dispatch because IP address security restriction is active in your Brevo account. Please disable IP restrictions at https://app.brevo.com/security/authorised_ips');
+                } else {
+                    console.error('[Brevo API Error Details]:', JSON.stringify(data));
+                }
             }
         } catch (brevoErr) {
             console.error('[Brevo HTTP Dispatch Error]:', brevoErr.message);
