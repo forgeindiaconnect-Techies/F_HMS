@@ -133,12 +133,11 @@ function App() {
           <Route path="reservations" element={<CustomerProtectedRoute><Reservations /></CustomerProtectedRoute>} />
         </Route>
         
-        {/* Auth */}
-        <Route path="/login" element={<CustomerAuthProvider><CustomerAuthPage /></CustomerAuthProvider>} />
-        <Route path="/register" element={<CustomerAuthProvider><CustomerAuthPage /></CustomerAuthProvider>} />
-        
-        <Route path="/staff/login" element={<StaffAuthPage />} />
-        <Route path="/staff/register" element={<StaffAuthPage />} />
+        {/* Unified Auth Portal */}
+        <Route path="/login" element={<StaffAuthPage />} />
+        <Route path="/register" element={<StaffAuthPage />} />
+        <Route path="/staff/login" element={<Navigate to="/login" replace />} />
+        <Route path="/staff/register" element={<Navigate to="/register" replace />} />
 
         {/* Standalone 3D Interactive Showcase Page */}
         <Route path="/3d-demo" element={<ThreeDemoShowcase />} />

@@ -131,15 +131,16 @@ const Home = () => {
                         <Link to="/3d-demo" className="hover:text-[#FF2D55] transition-colors flex items-center gap-1.5 font-bold text-[#FF2D55]">
                             <Sparkles size={14} className="animate-pulse" /> 3D Demo
                         </Link>
+                        <a href="#live-orders" className="hover:text-gray-900 dark:hover:text-white transition-colors">Live Orders</a>
                         <a href="#workflow" className="hover:text-gray-900 dark:hover:text-white transition-colors">Workflow</a>
                         <a href="#pricing" className="hover:text-gray-900 dark:hover:text-white transition-colors">Pricing</a>
                         <Link to="/contact" className="hover:text-gray-900 dark:hover:text-white transition-colors">Contact</Link>
                     </nav>
 
                     <div className="flex items-center gap-4 text-xs sm:text-sm font-bold shrink-0">
-                        <Link to="/staff/login" className="text-gray-600 dark:text-[#94A3B8] hover:text-gray-900 dark:hover:text-white transition-colors px-2 py-1">Log In</Link>
+                        <Link to="/login" className="text-gray-600 dark:text-[#94A3B8] hover:text-gray-900 dark:hover:text-white transition-colors px-3 py-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-white/[0.05]">Log In</Link>
                         <Link 
-                            to="/staff/register" 
+                            to="/register" 
                             className="bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] text-white font-extrabold px-5 py-2.5 rounded-xl shadow-lg shadow-[#FF2D55]/30 hover:scale-[1.03] active:scale-95 transition-all focus:outline-none"
                         >
                             Get Started Free
@@ -390,6 +391,90 @@ const Home = () => {
                                 <span className="text-xs font-bold text-gray-600 dark:text-[#94A3B8] group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{feature.name}</span>
                             </div>
                         ))}
+                    </div>
+                </section>
+
+                {/* Real-Time Live Orders & Order Dispatch Showcase */}
+                <section id="live-orders" className="space-y-12">
+                    <div className="text-center space-y-4 max-w-3xl mx-auto">
+                        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider">
+                            <Flame size={14} /> Unified Live Order Pipeline
+                        </div>
+                        <h2 className="text-3xl sm:text-5xl font-black text-gray-900 dark:text-white tracking-tight">
+                            Real-Time Orders & Unified Dispatch
+                        </h2>
+                        <p className="text-gray-500 dark:text-[#94A3B8] font-medium text-base sm:text-lg">
+                            Track dine-in table QR orders, online deliveries, counter takeaways, and POS billing simultaneously on one unified platform.
+                        </p>
+                    </div>
+
+                    {/* Interactive Order Flow Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Order Card 1: Incoming QR Table Order */}
+                        <div className="bg-white dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.08] p-6 rounded-[24px] shadow-lg hover:border-[#FF2D55]/40 transition-all space-y-4 relative overflow-hidden group">
+                            <div className="flex justify-between items-center pb-3 border-b border-gray-100 dark:border-white/[0.08]">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
+                                    <span className="text-xs font-black uppercase text-amber-500 tracking-wider">QR Table Order #1042</span>
+                                </div>
+                                <span className="text-xs font-bold bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 px-3 py-1 rounded-full">Table 08</span>
+                            </div>
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center text-sm font-bold text-gray-900 dark:text-white">
+                                    <span>2x Chicken Biryani + Cold Drink</span>
+                                    <span>₹480</span>
+                                </div>
+                                <div className="text-xs text-gray-500 dark:text-[#94A3B8]">Customer: Ananya S. • Dine-In</div>
+                            </div>
+                            <div className="pt-2 flex items-center justify-between">
+                                <span className="text-xs font-bold text-amber-500">Status: Preparing (5 mins)</span>
+                                <span className="text-xs font-extrabold text-[#FF2D55] group-hover:translate-x-1 transition-transform flex items-center gap-1">Live Track ➔</span>
+                            </div>
+                        </div>
+
+                        {/* Order Card 2: Express Online Delivery */}
+                        <div className="bg-white dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.08] p-6 rounded-[24px] shadow-lg hover:border-[#FF6A00]/40 transition-all space-y-4 relative overflow-hidden group">
+                            <div className="flex justify-between items-center pb-3 border-b border-gray-100 dark:border-white/[0.08]">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
+                                    <span className="text-xs font-black uppercase text-blue-500 tracking-wider">Online Delivery #1043</span>
+                                </div>
+                                <span className="text-xs font-bold bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 px-3 py-1 rounded-full">Home Delivery</span>
+                            </div>
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center text-sm font-bold text-gray-900 dark:text-white">
+                                    <span>1x Truffle Pizza + Garlic Bread</span>
+                                    <span>₹650</span>
+                                </div>
+                                <div className="text-xs text-gray-500 dark:text-[#94A3B8]">Customer: Vikram K. • Out for Delivery</div>
+                            </div>
+                            <div className="pt-2 flex items-center justify-between">
+                                <span className="text-xs font-bold text-blue-500">Partner: Assigned (ETA 12m)</span>
+                                <span className="text-xs font-extrabold text-[#FF6A00] group-hover:translate-x-1 transition-transform flex items-center gap-1">Live Track ➔</span>
+                            </div>
+                        </div>
+
+                        {/* Order Card 3: Ready Takeaway Pickup */}
+                        <div className="bg-white dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.08] p-6 rounded-[24px] shadow-lg hover:border-emerald-500/40 transition-all space-y-4 relative overflow-hidden group">
+                            <div className="flex justify-between items-center pb-3 border-b border-gray-100 dark:border-white/[0.08]">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                                    <span className="text-xs font-black uppercase text-emerald-500 tracking-wider">Takeaway Order #1044</span>
+                                </div>
+                                <span className="text-xs font-bold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded-full">Counter Pickup</span>
+                            </div>
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center text-sm font-bold text-gray-900 dark:text-white">
+                                    <span>3x Paneer Butter Masala + Naan</span>
+                                    <span>₹820</span>
+                                </div>
+                                <div className="text-xs text-gray-500 dark:text-[#94A3B8]">Customer: Rahul M. • Ready at Counter</div>
+                            </div>
+                            <div className="pt-2 flex items-center justify-between">
+                                <span className="text-xs font-bold text-emerald-500">Status: Ready for Pickup</span>
+                                <span className="text-xs font-extrabold text-emerald-500 group-hover:translate-x-1 transition-transform flex items-center gap-1">Completed ✓</span>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
