@@ -236,6 +236,15 @@ export const loginUser = async (req, res) => {
                 return res.status(403).json({ message: 'Staff cannot log into the customer portal' });
             }
 
+            // Auto-heal: If RestaurantAdmin user has no restaurantId set, find by ownerId
+            if (!user.restaurantId && user.role === 'RestaurantAdmin') {
+                const ownedRestaurant = await Restaurant.findOne({ ownerId: user._id });
+                if (ownedRestaurant) {
+                    user.restaurantId = ownedRestaurant._id;
+                    await user.save();
+                }
+            }
+
             // Check subscription if user belongs to a restaurant
             if (user.restaurantId && user.role !== 'SuperAdmin') {
                 const restaurant = await Restaurant.findById(user.restaurantId);

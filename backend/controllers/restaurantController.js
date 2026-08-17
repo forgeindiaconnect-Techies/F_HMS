@@ -172,10 +172,27 @@ export const getMyRestaurant = async (req, res) => {
         if (mongoose.connection.readyState !== 1) {
             return res.json(null);
         }
-        if (!req.user.restaurantId) {
-            return res.status(404).json({ message: 'No restaurant associated with this user' });
+
+        let restaurantId = req.user?.restaurantId;
+
+        // Auto-heal: If user is RestaurantAdmin but has no restaurantId set, find by ownerId
+        if (!restaurantId && req.user?._id) {
+            const ownedRestaurant = await Restaurant.findOne({ ownerId: req.user._id });
+            if (ownedRestaurant) {
+                restaurantId = ownedRestaurant._id;
+                req.user.restaurantId = ownedRestaurant._id;
+                await User.findByIdAndUpdate(req.user._id, { restaurantId: ownedRestaurant._id });
+            }
         }
-        const restaurant = await Restaurant.findById(req.user.restaurantId);
+
+        if (!restaurantId) {
+            return res.json(null);
+        }
+
+        const restaurant = await Restaurant.findById(restaurantId);
+        if (!restaurant) {
+            return res.json(null);
+        }
         
         if (restaurant && restaurant.subscription?.expiryDate) {
             const expiry = new Date(restaurant.subscription.expiryDate);
