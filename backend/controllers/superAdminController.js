@@ -258,7 +258,27 @@ export const updateApprovalStatus = async (req, res) => {
         const restaurant = await Restaurant.findById(req.params.id);
         if (!restaurant) return res.status(404).json({ message: 'Restaurant not found' });
         
-        if (req.body.approvalStatus) restaurant.approvalStatus = req.body.approvalStatus;
+        if (req.body.approvalStatus) {
+            restaurant.approvalStatus = req.body.approvalStatus;
+            if (req.body.approvalStatus === 'Approved') {
+                restaurant.verificationStatus = 'Verified';
+                if (!restaurant.subscription) restaurant.subscription = {};
+                restaurant.subscription.status = 'Active';
+
+                try {
+                    const RestaurantVerification = (await import('../models/RestaurantVerification.js')).default;
+                    const verif = await RestaurantVerification.findOne({ restaurantId: restaurant._id });
+                    if (verif) {
+                        verif.status = 'Verified';
+                        await verif.save();
+                    }
+                } catch (vErr) {
+                    console.error("Failed to sync verification record on approval", vErr);
+                }
+            } else if (req.body.approvalStatus === 'Rejected') {
+                restaurant.verificationStatus = 'Rejected';
+            }
+        }
         if (req.body.commissionRate !== undefined) restaurant.commissionRate = req.body.commissionRate;
         
         await restaurant.save();

@@ -251,6 +251,25 @@ export const getMyVerification = async (req, res) => {
 // @access  Private/SuperAdmin
 export const getAllVerifications = async (req, res) => {
     try {
+        // Self-heal: Ensure all unverified / unapproved restaurants have a RestaurantVerification record
+        const unverifiedRestaurants = await Restaurant.find({
+            $or: [
+                { verificationStatus: { $ne: 'Verified' } },
+                { approvalStatus: { $ne: 'Approved' } }
+            ]
+        });
+
+        for (const rest of unverifiedRestaurants) {
+            const existingVerif = await RestaurantVerification.findOne({ restaurantId: rest._id });
+            if (!existingVerif) {
+                await RestaurantVerification.create({
+                    restaurantId: rest._id,
+                    documents: {},
+                    status: rest.verificationStatus === 'Under Review' ? 'Under Review' : 'Pending'
+                });
+            }
+        }
+
         const verifications = await RestaurantVerification.find()
             .populate({
                 path: 'restaurantId',
