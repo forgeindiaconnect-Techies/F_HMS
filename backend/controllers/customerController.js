@@ -9,10 +9,26 @@ export const getCustomers = async (req, res) => {
     try {
         const { restaurantId } = req.user;
 
-        // Fetch all users with role 'Customer'
-        const customers = await User.find({ role: 'Customer' }).select('name email phoneNumber createdAt');
+        if (!restaurantId) {
+            return res.json([]);
+        }
 
-        // Aggregate order stats per customer for this restaurant
+        // Find customer IDs who have placed orders at this restaurant
+        const orderCustomerIds = await Order.distinct('user', {
+            restaurantId: new mongoose.Types.ObjectId(restaurantId),
+            user: { $exists: true, $ne: null }
+        });
+
+        // Fetch only customers who have ordered from this restaurant OR belong to this restaurant
+        const customers = await User.find({
+            role: 'Customer',
+            $or: [
+                { _id: { $in: orderCustomerIds } },
+                { restaurantId: restaurantId }
+            ]
+        }).select('name email phoneNumber createdAt');
+
+        // Aggregate order stats per customer specifically for this restaurant
         const orderStats = await Order.aggregate([
             { $match: { restaurantId: new mongoose.Types.ObjectId(restaurantId), user: { $exists: true, $ne: null } } },
             { 
@@ -27,7 +43,9 @@ export const getCustomers = async (req, res) => {
 
         const statsMap = {};
         orderStats.forEach(stat => {
-            statsMap[stat._id.toString()] = stat;
+            if (stat._id) {
+                statsMap[stat._id.toString()] = stat;
+            }
         });
 
         const customerData = customers.map(customer => {
@@ -43,7 +61,7 @@ export const getCustomers = async (req, res) => {
                 id: customer._id,
                 name: customer.name,
                 email: customer.email,
-                phone: customer.phoneNumber || 'N/A', // Using phoneNumber from User model
+                phone: customer.phoneNumber || 'N/A',
                 visits: stats.visits,
                 totalSpend: stats.totalSpend,
                 lastVisit: stats.lastVisit,
@@ -74,6 +92,7 @@ export const createCustomer = async (req, res) => {
             email,
             password: 'password123',
             role: 'Customer',
+            restaurantId: req.user.restaurantId,
             phoneNumber: phone
         });
 
