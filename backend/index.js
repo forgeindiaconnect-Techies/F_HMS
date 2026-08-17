@@ -42,7 +42,7 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Access-Control-Request-Method', 'Access-Control-Request-Headers']
 }));
 
-app.options('*', cors());
+// app.use(cors(...)) handles OPTIONS requests automatically
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
@@ -126,7 +126,7 @@ app.get('/', (req, res) => {
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
 if (fs.existsSync(frontendDistPath)) {
     app.use(express.static(frontendDistPath));
-    app.get('*', (req, res, next) => {
+    app.get(/(.*)/, (req, res, next) => {
         if (req.originalUrl.startsWith('/api')) return next();
         res.sendFile(path.resolve(frontendDistPath, 'index.html'));
     });
