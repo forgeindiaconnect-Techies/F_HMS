@@ -357,11 +357,21 @@ export const resendWelcomeEmail = async (req, res) => {
                 return res.status(404).json({ message: `No user account found for email: ${email}` });
             }
         } else {
-            // Find all RestaurantAdmin users in database
-            usersToNotify = await User.find({ role: { $in: ['RestaurantAdmin', 'Admin'] } });
+            // Find all registered users with admin roles or linked restaurant IDs
+            usersToNotify = await User.find({
+                $or: [
+                    { role: { $regex: 'admin', $options: 'i' } },
+                    { restaurantId: { $exists: true, $ne: null } }
+                ]
+            });
+
+            // Fallback: If no admin roles found, retrieve all users in database
+            if (usersToNotify.length === 0) {
+                usersToNotify = await User.find();
+            }
         }
 
-        let sentCount = 0;
+        const results = [];
         for (const user of usersToNotify) {
             let restaurant = null;
             if (user.restaurantId) {
@@ -373,15 +383,16 @@ export const resendWelcomeEmail = async (req, res) => {
             const restName = restaurant ? restaurant.name : `${user.name}'s Restaurant`;
             const restPlan = restaurant ? restaurant.subscription?.plan : 'Basic';
 
-            const success = await sendWelcomeEmail({
+            const welcomeSent = await sendWelcomeEmail({
                 email: user.email,
                 name: user.name,
                 restaurantName: restName,
                 plan: restPlan
             });
 
+            let approvalSent = false;
             if (restaurant && restaurant.approvalStatus === 'Approved') {
-                await sendApprovalEmail({
+                approvalSent = await sendApprovalEmail({
                     email: user.email,
                     name: user.name,
                     restaurantName: restName,
@@ -389,13 +400,20 @@ export const resendWelcomeEmail = async (req, res) => {
                 });
             }
 
-            if (success) sentCount++;
+            results.push({
+                email: user.email,
+                name: user.name,
+                restaurantName: restName,
+                welcomeSent,
+                approvalSent
+            });
         }
 
         res.json({
             success: true,
-            message: `Successfully dispatched real-time email notification(s) to ${sentCount} account(s)!`,
-            sentCount
+            message: `Dispatched real-time email notification(s) to ${results.length} account(s)!`,
+            accountsNotifiedCount: results.length,
+            results
         });
     } catch (error) {
         console.error("Resend welcome email error:", error);
