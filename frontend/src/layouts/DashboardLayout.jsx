@@ -106,7 +106,7 @@ const DashboardLayout = () => {
         return (PLAN_ORDER_FALLBACK[planName] ?? 0) >= (PLAN_ORDER_FALLBACK[fallbackMinPlan] ?? 99);
     };
 
-    const isUnverified = user?.role !== 'SuperAdmin' && (!restaurant || (restaurant.verificationStatus !== 'Verified' && restaurant.approvalStatus !== 'Approved'));
+    const isUnverified = user?.role !== 'SuperAdmin' && (!restaurant || restaurant.approvalStatus !== 'Approved');
     const isVerificationPage = location.pathname === '/admin/verification';
 
     const plan = restaurant?.subscription?.plan || 'Basic';
