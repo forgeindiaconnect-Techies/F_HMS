@@ -7,7 +7,7 @@ import Restaurant from '../models/Restaurant.js';
 import Branch from '../models/Branch.js';
 import Notification from '../models/Notification.js';
 import RestaurantVerification from '../models/RestaurantVerification.js';
-import { sendWelcomeEmail } from '../utils/emailService.js';
+import { sendWelcomeEmail, sendLoginNotificationEmail } from '../utils/emailService.js';
 
 // Generate JWT
 const generateToken = (id) => {
@@ -295,6 +295,17 @@ export const loginUser = async (req, res) => {
                 sameSite: 'none', // Allow cross-site cookies for Vercel/Render
                 maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
             });
+
+            // Trigger Real-Time Login Notification Email in background
+            try {
+                sendLoginNotificationEmail({
+                    email: user.email,
+                    name: user.name,
+                    role: user.role
+                }).catch(err => console.error("Login email background error:", err.message));
+            } catch (lErr) {
+                console.error("Login email error:", lErr.message);
+            }
 
             res.json({
                 _id: user._id,

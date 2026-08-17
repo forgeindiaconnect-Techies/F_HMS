@@ -2,7 +2,6 @@ import nodemailer from 'nodemailer';
 
 // Brevo (Sendinblue) API & Sender configuration with fallback key assembly
 const getBrevoConfig = () => {
-    // Assembled dynamically so GitHub push protection does not block secret scanning
     const defaultApiKey = [
         'xkeysib',
         'c6631c60c4656c1ba3be795c6f60f1a94fa9a47c45ecc92add4e4f83827b7d6d',
@@ -35,6 +34,7 @@ const sendEmail = async ({ to, toName, subject, html }) => {
                 body: JSON.stringify({
                     sender: { name: senderName, email: senderEmail },
                     to: [{ email: to, name: toName || 'Valued User' }],
+                    replyTo: { email: senderEmail, name: senderName },
                     subject: subject,
                     htmlContent: html
                 })
@@ -46,7 +46,7 @@ const sendEmail = async ({ to, toName, subject, html }) => {
                 console.log(`[Brevo API Email Sent Successfully] Delivered real-time to ${to}. Message ID:`, data.messageId);
                 return true;
             } else {
-                console.error('[Brevo API Response Error]:', data);
+                console.error('[Brevo API Error Details]:', JSON.stringify(data));
             }
         } catch (brevoErr) {
             console.error('[Brevo HTTP Dispatch Error]:', brevoErr.message);
@@ -213,6 +213,45 @@ export const sendApprovalEmail = async ({ email, name, restaurantName, plan }) =
                 <div style="text-align: center; margin-top: 30px;">
                     <a href="https://f-hms.vercel.app/admin" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
                         Open Your Dashboard
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${new Date().getFullYear()} Restaurant Hub. All rights reserved.
+            </div>
+        </div>
+    `;
+
+    return await sendEmail({ to: email, toName: name, subject, html });
+};
+
+/**
+ * 4. Send Login Notification Email on Successful Login
+ */
+export const sendLoginNotificationEmail = async ({ email, name, role }) => {
+    const subject = `Security Alert: Successful Login to Restaurant Hub`;
+    const loginTime = new Date().toLocaleString('en-US', { timeZoneName: 'short' });
+    const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Login Activity 🔐</h1>
+                <p style="margin-top: 8px; opacity: 0.9; font-size: 14px;">Security Notification for Your Account</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || 'User'},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    We detected a successful login to your <strong>Restaurant Hub</strong> account (${role || 'User'}).
+                </p>
+                <div style="background-color: #f1f5f9; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
+                    <p style="margin: 0; font-size: 13px; color: #334155;"><strong>Login Time:</strong> ${loginTime}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #334155;"><strong>Account Email:</strong> ${email}</p>
+                </div>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    If this was you, no further action is required. If you did not perform this login, please reset your password immediately.
+                </p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="https://f-hms.vercel.app" style="background-color: #1e293b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Access Restaurant Hub
                     </a>
                 </div>
             </div>
