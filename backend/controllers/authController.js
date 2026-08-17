@@ -371,50 +371,49 @@ export const resendWelcomeEmail = async (req, res) => {
             }
         }
 
-        const results = [];
-        for (const user of usersToNotify) {
-            let restaurant = null;
-            if (user.restaurantId) {
-                restaurant = await Restaurant.findById(user.restaurantId);
-            } else {
-                restaurant = await Restaurant.findOne({ ownerId: user._id });
-            }
-
-            const restName = restaurant ? restaurant.name : `${user.name}'s Restaurant`;
-            const restPlan = restaurant ? restaurant.subscription?.plan : 'Basic';
-
-            const welcomeSent = await sendWelcomeEmail({
-                email: user.email,
-                name: user.name,
-                restaurantName: restName,
-                plan: restPlan
-            });
-
-            let approvalSent = false;
-            if (restaurant && restaurant.approvalStatus === 'Approved') {
-                approvalSent = await sendApprovalEmail({
-                    email: user.email,
-                    name: user.name,
-                    restaurantName: restName,
-                    plan: restPlan
-                });
-            }
-
-            results.push({
-                email: user.email,
-                name: user.name,
-                restaurantName: restName,
-                welcomeSent,
-                approvalSent
-            });
-        }
-
+        // Send instant response so HTTP connection never times out
         res.json({
             success: true,
-            message: `Dispatched real-time email notification(s) to ${results.length} account(s)!`,
-            accountsNotifiedCount: results.length,
-            results
+            message: `Dispatched real-time email notifications for ${usersToNotify.length} account(s) in background.`,
+            count: usersToNotify.length,
+            accounts: usersToNotify.map(u => ({ email: u.email, name: u.name }))
         });
+
+        // Execute Brevo dispatches asynchronously in parallel
+        (async () => {
+            for (const user of usersToNotify) {
+                try {
+                    let restaurant = null;
+                    if (user.restaurantId) {
+                        restaurant = await Restaurant.findById(user.restaurantId);
+                    } else {
+                        restaurant = await Restaurant.findOne({ ownerId: user._id });
+                    }
+
+                    const restName = restaurant ? restaurant.name : `${user.name}'s Restaurant`;
+                    const restPlan = restaurant ? restaurant.subscription?.plan : 'Basic';
+
+                    await sendWelcomeEmail({
+                        email: user.email,
+                        name: user.name,
+                        restaurantName: restName,
+                        plan: restPlan
+                    });
+
+                    if (restaurant && restaurant.approvalStatus === 'Approved') {
+                        await sendApprovalEmail({
+                            email: user.email,
+                            name: user.name,
+                            restaurantName: restName,
+                            plan: restPlan
+                        });
+                    }
+                } catch (bErr) {
+                    console.error("Background email dispatch error for user:", user.email, bErr.message);
+                }
+            }
+        })();
+
     } catch (error) {
         console.error("Resend welcome email error:", error);
         res.status(500).json({ message: error.message });
