@@ -433,7 +433,7 @@ export const testSendEmail = async (req, res) => {
         const targetApiKey = apiKey || process.env.BREVO_API_KEY || [
             'xkeysib',
             'c6631c60c4656c1ba3be795c6f60f1a94fa9a47c45ecc92add4e4f83827b7d6d',
-            'hpPwsz1bKvDbXXLH'
+            'ZUUMRh04YAW16Ugq'
         ].join('-');
 
         const senderEmail = process.env.BREVO_SENDER_EMAIL || 'forgeindiaconnectfic@gmail.com';
