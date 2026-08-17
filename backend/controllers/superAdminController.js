@@ -44,16 +44,20 @@ export const getStats = async (req, res) => {
 // @access  Private/SuperAdmin
 export const getRestaurants = async (req, res) => {
     try {
-        // Self-heal: Check for any RestaurantAdmin users who do NOT have a Restaurant created/linked yet
-        const unlinkedAdmins = await User.find({ role: 'RestaurantAdmin', restaurantId: { $in: [null, undefined] } });
+        // Self-heal: Find any admin users with role matching admin who do NOT have a restaurantId set
+        const unlinkedAdmins = await User.find({
+            role: { $in: ['RestaurantAdmin', 'Admin', 'restaurantadmin', 'admin'] },
+            $or: [
+                { restaurantId: { $exists: false } },
+                { restaurantId: null }
+            ]
+        });
+
         for (const admin of unlinkedAdmins) {
-            const existingRest = await Restaurant.findOne({ ownerId: admin._id });
-            if (existingRest) {
-                admin.restaurantId = existingRest._id;
-                await admin.save();
-            } else {
-                const newRest = await Restaurant.create({
-                    name: `${admin.name}'s Restaurant`,
+            let existingRest = await Restaurant.findOne({ ownerId: admin._id });
+            if (!existingRest) {
+                existingRest = await Restaurant.create({
+                    name: `${admin.name || 'Partner'}'s Restaurant`,
                     ownerId: admin._id,
                     subscription: {
                         status: 'Active',
@@ -65,14 +69,12 @@ export const getRestaurants = async (req, res) => {
                     approvalStatus: 'Pending',
                     verificationStatus: 'Pending'
                 });
-                admin.restaurantId = newRest._id;
-                await admin.save();
 
                 try {
                     const Branch = (await import('../models/Branch.js')).default;
                     await Branch.create({
-                        restaurantId: newRest._id,
-                        name: `${newRest.name} Branch`,
+                        restaurantId: existingRest._id,
+                        name: `${existingRest.name} Branch`,
                         location: { address: 'Primary Location' },
                         contact: { phone: admin.phoneNumber || '' },
                         isActive: true
@@ -81,9 +83,26 @@ export const getRestaurants = async (req, res) => {
                     console.error("Failed to create self-heal branch", bErr);
                 }
             }
+            admin.restaurantId = existingRest._id;
+            await admin.save();
         }
 
         const restaurants = await Restaurant.find().populate('ownerId', 'name email').sort({ createdAt: -1 }).lean();
+
+        // Auto-repair any restaurants with blank, null, or 'Unnamed' names
+        const repairedRestaurants = await Promise.all(restaurants.map(async (r) => {
+            if (!r.name || r.name.trim() === '' || r.name === 'Unnamed') {
+                const ownerName = r.ownerId?.name || 'Partner';
+                r.name = `${ownerName}'s Restaurant`;
+                try {
+                    await Restaurant.findByIdAndUpdate(r._id, { name: r.name });
+                } catch (e) {
+                    console.error("Failed to persist repaired restaurant name", e);
+                }
+            }
+            return r;
+        }));
+
         const revenues = await Order.aggregate([
             { $match: { isPaid: true } },
             { $group: { _id: "$restaurantId", totalRevenue: { $sum: "$totalPrice" } } }
@@ -92,7 +111,7 @@ export const getRestaurants = async (req, res) => {
         revenues.forEach(r => {
             if (r._id) revMap[r._id.toString()] = r.totalRevenue;
         });
-        const result = restaurants.map(r => ({
+        const result = repairedRestaurants.map(r => ({
             ...r,
             totalRevenue: revMap[r._id.toString()] || 0
         }));
