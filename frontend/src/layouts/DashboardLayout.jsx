@@ -33,7 +33,7 @@ const ROUTE_FEATURE_MAP = [
 const PLAN_ORDER_FALLBACK = { Basic: 0, Starter: 0, Pro: 1, Professional: 1, Enterprise: 2 };
 
 const DashboardLayout = () => {
-    const { restaurant, api, fetchRestaurant } = useAuth();
+    const { user, restaurant, api, fetchRestaurant } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
 
