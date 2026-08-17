@@ -260,13 +260,17 @@ export const getAllVerifications = async (req, res) => {
         });
 
         for (const rest of unverifiedRestaurants) {
-            const existingVerif = await RestaurantVerification.findOne({ restaurantId: rest._id });
-            if (!existingVerif) {
-                await RestaurantVerification.create({
-                    restaurantId: rest._id,
-                    documents: {},
-                    status: rest.verificationStatus === 'Under Review' ? 'Under Review' : 'Pending'
-                });
+            try {
+                const existingVerif = await RestaurantVerification.findOne({ restaurantId: rest._id });
+                if (!existingVerif) {
+                    await RestaurantVerification.create({
+                        restaurantId: rest._id,
+                        documents: {},
+                        status: rest.verificationStatus === 'Under Review' ? 'Under Review' : 'Pending'
+                    });
+                }
+            } catch (vErr) {
+                console.error("Self-heal verification record error for rest:", rest._id, vErr.message);
             }
         }
 
