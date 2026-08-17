@@ -158,17 +158,16 @@ export const registerUser = async (req, res) => {
                 status: verifStatus
             });
 
-                // Notify Super Admins
-                try {
-                    await Notification.create({
-                        title: 'Verification Under Review',
-                        desc: `Restaurant "${restaurant.name}" has submitted verification documents during signup.`,
-                        type: 'System',
-                        isSuperAdminOnly: true
-                    });
-                } catch (notifErr) {
-                    console.error("Failed to create signup verification notification", notifErr);
-                }
+            // Notify Super Admins
+            try {
+                await Notification.create({
+                    title: 'Verification Under Review',
+                    desc: `Restaurant "${restaurant.name}" has submitted verification documents during signup.`,
+                    type: 'System',
+                    isSuperAdminOnly: true
+                });
+            } catch (notifErr) {
+                console.error("Failed to create signup verification notification", notifErr);
             }
         }
 
