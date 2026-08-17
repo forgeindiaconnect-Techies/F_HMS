@@ -255,7 +255,56 @@ export const getAllVerifications = async (req, res) => {
             return res.json([]);
         }
 
-        // Self-heal: Ensure ALL restaurants in DB have a RestaurantVerification record
+        // Self-heal Step 1: Find any RestaurantAdmin users without a linked Restaurant record
+        try {
+            const User = (await import('../models/User.js')).default;
+            const Branch = (await import('../models/Branch.js')).default;
+
+            const unlinkedAdmins = await User.find({
+                role: { $in: ['RestaurantAdmin', 'Admin', 'restaurantadmin', 'admin'] },
+                $or: [
+                    { restaurantId: { $exists: false } },
+                    { restaurantId: null }
+                ]
+            });
+
+            for (const admin of unlinkedAdmins) {
+                let existingRest = await Restaurant.findOne({ ownerId: admin._id });
+                if (!existingRest) {
+                    existingRest = await Restaurant.create({
+                        name: `${admin.name || 'Partner'}'s Restaurant`,
+                        ownerId: admin._id,
+                        subscription: {
+                            status: 'Active',
+                            plan: 'Basic',
+                            billingCycle: 'monthly',
+                            trialActive: true,
+                            expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                        },
+                        approvalStatus: 'Pending',
+                        verificationStatus: 'Pending'
+                    });
+
+                    try {
+                        await Branch.create({
+                            restaurantId: existingRest._id,
+                            name: `${existingRest.name} Branch`,
+                            location: { address: 'Primary Location' },
+                            contact: { phone: admin.phoneNumber || '' },
+                            isActive: true
+                        });
+                    } catch (bErr) {
+                        console.error("Self-heal branch error:", bErr.message);
+                    }
+                }
+                admin.restaurantId = existingRest._id;
+                await admin.save();
+            }
+        } catch (adminSelfHealErr) {
+            console.error("Self-heal admin users error:", adminSelfHealErr.message);
+        }
+
+        // Self-heal Step 2: Ensure ALL restaurants in DB have a RestaurantVerification record
         try {
             const allRestaurants = await Restaurant.find().lean();
             for (const rest of allRestaurants) {
