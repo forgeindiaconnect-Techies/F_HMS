@@ -7,7 +7,7 @@ import VerificationBlockedOverlay from '../components/VerificationBlockedOverlay
 
 const ChefLayout = () => {
     const { restaurant } = useAuth();
-    const isUnverified = restaurant && restaurant.verificationStatus !== 'Verified';
+    const isUnverified = restaurant && restaurant.verificationStatus !== 'Verified' && restaurant.approvalStatus !== 'Approved';
 
     return (
         <div className="flex flex-col h-screen overflow-hidden font-sans text-slate-900 dark:text-gray-200 bg-gray-50 dark:bg-[#151923]">
