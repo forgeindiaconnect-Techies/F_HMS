@@ -87,75 +87,76 @@ export const registerUser = async (req, res) => {
             user.branchId = initialBranch._id;
             await user.save();
 
-            if (hasVerificationFiles) {
-                const { addressText, fssaiExpiryDate } = req.body;
-                const documents = {};
-                const getFileUrl = (file) => `/uploads/verification/${file.filename}`;
+            const { addressText, fssaiExpiryDate } = req.body;
+            const documents = {};
+            const getFileUrl = (file) => `/uploads/verification/${file.filename}`;
 
-                const addField = (field, expiry = null) => {
-                    if (files[field] && files[field].length > 0) {
-                        documents[field] = {
-                            filePath: getFileUrl(files[field][0]),
-                            status: 'Pending',
-                            rejectReason: '',
-                            ...(expiry && { expiryDate: new Date(expiry) })
-                        };
-                    }
+            const addField = (field, expiry = null) => {
+                if (files[field] && files[field].length > 0) {
+                    documents[field] = {
+                        filePath: getFileUrl(files[field][0]),
+                        status: 'Pending',
+                        rejectReason: '',
+                        ...(expiry && { expiryDate: new Date(expiry) })
+                    };
+                }
+            };
+
+            addField('fssai', fssaiExpiryDate);
+            addField('businessRegistration');
+            addField('panCard');
+            addField('aadhaarCard');
+            addField('bankProof');
+
+            if (files.addressProof && files.addressProof.length > 0) {
+                documents.addressProof = {
+                    filePath: getFileUrl(files.addressProof[0]),
+                    addressText: addressText || '',
+                    status: 'Pending',
+                    rejectReason: ''
                 };
+            } else if (addressText) {
+                documents.addressProof = {
+                    filePath: '',
+                    addressText,
+                    status: 'Pending',
+                    rejectReason: ''
+                };
+            }
 
-                addField('fssai', fssaiExpiryDate);
-                addField('businessRegistration');
-                addField('panCard');
-                addField('aadhaarCard');
-                addField('bankProof');
-
-                if (files.addressProof && files.addressProof.length > 0) {
-                    documents.addressProof = {
-                        filePath: getFileUrl(files.addressProof[0]),
-                        addressText: addressText || '',
-                        status: 'Pending',
-                        rejectReason: ''
-                    };
-                } else if (addressText) {
-                    documents.addressProof = {
-                        filePath: '',
-                        addressText,
-                        status: 'Pending',
-                        rejectReason: ''
-                    };
+            if (req.body.logoBase64) {
+                documents.logo = { filePath: req.body.logoBase64 };
+                restaurant.logo = req.body.logoBase64;
+                await restaurant.save();
+            } else if (files.logo && files.logo.length > 0) {
+                const logoFile = files.logo[0];
+                documents.logo = { filePath: getFileUrl(logoFile) };
+                try {
+                    const fileBuffer = fs.readFileSync(logoFile.path);
+                    const ext = path.extname(logoFile.originalname || logoFile.filename || '').toLowerCase();
+                    const mimeType = ext === '.pdf' ? 'application/pdf' : (logoFile.mimetype || 'image/png');
+                    restaurant.logo = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+                } catch (e) {
+                    restaurant.logo = getFileUrl(logoFile);
                 }
+                await restaurant.save();
+            }
 
-                if (req.body.logoBase64) {
-                    documents.logo = { filePath: req.body.logoBase64 };
-                    restaurant.logo = req.body.logoBase64;
-                    await restaurant.save();
-                } else if (files.logo && files.logo.length > 0) {
-                    const logoFile = files.logo[0];
-                    documents.logo = { filePath: getFileUrl(logoFile) };
-                    try {
-                        const fileBuffer = fs.readFileSync(logoFile.path);
-                        const ext = path.extname(logoFile.originalname || logoFile.filename || '').toLowerCase();
-                        const mimeType = ext === '.pdf' ? 'application/pdf' : (logoFile.mimetype || 'image/png');
-                        restaurant.logo = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
-                    } catch (e) {
-                        restaurant.logo = getFileUrl(logoFile);
-                    }
-                    await restaurant.save();
-                }
+            if (files.menuPdf && files.menuPdf.length > 0) {
+                documents.menuPdf = { filePath: getFileUrl(files.menuPdf[0]) };
+            }
 
-                if (files.menuPdf && files.menuPdf.length > 0) {
-                    documents.menuPdf = { filePath: getFileUrl(files.menuPdf[0]) };
-                }
+            if (files.images && files.images.length > 0) {
+                documents.images = files.images.map(img => ({ filePath: getFileUrl(img) }));
+            }
 
-                if (files.images && files.images.length > 0) {
-                    documents.images = files.images.map(img => ({ filePath: getFileUrl(img) }));
-                }
-
-                await RestaurantVerification.create({
-                    restaurantId: restaurant._id,
-                    documents,
-                    status: 'Under Review'
-                });
+            // Always create RestaurantVerification document so Super Admin receives the verification request
+            const verifStatus = hasVerificationFiles ? 'Under Review' : 'Pending';
+            await RestaurantVerification.create({
+                restaurantId: restaurant._id,
+                documents,
+                status: verifStatus
+            });
 
                 // Notify Super Admins
                 try {
