@@ -23,27 +23,25 @@ export const registerUser = async (req, res) => {
     const { name, email, password, phoneNumber, roleName, loginType } = req.body;
 
     try {
-        const userExists = await User.findOne({ email });
+        if (!email || !password || !name) {
+            return res.status(400).json({ message: 'Please provide name, email, and password.' });
+        }
+
+        const normalizedEmail = String(email).trim().toLowerCase();
+
+        const userExists = await User.findOne({ email: { $regex: `^${normalizedEmail}$`, $options: 'i' } });
 
         if (userExists) {
-            return res.status(400).json({ message: 'User already exists' });
+            return res.status(400).json({ message: 'An account with this email address already exists. Please log in instead.' });
         }
 
-        const role = roleName || 'Customer';
-
-        // Check if customer is trying to register in staff portal or vice versa
-        if (loginType === 'staff' && role === 'Customer') {
-            return res.status(403).json({ message: 'Cannot register as customer from staff portal' });
-        }
-        if (loginType === 'customer' && role !== 'Customer') {
-            return res.status(403).json({ message: 'Cannot register as staff from customer portal' });
-        }
+        const role = roleName || (req.body.restaurantName ? 'RestaurantAdmin' : 'Customer');
 
         const user = await User.create({
-            name,
-            email,
+            name: String(name).trim(),
+            email: normalizedEmail,
             password,
-            phoneNumber,
+            phoneNumber: phoneNumber || '',
             role: role,
         });
 
