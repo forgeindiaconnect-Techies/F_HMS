@@ -71,8 +71,8 @@ export const registerUser = async (req, res) => {
                     trialActive: true,
                     expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
                 },
-                approvalStatus: 'Approved',
-                verificationStatus: 'Verified'
+                approvalStatus: 'Pending',
+                verificationStatus: hasVerificationFiles ? 'Under Review' : 'Pending'
             });
             user.restaurantId = restaurant._id;
 

@@ -193,15 +193,6 @@ export const getMyRestaurant = async (req, res) => {
         if (!restaurant) {
             return res.json(null);
         }
-
-        // Ensure restaurant is approved and verified so plan-based dashboard opens seamlessly
-        if (restaurant.approvalStatus !== 'Approved' || restaurant.verificationStatus !== 'Verified') {
-            restaurant.approvalStatus = 'Approved';
-            restaurant.verificationStatus = 'Verified';
-            if (!restaurant.subscription) restaurant.subscription = {};
-            restaurant.subscription.status = 'Active';
-            await restaurant.save();
-        }
         
         if (restaurant && restaurant.subscription?.expiryDate) {
             const expiry = new Date(restaurant.subscription.expiryDate);
