@@ -70,7 +70,8 @@ export const registerUser = async (req, res) => {
                     plan: sanitizePlan(req.body.plan),
                     billingCycle: req.body.billingCycle || 'monthly',
                     trialActive: true,
-                    expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                    startDate: new Date(),
+                    expiryDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000) // 1-Day Free Trial
                 },
                 approvalStatus: 'Pending',
                 verificationStatus: hasVerificationFiles ? 'Under Review' : 'Pending'

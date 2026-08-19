@@ -5,6 +5,7 @@ import Topbar from '../components/Topbar';
 import { useAuth } from '../context/AuthContext';
 
 import VerificationBlockedOverlay from '../components/VerificationBlockedOverlay';
+import SubscriptionFreezeOverlay from '../components/SubscriptionFreezeOverlay';
 import { Sparkles, ArrowRight, X, CheckCircle, ShieldCheck, Zap } from 'lucide-react';
 
 // ─── Route → Feature Key Mapping ──────────────────────────────────────────────
@@ -113,6 +114,17 @@ const DashboardLayout = () => {
     // Default to 'Active' so features aren't locked if subscription status isn't set yet
     const status = restaurant?.subscription?.status || 'Active';
 
+    // 1-Day Trial Expiration / Frozen Check
+    const isTrialExpired = restaurant?.subscription?.trialActive && 
+        restaurant?.subscription?.expiryDate && 
+        (new Date() > new Date(restaurant.subscription.expiryDate));
+        
+    const isFrozen = user?.role !== 'SuperAdmin' && (
+        status === 'Frozen' || 
+        status === 'Expired' || 
+        isTrialExpired
+    );
+
     // Find the first matching route in our feature map for the current path
     const routeBlock = ROUTE_FEATURE_MAP.find(r => location.pathname.startsWith(r.path));
 
@@ -197,7 +209,9 @@ const DashboardLayout = () => {
                 <Topbar />
                 
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 md:p-8 relative">
-                    {isUnverified && !isVerificationPage ? (
+                    {isFrozen ? (
+                        <SubscriptionFreezeOverlay onUnfrozen={() => fetchRestaurant()} />
+                    ) : isUnverified && !isVerificationPage ? (
                        <VerificationBlockedOverlay />
                     ) : (
                        <div className="relative w-full h-full min-h-[60vh]">

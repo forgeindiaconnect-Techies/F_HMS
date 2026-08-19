@@ -115,7 +115,7 @@ function App() {
       <ThemeToggle />
       <Routes>
         {/* Customer Facing Application */}
-        <Route path="/" element={<CustomerAuthProvider><PublicLayout /></CustomerAuthProvider>}>
+        <Route path="/" element={<CustomerAuthProvider><CartProvider><PublicLayout /></CartProvider></CustomerAuthProvider>}>
           <Route index element={<Home />} />
           <Route path="explore" element={<Explore />} />
           <Route path="contact" element={<Contact />} />

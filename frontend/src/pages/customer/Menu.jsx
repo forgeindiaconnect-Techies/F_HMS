@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Search, Heart, ShoppingBag, Star, Filter, Info, Flame, Leaf } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
-import { getItemImage } from '../../utils/imageHelper';
+import { getItemImage, getFallbackFoodImage } from '../../utils/imageHelper';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 
 const categories = ['All', 'Starters', 'Salads', 'Mains', 'Desserts', 'Beverages'];
@@ -154,6 +154,10 @@ const Menu = () => {
                                         <img 
                                             src={getItemImage(item)} 
                                             alt={item.name}
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.src = getFallbackFoodImage(item.name || item.category);
+                                            }}
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent transition-opacity"></div>

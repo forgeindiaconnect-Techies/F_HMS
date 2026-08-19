@@ -9,7 +9,9 @@ const Explore = () => {
     const { user, logout } = useCustomerAuth();
     const [restaurants, setRestaurants] = useState([]);
     const [search, setSearch] = useState('');
-    const [location, setLocation] = useState(localStorage.getItem('userLocation') || 'San Francisco, CA');
+    const savedLoc = localStorage.getItem('userLocation');
+    const defaultLocation = (savedLoc && savedLoc !== 'San Francisco, CA') ? savedLoc : 'Select Location';
+    const [location, setLocation] = useState(defaultLocation);
     const [isLocationOpen, setIsLocationOpen] = useState(false);
     const [loading, setLoading] = useState(true);
 

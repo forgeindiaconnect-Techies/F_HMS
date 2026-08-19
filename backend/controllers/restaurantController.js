@@ -215,21 +215,27 @@ export const getMyRestaurant = async (req, res) => {
                 });
             }
 
-            // If subscription is expired, check if we've already notified them
-            if (expiry < now && restaurant.subscription.status !== 'Cancelled') {
-                const existingNotif = await Notification.findOne({
-                    restaurantId: restaurant._id,
-                    title: 'Subscription Expired',
-                    read: false
-                });
-                
-                if (!existingNotif) {
-                    await Notification.create({
-                        title: 'Subscription Expired',
-                        desc: 'Your subscription has expired. Please renew to continue using all features.',
-                        type: 'System',
-                        restaurantId: restaurant._id
+            // If subscription or 1-day free trial has expired, freeze the dashboard
+            if (expiry < now) {
+                if (restaurant.subscription.status !== 'Frozen' && restaurant.subscription.status !== 'Cancelled') {
+                    restaurant.subscription.status = 'Frozen';
+                    restaurant.subscription.trialActive = false;
+                    await restaurant.save();
+
+                    const existingNotif = await Notification.findOne({
+                        restaurantId: restaurant._id,
+                        title: '1-Day Free Trial Expired',
+                        read: false
                     });
+                    
+                    if (!existingNotif) {
+                        await Notification.create({
+                            title: '1-Day Free Trial Expired',
+                            desc: 'Your 1-day free trial has ended. Your dashboard has been frozen. Please subscribe to unlock full access.',
+                            type: 'System',
+                            restaurantId: restaurant._id
+                        });
+                    }
                 }
             }
         }

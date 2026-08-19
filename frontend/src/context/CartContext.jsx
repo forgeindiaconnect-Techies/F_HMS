@@ -3,7 +3,26 @@ import { getItemImage } from '../utils/imageHelper';
 
 const CartContext = createContext();
 
-export const useCart = () => useContext(CartContext);
+const defaultCartContext = {
+    cartItems: [],
+    wishlist: [],
+    isCartOpen: false,
+    setIsCartOpen: () => {},
+    isWishlistOpen: false,
+    setIsWishlistOpen: () => {},
+    addToCart: () => {},
+    removeFromCart: () => {},
+    updateQuantity: () => {},
+    toggleWishlist: () => {},
+    clearCart: () => {},
+    cartTotal: 0,
+    cartCount: 0
+};
+
+export const useCart = () => {
+    const context = useContext(CartContext);
+    return context || defaultCartContext;
+};
 
 export const CartProvider = ({ children }) => {
     const [cartItems, setCartItems] = useState([]);
