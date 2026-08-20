@@ -46,18 +46,19 @@ const ModuleDetails = () => {
             ]
         },
         manager: {
-            title: "Branch Manager Operations",
+            title: "Branch Manager Operations & Dashboard",
             tag: "Branch Manager",
             tagColor: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20",
             checkColor: "text-emerald-500",
             icon: "🏬",
+            image: "/branch-manager-dashboard.png",
             features: [
-                { name: "Live Branch Overview Feed", desc: "Live KPI summary of shift revenue, active waiters on shift, and automated inventory stock alerts." },
-                { name: "Daily Orders Tracking", desc: "Keep track of active kitchen status lists, waiter orders status, and cashier shift summaries." },
-                { name: "Staff Shifts & Monitoring", desc: "Coordinate daily check-in logs, break statuses, and monitor schedule adherence directly from the floor." },
-                { name: "Localized Expense Tracking", desc: "Record local branch cash outflows and operational expenses including emergency repairs or supplies." },
-                { name: "Interactive Table Status", desc: "Visual map tracking occupied tables, pending guest reservations, and served status cycles." },
-                { name: "Customer Feedback Logbook", desc: "Review customer service reviews, food rating surveys, and suggestions in real time." }
+                { name: "Live Orders Dashboard", desc: "Monitor incoming customer dining orders, takeaway tickets, and new order sound alerts in real time." },
+                { name: "Revenue Analytics & Trends", desc: "Interactive graph charts tracking peak sales hours, daily bill volume, and live revenue totals." },
+                { name: "Inventory & Stock Levels", desc: "Instant visibility into raw ingredient stock, low-inventory warnings, and kitchen stock reorders." },
+                { name: "Reservations & Table Map", desc: "Track reserved tables, party sizes, time slots, and visual dine-in table seating status." },
+                { name: "Staff Attendance & Shifts", desc: "Log active floor waiters, chef prep shifts, clock-in times, and staff performance metrics." },
+                { name: "Customer Reviews & Sales Reports", desc: "Logbook of dining feedback, dish ratings, revenue pie-charts, and daily financial summaries." }
             ]
         }
     };
@@ -111,6 +112,30 @@ const ModuleDetails = () => {
                         {current.description}
                     </p>
                 </div>
+
+                {/* Rounded Dashboard Illustration Frame */}
+                {current.image && (
+                    <div className="max-w-4xl mx-auto rounded-[2.5rem] overflow-hidden bg-gradient-to-tr from-emerald-50 via-white to-rose-50 dark:from-slate-900 dark:via-slate-900/80 dark:to-emerald-950/40 p-4 sm:p-6 border border-emerald-100 dark:border-slate-800 shadow-xl">
+                        <div className="relative rounded-[2rem] overflow-hidden bg-white dark:bg-slate-950 shadow-inner border border-slate-200/80 dark:border-slate-800">
+                            <img 
+                                src={current.image} 
+                                alt={current.title}
+                                className="w-full h-auto object-cover filter contrast-[1.02] hover:scale-[1.01] transition-transform duration-500" 
+                            />
+                        </div>
+                        
+                        {/* Interactive Feature Pills */}
+                        <div className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-xs font-black">
+                            <span className="px-3 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">🛒 Live Orders</span>
+                            <span className="px-3 py-1 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">📈 Revenue Analytics</span>
+                            <span className="px-3 py-1 rounded-full bg-[#FF2D55]/10 text-[#FF2D55] border border-[#FF2D55]/20">📦 Inventory</span>
+                            <span className="px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">📅 Reservations</span>
+                            <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">👥 Staff Attendance</span>
+                            <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">⭐ Customer Reviews</span>
+                            <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">📊 Sales Reports</span>
+                        </div>
+                    </div>
+                )}
 
                 {/* Feature Explanation Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
