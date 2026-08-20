@@ -138,15 +138,6 @@ const ManagementFeatures = () => {
                                 <p className="text-gray-500 dark:text-[#94A3B8] text-sm font-medium mt-2">Daily overview, staff shifts monitoring, petty cash expenses and tables status.</p>
                             </div>
 
-                            {/* Rounded Branch Manager Graphic Inside Card */}
-                            <div className="relative rounded-[2rem] overflow-hidden bg-gradient-to-tr from-emerald-50 to-rose-50 dark:from-emerald-950/30 dark:to-slate-900/60 p-2.5 border border-emerald-100 dark:border-emerald-500/20 shadow-md group-hover:scale-[1.02] transition-transform duration-300">
-                                <img 
-                                    src="/branch-manager-dashboard.png" 
-                                    alt="Branch Manager Dashboard" 
-                                    className="w-full h-auto object-cover rounded-[1.5rem] shadow-sm filter contrast-[1.02] hover:brightness-105 transition-all"
-                                />
-                            </div>
-
                             <ul className="space-y-3 pt-2 font-bold text-gray-700 dark:text-slate-300 text-sm">
                                 <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-emerald-500 shrink-0" /> Live Orders &amp; Revenue Analytics</li>
                                 <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-emerald-500 shrink-0" /> Inventory &amp; Reservations</li>
