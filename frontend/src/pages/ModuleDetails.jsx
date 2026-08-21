@@ -121,25 +121,24 @@ const ModuleDetails = () => {
             features: [
                 {
                     name: "Live Orders Dashboard & Ticket Routing",
-                    desc: "Centralized Live Orders Dashboard to manage incoming Dine-In (32), Takeaway (3), and Delivery orders with instant sound alerts, kitchen station routing, and live order counters (11 active).",
+                    desc: "Centralized Live Orders Dashboard to manage incoming Dine-In, Takeaway, Delivery Orders, and Kitchen Queues with instant Sound Alerts, Table Numbers (T-05, T-06, T-03), and live order counters (12 Active).",
                     image: "/live-orders-dashboard.png",
                     capabilities: [
-                        "Real-time order counter (32 Dine-In, 3 Takeaway, 0 Delivery, 11 Active)",
-                        "New Order Notification & Sound Alert Cards for instant staff alerts",
-                        "Live Kitchen Queue status (New, Preparing, Ready, Delivered) & Priority tags (High, Medium)",
-                        "Individual Order Ticket generation ($28 total) & Multi-station Kitchen Routing (Estimated Prep Time 13m)"
+                        "Real-time Live Order Counter (12 Active Orders) across Dine-In, Takeaway & Delivery",
+                        "New Order Notification & Sound Alert chime cards for instant staff awareness",
+                        "Order Status tracking (New, Preparing, Ready, Delivered) & Table Numbers allocation (T-05, T-06, T-03)",
+                        "Kitchen Display, Chef Queue, Delivery Dispatch ($1274.4.5) & POS Integration"
                     ],
                     workflow: [
-                        "Customer places Order (Dine-In / Takeaway / Delivery)",
-                        "POS captures transaction & plays Sound Alert Notification",
-                        "Ticket dispatches to Kitchen Display Queue (Table T-05, T-03, T-04)",
-                        "Chef preps food; order marked Ready for Delivery / Table service"
+                        "Customer Order received via POS integration",
+                        "Kitchen Display routes ticket & updates Chef Queue",
+                        "Dish status progresses: Preparing -> Ready -> Delivered / Table"
                     ],
                     preview: {
-                        metric: "35 Total Orders (11 Active)",
-                        sub: "Live Orders Dashboard • 32 Dine-In • 3 Takeaway",
-                        status: "Sound Alerts & Kitchen Routing Active",
-                        detail: "Live Queue: T-05, T-03, T-04 • Estimated Prep Time: 13m • Individual Ticket $28"
+                        metric: "12 Live Order Counter",
+                        sub: "Dine-In • Takeaway • Delivery • Kitchen Queue",
+                        status: "Sound Alerts & POS Integration Active",
+                        detail: "Tables: T-05, T-06, T-03 • Delivery Dispatch & Chef Queue Active"
                     }
                 },
                 {
@@ -325,6 +324,7 @@ const ModuleDetails = () => {
                 {
                     name: "Live Orders Dashboard",
                     desc: "Monitor incoming customer dining orders, takeaway tickets, and new order sound alerts in real time.",
+                    image: "/live-orders-dashboard.png",
                     capabilities: [
                         "Centralized live dine-in & takeaway order feed",
                         "Instant audio chime alerts for new incoming orders",
@@ -345,107 +345,112 @@ const ModuleDetails = () => {
                 },
                 {
                     name: "Revenue Analytics & Trends",
-                    desc: "Interactive graph charts tracking peak sales hours, daily bill volume, and live revenue totals.",
+                    desc: "Analytics Dashboard tracking Hourly Revenue ($13.62K), Monthly Revenue ($2,507.0K), Average Order Value ($19.39), Revenue Comparison trends (+2.93% Growth), Peak Sales Hours, and Sales Heatmaps.",
+                    image: "/revenue-analytics-dashboard.png",
                     capabilities: [
-                        "Hourly sales volume & revenue trend curve",
-                        "Peak dining window revenue analysis",
-                        "Cashier till drawer reconciliation summary",
-                        "Gross vs. Net sales comparison"
+                        "Hourly Revenue ($13.62K) & Monthly Revenue ($2,507.0K) performance tracking",
+                        "Average Order Value (AOV: $19.39) & Revenue Trend curve visualization (Jan to Jun)",
+                        "Peak Sales Hours & Sales Heatmap dining intensity matrices",
+                        "Revenue Comparison Growth Cards (+2.93%), Branch Analytics KPIs (33%, 34.6%, 31%) & Export Reports"
                     ],
                     workflow: [
-                        "Manager views hourly sales curve",
-                        "Compares actual till cash against system reports",
-                        "Performs shift closure settlement smoothly"
+                        "Manager opens Analytics Dashboard to review hourly & monthly sales curves",
+                        "Analyzes Peak Sales Hours & Sales Heatmap dining windows",
+                        "Click Export Report button to download branch KPI summaries"
                     ],
                     preview: {
-                        metric: "₹1,48,920",
-                        sub: "Today's Branch Revenue",
-                        status: "+28.4% vs Yesterday",
-                        detail: "Dine-In: ₹1.12L • Takeaway: ₹36.9K"
+                        metric: "$2,507.0K Monthly Revenue",
+                        sub: "Hourly Revenue: $13.62K • Average Order Value: $19.39",
+                        status: "+2.93% Growth Comparison",
+                        detail: "Peak Sales Hours Active • Sales Heatmap & Branch Analytics KPIs Synced"
                     }
                 },
                 {
                     name: "Inventory & Stock Levels",
-                    desc: "Instant visibility into raw ingredient stock, low-inventory warnings, and kitchen stock reorders.",
+                    desc: "Inventory Dashboard managing 1,248 raw ingredients (Total Stock Value ₹24,85,000), 36 Low Stock Alerts, 18 Pending Purchase Orders (PO #1258, #1257), Expiry Tracking, Barcode Scanner, and Warehouse Overview (98% Utilization).",
+                    image: "/inventory-stock-dashboard.png",
                     capabilities: [
-                        "Live ingredient stock quantity tracking",
-                        "Low stock threshold warning alerts",
-                        "Automated supplier purchase order generation",
-                        "Spoilage & waste recording log"
+                        "Real-time ingredient tracking (1,248 Items • ₹24,85,000 Stock Value • 98% Stock Availability)",
+                        "Low Stock & Critical Item Alerts (36 Items below reorder level: Chicken Breast 18kg, Tomato 22kg, Paneer 5kg)",
+                        "Expiry Tracking (Expires in 2 to 7 days), Inventory Movement logs (-5kg, +10kg), & Barcode Scanner",
+                        "Warehouse Overview (4 Warehouses • 2,340 Bins) & Top Supplier Management (FreshFarm Foods 92%)"
                     ],
                     workflow: [
-                        "POS deducts recipe ingredients upon order",
-                        "Stock level drops below safety threshold (e.g. 2.5kg left)",
-                        "Manager receives alert & clicks Auto Re-order"
+                        "Scan ingredient barcodes or view Low Stock Alerts (36 Items below threshold)",
+                        "System tracks ingredient expiry (Expires in 2 days) & inventory movement",
+                        "One-click 'Create Purchase Order' dispatches 18 Pending POs (Worth ₹5,40,000)"
                     ],
                     preview: {
-                        metric: "Low Stock Alert",
-                        sub: "Amul Cheese (2.5 kg remaining)",
-                        status: "Reorder Threshold: 5.0 kg",
-                        detail: "Action: Auto Purchase Order Drafted"
+                        metric: "1,248 Total Items (₹24,85,000)",
+                        sub: "36 Low Stock Alerts • 18 Pending POs (₹5,40,000)",
+                        status: "98% Stock Availability Active",
+                        detail: "Warehouse Utilization: 98% • Expiry Tracking & Barcode Scanner Active"
                     }
                 },
                 {
                     name: "Reservations & Table Map",
-                    desc: "Track reserved tables, party sizes, time slots, and visual dine-in table seating status.",
+                    desc: "Interactive floor plan table layout map displaying real-time table occupancy status (Green Available / Red Occupied), table seating duration timers (35m, 52m), Waiting Queue, and upcoming guest reservation calendar (7:00 PM, 7:30 PM).",
+                    image: "/reservations-tablemap-dashboard.png",
                     capabilities: [
-                        "Interactive floor plan table layout map",
-                        "Real-time table occupancy status (Green/Red)",
-                        "Table seating duration timers",
-                        "Upcoming guest reservation calendar"
+                        "Interactive floor plan table layout map (Tables T1, T2, T3, T4, T5, TS)",
+                        "Real-time table occupancy status (Green = Available, Red = Occupied)",
+                        "Table seating duration timers (35 MINS, 52 MINS) & live Waiting Queue monitoring",
+                        "Upcoming guest reservation calendar, Reservation Ticket (7:30 PM), Guest Profile & Waitlist toggle"
                     ],
                     workflow: [
-                        "Host views live table floor map",
-                        "Seats arriving party at Table 12",
-                        "Monitors table status cycle from Occupied to Settled"
+                        "Receive Reservation Request & click Reservation Confirmed",
+                        "Assign Table on interactive floor plan map & issue Reservation Ticket (7:30 PM)",
+                        "Guest Checked-In -> Monitor table seating duration timer (35 MINS, 52 MINS) -> Dining Completed"
                     ],
                     preview: {
-                        metric: "Table #12",
-                        sub: "Occupied • 4 Guests",
-                        status: "Seated for 35 mins",
-                        detail: "Reserved Next: 08:30 PM (Party of 6)"
+                        metric: "Interactive Floor Plan Active",
+                        sub: "Green = Available • Red = Occupied",
+                        status: "Seating Timers: 35 MINS & 52 MINS",
+                        detail: "Reservation Tickets: 7:30 PM (Party Size 4P, 2P) • Waiting Queue & Waitlist Active"
                     }
                 },
                 {
                     name: "Staff Attendance & Shifts",
-                    desc: "Log active floor waiters, chef prep shifts, clock-in times, and staff performance metrics.",
+                    desc: "Staff Attendance Dashboard monitoring 26 Active Floor Staff, terminal Clock In/Out times, Chef kitchen food prep speed tracking, Waiter table section allocations (Tables 1-6), and Shift Compliance Logs.",
+                    image: "/staff-attendance-dashboard.png",
                     capabilities: [
-                        "Real-time active floor staff directory",
-                        "Chef kitchen food prep speed tracking",
-                        "Waiter table section allocation",
-                        "Break duration & shift compliance logs"
+                        "Staff Directory (26 Active Staff Counter) with real-time Present / Off Duty status badges & Staff Profile Cards",
+                        "Chef kitchen food prep speed tracking & Chef Productivity Tracker speed graphs across shift hours",
+                        "Waiter table section allocation & Waiter Floor Assignment cards (Tables 1, 2, 3, 4, 5, 6)",
+                        "Break duration & shift compliance logs, Leave Request Cards, & Staff Performance Metrics (Progress 43%, Break 12%, KPI 1.38)"
                     ],
                     workflow: [
-                        "Manager reviews staff clock-in board",
-                        "Assigns floor waiters to table sections",
-                        "Tracks average food prep speed per chef"
+                        "Staff member clocks in; profile appears in Active Floor Staff directory (26 Active Counter)",
+                        "Manager allocates waiter floor sections across Tables 1 to 6",
+                        "Monitor chef prep speed graphs & track break duration compliance logs"
                     ],
                     preview: {
-                        metric: "8.4 mins",
-                        sub: "Avg Kitchen Prep Speed",
-                        status: "96% Staff Punctuality",
-                        detail: "On-Duty: 2 Chefs, 4 Waiters, 2 Cashiers"
+                        metric: "26 Active Staff Counter",
+                        sub: "Staff Directory • Chef Prep Speed • Table Allocations",
+                        status: "Shift Compliance Logs Active",
+                        detail: "Performance Metrics: Progress 43% • Break 12% • KPI 1.38 • 25 Notifications"
                     }
                 },
                 {
                     name: "Customer Reviews & Sales Reports",
-                    desc: "Logbook of dining feedback, dish ratings, revenue pie-charts, and daily financial summaries.",
+                    desc: "Customer Reviews & Sales Dashboard providing real-time guest dining feedback logbooks, dish rating sentiment scores (4.8★ Margherita Pizza), Revenue Pie Charts, Daily Sales KPI ($2.5K Today), and End-of-Day summary report exports.",
+                    image: "/customer-reviews-sales-dashboard.png",
                     capabilities: [
-                        "Real-time guest dining feedback logbook",
-                        "Dish rating & customer sentiment scores",
-                        "Local branch petty cash expense recording",
-                        "End-of-day manager summary report export"
+                        "Real-time guest dining feedback logbook & Customer Rating Overview (5-Star: 58%, 4-Star: 35%)",
+                        "Dish rating & customer sentiment scores (Margherita Pizza 4.8★, Chocosa Pizza 4.8★, Sentiment Meter)",
+                        "Daily Sales KPI ($2.5K Today), Revenue Pie Chart (Dine-in / Takeaway), & Weekly Revenue Report bar charts",
+                        "Best Selling Menu Items (49 orders), Local branch petty cash recording, & End-of-Day Report Export Card"
                     ],
                     workflow: [
-                        "Guest submits review on QR menu or tablet",
-                        "Feedback appears immediately in manager logbook",
-                        "Manager logs petty cash expenses for daily report"
+                        "Guest submits dining feedback or review rating after meal",
+                        "Feedback logs instantly in Guest Dining Feedback Logbook & updates Sentiment Meter",
+                        "Manager reviews Daily Sales KPI ($2.5K Today) & clicks Report Export Card to download summary"
                     ],
                     preview: {
-                        metric: "4.9 / 5.0",
-                        sub: "Branch Customer Rating",
-                        status: "Petty Cash: ₹1,200 Logged",
-                        detail: "Positive Reviews: 94% • 0 Critical Complaints"
+                        metric: "$2.5K Daily Sales KPI",
+                        sub: "Customer Rating: 58% 5-Star • Dish Sentiment Score: 4.8★",
+                        status: "Guest Feedback Notifications Active",
+                        detail: "Best Seller: Margherita Pizza (49 Orders) • End-of-Day Report Export Ready"
                     }
                 }
             ]
@@ -570,11 +575,11 @@ const ModuleDetails = () => {
 
                         {/* RIGHT SIDE OF THE SCREEN: Image Graphic */}
                         <div className="lg:col-span-6 space-y-4 w-full">
-                            {selectedFeature.image && (
+                            {(selectedFeature.image || current.image) && (
                                 <div className="rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-tr from-orange-50 via-white to-rose-50 dark:from-slate-900 dark:via-slate-900/80 dark:to-orange-950/40 p-2 sm:p-4 border border-orange-100 dark:border-slate-800 shadow-2xl w-full">
-                                    <div className="relative rounded-xl sm:rounded-2xl overflow-hidden bg-white dark:bg-slate-950 shadow-inner border border-slate-200/80 dark:border-slate-800 flex items-center justify-center">
+                                    <div className="relative rounded-xl sm:rounded-2xl overflow-hidden bg-white dark:bg-slate-950 shadow-inner border border-slate-200/80 dark:border-slate-800 flex items-center justify-center min-h-[220px]">
                                         <img 
-                                            src={selectedFeature.image} 
+                                            src={selectedFeature.image || current.image} 
                                             alt={selectedFeature.name}
                                             className="w-full h-auto max-h-[350px] sm:max-h-[520px] object-contain filter contrast-[1.02] hover:scale-[1.01] transition-transform duration-500 mx-auto" 
                                         />
