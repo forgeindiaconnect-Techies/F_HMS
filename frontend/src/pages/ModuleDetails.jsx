@@ -120,25 +120,26 @@ const ModuleDetails = () => {
             pills: ["🎫 Order Tickets", "📱 QR Digital Menu", "👨‍🍳 Kitchen Queue (KDS)", "🍔 Menu Management", "📅 Table Reservations", "🛵 Delivery Tracker"],
             features: [
                 {
-                    name: "Order Tickets & Live Routing",
-                    desc: "Incoming customer orders auto-generate digital order tickets routed straight to kitchen stations.",
-                    image: "/order-routing-dashboard.png",
+                    name: "Live Orders Dashboard & Ticket Routing",
+                    desc: "Centralized Live Orders Dashboard to manage incoming Dine-In (32), Takeaway (3), and Delivery orders with instant sound alerts, kitchen station routing, and live order counters (11 active).",
+                    image: "/live-orders-dashboard.png",
                     capabilities: [
-                        "Instant digital KOT generation & kitchen dispatch",
-                        "Table-specific order ticket status tracking",
-                        "Multi-station routing (Grill, Bar, Desserts)",
-                        "Automated bill preparation upon prep completion"
+                        "Real-time order counter (32 Dine-In, 3 Takeaway, 0 Delivery, 11 Active)",
+                        "New Order Notification & Sound Alert Cards for instant staff alerts",
+                        "Live Kitchen Queue status (New, Preparing, Ready, Delivered) & Priority tags (High, Medium)",
+                        "Individual Order Ticket generation ($28 total) & Multi-station Kitchen Routing (Estimated Prep Time 13m)"
                     ],
                     workflow: [
-                        "Customer or waiter selects items on digital menu",
-                        "Ticket #A12-B appears instantly on Kitchen Screen",
-                        "Chef preps food and marks ticket as Ready"
+                        "Customer places Order (Dine-In / Takeaway / Delivery)",
+                        "POS captures transaction & plays Sound Alert Notification",
+                        "Ticket dispatches to Kitchen Display Queue (Table T-05, T-03, T-04)",
+                        "Chef preps food; order marked Ready for Delivery / Table service"
                     ],
                     preview: {
-                        metric: "Ticket #A12-B",
-                        sub: "Table 04 • Dine-In Order",
-                        status: "Status: Prepped",
-                        detail: "2x Paneer Tikka, 1x Naan • Timer: 04:12m"
+                        metric: "35 Total Orders (11 Active)",
+                        sub: "Live Orders Dashboard • 32 Dine-In • 3 Takeaway",
+                        status: "Sound Alerts & Kitchen Routing Active",
+                        detail: "Live Queue: T-05, T-03, T-04 • Estimated Prep Time: 13m • Individual Ticket $28"
                     }
                 },
                 {
