@@ -62,6 +62,9 @@ const ManagementFeatures = () => {
                                 <h2 className="text-2xl font-black text-gray-900 dark:text-white">Business Intelligence</h2>
                                 <p className="text-gray-500 dark:text-[#94A3B8] text-sm font-medium mt-2">Executive analytics to monitor profitability and performance metrics instantly.</p>
                             </div>
+                            <div className="rounded-2xl overflow-hidden border border-gray-100 dark:border-white/10 bg-slate-50 dark:bg-slate-900/50 p-2 group-hover:border-[#FF2D55]/30 transition-colors">
+                                <img src="/business-intelligence-dashboard.png" alt="Business Intelligence Dashboard" className="w-full h-32 object-contain rounded-xl filter contrast-[1.02] group-hover:scale-105 transition-transform duration-300" />
+                            </div>
                             <ul className="space-y-3 pt-2 font-bold text-gray-700 dark:text-slate-300 text-sm">
                                 <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-red-500 dark:text-[#FF2D55] shrink-0" /> Sales Analytics</li>
                                 <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-red-500 dark:text-[#FF2D55] shrink-0" /> Revenue Reports</li>

@@ -1,22 +1,113 @@
+// Updated Business Intelligence illustration asset
+import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Utensils, ArrowRight, CheckCircle2, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Utensils, ArrowRight, CheckCircle2, ChevronRight, ArrowLeft, Sparkles, Zap, Check } from 'lucide-react';
 
 const ModuleDetails = () => {
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const activeModule = searchParams.get('module') || 'intelligence';
+    const featureIdxParam = searchParams.get('feature');
+
+    const [selectedFeature, setSelectedFeature] = useState(null);
 
     const moduleData = {
         intelligence: {
-            title: "Business Intelligence & Analytics",
+            title: "Business Intelligence & Executive Analytics",
             tag: "Restaurant Owner",
             tagColor: "text-[#FF2D55] bg-[#FF2D55]/10 border-[#FF2D55]/20",
             checkColor: "text-[#FF2D55]",
             icon: "📊",
+            image: "/business-intelligence-dashboard.png",
+            pills: ["📈 Total Revenue (₹24,85,000)", "💰 Total Profit (₹8,45,000)", "🛒 Total Orders (1,245)", "🍕 Top Dish: Margherita Pizza", "📊 Dine-In Sales (45%)", "⚡ Growth (+18.5%)"],
             features: [
-                { name: "Executive Sales Dashboard", desc: "Live overview of total revenue, average order value (AOV), active orders, and top-selling menu items." },
-                { name: "Profit & Loss Tracking", desc: "Monitor raw material ingredient costs against menu pricing to calculate real-time net profit margins." },
-                { name: "Revenue Reports & Export", desc: "Generate daily, weekly, or monthly financial breakdowns compatible with accounting software." },
-                { name: "Sales Trend Analysis", desc: "Identify peak operational hours and customer ordering habits to optimize staffing shifts." }
+                {
+                    name: "Executive Sales Dashboard",
+                    desc: "Live overview of total ₹24,85,000 revenue, 1,235 total orders, average order value (AOV), active order turns, and top dish statistics.",
+                    image: "/executive-sales-dashboard.png",
+                    capabilities: [
+                        "Live multi-branch revenue & sales tracking",
+                        "Average Order Value (AOV) performance analysis",
+                        "Top-selling dish velocity & volume heatmaps",
+                        "Peak sales hour time-series graphs"
+                    ],
+                    workflow: [
+                        "Orders are settled across tables or online apps",
+                        "System aggregates gross revenue & taxes instantly",
+                        "Executive dashboard updates graphs & KPIs in real time"
+                    ],
+                    preview: {
+                        metric: "₹24,85,000",
+                        sub: "Total Revenue (+18% Monthly Sales Growth)",
+                        status: "Live Business KPIs Active",
+                        detail: "1,235 Total Orders • Profit Margin: 45% • Today's Orders: 108"
+                    }
+                },
+                {
+                    name: "Profit & Loss Tracking",
+                    desc: "Monitor raw material ingredient costs against menu pricing to calculate real-time net 75% profit margins and manage store expenses.",
+                    image: "/profit-and-loss-dashboard.png",
+                    capabilities: [
+                        "Automated recipe ingredient cost accounting & calculator",
+                        "Dish-level net profit margin calculation (75% Profit Margin)",
+                        "Low margin alert thresholds & warnings for menu items",
+                        "Real-time ledger of store operational expenses & financial health score"
+                    ],
+                    workflow: [
+                        "Log raw ingredient invoice prices in Inventory calculator",
+                        "System calculates exact food cost & recipe margin",
+                        "View live profit vs expense charts & financial health scores"
+                    ],
+                    preview: {
+                        metric: "75% Profit Margin",
+                        sub: "Revenue: $7,000.00 • Expenses: $1,883.00",
+                        status: "Financial Health Score: High",
+                        detail: "Low Margin Alerts: Active • Ingredient Food Cost: $18.75"
+                    }
+                },
+                {
+                    name: "Revenue Growth & Export",
+                    desc: "Generate daily, weekly, or monthly financial breakdowns tracking +18.5% growth velocity and instant multi-format audit report exports.",
+                    image: "/revenue-growth-dashboard.png",
+                    capabilities: [
+                        "Custom date-range financial filtering & time-series trends",
+                        "Tax & GST summary compliance reporting",
+                        "One-click PDF Report, Excel Sheet & CSV File exports",
+                        "Period-over-period revenue velocity comparison (+18.5% Growth)"
+                    ],
+                    workflow: [
+                        "Select desired date range (Daily, Weekly, Monthly)",
+                        "System calculates growth percentages & GST summary",
+                        "Click Export Button to download PDF, Excel, or CSV audit reports"
+                    ],
+                    preview: {
+                        metric: "+18.5%",
+                        sub: "Overall Revenue Growth Velocity",
+                        status: "Export Ready (PDF / Excel / CSV)",
+                        detail: "Daily Revenue: +12.5% • Weekly: +103.8% • Monthly: +58.2%"
+                    }
+                },
+                {
+                    name: "Customer Insights & Trends",
+                    desc: "Identify dining customer demographics, peak arrival hour heatmaps, dish review ratings, and guest loyalty trends.",
+                    image: "/customer-insights-dashboard.png",
+                    capabilities: [
+                        "Customer demographic profiling & age/gender analytics",
+                        "Peak hours arrival heatmap & dining time series",
+                        "Dish rating sentiment & review feedback analysis ('Best Pizza', 'Loved Biryani')",
+                        "Customer loyalty portal & repeat customer rate (+14.2%)"
+                    ],
+                    workflow: [
+                        "Capture customer dining profile & ratings on QR or POS",
+                        "AI generates peak hour heatmaps & demographic insights",
+                        "Reward loyal diners with targeted promotions & loyalty score points"
+                    ],
+                    preview: {
+                        metric: "85/100 Loyalty Score",
+                        sub: "Customer Satisfaction: 74% Positive",
+                        status: "Repeat Customer Rate (+14.2%)",
+                        detail: "Top Favorites: Margherita Pizza, Dum Biryani • 89% Dine-in Share"
+                    }
+                }
             ]
         },
         orders: {
@@ -25,11 +116,99 @@ const ModuleDetails = () => {
             tagColor: "text-[#FF6A00] bg-[#FF6A00]/10 border-[#FF6A00]/20",
             checkColor: "text-[#FF6A00]",
             icon: "🍔",
+            image: "/menu-orders-dashboard.png",
+            pills: ["🎫 Order Tickets", "📱 QR Digital Menu", "👨‍🍳 Kitchen Queue (KDS)", "🍔 Menu Management", "📅 Table Reservations", "🛵 Delivery Tracker"],
             features: [
-                { name: "Menu Catalog Management", desc: "Add, edit, or temporarily disable menu items, set category tags, and manage multi-branch pricing." },
-                { name: "Real-Time Order Routing", desc: "Orders flow directly to kitchen display screens (KDS), waiter tablets, and cashier billing counters." },
-                { name: "Smart QR Digital Menu", desc: "Generate table-specific QR codes enabling customers to view digital menus and pay at their table." },
-                { name: "Table & Reservation Scheduling", desc: "Visual floor map tracking occupied tables, pending bookings, and party arrival times." }
+                {
+                    name: "Order Tickets & Live Routing",
+                    desc: "Incoming customer orders auto-generate digital order tickets routed straight to kitchen stations.",
+                    image: "/order-routing-dashboard.png",
+                    capabilities: [
+                        "Instant digital KOT generation & kitchen dispatch",
+                        "Table-specific order ticket status tracking",
+                        "Multi-station routing (Grill, Bar, Desserts)",
+                        "Automated bill preparation upon prep completion"
+                    ],
+                    workflow: [
+                        "Customer or waiter selects items on digital menu",
+                        "Ticket #A12-B appears instantly on Kitchen Screen",
+                        "Chef preps food and marks ticket as Ready"
+                    ],
+                    preview: {
+                        metric: "Ticket #A12-B",
+                        sub: "Table 04 • Dine-In Order",
+                        status: "Status: Prepped",
+                        detail: "2x Paneer Tikka, 1x Naan • Timer: 04:12m"
+                    }
+                },
+                {
+                    name: "Smart QR Digital Menu",
+                    desc: "Generate table-specific QR codes enabling guests to scan, browse interactive HD dish menus, customize dietary preferences, pay online, and send orders directly to the kitchen.",
+                    image: "/smart-qr-digital-menu.png",
+                    capabilities: [
+                        "Table-Specific QR Management & instant QR Code Generator",
+                        "HD Dish Gallery with dietary filters (Vegan, Gluten Free, Spice Levels)",
+                        "Customizable order add-ons & popular dish highlights",
+                        "Secure online payment gateway & instant kitchen dispatch"
+                    ],
+                    workflow: [
+                        "Scan QR Code at Table 07",
+                        "Browse Menu Categories & HD Dish Gallery",
+                        "Customize Order (Spice Level, Vegan / Gluten Free tags)",
+                        "Add to Cart & Pay Online securely",
+                        "Order dispatches directly to Kitchen Queue"
+                    ],
+                    preview: {
+                        metric: "Table 07 Session",
+                        sub: "Live Cart: Veg Spring Rolls, Truffle Pasta ($12.00)",
+                        status: "Instant Kitchen Routing",
+                        detail: "Contactless Payment Enabled • Dietary Filters Active"
+                    }
+                },
+                {
+                    name: "Kitchen Queue (KDS Display)",
+                    desc: "Organize cooking tasks into To Do, In Progress, and Ready status boards with automated timers.",
+                    image: "/kitchen-display-dashboard.png",
+                    capabilities: [
+                        "Color-coded kitchen status columns (To Do, In Progress, Ready)",
+                        "Prep time countdown timers with delay alerts",
+                        "One-touch kitchen status updates",
+                        "Kitchen staff station load balancing"
+                    ],
+                    workflow: [
+                        "New order ticket arrives in To Do column",
+                        "Chef taps ticket to move to In Progress",
+                        "Order prepped; chef marks Ready for waiter pickup"
+                    ],
+                    preview: {
+                        metric: "04:15 mins",
+                        sub: "Average Kitchen Prep Time",
+                        status: "Station 1 Active",
+                        detail: "To Do: 2 • In Progress: 3 • Ready: 1"
+                    }
+                },
+                {
+                    name: "Menu Catalog & Delivery Tracking",
+                    desc: "Real-time menu editing, instant price updates, out-of-stock item toggles, reservation management, and live GPS rider delivery tracking.",
+                    image: "/menu-catalog-dashboard.png",
+                    capabilities: [
+                        "Real-time menu item editing & instant price updates ($28.00)",
+                        "Instant out-of-stock item availability toggling",
+                        "Reservation calendar & table allocation management",
+                        "Live delivery queue status timeline (Preparing -> Out for Delivery -> Delivered) & Rider GPS tracking"
+                    ],
+                    workflow: [
+                        "Edit dish prices or toggle out-of-stock items in Menu Catalog",
+                        "Changes reflect instantly across QR digital menus & POS terminals",
+                        "Assign delivery riders & track live driver map location with ETA countdown (ETA 12 mins)"
+                    ],
+                    preview: {
+                        metric: "ETA: 12 MINS",
+                        sub: "Live Delivery Tracking • Rider Near",
+                        status: "Rider Assigned",
+                        detail: "Truffle Pasta & Margherita Pizza ($28.00) • Live GPS Active"
+                    }
+                }
             ]
         },
         staff: {
@@ -38,11 +217,99 @@ const ModuleDetails = () => {
             tagColor: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 border-blue-100 dark:border-blue-500/20",
             checkColor: "text-blue-500",
             icon: "👥",
+            image: "/staff-customer-dashboard.png",
+            pills: ["👥 Staff Dashboard", "📊 Attendance Overview", "👨‍🍳 Team Roles & Shifts", "⭐ Customer Loyalty Portal", "📅 Reservation Log", "💬 Customer Feedback"],
             features: [
-                { name: "Staff Account Delegation", desc: "Create accounts for managers, chefs, waiters, and cashiers with strict role-based access permissions." },
-                { name: "Attendance & Shift Tracking", desc: "Record clock-in/clock-out timestamps and track operational staff performance per shift." },
-                { name: "Customer Profile Directory", desc: "Store customer contact details, dining history, favorite items, and loyalty reward balances." },
-                { name: "Role-Based Access Control", desc: "Restrict sensitive settings like tax rates or refund authorizations to store owners and managers." }
+                {
+                    name: "Staff Account Delegation",
+                    desc: "User management dashboard to create accounts and delegate role-based permissions across Owner, Manager, Chef, Waiter, Cashier, and Receptionist team members.",
+                    image: "/staff-delegation-dashboard.png",
+                    capabilities: [
+                        "Role Assignment & Permission Matrix (Owner, Manager, Chef, Waiter, Cashier, Receptionist)",
+                        "Granular Feature Access Controls & Active / Disabled Account Toggles",
+                        "Delegated Permissions & Access Key Security",
+                        "Real-time Staff Login Status monitoring (Active / Inactive sessions)"
+                    ],
+                    workflow: [
+                        "Owner selects staff member profile in User Management Dashboard",
+                        "Assigns specific role permissions (Kitchen Access, Billing Access, Order Access)",
+                        "Issue Access Key; track live staff login status across terminals"
+                    ],
+                    preview: {
+                        metric: "6 Roles Matrix",
+                        sub: "Permission Matrix & Access Key Security",
+                        status: "User Management Dashboard Active",
+                        detail: "Owner (Full), Manager (Ops), Chef (Kitchen), Waiter (Orders), Cashier (Billing), Receptionist"
+                    }
+                },
+                {
+                    name: "Attendance & Shift Tracking",
+                    desc: "Shift management dashboard to track 36+ daily staff attendance, terminal Clock In/Out, weekly schedule calendars, table area allocations, and overtime logs.",
+                    image: "/attendance-shift-dashboard.png",
+                    capabilities: [
+                        "Terminal Clock In & Clock Out timestamping with staff status (Present, On Leave, Late)",
+                        "Interactive Shift Calendar (8:00-16:00, 16:00-0:00) & Weekly Schedule matrix",
+                        "Table Area Allocation & staff section assignment",
+                        "Staff Performance metrics, Working Hours (3h 20h), and Overtime Hours (6h) logging"
+                    ],
+                    workflow: [
+                        "Staff member taps Clock In on terminal screen at shift start",
+                        "Manager assigns table area section & shift time slot on Shift Calendar",
+                        "System automatically logs working hours, punctuality, and overtime duration"
+                    ],
+                    preview: {
+                        metric: "36 Total Attendance",
+                        sub: "Shift Management Dashboard Active",
+                        status: "Clock In / Out Active",
+                        detail: "Status: Present / On Leave / Late • Working: 3h 20h • Overtime: 6h"
+                    }
+                },
+                {
+                    name: "Customer Profile & Loyalty Portal",
+                    desc: "Centralized Customer Profile Dashboard to manage QR membership cards, track 530+ loyalty points, reward wallet balances ($1,000), Gold Status tiers, and guest dining histories.",
+                    image: "/customer-loyalty-dashboard.png",
+                    capabilities: [
+                        "QR Membership & Digital Loyalty Card (530+ Loyalty Points)",
+                        "Reward Wallet Balance ($1,000) & Gift Voucher issuance",
+                        "Gold Status Membership Level & dining visit history tracking",
+                        "Favorite Menu Items, Customer Reviews, Birthday Rewards & Referral Bonuses"
+                    ],
+                    workflow: [
+                        "Guest scans QR Membership card or provides phone number at POS",
+                        "System credits 530+ Loyalty Points & updates Reward Wallet Balance ($1,000)",
+                        "Automatically unlocks Gold Status perks, Birthday Rewards & Gift Vouchers"
+                    ],
+                    preview: {
+                        metric: "530+ Loyalty Points",
+                        sub: "Membership Level: Gold Status",
+                        status: "Reward Wallet: $1,000 Balance",
+                        detail: "Gift Vouchers Active • Referral Bonus & Birthday Rewards Enabled"
+                    }
+                },
+                {
+                    name: "Reservation Log & Feedback",
+                    desc: "Reservation Management Dashboard to manage table booking timelines, guest lists, party sizes, special requests, table availability, live waitlists, and guest feedback analytics.",
+                    image: "/reservation-feedback-dashboard.png",
+                    capabilities: [
+                        "Reservation Calendar & Table Booking Timeline management",
+                        "Guest List, Party Size, Special Requests & Guest Notes logging",
+                        "Table Availability tracking, Waitlist toggle (ON/OFF) & Notification Alerts",
+                        "Dining Reviews, 5-Star Customer Ratings & Feedback Analytics"
+                    ],
+                    workflow: [
+                        "Customer Books table online or via phone call",
+                        "Reservation Confirmed & added to master Table Booking Timeline",
+                        "Table Allocated & Waitlist managed when busy",
+                        "Guest Checked In at table",
+                        "Feedback Collected & 5-Star Reviews saved in analytics"
+                    ],
+                    preview: {
+                        metric: "Reservation Calendar Active",
+                        sub: "Table Booking Timeline & Waitlist ON",
+                        status: "5-Star Rating Analytics Enabled",
+                        detail: "Guest Notes: Active • Special Requests & Notification Alerts Synced"
+                    }
+                }
             ]
         },
         manager: {
@@ -52,19 +319,372 @@ const ModuleDetails = () => {
             checkColor: "text-emerald-500",
             icon: "🏬",
             image: "/branch-manager-dashboard.png",
+            pills: ["🛒 Live Orders", "📈 Revenue Analytics", "📦 Inventory", "📅 Reservations", "👥 Staff Attendance", "⭐ Customer Reviews", "📊 Sales Reports"],
             features: [
-                { name: "Live Orders Dashboard", desc: "Monitor incoming customer dining orders, takeaway tickets, and new order sound alerts in real time." },
-                { name: "Revenue Analytics & Trends", desc: "Interactive graph charts tracking peak sales hours, daily bill volume, and live revenue totals." },
-                { name: "Inventory & Stock Levels", desc: "Instant visibility into raw ingredient stock, low-inventory warnings, and kitchen stock reorders." },
-                { name: "Reservations & Table Map", desc: "Track reserved tables, party sizes, time slots, and visual dine-in table seating status." },
-                { name: "Staff Attendance & Shifts", desc: "Log active floor waiters, chef prep shifts, clock-in times, and staff performance metrics." },
-                { name: "Customer Reviews & Sales Reports", desc: "Logbook of dining feedback, dish ratings, revenue pie-charts, and daily financial summaries." }
+                {
+                    name: "Live Orders Dashboard",
+                    desc: "Monitor incoming customer dining orders, takeaway tickets, and new order sound alerts in real time.",
+                    capabilities: [
+                        "Centralized live dine-in & takeaway order feed",
+                        "Instant audio chime alerts for new incoming orders",
+                        "Order status monitoring (Prepped, Cooking, Billed)",
+                        "Table bill settlement monitoring"
+                    ],
+                    workflow: [
+                        "Orders stream into manager dashboard live",
+                        "Manager monitors kitchen prep times & table service",
+                        "Ensure smooth billing & customer throughput"
+                    ],
+                    preview: {
+                        metric: "3 Active",
+                        sub: "Table #08, Table #14, Takeaway",
+                        status: "Live Feed Active",
+                        detail: "Total Active Value: ₹1,530 • Sound Alerts: On"
+                    }
+                },
+                {
+                    name: "Revenue Analytics & Trends",
+                    desc: "Interactive graph charts tracking peak sales hours, daily bill volume, and live revenue totals.",
+                    capabilities: [
+                        "Hourly sales volume & revenue trend curve",
+                        "Peak dining window revenue analysis",
+                        "Cashier till drawer reconciliation summary",
+                        "Gross vs. Net sales comparison"
+                    ],
+                    workflow: [
+                        "Manager views hourly sales curve",
+                        "Compares actual till cash against system reports",
+                        "Performs shift closure settlement smoothly"
+                    ],
+                    preview: {
+                        metric: "₹1,48,920",
+                        sub: "Today's Branch Revenue",
+                        status: "+28.4% vs Yesterday",
+                        detail: "Dine-In: ₹1.12L • Takeaway: ₹36.9K"
+                    }
+                },
+                {
+                    name: "Inventory & Stock Levels",
+                    desc: "Instant visibility into raw ingredient stock, low-inventory warnings, and kitchen stock reorders.",
+                    capabilities: [
+                        "Live ingredient stock quantity tracking",
+                        "Low stock threshold warning alerts",
+                        "Automated supplier purchase order generation",
+                        "Spoilage & waste recording log"
+                    ],
+                    workflow: [
+                        "POS deducts recipe ingredients upon order",
+                        "Stock level drops below safety threshold (e.g. 2.5kg left)",
+                        "Manager receives alert & clicks Auto Re-order"
+                    ],
+                    preview: {
+                        metric: "Low Stock Alert",
+                        sub: "Amul Cheese (2.5 kg remaining)",
+                        status: "Reorder Threshold: 5.0 kg",
+                        detail: "Action: Auto Purchase Order Drafted"
+                    }
+                },
+                {
+                    name: "Reservations & Table Map",
+                    desc: "Track reserved tables, party sizes, time slots, and visual dine-in table seating status.",
+                    capabilities: [
+                        "Interactive floor plan table layout map",
+                        "Real-time table occupancy status (Green/Red)",
+                        "Table seating duration timers",
+                        "Upcoming guest reservation calendar"
+                    ],
+                    workflow: [
+                        "Host views live table floor map",
+                        "Seats arriving party at Table 12",
+                        "Monitors table status cycle from Occupied to Settled"
+                    ],
+                    preview: {
+                        metric: "Table #12",
+                        sub: "Occupied • 4 Guests",
+                        status: "Seated for 35 mins",
+                        detail: "Reserved Next: 08:30 PM (Party of 6)"
+                    }
+                },
+                {
+                    name: "Staff Attendance & Shifts",
+                    desc: "Log active floor waiters, chef prep shifts, clock-in times, and staff performance metrics.",
+                    capabilities: [
+                        "Real-time active floor staff directory",
+                        "Chef kitchen food prep speed tracking",
+                        "Waiter table section allocation",
+                        "Break duration & shift compliance logs"
+                    ],
+                    workflow: [
+                        "Manager reviews staff clock-in board",
+                        "Assigns floor waiters to table sections",
+                        "Tracks average food prep speed per chef"
+                    ],
+                    preview: {
+                        metric: "8.4 mins",
+                        sub: "Avg Kitchen Prep Speed",
+                        status: "96% Staff Punctuality",
+                        detail: "On-Duty: 2 Chefs, 4 Waiters, 2 Cashiers"
+                    }
+                },
+                {
+                    name: "Customer Reviews & Sales Reports",
+                    desc: "Logbook of dining feedback, dish ratings, revenue pie-charts, and daily financial summaries.",
+                    capabilities: [
+                        "Real-time guest dining feedback logbook",
+                        "Dish rating & customer sentiment scores",
+                        "Local branch petty cash expense recording",
+                        "End-of-day manager summary report export"
+                    ],
+                    workflow: [
+                        "Guest submits review on QR menu or tablet",
+                        "Feedback appears immediately in manager logbook",
+                        "Manager logs petty cash expenses for daily report"
+                    ],
+                    preview: {
+                        metric: "4.9 / 5.0",
+                        sub: "Branch Customer Rating",
+                        status: "Petty Cash: ₹1,200 Logged",
+                        detail: "Positive Reviews: 94% • 0 Critical Complaints"
+                    }
+                }
             ]
         }
     };
 
     const current = moduleData[activeModule] || moduleData.intelligence;
 
+    // Check if feature query param exists on mount or update
+    useEffect(() => {
+        if (featureIdxParam !== null && current.features[parseInt(featureIdxParam)]) {
+            setSelectedFeature(current.features[parseInt(featureIdxParam)]);
+        } else {
+            setSelectedFeature(null);
+        }
+    }, [featureIdxParam, activeModule]);
+
+    const openFeatureModal = (feat, idx) => {
+        setSelectedFeature(feat);
+        setSearchParams({ module: activeModule, feature: idx.toString() });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const closeFeatureModal = () => {
+        setSelectedFeature(null);
+        setSearchParams({ module: activeModule });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // ── 1. DEDICATED FULL-SCREEN FEATURE DETAIL PAGE VIEW ──────────────────────────────────
+    if (selectedFeature) {
+        return (
+            <div className="min-h-screen bg-white dark:bg-[#050816] text-gray-900 dark:text-white font-sans transition-colors duration-300">
+                
+                {/* Ambient Glow Background */}
+                <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-[#FF2D55]/10 via-[#FF6A00]/5 to-transparent blur-[160px] pointer-events-none z-0 hidden dark:block" />
+
+                {/* Header */}
+                <header className="sticky top-0 z-50 bg-white/90 dark:bg-[#050816]/80 backdrop-blur-xl border-b border-gray-100 dark:border-white/[0.08] py-4 px-6 shadow-sm transition-colors">
+                    <div className="max-w-7xl mx-auto flex items-center justify-between">
+                        <Link to="/" className="flex items-center gap-2 group">
+                            <div className="w-10 h-10 bg-gradient-to-tr from-[#FF2D55] to-[#FF6A00] rounded-xl flex items-center justify-center text-white shadow-lg shadow-red-500/20 group-hover:scale-105 transition-transform">
+                                <Utensils size={22} />
+                            </div>
+                            <h1 className="text-2xl font-black text-gray-900 dark:text-white">
+                                Restaurant<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF2D55] to-[#FF6A00]">Hub</span>
+                            </h1>
+                        </Link>
+                        <div className="flex items-center gap-4">
+                            <button 
+                                onClick={closeFeatureModal}
+                                className="text-gray-600 dark:text-[#94A3B8] hover:text-gray-900 dark:hover:text-white font-bold text-sm transition-colors flex items-center gap-1.5 cursor-pointer bg-slate-100 dark:bg-slate-800/80 px-4 py-2 rounded-xl"
+                            >
+                                <ArrowLeft size={16} /> Back to {current.tag} Overview
+                            </button>
+                            <Link
+                                to="/staff/register"
+                                className="bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] text-white font-extrabold px-5 py-2.5 rounded-xl shadow-lg shadow-[#FF2D55]/25 hover:scale-[1.03] active:scale-95 transition-all text-sm"
+                            >
+                                Get Started Free
+                            </Link>
+                        </div>
+                    </div>
+                </header>
+
+                {/* Main Content Split Layout: Content on Left, Image on Right */}
+                <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-12 relative z-10">
+
+                    {/* Side-by-Side Grid Section */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+
+                        {/* LEFT SIDE OF THE SCREEN: Content, Header, Live Metrics, Key Capabilities */}
+                        <div className="lg:col-span-6 space-y-8 text-left">
+                            {/* Top Hero Header for Feature */}
+                            <div className="space-y-4">
+                                <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border font-bold text-xs uppercase tracking-wider text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900">
+                                    <span>{current.icon}</span>
+                                    <span>{current.tag} • FULL FEATURE SPECIFICATION</span>
+                                    <ChevronRight size={14} />
+                                </div>
+                                
+                                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                                    {selectedFeature.name}
+                                </h1>
+                                
+                                <p className="text-slate-600 dark:text-slate-300 font-medium text-base sm:text-lg leading-relaxed">
+                                    {selectedFeature.desc}
+                                </p>
+                            </div>
+
+                            {/* Real-time Live Metric Preview Banner */}
+                            {selectedFeature.preview && (
+                                <div className="p-6 sm:p-8 rounded-[2.5rem] bg-gradient-to-tr from-slate-900 via-slate-950 to-slate-900 text-white border border-slate-800 shadow-2xl space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <span className="w-3 h-3 rounded-full bg-emerald-500 animate-ping" />
+                                            <span className="text-xs font-black uppercase tracking-wider text-slate-400">
+                                                LIVE SYSTEM PREVIEW METRICS
+                                            </span>
+                                        </div>
+                                        <span className="text-xs font-bold px-3.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                            {selectedFeature.preview.status}
+                                        </span>
+                                    </div>
+
+                                    <div className="border-y border-slate-800 py-4 space-y-2">
+                                        <h4 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+                                            {selectedFeature.preview.metric}
+                                        </h4>
+                                        <p className="text-sm font-bold text-rose-400">
+                                            {selectedFeature.preview.sub}
+                                        </p>
+                                    </div>
+                                    <div className="pt-1">
+                                        <span className="text-xs font-semibold text-slate-300 bg-slate-800/80 px-4 py-2 rounded-xl border border-slate-700/60 inline-block">
+                                            {selectedFeature.preview.detail}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* RIGHT SIDE OF THE SCREEN: Image Graphic */}
+                        <div className="lg:col-span-6 space-y-4">
+                            {selectedFeature.image && (
+                                <div className="rounded-3xl overflow-hidden bg-gradient-to-tr from-orange-50 via-white to-rose-50 dark:from-slate-900 dark:via-slate-900/80 dark:to-orange-950/40 p-3 sm:p-4 border border-orange-100 dark:border-slate-800 shadow-2xl">
+                                    <div className="relative rounded-2xl overflow-hidden bg-white dark:bg-slate-950 shadow-inner border border-slate-200/80 dark:border-slate-800 flex items-center justify-center">
+                                        <img 
+                                            src={selectedFeature.image} 
+                                            alt={selectedFeature.name}
+                                            className="w-full h-auto max-h-[520px] object-contain filter contrast-[1.02] hover:scale-[1.01] transition-transform duration-500" 
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Key System Capabilities (Positioned AFTER the right side image, flowing left to right) */}
+                    <div className="space-y-6 pt-4 border-t border-slate-200/80 dark:border-slate-800/60">
+                        <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                            <Sparkles size={22} className="text-rose-500" />
+                            <span>Key System Capabilities & Responsibilities</span>
+                        </h3>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {selectedFeature.capabilities?.map((cap, idx) => (
+                                <div key={idx} className="flex flex-col justify-between p-6 rounded-3xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-rose-500/30 transition-all space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 shrink-0 border border-emerald-500/20">
+                                            <Check size={18} />
+                                        </div>
+                                        <span className="text-xs font-black text-rose-500 uppercase tracking-wider">
+                                            0{idx + 1}
+                                        </span>
+                                    </div>
+                                    <h4 className="text-base font-bold text-slate-900 dark:text-slate-100 leading-snug">
+                                        {cap}
+                                    </h4>
+                                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                                        Engineered for high-volume operational efficiency and real-time synchronization.
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* How It Works Workflow Steps */}
+                    {selectedFeature.workflow && (
+                        <div className="max-w-5xl mx-auto space-y-6">
+                            <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                                <Zap size={22} className="text-orange-500" />
+                                <span>How It Works (Step-by-Step Workflow)</span>
+                            </h3>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {selectedFeature.workflow.map((step, idx) => (
+                                    <div key={idx} className="p-6 rounded-3xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 relative">
+                                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-rose-500 to-orange-500 text-white font-black text-sm flex items-center justify-center shadow-lg">
+                                            0{idx + 1}
+                                        </div>
+                                        <h4 className="text-sm font-black text-slate-900 dark:text-slate-100">
+                                            Step {idx + 1}
+                                        </h4>
+                                        <p className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 leading-relaxed">
+                                            {step}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Feature Switcher Bar - Switch to other features easily */}
+                    <div className="max-w-5xl mx-auto bg-slate-50 dark:bg-slate-900/50 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                        <h4 className="text-xs font-black uppercase text-slate-500 dark:text-slate-400 tracking-wider">
+                            EXPLORE OTHER FEATURES IN THIS MODULE
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                            {current.features.map((feat, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => openFeatureModal(feat, idx)}
+                                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                                        selectedFeature.name === feat.name
+                                            ? 'bg-rose-500 text-white shadow-md'
+                                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 border border-slate-200 dark:border-slate-700'
+                                    }`}
+                                >
+                                    {feat.name}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Bottom CTA Banner */}
+                    <div className="max-w-5xl mx-auto bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] rounded-3xl p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-[#FF2D55]/20">
+                        <div className="space-y-2 text-center md:text-left">
+                            <h2 className="text-3xl font-black">Ready to deploy {selectedFeature.name}?</h2>
+                            <p className="text-red-100 font-medium text-sm">Get started with our 1-Day Free Trial and transform your restaurant operations.</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={closeFeatureModal}
+                                className="bg-white/20 hover:bg-white/30 text-white font-bold px-6 py-3.5 rounded-xl transition-colors text-sm cursor-pointer"
+                            >
+                                Back to Module Overview
+                            </button>
+                            <Link to="/staff/register" className="bg-white dark:bg-[#050816] text-gray-900 dark:text-white font-bold px-8 py-3.5 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-colors shadow-lg whitespace-nowrap border border-transparent dark:border-white/[0.12] text-sm">
+                                Get Started Free
+                            </Link>
+                        </div>
+                    </div>
+
+                </main>
+            </div>
+        );
+    }
+
+    // ── 2. MODULE OVERVIEW PAGE VIEW (NO FEATURE SELECTED) ──────────────────────────────────
     return (
         <div className="min-h-screen bg-white dark:bg-[#050816] text-gray-900 dark:text-white font-sans transition-colors duration-300">
 
@@ -109,45 +729,86 @@ const ModuleDetails = () => {
                         {current.title}
                     </h1>
                     <p className="text-gray-500 dark:text-[#94A3B8] font-medium text-lg leading-relaxed">
-                        {current.description}
+                        Click on any feature card below to open its dedicated full-screen specification page.
                     </p>
                 </div>
 
                 {/* Rounded Dashboard Illustration Frame */}
                 {current.image && (
-                    <div className="max-w-4xl mx-auto rounded-[2.5rem] overflow-hidden bg-gradient-to-tr from-emerald-50 via-white to-rose-50 dark:from-slate-900 dark:via-slate-900/80 dark:to-emerald-950/40 p-4 sm:p-6 border border-emerald-100 dark:border-slate-800 shadow-xl">
-                        <div className="relative rounded-[2rem] overflow-hidden bg-white dark:bg-slate-950 shadow-inner border border-slate-200/80 dark:border-slate-800">
+                    <div className="max-w-2xl sm:max-w-3xl mx-auto rounded-3xl overflow-hidden bg-gradient-to-tr from-emerald-50 via-white to-rose-50 dark:from-slate-900 dark:via-slate-900/80 dark:to-emerald-950/40 p-3 sm:p-4 border border-emerald-100 dark:border-slate-800 shadow-xl">
+                        <div className="relative rounded-2xl overflow-hidden bg-white dark:bg-slate-950 shadow-inner border border-slate-200/80 dark:border-slate-800 flex items-center justify-center">
                             <img 
                                 src={current.image} 
                                 alt={current.title}
-                                className="w-full h-auto object-cover filter contrast-[1.02] hover:scale-[1.01] transition-transform duration-500" 
+                                className="max-h-[380px] w-auto max-w-full object-contain filter contrast-[1.02] hover:scale-[1.01] transition-transform duration-500 mx-auto" 
                             />
                         </div>
                         
                         {/* Interactive Feature Pills */}
-                        <div className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-xs font-black">
-                            <span className="px-3 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">🛒 Live Orders</span>
-                            <span className="px-3 py-1 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">📈 Revenue Analytics</span>
-                            <span className="px-3 py-1 rounded-full bg-[#FF2D55]/10 text-[#FF2D55] border border-[#FF2D55]/20">📦 Inventory</span>
-                            <span className="px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">📅 Reservations</span>
-                            <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">👥 Staff Attendance</span>
-                            <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">⭐ Customer Reviews</span>
-                            <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">📊 Sales Reports</span>
-                        </div>
+                        {current.pills && (
+                            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-xs font-black">
+                                {current.pills.map((pill, idx) => (
+                                    <span key={idx} className="px-3.5 py-1.5 rounded-full bg-blue-500/10 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40 shadow-sm">
+                                        {pill}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
 
-                {/* Feature Explanation Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-                    {current.features.map((feat, idx) => (
-                        <div key={idx} className="bg-white dark:bg-white/[0.03] rounded-3xl p-8 border border-gray-100 dark:border-white/[0.08] shadow-sm dark:shadow-none hover:shadow-md dark:hover:border-[#FF2D55]/20 transition-all space-y-3">
-                            <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-[#FF2D55]/10 flex items-center justify-center text-[#FF2D55] font-black text-lg border border-gray-100 dark:border-[#FF2D55]/20">
-                                {idx + 1}
+                {/* Feature Explanation Grid - CLICKABLE CARDS */}
+                <div className="space-y-4 max-w-5xl mx-auto">
+                    <div className="flex items-center justify-between px-2">
+                        <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>Key Feature Modules</span>
+                            <span className="text-xs text-rose-500 font-bold bg-rose-50 dark:bg-rose-950/50 px-2.5 py-0.5 rounded-full border border-rose-200 dark:border-rose-900">
+                                Click any card to open full-screen page
+                            </span>
+                        </h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {current.features.map((feat, idx) => (
+                            <div 
+                                key={idx} 
+                                onClick={() => openFeatureModal(feat, idx)}
+                                className="bg-white dark:bg-white/[0.03] rounded-3xl p-8 border border-gray-200 dark:border-white/[0.08] shadow-sm dark:shadow-none hover:shadow-xl hover:border-[#FF2D55]/50 dark:hover:border-[#FF2D55]/40 hover:-translate-y-1 transition-all duration-300 cursor-pointer space-y-4 group relative overflow-hidden"
+                            >
+                                {/* Glow Accent on Hover */}
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-rose-500/10 to-transparent rounded-full blur-xl group-hover:opacity-100 opacity-0 transition-opacity" />
+
+                                <div className="flex items-center justify-between">
+                                    <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-[#FF2D55]/10 flex items-center justify-center text-[#FF2D55] font-black text-lg border border-red-100 dark:border-[#FF2D55]/20 group-hover:scale-110 transition-transform">
+                                        {idx + 1}
+                                    </div>
+                                    <span className="text-xs font-bold text-rose-500 dark:text-rose-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                                        Open Full Detail Page <ArrowRight size={14} />
+                                    </span>
+                                </div>
+                                
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-rose-500 dark:group-hover:text-rose-400 transition-colors">
+                                        {feat.name}
+                                    </h3>
+                                    <p className="text-gray-500 dark:text-[#94A3B8] text-sm font-medium leading-relaxed mt-2">
+                                        {feat.desc}
+                                    </p>
+                                </div>
+
+                                {/* Capability Pills Preview */}
+                                {feat.capabilities && (
+                                    <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-2">
+                                        {feat.capabilities.slice(0, 2).map((cap, cIdx) => (
+                                            <span key={cIdx} className="text-[11px] font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg">
+                                                ✓ {cap}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">{feat.name}</h3>
-                            <p className="text-gray-500 dark:text-[#94A3B8] text-sm font-medium leading-relaxed">{feat.desc}</p>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
 
                 {/* Call to Action Card */}
