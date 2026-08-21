@@ -9,23 +9,23 @@ const ManagementFeatures = () => {
             <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-[#FF2D55]/10 via-[#FF6A00]/5 to-transparent blur-[160px] pointer-events-none z-0 hidden dark:block" />
 
             {/* Header */}
-            <header className="sticky top-0 z-50 bg-white/90 dark:bg-[#050816]/80 backdrop-blur-xl border-b border-gray-100 dark:border-white/[0.08] py-4 px-6 shadow-sm dark:shadow-none transition-colors">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <header className="sticky top-0 z-50 bg-white/90 dark:bg-[#050816]/80 backdrop-blur-xl border-b border-gray-100 dark:border-white/[0.08] py-3 sm:py-4 px-3 sm:px-6 shadow-sm dark:shadow-none transition-colors">
+                <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 sm:gap-4">
                     <Link to="/" className="flex items-center gap-2 group">
-                        <div className="w-10 h-10 bg-gradient-to-tr from-[#FF2D55] to-[#FF6A00] rounded-xl flex items-center justify-center text-white shadow-lg shadow-red-500/20 group-hover:scale-105 transition-transform">
-                            <Utensils size={22} />
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-tr from-[#FF2D55] to-[#FF6A00] rounded-xl flex items-center justify-center text-white shadow-lg shadow-red-500/20 group-hover:scale-105 transition-transform shrink-0">
+                            <Utensils size={18} className="sm:w-5 sm:h-5" />
                         </div>
-                        <h1 className="text-2xl font-black text-gray-900 dark:text-white">
+                        <h1 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">
                             Restaurant<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF2D55] to-[#FF6A00]">Hub</span>
                         </h1>
                     </Link>
-                    <div className="flex items-center gap-4">
-                        <Link to="/" className="text-gray-500 dark:text-[#94A3B8] hover:text-gray-900 dark:hover:text-white font-semibold text-sm transition-colors">
+                    <div className="flex items-center gap-2 sm:gap-4">
+                        <Link to="/" className="text-gray-500 dark:text-[#94A3B8] hover:text-gray-900 dark:hover:text-white font-semibold text-xs sm:text-sm transition-colors">
                             Back to Home
                         </Link>
                         <Link
                             to="/staff/register"
-                            className="bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] text-white font-extrabold px-5 py-2.5 rounded-xl shadow-lg shadow-[#FF2D55]/25 hover:scale-[1.03] active:scale-95 transition-all text-sm"
+                            className="bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] text-white font-extrabold px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-xl shadow-lg shadow-[#FF2D55]/25 hover:scale-[1.03] active:scale-95 transition-all text-xs sm:text-sm whitespace-nowrap"
                         >
                             Get Started Free
                         </Link>

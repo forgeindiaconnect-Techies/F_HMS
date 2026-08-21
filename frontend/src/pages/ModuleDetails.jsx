@@ -483,26 +483,26 @@ const ModuleDetails = () => {
                 <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-[#FF2D55]/10 via-[#FF6A00]/5 to-transparent blur-[160px] pointer-events-none z-0 hidden dark:block" />
 
                 {/* Header */}
-                <header className="sticky top-0 z-50 bg-white/90 dark:bg-[#050816]/80 backdrop-blur-xl border-b border-gray-100 dark:border-white/[0.08] py-4 px-6 shadow-sm transition-colors">
-                    <div className="max-w-7xl mx-auto flex items-center justify-between">
+                <header className="sticky top-0 z-50 bg-white/90 dark:bg-[#050816]/80 backdrop-blur-xl border-b border-gray-100 dark:border-white/[0.08] py-3 sm:py-4 px-3 sm:px-6 shadow-sm transition-colors">
+                    <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 sm:gap-4">
                         <Link to="/" className="flex items-center gap-2 group">
-                            <div className="w-10 h-10 bg-gradient-to-tr from-[#FF2D55] to-[#FF6A00] rounded-xl flex items-center justify-center text-white shadow-lg shadow-red-500/20 group-hover:scale-105 transition-transform">
-                                <Utensils size={22} />
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-tr from-[#FF2D55] to-[#FF6A00] rounded-xl flex items-center justify-center text-white shadow-lg shadow-red-500/20 group-hover:scale-105 transition-transform shrink-0">
+                                <Utensils size={18} className="sm:w-5 sm:h-5" />
                             </div>
-                            <h1 className="text-2xl font-black text-gray-900 dark:text-white">
+                            <h1 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">
                                 Restaurant<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF2D55] to-[#FF6A00]">Hub</span>
                             </h1>
                         </Link>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 sm:gap-4">
                             <button 
                                 onClick={closeFeatureModal}
-                                className="text-gray-600 dark:text-[#94A3B8] hover:text-gray-900 dark:hover:text-white font-bold text-sm transition-colors flex items-center gap-1.5 cursor-pointer bg-slate-100 dark:bg-slate-800/80 px-4 py-2 rounded-xl"
+                                className="text-gray-600 dark:text-[#94A3B8] hover:text-gray-900 dark:hover:text-white font-bold text-xs sm:text-sm transition-colors flex items-center gap-1 cursor-pointer bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-xl whitespace-nowrap"
                             >
-                                <ArrowLeft size={16} /> Back to {current.tag} Overview
+                                <ArrowLeft size={14} className="sm:w-4 sm:h-4" /> <span className="hidden xs:inline">Back to</span> {current.tag} Overview
                             </button>
                             <Link
                                 to="/staff/register"
-                                className="bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] text-white font-extrabold px-5 py-2.5 rounded-xl shadow-lg shadow-[#FF2D55]/25 hover:scale-[1.03] active:scale-95 transition-all text-sm"
+                                className="bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] text-white font-extrabold px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-xl shadow-lg shadow-[#FF2D55]/25 hover:scale-[1.03] active:scale-95 transition-all text-xs sm:text-sm whitespace-nowrap"
                             >
                                 Get Started Free
                             </Link>
@@ -511,55 +511,55 @@ const ModuleDetails = () => {
                 </header>
 
                 {/* Main Content Split Layout: Content on Left, Image on Right */}
-                <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-12 relative z-10">
+                <main className="w-full max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-10 space-y-8 sm:space-y-12 relative z-10">
 
                     {/* Side-by-Side Grid Section */}
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-start">
 
-                        {/* LEFT SIDE OF THE SCREEN: Content, Header, Live Metrics, Key Capabilities */}
-                        <div className="lg:col-span-6 space-y-8 text-left">
+                        {/* LEFT SIDE OF THE SCREEN: Content, Header, Live Metrics */}
+                        <div className="lg:col-span-6 space-y-6 text-left">
                             {/* Top Hero Header for Feature */}
-                            <div className="space-y-4">
-                                <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border font-bold text-xs uppercase tracking-wider text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900">
+                            <div className="space-y-3 sm:space-y-4">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border font-bold text-[10px] sm:text-xs uppercase tracking-wider text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900 max-w-full truncate">
                                     <span>{current.icon}</span>
-                                    <span>{current.tag} • FULL FEATURE SPECIFICATION</span>
-                                    <ChevronRight size={14} />
+                                    <span className="truncate">{current.tag} • FULL SPECIFICATION</span>
+                                    <ChevronRight size={12} className="shrink-0" />
                                 </div>
                                 
-                                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
                                     {selectedFeature.name}
                                 </h1>
                                 
-                                <p className="text-slate-600 dark:text-slate-300 font-medium text-base sm:text-lg leading-relaxed">
+                                <p className="text-slate-600 dark:text-slate-300 font-medium text-sm sm:text-base lg:text-lg leading-relaxed">
                                     {selectedFeature.desc}
                                 </p>
                             </div>
 
                             {/* Real-time Live Metric Preview Banner */}
                             {selectedFeature.preview && (
-                                <div className="p-6 sm:p-8 rounded-[2.5rem] bg-gradient-to-tr from-slate-900 via-slate-950 to-slate-900 text-white border border-slate-800 shadow-2xl space-y-6">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <span className="w-3 h-3 rounded-full bg-emerald-500 animate-ping" />
-                                            <span className="text-xs font-black uppercase tracking-wider text-slate-400">
+                                <div className="p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[2.5rem] bg-gradient-to-tr from-slate-900 via-slate-950 to-slate-900 text-white border border-slate-800 shadow-2xl space-y-4 sm:space-y-6">
+                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2 sm:gap-3">
+                                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping shrink-0" />
+                                            <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-slate-400">
                                                 LIVE SYSTEM PREVIEW METRICS
                                             </span>
                                         </div>
-                                        <span className="text-xs font-bold px-3.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                        <span className="text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
                                             {selectedFeature.preview.status}
                                         </span>
                                     </div>
 
-                                    <div className="border-y border-slate-800 py-4 space-y-2">
-                                        <h4 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+                                    <div className="border-y border-slate-800 py-3 sm:py-4 space-y-1 sm:space-y-2">
+                                        <h4 className="text-2xl sm:text-4xl font-black text-white tracking-tight break-words">
                                             {selectedFeature.preview.metric}
                                         </h4>
-                                        <p className="text-sm font-bold text-rose-400">
+                                        <p className="text-xs sm:text-sm font-bold text-rose-400">
                                             {selectedFeature.preview.sub}
                                         </p>
                                     </div>
                                     <div className="pt-1">
-                                        <span className="text-xs font-semibold text-slate-300 bg-slate-800/80 px-4 py-2 rounded-xl border border-slate-700/60 inline-block">
+                                        <span className="text-[11px] sm:text-xs font-semibold text-slate-300 bg-slate-800/80 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl border border-slate-700/60 inline-block leading-normal">
                                             {selectedFeature.preview.detail}
                                         </span>
                                     </div>
@@ -568,14 +568,14 @@ const ModuleDetails = () => {
                         </div>
 
                         {/* RIGHT SIDE OF THE SCREEN: Image Graphic */}
-                        <div className="lg:col-span-6 space-y-4">
+                        <div className="lg:col-span-6 space-y-4 w-full">
                             {selectedFeature.image && (
-                                <div className="rounded-3xl overflow-hidden bg-gradient-to-tr from-orange-50 via-white to-rose-50 dark:from-slate-900 dark:via-slate-900/80 dark:to-orange-950/40 p-3 sm:p-4 border border-orange-100 dark:border-slate-800 shadow-2xl">
-                                    <div className="relative rounded-2xl overflow-hidden bg-white dark:bg-slate-950 shadow-inner border border-slate-200/80 dark:border-slate-800 flex items-center justify-center">
+                                <div className="rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-tr from-orange-50 via-white to-rose-50 dark:from-slate-900 dark:via-slate-900/80 dark:to-orange-950/40 p-2 sm:p-4 border border-orange-100 dark:border-slate-800 shadow-2xl w-full">
+                                    <div className="relative rounded-xl sm:rounded-2xl overflow-hidden bg-white dark:bg-slate-950 shadow-inner border border-slate-200/80 dark:border-slate-800 flex items-center justify-center">
                                         <img 
                                             src={selectedFeature.image} 
                                             alt={selectedFeature.name}
-                                            className="w-full h-auto max-h-[520px] object-contain filter contrast-[1.02] hover:scale-[1.01] transition-transform duration-500" 
+                                            className="w-full h-auto max-h-[350px] sm:max-h-[520px] object-contain filter contrast-[1.02] hover:scale-[1.01] transition-transform duration-500 mx-auto" 
                                         />
                                     </div>
                                 </div>
@@ -584,27 +584,27 @@ const ModuleDetails = () => {
                     </div>
 
                     {/* Key System Capabilities (Positioned AFTER the right side image, flowing left to right) */}
-                    <div className="space-y-6 pt-4 border-t border-slate-200/80 dark:border-slate-800/60">
-                        <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-                            <Sparkles size={22} className="text-rose-500" />
+                    <div className="space-y-4 sm:space-y-6 pt-4 border-t border-slate-200/80 dark:border-slate-800/60">
+                        <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                            <Sparkles size={20} className="text-rose-500 shrink-0" />
                             <span>Key System Capabilities & Responsibilities</span>
                         </h3>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                             {selectedFeature.capabilities?.map((cap, idx) => (
-                                <div key={idx} className="flex flex-col justify-between p-6 rounded-3xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-rose-500/30 transition-all space-y-3">
+                                <div key={idx} className="flex flex-col justify-between p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-rose-500/30 transition-all space-y-3">
                                     <div className="flex items-center justify-between">
-                                        <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 shrink-0 border border-emerald-500/20">
-                                            <Check size={18} />
+                                        <div className="p-1.5 sm:p-2 rounded-xl bg-emerald-500/10 text-emerald-500 shrink-0 border border-emerald-500/20">
+                                            <Check size={16} className="sm:w-4 sm:h-4" />
                                         </div>
-                                        <span className="text-xs font-black text-rose-500 uppercase tracking-wider">
+                                        <span className="text-[10px] sm:text-xs font-black text-rose-500 uppercase tracking-wider">
                                             0{idx + 1}
                                         </span>
                                     </div>
-                                    <h4 className="text-base font-bold text-slate-900 dark:text-slate-100 leading-snug">
+                                    <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 leading-snug">
                                         {cap}
                                     </h4>
-                                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                                    <p className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400">
                                         Engineered for high-volume operational efficiency and real-time synchronization.
                                     </p>
                                 </div>
@@ -614,19 +614,19 @@ const ModuleDetails = () => {
 
                     {/* How It Works Workflow Steps */}
                     {selectedFeature.workflow && (
-                        <div className="max-w-5xl mx-auto space-y-6">
-                            <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-                                <Zap size={22} className="text-orange-500" />
+                        <div className="space-y-4 sm:space-y-6">
+                            <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                                <Zap size={20} className="text-orange-500 shrink-0" />
                                 <span>How It Works (Step-by-Step Workflow)</span>
                             </h3>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                                 {selectedFeature.workflow.map((step, idx) => (
-                                    <div key={idx} className="p-6 rounded-3xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 relative">
-                                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-rose-500 to-orange-500 text-white font-black text-sm flex items-center justify-center shadow-lg">
+                                    <div key={idx} className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 relative">
+                                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-r from-rose-500 to-orange-500 text-white font-black text-xs sm:text-sm flex items-center justify-center shadow-lg">
                                             0{idx + 1}
                                         </div>
-                                        <h4 className="text-sm font-black text-slate-900 dark:text-slate-100">
+                                        <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-100">
                                             Step {idx + 1}
                                         </h4>
                                         <p className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 leading-relaxed">
@@ -639,8 +639,8 @@ const ModuleDetails = () => {
                     )}
 
                     {/* Feature Switcher Bar - Switch to other features easily */}
-                    <div className="max-w-5xl mx-auto bg-slate-50 dark:bg-slate-900/50 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-                        <h4 className="text-xs font-black uppercase text-slate-500 dark:text-slate-400 tracking-wider">
+                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 space-y-3 sm:space-y-4">
+                        <h4 className="text-[10px] sm:text-xs font-black uppercase text-slate-500 dark:text-slate-400 tracking-wider">
                             EXPLORE OTHER FEATURES IN THIS MODULE
                         </h4>
                         <div className="flex flex-wrap gap-2">
@@ -648,7 +648,7 @@ const ModuleDetails = () => {
                                 <button
                                     key={idx}
                                     onClick={() => openFeatureModal(feat, idx)}
-                                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                                    className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                                         selectedFeature.name === feat.name
                                             ? 'bg-rose-500 text-white shadow-md'
                                             : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 border border-slate-200 dark:border-slate-700'
@@ -661,19 +661,19 @@ const ModuleDetails = () => {
                     </div>
 
                     {/* Bottom CTA Banner */}
-                    <div className="max-w-5xl mx-auto bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] rounded-3xl p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-[#FF2D55]/20">
+                    <div className="bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] rounded-2xl sm:rounded-3xl p-6 sm:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-[#FF2D55]/20">
                         <div className="space-y-2 text-center md:text-left">
-                            <h2 className="text-3xl font-black">Ready to deploy {selectedFeature.name}?</h2>
-                            <p className="text-red-100 font-medium text-sm">Get started with our 1-Day Free Trial and transform your restaurant operations.</p>
+                            <h2 className="text-2xl sm:text-3xl font-black">Ready to deploy {selectedFeature.name}?</h2>
+                            <p className="text-red-100 font-medium text-xs sm:text-sm">Get started with our 1-Day Free Trial and transform your restaurant operations.</p>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
                             <button
                                 onClick={closeFeatureModal}
-                                className="bg-white/20 hover:bg-white/30 text-white font-bold px-6 py-3.5 rounded-xl transition-colors text-sm cursor-pointer"
+                                className="w-full sm:w-auto bg-white/20 hover:bg-white/30 text-white font-bold px-5 py-3 rounded-xl transition-colors text-xs sm:text-sm cursor-pointer"
                             >
                                 Back to Module Overview
                             </button>
-                            <Link to="/staff/register" className="bg-white dark:bg-[#050816] text-gray-900 dark:text-white font-bold px-8 py-3.5 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-colors shadow-lg whitespace-nowrap border border-transparent dark:border-white/[0.12] text-sm">
+                            <Link to="/staff/register" className="w-full sm:w-auto text-center bg-white dark:bg-[#050816] text-gray-900 dark:text-white font-bold px-6 py-3 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-colors shadow-lg whitespace-nowrap border border-transparent dark:border-white/[0.12] text-xs sm:text-sm">
                                 Get Started Free
                             </Link>
                         </div>
