@@ -78,6 +78,11 @@ export const CustomerAuthProvider = ({ children }) => {
             const { data } = await api.post('/auth/register', { name, email, password, phoneNumber, roleName: 'Customer', loginType: 'customer' });
             setUser(data);
             localStorage.setItem('restosys_customer_user', JSON.stringify(data));
+            // Clear previous cart, wishlist and state for clean new user dashboard
+            localStorage.removeItem('restosys_cart');
+            localStorage.removeItem('restosys_wishlist');
+            localStorage.removeItem('customerWalletBalance');
+            localStorage.removeItem('customerReservations');
             return { success: true, data };
         } catch (error) {
             console.error('Register error:', error.response?.data || error.message);
@@ -93,7 +98,11 @@ export const CustomerAuthProvider = ({ children }) => {
         }
         setUser(null);
         localStorage.removeItem('restosys_customer_user');
-        window.location.href = '/login';
+        localStorage.removeItem('restosys_cart');
+        localStorage.removeItem('restosys_wishlist');
+        localStorage.removeItem('customerWalletBalance');
+        localStorage.removeItem('customerReservations');
+        window.location.href = '/customer/login';
     };
 
     return (

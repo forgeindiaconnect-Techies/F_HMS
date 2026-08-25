@@ -35,9 +35,9 @@ const CustomerDashboard = () => {
     // Wallet State
     const [walletBalance, setWalletBalance] = useState(() => {
         try {
-            return parseFloat(localStorage.getItem('customerWalletBalance') || '500.00');
+            return parseFloat(localStorage.getItem('customerWalletBalance') || '0.00');
         } catch (e) {
-            return 500.00;
+            return 0.00;
         }
     });
 
@@ -212,6 +212,8 @@ const CustomerDashboard = () => {
     };
 
     const safeOrders = Array.isArray(orders) ? orders : [];
+    const userPoints = user?.loyaltyPoints || (safeOrders.filter(o => o.status === 'Completed' || o.status === 'Delivered').length * 50) || 0;
+    const tierName = userPoints >= 1000 ? 'GOLD MEMBER' : userPoints >= 500 ? 'SILVER MEMBER' : 'BRONZE MEMBER';
 
     const readySelfPickupOrders = safeOrders.filter(o => 
         (o.orderType === 'Self-Pickup' || o.orderType === 'Self Pickup') && 
@@ -331,7 +333,7 @@ const CustomerDashboard = () => {
                                                 </div>
                                                 <div>
                                                     <span className="block font-black tracking-[0.25em] text-[10px] text-transparent bg-clip-text bg-gradient-to-r from-[#ffe07d] via-[#f5c661] to-[#ffe07d]">
-                                                        GOLD MEMBER
+                                                        {tierName}
                                                     </span>
                                                     <span className="block text-[8px] text-gray-500 font-extrabold uppercase tracking-widest leading-none mt-0.5">
                                                         Resto Loyalty Points
@@ -344,7 +346,7 @@ const CustomerDashboard = () => {
                                         <div className="space-y-1">
                                             <span className="text-[10px] text-gray-400 font-black tracking-widest uppercase block">Points Balance</span>
                                             <h2 className="text-5xl font-black font-sans tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-[#fff2d1] to-[#f3c056]">
-                                                2,450
+                                                {userPoints.toLocaleString()}
                                             </h2>
                                             <p className="text-gray-500 text-xs font-semibold">Convert points to cash discount at checkout</p>
                                         </div>
@@ -697,7 +699,7 @@ const CustomerDashboard = () => {
                                                 <Crown size={18} className="fill-black" />
                                             </div>
                                             <div>
-                                                <span className="block font-black tracking-widest text-[11px] text-[#ffe07d]">GOLD MEMBERSHIP</span>
+                                                <span className="block font-black tracking-widest text-[11px] text-[#ffe07d]">{tierName}</span>
                                                 <span className="block text-[9px] text-gray-500">RestoSys Rewards</span>
                                             </div>
                                         </div>
@@ -706,8 +708,8 @@ const CustomerDashboard = () => {
 
                                     <div className="mt-8 space-y-1">
                                         <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider block">Available Balance</span>
-                                        <h2 className="text-5xl font-black font-sans text-transparent bg-clip-text bg-gradient-to-r from-white via-[#fff2d1] to-[#f3c056]">2,450 Pts</h2>
-                                        <p className="text-xs text-gray-500 font-semibold mt-1">Value: ₹245.00 (Redeemable at checkout)</p>
+                                        <h2 className="text-5xl font-black font-sans text-transparent bg-clip-text bg-gradient-to-r from-white via-[#fff2d1] to-[#f3c056]">{userPoints.toLocaleString()} Pts</h2>
+                                        <p className="text-xs text-gray-500 font-semibold mt-1">Value: ₹{(userPoints * 0.1).toFixed(2)} (Redeemable at checkout)</p>
                                     </div>
 
                                     <div className="mt-8 pt-6 border-t border-white/5 space-y-3">
