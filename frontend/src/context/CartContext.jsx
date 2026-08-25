@@ -32,6 +32,14 @@ export const CartProvider = ({ children }) => {
 
     // Load from local storage
     useEffect(() => {
+        const isUserLoggedIn = !!localStorage.getItem('restosys_customer_user');
+        if (!isUserLoggedIn) {
+            localStorage.removeItem('restosys_cart');
+            localStorage.removeItem('restosys_wishlist');
+            setCartItems([]);
+            setWishlist([]);
+            return;
+        }
         const savedCart = localStorage.getItem('restosys_cart');
         const savedWishlist = localStorage.getItem('restosys_wishlist');
         try {

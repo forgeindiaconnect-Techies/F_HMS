@@ -251,27 +251,31 @@ const RestaurantDetails = () => {
                                 <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden divide-y divide-gray-50 dark:divide-slate-800">
                                     {menu.filter(item => item.category === category).map(item => (
                                         <div 
-                                            key={item._id} 
-                                            onClick={() => addToCart(item)}
-                                            className="p-6 flex gap-6 hover:bg-orange-50/20 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group active:scale-[0.99] transition-all rounded-2xl"
-                                            title="Click to add to cart"
-                                        >
-                                            <div className="flex-1">
-                                                <div className="flex items-start justify-between mb-1">
-                                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">{item.name}</h3>
-                                                </div>
-                                                <div className="font-medium text-gray-700 dark:text-slate-300 mb-3">₹{item.price}</div>
-                                                <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed line-clamp-2">{item.description}</p>
-                                            </div>
-                                            <div className="w-32 h-32 shrink-0 relative overflow-hidden rounded-xl bg-gray-100 dark:bg-slate-800">
-                                                <img 
-                                                    src={getItemImage(item)} 
-                                                    onError={(e) => { e.target.onerror = null; e.target.src = getItemImage({ ...item, image: '' }); }}
-                                                    alt={item.name} 
-                                                    className="w-full h-full object-cover rounded-xl shadow-sm group-hover:scale-105 transition-transform duration-300" 
-                                                />
-                                            </div>
-                                        </div>
+                                             key={item._id} 
+                                             className="p-6 flex gap-6 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors group rounded-2xl"
+                                         >
+                                             <div className="flex-1">
+                                                 <div className="flex items-start justify-between mb-1">
+                                                     <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">{item.name}</h3>
+                                                 </div>
+                                                 <div className="font-extrabold text-red-600 dark:text-red-400 mb-2">₹{item.price}</div>
+                                                 <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed line-clamp-2">{item.description}</p>
+                                                 <button 
+                                                     onClick={() => { addToCart(item); toast.success(`${item.name} added to cart!`); }}
+                                                     className="mt-3 px-4 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                                                 >
+                                                     <Plus size={14} /> Add
+                                                 </button>
+                                             </div>
+                                             <div className="w-32 h-32 shrink-0 relative overflow-hidden rounded-xl bg-gray-100 dark:bg-slate-800">
+                                                 <img 
+                                                     src={getItemImage(item)} 
+                                                     onError={(e) => { e.target.onerror = null; e.target.src = getItemImage({ ...item, image: '' }); }}
+                                                     alt={item.name} 
+                                                     className="w-full h-full object-cover rounded-xl shadow-sm group-hover:scale-105 transition-transform duration-300" 
+                                                 />
+                                             </div>
+                                         </div>
                                     ))}
                                 </div>
                             </div>
