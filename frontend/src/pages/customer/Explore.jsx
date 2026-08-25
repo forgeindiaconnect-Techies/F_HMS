@@ -6,18 +6,7 @@ import toast from 'react-hot-toast';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 
 const Explore = () => {
-    const { user, logout } = useCustomerAuth();
-    const [restaurants, setRestaurants] = useState([]);
-    const [search, setSearch] = useState('');
-    const savedLoc = localStorage.getItem('userLocation');
-    const defaultLocation = (savedLoc && savedLoc !== 'San Francisco, CA') ? savedLoc : 'Select Location';
-    const [location, setLocation] = useState(defaultLocation);
-    const [isLocationOpen, setIsLocationOpen] = useState(false);
-    const [loading, setLoading] = useState(true);
-
-    const availableLocations = [];
-
-    // Dummy data for the landing page grid
+    // Dummy data for the landing page grid (instant 0ms load)
     const dummyRestaurants = [
         { _id: 'demo1', name: 'Pizza Palace', rating: 4.8, time: '20-25', tags: 'Italian, Pizzas, Fast Food', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
         { _id: 'demo2', name: 'Burger Hub', rating: 4.5, time: '15-20', tags: 'American, Burgers, Beverages', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
@@ -26,6 +15,15 @@ const Explore = () => {
         { _id: 'demo5', name: 'BBQ Nation', rating: 4.7, time: '30-40', tags: 'BBQ, Grilled, Non-Veg', img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
         { _id: 'demo6', name: 'Juice Corner', rating: 4.6, time: '5-10', tags: 'Beverages, Healthy, Shakes', img: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' }
     ];
+
+    const { user, logout } = useCustomerAuth();
+    const [restaurants, setRestaurants] = useState(dummyRestaurants);
+    const [search, setSearch] = useState('');
+    const savedLoc = localStorage.getItem('userLocation');
+    const defaultLocation = (savedLoc && savedLoc !== 'San Francisco, CA') ? savedLoc : 'Select Location';
+    const [location, setLocation] = useState(defaultLocation);
+    const [isLocationOpen, setIsLocationOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const foodItems = [
         { name: 'Pizza', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80' },

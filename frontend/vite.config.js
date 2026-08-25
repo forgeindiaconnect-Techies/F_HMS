@@ -23,6 +23,24 @@ export default defineConfig(({ command, mode }) => {
     },
     define: {
       'import.meta.env.VITE_API_URL': JSON.stringify(apiUrl)
+    },
+    build: {
+      chunkSizeWarningLimit: 1000,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+                return 'vendor-react';
+              }
+              if (id.includes('lucide-react')) {
+                return 'vendor-icons';
+              }
+              return 'vendor-libs';
+            }
+          }
+        }
+      }
     }
   }
 })
