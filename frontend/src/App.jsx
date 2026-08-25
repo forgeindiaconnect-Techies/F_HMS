@@ -136,6 +136,8 @@ function App() {
         {/* Unified Auth Portal */}
         <Route path="/login" element={<StaffAuthPage />} />
         <Route path="/register" element={<StaffAuthPage />} />
+        <Route path="/customer/login" element={<CustomerAuthProvider><CustomerAuthPage /></CustomerAuthProvider>} />
+        <Route path="/customer/register" element={<CustomerAuthProvider><CustomerAuthPage /></CustomerAuthProvider>} />
         <Route path="/staff/login" element={<Navigate to="/login" replace />} />
         <Route path="/staff/register" element={<Navigate to="/register" replace />} />
 

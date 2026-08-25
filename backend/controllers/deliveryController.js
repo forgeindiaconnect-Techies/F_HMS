@@ -180,6 +180,20 @@ export const updateOrderDeliveryStatus = async (req, res) => {
         } else if (status === 'On the Way') {
             order.status = 'Out for Delivery';
         } else if (status === 'Delivered') {
+            // Ensure delivery OTP exists
+            if (!order.deliveryOtp) {
+                order.deliveryOtp = Math.floor(1000 + Math.random() * 9000).toString();
+            }
+
+            const inputOtp = String(req.body.otp || '').trim();
+            const expectedOtp = String(order.deliveryOtp).trim();
+
+            if (!inputOtp || inputOtp !== expectedOtp) {
+                return res.status(400).json({ 
+                    message: `Invalid Delivery OTP. Please ask the customer for the correct OTP.` 
+                });
+            }
+
             order.status = 'Delivered';
             order.isPaid = true;
             order.paidAt = new Date();
@@ -451,6 +465,9 @@ export const assignDeliveryPartner = async (req, res) => {
 
         order.deliveryPartner = partnerUserId;
         order.deliveryStatus = 'Pending Assignment';
+        if (!order.deliveryOtp) {
+            order.deliveryOtp = Math.floor(1000 + Math.random() * 9000).toString();
+        }
         order.deliveryDistance = Math.floor(Math.random() * 8) + 1; // Simulated distance
         
         // Calculate dynamic delivery fee
@@ -510,6 +527,9 @@ export const autoAssignDeliveryPartner = async (req, res) => {
 
         order.deliveryPartner = partner.userId;
         order.deliveryStatus = 'Pending Assignment';
+        if (!order.deliveryOtp) {
+            order.deliveryOtp = Math.floor(1000 + Math.random() * 9000).toString();
+        }
         order.deliveryDistance = Math.floor(Math.random() * 6) + 1; // 1-7 km mock
         
         let fee = settings.baseFee || 30;

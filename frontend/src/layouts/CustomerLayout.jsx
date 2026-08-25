@@ -69,10 +69,10 @@ const CustomerLayout = () => {
                             </Link>
                         ) : (
                             <>
-                                <Link to="/register" className="hidden sm:inline text-sm font-bold text-slate-650 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
+                                <Link to="/customer/register" className="hidden sm:inline text-sm font-bold text-slate-650 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
                                     Register
                                 </Link>
-                                <Link to="/login" className="flex items-center gap-1 bg-orange-600 hover:bg-orange-750 text-white px-3 py-1.5 sm:px-5 sm:py-2 rounded-full font-bold transition-colors shadow-sm shadow-orange-600/20 text-xs sm:text-sm" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                                <Link to="/customer/login" className="flex items-center gap-1 bg-orange-600 hover:bg-orange-750 text-white px-3 py-1.5 sm:px-5 sm:py-2 rounded-full font-bold transition-colors shadow-sm shadow-orange-600/20 text-xs sm:text-sm" style={{ fontFamily: 'Outfit, sans-serif' }}>
                                     <User size={12} className="shrink-0" />
                                     Sign In
                                 </Link>

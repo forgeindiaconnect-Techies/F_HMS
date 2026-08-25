@@ -56,6 +56,10 @@ export const addOrderItems = async (req, res) => {
             if (guestUser) finalUserId = guestUser._id;
         }
 
+        const deliveryOtp = (orderType === 'Delivery') 
+            ? Math.floor(1000 + Math.random() * 9000).toString() 
+            : null;
+
         const order = new Order({
             orderItems: sanitizeOrderItems(orderItems),
             user: finalUserId,
@@ -69,6 +73,7 @@ export const addOrderItems = async (req, res) => {
             subscriptionPlan: subscriptionPlan || 'One-time Order',
             taxPrice,
             totalPrice,
+            deliveryOtp,
             isPaid: false, // Will be paid later or by cashier
             statusHistory: [{
                 status: 'Pending',

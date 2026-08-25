@@ -144,7 +144,7 @@ const Home = () => {
                             <span>Order Now</span>
                         </Link>
 
-                        <Link to="/login" className="hidden xs:inline-block text-slate-700 hover:text-slate-950 transition-colors px-2.5 py-1.5 sm:px-3 rounded-xl hover:bg-slate-100">
+                        <Link to="/customer/login" className="hidden xs:inline-block text-slate-700 hover:text-slate-950 transition-colors px-2.5 py-1.5 sm:px-3 rounded-xl hover:bg-slate-100">
                             Log In
                         </Link>
 
@@ -259,7 +259,7 @@ const Home = () => {
                         
                         <div className="pt-2 border-t border-slate-200/80 flex flex-col gap-2">
                             <Link 
-                                to="/login" 
+                                to="/customer/login" 
                                 onClick={() => setMobileMenuOpen(false)}
                                 className="w-full text-center py-2.5 rounded-xl border border-slate-200 text-slate-800 font-extrabold text-sm hover:bg-slate-50 transition-colors"
                             >
@@ -544,9 +544,9 @@ const Home = () => {
                                     }
 
                                     return (
-                                        <div 
+                                        <Link 
                                             key={restaurant._id || idx} 
-                                            onClick={() => toast.success(`Storefront preview of "${restaurant.name}"`)}
+                                            to={`/restaurant/${restaurant._id}`}
                                             className="group cursor-pointer block hover:-translate-y-1.5 transition-transform duration-200"
                                         >
                                             <div className="relative rounded-[20px] overflow-hidden aspect-square mb-2.5 shadow-md bg-white border border-slate-200">
@@ -564,7 +564,7 @@ const Home = () => {
                                                     <h3 className="text-xs font-black truncate">{restaurant.name}</h3>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </Link>
                                     );
                                 })}
                         </div>

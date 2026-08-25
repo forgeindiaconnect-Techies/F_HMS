@@ -4,7 +4,7 @@ import axios from 'axios';
 import { 
     Truck, Power, User, MapPin, Phone, MessageSquare, DollarSign, 
     CheckCircle2, Clock, Navigation, AlertTriangle, ArrowUpRight, 
-    LogOut, Calendar, Wallet, ListTodo, ShieldCheck, Award, ChevronRight
+    LogOut, Calendar, Wallet, ListTodo, ShieldCheck, Award, ChevronRight, KeyRound, Lock, X
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
@@ -19,6 +19,12 @@ const DeliveryPartnerDashboard = () => {
     const [withdrawals, setWithdrawals] = useState([]);
     const [activeSection, setActiveSection] = useState('tasks'); // tasks, earnings, profile
     const [loading, setLoading] = useState(true);
+
+    // OTP Modal states
+    const [showOtpModal, setShowOtpModal] = useState(false);
+    const [selectedOtpOrder, setSelectedOtpOrder] = useState(null);
+    const [customerOtpInput, setCustomerOtpInput] = useState('');
+    const [verifyingOtp, setVerifyingOtp] = useState(false);
 
     // Withdrawal input
     const [withdrawAmount, setWithdrawAmount] = useState('');
@@ -168,7 +174,38 @@ const DeliveryPartnerDashboard = () => {
             toast.success(`Order marked as: ${newStatus}`);
             loadData(); // Reload list
         } catch (error) {
-            toast.error('Failed to update status');
+            toast.error(error.response?.data?.message || 'Failed to update status');
+        }
+    };
+
+    const handleOpenOtpModal = (order) => {
+        setSelectedOtpOrder(order);
+        setCustomerOtpInput('');
+        setShowOtpModal(true);
+    };
+
+    const handleVerifyAndDeliver = async (e) => {
+        e.preventDefault();
+        if (!selectedOtpOrder || !client) return;
+        if (!customerOtpInput || customerOtpInput.trim().length < 4) {
+            toast.error('Please enter the 4-digit customer OTP');
+            return;
+        }
+        setVerifyingOtp(true);
+        try {
+            await client.put(`/delivery/orders/${selectedOtpOrder._id}/status`, { 
+                status: 'Delivered', 
+                otp: customerOtpInput.trim()
+            });
+            toast.success('🎉 Customer OTP Verified! Delivery Completed Successfully!');
+            setShowOtpModal(false);
+            setSelectedOtpOrder(null);
+            setCustomerOtpInput('');
+            loadData();
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Invalid Delivery OTP');
+        } finally {
+            setVerifyingOtp(false);
         }
     };
 
@@ -429,10 +466,10 @@ const DeliveryPartnerDashboard = () => {
 
                                                 {order.deliveryStatus === 'On the Way' && (
                                                     <button
-                                                        onClick={() => handleUpdateOrderStatus(order._id, 'Delivered')}
-                                                        className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-650 text-white rounded-2xl text-xs font-black tracking-wider uppercase transition-all shadow-lg shadow-emerald-500/15 cursor-pointer active:scale-98"
+                                                        onClick={() => handleOpenOtpModal(order)}
+                                                        className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-650 text-white rounded-2xl text-xs font-black tracking-wider uppercase transition-all shadow-lg shadow-emerald-500/15 cursor-pointer active:scale-98 flex items-center justify-center gap-2"
                                                     >
-                                                        Complete Delivery (Mark Paid)
+                                                        <ShieldCheck size={16} /> Complete Delivery (Verify Customer OTP)
                                                     </button>
                                                 )}
                                             </div>
@@ -815,6 +852,69 @@ const DeliveryPartnerDashboard = () => {
                                 Close Directions
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Customer OTP Verification Modal */}
+            {showOtpModal && selectedOtpOrder && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-md p-4 animate-in fade-in">
+                    <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-8 max-w-md w-full shadow-2xl relative space-y-6 text-left">
+                        <button
+                            onClick={() => setShowOtpModal(false)}
+                            className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-full transition-colors cursor-pointer"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <div className="flex items-center gap-3.5">
+                            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center shadow-inner">
+                                <KeyRound size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black text-slate-900 dark:text-white leading-tight">Customer OTP Verification</h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-bold">Order #{selectedOtpOrder._id.substring(selectedOtpOrder._id.length - 4).toUpperCase()}</p>
+                            </div>
+                        </div>
+
+                        <div className="p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-2xl text-xs text-amber-800 dark:text-amber-300 space-y-1">
+                            <p className="font-bold flex items-center gap-1.5">
+                                <ShieldCheck size={14} className="text-amber-600 dark:text-amber-400" /> Enter 4-Digit Customer OTP
+                            </p>
+                            <p className="text-[11px] opacity-90">Please ask the customer for the OTP displayed on their order tracking dashboard before handing over the food package.</p>
+                        </div>
+
+                        <form onSubmit={handleVerifyAndDeliver} className="space-y-4">
+                            <div>
+                                <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">Customer Delivery OTP Code</label>
+                                <input
+                                    type="text"
+                                    maxLength="4"
+                                    placeholder="e.g. 4829"
+                                    value={customerOtpInput}
+                                    onChange={(e) => setCustomerOtpInput(e.target.value.replace(/\D/g, ''))}
+                                    autoFocus
+                                    className="w-full text-center text-3xl font-black tracking-[0.4em] font-mono py-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 transition-all shadow-inner"
+                                />
+                            </div>
+
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowOtpModal(false)}
+                                    className="flex-1 py-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-2xl text-xs uppercase tracking-wider transition-colors cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={verifyingOtp}
+                                    className="flex-1 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black rounded-2xl text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
+                                >
+                                    {verifyingOtp ? 'Verifying...' : 'Verify & Deliver'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

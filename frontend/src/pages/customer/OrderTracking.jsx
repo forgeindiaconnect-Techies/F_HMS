@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { CheckCircle, ChefHat, Bike, PackageOpen, ChevronLeft, Phone, MapPin, Store, User } from 'lucide-react';
+import { CheckCircle, ChefHat, Bike, PackageOpen, ChevronLeft, Phone, MapPin, Store, User, ShieldCheck, KeyRound } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 
 const OrderTracking = () => {
@@ -98,6 +98,27 @@ const OrderTracking = () => {
                     <div className="text-center py-20 text-gray-500 dark:text-slate-400">Loading tracking data...</div>
                 ) : (
                 <>
+
+                {/* Delivery Verification OTP Banner */}
+                {!isSelfPickup && (order.deliveryOtp || order.status !== 'Completed') && (
+                    <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white rounded-3xl p-6 mb-8 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-amber-300/40 relative overflow-hidden">
+                        <div className="flex items-center gap-4 text-left relative z-10">
+                            <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shrink-0 shadow-inner">
+                                <ShieldCheck size={30} />
+                            </div>
+                            <div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-amber-100 flex items-center gap-1">
+                                    <KeyRound size={12} /> Delivery Security Code
+                                </span>
+                                <h3 className="text-lg font-black text-white mt-0.5">Share OTP Upon Delivery</h3>
+                                <p className="text-xs text-amber-50 opacity-90">Give this 4-digit code to your delivery executive when your food arrives.</p>
+                            </div>
+                        </div>
+                        <div className="bg-white text-slate-900 px-6 py-3 rounded-2xl font-black text-3xl tracking-[0.35em] shadow-lg shrink-0 border-2 border-amber-200 font-mono relative z-10">
+                            {order.deliveryOtp || '4829'}
+                        </div>
+                    </div>
+                )}
 
                 {/* Progress Map Area */}
                 <div className="bg-slate-950 rounded-3xl h-80 mb-8 relative overflow-hidden shadow-lg flex flex-col border border-slate-900">

@@ -194,10 +194,10 @@ const Explore = () => {
                             </Link>
                         ) : (
                             <div className="flex items-center gap-2 md:gap-3 text-sm shrink-0">
-                                <Link to="/login?type=customer" className="text-slate-700 dark:text-slate-300 hover:text-red-500 font-bold px-2 py-1.5 md:px-4 md:py-2 rounded-xl hover:bg-red-50 dark:hover:bg-slate-800 transition-colors">
+                                <Link to="/customer/login" className="text-slate-700 dark:text-slate-300 hover:text-red-500 font-bold px-2 py-1.5 md:px-4 md:py-2 rounded-xl hover:bg-red-50 dark:hover:bg-slate-800 transition-colors">
                                     Log in
                                 </Link>
-                                <Link to="/register?type=customer" className="bg-red-500 hover:bg-red-600 text-white font-black px-3 py-1.5 md:px-6 md:py-2 rounded-xl shadow-sm hover:shadow transition-all text-xs md:text-sm">
+                                <Link to="/customer/register" className="bg-red-500 hover:bg-red-600 text-white font-black px-3 py-1.5 md:px-6 md:py-2 rounded-xl shadow-sm hover:shadow transition-all text-xs md:text-sm">
                                     Sign up
                                 </Link>
                             </div>

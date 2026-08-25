@@ -14,12 +14,12 @@ const CustomerProtectedRoute = ({ children }) => {
     }
 
     if (!user) {
-        // Redirect to login but save the attempted url
-        return <Navigate to="/login" state={{ from: location }} replace />;
+        // Redirect to customer login but save the attempted url
+        return <Navigate to="/customer/login" state={{ from: location }} replace />;
     }
 
     if (user.role !== 'Customer') {
-        return <Navigate to="/login" replace />;
+        return <Navigate to="/customer/login" replace />;
     }
 
     return children;

@@ -120,6 +120,10 @@ const orderSchema = new mongoose.Schema({
     deliveryETA: {
         type: Date
     },
+    deliveryOtp: {
+        type: String,
+        default: null
+    },
     deliveryRating: {
         speed: { type: Number, default: 0 },
         behaviour: { type: Number, default: 0 },

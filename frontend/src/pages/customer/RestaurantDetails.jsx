@@ -152,6 +152,12 @@ const RestaurantDetails = () => {
     };
 
     const handleCheckout = () => {
+        const storedCustomer = localStorage.getItem('restosys_customer_user');
+        if (!storedCustomer) {
+            toast.error('Please sign in or create an account to place your order.');
+            navigate('/customer/login', { state: { from: { pathname: '/checkout', state: { restaurantId: id, branchId: selectedBranch } } } });
+            return;
+        }
         navigate('/checkout', { state: { restaurantId: id, branchId: selectedBranch } });
     };
 

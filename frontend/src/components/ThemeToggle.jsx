@@ -43,8 +43,19 @@ const ThemeToggle = () => {
         };
     }, []);
 
-    const isLandingRoute = location.pathname === '/' || location.pathname === '';
-    if (isChefRoute || isLandingRoute) return null;
+    const dashboardPrefixes = [
+        '/admin',
+        '/manager',
+        '/chef',
+        '/waiter',
+        '/cashier',
+        '/super-admin',
+        '/delivery/dashboard',
+        '/profile'
+    ];
+    const isDashboardRoute = dashboardPrefixes.some(prefix => location.pathname.startsWith(prefix));
+
+    if (!isDashboardRoute) return null;
 
     return (
         <div className="fixed bottom-6 right-6 z-[9999] font-sans">

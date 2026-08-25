@@ -805,14 +805,19 @@ const StaffAuthPage = () => {
                     <Link to="/" className="absolute top-4 right-4 text-white/80 hover:text-white bg-black/10 hover:bg-black/20 p-2 rounded-full transition-all z-20">
                         <X size={20} />
                     </Link>
-                    <Link to="/" className="inline-flex items-center gap-2 mb-2 relative z-10">
+
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white font-extrabold text-[11px] uppercase tracking-wider mb-3 relative z-10">
+                        <ShieldCheck size={13} /> Restaurant Partner & Staff Portal
+                    </div>
+
+                    <Link to="/" className="inline-flex items-center justify-center gap-2 mb-1 relative z-10 w-full">
                         <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
                             <UtensilsCrossed size={28} className="text-white" />
                         </div>
                         <span className="text-3xl font-bold text-white tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>RestoSys</span>
                     </Link>
-                    <p className="text-green-50 text-sm font-medium relative z-10 opacity-90">
-                        {mode === 'login' ? 'Sign in to RestaurantHub Staff Portal' : 'Subscribe and Get Started'}
+                    <p className="text-green-50 text-xs font-semibold relative z-10 opacity-95">
+                        {mode === 'login' ? 'Sign in to manage POS billing, KDS, inventory & staff' : 'Register your restaurant & choose a plan'}
                     </p>
                 </div>
 
@@ -852,6 +857,17 @@ const StaffAuthPage = () => {
                     {mode === 'register' && step === 4 && renderRegisterStep3()}
                     {mode === 'register' && step === 5 && renderRegisterStep4()}
                     {mode === 'register' && step === 6 && renderRegisterStep5()}
+
+                    {/* Customer Portal Switcher Footer */}
+                    <div className="mt-6 pt-4 border-t border-gray-100 text-center">
+                        <p className="text-xs text-gray-500 font-medium mb-2">Looking to order food as a customer?</p>
+                        <Link 
+                            to="/customer/login" 
+                            className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-green-700 hover:text-green-800 bg-green-50 hover:bg-green-100 px-3.5 py-2 rounded-xl transition-all border border-green-100 shadow-sm"
+                        >
+                            <UtensilsCrossed size={14} /> Go to Customer Sign In & Food Ordering →
+                        </Link>
+                    </div>
                 </div>
             </div>
 

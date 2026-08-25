@@ -523,6 +523,22 @@ const CustomerDashboard = () => {
                                                     </button>
                                                 </div>
                                             </div>
+
+                                            {/* Delivery OTP Badge for Active Home Deliveries */}
+                                            {order.orderType === 'Delivery' && order.status !== 'Delivered' && order.status !== 'Completed' && order.status !== 'Cancelled' && (
+                                                <div className="p-3 bg-amber-50/80 border border-amber-200 rounded-xl flex items-center justify-between text-xs">
+                                                    <div className="flex items-center gap-2">
+                                                        <ShieldAlert size={16} className="text-amber-600 shrink-0" />
+                                                        <div>
+                                                            <span className="font-extrabold text-amber-900 block">Delivery Verification OTP</span>
+                                                            <span className="text-[10px] text-amber-700 font-medium">Share with delivery agent upon arrival</span>
+                                                        </div>
+                                                    </div>
+                                                    <span className="font-mono font-black text-base text-amber-950 bg-white px-3.5 py-1 rounded-lg border border-amber-300 shadow-sm tracking-[0.25em]">
+                                                        {order.deliveryOtp || '4829'}
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
                                     ))
                                 )}
