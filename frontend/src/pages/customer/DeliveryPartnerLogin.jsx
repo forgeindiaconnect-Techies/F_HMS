@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Phone, Lock, ArrowRight, Truck, Smartphone } from 'lucide-react';
@@ -8,6 +8,11 @@ import { useAuth } from '../../context/AuthContext';
 const DeliveryPartnerLogin = () => {
     const navigate = useNavigate();
     const { setUser } = useAuth();
+
+    // Force Light Mode on Auth Pages even after page refresh
+    useEffect(() => {
+        document.documentElement.classList.remove('dark');
+    }, []);
     const [phoneNumber, setPhoneNumber] = useState('');
     const [otp, setOtp] = useState('');
     const [step, setStep] = useState('phone'); // phone, otp

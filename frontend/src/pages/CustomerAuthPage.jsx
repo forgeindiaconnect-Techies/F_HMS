@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Eye, EyeOff, UtensilsCrossed, ArrowRight, Mail, Lock, User as UserIcon, Tag, AlertCircle, Phone, X, Store, ShoppingBag, Truck } from 'lucide-react';
@@ -8,6 +8,11 @@ const CustomerAuthPage = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const location = useLocation();
+
+    // Force Light Mode on Auth Pages even after page refresh
+    useEffect(() => {
+        document.documentElement.classList.remove('dark');
+    }, []);
     
     // Determine initial mode from path or URL params
     const initialMode = location.pathname.includes('register') ? 'register' : 'login';

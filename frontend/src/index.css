@@ -329,6 +329,36 @@ html.dark select:not(.auth-input) {
 /* ═══════════════════════════════════════════════════════════════════
    LIGHT THEME AUTH FORMS (STRICTLY LIGHT THEME FOR ALL LOGIN & REGISTER PAGES)
    ═══════════════════════════════════════════════════════════════════ */
+/* Text & Headings inside Auth Card */
+html.dark .auth-page h1,
+html.dark .auth-page h2,
+html.dark .auth-page h3,
+html.dark .auth-page h4,
+html.dark .auth-page h5,
+html.dark .auth-page h6,
+html.dark .auth-page .text-gray-900,
+html.dark .auth-page .text-gray-800,
+html.dark .auth-page .text-gray-700,
+html.dark .auth-form-container h1,
+html.dark .auth-form-container h2,
+html.dark .auth-form-container h3,
+html.dark .auth-form-container h4,
+html.dark .auth-form-container h5,
+html.dark .auth-form-container h6,
+html.dark .auth-form-container .text-gray-900,
+html.dark .auth-form-container .text-gray-800,
+html.dark .auth-form-container .text-gray-700 {
+  color: #0f172a !important;
+}
+
+html.dark .auth-page .text-gray-600,
+html.dark .auth-page .text-gray-500,
+html.dark .auth-form-container .text-gray-600,
+html.dark .auth-form-container .text-gray-500 {
+  color: #64748b !important;
+}
+
+/* Inputs, Textareas, Selects inside Auth Card */
 .auth-page input,
 .auth-page select,
 .auth-page textarea,
@@ -346,6 +376,7 @@ html.dark .auth-input {
   background-color: #f8fafc !important;
   border-color: #e2e8f0 !important;
   color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
 }
 
 .auth-page input::placeholder,
@@ -355,6 +386,7 @@ html.dark .auth-page input::placeholder,
 html.dark .auth-form-container input::placeholder,
 html.dark .auth-input::placeholder {
   color: #94a3b8 !important;
+  -webkit-text-fill-color: #94a3b8 !important;
 }
 
 .auth-page input:focus,
@@ -364,7 +396,9 @@ html.dark .auth-page input:focus,
 html.dark .auth-form-container input:focus,
 html.dark .auth-input:focus {
   background-color: #ffffff !important;
+  border-color: #16a34a !important;
   color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
 }
 
 html.dark input::placeholder,

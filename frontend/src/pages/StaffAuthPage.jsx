@@ -56,6 +56,11 @@ const StaffAuthPage = () => {
         }
     });
 
+    // Force Light Mode on Auth Pages even after page refresh
+    useEffect(() => {
+        document.documentElement.classList.remove('dark');
+    }, []);
+
     // Fetch plans from API asynchronously in background
     useEffect(() => {
         const fetchPlans = async () => {
