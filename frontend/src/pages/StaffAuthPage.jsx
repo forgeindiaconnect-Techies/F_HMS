@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Eye, EyeOff, UtensilsCrossed, ArrowRight, Mail, Lock, User as UserIcon, Tag, AlertCircle, Phone, CheckCircle2, QrCode, Loader2, ShieldCheck, X } from 'lucide-react';
+import { Eye, EyeOff, UtensilsCrossed, ArrowRight, Mail, Lock, User as UserIcon, Tag, AlertCircle, Phone, CheckCircle2, QrCode, Loader2, ShieldCheck, X, Truck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api, { getApiUrl } from '../utils/axiosInstance';
 import axios from 'axios';
@@ -858,15 +858,23 @@ const StaffAuthPage = () => {
                     {mode === 'register' && step === 5 && renderRegisterStep4()}
                     {mode === 'register' && step === 6 && renderRegisterStep5()}
 
-                    {/* Customer Portal Switcher Footer */}
-                    <div className="mt-6 pt-4 border-t border-gray-100 text-center">
-                        <p className="text-xs text-gray-500 font-medium mb-2">Looking to order food as a customer?</p>
-                        <Link 
-                            to="/customer/login" 
-                            className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-green-700 hover:text-green-800 bg-green-50 hover:bg-green-100 px-3.5 py-2 rounded-xl transition-all border border-green-100 shadow-sm"
-                        >
-                            <UtensilsCrossed size={14} /> Go to Customer Sign In & Food Ordering →
-                        </Link>
+                    {/* Customer & Delivery Portal Switcher Footer */}
+                    <div className="mt-6 pt-4 border-t border-gray-100 text-center space-y-2">
+                        <p className="text-xs text-gray-500 font-medium">Looking for another portal?</p>
+                        <div className="flex flex-wrap gap-2 justify-center">
+                            <Link 
+                                to="/customer/login" 
+                                className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-green-700 hover:text-green-800 bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded-xl transition-all border border-green-100 shadow-sm"
+                            >
+                                <UtensilsCrossed size={14} /> Customer Ordering
+                            </Link>
+                            <Link 
+                                to="/delivery/login" 
+                                className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-xl transition-all border border-emerald-100 shadow-sm"
+                            >
+                                <Truck size={14} /> Delivery Partner Portal
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>

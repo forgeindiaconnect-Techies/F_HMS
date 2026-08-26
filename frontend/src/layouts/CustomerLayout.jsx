@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, Link } from 'react-router-dom';
-import { ShoppingCart, User, UtensilsCrossed, Heart, CalendarDays, ShoppingBag } from 'lucide-react';
+import { ShoppingCart, User, UtensilsCrossed, Heart, CalendarDays, ShoppingBag, Truck } from 'lucide-react';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { useCart } from '../context/CartContext';
 import CartDrawer from '../components/CartDrawer';
@@ -123,6 +123,8 @@ const CustomerLayout = () => {
                         <ul className="space-y-2">
                             <li><Link to="/menu" className="hover:text-green-400 transition-colors">Browse Menu</Link></li>
                             <li><Link to="/reservations" className="hover:text-green-400 transition-colors">Book a Table</Link></li>
+                            <li><Link to="/delivery/login" className="hover:text-emerald-400 text-slate-300 font-semibold transition-colors flex items-center gap-1.5"><Truck size={14} className="text-emerald-400" /> Delivery Partner Portal</Link></li>
+                            <li><Link to="/login" className="hover:text-green-400 text-slate-400 transition-colors">Restaurant Owner & Staff Login</Link></li>
                         </ul>
                     </div>
                     <div>

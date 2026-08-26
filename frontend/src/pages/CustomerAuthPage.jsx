@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Eye, EyeOff, UtensilsCrossed, ArrowRight, Mail, Lock, User as UserIcon, Tag, AlertCircle, Phone, X, Store, ShoppingBag } from 'lucide-react';
+import { Eye, EyeOff, UtensilsCrossed, ArrowRight, Mail, Lock, User as UserIcon, Tag, AlertCircle, Phone, X, Store, ShoppingBag, Truck } from 'lucide-react';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 
 const CustomerAuthPage = () => {
@@ -269,14 +269,22 @@ const CustomerAuthPage = () => {
                     </form>
 
                     {/* Portal Switcher Footer */}
-                    <div className="mt-6 pt-4 border-t border-gray-100 text-center">
-                        <p className="text-xs text-gray-500 font-medium mb-2">Are you a Restaurant Owner, Manager, or Staff?</p>
-                        <Link 
-                            to="/login" 
-                            className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-orange-600 hover:text-orange-700 bg-orange-50 hover:bg-orange-100 px-3.5 py-2 rounded-xl transition-all border border-orange-100 shadow-sm"
-                        >
-                            <Store size={14} /> Go to Restaurant Partner Portal →
-                        </Link>
+                    <div className="mt-6 pt-4 border-t border-gray-100 text-center space-y-2">
+                        <p className="text-xs text-gray-500 font-medium">Looking for partner portals?</p>
+                        <div className="flex flex-wrap gap-2 justify-center">
+                            <Link 
+                                to="/login" 
+                                className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-orange-600 hover:text-orange-700 bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-xl transition-all border border-orange-100 shadow-sm"
+                            >
+                                <Store size={14} /> Restaurant Partner Login
+                            </Link>
+                            <Link 
+                                to="/delivery/login" 
+                                className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-xl transition-all border border-emerald-100 shadow-sm"
+                            >
+                                <Truck size={14} /> Delivery Partner Portal
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>
