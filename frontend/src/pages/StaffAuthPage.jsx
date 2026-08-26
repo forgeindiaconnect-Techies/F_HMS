@@ -786,15 +786,15 @@ const StaffAuthPage = () => {
     );
 
     return (
-        <div className="min-h-screen relative flex items-center justify-center p-4 font-sans bg-gray-900 auth-page">
+        <div className="min-h-screen relative flex items-center justify-center p-4 font-sans bg-gradient-to-br from-slate-50 via-green-50/30 to-slate-100 auth-page">
             {/* Full screen background */}
             <div className="absolute inset-0 z-0">
                 <img
                     src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=2000&auto=format&fit=crop"
                     alt="Restaurant ambiance"
-                    className="w-full h-full object-cover opacity-60"
+                    className="w-full h-full object-cover opacity-20"
                 />
-                <div className="absolute inset-0 bg-gray-900/80 backdrop-blur-[10px]"></div>
+                <div className="absolute inset-0 bg-white/70 backdrop-blur-[6px]"></div>
             </div>
 
             {/* Glass Card */}

@@ -80,7 +80,7 @@ const DeliveryPartnerLogin = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-6 text-gray-900 font-sans auth-page">
+        <div className="min-h-screen bg-gradient-to-br from-emerald-50/40 via-slate-50 to-emerald-100/30 flex flex-col justify-center items-center p-6 text-gray-900 font-sans auth-page">
             <div className="w-full max-w-sm space-y-8 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-2xl relative overflow-hidden auth-form-container">
                 {/* Header */}
                 <div className="text-center space-y-3">
