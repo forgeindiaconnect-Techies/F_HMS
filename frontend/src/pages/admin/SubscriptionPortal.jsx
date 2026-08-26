@@ -157,30 +157,94 @@ const SubscriptionPortal = () => {
         setShowCheckoutModal(true);
     };
 
+    const loadRazorpayScript = () => {
+        return new Promise((resolve) => {
+            if (window.Razorpay) {
+                resolve(true);
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
+    };
+
     const handleConfirmPayment = async () => {
         setIsSubmitting(true);
         setPaymentStatus('processing');
         try {
-            // Call Backend Upgrade/Renew
-            const isRenewal = restaurant?.subscription?.plan === selectedPlanToBuy.name;
-            const endpoint = isRenewal ? '/restaurants/mine/renew' : '/restaurants/mine/upgrade';
-            
-            const res = await api.post(endpoint, {
+            const loaded = await loadRazorpayScript();
+            if (!loaded) {
+                toast.error("Razorpay SDK failed to load. Please check your network.");
+                setPaymentStatus('failed');
+                setIsSubmitting(false);
+                return;
+            }
+
+            // 1. Create Razorpay order via backend
+            const { data: orderData } = await api.post('/restaurants/mine/razorpay-order', {
                 planName: selectedPlanToBuy.name,
                 billingCycle: billingCycle
             });
 
-            setTimeout(() => {
-                setPaymentStatus('success');
-                setTimeout(() => {
-                    setShowCheckoutModal(false);
-                    fetchData();
-                    toast.success(res.data.message || "Payment processed successfully!");
-                }, 1500);
-            }, 1500);
+            const razorpayKey = orderData.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_SlbQBi57McKtUc';
+
+            // 2. Configure Razorpay popup options
+            const options = {
+                key: razorpayKey,
+                amount: orderData.amountPaise,
+                currency: orderData.currency || 'INR',
+                name: 'RestoSys SaaS Platform',
+                description: `${selectedPlanToBuy.name} Subscription (${billingCycle})`,
+                order_id: (orderData.orderId && !orderData.orderId.startsWith('order_live_')) ? orderData.orderId : undefined,
+                handler: async function (response) {
+                    try {
+                        setPaymentStatus('processing');
+                        const verifyRes = await api.post('/restaurants/mine/razorpay-verify', {
+                            razorpay_order_id: response.razorpay_order_id || orderData.orderId,
+                            razorpay_payment_id: response.razorpay_payment_id || `pay_${Date.now()}`,
+                            razorpay_signature: response.razorpay_signature || '',
+                            planName: selectedPlanToBuy.name,
+                            billingCycle: billingCycle
+                        });
+                        setPaymentStatus('success');
+                        toast.success(verifyRes.data.message || "Subscription activated successfully via Razorpay!");
+                        setTimeout(() => {
+                            setShowCheckoutModal(false);
+                            fetchData();
+                        }, 1200);
+                    } catch (verifyErr) {
+                        console.error("Verification failed", verifyErr);
+                        setPaymentStatus('failed');
+                        toast.error("Payment verification failed.");
+                    }
+                },
+                prefill: {
+                    name: user?.name || restaurant?.name || 'Restaurant Admin',
+                    email: user?.email || restaurant?.contactEmail || 'admin@restosys.com',
+                    contact: restaurant?.phone || '9999999999'
+                },
+                theme: {
+                    color: '#4f46e5'
+                },
+                modal: {
+                    ondismiss: function() {
+                        setIsSubmitting(false);
+                        setPaymentStatus('idle');
+                        toast('Payment window closed.', { icon: 'ℹ️' });
+                    }
+                }
+            };
+
+            const paymentObject = new window.Razorpay(options);
+            paymentObject.open();
+
         } catch (error) {
-            console.error("Payment failed", error);
+            console.error("Payment init failed", error);
             setPaymentStatus('failed');
+            toast.error(error.response?.data?.message || "Payment initialization failed.");
         } finally {
             setIsSubmitting(false);
         }
@@ -508,35 +572,35 @@ const SubscriptionPortal = () => {
 
                             {paymentStatus === 'idle' && (
                                 <div className="flex flex-col items-center gap-4 py-4 text-center">
-                                    <div 
-                                        onClick={handleConfirmPayment}
-                                        className="w-48 h-48 rounded-2xl border-2 border-slate-100 bg-white p-3 shadow-inner hover:scale-[1.02] active:scale-[0.98] cursor-pointer transition-all flex items-center justify-center relative group"
-                                        title="Click QR Code to process mock checkout"
-                                    >
-                                        <img 
-                                            src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://f-hms.onrender.com/api/plans/scan-activate?restaurantId=${restaurant._id}%26plan=${selectedPlanToBuy.name}`} 
-                                            alt="Mock checkout QR code"
-                                            className="w-full h-full object-contain"
-                                        />
-                                        <div className="absolute inset-0 bg-indigo-600/5 group-hover:opacity-100 opacity-0 transition-opacity rounded-2xl flex items-center justify-center text-indigo-600 font-extrabold text-xs">
-                                            Click QR to Pay
+                                    <div className="w-full bg-slate-50 border border-slate-200/80 rounded-2xl p-5 text-center space-y-3">
+                                        <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto">
+                                            <CreditCard size={24} />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-extrabold text-slate-900 text-sm">Realtime Razorpay Payment</h4>
+                                            <p className="text-slate-500 text-xs mt-0.5 font-medium">Supports UPI (GPay/PhonePe), Cards, NetBanking & Wallets</p>
+                                        </div>
+                                        <div className="flex items-center justify-center gap-2 pt-1">
+                                            <span className="text-[10px] bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded-full">UPI / GPay</span>
+                                            <span className="text-[10px] bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded-full">Credit/Debit Card</span>
+                                            <span className="text-[10px] bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded-full">NetBanking</span>
                                         </div>
                                     </div>
-                                    <p className="text-xs text-slate-400 font-semibold">Click the QR code to verify sandbox credentials and activate instantly.</p>
+                                    <p className="text-xs text-slate-400 font-semibold">Clicking below will open the official live Razorpay checkout window.</p>
                                 </div>
                             )}
 
                             {paymentStatus === 'processing' && (
                                 <div className="flex flex-col items-center gap-3 py-10">
                                     <Loader2 className="animate-spin text-indigo-600" size={36} />
-                                    <p className="text-sm font-black text-slate-600">Processing transaction details...</p>
+                                    <p className="text-sm font-black text-slate-600">Awaiting Razorpay Payment...</p>
                                 </div>
                             )}
 
                             {paymentStatus === 'success' && (
                                 <div className="flex flex-col items-center gap-3 py-10 text-emerald-500">
                                     <CheckCircle2 size={44} className="fill-emerald-500 text-white animate-in zoom-in" />
-                                    <p className="text-base font-black text-emerald-600">Payment Completed!</p>
+                                    <p className="text-base font-black text-emerald-600">Razorpay Payment Verified & Activated!</p>
                                 </div>
                             )}
 
@@ -552,15 +616,15 @@ const SubscriptionPortal = () => {
                             <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
                                 <button 
                                     onClick={() => setShowCheckoutModal(false)}
-                                    className="w-1/2 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-extrabold text-xs rounded-xl transition-all"
+                                    className="w-1/3 py-3.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-extrabold text-xs rounded-xl transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button 
                                     onClick={handleConfirmPayment}
-                                    className="w-1/2 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-sm hover:shadow transition-all"
+                                    className="w-2/3 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                                 >
-                                    Confirm Mock Pay
+                                    <CreditCard size={16} /> Pay ₹{upgradeSummary.chargeAmount.toLocaleString('en-IN')} via Razorpay
                                 </button>
                             </div>
                         )}

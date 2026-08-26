@@ -3,7 +3,8 @@ import {
     getRestaurants, getRestaurantById, createRestaurant, getBranches, 
     createBranch, getMyRestaurant, updateMyRestaurant, updateSubscription, 
     selfSubscribe, logoUpload, getMyBillingHistory, upgradeSubscription, 
-    downgradeSubscription, renewSubscription 
+    downgradeSubscription, renewSubscription,
+    createRazorpaySubscriptionOrder, verifyRazorpaySubscriptionPayment
 } from '../controllers/restaurantController.js';
 import { submitVerification, getMyVerification, getAllVerifications, getVerificationById, reviewVerification, verificationUpload, deleteVerification } from '../controllers/verificationController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
@@ -49,6 +50,12 @@ router.route('/mine/downgrade')
 
 router.route('/mine/renew')
     .post(protect, authorize('RestaurantAdmin'), renewSubscription);
+
+router.route('/mine/razorpay-order')
+    .post(protect, authorize('RestaurantAdmin'), createRazorpaySubscriptionOrder);
+
+router.route('/mine/razorpay-verify')
+    .post(protect, authorize('RestaurantAdmin'), verifyRazorpaySubscriptionPayment);
 
 router.route('/subscribe')
     .put(protect, authorize('RestaurantAdmin'), selfSubscribe);
