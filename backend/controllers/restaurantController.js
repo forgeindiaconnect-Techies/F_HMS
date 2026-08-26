@@ -747,10 +747,44 @@ export const generateRazorpaySubscriptionQR = async (req, res) => {
         const chargeAmount = Math.max(1, targetPrice - remainingCredit);
         const refId = `SUB-${restaurant._id.toString().slice(-6)}-${Date.now().toString().slice(-6)}`;
         
-        // Generate scannable Razorpay UPI string for GPay, PhonePe, Paytm, CRED, BHIM
         const razorpayKey = process.env.RAZORPAY_KEY_ID || 'rzp_live_SlbQBi57McKtUc';
-        const upiString = `upi://pay?pa=razorpay.sub@icici&pn=RestoSys%20SaaS&am=${chargeAmount}&tr=${refId}&tn=RestoSys%20${planName}%20Plan`;
-        const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiString)}`;
+        const razorpaySecret = process.env.RAZORPAY_KEY_SECRET || 'IgfxpfmQCMxSPaU0T4EyhcLU';
+        
+        let qrImageUrl = '';
+        let upiString = `upi://pay?pa=razorpay.sub@icici&pn=RestoSys%20SaaS&am=${chargeAmount}&tr=${refId}&tn=RestoSys%20${planName}%20Plan`;
+
+        // Try generating official Razorpay API Dynamic QR Code
+        try {
+            const instance = new Razorpay({
+                key_id: razorpayKey,
+                key_secret: razorpaySecret,
+            });
+            const qrCode = await instance.qrCode.create({
+                type: 'upi_qr',
+                name: `Sub_${restaurant.name.slice(0, 10).replace(/[^a-zA-Z0-9]/g, '')}_${planName}`,
+                usage: 'single_use',
+                fixed_amount: true,
+                payment_amount: Math.round(chargeAmount * 100),
+                description: `RestoSys ${planName} Subscription`,
+                notes: {
+                    restaurantId: restaurant._id.toString(),
+                    planName: planName,
+                    billingCycle: billingCycle
+                }
+            });
+
+            if (qrCode && (qrCode.image_url || qrCode.short_url)) {
+                qrImageUrl = qrCode.image_url || qrCode.short_url;
+                if (qrCode.upi_link) upiString = qrCode.upi_link;
+            }
+        } catch (qrErr) {
+            console.warn("Official Razorpay QR API call fallback (using standard UPI payload):", qrErr.message || qrErr);
+        }
+
+        // Fallback to standard UPI QR payload if Razorpay QR API is disabled on merchant account
+        if (!qrImageUrl) {
+            qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiString)}`;
+        }
 
         res.json({
             qrImageUrl,
