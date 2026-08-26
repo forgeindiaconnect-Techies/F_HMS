@@ -76,6 +76,7 @@ const SubscriptionPortal = () => {
     // Checkout states
     const [selectedPlanToBuy, setSelectedPlanToBuy] = useState(null);
     const [upgradeSummary, setUpgradeSummary] = useState(null);
+    const [qrData, setQrData] = useState(null);
     const [showCheckoutModal, setShowCheckoutModal] = useState(false);
     const [paymentStatus, setPaymentStatus] = useState('idle'); // 'idle', 'processing', 'success', 'failed'
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -154,7 +155,42 @@ const SubscriptionPortal = () => {
             chargeAmount
         });
 
+        // Fetch live scannable UPI / Razorpay QR code data
+        try {
+            const qrRes = await api.post('/restaurants/mine/razorpay-qr', {
+                planName: plan.name,
+                billingCycle: billingCycle
+            });
+            setQrData(qrRes.data);
+        } catch (e) {
+            console.error("Failed to generate subscription QR code", e);
+        }
+
         setShowCheckoutModal(true);
+    };
+
+    const handleConfirmQRPayment = async () => {
+        setIsSubmitting(true);
+        setPaymentStatus('processing');
+        try {
+            const res = await api.post('/restaurants/mine/confirm-qr-payment', {
+                planName: selectedPlanToBuy.name,
+                billingCycle: billingCycle,
+                refId: qrData?.refId || `PAY-QR-${Date.now()}`
+            });
+            setPaymentStatus('success');
+            toast.success(res.data.message || "Subscription activated via QR Payment!");
+            setTimeout(() => {
+                setShowCheckoutModal(false);
+                fetchData();
+            }, 1200);
+        } catch (error) {
+            console.error("QR confirmation failed", error);
+            setPaymentStatus('failed');
+            toast.error(error.response?.data?.message || "Failed to confirm QR payment.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const loadRazorpayScript = () => {
@@ -571,43 +607,67 @@ const SubscriptionPortal = () => {
                             </div>
 
                             {paymentStatus === 'idle' && (
-                                <div className="flex flex-col items-center gap-4 py-4 text-center">
-                                    <div className="w-full bg-slate-50 border border-slate-200/80 rounded-2xl p-5 text-center space-y-3">
-                                        <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto">
-                                            <CreditCard size={24} />
+                                <div className="flex flex-col items-center gap-4 py-2 text-center">
+                                    {/* Live Scannable QR Card */}
+                                    <div className="w-full bg-slate-900 text-white rounded-3xl p-5 shadow-xl border border-slate-800 space-y-3 relative overflow-hidden">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[10px] font-black tracking-widest text-indigo-400 uppercase">SCAN & PAY WITH ANY UPI APP</span>
+                                            <span className="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30 animate-pulse">● LIVE QR</span>
                                         </div>
-                                        <div>
-                                            <h4 className="font-extrabold text-slate-900 text-sm">Realtime Razorpay Payment</h4>
-                                            <p className="text-slate-500 text-xs mt-0.5 font-medium">Supports UPI (GPay/PhonePe), Cards, NetBanking & Wallets</p>
+
+                                        <div className="w-44 h-44 bg-white p-2.5 rounded-2xl mx-auto shadow-inner flex items-center justify-center">
+                                            {qrData?.qrImageUrl ? (
+                                                <img 
+                                                    src={qrData.qrImageUrl} 
+                                                    alt="Razorpay Live UPI Subscription QR" 
+                                                    className="w-full h-full object-contain"
+                                                />
+                                            ) : (
+                                                <Loader2 className="animate-spin text-indigo-600" size={32} />
+                                            )}
                                         </div>
-                                        <div className="flex items-center justify-center gap-2 pt-1">
-                                            <span className="text-[10px] bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded-full">UPI / GPay</span>
-                                            <span className="text-[10px] bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded-full">Credit/Debit Card</span>
-                                            <span className="text-[10px] bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded-full">NetBanking</span>
+
+                                        <div className="text-center space-y-1">
+                                            <p className="text-xs text-slate-300 font-bold">Scan using Google Pay, PhonePe, Paytm, CRED or BHIM</p>
+                                            <p className="text-[10px] text-slate-400">Ref: {qrData?.refId || 'SUB-RAZORPAY-LIVE'}</p>
+                                        </div>
+
+                                        <div className="flex items-center justify-center gap-2 pt-1 border-t border-slate-800">
+                                            <span className="text-[9px] bg-white/10 text-slate-300 font-extrabold px-2 py-0.5 rounded-full">GPay</span>
+                                            <span className="text-[9px] bg-white/10 text-slate-300 font-extrabold px-2 py-0.5 rounded-full">PhonePe</span>
+                                            <span className="text-[9px] bg-white/10 text-slate-300 font-extrabold px-2 py-0.5 rounded-full">Paytm</span>
+                                            <span className="text-[9px] bg-white/10 text-slate-300 font-extrabold px-2 py-0.5 rounded-full">BHIM UPI</span>
                                         </div>
                                     </div>
-                                    <p className="text-xs text-slate-400 font-semibold">Clicking below will open the official live Razorpay checkout window.</p>
+
+                                    <button 
+                                        onClick={handleConfirmQRPayment}
+                                        disabled={isSubmitting}
+                                        className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50"
+                                    >
+                                        <CheckCircle2 size={16} /> I Have Paid via QR (Verify & Activate Live)
+                                    </button>
                                 </div>
                             )}
 
                             {paymentStatus === 'processing' && (
                                 <div className="flex flex-col items-center gap-3 py-10">
                                     <Loader2 className="animate-spin text-indigo-600" size={36} />
-                                    <p className="text-sm font-black text-slate-600">Awaiting Razorpay Payment...</p>
+                                    <p className="text-sm font-black text-slate-600">Verifying live payment status...</p>
                                 </div>
                             )}
 
                             {paymentStatus === 'success' && (
                                 <div className="flex flex-col items-center gap-3 py-10 text-emerald-500">
                                     <CheckCircle2 size={44} className="fill-emerald-500 text-white animate-in zoom-in" />
-                                    <p className="text-base font-black text-emerald-600">Razorpay Payment Verified & Activated!</p>
+                                    <p className="text-base font-black text-emerald-600">Subscription Activated Live!</p>
                                 </div>
                             )}
 
                             {paymentStatus === 'failed' && (
                                 <div className="flex flex-col items-center gap-3 py-10 text-red-500">
                                     <AlertCircle size={44} className="fill-red-500 text-white animate-in zoom-in" />
-                                    <p className="text-base font-black text-red-600">Checkout Failed</p>
+                                    <p className="text-base font-black text-red-600">Verification Failed</p>
                                 </div>
                             )}
                         </div>
@@ -622,9 +682,9 @@ const SubscriptionPortal = () => {
                                 </button>
                                 <button 
                                     onClick={handleConfirmPayment}
-                                    className="w-2/3 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                                    className="w-2/3 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                                 >
-                                    <CreditCard size={16} /> Pay ₹{upgradeSummary.chargeAmount.toLocaleString('en-IN')} via Razorpay
+                                    <CreditCard size={16} /> Pay via Razorpay Popup
                                 </button>
                             </div>
                         )}
