@@ -7,6 +7,12 @@ import api, { getApiUrl } from '../utils/axiosInstance';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
+const DEFAULT_PLANS = [
+    { _id: 'p1', name: 'Starter', monthlyPrice: 2999, yearlyPrice: 2399, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'] },
+    { _id: 'p2', name: 'Professional', monthlyPrice: 5999, yearlyPrice: 4799, features: ['Up to 3 Branches', 'Kitchen Display System', 'Online Ordering', 'Advanced Analytics', 'Priority Support'] },
+    { _id: 'p3', name: 'Enterprise', monthlyPrice: 12999, yearlyPrice: 10399, features: ['Unlimited Branches', 'Custom APIs & Webhooks', 'Dedicated Account Manager', 'SLA Guarantee', 'White-label Branding'] }
+];
+
 const StaffAuthPage = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -24,8 +30,8 @@ const StaffAuthPage = () => {
     const [scanActive, setScanActive] = useState(false);
     const [showUpiModal, setShowUpiModal] = useState(false);
     const [paymentStatus, setPaymentStatus] = useState('idle'); // 'idle', 'processing', 'success', 'failed'
-    const [plans, setPlans] = useState([]);
-    const [plansLoading, setPlansLoading] = useState(true);
+    const [plans, setPlans] = useState(DEFAULT_PLANS);
+    const [plansLoading, setPlansLoading] = useState(false);
 
     // KYC File upload states
     const [fssaiFile, setFssaiFile] = useState(null);
@@ -45,39 +51,25 @@ const StaffAuthPage = () => {
     const { register, handleSubmit, watch, formState: { errors, isValid }, trigger, getValues, reset } = useForm({
         mode: 'onChange',
         defaultValues: {
-            plan: searchParams.get('plan') || '',
+            plan: searchParams.get('plan') || 'Starter',
             billingCycle: searchParams.get('billing') || 'monthly'
         }
     });
 
-    // Fetch plans from API
+    // Fetch plans from API asynchronously in background
     useEffect(() => {
         const fetchPlans = async () => {
             try {
                 const res = await api.get('/plans');
                 if (res.data && res.data.length > 0) {
                     setPlans(res.data);
-                    // Auto-select the plan from URL params or first plan
                     const urlPlan = searchParams.get('plan');
-                    if (!urlPlan || !res.data.find(p => p.name === urlPlan)) {
-                        // Set default to first plan name if URL plan not found
-                        reset({ plan: res.data[0].name, billingCycle: searchParams.get('billing') || 'monthly' });
+                    if (urlPlan && res.data.find(p => p.name === urlPlan)) {
+                        reset({ plan: urlPlan, billingCycle: searchParams.get('billing') || 'monthly' });
                     }
                 }
             } catch (err) {
-                console.error('Failed to fetch plans', err);
-                const fallbackPlans = [
-                    { _id: 'p1', name: 'Starter', monthlyPrice: 2999, yearlyPrice: 2399, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'] },
-                    { _id: 'p2', name: 'Professional', monthlyPrice: 5999, yearlyPrice: 4799, features: ['Up to 3 Branches', 'Kitchen Display System', 'Online Ordering', 'Advanced Analytics', 'Priority Support'] },
-                    { _id: 'p3', name: 'Enterprise', monthlyPrice: 12999, yearlyPrice: 10399, features: ['Unlimited Branches', 'Custom APIs & Webhooks', 'Dedicated Account Manager', 'SLA Guarantee', 'White-label Branding'] }
-                ];
-                setPlans(fallbackPlans);
-                const urlPlan = searchParams.get('plan');
-                if (!urlPlan || !fallbackPlans.find(p => p.name === urlPlan)) {
-                    reset({ plan: fallbackPlans[0].name, billingCycle: searchParams.get('billing') || 'monthly' });
-                }
-            } finally {
-                setPlansLoading(false);
+                console.error('Background fetch for plans failed, using default plans', err);
             }
         };
         fetchPlans();
