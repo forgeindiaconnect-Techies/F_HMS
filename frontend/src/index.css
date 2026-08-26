@@ -310,20 +310,61 @@ html.dark .divide-gray-100 > * + * {
 }
 
 /* Form inputs, textareas, selects */
-html.dark input[type="text"],
-html.dark input[type="email"],
-html.dark input[type="password"],
-html.dark input[type="number"],
-html.dark input[type="url"],
-html.dark input[type="tel"],
-html.dark input[type="date"],
-html.dark input[type="time"],
-html.dark input[type="search"],
-html.dark textarea,
-html.dark select {
+html.dark input[type="text"]:not(.auth-input),
+html.dark input[type="email"]:not(.auth-input),
+html.dark input[type="password"]:not(.auth-input),
+html.dark input[type="number"]:not(.auth-input),
+html.dark input[type="url"]:not(.auth-input),
+html.dark input[type="tel"]:not(.auth-input),
+html.dark input[type="date"]:not(.auth-input),
+html.dark input[type="time"]:not(.auth-input),
+html.dark input[type="search"]:not(.auth-input),
+html.dark textarea:not(.auth-input),
+html.dark select:not(.auth-input) {
   background-color: #0A0F1F !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
   color: #ffffff !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHT THEME AUTH FORMS (STRICTLY LIGHT THEME FOR ALL LOGIN & REGISTER PAGES)
+   ═══════════════════════════════════════════════════════════════════ */
+.auth-page input,
+.auth-page select,
+.auth-page textarea,
+.auth-form-container input,
+.auth-form-container select,
+.auth-form-container textarea,
+.auth-input,
+html.dark .auth-page input,
+html.dark .auth-page select,
+html.dark .auth-page textarea,
+html.dark .auth-form-container input,
+html.dark .auth-form-container select,
+html.dark .auth-form-container textarea,
+html.dark .auth-input {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.auth-page input::placeholder,
+.auth-form-container input::placeholder,
+.auth-input::placeholder,
+html.dark .auth-page input::placeholder,
+html.dark .auth-form-container input::placeholder,
+html.dark .auth-input::placeholder {
+  color: #94a3b8 !important;
+}
+
+.auth-page input:focus,
+.auth-form-container input:focus,
+.auth-input:focus,
+html.dark .auth-page input:focus,
+html.dark .auth-form-container input:focus,
+html.dark .auth-input:focus {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
 }
 
 html.dark input::placeholder,

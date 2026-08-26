@@ -51,7 +51,7 @@ const CustomerAuthPage = () => {
     };
 
     return (
-        <div className="min-h-screen relative flex items-center justify-center p-4 font-sans bg-gray-900">
+        <div className="min-h-screen relative flex items-center justify-center p-4 font-sans bg-gray-900 auth-page">
             {/* Full screen background */}
             <div className="absolute inset-0 z-0">
                 <img
@@ -63,7 +63,7 @@ const CustomerAuthPage = () => {
             </div>
 
             {/* Glass Card */}
-            <div className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl overflow-hidden border border-white/20">
+            <div className="relative z-10 w-full max-w-md bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-white/20">
                 
                 {/* Branding Header */}
                 <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-8 text-center relative overflow-hidden">
@@ -89,7 +89,7 @@ const CustomerAuthPage = () => {
                 </div>
 
                 {/* Main Content */}
-                <div className="p-8">
+                <div className="p-8 bg-white auth-form-container">
                     {/* Tabs */}
                     <div className="flex bg-gray-100/80 p-1.5 rounded-2xl mb-6 relative">
                         <div 

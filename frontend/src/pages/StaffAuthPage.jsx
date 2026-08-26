@@ -786,7 +786,7 @@ const StaffAuthPage = () => {
     );
 
     return (
-        <div className="min-h-screen relative flex items-center justify-center p-4 font-sans bg-gray-900">
+        <div className="min-h-screen relative flex items-center justify-center p-4 font-sans bg-gray-900 auth-page">
             {/* Full screen background */}
             <div className="absolute inset-0 z-0">
                 <img
@@ -798,7 +798,7 @@ const StaffAuthPage = () => {
             </div>
 
             {/* Glass Card */}
-            <div className="relative z-10 w-full max-w-md bg-white rounded-[2rem] shadow-2xl overflow-hidden">
+            <div className="relative z-10 w-full max-w-md bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-white/20">
                 
                 {/* Branding Header */}
                 <div className="bg-gradient-to-br from-green-500 to-green-600 p-8 text-center relative overflow-hidden">
@@ -822,7 +822,7 @@ const StaffAuthPage = () => {
                 </div>
 
                 {/* Main Content */}
-                <div className="p-8">
+                <div className="p-8 bg-white auth-form-container">
                     {/* Tabs (Only show if not mid-registration) */}
                     {step === 1 && (
                         <div className="flex bg-gray-100 p-1 rounded-2xl mb-8 relative">
