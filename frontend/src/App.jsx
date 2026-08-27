@@ -106,9 +106,23 @@ import ManagementFeatures from './pages/ManagementFeatures';
 import ModuleDetails from './pages/ModuleDetails';
 import ThemeToggle from './components/ThemeToggle';
 
+import { useEffect } from 'react';
+import api from './utils/axiosInstance';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
+  // Background server warmup ping for Render cold-starts
+  useEffect(() => {
+    const pingServer = async () => {
+      try {
+        await api.get('/health');
+      } catch (err) {
+        // Silent warmup ping catch
+      }
+    };
+    pingServer();
+  }, []);
+
   return (
     <>
       <Toaster position="top-right" />
