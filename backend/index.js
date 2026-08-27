@@ -1,4 +1,6 @@
-import express from 'express';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const express = require('express');
 import dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
