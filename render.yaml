@@ -3,7 +3,7 @@ services:
     name: f-hms-1
     env: node
     rootDir: backend
-    buildCommand: npm install
+    buildCommand: rm -rf node_modules package-lock.json && npm install
     startCommand: node --experimental-specifier-resolution=node index.js
     envVars:
       - key: NODE_VERSION
