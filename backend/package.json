@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npx esbuild index.js --bundle --platform=node --format=esm --packages=external --outfile=dist/server.js",
-    "start": "node dist/server.js",
+    "start": "node index.js",
     "dev": "nodemon index.js"
   },
   "keywords": [],
