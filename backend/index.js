@@ -12,37 +12,26 @@ dotenv.config();
 
 const app = express();
 
-// Comprehensive Universal CORS setup
-const allowedOrigins = [
-    'https://f-hms.vercel.app',
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://localhost:5000'
-];
-
-if (process.env.FRONTEND_URL) {
-    const customFrontend = process.env.FRONTEND_URL.startsWith('http')
-        ? process.env.FRONTEND_URL
-        : `https://${process.env.FRONTEND_URL}`;
-    if (!allowedOrigins.includes(customFrontend)) {
-        allowedOrigins.push(customFrontend);
+// Bulletproof Universal CORS setup for Vercel, localhost, and all origins
+app.use((req, res, next) => {
+    const origin = req.headers.origin || '*';
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
+    
+    if (req.method === 'OPTIONS') {
+        return res.status(204).end();
     }
-}
+    next();
+});
 
 app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production' || origin.endsWith('.vercel.app')) {
-            return callback(null, origin);
-        }
-        return callback(null, origin);
-    },
+    origin: true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Access-Control-Request-Method', 'Access-Control-Request-Headers']
 }));
-
-// app.use(cors(...)) handles OPTIONS requests automatically
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
