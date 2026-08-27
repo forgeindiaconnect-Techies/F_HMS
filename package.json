@@ -4,8 +4,8 @@
   "description": "Root package.json to help Vercel and Render deploy easily",
   "main": "backend/index.js",
   "scripts": {
-    "postinstall": "cd backend && npm install",
-    "prestart": "cd backend && npm install --no-audit",
+    "postinstall": "cd backend && npm install --force",
+    "prestart": "cd backend && npm install --force",
     "build": "npm run build --prefix frontend && node -e \"const fs = require('fs'); fs.cpSync('frontend/dist', 'dist', { recursive: true });\"",
     "start": "node backend/index.js"
   },
