@@ -8,21 +8,8 @@ import {
 import { Link } from 'react-router-dom';
 import api from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
-import Restaurant3DHero from '../../components/Restaurant3DHero';
-
 const Home = () => {
-    const [restaurants, setRestaurants] = useState([]);
-    const [plans, setPlans] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [plansLoading, setPlansLoading] = useState(true);
-    const [isYearly, setIsYearly] = useState(false);
-    const [openFaq, setOpenFaq] = useState(null);
-    const [showDemoModal, setShowDemoModal] = useState(false);
-    const [demoStep, setDemoStep] = useState(1);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [mobileFeaturesOpen, setMobileFeaturesOpen] = useState(false);
-
-    // Dummy data fallback
+    // Dummy data fallback for instant zero-delay rendering
     const dummyRestaurants = [
         { _id: 'demo1', name: 'Pizza Palace', rating: 4.8, time: '20-25', tags: 'Italian, Fast Food', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60' },
         { _id: 'demo2', name: 'Burger Hub', rating: 4.5, time: '15-20', tags: 'American, Beverages', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60' },
@@ -32,19 +19,37 @@ const Home = () => {
         { _id: 'demo6', name: 'Juice Corner', rating: 4.6, time: '5-10', tags: 'Beverages, Healthy', img: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60' }
     ];
 
+    const defaultPlans = [
+        { _id: 'p1', name: 'Starter', monthlyPrice: 4999, yearlyPrice: 3999, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'] },
+        { _id: 'p2', name: 'Professional', monthlyPrice: 9999, yearlyPrice: 7999, features: ['Up to 3 Branches', 'Kitchen Display System', 'Online Ordering', 'Advanced Analytics', 'Priority Support'] },
+        { _id: 'p3', name: 'Enterprise', monthlyPrice: 19999, yearlyPrice: 15999, features: ['Unlimited Branches', 'Custom APIs & Webhooks', 'Dedicated Account Manager', '24/7 Support'] }
+    ];
+
+    const [restaurants, setRestaurants] = useState(dummyRestaurants);
+    const [plans, setPlans] = useState(defaultPlans);
+    const [loading, setLoading] = useState(false);
+    const [plansLoading, setPlansLoading] = useState(false);
+    const [isYearly, setIsYearly] = useState(false);
+    const [openFaq, setOpenFaq] = useState(null);
+    const [showDemoModal, setShowDemoModal] = useState(false);
+    const [demoStep, setDemoStep] = useState(1);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [mobileFeaturesOpen, setMobileFeaturesOpen] = useState(false);
+
     useEffect(() => {
         const fetchRestaurants = async () => {
             try {
                 const res = await api.get('/restaurants');
-                let realRest = res.data.filter(r => r.subscription?.status === 'Active' && r.isActive !== false);
-                let combined = [...realRest];
-                if (combined.length < 6) {
-                    combined.push(...dummyRestaurants.slice(0, 6 - combined.length));
+                if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+                    let realRest = res.data.filter(r => r.subscription?.status === 'Active' && r.isActive !== false);
+                    let combined = [...realRest];
+                    if (combined.length < 6) {
+                        combined.push(...dummyRestaurants.slice(0, 6 - combined.length));
+                    }
+                    setRestaurants(combined);
                 }
-                setRestaurants(combined);
             } catch (error) {
-                console.error("Failed to load restaurants", error);
-                setRestaurants(dummyRestaurants);
+                // Keep dummy default
             } finally {
                 setLoading(false);
             }
@@ -53,14 +58,11 @@ const Home = () => {
         const fetchPlans = async () => {
             try {
                 const res = await api.get('/plans');
-                setPlans(res.data);
+                if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+                    setPlans(res.data);
+                }
             } catch (error) {
-                console.error("Failed to fetch public pricing plans", error);
-                setPlans([
-                    { _id: 'p1', name: 'Starter', monthlyPrice: 4999, yearlyPrice: 3999, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'] },
-                    { _id: 'p2', name: 'Professional', monthlyPrice: 9999, yearlyPrice: 7999, features: ['Up to 3 Branches', 'Kitchen Display System', 'Online Ordering', 'Advanced Analytics', 'Priority Support'] },
-                    { _id: 'p3', name: 'Enterprise', monthlyPrice: 19999, yearlyPrice: 15999, features: ['Unlimited Branches', 'Custom APIs & Webhooks', 'Dedicated Account Manager', '24/7 Support'] }
-                ]);
+                // Keep default plans
             } finally {
                 setPlansLoading(false);
             }
