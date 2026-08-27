@@ -3,9 +3,40 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import fs from 'fs';
-import connectDB from './config/db.js';
+import path from 'path';
 import http from 'http';
+
+import connectDB from './config/db.js';
 import { initWebSocket } from './config/websocket.js';
+import { notFound, errorHandler } from './middleware/errorMiddleware.js';
+
+import authRoutes from './routes/authRoutes.js';
+import restaurantRoutes from './routes/restaurantRoutes.js';
+import branchRoutes from './routes/branchRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
+import analyticsRoutes from './routes/analyticsRoutes.js';
+import menuRoutes from './routes/menuRoutes.js';
+import superAdminRoutes from './routes/superAdminRoutes.js';
+import tableRoutes from './routes/tableRoutes.js';
+import customerRoutes from './routes/customerRoutes.js';
+import staffRoutes from './routes/staffRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import roleRoutes from './routes/roleRoutes.js';
+import reservationRoutes from './routes/reservationRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js';
+import inventoryRoutes from './routes/inventoryRoutes.js';
+import supplierRoutes from './routes/supplierRoutes.js';
+import offerRoutes from './routes/offerRoutes.js';
+import taxRoutes from './routes/taxRoutes.js';
+import reportRoutes from './routes/reportRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+import planRoutes from './routes/planRoutes.js';
+import serviceRequestRoutes from './routes/serviceRequestRoutes.js';
+import expenseRoutes from './routes/expenseRoutes.js';
+import supportRoutes from './routes/supportRoutes.js';
+import deliveryRoutes from './routes/deliveryRoutes.js';
+import inquiryRoutes from './routes/inquiryRoutes.js';
+import Plan from './models/Plan.js';
 
 // Load env vars
 dotenv.config();
@@ -41,36 +72,6 @@ app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'ok', time: new Date().toISOString() });
 });
 
-import authRoutes from './routes/authRoutes.js';
-import restaurantRoutes from './routes/restaurantRoutes.js';
-import branchRoutes from './routes/branchRoutes.js';
-import orderRoutes from './routes/orderRoutes.js';
-import analyticsRoutes from './routes/analyticsRoutes.js';
-import menuRoutes from './routes/menuRoutes.js';
-import superAdminRoutes from './routes/superAdminRoutes.js';
-import tableRoutes from './routes/tableRoutes.js';
-import customerRoutes from './routes/customerRoutes.js';
-import staffRoutes from './routes/staffRoutes.js';
-import userRoutes from './routes/userRoutes.js';
-import roleRoutes from './routes/roleRoutes.js';
-import reservationRoutes from './routes/reservationRoutes.js';
-import categoryRoutes from './routes/categoryRoutes.js';
-import inventoryRoutes from './routes/inventoryRoutes.js';
-import supplierRoutes from './routes/supplierRoutes.js';
-import offerRoutes from './routes/offerRoutes.js';
-import taxRoutes from './routes/taxRoutes.js';
-import reportRoutes from './routes/reportRoutes.js';
-import notificationRoutes from './routes/notificationRoutes.js';
-import planRoutes from './routes/planRoutes.js';
-import serviceRequestRoutes from './routes/serviceRequestRoutes.js';
-import expenseRoutes from './routes/expenseRoutes.js';
-import supportRoutes from './routes/supportRoutes.js';
-import deliveryRoutes from './routes/deliveryRoutes.js';
-import inquiryRoutes from './routes/inquiryRoutes.js';
-import Plan from './models/Plan.js';
-
-
-
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/menu', menuRoutes);
@@ -98,9 +99,6 @@ app.use('/api/support', supportRoutes);
 app.use('/api/delivery', deliveryRoutes);
 app.use('/api/inquiries', inquiryRoutes);
 app.use('/api/expenses', expenseRoutes);
-
-import path from 'path';
-import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
