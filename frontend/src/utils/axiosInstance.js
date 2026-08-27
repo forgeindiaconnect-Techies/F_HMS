@@ -2,8 +2,8 @@ import axios from 'axios';
 
 export const getApiUrl = () => {
     let url = import.meta.env.VITE_API_URL;
-    if (url && url.includes('ERR_NAME_NOT_RESOLVED')) {
-        url = 'https://f-hms.onrender.com/api';
+    if (url && (url.includes('ERR_NAME_NOT_RESOLVED') || url.includes('f-hms.onrender.com'))) {
+        url = 'https://f-hms-7hbi.onrender.com/api';
     }
     if (url) {
         if (url.endsWith('/')) url = url.slice(0, -1);
@@ -12,7 +12,7 @@ export const getApiUrl = () => {
     }
     const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
     if (hostname.includes('vercel.app') || hostname.includes('onrender.com')) {
-        return 'https://f-hms.onrender.com/api';
+        return 'https://f-hms-7hbi.onrender.com/api';
     }
     const isLocalIp = hostname.startsWith('192.168.') || hostname.startsWith('10.') || hostname.startsWith('172.');
     if (isLocalIp) {
