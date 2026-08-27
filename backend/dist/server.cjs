@@ -97150,9 +97150,19 @@ var optionalProtect = async (req, res, next) => {
 };
 var authorize = (...roles) => {
   return (req, res, next) => {
-    if (!req.user || !req.user.role || !roles.includes(req.user.role)) {
+    if (!req.user || !req.user.role) {
       return res.status(403).json({
         message: `User role ${req.user?.role || "Unknown"} is not authorized to access this route`
+      });
+    }
+    const userRole = String(req.user.role).trim().toLowerCase();
+    const allowed = roles.some((role) => {
+      const r = String(role).trim().toLowerCase();
+      return userRole === r || userRole === r.replace(/\s+/g, "") || userRole.includes("superadmin") && r.includes("superadmin") || userRole.includes("admin") && r.includes("admin");
+    });
+    if (!allowed) {
+      return res.status(403).json({
+        message: `User role ${req.user.role} is not authorized to access this route`
       });
     }
     next();
