@@ -1,24 +1,15 @@
 import axios from 'axios';
 
 export const getApiUrl = () => {
-    let url = import.meta.env.VITE_API_URL;
-    if (url && (url.includes('ERR_NAME_NOT_RESOLVED') || url.includes('f-hms.onrender.com') || url.includes('f-hms-7hbi.onrender.com'))) {
-        url = 'https://f-hms-1.onrender.com/api';
-    }
-    if (url) {
-        if (url.endsWith('/')) url = url.slice(0, -1);
-        if (!url.endsWith('/api')) url += '/api';
-        return url;
-    }
-    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-    if (hostname.includes('vercel.app') || hostname.includes('onrender.com')) {
+    let envUrl = import.meta.env.VITE_API_URL;
+    if (envUrl && envUrl.includes('f-hms')) {
         return 'https://f-hms-1.onrender.com/api';
     }
-    const isLocalIp = hostname.startsWith('192.168.') || hostname.startsWith('10.') || hostname.startsWith('172.');
-    if (isLocalIp) {
-        return `http://${hostname}:5000/api`;
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return 'http://localhost:5000/api';
     }
-    return 'http://localhost:5000/api';
+    return 'https://f-hms-1.onrender.com/api';
 };
 
 const api = axios.create({

@@ -131,9 +131,9 @@ const BranchesManagement = () => {
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800" style={{ fontFamily: 'Poppins, sans-serif' }}>Branches</h2>
-                    <p className="text-gray-500 text-sm mt-1">
-                        Manage your restaurant locations ({branches.length} / {maxBranches} branch{maxBranches === 1 ? '' : 'es'} used on <span className="font-semibold text-green-700">{planName}</span> plan).
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100" style={{ fontFamily: 'Poppins, sans-serif' }}>Branches</h2>
+                    <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">
+                        Manage your restaurant locations ({branches.length} / {maxBranches} branch{maxBranches === 1 ? '' : 'es'} used on <span className="font-semibold text-green-700 dark:text-green-400">{planName}</span> plan).
                     </p>
                 </div>
                 <button 
@@ -145,22 +145,22 @@ const BranchesManagement = () => {
             </div>
 
             {/* Controls */}
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
+            <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex justify-between items-center">
                 <div className="relative w-72">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={16} />
                     <input 
                         type="text" 
                         placeholder="Search branches..." 
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
+                        className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                     />
                 </div>
                 <div className="flex gap-2">
                     <select 
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-green-500"
+                        className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-green-500"
                     >
                         <option value="All Statuses">All Statuses</option>
                         <option value="Active">Active</option>
@@ -175,56 +175,56 @@ const BranchesManagement = () => {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
                 </div>
             ) : filteredBranches.length === 0 ? (
-                <div className="text-center py-10 bg-white rounded-2xl border border-gray-100 shadow-sm">
-                    <p className="text-gray-500">No branches found matching your criteria.</p>
+                <div className="text-center py-10 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
+                    <p className="text-gray-500 dark:text-slate-400">No branches found matching your criteria.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredBranches.map(branch => (
-                        <div key={branch._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all group">
-                            <div className="p-5 border-b border-gray-50">
+                        <div key={branch._id} className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden hover:shadow-md transition-all group">
+                            <div className="p-5 border-b border-gray-50 dark:border-slate-800">
                                 <div className="flex justify-between items-start mb-3">
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${branch.isActive ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'}`}>
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${branch.isActive ? 'bg-green-100 dark:bg-green-950/60 text-green-600 dark:text-green-400' : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'}`}>
                                             <MapPin size={20} />
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>{branch.name}</h3>
-                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${branch.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                            <h3 className="font-bold text-gray-900 dark:text-slate-100" style={{ fontFamily: 'Poppins, sans-serif' }}>{branch.name}</h3>
+                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${branch.isActive ? 'bg-green-100 dark:bg-green-950/60 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'}`}>
                                                 {branch.isActive ? 'Active' : 'Inactive'}
                                             </span>
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <div className="space-y-2 mt-4 text-sm text-gray-500">
-                                    <p className="flex items-center gap-2"><MapPin size={14} className="text-gray-400" /> {branch.location?.address || 'No address'}</p>
-                                    <p className="flex items-center gap-2"><Phone size={14} className="text-gray-400" /> {branch.contact?.phone || 'No phone'}</p>
+                                <div className="space-y-2 mt-4 text-sm text-gray-500 dark:text-slate-400">
+                                    <p className="flex items-center gap-2"><MapPin size={14} className="text-gray-400 dark:text-slate-500" /> {branch.location?.address || 'No address'}</p>
+                                    <p className="flex items-center gap-2"><Phone size={14} className="text-gray-400 dark:text-slate-500" /> {branch.contact?.phone || 'No phone'}</p>
                                 </div>
                             </div>
                             
-                            <div className="bg-gray-50/50 p-5 flex justify-between items-center">
+                            <div className="bg-gray-50/50 dark:bg-slate-800/50 p-5 flex justify-between items-center border-b border-gray-100 dark:border-slate-800">
                                 <div>
-                                    <p className="text-xs text-gray-400 font-medium mb-1">Manager</p>
-                                    <p className="text-sm font-semibold text-gray-800">{branch.manager?.name || 'Unassigned'}</p>
+                                    <p className="text-xs text-gray-400 dark:text-slate-500 font-medium mb-1">Manager</p>
+                                    <p className="text-sm font-semibold text-gray-800 dark:text-slate-200">{branch.manager?.name || 'Unassigned'}</p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-xs text-gray-400 font-medium mb-1">Monthly Rev</p>
-                                    <p className="text-sm font-bold text-green-600" style={{ fontFamily: 'Manrope, sans-serif' }}>₹0</p>
+                                    <p className="text-xs text-gray-400 dark:text-slate-500 font-medium mb-1">Monthly Rev</p>
+                                    <p className="text-sm font-bold text-green-600 dark:text-green-400" style={{ fontFamily: 'Manrope, sans-serif' }}>₹0</p>
                                 </div>
                             </div>
 
                             {/* Actions */}
-                            <div className="bg-white px-5 py-3 border-t border-gray-100 flex justify-end gap-3 opacity-100">
+                            <div className="bg-white dark:bg-slate-900 px-5 py-3 border-t border-gray-100 dark:border-slate-800 flex justify-end gap-3 opacity-100">
                                 <button 
                                     onClick={() => handleOpenModal(branch)}
-                                    className="text-sm flex items-center gap-1.5 text-gray-500 hover:text-blue-600 transition-colors font-medium"
+                                    className="text-sm flex items-center gap-1.5 text-gray-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
                                 >
                                     <Edit2 size={14} /> Edit
                                 </button>
                                 <button 
                                     onClick={() => handleDeleteClick(branch)}
-                                    className="text-sm flex items-center gap-1.5 text-gray-500 hover:text-red-600 transition-colors font-medium"
+                                    className="text-sm flex items-center gap-1.5 text-gray-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors font-medium"
                                 >
                                     <Trash2 size={14} /> Delete
                                 </button>
@@ -237,43 +237,43 @@ const BranchesManagement = () => {
             {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onClick={handleCloseModal}></div>
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md relative z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                            <h3 className="font-bold text-gray-900 text-lg">{editingBranch ? 'Edit Branch' : 'Add New Branch'}</h3>
-                            <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600 transition-colors">
+                    <div className="absolute inset-0 bg-gray-900/50 dark:bg-slate-950/70 backdrop-blur-sm" onClick={handleCloseModal}></div>
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md relative z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-gray-100 dark:border-slate-800">
+                        <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
+                            <h3 className="font-bold text-gray-900 dark:text-slate-100 text-lg">{editingBranch ? 'Edit Branch' : 'Add New Branch'}</h3>
+                            <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 transition-colors">
                                 <X size={20} />
                             </button>
                         </div>
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Branch Name</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Branch Name</label>
                                 <input 
                                     type="text" 
                                     required
                                     value={formData.name}
                                     onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
+                                    className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                                     placeholder="e.g. Downtown Main"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Address</label>
                                 <input 
                                     type="text" 
                                     value={formData.address}
                                     onChange={(e) => setFormData({...formData, address: e.target.value})}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
+                                    className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                                     placeholder="Full address"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Phone Number</label>
                                 <input 
                                     type="text" 
                                     value={formData.phone}
                                     onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
+                                    className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                                     placeholder="+1 234 567 8900"
                                 />
                             </div>
@@ -283,9 +283,9 @@ const BranchesManagement = () => {
                                     id="isActive"
                                     checked={formData.isActive}
                                     onChange={(e) => setFormData({...formData, isActive: e.target.checked})}
-                                    className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500 cursor-pointer"
+                                    className="w-4 h-4 text-green-600 border-gray-300 dark:border-slate-700 rounded focus:ring-green-500 cursor-pointer"
                                 />
-                                <label htmlFor="isActive" className="text-sm font-medium text-gray-700 cursor-pointer">
+                                <label htmlFor="isActive" className="text-sm font-medium text-gray-700 dark:text-slate-300 cursor-pointer">
                                     Branch is Active
                                 </label>
                             </div>
@@ -294,7 +294,7 @@ const BranchesManagement = () => {
                                 <button 
                                     type="button" 
                                     onClick={handleCloseModal}
-                                    className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors text-sm"
+                                    className="flex-1 py-2.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 font-bold rounded-xl transition-colors text-sm"
                                 >
                                     Cancel
                                 </button>
@@ -312,20 +312,20 @@ const BranchesManagement = () => {
             {/* Delete Confirmation Modal */}
             {branchToDelete && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onClick={() => setBranchToDelete(null)}></div>
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm relative z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                    <div className="absolute inset-0 bg-gray-900/50 dark:bg-slate-950/70 backdrop-blur-sm" onClick={() => setBranchToDelete(null)}></div>
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-sm relative z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-gray-100 dark:border-slate-800">
                         <div className="p-6 text-center">
-                            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <div className="w-16 h-16 bg-red-50 dark:bg-red-950/50 text-red-500 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <AlertTriangle size={32} />
                             </div>
-                            <h3 className="font-bold text-gray-900 text-xl mb-2">Delete Branch?</h3>
-                            <p className="text-gray-500 text-sm mb-6">
+                            <h3 className="font-bold text-gray-900 dark:text-slate-100 text-xl mb-2">Delete Branch?</h3>
+                            <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">
                                 Are you sure you want to delete <strong>{branchToDelete.name}</strong>? This action cannot be undone.
                             </p>
                             <div className="flex gap-3">
                                 <button 
                                     onClick={() => setBranchToDelete(null)}
-                                    className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors text-sm"
+                                    className="flex-1 py-2.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 font-bold rounded-xl transition-colors text-sm"
                                 >
                                     Cancel
                                 </button>
