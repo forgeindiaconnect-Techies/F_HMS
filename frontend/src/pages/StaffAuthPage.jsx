@@ -8,9 +8,9 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 
 const DEFAULT_PLANS = [
-    { _id: 'p1', name: 'Starter', monthlyPrice: 2999, yearlyPrice: 2399, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'] },
-    { _id: 'p2', name: 'Professional', monthlyPrice: 5999, yearlyPrice: 4799, features: ['Up to 3 Branches', 'Kitchen Display System', 'Online Ordering', 'Advanced Analytics', 'Priority Support'] },
-    { _id: 'p3', name: 'Enterprise', monthlyPrice: 12999, yearlyPrice: 10399, features: ['Unlimited Branches', 'Custom APIs & Webhooks', 'Dedicated Account Manager', 'SLA Guarantee', 'White-label Branding'] }
+    { _id: 'p1', name: 'Basic', monthlyPrice: 1, yearlyPrice: 390, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'] },
+    { _id: 'p2', name: 'Pro', monthlyPrice: 2, yearlyPrice: 990, features: ['Up to 3 Branches', 'Kitchen Display System', 'Online Ordering', 'Advanced Analytics', 'Priority Support'] },
+    { _id: 'p3', name: 'Enterprise', monthlyPrice: 3, yearlyPrice: 2490, features: ['Unlimited Branches', 'Custom APIs & Webhooks', 'Dedicated Account Manager', 'SLA Guarantee', 'White-label Branding'] }
 ];
 
 const StaffAuthPage = () => {
@@ -48,10 +48,10 @@ const StaffAuthPage = () => {
     
     const { login, register: registerUser } = useAuth();
     
-    const { register, handleSubmit, watch, formState: { errors, isValid }, trigger, getValues, reset } = useForm({
+    const { register, handleSubmit, watch, formState: { errors, isValid }, trigger, getValues, reset, setValue } = useForm({
         mode: 'onChange',
         defaultValues: {
-            plan: searchParams.get('plan') || 'Starter',
+            plan: searchParams.get('plan') || 'Basic',
             billingCycle: searchParams.get('billing') || 'monthly'
         }
     });
@@ -66,11 +66,18 @@ const StaffAuthPage = () => {
         const fetchPlans = async () => {
             try {
                 const res = await api.get('/plans');
-                if (res.data && res.data.length > 0) {
+                if (res.data && Array.isArray(res.data) && res.data.length > 0) {
                     setPlans(res.data);
                     const urlPlan = searchParams.get('plan');
-                    if (urlPlan && res.data.find(p => p.name === urlPlan)) {
-                        reset({ plan: urlPlan, billingCycle: searchParams.get('billing') || 'monthly' });
+                    const match = res.data.find(p => p.name.toLowerCase() === (urlPlan || '').toLowerCase());
+                    if (match) {
+                        setValue('plan', match.name);
+                    } else if (res.data[0]?.name) {
+                        const currentPlan = getValues('plan');
+                        const currentExists = res.data.some(p => p.name.toLowerCase() === (currentPlan || '').toLowerCase());
+                        if (!currentExists) {
+                            setValue('plan', res.data[0].name);
+                        }
                     }
                 }
             } catch (err) {
@@ -454,7 +461,7 @@ const StaffAuthPage = () => {
                             ? Math.round((1 - yPrice / mPrice) * 100)
                             : 0;
                         return (
-                            <label key={plan._id || idx} className={`relative p-4 border-2 rounded-xl cursor-pointer transition-all ${selectedPlan === plan.name ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-200'}`}>
+                            <label key={plan._id || idx} className={`relative p-4 border-2 rounded-xl cursor-pointer transition-all ${selectedPlan?.toLowerCase() === plan.name?.toLowerCase() ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-200'}`}>
                                 <input type="radio" value={plan.name} {...register('plan')} className="hidden" />
                                 <div className="flex justify-between items-center mb-1">
                                     <span className="font-bold text-gray-900">{plan.name}</span>
@@ -470,7 +477,7 @@ const StaffAuthPage = () => {
                                 <p className="text-xs text-gray-500 font-medium">
                                     {(plan.features || []).slice(0, 2).join(' · ')}{(plan.features || []).length > 2 ? ` · +${plan.features.length - 2} more` : ''}
                                 </p>
-                                {selectedPlan === plan.name && <CheckCircle2 size={18} className="absolute top-4 right-4 text-green-500" />}
+                                {selectedPlan?.toLowerCase() === plan.name?.toLowerCase() && <CheckCircle2 size={18} className="absolute top-4 right-4 text-green-500" />}
                             </label>
                         );
                     })}

@@ -20,9 +20,9 @@ const Home = () => {
     ];
 
     const defaultPlans = [
-        { _id: 'p1', name: 'Starter', monthlyPrice: 4999, yearlyPrice: 3999, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'] },
-        { _id: 'p2', name: 'Professional', monthlyPrice: 9999, yearlyPrice: 7999, features: ['Up to 3 Branches', 'Kitchen Display System', 'Online Ordering', 'Advanced Analytics', 'Priority Support'] },
-        { _id: 'p3', name: 'Enterprise', monthlyPrice: 19999, yearlyPrice: 15999, features: ['Unlimited Branches', 'Custom APIs & Webhooks', 'Dedicated Account Manager', '24/7 Support'] }
+        { _id: 'p1', name: 'Basic', monthlyPrice: 1, yearlyPrice: 390, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'] },
+        { _id: 'p2', name: 'Pro', monthlyPrice: 2, yearlyPrice: 990, features: ['Up to 3 Branches', 'Kitchen Display System', 'Online Ordering', 'Advanced Analytics', 'Priority Support'] },
+        { _id: 'p3', name: 'Enterprise', monthlyPrice: 3, yearlyPrice: 2490, features: ['Unlimited Branches', 'Custom APIs & Webhooks', 'Dedicated Account Manager', '24/7 Support'] }
     ];
 
     const [restaurants, setRestaurants] = useState(dummyRestaurants);
