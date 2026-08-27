@@ -41,20 +41,20 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// Response interceptor to handle automatic retries for Render cold-starts
+// Response interceptor to handle automatic retries for Render cold-starts (503 / Network Error)
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const config = error.config;
-        if (!config || config._retryCount >= 6) {
+        if (!config || config._retryCount >= 10) {
             return Promise.reject(error);
         }
 
         const status = error.response ? error.response.status : 0;
         if (status === 502 || status === 503 || !error.response || error.code === 'ERR_NETWORK') {
             config._retryCount = (config._retryCount || 0) + 1;
-            console.log(`Render backend waking up (${status || 'Network Error'}). Retrying in 3s... (attempt ${config._retryCount}/6)`);
-            await new Promise((resolve) => setTimeout(resolve, 3000));
+            console.log(`Render backend waking up (${status || 'Network Error'}). Retrying in 2.5s... (attempt ${config._retryCount}/10)`);
+            await new Promise((resolve) => setTimeout(resolve, 2500));
             return api(config);
         }
 
