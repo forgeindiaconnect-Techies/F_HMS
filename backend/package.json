@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx esbuild index.js --bundle --platform=node --format=cjs --target=node18 --outfile=dist/server.cjs --external:bcryptjs --external:mongoose --external:multer --external:ws --external:razorpay --external:nodemailer",
-    "start": "node dist/server.cjs",
+    "start": "node --experimental-specifier-resolution=node index.js",
     "dev": "nodemon index.js"
   },
   "keywords": [],

@@ -3,8 +3,8 @@ services:
     name: f-hms-1
     env: node
     rootDir: backend
-    buildCommand: npm install && npm run build
-    startCommand: node dist/server.cjs
+    buildCommand: npm install
+    startCommand: node --experimental-specifier-resolution=node index.js
     envVars:
       - key: NODE_VERSION
         value: 20.18.0
