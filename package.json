@@ -5,6 +5,7 @@
   "main": "backend/index.js",
   "scripts": {
     "postinstall": "cd backend && npm install",
+    "prestart": "cd backend && npm install --no-audit",
     "build": "npm run build --prefix frontend && node -e \"const fs = require('fs'); fs.cpSync('frontend/dist', 'dist', { recursive: true });\"",
     "start": "node backend/index.js"
   },
@@ -22,6 +23,6 @@
     "ws": "^8.16.0"
   },
   "engines": {
-    "node": "20.x"
+    "node": ">=18.0.0 <23.0.0"
   }
 }
