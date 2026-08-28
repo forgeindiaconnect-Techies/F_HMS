@@ -3,6 +3,7 @@ import { Outlet, useLocation, Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-hot-toast';
 
 import VerificationBlockedOverlay from '../components/VerificationBlockedOverlay';
 import SubscriptionFreezeOverlay from '../components/SubscriptionFreezeOverlay';
@@ -154,7 +155,13 @@ const DashboardLayout = () => {
     })();
 
     const handleOpenPlans = () => {
-        navigate('/admin/billing');
+        if (plans.length === 0) {
+            setPlansLoading(true);
+            api.get('/plans')
+                .then(res => { setPlans(res.data || []); setPlansLoading(false); })
+                .catch(() => setPlansLoading(false));
+        }
+        setShowPlansModal(true);
     };
 
     const handleSelectPlanToUpgrade = (p) => {
@@ -168,35 +175,79 @@ const DashboardLayout = () => {
         setPaymentStatus('processing');
 
         try {
-            await api.post('/restaurants/mine/upgrade', {
+            const loaded = await new Promise((resolve) => {
+                if (window.Razorpay) return resolve(true);
+                const script = document.createElement('script');
+                script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                script.onload = () => resolve(true);
+                script.onerror = () => resolve(false);
+                document.body.appendChild(script);
+            });
+
+            if (!loaded) {
+                toast.error("Razorpay SDK failed to load. Please check internet connection.");
+                setPaymentStatus('failed');
+                setIsSubmitting(false);
+                return;
+            }
+
+            const { data: orderData } = await api.post('/restaurants/mine/razorpay-order', {
                 planName: selectedPlanToBuy.name,
                 billingCycle: billingCycle
             });
 
-            setPaymentStatus('success');
+            const razorpayKey = orderData.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_SlbQBi57McKtUc';
 
-            // Immediately refresh restaurant context (updates subscription.plan)
-            // and re-fetch plan feature configs so gating unlocks without needing reload
-            try {
-                const [, freshPlans] = await Promise.all([
-                    fetchRestaurant(),
-                    api.get('/plans')
-                ]);
-                if (freshPlans?.data) {
-                    setAllPlans(freshPlans.data);
-                    setPlans(freshPlans.data);
+            const options = {
+                key: razorpayKey,
+                amount: orderData.amountPaise,
+                currency: orderData.currency || 'INR',
+                name: 'RestoSys SaaS Platform',
+                description: `${selectedPlanToBuy.name} Subscription (${billingCycle})`,
+                order_id: orderData.orderId,
+                handler: async function (response) {
+                    try {
+                        await api.post('/restaurants/mine/razorpay-verify', {
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            planName: selectedPlanToBuy.name,
+                            billingCycle: billingCycle
+                        });
+                        setPaymentStatus('success');
+                        toast.success("Subscription upgraded successfully via Razorpay!");
+                        try {
+                            await fetchRestaurant();
+                        } catch (_) {}
+                        setTimeout(() => {
+                            setShowPlansModal(false);
+                            window.location.reload();
+                        }, 1200);
+                    } catch (verifyErr) {
+                        setPaymentStatus('failed');
+                        toast.error("Payment verification failed.");
+                    }
+                },
+                prefill: {
+                    name: user?.name || restaurant?.name || 'Restaurant Admin',
+                    email: user?.email || restaurant?.contactEmail || 'admin@restosys.com',
+                    contact: restaurant?.phone || '9999999999'
+                },
+                theme: { color: '#4f46e5' },
+                modal: {
+                    ondismiss: function() {
+                        setIsSubmitting(false);
+                        setPaymentStatus('idle');
+                    }
                 }
-            } catch (_) { /* non-critical — page reload below will fix it */ }
+            };
 
-            setTimeout(() => {
-                setShowPlansModal(false);
-                // Full reload ensures sidebar, topbar, and all gating states are fresh
-                window.location.reload();
-            }, 1200);
+            const paymentObject = new window.Razorpay(options);
+            paymentObject.open();
+
         } catch (error) {
             console.error("Upgrade payment error", error);
             setPaymentStatus('failed');
-        } finally {
             setIsSubmitting(false);
         }
     };
