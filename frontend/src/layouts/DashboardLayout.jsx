@@ -348,7 +348,7 @@ const DashboardLayout = () => {
 
                         {/* Modal Body: Either Plans Grid OR QR Code Checkout */}
                         {selectedPlanToBuy ? (
-                            /* QR Code Payment Checkout Screen */
+                            /* Real-time Razorpay Payment Checkout Screen */
                             <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1 flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in zoom-in-95">
                                 <button 
                                     onClick={() => setSelectedPlanToBuy(null)} 
@@ -358,47 +358,43 @@ const DashboardLayout = () => {
                                 </button>
 
                                 <div className="space-y-1">
-                                    <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-3 py-1 rounded-full border border-indigo-100 dark:border-indigo-900/50">
-                                        Scan UPI QR Code to Activate
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-3.5 py-1 rounded-full border border-indigo-100 dark:border-indigo-900/50">
+                                        Official Razorpay API Payment
                                     </span>
                                     <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-2">
                                         {selectedPlanToBuy.name} Plan ({billingCycle})
                                     </h3>
                                     <p className="text-sm font-bold text-slate-500 dark:text-slate-400">
-                                        Total Amount Payable: <span className="text-slate-900 dark:text-white font-black text-lg">₹{((billingCycle === 'yearly' ? (selectedPlanToBuy.yearlyPrice || selectedPlanToBuy.monthlyPrice) : selectedPlanToBuy.monthlyPrice) || 0).toLocaleString('en-IN')}</span>
+                                        Total Amount Payable: <span className="text-indigo-600 dark:text-indigo-400 font-black text-2xl">₹{((billingCycle === 'yearly' ? (selectedPlanToBuy.yearlyPrice || selectedPlanToBuy.monthlyPrice) : selectedPlanToBuy.monthlyPrice) || 0).toLocaleString('en-IN')}</span>
                                     </p>
                                 </div>
 
                                 {paymentStatus === 'idle' && (
-                                    <div className="flex flex-col items-center gap-4">
-                                        <div 
-                                            onClick={handleConfirmPayment}
-                                            className="relative w-52 h-52 bg-white p-4 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 flex items-center justify-center cursor-pointer group hover:scale-105 transition-transform"
-                                            title="Click to simulate scanning QR Code"
-                                        >
-                                            <img 
-                                                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi%3A%2F%2Fpay%3Fpa%3Dresto%40upi%26pn%3DRestaurantHub%26am%3D${billingCycle === 'yearly' ? (selectedPlanToBuy.yearlyPrice || selectedPlanToBuy.monthlyPrice) : selectedPlanToBuy.monthlyPrice}%26cu%3DINR&bgcolor=ffffff&color=1e1b4b`}
-                                                alt="Subscription QR Code" 
-                                                className="w-44 h-44 object-contain"
-                                            />
-                                            <div className="absolute inset-0 bg-indigo-600/10 group-hover:opacity-100 opacity-0 transition-opacity rounded-3xl flex items-center justify-center font-black text-indigo-700 text-xs bg-white/90">
-                                                Click to Simulate Payment &rarr;
-                                            </div>
+                                    <div className="w-full max-w-md bg-gradient-to-br from-indigo-50/80 to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-indigo-100 dark:border-slate-800 p-6 rounded-3xl space-y-5 shadow-sm text-center">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <ShieldCheck size={20} className="text-indigo-600 dark:text-indigo-400" />
+                                            <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Razorpay Gateway API</span>
                                         </div>
 
-                                        <div className="space-y-2 max-w-sm">
-                                            <div className="flex items-center justify-center gap-1.5 text-slate-400 dark:text-slate-500 text-xs font-semibold">
-                                                <ShieldCheck size={14} className="text-emerald-500" />
-                                                <span>Scan with GPay, PhonePe, Paytm, or BHIM UPI</span>
-                                            </div>
-                                            <button 
-                                                onClick={handleConfirmPayment}
-                                                disabled={isSubmitting}
-                                                className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-white font-black text-sm rounded-2xl shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
-                                            >
-                                                Confirm Payment & Upgrade <ArrowRight size={16} />
-                                            </button>
+                                        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+                                            Pay securely using Google Pay, PhonePe, Paytm, BHIM UPI, Credit/Debit Cards, NetBanking, or Scannable Dynamic QR Code.
+                                        </p>
+
+                                        <div className="flex items-center justify-center gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+                                            <span className="text-[10px] bg-white dark:bg-slate-800 font-extrabold text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">GPay</span>
+                                            <span className="text-[10px] bg-white dark:bg-slate-800 font-extrabold text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">PhonePe</span>
+                                            <span className="text-[10px] bg-white dark:bg-slate-800 font-extrabold text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">Paytm</span>
+                                            <span className="text-[10px] bg-white dark:bg-slate-800 font-extrabold text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">UPI QR</span>
+                                            <span className="text-[10px] bg-white dark:bg-slate-800 font-extrabold text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">Cards</span>
                                         </div>
+
+                                        <button 
+                                            onClick={handleConfirmPayment}
+                                            disabled={isSubmitting}
+                                            className="w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black text-sm rounded-2xl shadow-xl shadow-indigo-600/20 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                                        >
+                                            <Zap size={18} /> Pay ₹{((billingCycle === 'yearly' ? (selectedPlanToBuy.yearlyPrice || selectedPlanToBuy.monthlyPrice) : selectedPlanToBuy.monthlyPrice) || 0).toLocaleString('en-IN')} via Razorpay <ArrowRight size={16} />
+                                        </button>
                                     </div>
                                 )}
 

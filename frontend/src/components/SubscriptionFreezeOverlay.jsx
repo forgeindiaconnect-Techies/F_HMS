@@ -69,25 +69,84 @@ const SubscriptionFreezeOverlay = ({ onUnfrozen }) => {
 
         try {
             const billingCycle = isYearly ? 'yearly' : 'monthly';
-            const res = await api.post('/restaurants/mine/upgrade', {
+
+            const loaded = await new Promise((resolve) => {
+                if (window.Razorpay) return resolve(true);
+                const script = document.createElement('script');
+                script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                script.onload = () => resolve(true);
+                script.onerror = () => resolve(false);
+                document.body.appendChild(script);
+            });
+
+            if (!loaded) {
+                toast.error("Razorpay SDK failed to load. Please check internet connection.");
+                setPaymentStep('qr');
+                setSubmitting(false);
+                return;
+            }
+
+            const { data: orderData } = await api.post('/restaurants/mine/razorpay-order', {
                 planName: selectedPlan,
                 billingCycle: billingCycle
             });
 
-            setPaymentStep('success');
-            toast.success(`🎉 Subscription Activated! Restaurant Dashboard Unfrozen.`);
+            const razorpayKey = orderData.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_SlbQBi57McKtUc';
 
-            await fetchRestaurant();
-            if (onUnfrozen) onUnfrozen();
+            const options = {
+                key: razorpayKey,
+                amount: orderData.amountPaise,
+                currency: orderData.currency || 'INR',
+                name: 'RestoSys SaaS Platform',
+                description: `${selectedPlan} Subscription (${billingCycle})`,
+                order_id: orderData.orderId,
+                handler: async function (response) {
+                    try {
+                        await api.post('/restaurants/mine/razorpay-verify', {
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            planName: selectedPlan,
+                            billingCycle: billingCycle
+                        });
 
-            setTimeout(() => {
-                setShowPaymentModal(false);
-                window.location.reload();
-            }, 1200);
+                        setPaymentStep('success');
+                        toast.success(`🎉 Subscription Activated! Restaurant Dashboard Unfrozen.`);
+
+                        await fetchRestaurant();
+                        if (onUnfrozen) onUnfrozen();
+
+                        setTimeout(() => {
+                            setShowPaymentModal(false);
+                            window.location.reload();
+                        }, 1200);
+                    } catch (verifyErr) {
+                        toast.error("Payment verification failed.");
+                        setPaymentStep('qr');
+                    } finally {
+                        setSubmitting(false);
+                    }
+                },
+                prefill: {
+                    name: restaurant?.name || 'Restaurant Admin',
+                    email: restaurant?.contactEmail || 'admin@restosys.com',
+                    contact: restaurant?.phone || '9999999999'
+                },
+                theme: { color: '#e11d48' },
+                modal: {
+                    ondismiss: function() {
+                        setSubmitting(false);
+                        setPaymentStep('qr');
+                    }
+                }
+            };
+
+            const paymentObject = new window.Razorpay(options);
+            paymentObject.open();
+
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to process subscription. Please try again.');
             setPaymentStep('qr');
-        } finally {
             setSubmitting(false);
         }
     };
@@ -229,7 +288,7 @@ const SubscriptionFreezeOverlay = ({ onUnfrozen }) => {
                 </div>
             </div>
 
-            {/* Simulated Payment / QR Modal */}
+            {/* Real-time Razorpay Payment Modal */}
             {showPaymentModal && (
                 <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in">
                     <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 sm:p-8 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6 text-center animate-in zoom-in-95">
@@ -237,42 +296,49 @@ const SubscriptionFreezeOverlay = ({ onUnfrozen }) => {
                         {paymentStep === 'qr' && (
                             <>
                                 <div className="w-14 h-14 bg-rose-100 dark:bg-rose-950/60 text-rose-600 rounded-2xl flex items-center justify-center mx-auto">
-                                    <QrCode size={28} />
+                                    <CreditCard size={28} />
                                 </div>
 
                                 <div className="space-y-1">
-                                    <h3 className="text-xl font-black text-slate-900 dark:text-slate-100">Activate {selectedPlan} Subscription</h3>
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 px-3 py-1 rounded-full border border-rose-100 dark:border-rose-900/50">
+                                        Official Razorpay API Payment
+                                    </span>
+                                    <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 mt-2">
+                                        Activate {selectedPlan} Subscription
+                                    </h3>
                                     <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                                        Scan QR or click confirm below to complete payment & unlock dashboard.
+                                        Pay securely using GPay, PhonePe, Paytm, Cards, or UPI QR code.
                                     </p>
                                 </div>
 
-                                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col items-center gap-3">
-                                    <div className="w-44 h-44 bg-white p-2 rounded-xl shadow-md border border-slate-200 flex items-center justify-center">
-                                        <img 
-                                            src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=RestaurantHubSubscriptionPayment" 
-                                            alt="Payment QR" 
-                                            className="w-full h-full object-contain"
-                                        />
+                                <div className="p-4 bg-rose-50/50 dark:bg-slate-800 rounded-2xl border border-rose-100 dark:border-slate-700 flex flex-col items-center gap-3">
+                                    <div className="flex items-center justify-center gap-2">
+                                        <ShieldCheck size={18} className="text-rose-600 dark:text-rose-400" />
+                                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                            Razorpay Secure Checkout
+                                        </span>
                                     </div>
-                                    <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
-                                        Scan via UPI / GPay / PhonePe / Card
-                                    </span>
+                                    <div className="flex items-center justify-center gap-2 pt-1">
+                                        <span className="text-[10px] bg-white dark:bg-slate-900 font-extrabold text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">GPay</span>
+                                        <span className="text-[10px] bg-white dark:bg-slate-900 font-extrabold text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">PhonePe</span>
+                                        <span className="text-[10px] bg-white dark:bg-slate-900 font-extrabold text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">Paytm</span>
+                                        <span className="text-[10px] bg-white dark:bg-slate-900 font-extrabold text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">Cards</span>
+                                    </div>
                                 </div>
 
                                 <div className="flex gap-3">
                                     <button
                                         onClick={() => setShowPaymentModal(false)}
-                                        className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl"
+                                        className="flex-1 py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         onClick={handleConfirmPayment}
                                         disabled={submitting}
-                                        className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-rose-600/30 flex items-center justify-center gap-2 cursor-pointer"
+                                        className="flex-1 py-3.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-rose-600/30 flex items-center justify-center gap-2 cursor-pointer"
                                     >
-                                        {submitting ? <RefreshCw size={14} className="animate-spin" /> : 'Confirm Payment & Unlock'}
+                                        {submitting ? <RefreshCw size={14} className="animate-spin" /> : 'Pay via Razorpay'}
                                     </button>
                                 </div>
                             </>

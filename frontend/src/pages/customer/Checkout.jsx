@@ -597,112 +597,22 @@ const Checkout = () => {
                             )}
 
                             {paymentMethod === 'UPI' && (
-                                <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100 animate-in fade-in slide-in-from-top-4 duration-300 space-y-6 text-left">
-
-                                    {/* Sub-selector: QR Code vs UPI ID */}
-                                    <div className="flex gap-3 border-b border-gray-100 pb-4">
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setUpiMethod('QR');
-                                                setIsScanned(false);
-                                                setUpiPlatform('');
-                                            }}
-                                            className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${
-                                                upiMethod === 'QR'
-                                                    ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                                                    : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                                            }`}
-                                        >
-                                            Scan QR Code
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setUpiMethod('ID')}
-                                            className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${
-                                                upiMethod === 'ID'
-                                                    ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                                                    : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                                            }`}
-                                        >
-                                            Enter UPI ID
-                                        </button>
+                                <div className="p-6 bg-gradient-to-br from-orange-50/60 to-amber-50/60 rounded-2xl border border-orange-200/80 animate-in fade-in slide-in-from-top-4 duration-300 space-y-4 text-center">
+                                    <div className="flex items-center justify-center gap-2">
+                                        <ShieldCheck size={20} className="text-orange-600" />
+                                        <span className="text-xs font-extrabold text-orange-950 uppercase tracking-wider">Official Razorpay UPI Checkout</span>
                                     </div>
+                                    
+                                    <p className="text-xs text-gray-600 leading-relaxed font-medium">
+                                        When you click <strong>Place Order</strong> below, the official Razorpay payment modal will open supporting Google Pay, PhonePe, Paytm, BHIM, UPI ID, or Dynamic Scannable QR Code.
+                                    </p>
 
-                                    {upiMethod === 'QR' ? (
-                                        <div className="flex flex-col items-center justify-center space-y-4 text-center">
-                                            {!isScanned ? (
-                                                <>
-                                                    {/* Clean QR code wrapper */}
-                                                    <div className="w-48 h-48 bg-white p-3 rounded-2xl border border-gray-200 shadow-md flex items-center justify-center">
-                                                        <img src="/images/payment_qr.png" alt="Scan to pay" className="w-full h-full object-contain rounded-xl" />
-                                                    </div>
-
-                                                    <div>
-                                                        <h3 className="font-bold text-gray-900 text-sm">Scan QR Code to Pay</h3>
-                                                        <p className="text-xs text-gray-500 mt-1">Use GPay, PhonePe, Paytm, or any banking app to scan. Payment apps will be shown automatically after scan.</p>
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                <div className="w-full space-y-4 animate-in fade-in zoom-in-95 duration-200">
-                                                    <div className="flex flex-col items-center justify-center p-4 bg-green-50 border border-green-200 rounded-2xl text-center">
-                                                        <span className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-lg mb-1">✓</span>
-                                                        <h4 className="font-bold text-green-900 text-sm">Scan Completed Successfully!</h4>
-                                                        <p className="text-[11px] text-green-700 mt-0.5">Please select the platform you used to make the payment:</p>
-                                                    </div>
-
-                                                    {/* App Logos selector */}
-                                                    <div className="grid grid-cols-3 gap-3">
-                                                        {[
-                                                            { id: 'GPay', name: 'Google Pay', short: 'GPay' },
-                                                            { id: 'PhonePe', name: 'PhonePe', short: 'PhonePe' },
-                                                            { id: 'Paytm', name: 'Paytm', short: 'Paytm' }
-                                                        ].map(app => (
-                                                            <button
-                                                                key={app.id}
-                                                                type="button"
-                                                                onClick={() => setUpiPlatform(app.id)}
-                                                                className={`py-3 px-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all text-xs font-bold ${
-                                                                    upiPlatform === app.id
-                                                                        ? 'border-orange-500 bg-orange-50/50 text-orange-700 scale-105 shadow-sm'
-                                                                        : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-700'
-                                                                }`}
-                                                            >
-                                                                <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center font-black text-[10px] uppercase shadow-sm">
-                                                                    {app.short}
-                                                                </div>
-                                                                {app.name}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setIsScanned(false);
-                                                            setUpiPlatform('');
-                                                        }}
-                                                        className="text-xs text-gray-500 hover:text-gray-700 underline font-medium"
-                                                    >
-                                                        Re-scan QR Code
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-3">
-                                            <label className="block text-sm font-bold text-gray-700">Enter UPI ID</label>
-                                            <input 
-                                                type="text" 
-                                                value={upiId}
-                                                onChange={(e) => setUpiId(e.target.value)}
-                                                placeholder="e.g. mobile@upi, username@okaxis" 
-                                                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors bg-white font-mono text-sm"
-                                                required={upiMethod === 'ID'}
-                                            />
-                                            <p className="text-xs text-gray-500">Pay using BHIM, Google Pay, PhonePe, Paytm, or any UPI app.</p>
-                                        </div>
-                                    )}
+                                    <div className="flex items-center justify-center gap-2 pt-2 border-t border-orange-200/60">
+                                        <span className="text-[10px] bg-white font-extrabold text-gray-700 px-3 py-1 rounded-full border border-gray-200 shadow-2xs">Google Pay</span>
+                                        <span className="text-[10px] bg-white font-extrabold text-gray-700 px-3 py-1 rounded-full border border-gray-200 shadow-2xs">PhonePe</span>
+                                        <span className="text-[10px] bg-white font-extrabold text-gray-700 px-3 py-1 rounded-full border border-gray-200 shadow-2xs">Paytm</span>
+                                        <span className="text-[10px] bg-white font-extrabold text-gray-700 px-3 py-1 rounded-full border border-gray-200 shadow-2xs">BHIM UPI</span>
+                                    </div>
                                 </div>
                             )}
 
