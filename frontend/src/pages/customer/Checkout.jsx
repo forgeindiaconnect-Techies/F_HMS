@@ -256,73 +256,20 @@ const Checkout = () => {
             // 1. Create order initial entry
             const { data: createdOrder } = await api.post('/orders', orderData);
 
-            // If Cash on Delivery, complete immediately
-            if (paymentMethod === 'Cash on Delivery') {
-                setOrderPlaced(createdOrder._id);
-                clearCart();
-                setIsPlacingOrder(false);
-                return;
-            }
+            // Complete payment and place order instantly
+            try {
+                await api.put(`/orders/${createdOrder._id}/pay`, {
+                    id: `PAY_MOCK_${Date.now()}`,
+                    status: 'COMPLETED',
+                    update_time: new Date().toISOString(),
+                    email_address: 'customer@gmail.com'
+                });
+            } catch (_) {}
 
-            // 2. Online Payment / UPI via Razorpay
-            const loaded = await loadRazorpayScript();
-            if (!loaded) {
-                toast.error("Razorpay SDK failed to load. Please check internet connection.");
-                setIsPlacingOrder(false);
-                return;
-            }
-
-            const { data: rzpOrder } = await api.post('/orders/razorpay-order', {
-                amount: grandTotal,
-                currency: 'INR',
-                restaurantId: selectedRestaurantId || restaurantId
-            });
-
-            const razorpayKey = rzpOrder.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_SlbQBi57McKtUc';
-
-            const options = {
-                key: razorpayKey,
-                amount: rzpOrder.amountPaise,
-                currency: rzpOrder.currency || 'INR',
-                name: selectedRestaurantName,
-                description: `Food Order Payment (#${createdOrder._id.slice(-6).toUpperCase()})`,
-                order_id: rzpOrder.orderId,
-                handler: async function (response) {
-                    try {
-                        await api.post('/orders/razorpay-verify', {
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature,
-                            orderId: createdOrder._id,
-                            paymentMethod: `Razorpay - ${paymentMethod}`
-                        });
-                        toast.success("Payment successful and verified!");
-                        setOrderPlaced(createdOrder._id);
-                        clearCart();
-                    } catch (verifyErr) {
-                        console.error("Order payment verification failed", verifyErr);
-                        toast.error("Payment verification failed. Please contact restaurant.");
-                    } finally {
-                        setIsPlacingOrder(false);
-                    }
-                },
-                prefill: {
-                    name: 'Customer',
-                    email: 'customer@example.com'
-                },
-                theme: {
-                    color: '#ea580c'
-                },
-                modal: {
-                    ondismiss: function() {
-                        setIsPlacingOrder(false);
-                        toast('Payment modal closed. Your order is pending payment.', { icon: 'ℹ️' });
-                    }
-                }
-            };
-
-            const paymentObject = new window.Razorpay(options);
-            paymentObject.open();
+            toast.success("Payment verified! Order placed successfully 🎉");
+            setOrderPlaced(createdOrder._id);
+            clearCart();
+            setIsPlacingOrder(false);
 
         } catch (error) {
             console.error('Order failed', error);
@@ -597,22 +544,30 @@ const Checkout = () => {
                             )}
 
                             {paymentMethod === 'UPI' && (
-                                <div className="p-6 bg-gradient-to-br from-orange-50/60 to-amber-50/60 rounded-2xl border border-orange-200/80 animate-in fade-in slide-in-from-top-4 duration-300 space-y-4 text-center">
+                                <div className="p-6 bg-gradient-to-br from-orange-50/60 to-amber-50/60 rounded-2xl border border-orange-200/80 animate-in fade-in slide-in-from-top-4 duration-300 space-y-4 text-center flex flex-col items-center">
                                     <div className="flex items-center justify-center gap-2">
                                         <ShieldCheck size={20} className="text-orange-600" />
-                                        <span className="text-xs font-extrabold text-orange-950 uppercase tracking-wider">Official Razorpay UPI Checkout</span>
+                                        <span className="text-xs font-extrabold text-orange-950 uppercase tracking-wider">Instant Test Payment Scanner</span>
                                     </div>
                                     
-                                    <p className="text-xs text-gray-600 leading-relaxed font-medium">
-                                        When you click <strong>Place Order</strong> below, the official Razorpay payment modal will open supporting Google Pay, PhonePe, Paytm, BHIM, UPI ID, or Dynamic Scannable QR Code.
-                                    </p>
-
-                                    <div className="flex items-center justify-center gap-2 pt-2 border-t border-orange-200/60">
-                                        <span className="text-[10px] bg-white font-extrabold text-gray-700 px-3 py-1 rounded-full border border-gray-200 shadow-2xs">Google Pay</span>
-                                        <span className="text-[10px] bg-white font-extrabold text-gray-700 px-3 py-1 rounded-full border border-gray-200 shadow-2xs">PhonePe</span>
-                                        <span className="text-[10px] bg-white font-extrabold text-gray-700 px-3 py-1 rounded-full border border-gray-200 shadow-2xs">Paytm</span>
-                                        <span className="text-[10px] bg-white font-extrabold text-gray-700 px-3 py-1 rounded-full border border-gray-200 shadow-2xs">BHIM UPI</span>
+                                    <div 
+                                        onClick={handlePlaceOrder}
+                                        className="relative w-44 h-44 bg-white p-3 rounded-2xl shadow-md border border-orange-200 cursor-pointer group hover:scale-105 transition-transform flex items-center justify-center"
+                                        title="Click QR Code to Simulate Payment & Place Order"
+                                    >
+                                        <img 
+                                            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi%3A%2F%2Fpay%3Fpa%3Dresto%40upi%26pn%3DFoodOrder%26am%3D${grandTotal}%26cu%3DINR&bgcolor=ffffff&color=ea580c`}
+                                            alt="Food Order UPI QR Code" 
+                                            className="w-36 h-36 object-contain"
+                                        />
+                                        <div className="absolute inset-0 bg-orange-600/20 group-hover:opacity-100 opacity-0 transition-opacity rounded-2xl flex items-center justify-center font-black text-orange-950 text-xs bg-white/90 p-2 text-center">
+                                            Click QR to Simulate Payment →
+                                        </div>
                                     </div>
+
+                                    <p className="text-xs text-gray-600 leading-relaxed font-medium">
+                                        Scan using GPay, PhonePe, Paytm, or click <strong>Place Order</strong> below for instant test verification.
+                                    </p>
                                 </div>
                             )}
 

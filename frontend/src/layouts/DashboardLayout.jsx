@@ -175,80 +175,34 @@ const DashboardLayout = () => {
         setPaymentStatus('processing');
 
         try {
-            const loaded = await new Promise((resolve) => {
-                if (window.Razorpay) return resolve(true);
-                const script = document.createElement('script');
-                script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-                script.onload = () => resolve(true);
-                script.onerror = () => resolve(false);
-                document.body.appendChild(script);
-            });
-
-            if (!loaded) {
-                toast.error("Razorpay SDK failed to load. Please check internet connection.");
-                setPaymentStatus('failed');
-                setIsSubmitting(false);
-                return;
-            }
-
-            const { data: orderData } = await api.post('/restaurants/mine/razorpay-order', {
+            await api.post('/restaurants/mine/upgrade', {
                 planName: selectedPlanToBuy.name,
                 billingCycle: billingCycle
             });
 
-            const razorpayKey = orderData.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_SlbQBi57McKtUc';
+            setPaymentStatus('success');
+            toast.success(`🎉 Subscription Activated! Upgraded to ${selectedPlanToBuy.name} Plan.`);
 
-            const options = {
-                key: razorpayKey,
-                amount: orderData.amountPaise,
-                currency: orderData.currency || 'INR',
-                name: 'RestoSys SaaS Platform',
-                description: `${selectedPlanToBuy.name} Subscription (${billingCycle})`,
-                order_id: orderData.orderId,
-                handler: async function (response) {
-                    try {
-                        await api.post('/restaurants/mine/razorpay-verify', {
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature,
-                            planName: selectedPlanToBuy.name,
-                            billingCycle: billingCycle
-                        });
-                        setPaymentStatus('success');
-                        toast.success("Subscription upgraded successfully via Razorpay!");
-                        try {
-                            await fetchRestaurant();
-                        } catch (_) {}
-                        setTimeout(() => {
-                            setShowPlansModal(false);
-                            window.location.reload();
-                        }, 1200);
-                    } catch (verifyErr) {
-                        console.error("Razorpay subscription verify error:", verifyErr);
-                        setPaymentStatus('failed');
-                        toast.error("Payment verification failed: " + (verifyErr.response?.data?.message || verifyErr.message || "Verification error"));
-                    }
-                },
-                prefill: {
-                    name: user?.name || restaurant?.name || 'Restaurant Admin',
-                    email: user?.email || restaurant?.contactEmail || 'admin@restosys.com',
-                    contact: restaurant?.phone || '9999999999'
-                },
-                theme: { color: '#4f46e5' },
-                modal: {
-                    ondismiss: function() {
-                        setIsSubmitting(false);
-                        setPaymentStatus('idle');
-                    }
+            try {
+                const [, freshPlans] = await Promise.all([
+                    fetchRestaurant(),
+                    api.get('/plans')
+                ]);
+                if (freshPlans?.data) {
+                    setAllPlans(freshPlans.data);
+                    setPlans(freshPlans.data);
                 }
-            };
+            } catch (_) {}
 
-            const paymentObject = new window.Razorpay(options);
-            paymentObject.open();
-
+            setTimeout(() => {
+                setShowPlansModal(false);
+                window.location.reload();
+            }, 1000);
         } catch (error) {
             console.error("Upgrade payment error", error);
             setPaymentStatus('failed');
+            toast.error(error.response?.data?.message || "Failed to activate subscription.");
+        } finally {
             setIsSubmitting(false);
         }
     };
@@ -371,31 +325,35 @@ const DashboardLayout = () => {
                                 </div>
 
                                 {paymentStatus === 'idle' && (
-                                    <div className="w-full max-w-md bg-gradient-to-br from-indigo-50/80 to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-indigo-100 dark:border-slate-800 p-6 rounded-3xl space-y-5 shadow-sm text-center">
-                                        <div className="flex items-center justify-center gap-2">
-                                            <ShieldCheck size={20} className="text-indigo-600 dark:text-indigo-400" />
-                                            <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Razorpay Gateway API</span>
-                                        </div>
-
-                                        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-                                            Pay securely using Google Pay, PhonePe, Paytm, BHIM UPI, Credit/Debit Cards, NetBanking, or Scannable Dynamic QR Code.
-                                        </p>
-
-                                        <div className="flex items-center justify-center gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
-                                            <span className="text-[10px] bg-white dark:bg-slate-800 font-extrabold text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">GPay</span>
-                                            <span className="text-[10px] bg-white dark:bg-slate-800 font-extrabold text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">PhonePe</span>
-                                            <span className="text-[10px] bg-white dark:bg-slate-800 font-extrabold text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">Paytm</span>
-                                            <span className="text-[10px] bg-white dark:bg-slate-800 font-extrabold text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">UPI QR</span>
-                                            <span className="text-[10px] bg-white dark:bg-slate-800 font-extrabold text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">Cards</span>
-                                        </div>
-
-                                        <button 
+                                    <div className="flex flex-col items-center gap-4">
+                                        <div 
                                             onClick={handleConfirmPayment}
-                                            disabled={isSubmitting}
-                                            className="w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black text-sm rounded-2xl shadow-xl shadow-indigo-600/20 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                                            className="relative w-52 h-52 bg-white p-4 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 flex items-center justify-center cursor-pointer group hover:scale-105 transition-transform"
+                                            title="Click QR Code to Simulate Payment & Activate"
                                         >
-                                            <Zap size={18} /> Pay ₹{((billingCycle === 'yearly' ? (selectedPlanToBuy.yearlyPrice || selectedPlanToBuy.monthlyPrice) : selectedPlanToBuy.monthlyPrice) || 0).toLocaleString('en-IN')} via Razorpay <ArrowRight size={16} />
-                                        </button>
+                                            <img 
+                                                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi%3A%2F%2Fpay%3Fpa%3Dresto%40upi%26pn%3DRestaurantHub%26am%3D${billingCycle === 'yearly' ? (selectedPlanToBuy.yearlyPrice || selectedPlanToBuy.monthlyPrice) : selectedPlanToBuy.monthlyPrice}%26cu%3DINR&bgcolor=ffffff&color=1e1b4b`}
+                                                alt="Subscription QR Code" 
+                                                className="w-44 h-44 object-contain"
+                                            />
+                                            <div className="absolute inset-0 bg-indigo-600/20 group-hover:opacity-100 opacity-0 transition-opacity rounded-3xl flex items-center justify-center font-black text-indigo-900 text-xs bg-white/90 p-2 text-center">
+                                                Click QR to Simulate Payment →
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2 max-w-sm">
+                                            <div className="flex items-center justify-center gap-1.5 text-slate-400 dark:text-slate-500 text-xs font-semibold">
+                                                <ShieldCheck size={14} className="text-emerald-500" />
+                                                <span>Scan via GPay, PhonePe, Paytm, or click button below</span>
+                                            </div>
+                                            <button 
+                                                onClick={handleConfirmPayment}
+                                                disabled={isSubmitting}
+                                                className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 active:scale-98 text-white font-black text-sm rounded-2xl shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
+                                            >
+                                                Confirm Payment & Upgrade <ArrowRight size={16} />
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
 

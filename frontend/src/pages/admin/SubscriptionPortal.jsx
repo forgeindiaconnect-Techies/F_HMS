@@ -206,82 +206,27 @@ const SubscriptionPortal = () => {
             document.body.appendChild(script);
         });
     };
-
     const handleConfirmPayment = async () => {
         setIsSubmitting(true);
         setPaymentStatus('processing');
         try {
-            const loaded = await loadRazorpayScript();
-            if (!loaded) {
-                toast.error("Razorpay SDK failed to load. Please check your network.");
-                setPaymentStatus('failed');
-                setIsSubmitting(false);
-                return;
-            }
-
-            // 1. Create Razorpay order via backend
-            const { data: orderData } = await api.post('/restaurants/mine/razorpay-order', {
+            const res = await api.post('/restaurants/mine/upgrade', {
                 planName: selectedPlanToBuy.name,
                 billingCycle: billingCycle
             });
 
-            const razorpayKey = orderData.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_SlbQBi57McKtUc';
+            setPaymentStatus('success');
+            toast.success(res.data.message || `🎉 Subscription upgraded to ${selectedPlanToBuy.name} Plan!`);
 
-            // 2. Configure Razorpay popup options
-            const options = {
-                key: razorpayKey,
-                amount: orderData.amountPaise,
-                currency: orderData.currency || 'INR',
-                name: 'RestoSys SaaS Platform',
-                description: `${selectedPlanToBuy.name} Subscription (${billingCycle})`,
-                order_id: orderData.orderId,
-                handler: async function (response) {
-                    try {
-                        setPaymentStatus('processing');
-                        const verifyRes = await api.post('/restaurants/mine/razorpay-verify', {
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature,
-                            planName: selectedPlanToBuy.name,
-                            billingCycle: billingCycle
-                        });
-                        setPaymentStatus('success');
-                        toast.success(verifyRes.data.message || "Subscription activated successfully via Razorpay!");
-                        setTimeout(() => {
-                            setShowCheckoutModal(false);
-                            fetchData();
-                            window.location.reload();
-                        }, 1200);
-                    } catch (verifyErr) {
-                        console.error("Verification failed", verifyErr);
-                        setPaymentStatus('failed');
-                        toast.error("Payment verification failed: " + (verifyErr.response?.data?.message || verifyErr.message));
-                    }
-                },
-                prefill: {
-                    name: user?.name || restaurant?.name || 'Restaurant Admin',
-                    email: user?.email || restaurant?.contactEmail || 'admin@restosys.com',
-                    contact: restaurant?.phone || '9999999999'
-                },
-                theme: {
-                    color: '#4f46e5'
-                },
-                modal: {
-                    ondismiss: function() {
-                        setIsSubmitting(false);
-                        setPaymentStatus('idle');
-                        toast('Payment window closed.', { icon: 'ℹ️' });
-                    }
-                }
-            };
-
-            const paymentObject = new window.Razorpay(options);
-            paymentObject.open();
-
+            setTimeout(() => {
+                setShowCheckoutModal(false);
+                fetchData();
+                window.location.reload();
+            }, 1000);
         } catch (error) {
-            console.error("Payment init failed", error);
+            console.error("Upgrade payment error", error);
             setPaymentStatus('failed');
-            toast.error(error.response?.data?.message || "Payment initialization failed.");
+            toast.error(error.response?.data?.message || "Failed to upgrade subscription.");
         } finally {
             setIsSubmitting(false);
         }
