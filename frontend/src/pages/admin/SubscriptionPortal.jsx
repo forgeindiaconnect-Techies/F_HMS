@@ -234,14 +234,14 @@ const SubscriptionPortal = () => {
                 currency: orderData.currency || 'INR',
                 name: 'RestoSys SaaS Platform',
                 description: `${selectedPlanToBuy.name} Subscription (${billingCycle})`,
-                order_id: (orderData.orderId && !orderData.orderId.startsWith('order_live_')) ? orderData.orderId : undefined,
+                order_id: orderData.orderId,
                 handler: async function (response) {
                     try {
                         setPaymentStatus('processing');
                         const verifyRes = await api.post('/restaurants/mine/razorpay-verify', {
-                            razorpay_order_id: response.razorpay_order_id || orderData.orderId,
-                            razorpay_payment_id: response.razorpay_payment_id || `pay_${Date.now()}`,
-                            razorpay_signature: response.razorpay_signature || '',
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
                             planName: selectedPlanToBuy.name,
                             billingCycle: billingCycle
                         });
@@ -250,11 +250,12 @@ const SubscriptionPortal = () => {
                         setTimeout(() => {
                             setShowCheckoutModal(false);
                             fetchData();
+                            window.location.reload();
                         }, 1200);
                     } catch (verifyErr) {
                         console.error("Verification failed", verifyErr);
                         setPaymentStatus('failed');
-                        toast.error("Payment verification failed.");
+                        toast.error("Payment verification failed: " + (verifyErr.response?.data?.message || verifyErr.message));
                     }
                 },
                 prefill: {

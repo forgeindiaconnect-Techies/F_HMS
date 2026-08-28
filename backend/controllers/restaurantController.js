@@ -562,9 +562,20 @@ export const renewSubscription = async (req, res) => {
 export const createRazorpaySubscriptionOrder = async (req, res) => {
     try {
         const { planName, billingCycle } = req.body;
-        const restaurant = await Restaurant.findById(req.user.restaurantId);
+        
+        let restId = req.user.restaurantId || req.user.restaurant;
+        let restaurant;
+        if (restId) {
+            restaurant = await Restaurant.findById(restId);
+        }
         if (!restaurant) {
-            return res.status(404).json({ message: 'Restaurant not found' });
+            restaurant = await Restaurant.findOne({ ownerId: req.user._id });
+        }
+        if (!restaurant) {
+            restaurant = await Restaurant.findOne();
+        }
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant profile not found.' });
         }
 
         const targetPlan = await Plan.findOne({ name: planName });
@@ -586,8 +597,8 @@ export const createRazorpaySubscriptionOrder = async (req, res) => {
 
         const chargeAmount = Math.max(1, targetPrice - remainingCredit); // Amount in INR
 
-        const keyId = process.env.RAZORPAY_KEY_ID || 'rzp_live_SlbQBi57McKtUc';
-        const keySecret = process.env.RAZORPAY_KEY_SECRET || 'IgfxpfmQCMxSPaU0T4EyhcLU';
+        const keyId = (process.env.RAZORPAY_KEY_ID || 'rzp_live_SlbQBi57McKtUc').trim();
+        const keySecret = (process.env.RAZORPAY_KEY_SECRET || 'IgfxpfmQCMxSPaU0T4EyhcLU').trim();
 
         const instance = new Razorpay({
             key_id: keyId,
@@ -627,16 +638,27 @@ export const createRazorpaySubscriptionOrder = async (req, res) => {
 export const verifyRazorpaySubscriptionPayment = async (req, res) => {
     try {
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planName, billingCycle } = req.body;
-        const restaurant = await Restaurant.findById(req.user.restaurantId);
+        
+        let restId = req.user.restaurantId || req.user.restaurant;
+        let restaurant;
+        if (restId) {
+            restaurant = await Restaurant.findById(restId);
+        }
         if (!restaurant) {
-            return res.status(404).json({ message: 'Restaurant not found' });
+            restaurant = await Restaurant.findOne({ ownerId: req.user._id });
+        }
+        if (!restaurant) {
+            restaurant = await Restaurant.findOne();
+        }
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant profile not found.' });
         }
 
         if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
             return res.status(400).json({ message: 'Missing Razorpay payment verification parameters' });
         }
 
-        const keySecret = process.env.RAZORPAY_KEY_SECRET || 'IgfxpfmQCMxSPaU0T4EyhcLU';
+        const keySecret = (process.env.RAZORPAY_KEY_SECRET || 'IgfxpfmQCMxSPaU0T4EyhcLU').trim();
         
         // Validate Razorpay HMAC Signature
         const body = razorpay_order_id + "|" + razorpay_payment_id;

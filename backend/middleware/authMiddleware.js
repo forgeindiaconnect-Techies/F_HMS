@@ -83,8 +83,14 @@ export const checkSubscription = async (req, res, next) => {
         return next(); // SuperAdmin, Customer, or DeliveryPartner, skip
     }
 
-    // Bypass check for subscription routes
-    if (req.originalUrl.includes('/subscribe') || (req.method === 'GET' && req.originalUrl.includes('/mine'))) {
+    // Bypass check for subscription & payment upgrade routes
+    if (
+        req.originalUrl.includes('/subscribe') || 
+        req.originalUrl.includes('/upgrade') || 
+        req.originalUrl.includes('/renew') || 
+        req.originalUrl.includes('/razorpay') || 
+        (req.method === 'GET' && req.originalUrl.includes('/mine'))
+    ) {
         return next();
     }
 

@@ -41,31 +41,31 @@ router.route('/mine')
     .put(protect, authorize('RestaurantAdmin'), logoUpload, updateMyRestaurant);
 
 router.route('/mine/billing-history')
-    .get(protect, authorize('RestaurantAdmin'), getMyBillingHistory);
+    .get(protect, authorize('RestaurantAdmin', 'SuperAdmin', 'Admin'), getMyBillingHistory);
 
 router.route('/mine/upgrade')
-    .post(protect, authorize('RestaurantAdmin'), upgradeSubscription);
+    .post(protect, authorize('RestaurantAdmin', 'SuperAdmin', 'Admin'), upgradeSubscription);
 
 router.route('/mine/downgrade')
-    .post(protect, authorize('RestaurantAdmin'), downgradeSubscription);
+    .post(protect, authorize('RestaurantAdmin', 'SuperAdmin', 'Admin'), downgradeSubscription);
 
 router.route('/mine/renew')
-    .post(protect, authorize('RestaurantAdmin'), renewSubscription);
+    .post(protect, authorize('RestaurantAdmin', 'SuperAdmin', 'Admin'), renewSubscription);
 
 router.route('/mine/razorpay-order')
-    .post(protect, authorize('RestaurantAdmin'), createRazorpaySubscriptionOrder);
+    .post(protect, authorize('RestaurantAdmin', 'SuperAdmin', 'Admin'), createRazorpaySubscriptionOrder);
 
 router.route('/mine/razorpay-verify')
-    .post(protect, authorize('RestaurantAdmin'), verifyRazorpaySubscriptionPayment);
+    .post(protect, authorize('RestaurantAdmin', 'SuperAdmin', 'Admin'), verifyRazorpaySubscriptionPayment);
 
 router.route('/mine/razorpay-qr')
-    .post(protect, authorize('RestaurantAdmin'), generateRazorpaySubscriptionQR);
+    .post(protect, authorize('RestaurantAdmin', 'SuperAdmin', 'Admin'), generateRazorpaySubscriptionQR);
 
 router.route('/mine/confirm-qr-payment')
-    .post(protect, authorize('RestaurantAdmin'), confirmSubscriptionQRPayment);
+    .post(protect, authorize('RestaurantAdmin', 'SuperAdmin', 'Admin'), confirmSubscriptionQRPayment);
 
 router.route('/subscribe')
-    .put(protect, authorize('RestaurantAdmin'), selfSubscribe);
+    .put(protect, authorize('RestaurantAdmin', 'SuperAdmin', 'Admin'), selfSubscribe);
 
 router.route('/')
     .get(getRestaurants)

@@ -224,8 +224,9 @@ const DashboardLayout = () => {
                             window.location.reload();
                         }, 1200);
                     } catch (verifyErr) {
+                        console.error("Razorpay subscription verify error:", verifyErr);
                         setPaymentStatus('failed');
-                        toast.error("Payment verification failed.");
+                        toast.error("Payment verification failed: " + (verifyErr.response?.data?.message || verifyErr.message || "Verification error"));
                     }
                 },
                 prefill: {
