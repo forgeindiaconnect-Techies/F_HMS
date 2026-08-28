@@ -470,3 +470,98 @@ export const refundOrder = async (req, res) => {
         res.status(500).json({ message: 'Refund failed', error: error.message });
     }
 };
+
+// @desc    Create Razorpay Order for Customer Checkout
+// @route   POST /api/orders/razorpay-order
+// @access  Public / Customer
+export const createRazorpayCustomerOrder = async (req, res) => {
+    try {
+        const { amount, currency = 'INR', restaurantId } = req.body;
+        if (!amount || amount <= 0) {
+            return res.status(400).json({ message: 'Valid payment amount is required.' });
+        }
+
+        const Razorpay = (await import('razorpay')).default;
+        const keyId = process.env.RAZORPAY_KEY_ID || 'rzp_live_SlbQBi57McKtUc';
+        const keySecret = process.env.RAZORPAY_KEY_SECRET || 'IgfxpfmQCMxSPaU0T4EyhcLU';
+
+        const instance = new Razorpay({
+            key_id: keyId,
+            key_secret: keySecret,
+        });
+
+        const razorpayOrder = await instance.orders.create({
+            amount: Math.round(amount * 100), // in paise
+            currency: currency,
+            receipt: `food_${Date.now().toString().slice(-8)}`,
+            notes: {
+                restaurantId: restaurantId || '',
+                type: 'Customer Food Order'
+            }
+        });
+
+        res.json({
+            orderId: razorpayOrder.id,
+            amount: amount,
+            amountPaise: Math.round(amount * 100),
+            currency: currency,
+            keyId: keyId
+        });
+    } catch (error) {
+        console.error('Razorpay Customer Order Error:', error);
+        res.status(400).json({ message: error.message || 'Failed to create Razorpay payment order' });
+    }
+};
+
+// @desc    Verify Razorpay Payment and Mark Customer Order as Paid
+// @route   POST /api/orders/razorpay-verify
+// @access  Public / Customer
+export const verifyRazorpayCustomerPayment = async (req, res) => {
+    try {
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId, paymentMethod } = req.body;
+
+        if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+            return res.status(400).json({ message: 'Missing Razorpay signature verification parameters.' });
+        }
+
+        const crypto = (await import('crypto')).default;
+        const keySecret = process.env.RAZORPAY_KEY_SECRET || 'IgfxpfmQCMxSPaU0T4EyhcLU';
+
+        const body = razorpay_order_id + "|" + razorpay_payment_id;
+        const expectedSignature = crypto
+            .createHmac("sha256", keySecret)
+            .update(body.toString())
+            .digest("hex");
+
+        if (expectedSignature !== razorpay_signature) {
+            return res.status(400).json({ message: 'Razorpay payment signature verification failed.' });
+        }
+
+        if (orderId) {
+            const order = await Order.findById(orderId);
+            if (order) {
+                order.isPaid = true;
+                order.paidAt = new Date();
+                order.paymentMethod = paymentMethod || 'Razorpay UPI';
+                order.paymentResult = {
+                    id: razorpay_payment_id,
+                    status: 'captured',
+                    update_time: new Date().toISOString()
+                };
+                await order.save();
+
+                // Broadcast real-time order update
+                broadcastToRestaurant(order.restaurantId, 'order_updated', order);
+                broadcastToCustomerOrder(order._id, 'order_status_updated', order);
+
+                return res.json({ success: true, message: 'Payment verified and order updated!', order });
+            }
+        }
+
+        res.json({ success: true, message: 'Razorpay payment verified successfully!', paymentId: razorpay_payment_id });
+    } catch (error) {
+        console.error('Razorpay Customer Payment Verification Error:', error);
+        res.status(400).json({ message: error.message || 'Payment verification failed' });
+    }
+};
+

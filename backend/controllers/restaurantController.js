@@ -589,31 +589,21 @@ export const createRazorpaySubscriptionOrder = async (req, res) => {
         const keyId = process.env.RAZORPAY_KEY_ID || 'rzp_live_SlbQBi57McKtUc';
         const keySecret = process.env.RAZORPAY_KEY_SECRET || 'IgfxpfmQCMxSPaU0T4EyhcLU';
 
-        let razorpayOrder;
-        try {
-            const instance = new Razorpay({
-                key_id: keyId,
-                key_secret: keySecret
-            });
+        const instance = new Razorpay({
+            key_id: keyId,
+            key_secret: keySecret
+        });
 
-            razorpayOrder = await instance.orders.create({
-                amount: Math.round(chargeAmount * 100), // in paise
-                currency: 'INR',
-                receipt: `sub_${restaurant._id.toString().slice(-6)}_${Date.now().toString().slice(-6)}`,
-                notes: {
-                    restaurantId: restaurant._id.toString(),
-                    planName,
-                    billingCycle
-                }
-            });
-        } catch (rzpErr) {
-            console.error("Razorpay SDK Order Error, generating fallback order ID", rzpErr.message || rzpErr);
-            razorpayOrder = {
-                id: `order_live_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-                amount: Math.round(chargeAmount * 100),
-                currency: 'INR'
-            };
-        }
+        const razorpayOrder = await instance.orders.create({
+            amount: Math.round(chargeAmount * 100), // in paise
+            currency: 'INR',
+            receipt: `sub_${restaurant._id.toString().slice(-6)}_${Date.now().toString().slice(-6)}`,
+            notes: {
+                restaurantId: restaurant._id.toString(),
+                planName,
+                billingCycle
+            }
+        });
 
         res.json({
             orderId: razorpayOrder.id,
@@ -626,7 +616,8 @@ export const createRazorpaySubscriptionOrder = async (req, res) => {
             restaurantName: restaurant.name
         });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        console.error('Razorpay Subscription Order Creation Failed:', error);
+        res.status(400).json({ message: error.message || 'Failed to create Razorpay Order' });
     }
 };
 
@@ -641,19 +632,21 @@ export const verifyRazorpaySubscriptionPayment = async (req, res) => {
             return res.status(404).json({ message: 'Restaurant not found' });
         }
 
+        if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+            return res.status(400).json({ message: 'Missing Razorpay payment verification parameters' });
+        }
+
         const keySecret = process.env.RAZORPAY_KEY_SECRET || 'IgfxpfmQCMxSPaU0T4EyhcLU';
         
-        // Validate Razorpay Signature if signature provided
-        if (razorpay_order_id && razorpay_payment_id && razorpay_signature) {
-            const body = razorpay_order_id + "|" + razorpay_payment_id;
-            const expectedSignature = crypto
-                .createHmac("sha256", keySecret)
-                .update(body.toString())
-                .digest("hex");
+        // Validate Razorpay HMAC Signature
+        const body = razorpay_order_id + "|" + razorpay_payment_id;
+        const expectedSignature = crypto
+            .createHmac("sha256", keySecret)
+            .update(body.toString())
+            .digest("hex");
 
-            if (expectedSignature !== razorpay_signature) {
-                console.warn("Razorpay signature mismatch warning - processing with payment ID fallback");
-            }
+        if (expectedSignature !== razorpay_signature) {
+            return res.status(400).json({ message: 'Razorpay payment signature verification failed!' });
         }
 
         const targetPlan = await Plan.findOne({ name: planName });
@@ -684,7 +677,7 @@ export const verifyRazorpaySubscriptionPayment = async (req, res) => {
         await restaurant.save();
 
         // Record Subscription Payment
-        const txnId = razorpay_payment_id || `PAY-RZP-${Date.now().toString().slice(-8)}`;
+        const txnId = razorpay_payment_id;
         await SubscriptionPayment.create({
             restaurantId: restaurant._id,
             planName,
@@ -699,7 +692,7 @@ export const verifyRazorpaySubscriptionPayment = async (req, res) => {
 
         // Notifications
         await Notification.create({
-            title: 'Subscription Activated (Razorpay Realtime)',
+            title: 'Subscription Activated (Razorpay)',
             desc: `Your subscription to the ${planName} plan has been successfully activated via Razorpay (Txn ID: ${txnId}).`,
             type: 'System',
             restaurantId: restaurant._id
@@ -778,10 +771,9 @@ export const generateRazorpaySubscriptionQR = async (req, res) => {
                 if (qrCode.upi_link) upiString = qrCode.upi_link;
             }
         } catch (qrErr) {
-            console.warn("Official Razorpay QR API call fallback (using standard UPI payload):", qrErr.message || qrErr);
+            console.warn("Official Razorpay QR API call fallback:", qrErr.message || qrErr);
         }
 
-        // Fallback to standard UPI QR payload if Razorpay QR API is disabled on merchant account
         if (!qrImageUrl) {
             qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiString)}`;
         }

@@ -1,5 +1,5 @@
 import express from 'express';
-import { registerUser, loginUser, logoutUser, resendWelcomeEmail, testSendEmail } from '../controllers/authController.js';
+import { registerUser, loginUser, logoutUser, resendWelcomeEmail, testSendEmail, createRazorpayRegistrationOrder } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { verificationUpload } from '../controllers/verificationController.js';
 
@@ -18,6 +18,7 @@ router.post('/login', loginUser);
 router.post('/logout', protect, logoutUser);
 router.post('/resend-welcome-email', resendWelcomeEmail);
 router.post('/test-email', testSendEmail);
+router.post('/razorpay-order', createRazorpayRegistrationOrder);
 
 // Example of a protected route for testing
 router.get('/profile', protect, (req, res) => {

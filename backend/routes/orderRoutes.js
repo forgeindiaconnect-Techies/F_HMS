@@ -8,11 +8,16 @@ import {
     getOrders, 
     updateOrderStatus,
     mergeOrders,
-    refundOrder
+    refundOrder,
+    createRazorpayCustomerOrder,
+    verifyRazorpayCustomerPayment
 } from '../controllers/orderController.js';
 import { protect, optionalProtect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
+
+router.route('/razorpay-order').post(createRazorpayCustomerOrder);
+router.route('/razorpay-verify').post(verifyRazorpayCustomerPayment);
 
 router.route('/')
     .post(optionalProtect, addOrderItems)

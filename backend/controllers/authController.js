@@ -470,3 +470,53 @@ export const testSendEmail = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+// @desc    Create Razorpay Order for New Registration Subscription
+// @route   POST /api/auth/razorpay-order
+// @access  Public
+export const createRazorpayRegistrationOrder = async (req, res) => {
+    try {
+        const { planName, billingCycle, restaurantName } = req.body;
+        const Plan = (await import('../models/Plan.js')).default;
+        const Razorpay = (await import('razorpay')).default;
+
+        const targetPlan = await Plan.findOne({ name: planName });
+        const targetPrice = targetPlan 
+            ? (billingCycle === 'yearly' ? targetPlan.yearlyPrice : targetPlan.monthlyPrice)
+            : (planName === 'Pro' ? (billingCycle === 'yearly' ? 990 : 99) : (billingCycle === 'yearly' ? 1990 : 199));
+
+        const chargeAmount = Math.max(1, targetPrice);
+        const keyId = process.env.RAZORPAY_KEY_ID || 'rzp_live_SlbQBi57McKtUc';
+        const keySecret = process.env.RAZORPAY_KEY_SECRET || 'IgfxpfmQCMxSPaU0T4EyhcLU';
+
+        const instance = new Razorpay({
+            key_id: keyId,
+            key_secret: keySecret
+        });
+
+        const razorpayOrder = await instance.orders.create({
+            amount: Math.round(chargeAmount * 100),
+            currency: 'INR',
+            receipt: `reg_${Date.now().toString().slice(-8)}`,
+            notes: {
+                planName: planName || 'Basic',
+                billingCycle: billingCycle || 'monthly',
+                restaurantName: restaurantName || ''
+            }
+        });
+
+        res.json({
+            orderId: razorpayOrder.id,
+            amount: chargeAmount,
+            amountPaise: Math.round(chargeAmount * 100),
+            currency: 'INR',
+            keyId: keyId,
+            planName,
+            billingCycle
+        });
+    } catch (error) {
+        console.error('Razorpay Registration Order Creation Error:', error);
+        res.status(400).json({ message: error.message || 'Failed to create Razorpay Order' });
+    }
+};
+

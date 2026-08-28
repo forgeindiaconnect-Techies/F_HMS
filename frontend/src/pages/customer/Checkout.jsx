@@ -194,6 +194,20 @@ const Checkout = () => {
         }
     };
 
+    const loadRazorpayScript = () => {
+        return new Promise((resolve) => {
+            if (window.Razorpay) {
+                resolve(true);
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
+    };
+
     const handlePlaceOrder = async (e) => {
         e.preventDefault();
         if (!selectedRestaurantId && !restaurantId) {
@@ -239,13 +253,80 @@ const Checkout = () => {
                 deliveryStatus: orderType === 'Delivery' ? 'Pending Assignment' : undefined
             };
             
-            const { data } = await api.post('/orders', orderData);
-            setOrderPlaced(data._id); // Save order ID for success screen
-            clearCart();
+            // 1. Create order initial entry
+            const { data: createdOrder } = await api.post('/orders', orderData);
+
+            // If Cash on Delivery, complete immediately
+            if (paymentMethod === 'Cash on Delivery') {
+                setOrderPlaced(createdOrder._id);
+                clearCart();
+                setIsPlacingOrder(false);
+                return;
+            }
+
+            // 2. Online Payment / UPI via Razorpay
+            const loaded = await loadRazorpayScript();
+            if (!loaded) {
+                toast.error("Razorpay SDK failed to load. Please check internet connection.");
+                setIsPlacingOrder(false);
+                return;
+            }
+
+            const { data: rzpOrder } = await api.post('/orders/razorpay-order', {
+                amount: grandTotal,
+                currency: 'INR',
+                restaurantId: selectedRestaurantId || restaurantId
+            });
+
+            const razorpayKey = rzpOrder.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_SlbQBi57McKtUc';
+
+            const options = {
+                key: razorpayKey,
+                amount: rzpOrder.amountPaise,
+                currency: rzpOrder.currency || 'INR',
+                name: selectedRestaurantName,
+                description: `Food Order Payment (#${createdOrder._id.slice(-6).toUpperCase()})`,
+                order_id: rzpOrder.orderId,
+                handler: async function (response) {
+                    try {
+                        await api.post('/orders/razorpay-verify', {
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            orderId: createdOrder._id,
+                            paymentMethod: `Razorpay - ${paymentMethod}`
+                        });
+                        toast.success("Payment successful and verified!");
+                        setOrderPlaced(createdOrder._id);
+                        clearCart();
+                    } catch (verifyErr) {
+                        console.error("Order payment verification failed", verifyErr);
+                        toast.error("Payment verification failed. Please contact restaurant.");
+                    } finally {
+                        setIsPlacingOrder(false);
+                    }
+                },
+                prefill: {
+                    name: 'Customer',
+                    email: 'customer@example.com'
+                },
+                theme: {
+                    color: '#ea580c'
+                },
+                modal: {
+                    ondismiss: function() {
+                        setIsPlacingOrder(false);
+                        toast('Payment modal closed. Your order is pending payment.', { icon: 'ℹ️' });
+                    }
+                }
+            };
+
+            const paymentObject = new window.Razorpay(options);
+            paymentObject.open();
+
         } catch (error) {
             console.error('Order failed', error);
             toast.error('Failed to place order: ' + (error.response?.data?.message || error.message));
-        } finally {
             setIsPlacingOrder(false);
         }
     };
