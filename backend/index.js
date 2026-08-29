@@ -72,6 +72,10 @@ app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'ok', time: new Date().toISOString() });
 });
 
+app.get('/api', (req, res) => {
+    res.status(200).json({ status: 'ok', message: 'Restaurant SaaS API Root Service' });
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/menu', menuRoutes);
