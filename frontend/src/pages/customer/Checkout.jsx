@@ -317,10 +317,10 @@ const Checkout = () => {
                     </div>
                     
                     <button 
-                        onClick={() => navigate('/profile')}
-                        className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-600/20 active:scale-95"
+                        onClick={() => navigate(`/track/${orderPlaced}`)}
+                        className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-600/20 active:scale-95 cursor-pointer"
                     >
-                        View Dashboard <ArrowRight size={18} />
+                        Track Live Order Progress <ArrowRight size={18} />
                     </button>
                 </div>
             </div>
