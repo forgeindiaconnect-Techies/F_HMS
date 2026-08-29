@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { 
     Coffee, Pizza, Utensils, GlassWater, IceCream, ChefHat, 
     Sparkles, ArrowRight, Play, Pause, Volume2, VolumeX, Eye, 
-    RotateCcw, Compass, MapPin, CheckCircle2, ChevronRight, Layers, Flame, Award
+    RotateCcw, Compass, MapPin, CheckCircle2, ChevronRight, Layers, Flame, Award, Users, User
 } from 'lucide-react';
 
 const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone = false }) => {
@@ -56,7 +56,15 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         drinkBubbles: [],
         kitchenFireParticles: [],
         chefKnife: null,
-        waiterModel: null,
+        
+        // Human Working Avatars
+        chefAvatar: null,
+        waiterAvatar: null,
+        hostAvatar: null,
+        cashierAvatar: null,
+        customer1Avatar: null,
+        customer2Avatar: null,
+        courierAvatar: null,
 
         // User interaction
         pointerX: 0,
@@ -113,36 +121,36 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
     const chapters = [
         {
             id: 0,
-            title: "Grand Arrival & Entrance",
-            subtitle: "The restaurant emerges with glowing neon signboards, automatic glass entry doors, and kitchen chimney smoke.",
+            title: "Grand Entrance & Host Greeting",
+            subtitle: "The restaurant facade illuminates as host welcomes incoming guests through opening glass doors.",
             icon: "🏰",
             badge: "01 / STORY ENGINE"
         },
         {
             id: 1,
-            title: "Customer Welcome & Dining Seating",
-            subtitle: "Step into warm ambient lighting. Host greets you as chairs slide in smoothly for your table arrangement.",
+            title: "Customer Journey & Seating",
+            subtitle: "Step into warm ambient lighting. Seated customers converse as chairs slide in smoothly for your table.",
             icon: "🍷",
             badge: "02 / ATMOSPHERE"
         },
         {
             id: 2,
             title: "Micro-Animation Culinary Crafting",
-            subtitle: "Interactive 3D preparation of signature items: Coffee pours, pizza bakes, burgers stack, desserts swirl.",
+            subtitle: "Interactive 3D dish preparation: Coffee pours, pizza bakes, burgers stack, cocktails effervesce.",
             icon: "☕",
             badge: "03 / DISH EXPERIENCE"
         },
         {
             id: 3,
-            title: "Kitchen Workflow & Flaming Stoves",
-            subtitle: "Sizzling stoves, knife precision chopping, steam rising, and live order routing to KDS displays.",
+            title: "Master Chef Kitchen & Flaming Stoves",
+            subtitle: "Sizzling gas stoves, chef knife chopping, and real-time order routing to kitchen displays.",
             icon: "🔥",
             badge: "04 / KITCHEN ENGINE"
         },
         {
             id: 4,
-            title: "Plating & Service Delivery",
-            subtitle: "Waiters collect freshly prepared dishes and dispatch instant orders directly to customers.",
+            title: "Waiter Plating & Delivery Partner Dispatch",
+            subtitle: "Head waiter collects plated cloche trays while courier partners dispatch orders to customers.",
             icon: "✨",
             badge: "05 / EXPRESS SERVICE"
         }
@@ -256,9 +264,155 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         const goldMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.3, metalness: 0.8 });
         const mahoganyMat = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.4 });
         const neonRedMat = new THREE.MeshBasicMaterial({ color: 0xff2d55 });
-        const neonOrangeMat = new THREE.MeshBasicMaterial({ color: 0xff6a00 });
         const whiteMarbleMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.15, metalness: 0.1 });
         const stainlessSteelMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 0.9, roughness: 0.15 });
+
+        // -------------------------------------------------------------
+        // PROCEDURAL REALISTIC 3D HUMAN AVATAR CREATOR FUNCTION
+        // -------------------------------------------------------------
+        const buildRealisticHuman = ({
+            role = 'chef',
+            skinTone = 0xe0ac69,
+            shirtColor = 0xffffff,
+            pantsColor = 0x0f172a,
+            apronColor = null,
+            hairColor = 0x1e293b,
+            isSeated = false
+        }) => {
+            const avatarGroup = new THREE.Group();
+
+            // Materials
+            const skinMat = new THREE.MeshStandardMaterial({ color: skinTone, roughness: 0.6 });
+            const shirtMat = new THREE.MeshStandardMaterial({ color: shirtColor, roughness: 0.5 });
+            const pantsMat = new THREE.MeshStandardMaterial({ color: pantsColor, roughness: 0.6 });
+            const hairMat = new THREE.MeshStandardMaterial({ color: hairColor, roughness: 0.8 });
+
+            // 1. Head & Face
+            const headGeo = new THREE.SphereGeometry(0.32, 24, 20);
+            const headMesh = new THREE.Mesh(headGeo, skinMat);
+            headMesh.position.y = isSeated ? 1.7 : 2.4;
+            headMesh.castShadow = true;
+            avatarGroup.add(headMesh);
+
+            // Hair Style
+            const hairGeo = new THREE.SphereGeometry(0.34, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2);
+            const hairMesh = new THREE.Mesh(hairGeo, hairMat);
+            hairMesh.position.set(0, isSeated ? 1.75 : 2.45, 0);
+            avatarGroup.add(hairMesh);
+
+            // Eye Dots
+            for (let eyeX of [-0.1, 0.1]) {
+                const eyeGeo = new THREE.SphereGeometry(0.04, 8, 8);
+                const eyeMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
+                const eyeMesh = new THREE.Mesh(eyeGeo, eyeMat);
+                eyeMesh.position.set(eyeX, isSeated ? 1.76 : 2.46, 0.28);
+                avatarGroup.add(eyeMesh);
+            }
+
+            // Role Headwear (Chef Hat or Courier Helmet)
+            if (role === 'chef') {
+                const hatMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
+                const hatBase = new THREE.Mesh(new THREE.CylinderGeometry(0.33, 0.33, 0.25, 24), hatMat);
+                hatBase.position.y = 2.65;
+                avatarGroup.add(hatBase);
+
+                const hatTop = new THREE.Mesh(new THREE.SphereGeometry(0.48, 24, 16), hatMat);
+                hatTop.position.y = 2.95;
+                hatTop.scale.set(1, 0.7, 1);
+                avatarGroup.add(hatTop);
+            } else if (role === 'courier') {
+                const helmetMat = new THREE.MeshStandardMaterial({ color: 0xe11d48, roughness: 0.3, metalness: 0.4 });
+                const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.38, 24, 16), helmetMat);
+                helmet.position.y = 2.45;
+                avatarGroup.add(helmet);
+
+                const visorMat = new THREE.MeshPhysicalMaterial({ color: 0x0f172a, roughness: 0.1, transmission: 0.8 });
+                const visor = new THREE.Mesh(new THREE.CylinderGeometry(0.39, 0.39, 0.18, 16, 1, false, -Math.PI / 3, (2 * Math.PI) / 3), visorMat);
+                visor.position.set(0, 2.42, 0.05);
+                avatarGroup.add(visor);
+            }
+
+            // 2. Neck
+            const neckGeo = new THREE.CylinderGeometry(0.12, 0.14, 0.2, 16);
+            const neckMesh = new THREE.Mesh(neckGeo, skinMat);
+            neckMesh.position.y = isSeated ? 1.4 : 2.1;
+            avatarGroup.add(neckMesh);
+
+            // 3. Torso Body
+            const torsoGeo = new THREE.CylinderGeometry(0.38, 0.32, 1.1, 24);
+            const torsoMesh = new THREE.Mesh(torsoGeo, shirtMat);
+            torsoMesh.position.y = isSeated ? 0.75 : 1.45;
+            torsoMesh.castShadow = true;
+            avatarGroup.add(torsoMesh);
+
+            // Apron Layer
+            if (apronColor) {
+                const apronGeo = new THREE.BoxGeometry(0.55, 0.85, 0.05);
+                const apronMat = new THREE.MeshStandardMaterial({ color: apronColor, roughness: 0.6 });
+                const apronMesh = new THREE.Mesh(apronGeo, apronMat);
+                apronMesh.position.set(0, isSeated ? 0.65 : 1.25, 0.33);
+                avatarGroup.add(apronMesh);
+            }
+
+            // 4. Arm Articulated Groups (Left & Right)
+            const armGeo = new THREE.CylinderGeometry(0.09, 0.08, 0.85, 16);
+
+            // Left Arm
+            const leftArmGroup = new THREE.Group();
+            leftArmGroup.position.set(-0.44, isSeated ? 1.2 : 1.9, 0);
+            const leftArmMesh = new THREE.Mesh(armGeo, shirtMat);
+            leftArmMesh.position.y = -0.42;
+            leftArmGroup.add(leftArmMesh);
+
+            const leftHand = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 12), skinMat);
+            leftHand.position.y = -0.88;
+            leftArmGroup.add(leftHand);
+            avatarGroup.add(leftArmGroup);
+
+            // Right Arm
+            const rightArmGroup = new THREE.Group();
+            rightArmGroup.position.set(0.44, isSeated ? 1.2 : 1.9, 0);
+            const rightArmMesh = new THREE.Mesh(armGeo, shirtMat);
+            rightArmMesh.position.y = -0.42;
+            rightArmGroup.add(rightArmMesh);
+
+            const rightHand = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 12), skinMat);
+            rightHand.position.y = -0.88;
+            rightArmGroup.add(rightHand);
+            avatarGroup.add(rightArmGroup);
+
+            // 5. Legs (Standing vs Seated pose)
+            if (isSeated) {
+                // Thighs bending forward
+                for (let lx of [-0.2, 0.2]) {
+                    const thighGeo = new THREE.CylinderGeometry(0.12, 0.1, 0.6, 16);
+                    const thighMesh = new THREE.Mesh(thighGeo, pantsMat);
+                    thighMesh.position.set(lx, 0.3, 0.3);
+                    thighMesh.rotation.x = Math.PI / 2;
+                    avatarGroup.add(thighMesh);
+
+                    const shinGeo = new THREE.CylinderGeometry(0.1, 0.09, 0.6, 16);
+                    const shinMesh = new THREE.Mesh(shinGeo, pantsMat);
+                    shinMesh.position.set(lx, -0.2, 0.58);
+                    avatarGroup.add(shinMesh);
+                }
+            } else {
+                for (let lx of [-0.2, 0.2]) {
+                    const legGeo = new THREE.CylinderGeometry(0.12, 0.1, 1.0, 16);
+                    const legMesh = new THREE.Mesh(legGeo, pantsMat);
+                    legMesh.position.set(lx, 0.5, 0);
+                    avatarGroup.add(legMesh);
+
+                    const shoeGeo = new THREE.BoxGeometry(0.16, 0.12, 0.32);
+                    const shoeMat = new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.3 });
+                    const shoeMesh = new THREE.Mesh(shoeGeo, shoeMat);
+                    shoeMesh.position.set(lx, 0.06, 0.08);
+                    avatarGroup.add(shoeMesh);
+                }
+            }
+
+            return { avatarGroup, leftArmGroup, rightArmGroup, headMesh };
+        };
 
         // -------------------------------------------------------------
         // ENVIRONMENT 1: EXTERIOR BUILDING & ENTRANCE (CH 0)
@@ -350,6 +504,21 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         }
 
         // -------------------------------------------------------------
+        // AVATAR 1: HOSTESS AT ENTRANCE PODIUM (CH 0)
+        // -------------------------------------------------------------
+        const hostPerson = buildRealisticHuman({
+            role: 'host',
+            skinTone: 0xf5d0a9,
+            shirtColor: 0x9f1239, // Elegant Rose Velvet Blazer
+            pantsColor: 0x0f172a,
+            hairColor: 0x451a03
+        });
+        hostPerson.avatarGroup.position.set(-2.5, 0, 4.2);
+        hostPerson.avatarGroup.rotation.y = 0.4;
+        buildingGroup.add(hostPerson.avatarGroup);
+        threeRef.current.hostAvatar = hostPerson;
+
+        // -------------------------------------------------------------
         // ENVIRONMENT 2: DINING ROOM & SEATING JOURNEY (CH 1)
         // -------------------------------------------------------------
         const diningGroup = new THREE.Group();
@@ -432,6 +601,35 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
             chairsList.push({ group: chairGroup, basePos: new THREE.Vector3(x, 0, z), targetDist: pos.dist });
         });
         threeRef.current.chairs = chairsList;
+
+        // -------------------------------------------------------------
+        // AVATARS 2 & 3: SEATED DINING CUSTOMERS AT TABLE (CH 1)
+        // -------------------------------------------------------------
+        const cust1Person = buildRealisticHuman({
+            role: 'customer',
+            skinTone: 0xd2b48c,
+            shirtColor: 0x0284c7, // Sky Blue Silk Shirt
+            pantsColor: 0x1e293b,
+            hairColor: 0x0f172a,
+            isSeated: true
+        });
+        cust1Person.avatarGroup.position.set(1.8, 0.7, -1);
+        cust1Person.avatarGroup.rotation.y = -Math.PI / 2;
+        diningGroup.add(cust1Person.avatarGroup);
+        threeRef.current.customer1Avatar = cust1Person;
+
+        const cust2Person = buildRealisticHuman({
+            role: 'customer',
+            skinTone: 0xf5d0a9,
+            shirtColor: 0xe11d48, // Crimson Red Dress
+            pantsColor: 0x1e293b,
+            hairColor: 0xd97706,
+            isSeated: true
+        });
+        cust2Person.avatarGroup.position.set(-1.8, 0.7, -1);
+        cust2Person.avatarGroup.rotation.y = Math.PI / 2;
+        diningGroup.add(cust2Person.avatarGroup);
+        threeRef.current.customer2Avatar = cust2Person;
 
         // Swaying Overhead Pendant Lights
         const hangingLightsList = [];
@@ -771,6 +969,32 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
 
         threeRef.current.chefKnife = knifeGroup;
 
+        // -------------------------------------------------------------
+        // AVATAR 4: MASTER CHEF COOKING AT STOVE (CH 3)
+        // -------------------------------------------------------------
+        const chefPerson = buildRealisticHuman({
+            role: 'chef',
+            skinTone: 0xe0ac69,
+            shirtColor: 0xffffff,
+            pantsColor: 0x0f172a,
+            apronColor: 0x1e293b
+        });
+        chefPerson.avatarGroup.position.set(-10, 0, -9.2);
+        kitchenGroup.add(chefPerson.avatarGroup);
+        threeRef.current.chefAvatar = chefPerson;
+
+        // Skillet Pan in Chef's Hand
+        const panGeo = new THREE.CylinderGeometry(0.45, 0.4, 0.1, 24);
+        const panMesh = new THREE.Mesh(panGeo, wallMat);
+        panMesh.position.set(-0.2, 1.48, 0.9);
+        chefPerson.avatarGroup.add(panMesh);
+
+        const panHandleGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.6, 12);
+        const panHandleMesh = new THREE.Mesh(panHandleGeo, wallMat);
+        panHandleMesh.position.set(0.2, 1.48, 0.9);
+        panHandleMesh.rotation.z = Math.PI / 2;
+        chefPerson.avatarGroup.add(panHandleMesh);
+
 
         // -------------------------------------------------------------
         // ENVIRONMENT 5: WAITER & SERVICE DELIVERY (CH 4)
@@ -784,22 +1008,51 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         serviceGroup.add(waiterGroup);
         threeRef.current.waiterModel = waiterGroup;
 
-        // Tray Model
-        const trayGeo = new THREE.CylinderGeometry(1.2, 1.2, 0.06, 32);
+        // -------------------------------------------------------------
+        // AVATAR 5: HEAD WAITER SERVING PLATED DISH (CH 4)
+        // -------------------------------------------------------------
+        const waiterPerson = buildRealisticHuman({
+            role: 'waiter',
+            skinTone: 0xf5d0a9,
+            shirtColor: 0xffffff,
+            pantsColor: 0x0f172a,
+            apronColor: 0x0f172a,
+            hairColor: 0x0f172a
+        });
+        waiterPerson.avatarGroup.position.set(0, 0, 0);
+        waiterGroup.add(waiterPerson.avatarGroup);
+        threeRef.current.waiterAvatar = waiterPerson;
+
+        // Tray Model held by Waiter
+        const trayGeo = new THREE.CylinderGeometry(1.0, 1.0, 0.06, 32);
         const trayMesh = new THREE.Mesh(trayGeo, stainlessSteelMat);
-        trayMesh.position.set(0, 1.8, 0);
+        trayMesh.position.set(0, 1.9, 0.6);
         waiterGroup.add(trayMesh);
 
         // Cloche Dome Cover
-        const clocheGeo = new THREE.SphereGeometry(0.9, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+        const clocheGeo = new THREE.SphereGeometry(0.75, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2);
         const clocheMesh = new THREE.Mesh(clocheGeo, stainlessSteelMat);
-        clocheMesh.position.set(0, 1.83, 0);
+        clocheMesh.position.set(0, 1.93, 0.6);
         waiterGroup.add(clocheMesh);
 
-        const clocheKnobGeo = new THREE.SphereGeometry(0.12, 12, 12);
+        const clocheKnobGeo = new THREE.SphereGeometry(0.1, 12, 12);
         const clocheKnob = new THREE.Mesh(clocheKnobGeo, goldMat);
-        clocheKnob.position.set(0, 2.75, 0);
+        clocheKnob.position.set(0, 2.68, 0.6);
         waiterGroup.add(clocheKnob);
+
+        // -------------------------------------------------------------
+        // AVATAR 6: DELIVERY COURIER PARTNER (CH 4)
+        // -------------------------------------------------------------
+        const courierPerson = buildRealisticHuman({
+            role: 'courier',
+            skinTone: 0xd2b48c,
+            shirtColor: 0xe11d48, // Delivery Partner Red/Black Jacket
+            pantsColor: 0x0f172a,
+            hairColor: 0x0f172a
+        });
+        courierPerson.avatarGroup.position.set(2.5, 0, 1.2);
+        serviceGroup.add(courierPerson.avatarGroup);
+        threeRef.current.courierAvatar = courierPerson;
 
 
         // -------------------------------------------------------------
@@ -915,10 +1168,67 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
                 threeRef.current.chefKnife.rotation.z = Math.sin(elapsed * 6) * 0.15;
             }
 
-            // 8. WAITER GENTLE FLOAT
-            if (threeRef.current.waiterModel) {
-                threeRef.current.waiterModel.position.y = Math.sin(elapsed * 2) * 0.08;
+            // -------------------------------------------------------------
+            // 8. WORKING HUMAN AVATARS LIVE ANIMATION LOOPS
+            // -------------------------------------------------------------
+
+            // 8A. HOSTESS WELCOMING GESTURE AT PODIUM
+            if (threeRef.current.hostAvatar) {
+                const { rightArmGroup, headMesh } = threeRef.current.hostAvatar;
+                // Right arm waving gesture
+                rightArmGroup.rotation.z = Math.sin(elapsed * 3) * 0.35 + 0.4;
+                rightArmGroup.rotation.x = Math.cos(elapsed * 2) * 0.2;
+                headMesh.rotation.y = Math.sin(elapsed * 1.5) * 0.2;
             }
+
+            // 8B. MASTER CHEF COOKING & PAN TOSSING MOTION
+            if (threeRef.current.chefAvatar) {
+                const { leftArmGroup, rightArmGroup, avatarGroup } = threeRef.current.chefAvatar;
+                // Left arm tossing pan over stove
+                leftArmGroup.rotation.x = -0.6 + Math.sin(elapsed * 4) * 0.2;
+                leftArmGroup.rotation.z = 0.2;
+                // Right arm stirring spoon/spatula
+                rightArmGroup.rotation.x = -0.5 + Math.cos(elapsed * 5) * 0.25;
+                rightArmGroup.rotation.y = Math.sin(elapsed * 5) * 0.3;
+                avatarGroup.position.y = Math.abs(Math.sin(elapsed * 4)) * 0.05;
+            }
+
+            // 8C. HEAD WAITER SERVING WALK & TRAY BALANCE
+            if (threeRef.current.waiterAvatar) {
+                const { leftArmGroup, rightArmGroup, avatarGroup } = threeRef.current.waiterAvatar;
+                // Holding tray high up
+                rightArmGroup.rotation.x = -1.2;
+                rightArmGroup.rotation.z = -0.3;
+                leftArmGroup.rotation.x = Math.sin(elapsed * 2) * 0.25;
+                avatarGroup.position.y = Math.abs(Math.sin(elapsed * 3)) * 0.06;
+            }
+
+            // 8D. SEATED CUSTOMERS DINING CONVERSATION & DRINK SIPPING
+            if (threeRef.current.customer1Avatar) {
+                const { rightArmGroup, headMesh } = threeRef.current.customer1Avatar;
+                // Customer 1 sipping drink / coffee
+                rightArmGroup.rotation.x = -0.8 + Math.sin(elapsed * 1.2) * 0.3;
+                rightArmGroup.rotation.z = -0.2;
+                headMesh.rotation.x = Math.sin(elapsed * 1.2) * 0.1;
+            }
+
+            if (threeRef.current.customer2Avatar) {
+                const { leftArmGroup, rightArmGroup, headMesh } = threeRef.current.customer2Avatar;
+                // Customer 2 conversing with hand gestures & head nod
+                leftArmGroup.rotation.x = -0.4 + Math.cos(elapsed * 2) * 0.2;
+                rightArmGroup.rotation.x = -0.5 + Math.sin(elapsed * 2.5) * 0.25;
+                headMesh.rotation.y = Math.sin(elapsed * 2) * 0.15;
+            }
+
+            // 8E. COURIER PARTNER SMARTPHONE DISPATCH CHECK
+            if (threeRef.current.courierAvatar) {
+                const { rightArmGroup, headMesh } = threeRef.current.courierAvatar;
+                // Right arm holding phone
+                rightArmGroup.rotation.x = -0.8 + Math.sin(elapsed * 1.5) * 0.1;
+                rightArmGroup.rotation.y = -0.3;
+                headMesh.rotation.y = Math.sin(elapsed * 1.2) * 0.15;
+            }
+
 
             // -------------------------------------------------------------
             // CAMERA POSITIONING & CHAPTER STORYTELLING PATH INTERPOLATION
@@ -929,7 +1239,7 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
                 let targetLook = new THREE.Vector3(0, 2, 0);
 
                 if (activeChapter === 0) {
-                    // Chapter 0: Entrance Fly-In
+                    // Chapter 0: Entrance Fly-In & Hostess Greeting
                     targetEye.set(0, 7 - scrollProgress * 5, 26 - scrollProgress * 15);
                     targetLook.set(0, 4, 10);
 
@@ -938,7 +1248,7 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
                     if (threeRef.current.doorsLeft) threeRef.current.doorsLeft.position.x = -0.95 - doorOpenDist;
                     if (threeRef.current.doorsRight) threeRef.current.doorsRight.position.x = 0.95 + doorOpenDist;
                 } else if (activeChapter === 1) {
-                    // Chapter 1: Dining Walkthrough & Chairs Slide In
+                    // Chapter 1: Dining Walkthrough & Seated Customers
                     targetEye.set(3, 4.5, 7);
                     targetLook.set(0, 1.4, -1);
 
@@ -959,11 +1269,11 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
                         threeRef.current.dishGroup.rotation.y += delta * 0.5;
                     }
                 } else if (activeChapter === 3) {
-                    // Chapter 3: Kitchen Workflow
+                    // Chapter 3: Master Chef Kitchen Workflow
                     targetEye.set(-7, 4.2, -3);
                     targetLook.set(-10, 2, -8);
                 } else if (activeChapter === 4) {
-                    // Chapter 4: Service Delivery
+                    // Chapter 4: Waiter Service & Courier Partner Delivery
                     targetEye.set(6, 4.0, 1);
                     targetLook.set(8, 1.8, -4);
                 }
@@ -1053,6 +1363,12 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
 
                 {/* Right Action Tools: Mute, Orbit Toggle, Story Jump */}
                 <div className="flex items-center gap-2">
+                    {/* Active Staff Indicator Badge */}
+                    <div className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-slate-700/80 text-emerald-400 font-bold text-xs">
+                        <Users size={15} className="animate-pulse" />
+                        <span>Live Working Avatars (Staff & Guests)</span>
+                    </div>
+
                     {/* Mute / Audio Toggle */}
                     <button
                         onClick={toggleAudio}
