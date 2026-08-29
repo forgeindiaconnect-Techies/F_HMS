@@ -281,7 +281,7 @@ const WaiterDashboard = () => {
             case 'Available': return 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100/50';
             case 'Occupied': return 'bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100/50';
             case 'Reserved': return 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-50';
-            case 'Cleaning': return 'bg-gray-150 border-gray-250 text-gray-655 hover:bg-gray-200/50';
+            case 'Cleaning': return 'bg-gray-100 border-gray-200 text-gray-600 hover:bg-gray-200/50';
             case 'Billing': return 'bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100/50';
             default: return 'bg-gray-50 border-gray-200 text-gray-700';
         }
@@ -294,7 +294,7 @@ const WaiterDashboard = () => {
         <div className="max-w-[1600px] mx-auto space-y-6 relative h-full flex flex-col">
             
             {/* View Mode Switcher */}
-            <div className="flex gap-4 bg-white p-2 rounded-2xl border border-gray-150 shadow-sm shrink-0">
+            <div className="flex gap-4 bg-white p-2 rounded-2xl border border-gray-200 shadow-sm shrink-0">
                 <button
                     onClick={() => setViewMode('DineIn')}
                     className={`flex-1 py-3 text-center rounded-xl font-bold transition-all cursor-pointer text-sm md:text-base flex items-center justify-center gap-2 ${
@@ -309,7 +309,7 @@ const WaiterDashboard = () => {
                     onClick={() => setViewMode('SelfPickup')}
                     className={`flex-1 py-3 text-center rounded-xl font-bold transition-all relative cursor-pointer text-sm md:text-base flex items-center justify-center gap-2 ${
                         viewMode === 'SelfPickup'
-                        ? 'bg-orange-650 text-white shadow-md'
+                        ? 'bg-orange-600 text-white shadow-md'
                         : 'text-gray-600 hover:bg-gray-50'
                     }`}
                 >
@@ -349,7 +349,7 @@ const WaiterDashboard = () => {
 
                                     <button 
                                         onClick={() => setStatusFilter('All')} 
-                                        className={`px-3 py-1.5 rounded-full text-xs font-black border transition-colors ${statusFilter === 'All' ? 'bg-gray-905 text-white border-gray-905 shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
+                                        className={`px-3 py-1.5 rounded-full text-xs font-black border transition-colors ${statusFilter === 'All' ? 'bg-gray-900 text-white border-gray-900 shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
                                     >
                                         All Statuses
                                     </button>
@@ -453,7 +453,7 @@ const WaiterDashboard = () => {
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
                                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500"></span>
                                 </span>
-                                <h3 className="text-xs font-black text-orange-655 tracking-wider uppercase flex items-center gap-1.5">
+                                <h3 className="text-xs font-black text-orange-600 tracking-wider uppercase flex items-center gap-1.5">
                                     <UtensilsCrossed size={14} /> Counter Transfers ({selfPickupOrders.length})
                                 </h3>
                             </div>
@@ -468,7 +468,7 @@ const WaiterDashboard = () => {
                                         </div>
                                         <button 
                                             onClick={() => handleUpdateStatus(order._id, 'Picked Up')}
-                                            className="p-2 bg-orange-600 hover:bg-orange-755 text-white rounded-xl transition-colors flex items-center justify-center shadow-sm cursor-pointer"
+                                            className="p-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl transition-colors flex items-center justify-center shadow-sm cursor-pointer"
                                             title="Move to Counter"
                                         >
                                             <Check size={12} />
@@ -551,7 +551,7 @@ const WaiterDashboard = () => {
                                             {table.orders.status === 'Ready' ? (
                                                 <button 
                                                     onClick={() => handleUpdateStatus(table.orders._id, 'Served')} 
-                                                    className="bg-green-650 hover:bg-green-700 text-white px-3.5 py-1.5 rounded-xl text-[10px] font-black transition-colors shadow-sm flex items-center gap-1 cursor-pointer"
+                                                    className="bg-green-600 hover:bg-green-700 text-white px-3.5 py-1.5 rounded-xl text-[10px] font-black transition-colors shadow-sm flex items-center gap-1 cursor-pointer"
                                                 >
                                                     <CheckCircle size={12} /> Serve Food
                                                 </button>
@@ -736,7 +736,7 @@ const WaiterDashboard = () => {
                                     <div className="mt-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 text-xs">
                                         <div className="flex justify-between items-center mb-2">
                                             <p className="font-black text-slate-700">Already Sent Items</p>
-                                            <span className="text-indigo-650 font-black uppercase text-[10px]">{activeTable.orders.status}</span>
+                                            <span className="text-indigo-600 font-black uppercase text-[10px]">{activeTable.orders.status}</span>
                                         </div>
                                         <ul className="text-slate-500 list-disc list-inside space-y-1 font-semibold">
                                             {activeTable.orders.orderItems.map((i, idx) => (
