@@ -67,6 +67,7 @@ import CashierDashboard from './pages/staff/CashierDashboard';
 import CashierHistory from './pages/staff/CashierHistory';
 import Home from './pages/customer/Home';
 import ThreeDemoShowcase from './pages/customer/ThreeDemoShowcase';
+import ChaiTheoryShowcase from './pages/customer/ChaiTheoryShowcase';
 import Explore from './pages/customer/Explore';
 import Menu from './pages/customer/Menu';
 import RestaurantDetails from './pages/customer/RestaurantDetails';
@@ -160,6 +161,7 @@ function App() {
 
         {/* Standalone 3D Interactive Showcase Page */}
         <Route path="/3d-demo" element={<ThreeDemoShowcase />} />
+        <Route path="/chai-theory" element={<ChaiTheoryShowcase />} />
 
         {/* Public QR ordering flow */}
         <Route path="/customer/menu" element={<CustomerMenu />} />
