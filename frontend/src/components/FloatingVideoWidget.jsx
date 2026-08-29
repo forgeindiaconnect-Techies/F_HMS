@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Volume2, VolumeX, Play, Pause, Maximize, Minimize } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 const FloatingVideoWidget = () => {
+    const location = useLocation();
     const [isVisible, setIsVisible] = useState(true);
     const [isMuted, setIsMuted] = useState(true);
     const [isPlaying, setIsPlaying] = useState(true);
@@ -15,6 +17,12 @@ const FloatingVideoWidget = () => {
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
     }, []);
+
+    // Only display on the main restaurant landing page ('/')
+    if (location.pathname !== '/') {
+        return null;
+    }
+
 
     if (!isVisible) {
         return (

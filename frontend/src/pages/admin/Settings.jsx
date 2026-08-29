@@ -25,9 +25,14 @@ const Settings = () => {
     // Build full URL for a logo path from the backend
     const getLogoUrl = (logoPath) => {
         if (!logoPath) return null;
-        if (logoPath.startsWith('http')) return logoPath;
-        const base = new URL(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').origin;
-        return `${base}${logoPath}`;
+        if (logoPath.startsWith('http') || logoPath.startsWith('data:')) return logoPath;
+        const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        try {
+            const origin = new URL(apiBase).origin;
+            return `${origin}${logoPath.startsWith('/') ? '' : '/'}${logoPath}`;
+        } catch (e) {
+            return logoPath;
+        }
     };
 
     useEffect(() => {
