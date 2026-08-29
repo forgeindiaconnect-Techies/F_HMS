@@ -3,7 +3,8 @@ import * as THREE from 'three';
 import { 
     Coffee, Pizza, Utensils, GlassWater, IceCream, ChefHat, 
     Sparkles, ArrowRight, Play, Pause, Volume2, VolumeX, Eye, 
-    RotateCcw, Compass, MapPin, CheckCircle2, ChevronRight, Layers, Flame, Award, Users, User
+    RotateCcw, Compass, MapPin, CheckCircle2, ChevronRight, Layers, Flame, Award, Users, User,
+    ZoomIn, ZoomOut, Maximize2
 } from 'lucide-react';
 
 const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone = false }) => {
@@ -13,10 +14,10 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
     // Interactive State
     const [scrollProgress, setScrollProgress] = useState(0); // 0 to 1
     const [activeChapter, setActiveChapter] = useState(0); // 0: Arrival, 1: Journey, 2: Crafting, 3: Kitchen, 4: Service
-    const [activeDish, setActiveDish] = useState('coffee'); // 'coffee' | 'pizza' | 'burger' | 'dessert' | 'drink'
+    const [activeDish, setActiveDish] = useState('drink'); // 'coffee' | 'pizza' | 'burger' | 'dessert' | 'drink'
     const [isOrbitMode, setIsOrbitMode] = useState(false);
     const [isAudioMuted, setIsAudioMuted] = useState(true);
-    const [isPlayingAnimation, setIsPlayingAnimation] = useState(true);
+    const [zoomLevel, setZoomLevel] = useState(1.0); // 0.5 to 2.5x
 
     // Audio Context Ref for Synthesized Ambient Sound (Zero external audio file dependencies)
     const audioCtxRef = useRef(null);
@@ -69,6 +70,7 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         isPointerDown: false,
         dragRotationX: 0,
         dragRotationY: 0,
+        touchStartDist: 0,
     });
 
     // Sound Synthesizer using Web Audio API
@@ -114,6 +116,11 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         }
     };
 
+    // Zoom Helpers
+    const handleZoomIn = () => setZoomLevel(prev => Math.min(2.5, +(prev + 0.25).toFixed(2)));
+    const handleZoomOut = () => setZoomLevel(prev => Math.max(0.5, +(prev - 0.25).toFixed(2)));
+    const handleResetZoom = () => setZoomLevel(1.0);
+
     // Chapter Definitions
     const chapters = [
         {
@@ -133,8 +140,8 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         {
             id: 2,
             title: "Table Center Dish Crafting",
-            subtitle: "Watch signature items prepare in 3D right on the center of your table: Coffee, pizza, burger, cocktail.",
-            icon: "☕",
+            subtitle: "Watch signature items prepare in 3D right on the center of your table: Electric Blue Cocktail, Pizza, Burger.",
+            icon: "🍹",
             badge: "03 / DISH EXPERIENCE"
         },
         {
@@ -198,7 +205,7 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         threeRef.current.scene = scene;
 
         // 2. CAMERA SETUP
-        const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(40 / zoomLevel, width / height, 0.1, 1000);
         camera.position.set(0, 8, 25);
         threeRef.current.camera = camera;
 
@@ -658,7 +665,6 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
             hairColor: 0x0f172a,
             isSeated: true
         });
-        // Seated comfortably in East chair with bottom resting at y=0.0
         cust1Person.avatarGroup.position.set(2.0, 0, -1.0);
         cust1Person.avatarGroup.rotation.y = -Math.PI / 2;
         diningGroup.add(cust1Person.avatarGroup);
@@ -672,7 +678,6 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
             hairColor: 0xd97706,
             isSeated: true
         });
-        // Seated comfortably in West chair
         cust2Person.avatarGroup.position.set(-2.0, 0, -1.0);
         cust2Person.avatarGroup.rotation.y = Math.PI / 2;
         diningGroup.add(cust2Person.avatarGroup);
@@ -716,8 +721,9 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         pedBaseMesh.position.y = 0.01;
         dishStageGroup.add(pedBaseMesh);
 
-        // 3A. COFFEE EXPERIENCE DISH (On Table Center)
+        // 3A. COFFEE EXPERIENCE DISH
         const coffeeGroup = new THREE.Group();
+        coffeeGroup.visible = false;
         dishStageGroup.add(coffeeGroup);
         threeRef.current.coffeeMug = coffeeGroup;
 
@@ -776,7 +782,7 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         }
         threeRef.current.coffeeBeans = beansList;
 
-        // 3B. PIZZA ARTISANSHIP DISH (On Table Center)
+        // 3B. PIZZA ARTISANSHIP DISH
         const pizzaGroup = new THREE.Group();
         pizzaGroup.visible = false;
         dishStageGroup.add(pizzaGroup);
@@ -818,7 +824,7 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         }
         threeRef.current.pizzaToppings = toppingsList;
 
-        // 3C. GOURMET BURGER ASSEMBLY DISH (On Table Center)
+        // 3C. GOURMET BURGER ASSEMBLY DISH
         const burgerGroup = new THREE.Group();
         burgerGroup.visible = false;
         dishStageGroup.add(burgerGroup);
@@ -876,7 +882,7 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
             { mesh: bBunTop, targetY: 0.32, initialY: 1.8 },
         ];
 
-        // 3D. SIGNATURE DESSERT DISH (On Table Center)
+        // 3D. SIGNATURE DESSERT DISH
         const dessertGroup = new THREE.Group();
         dessertGroup.visible = false;
         dishStageGroup.add(dessertGroup);
@@ -910,49 +916,109 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         berryMesh.rotation.z = 0.4;
         dessertGroup.add(berryMesh);
 
-        // 3E. CRAFT COCKTAIL DRINK DISH (On Table Center)
+        // -------------------------------------------------------------
+        // 3E. ULTRA-ATTRACTIVE ELECTRIC BLUE CRAFT COCKTAIL DRINK
+        // -------------------------------------------------------------
         const drinkGroup = new THREE.Group();
-        drinkGroup.visible = false;
         dishStageGroup.add(drinkGroup);
         threeRef.current.drinkGroup = drinkGroup;
 
-        // Highball Glass
-        const glassGeo = new THREE.CylinderGeometry(0.28, 0.24, 0.75, 32);
-        const glassMesh = new THREE.Mesh(glassGeo, glassMat);
-        glassMesh.position.y = 0.4;
+        // Coaster Plate Base
+        const coasterGeo = new THREE.CylinderGeometry(0.48, 0.48, 0.02, 32);
+        const coasterMesh = new THREE.Mesh(coasterGeo, mahoganyMat);
+        coasterMesh.position.y = 0.02;
+        drinkGroup.add(coasterMesh);
+
+        // Highball Crystal Glass Container
+        const glassGeo = new THREE.CylinderGeometry(0.34, 0.28, 0.82, 32);
+        const glassMatCrystal = new THREE.MeshPhysicalMaterial({ 
+            color: 0xffffff, 
+            transparent: true, 
+            opacity: 0.3, 
+            roughness: 0.05, 
+            transmission: 0.95, 
+            thickness: 0.6,
+            ior: 1.5 
+        });
+        const glassMesh = new THREE.Mesh(glassGeo, glassMatCrystal);
+        glassMesh.position.y = 0.43;
+        glassMesh.castShadow = true;
         drinkGroup.add(glassMesh);
 
-        // Amber Liquid Fill
-        const liquidFillGeo = new THREE.CylinderGeometry(0.25, 0.22, 0.6, 32);
-        const liquidFillMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.85, roughness: 0.1 });
+        // Electric Ocean Blue Liquid Fill
+        const liquidFillGeo = new THREE.CylinderGeometry(0.31, 0.25, 0.68, 32);
+        const liquidFillMat = new THREE.MeshPhysicalMaterial({ 
+            color: 0x00d4ff, 
+            emissive: 0x0055ff, 
+            emissiveIntensity: 0.45, 
+            transparent: true, 
+            opacity: 0.88, 
+            roughness: 0.1,
+            transmission: 0.85,
+            ior: 1.33
+        });
         const liquidFillMesh = new THREE.Mesh(liquidFillGeo, liquidFillMat);
-        liquidFillMesh.position.y = 0.34;
+        liquidFillMesh.position.y = 0.37;
         drinkGroup.add(liquidFillMesh);
 
-        // Floating Ice Cubes inside Glass
+        // Glowing Blue PointLight inside Drink
+        const drinkLight = new THREE.PointLight(0x00ffff, 3.5, 2.5);
+        drinkLight.position.set(0, 0.45, 0);
+        drinkGroup.add(drinkLight);
+
+        // Floating Crystal Ice Cubes
         for (let i = 0; i < 3; i++) {
-            const iceGeo = new THREE.BoxGeometry(0.12, 0.12, 0.12);
-            const iceMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, transparent: true, opacity: 0.7, transmission: 0.9 });
+            const iceGeo = new THREE.BoxGeometry(0.13, 0.13, 0.13);
+            const iceMat = new THREE.MeshPhysicalMaterial({ 
+                color: 0xe0f7fa, 
+                transparent: true, 
+                opacity: 0.8, 
+                roughness: 0.05,
+                transmission: 0.9 
+            });
             const iceMesh = new THREE.Mesh(iceGeo, iceMat);
             iceMesh.position.set(
-                (Math.random() - 0.5) * 0.15,
-                0.25 + i * 0.15,
-                (Math.random() - 0.5) * 0.15
+                (Math.random() - 0.5) * 0.16,
+                0.22 + i * 0.18,
+                (Math.random() - 0.5) * 0.16
             );
             iceMesh.rotation.set(Math.random(), Math.random(), Math.random());
             drinkGroup.add(iceMesh);
         }
 
-        // Effervescent Bubbles Rising
+        // Tropical Lime Wheel Garnish on Rim
+        const limeRindGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.02, 24);
+        const limeRindMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.4 });
+        const limeRind = new THREE.Mesh(limeRindGeo, limeRindMat);
+        limeRind.position.set(0.32, 0.78, 0);
+        limeRind.rotation.z = Math.PI / 3;
+        drinkGroup.add(limeRind);
+
+        const limeCoreGeo = new THREE.CylinderGeometry(0.14, 0.14, 0.025, 24);
+        const limeCoreMat = new THREE.MeshStandardMaterial({ color: 0x84cc16, roughness: 0.3 });
+        const limeCore = new THREE.Mesh(limeCoreGeo, limeCoreMat);
+        limeCore.position.set(0.32, 0.78, 0);
+        limeCore.rotation.z = Math.PI / 3;
+        drinkGroup.add(limeCore);
+
+        // Cocktail Straw
+        const strawGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.95, 16);
+        const strawMat = new THREE.MeshStandardMaterial({ color: 0xff2d55, roughness: 0.2 });
+        const strawMesh = new THREE.Mesh(strawGeo, strawMat);
+        strawMesh.position.set(-0.1, 0.55, 0.05);
+        strawMesh.rotation.z = -0.25;
+        drinkGroup.add(strawMesh);
+
+        // Effervescent Cyan Bubbles Rising
         const bubblesList = [];
-        for (let i = 0; i < 15; i++) {
+        for (let i = 0; i < 20; i++) {
             const bGeo = new THREE.SphereGeometry(0.015, 8, 8);
-            const bMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 });
+            const bMat = new THREE.MeshBasicMaterial({ color: 0xe0f7fa, transparent: true, opacity: 0.8 });
             const bMesh = new THREE.Mesh(bGeo, bMat);
             bMesh.position.set(
-                (Math.random() - 0.5) * 0.2,
-                0.1 + Math.random() * 0.5,
-                (Math.random() - 0.5) * 0.2
+                (Math.random() - 0.5) * 0.22,
+                0.12 + Math.random() * 0.55,
+                (Math.random() - 0.5) * 0.22
             );
             drinkGroup.add(bMesh);
             bubblesList.push({ mesh: bMesh, speedY: 0.008 + Math.random() * 0.008 });
@@ -1104,17 +1170,37 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
 
 
         // -------------------------------------------------------------
-        // POINTER & TOUCH CONTROLS
+        // POINTER, TOUCH PINCH & MOUSE WHEEL ZOOM CONTROLS
         // -------------------------------------------------------------
         const handlePointerDown = (e) => {
             threeRef.current.isPointerDown = true;
-            const x = e.touches ? e.touches[0].clientX : e.clientX;
-            const y = e.touches ? e.touches[0].clientY : e.clientY;
-            threeRef.current.pointerX = x;
-            threeRef.current.pointerY = y;
+            if (e.touches && e.touches.length === 2) {
+                // Pinch zoom initial distance
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                threeRef.current.touchStartDist = Math.hypot(dx, dy);
+            } else {
+                const x = e.touches ? e.touches[0].clientX : e.clientX;
+                const y = e.touches ? e.touches[0].clientY : e.clientY;
+                threeRef.current.pointerX = x;
+                threeRef.current.pointerY = y;
+            }
         };
 
         const handlePointerMove = (e) => {
+            if (e.touches && e.touches.length === 2) {
+                // Handle Touch Pinch Zoom
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                const dist = Math.hypot(dx, dy);
+                if (threeRef.current.touchStartDist > 0) {
+                    const factor = dist / threeRef.current.touchStartDist;
+                    setZoomLevel(prev => Math.max(0.5, Math.min(2.5, +(prev * (factor > 1 ? 1.03 : 0.97)).toFixed(2))));
+                }
+                threeRef.current.touchStartDist = dist;
+                return;
+            }
+
             const x = e.touches ? e.touches[0].clientX : e.clientX;
             const y = e.touches ? e.touches[0].clientY : e.clientY;
 
@@ -1133,6 +1219,17 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
 
         const handlePointerUp = () => {
             threeRef.current.isPointerDown = false;
+            threeRef.current.touchStartDist = 0;
+        };
+
+        // Smooth Mouse Wheel Zoom Event
+        const handleWheel = (e) => {
+            e.preventDefault();
+            if (e.deltaY < 0) {
+                setZoomLevel(prev => Math.min(2.5, +(prev + 0.15).toFixed(2)));
+            } else {
+                setZoomLevel(prev => Math.max(0.5, +(prev - 0.15).toFixed(2)));
+            }
         };
 
         container.addEventListener('mousedown', handlePointerDown);
@@ -1142,6 +1239,8 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         container.addEventListener('touchstart', handlePointerDown, { passive: true });
         container.addEventListener('touchmove', handlePointerMove, { passive: true });
         window.addEventListener('touchend', handlePointerUp);
+
+        container.addEventListener('wheel', handleWheel, { passive: false });
 
         // -------------------------------------------------------------
         // ANIMATION RENDER LOOP (60 FPS)
@@ -1153,6 +1252,10 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
             animFrameId = requestAnimationFrame(renderLoop);
             const delta = clock.getDelta();
             const elapsed = clock.getElapsedTime();
+
+            // Dynamic Camera Field of View based on Zoom State
+            camera.fov = 40 / zoomLevel;
+            camera.updateProjectionMatrix();
 
             // 1. CHIMNEY SMOKE PARTICLES ANIMATION
             threeRef.current.chimneySmokeParticles.forEach(p => {
@@ -1193,11 +1296,11 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
                 b.mesh.rotation.y += delta * 1.5;
             });
 
-            // 5. DRINK BUBBLES RISING
+            // 5. DRINK BUBBLES RISING IN ELECTRIC BLUE LIQUID
             threeRef.current.drinkBubbles.forEach(b => {
                 b.mesh.position.y += b.speedY;
-                if (b.mesh.position.y > 0.7) {
-                    b.mesh.position.y = 0.1;
+                if (b.mesh.position.y > 0.72) {
+                    b.mesh.position.y = 0.12;
                 }
             });
 
@@ -1223,7 +1326,6 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
             // 8A. HOSTESS WELCOMING GESTURE AT PODIUM
             if (threeRef.current.hostAvatar) {
                 const { rightArmGroup, headMesh } = threeRef.current.hostAvatar;
-                // Right arm waving gesture
                 rightArmGroup.rotation.z = Math.sin(elapsed * 3) * 0.35 + 0.4;
                 rightArmGroup.rotation.x = Math.cos(elapsed * 2) * 0.2;
                 headMesh.rotation.y = Math.sin(elapsed * 1.5) * 0.2;
@@ -1232,10 +1334,8 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
             // 8B. MASTER CHEF COOKING & PAN TOSSING MOTION
             if (threeRef.current.chefAvatar) {
                 const { leftArmGroup, rightArmGroup, avatarGroup } = threeRef.current.chefAvatar;
-                // Left arm tossing pan over stove
                 leftArmGroup.rotation.x = -0.6 + Math.sin(elapsed * 4) * 0.2;
                 leftArmGroup.rotation.z = 0.2;
-                // Right arm stirring spoon/spatula
                 rightArmGroup.rotation.x = -0.5 + Math.cos(elapsed * 5) * 0.25;
                 rightArmGroup.rotation.y = Math.sin(elapsed * 5) * 0.3;
                 avatarGroup.position.y = Math.abs(Math.sin(elapsed * 4)) * 0.05;
@@ -1244,7 +1344,6 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
             // 8C. HEAD WAITER SERVING WALK & TRAY BALANCE
             if (threeRef.current.waiterAvatar) {
                 const { leftArmGroup, rightArmGroup, avatarGroup } = threeRef.current.waiterAvatar;
-                // Holding tray high up
                 rightArmGroup.rotation.x = -1.2;
                 rightArmGroup.rotation.z = -0.3;
                 leftArmGroup.rotation.x = Math.sin(elapsed * 2) * 0.25;
@@ -1254,7 +1353,6 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
             // 8D. SEATED CUSTOMERS DINING CONVERSATION & DRINK SIPPING
             if (threeRef.current.customer1Avatar) {
                 const { rightArmGroup, headMesh } = threeRef.current.customer1Avatar;
-                // Customer 1 sipping drink / coffee
                 rightArmGroup.rotation.x = -0.8 + Math.sin(elapsed * 1.2) * 0.3;
                 rightArmGroup.rotation.z = -0.2;
                 headMesh.rotation.x = Math.sin(elapsed * 1.2) * 0.1;
@@ -1262,7 +1360,6 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
 
             if (threeRef.current.customer2Avatar) {
                 const { leftArmGroup, rightArmGroup, headMesh } = threeRef.current.customer2Avatar;
-                // Customer 2 conversing with hand gestures & head nod
                 leftArmGroup.rotation.x = -0.4 + Math.cos(elapsed * 2) * 0.2;
                 rightArmGroup.rotation.x = -0.5 + Math.sin(elapsed * 2.5) * 0.25;
                 headMesh.rotation.y = Math.sin(elapsed * 2) * 0.15;
@@ -1271,7 +1368,6 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
             // 8E. COURIER PARTNER SMARTPHONE DISPATCH CHECK
             if (threeRef.current.courierAvatar) {
                 const { rightArmGroup, headMesh } = threeRef.current.courierAvatar;
-                // Right arm holding phone
                 rightArmGroup.rotation.x = -0.8 + Math.sin(elapsed * 1.5) * 0.1;
                 rightArmGroup.rotation.y = -0.3;
                 headMesh.rotation.y = Math.sin(elapsed * 1.2) * 0.15;
@@ -1282,25 +1378,20 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
             // CAMERA POSITIONING & CHAPTER STORYTELLING PATH INTERPOLATION
             // -------------------------------------------------------------
             if (!isOrbitMode) {
-                // Smooth interpolation targets based on active chapter
                 let targetEye = new THREE.Vector3(0, 8, 25);
                 let targetLook = new THREE.Vector3(0, 1.5, -1);
 
                 if (activeChapter === 0) {
-                    // Chapter 0: Entrance Fly-In & Hostess Greeting
                     targetEye.set(0, 6.5 - scrollProgress * 5, 26 - scrollProgress * 15);
                     targetLook.set(0, 3.5, 6);
 
-                    // Open entrance doors as camera moves closer
                     const doorOpenDist = Math.min(1.8, Math.max(0, (scrollProgress - 0.05) * 12));
                     if (threeRef.current.doorsLeft) threeRef.current.doorsLeft.position.x = -0.95 - doorOpenDist;
                     if (threeRef.current.doorsRight) threeRef.current.doorsRight.position.x = 0.95 + doorOpenDist;
                 } else if (activeChapter === 1) {
-                    // Chapter 1: Dining Walkthrough & Seated Customers
                     targetEye.set(3.2, 4.2, 5.5);
                     targetLook.set(0, 1.4, -1);
 
-                    // Chairs slide smoothly into table
                     const chairSlide = Math.min(1, Math.max(0, (scrollProgress - 0.2) * 5));
                     threeRef.current.chairs.forEach(c => {
                         const dist = 2.8 - chairSlide * 0.8;
@@ -1308,20 +1399,17 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
                         c.group.position.z = -1 + Math.sin(c.group.rotation.y + Math.PI / 2) * dist;
                     });
                 } else if (activeChapter === 2) {
-                    // Chapter 2: 3D Micro-Animation Dish Crafting ON CENTER OF TABLE
+                    // Close-up on Table Center Dish
                     targetEye.set(0, 2.75, 1.6);
                     targetLook.set(0, 1.52, -1.0);
 
-                    // Rotate active dish stage slowly
                     if (threeRef.current.dishGroup) {
                         threeRef.current.dishGroup.rotation.y += delta * 0.4;
                     }
                 } else if (activeChapter === 3) {
-                    // Chapter 3: Master Chef Kitchen Workflow
                     targetEye.set(-7.5, 3.8, -4);
                     targetLook.set(-10, 1.8, -8);
                 } else if (activeChapter === 4) {
-                    // Chapter 4: Waiter Service & Courier Partner Delivery
                     targetEye.set(5.5, 3.5, 0.5);
                     targetLook.set(8, 1.6, -4);
                 }
@@ -1361,30 +1449,31 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
             container.removeEventListener('touchstart', handlePointerDown);
             container.removeEventListener('touchmove', handlePointerMove);
             window.removeEventListener('touchend', handlePointerUp);
+            container.removeEventListener('wheel', handleWheel);
             window.removeEventListener('resize', handleResize);
             renderer.dispose();
         };
-    }, [activeChapter, isOrbitMode]);
+    }, [activeChapter, isOrbitMode, zoomLevel]);
 
     // Handle Active Dish Switching in Chapter 2
     useEffect(() => {
         const { coffeeMug, pizzaGroup, burgerGroup, dessertGroup, drinkGroup } = threeRef.current;
-        if (!coffeeMug) return;
+        if (!drinkGroup) return;
 
-        coffeeMug.visible = activeDish === 'coffee';
+        drinkGroup.visible = activeDish === 'drink';
+        if (coffeeMug) coffeeMug.visible = activeDish === 'coffee';
         if (pizzaGroup) pizzaGroup.visible = activeDish === 'pizza';
         if (burgerGroup) burgerGroup.visible = activeDish === 'burger';
         if (dessertGroup) dessertGroup.visible = activeDish === 'dessert';
-        if (drinkGroup) drinkGroup.visible = activeDish === 'drink';
     }, [activeDish]);
 
     return (
-        <div ref={containerRef} className={`relative w-full ${height} overflow-hidden bg-slate-950 text-white font-sans selection:bg-[#FF2D55] select-none rounded-[2.5rem] border border-slate-800 shadow-2xl`}>
+        <div ref={containerRef} className={`relative w-full ${height} overflow-hidden bg-slate-950 text-white font-sans selection:bg-[#00d4ff] select-none rounded-[2.5rem] border border-slate-800 shadow-2xl`}>
             
             {/* Ambient Background Gradient & Glow Spheres */}
             <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-                <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-[#FF2D55]/15 rounded-full blur-[140px]" />
-                <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-[#FF6A00]/15 rounded-full blur-[120px]" />
+                <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-[#00d4ff]/15 rounded-full blur-[140px]" />
+                <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-[#FF2D55]/15 rounded-full blur-[120px]" />
             </div>
 
             {/* Main Three.js WebGL Canvas */}
@@ -1400,7 +1489,7 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
                 <div className="flex items-center gap-3 bg-slate-900/80 backdrop-blur-xl border border-slate-700/80 px-4 py-2 rounded-2xl shadow-xl">
                     <span className="text-xl">{chapters[activeChapter].icon}</span>
                     <div>
-                        <span className="text-[10px] font-black uppercase tracking-wider text-[#FF2D55] block">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-[#00d4ff] block">
                             {chapters[activeChapter].badge}
                         </span>
                         <h4 className="text-xs sm:text-sm font-black text-white truncate max-w-[200px] sm:max-w-xs">
@@ -1409,12 +1498,40 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
                     </div>
                 </div>
 
-                {/* Right Action Tools: Mute, Orbit Toggle, Story Jump */}
+                {/* Right Action Tools: Mute, Zoom Controls, Orbit Toggle */}
                 <div className="flex items-center gap-2">
-                    {/* Active Staff Indicator Badge */}
-                    <div className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-slate-700/80 text-emerald-400 font-bold text-xs">
-                        <Users size={15} className="animate-pulse" />
-                        <span>Realistic 3D Human Avatars & Table Center Dish</span>
+                    
+                    {/* INTERACTIVE ZOOM IN & OUT TOOLBAR */}
+                    <div className="flex items-center gap-1 bg-slate-900/80 backdrop-blur-xl border border-slate-700/80 p-1 rounded-2xl shadow-xl">
+                        <button
+                            onClick={handleZoomIn}
+                            className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+                            title="Zoom In (+)"
+                        >
+                            <ZoomIn size={16} />
+                        </button>
+                        
+                        <span className="text-xs font-mono font-bold text-[#00d4ff] px-1.5 select-none">
+                            {zoomLevel.toFixed(1)}x
+                        </span>
+
+                        <button
+                            onClick={handleZoomOut}
+                            className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+                            title="Zoom Out (-)"
+                        >
+                            <ZoomOut size={16} />
+                        </button>
+
+                        {zoomLevel !== 1.0 && (
+                            <button
+                                onClick={handleResetZoom}
+                                className="p-2 rounded-xl text-amber-400 hover:bg-slate-800 transition-all cursor-pointer"
+                                title="Reset Zoom (1.0x)"
+                            >
+                                <RotateCcw size={14} />
+                            </button>
+                        )}
                     </div>
 
                     {/* Mute / Audio Toggle */}
@@ -1422,7 +1539,7 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
                         onClick={toggleAudio}
                         className={`p-3 rounded-2xl backdrop-blur-xl border transition-all cursor-pointer shadow-lg ${
                             !isAudioMuted 
-                                ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-[#FF2D55]/30' 
+                                ? 'bg-[#00d4ff] text-slate-950 border-[#00d4ff] shadow-[#00d4ff]/30 font-bold' 
                                 : 'bg-slate-900/80 text-slate-400 border-slate-700/80 hover:text-white'
                         }`}
                         title={isAudioMuted ? "Unmute Ambient Restaurant Sound" : "Mute Sound"}
@@ -1452,8 +1569,8 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
                         <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
                             <Sparkles size={12} /> Chapter {activeChapter + 1} of 5
                         </span>
-                        <span className="text-xs font-mono font-bold text-slate-400">
-                            {Math.round(scrollProgress * 100)}% Depth
+                        <span className="text-xs font-mono font-bold text-[#00d4ff]">
+                            Zoom: {zoomLevel.toFixed(1)}x • {Math.round(scrollProgress * 100)}% Depth
                         </span>
                     </div>
 
@@ -1469,18 +1586,18 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
                             </span>
                             <div className="flex flex-wrap gap-1.5">
                                 {[
+                                    { id: 'drink', label: 'Blue Cocktail 🍹' },
                                     { id: 'coffee', label: 'Coffee ☕' },
                                     { id: 'pizza', label: 'Pizza 🍕' },
                                     { id: 'burger', label: 'Burger 🍔' },
                                     { id: 'dessert', label: 'Dessert 🍰' },
-                                    { id: 'drink', label: 'Cocktail 🍹' },
                                 ].map(dish => (
                                     <button
                                         key={dish.id}
                                         onClick={() => setActiveDish(dish.id)}
                                         className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
                                             activeDish === dish.id 
-                                                ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-md shadow-[#FF2D55]/30 scale-105' 
+                                                ? 'bg-[#00d4ff] text-slate-950 border-[#00d4ff] shadow-md shadow-[#00d4ff]/30 scale-105 font-black' 
                                                 : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
                                         }`}
                                     >
@@ -1505,7 +1622,7 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
                             }}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer shrink-0 border ${
                                 activeChapter === idx 
-                                    ? 'bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] text-white border-[#FF2D55] shadow-md scale-105' 
+                                    ? 'bg-gradient-to-r from-[#00d4ff] to-[#0055ff] text-white border-[#00d4ff] shadow-md scale-105' 
                                     : 'bg-slate-800/80 text-slate-400 border-slate-700/80 hover:text-white hover:bg-slate-800'
                             }`}
                         >
@@ -1516,8 +1633,8 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
                 </div>
 
                 <div className="text-[10px] font-black text-slate-400 px-3 border-l border-slate-800 hidden sm:flex items-center gap-1.5 shrink-0">
-                    <Flame size={14} className="text-[#FF6A00]" />
-                    <span>Scroll to Explore 3D Story</span>
+                    <Flame size={14} className="text-[#00d4ff]" />
+                    <span>Scroll or Pinch to Zoom 3D Scene</span>
                 </div>
             </div>
 
