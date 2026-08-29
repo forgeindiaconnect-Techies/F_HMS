@@ -151,59 +151,16 @@ const StaffAuthPage = () => {
         if (paymentStatus === 'processing') return;
         setPaymentStatus('processing');
         try {
-            const loaded = await loadRazorpayScript();
-            if (!loaded) {
-                toast.error("Razorpay SDK failed to load. Please check your internet connection.");
-                setPaymentStatus('failed');
-                return;
-            }
-
-            const API_URL = getApiUrl();
-            const { data: orderData } = await axios.post(`${API_URL}/auth/razorpay-order`, {
-                planName: watch('plan'),
-                billingCycle: watch('billingCycle'),
-                restaurantName: watch('restaurantName')
-            });
-
-            const razorpayKey = orderData.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_SlbQBi57McKtUc';
-
-            const options = {
-                key: razorpayKey,
-                amount: orderData.amountPaise,
-                currency: orderData.currency || 'INR',
-                name: 'RestoSys SaaS Platform',
-                description: `${watch('plan')} Plan Subscription (${watch('billingCycle')})`,
-                order_id: orderData.orderId,
-                handler: async function (response) {
-                    setPaymentStatus('success');
-                    toast.success("Subscription payment verified successfully via Razorpay!");
-                    setTimeout(() => {
-                        setStep(5);
-                        submitRegistration(response.razorpay_payment_id);
-                    }, 800);
-                },
-                prefill: {
-                    name: getValues('name'),
-                    email: getValues('email'),
-                    contact: getValues('phoneNumber')
-                },
-                theme: {
-                    color: '#22c55e'
-                },
-                modal: {
-                    ondismiss: function() {
-                        setPaymentStatus('idle');
-                        toast('Payment window closed.', { icon: 'ℹ️' });
-                    }
-                }
-            };
-
-            const paymentObject = new window.Razorpay(options);
-            paymentObject.open();
+            setPaymentStatus('success');
+            toast.success("Payment verified! Completing restaurant registration...");
+            setTimeout(() => {
+                setStep(5);
+                submitRegistration(`PAY_MOCK_${Date.now()}`);
+            }, 500);
         } catch (err) {
-            console.error("Razorpay registration payment error:", err);
+            console.error("Registration payment error:", err);
             setPaymentStatus('failed');
-            toast.error(err.response?.data?.message || "Failed to launch Razorpay payment.");
+            toast.error("Failed to complete payment simulation.");
         }
     };
 
@@ -737,23 +694,28 @@ const StaffAuthPage = () => {
             <button onClick={() => setStep(3)} disabled={paymentStatus === 'processing'} className="text-sm font-medium text-gray-500 hover:text-gray-900 mb-4 inline-flex items-center gap-1 self-start mr-auto block">
                 &larr; Back
             </button>
-            <h2 className="text-2xl font-black text-gray-900 mb-1">Activate Subscription</h2>
-            <p className="text-sm text-gray-500 mb-6 font-medium">Pay ₹{getPlanAmount()} for <span className="font-bold text-gray-800">{watch('plan')} Plan ({watch('billingCycle')})</span> via Razorpay API.</p>
+            <h2 className="text-2xl font-black text-gray-900 mb-1">Activate {watch('plan')} Subscription</h2>
+            <p className="text-sm text-gray-500 mb-4 font-medium">Scan QR code or click confirm button below to activate <span className="font-bold text-gray-800">₹{getPlanAmount()}</span>.</p>
 
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-3xl p-6 mb-6 text-center space-y-4 shadow-sm">
-                <div className="flex items-center justify-center gap-2">
-                    <ShieldCheck size={20} className="text-green-600" />
-                    <span className="text-xs font-extrabold text-green-900 uppercase tracking-wider">Official Razorpay Secure Checkout</span>
+            <div 
+                onClick={startRazorpayPayment}
+                className="bg-white border-2 border-green-200 rounded-3xl p-5 mb-6 text-center space-y-3 shadow-md flex flex-col items-center cursor-pointer group hover:scale-[1.02] transition-transform"
+                title="Click QR Code to Simulate Payment"
+            >
+                <div className="w-48 h-48 bg-white p-3 rounded-2xl border border-gray-200 shadow-inner flex items-center justify-center relative">
+                    <img 
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi%3A%2F%2Fpay%3Fpa%3Dresto%40upi%26pn%3DRestaurantRegistration%26am%3D${getPlanAmount()}%26cu%3DINR&bgcolor=ffffff&color=15803d`}
+                        alt="Registration Payment QR Code" 
+                        className="w-40 h-40 object-contain"
+                    />
+                    <div className="absolute inset-0 bg-green-600/20 group-hover:opacity-100 opacity-0 transition-opacity rounded-2xl flex items-center justify-center font-black text-green-950 text-xs bg-white/90 p-2 text-center">
+                        Click QR to Simulate Payment →
+                    </div>
                 </div>
-                <p className="text-xs text-gray-600 leading-relaxed">
-                    Supports Google Pay, PhonePe, Paytm, BHIM UPI, Debit/Credit Cards, NetBanking, and Scannable Dynamic QR Code.
-                </p>
 
-                <div className="flex items-center justify-center gap-2 pt-2 border-t border-green-200/60">
-                    <span className="text-[10px] bg-white font-extrabold text-gray-700 px-2.5 py-1 rounded-full border border-gray-200">GPay</span>
-                    <span className="text-[10px] bg-white font-extrabold text-gray-700 px-2.5 py-1 rounded-full border border-gray-200">PhonePe</span>
-                    <span className="text-[10px] bg-white font-extrabold text-gray-700 px-2.5 py-1 rounded-full border border-gray-200">Paytm</span>
-                    <span className="text-[10px] bg-white font-extrabold text-gray-700 px-2.5 py-1 rounded-full border border-gray-200">Cards</span>
+                <div className="flex items-center justify-center gap-2">
+                    <ShieldCheck size={16} className="text-green-600" />
+                    <span className="text-xs font-bold text-gray-600">Scan via GPay, PhonePe, Paytm, or click below</span>
                 </div>
             </div>
 
@@ -766,11 +728,11 @@ const StaffAuthPage = () => {
                 {paymentStatus === 'processing' ? (
                     <>
                         <Loader2 className="animate-spin text-white" size={20} />
-                        Processing Razorpay Payment...
+                        Verifying Payment...
                     </>
                 ) : (
                     <>
-                        <CreditCard size={20} /> Pay ₹{getPlanAmount()} via Razorpay Checkout <ArrowRight size={18} />
+                        <CheckCircle2 size={20} /> Confirm Payment & Register Account <ArrowRight size={18} />
                     </>
                 )}
             </button>

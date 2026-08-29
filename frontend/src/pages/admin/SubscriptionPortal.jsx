@@ -630,7 +630,7 @@ const SubscriptionPortal = () => {
                                     onClick={handleConfirmPayment}
                                     className="w-2/3 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                                 >
-                                    <CreditCard size={16} /> Pay via Razorpay Popup
+                                    <CheckCircle2 size={16} /> Confirm Payment & Upgrade
                                 </button>
                             </div>
                         )}
