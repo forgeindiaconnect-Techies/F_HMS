@@ -514,25 +514,26 @@ const Home = () => {
                     {workflowTab === 'customer' ? (
                         /* Customer Workflow Carousel */
                         <div className="relative z-10 space-y-8" onMouseEnter={() => setIsAutoPlaying(false)} onMouseLeave={() => setIsAutoPlaying(true)}>
-                            {/* Step Indicator Pills */}
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-4xl mx-auto">
+                            {/* Step Indicator Pills - 5 Step Flow (Online App & Table QR) */}
+                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 max-w-5xl mx-auto">
                                 {[
-                                    { step: 0, title: '01. Scan QR & Menu', icon: <QrCode size={16} /> },
-                                    { step: 1, title: '02. Order & Customize', icon: <ShoppingBag size={16} /> },
-                                    { step: 2, title: '03. Live Cook Tracker', icon: <Clock size={16} /> },
-                                    { step: 3, title: '04. Table Service & Bill', icon: <Receipt size={16} /> },
+                                    { step: 0, title: '01. Discover & Menu', icon: <Store size={15} /> },
+                                    { step: 1, title: '02. Cart & Custom Add-ons', icon: <ShoppingBag size={15} /> },
+                                    { step: 2, title: '03. Checkout & UPI Pay', icon: <Receipt size={15} /> },
+                                    { step: 3, title: '04. Live Cook & Delivery Track', icon: <Clock size={15} /> },
+                                    { step: 4, title: '05. E-Receipt & Reorder', icon: <CheckCircle2 size={15} /> },
                                 ].map((item) => (
                                     <button
                                         key={item.step}
                                         onClick={() => setCustomerStep(item.step)}
-                                        className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-xs transition-all cursor-pointer border ${
+                                        className={`flex items-center justify-center gap-1.5 py-3 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer border ${
                                             customerStep === item.step
-                                                ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-md shadow-[#FF2D55]/30'
+                                                ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-md shadow-[#FF2D55]/30 scale-[1.02]'
                                                 : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                                         }`}
                                     >
                                         {item.icon}
-                                        <span>{item.title}</span>
+                                        <span className="truncate">{item.title}</span>
                                     </button>
                                 ))}
                             </div>
@@ -542,61 +543,75 @@ const Home = () => {
                                 {/* Left Explanation Card */}
                                 <div className="space-y-6">
                                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FF2D55]/10 border border-[#FF2D55]/20 text-[#FF2D55] font-black text-xs rounded-full">
-                                        STEP 0{customerStep + 1} OF 04 • CUSTOMER WORKFLOW
+                                        STEP 0{customerStep + 1} OF 05 • CUSTOMER ORDERING WORKFLOW
                                     </div>
                                     
                                     {customerStep === 0 && (
                                         <div className="space-y-4 animate-fadeIn">
-                                            <h3 className="text-2xl sm:text-3xl font-black text-slate-900">1. Instant QR Code & Digital Menu Access</h3>
+                                            <h3 className="text-2xl sm:text-3xl font-black text-slate-900">1. Discover Restaurants & Explore Digital Menu</h3>
                                             <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                                                Customers sit at any table and scan the table QR code with their mobile camera, or open the online web storefront. Zero app download required!
+                                                Customers can order from home via our Web Portal (<code className="text-[#FF2D55] bg-red-50 px-1.5 py-0.5 rounded font-mono text-xs">/explore</code> or <code className="text-[#FF2D55] bg-red-50 px-1.5 py-0.5 rounded font-mono text-xs">/menu</code>) for delivery/takeaway, or scan the Table QR code inside a restaurant.
                                             </p>
                                             <ul className="space-y-2 text-xs sm:text-sm font-semibold text-slate-700">
-                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Instant photo-rich digital menu with live search</li>
-                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Auto-assigned table number identification</li>
-                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Filter by Vegetarian, Vegan, Gluten-Free, Chef Special</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Online Food Delivery & Takeaway Web Portal</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Table QR Ordering with zero app installation</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Filter dishes by Veg, Non-Veg, Ratings & Chef Specials</li>
                                             </ul>
                                         </div>
                                     )}
 
                                     {customerStep === 1 && (
                                         <div className="space-y-4 animate-fadeIn">
-                                            <h3 className="text-2xl sm:text-3xl font-black text-slate-900">2. Custom Dish Options & Seamless Order</h3>
+                                            <h3 className="text-2xl sm:text-3xl font-black text-slate-900">2. Customize Dishes & Build Table Basket</h3>
                                             <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                                                Guests customize spice levels, select optional toppings, add cooking notes (e.g. "Less oil, extra crisp"), and submit order directly to kitchen.
+                                                Select items from the restaurant menu, customize spice levels, choose extra toppings/addons, and add special instructions for the chef.
                                             </p>
                                             <ul className="space-y-2 text-xs sm:text-sm font-semibold text-slate-700">
-                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Custom add-ons & allergen warnings</li>
-                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Pay via Mock UPI / Razorpay QR or Pay Cash at Table</li>
-                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Real-time order confirmation token</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Interactive dish options & allergen badges</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Real-time subtotal & discount calculation</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Add custom notes for the kitchen staff</li>
                                             </ul>
                                         </div>
                                     )}
 
                                     {customerStep === 2 && (
                                         <div className="space-y-4 animate-fadeIn">
-                                            <h3 className="text-2xl sm:text-3xl font-black text-slate-900">3. Live Cook Timer & Station Tracking</h3>
+                                            <h3 className="text-2xl sm:text-3xl font-black text-slate-900">3. Direct Checkout & Instant UPI QR Payment</h3>
                                             <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                                                No more asking "Where is my food?". Customers see live progress updating automatically from the kitchen KDS terminal screen.
+                                                Choose Delivery Address, Pickup, or Table Dine-In. Pay instantly using the interactive UPI QR Scanner code or Cash on Delivery.
                                             </p>
                                             <ul className="space-y-2 text-xs sm:text-sm font-semibold text-slate-700">
-                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Live Status: Received ➔ Cooking ➔ Plated ➔ Served</li>
-                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Estimated prep timer countdown (e.g. ~ 8 mins)</li>
-                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Instant waiter call button right from phone screen</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Multiple modes: Delivery, Pickup & Table Dine-In</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> UPI QR Scanner code & instant mock payment flow</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Instant order token generation</li>
                                             </ul>
                                         </div>
                                     )}
 
                                     {customerStep === 3 && (
                                         <div className="space-y-4 animate-fadeIn">
-                                            <h3 className="text-2xl sm:text-3xl font-black text-slate-900">4. Table Service & Instant Digital Receipt</h3>
+                                            <h3 className="text-2xl sm:text-3xl font-black text-slate-900">4. Live Order Progress & Kitchen KDS Tracking</h3>
                                             <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                                                Food is served directly to table. Guests can view itemized GST tax breakdown, request digital invoice copy, rate dishes, and leave feedback.
+                                                Customers monitor real-time order status live: <b className="text-slate-900">Order Confirmed ➔ Cooking ➔ Ready ➔ Delivered</b> with live preparation timers.
                                             </p>
                                             <ul className="space-y-2 text-xs sm:text-sm font-semibold text-slate-700">
-                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Paperless Eco-Friendly Digital Receipts</li>
-                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Split-Bill with dining companions easily</li>
-                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Earn customer loyalty reward points automatically</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Real-time status sync with Kitchen KDS screen</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Live estimated cook countdown (~ 8 mins)</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Live Delivery Driver status for home orders</li>
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {customerStep === 4 && (
+                                        <div className="space-y-4 animate-fadeIn">
+                                            <h3 className="text-2xl sm:text-3xl font-black text-slate-900">5. Order History, E-Receipts & 1-Click Reorder</h3>
+                                            <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                                                Access full order history under Customer Profile (<code className="text-[#FF2D55] bg-red-50 px-1.5 py-0.5 rounded font-mono text-xs">/profile/orders</code>), download official tax invoice PDFs, and reorder favorite meals in 1 click!
+                                            </p>
+                                            <ul className="space-y-2 text-xs sm:text-sm font-semibold text-slate-700">
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Customer Order History & Tax Invoices</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> 1-Click Fast Reorder for frequent dishes</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Rate dishes & leave feedback for the chef</li>
                                             </ul>
                                         </div>
                                     )}
@@ -604,13 +619,13 @@ const Home = () => {
                                     {/* Carousel Navigation Controls */}
                                     <div className="flex items-center gap-4 pt-4 border-t border-slate-200">
                                         <button
-                                            onClick={() => setCustomerStep(prev => (prev === 0 ? 3 : prev - 1))}
+                                            onClick={() => setCustomerStep(prev => (prev === 0 ? 4 : prev - 1))}
                                             className="w-10 h-10 rounded-full border border-slate-300 bg-white hover:bg-slate-100 flex items-center justify-center text-slate-700 transition-colors shadow-sm cursor-pointer"
                                         >
                                             <ChevronLeft size={20} />
                                         </button>
                                         <div className="flex items-center gap-1.5">
-                                            {[0, 1, 2, 3].map(dot => (
+                                            {[0, 1, 2, 3, 4].map(dot => (
                                                 <button
                                                     key={dot}
                                                     onClick={() => setCustomerStep(dot)}
@@ -619,7 +634,7 @@ const Home = () => {
                                             ))}
                                         </div>
                                         <button
-                                            onClick={() => setCustomerStep(prev => (prev === 3 ? 0 : prev + 1))}
+                                            onClick={() => setCustomerStep(prev => (prev === 4 ? 0 : prev + 1))}
                                             className="w-10 h-10 rounded-full border border-slate-300 bg-white hover:bg-slate-100 flex items-center justify-center text-slate-700 transition-colors shadow-sm cursor-pointer"
                                         >
                                             <ChevronRight size={20} />
@@ -633,7 +648,7 @@ const Home = () => {
                                     <div className="flex justify-between items-center pb-4 border-b border-slate-100 mb-4">
                                         <div className="flex items-center gap-2">
                                             <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping" />
-                                            <span className="font-extrabold text-xs text-slate-800 uppercase tracking-wider">Customer Screen Preview</span>
+                                            <span className="font-extrabold text-xs text-slate-800 uppercase tracking-wider">Customer App View</span>
                                         </div>
                                         <span className="text-xs bg-red-50 text-[#FF2D55] px-2.5 py-1 rounded-full font-bold border border-red-100">Live Demo</span>
                                     </div>
@@ -644,20 +659,20 @@ const Home = () => {
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 bg-[#FF2D55] rounded-xl flex items-center justify-center font-black text-white">RH</div>
                                                     <div>
-                                                        <div className="font-bold text-sm">Table #04 • Pizza Palace</div>
-                                                        <div className="text-xs text-slate-400">Scanned QR Code • Live Menu</div>
+                                                        <div className="font-bold text-sm">Customer Online Food Portal</div>
+                                                        <div className="text-xs text-slate-400">Order Online or Scan Table QR</div>
                                                     </div>
                                                 </div>
-                                                <span className="text-xs bg-emerald-500/20 text-emerald-400 font-bold px-2.5 py-1 rounded-lg border border-emerald-500/30">Active Session</span>
+                                                <span className="text-xs bg-emerald-500/20 text-emerald-400 font-bold px-2.5 py-1 rounded-lg border border-emerald-500/30">Explore Menu</span>
                                             </div>
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                                                    <div className="font-bold text-xs text-slate-900">🍕 Truffle Pizza</div>
-                                                    <div className="text-xs text-[#FF2D55] font-black mt-1">₹499</div>
+                                                    <div className="font-bold text-xs text-slate-900">🍕 Pizza Palace</div>
+                                                    <div className="text-xs text-[#FF2D55] font-black mt-1">4.8 ★ • 20 mins</div>
                                                 </div>
                                                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                                                    <div className="font-bold text-xs text-slate-900">🍔 Wagyu Burger</div>
-                                                    <div className="text-xs text-[#FF2D55] font-black mt-1">₹399</div>
+                                                    <div className="font-bold text-xs text-slate-900">🍔 Burger Hub</div>
+                                                    <div className="text-xs text-[#FF2D55] font-black mt-1">4.5 ★ • 15 mins</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -668,7 +683,7 @@ const Home = () => {
                                             <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl flex justify-between items-center">
                                                 <div className="flex items-center gap-2">
                                                     <CheckCircle2 size={18} className="text-emerald-600" />
-                                                    <span className="font-bold text-xs text-emerald-900">Item Added to Table Cart</span>
+                                                    <span className="font-bold text-xs text-emerald-900">Item Added to Online Cart</span>
                                                 </div>
                                                 <span className="text-xs font-black text-emerald-700">₹898</span>
                                             </div>
@@ -686,15 +701,34 @@ const Home = () => {
                                                     <span>₹898</span>
                                                 </div>
                                             </div>
-                                            <button className="w-full bg-[#FF2D55] text-white py-2.5 rounded-xl font-bold text-xs shadow-md">Confirm Order & Pay via UPI</button>
+                                            <button className="w-full bg-[#FF2D55] text-white py-2.5 rounded-xl font-bold text-xs shadow-md">Proceed to Checkout</button>
                                         </div>
                                     )}
 
                                     {customerStep === 2 && (
+                                        <div className="space-y-3">
+                                            <div className="p-3 bg-slate-900 text-white rounded-xl flex justify-between items-center text-xs">
+                                                <div>
+                                                    <div className="font-bold">Select Order Type</div>
+                                                    <div className="text-slate-400">Home Delivery / Pickup / Table</div>
+                                                </div>
+                                                <span className="text-emerald-400 font-bold">Delivery Selected</span>
+                                            </div>
+                                            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-center space-y-1">
+                                                <div className="font-bold text-xs text-slate-900">Instant UPI Payment QR</div>
+                                                <div className="text-[11px] text-slate-500">Scan QR Code or Click Confirm to Pay</div>
+                                                <div className="inline-block p-2 bg-white rounded-lg border border-slate-200 mt-1">
+                                                    <QrCode size={40} className="text-slate-900" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {customerStep === 3 && (
                                         <div className="space-y-4">
                                             <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between">
                                                 <div>
-                                                    <div className="text-xs font-bold text-amber-800">Chef is preparing your dish!</div>
+                                                    <div className="text-xs font-bold text-amber-800">Chef is preparing your food!</div>
                                                     <div className="text-xs text-amber-600 mt-0.5">Estimated Prep Time: ~ 6 mins</div>
                                                 </div>
                                                 <span className="text-xs bg-amber-500 text-white font-black px-3 py-1 rounded-full animate-pulse">Cooking</span>
@@ -702,30 +736,33 @@ const Home = () => {
                                             <div className="space-y-2 text-xs">
                                                 <div className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-xl">
                                                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                                                    <span className="font-bold text-slate-800">Order Received by Kitchen</span>
+                                                    <span className="font-bold text-slate-800">Order Confirmed by Restaurant</span>
                                                     <span className="ml-auto text-slate-400">10:42 AM</span>
                                                 </div>
                                                 <div className="flex items-center gap-3 p-2.5 bg-amber-50 rounded-xl border border-amber-200">
                                                     <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
-                                                    <span className="font-bold text-amber-900">Station 1: Pizza Oven Active</span>
+                                                    <span className="font-bold text-amber-900">Station 1: Kitchen Prep Active</span>
                                                     <span className="ml-auto text-amber-700 font-bold">10:44 AM</span>
                                                 </div>
                                             </div>
                                         </div>
                                     )}
 
-                                    {customerStep === 3 && (
+                                    {customerStep === 4 && (
                                         <div className="space-y-3">
                                             <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-center space-y-1">
-                                                <div className="text-sm font-black text-emerald-900">🎉 Order Completed & Served!</div>
-                                                <div className="text-xs text-emerald-700 font-medium">Thank you for dining at Pizza Palace.</div>
+                                                <div className="text-sm font-black text-emerald-900">🎉 Order Delivered & Completed!</div>
+                                                <div className="text-xs text-emerald-700 font-medium">Order saved in your Customer History (/profile/orders)</div>
                                             </div>
                                             <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center text-xs">
                                                 <div>
-                                                    <div className="font-bold text-slate-900">Receipt #INV-2026-9912</div>
-                                                    <div className="text-slate-500">VAT/GST Paid • Instant PDF Download</div>
+                                                    <div className="font-bold text-slate-900">Invoice #INV-2026-9912</div>
+                                                    <div className="text-slate-500">Official GST PDF Receipt</div>
                                                 </div>
-                                                <span className="bg-slate-900 text-white font-bold px-3 py-1.5 rounded-lg text-[11px]">Download</span>
+                                                <div className="flex gap-1.5">
+                                                    <span className="bg-[#FF2D55] text-white font-bold px-2.5 py-1 rounded-lg text-[11px]">Reorder</span>
+                                                    <span className="bg-slate-900 text-white font-bold px-2.5 py-1 rounded-lg text-[11px]">Download</span>
+                                                </div>
                                             </div>
                                         </div>
                                     )}
