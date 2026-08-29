@@ -4,7 +4,7 @@ import {
     Utensils, ArrowLeft, ArrowRight, Sparkles, QrCode, 
     ChefHat, Monitor, Truck, CheckCircle2, Star, Play
 } from 'lucide-react';
-import Restaurant3DHero from '../../components/Restaurant3DHero';
+import Interactive3DRestaurantExperience from '../../components/Interactive3DRestaurantExperience';
 
 const ThreeDemoShowcase = () => {
     const navigate = useNavigate();
@@ -31,13 +31,13 @@ const ThreeDemoShowcase = () => {
                         <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center text-white shadow-lg shadow-red-500/20">
                             <Utensils size={18} />
                         </div>
-                        <span className="text-base font-black text-white">RestaurantHub 3D Demo</span>
+                        <span className="text-base font-black text-white">RestaurantHub 3D Animatic</span>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-3">
                     <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-bold text-xs">
-                        <Sparkles size={14} className="animate-spin" /> Interactive WebGL Simulation
+                        <Sparkles size={14} className="animate-spin" /> Interactive WebGL Animatic
                     </div>
 
                     <Link 
@@ -55,19 +55,19 @@ const ThreeDemoShowcase = () => {
                 {/* Banner Headline */}
                 <div className="text-center max-w-3xl mx-auto mb-6 space-y-3">
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 font-bold text-xs">
-                        <Star size={14} className="fill-red-400" /> Interactive SaaS Architecture Showcase
+                        <Star size={14} className="fill-red-400" /> Scroll-Driven 3D Storytelling Experience
                     </div>
                     <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight">
-                        Experience the <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-400">Digital Restaurant</span> Workflow
+                        Interactive <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-400">Restaurant Story</span> & Micro-Animations
                     </h1>
                     <p className="text-xs md:text-sm text-slate-400 font-medium max-w-xl mx-auto">
-                        Explore how orders flow seamlessly from Table QR Digital Scans directly to Kitchen KDS displays and automated delivery dispatch.
+                        Scroll to fly into the entrance, watch chairs slide into place, interact with micro-animated dish preparations, and witness live kitchen workflows.
                     </p>
                 </div>
 
                 {/* 3D WebGL Scene Container */}
-                <div className="w-full flex-1 flex items-center justify-center min-h-[500px] md:min-h-[580px] my-2">
-                    <Restaurant3DHero />
+                <div className="w-full flex-1 flex items-center justify-center min-h-[550px] md:min-h-[680px] my-2">
+                    <Interactive3DRestaurantExperience height="h-[550px] md:h-[680px]" isStandalone={true} />
                 </div>
 
                 {/* Bottom Feature Guide Pills */}

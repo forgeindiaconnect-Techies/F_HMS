@@ -8,6 +8,7 @@ import {
 import { Link } from 'react-router-dom';
 import api from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
+import Interactive3DRestaurantExperience from '../../components/Interactive3DRestaurantExperience';
 
 const Home = () => {
     // Dummy data fallback for instant zero-delay rendering
@@ -334,7 +335,7 @@ const Home = () => {
                     </p>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md sm:max-w-none">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md sm:max-w-none mb-12">
                         <Link 
                             to="/staff/register" 
                             className="w-full sm:w-auto bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] text-white font-extrabold text-base px-8 py-3.5 rounded-2xl shadow-xl shadow-[#FF2D55]/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2.5 group"
@@ -342,6 +343,19 @@ const Home = () => {
                             Subscribe Now 
                             <ArrowRight size={18} className="group-hover:translate-x-1.5 transition-transform" />
                         </Link>
+
+                        <Link 
+                            to="/3d-demo" 
+                            className="w-full sm:w-auto bg-slate-900/80 hover:bg-slate-800 text-white font-extrabold text-base px-8 py-3.5 rounded-2xl border border-slate-700 shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2.5 group"
+                        >
+                            <Sparkles size={18} className="text-amber-400 animate-spin" />
+                            Full 3D Showcase Mode
+                        </Link>
+                    </div>
+
+                    {/* Interactive 3D Animatic WebGL Hero Experience */}
+                    <div className="w-full max-w-6xl mx-auto my-4 relative z-20">
+                        <Interactive3DRestaurantExperience height="h-[550px] sm:h-[650px] lg:h-[720px]" />
                     </div>
                 </div>
             </section>
