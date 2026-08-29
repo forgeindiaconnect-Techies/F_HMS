@@ -28,10 +28,8 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         camera: null,
         renderer: null,
         rootGroup: null,
-        cameraTarget: new THREE.Vector3(0, 2, 0),
+        cameraTarget: new THREE.Vector3(0, 1.5, -1),
         cameraPosition: new THREE.Vector3(0, 8, 25),
-        targetCameraPos: new THREE.Vector3(0, 8, 25),
-        targetCameraLookAt: new THREE.Vector3(0, 2, 0),
         
         // Animated objects
         doorsLeft: null,
@@ -61,7 +59,6 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         chefAvatar: null,
         waiterAvatar: null,
         hostAvatar: null,
-        cashierAvatar: null,
         customer1Avatar: null,
         customer2Avatar: null,
         courierAvatar: null,
@@ -135,8 +132,8 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         },
         {
             id: 2,
-            title: "Micro-Animation Culinary Crafting",
-            subtitle: "Interactive 3D dish preparation: Coffee pours, pizza bakes, burgers stack, cocktails effervesce.",
+            title: "Table Center Dish Crafting",
+            subtitle: "Watch signature items prepare in 3D right on the center of your table: Coffee, pizza, burger, cocktail.",
             icon: "☕",
             badge: "03 / DISH EXPERIENCE"
         },
@@ -197,12 +194,12 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         // 1. SCENE SETUP
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x070a14);
-        scene.fog = new THREE.FogExp2(0x070a14, 0.018);
+        scene.fog = new THREE.FogExp2(0x070a14, 0.016);
         threeRef.current.scene = scene;
 
         // 2. CAMERA SETUP
-        const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 1000);
-        camera.position.set(0, 10, 26);
+        const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000);
+        camera.position.set(0, 8, 25);
         threeRef.current.camera = camera;
 
         // 3. RENDERER SETUP
@@ -217,17 +214,17 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.25;
+        renderer.toneMappingExposure = 1.3;
         threeRef.current.renderer = renderer;
 
         // 4. LIGHTING SYSTEM
-        const ambientLight = new THREE.AmbientLight(0xffedd5, 1.2);
+        const ambientLight = new THREE.AmbientLight(0xffedd5, 1.4);
         scene.add(ambientLight);
 
         // Key Warm Spotlight for Entrance & Table
-        const spotLight = new THREE.SpotLight(0xff9900, 4.5);
-        spotLight.position.set(0, 20, 12);
-        spotLight.angle = Math.PI / 4;
+        const spotLight = new THREE.SpotLight(0xff9900, 5.0);
+        spotLight.position.set(0, 18, 10);
+        spotLight.angle = Math.PI / 3.5;
         spotLight.penumbra = 0.8;
         spotLight.castShadow = true;
         spotLight.shadow.mapSize.width = 2048;
@@ -268,7 +265,7 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         const stainlessSteelMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 0.9, roughness: 0.15 });
 
         // -------------------------------------------------------------
-        // PROCEDURAL REALISTIC 3D HUMAN AVATAR CREATOR FUNCTION
+        // ANATOMICALLY REALISTIC 3D HUMAN AVATAR BUILDER
         // -------------------------------------------------------------
         const buildRealisticHuman = ({
             role = 'chef',
@@ -281,132 +278,180 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         }) => {
             const avatarGroup = new THREE.Group();
 
-            // Materials
-            const skinMat = new THREE.MeshStandardMaterial({ color: skinTone, roughness: 0.6 });
-            const shirtMat = new THREE.MeshStandardMaterial({ color: shirtColor, roughness: 0.5 });
+            const skinMat = new THREE.MeshStandardMaterial({ color: skinTone, roughness: 0.55 });
+            const shirtMat = new THREE.MeshStandardMaterial({ color: shirtColor, roughness: 0.45 });
             const pantsMat = new THREE.MeshStandardMaterial({ color: pantsColor, roughness: 0.6 });
             const hairMat = new THREE.MeshStandardMaterial({ color: hairColor, roughness: 0.8 });
 
-            // 1. Head & Face
-            const headGeo = new THREE.SphereGeometry(0.32, 24, 20);
+            const hipY = isSeated ? 0.72 : 1.0;
+            const torsoY = isSeated ? 1.25 : 1.55;
+            const neckY = isSeated ? 1.78 : 2.12;
+            const headY = isSeated ? 2.05 : 2.38;
+
+            // 1. Head (Sculpted Oval Face Shape)
+            const headGeo = new THREE.SphereGeometry(0.26, 24, 20);
+            headGeo.scale(1, 1.18, 0.95);
             const headMesh = new THREE.Mesh(headGeo, skinMat);
-            headMesh.position.y = isSeated ? 1.7 : 2.4;
+            headMesh.position.y = headY;
             headMesh.castShadow = true;
             avatarGroup.add(headMesh);
 
-            // Hair Style
-            const hairGeo = new THREE.SphereGeometry(0.34, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2);
-            const hairMesh = new THREE.Mesh(hairGeo, hairMat);
-            hairMesh.position.set(0, isSeated ? 1.75 : 2.45, 0);
-            avatarGroup.add(hairMesh);
+            // Nose Bridge
+            const noseGeo = new THREE.ConeGeometry(0.04, 0.12, 12);
+            const noseMesh = new THREE.Mesh(noseGeo, skinMat);
+            noseMesh.position.set(0, headY - 0.04, 0.25);
+            noseMesh.rotation.x = -Math.PI / 4;
+            avatarGroup.add(noseMesh);
 
-            // Eye Dots
-            for (let eyeX of [-0.1, 0.1]) {
-                const eyeGeo = new THREE.SphereGeometry(0.04, 8, 8);
-                const eyeMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
-                const eyeMesh = new THREE.Mesh(eyeGeo, eyeMat);
-                eyeMesh.position.set(eyeX, isSeated ? 1.76 : 2.46, 0.28);
-                avatarGroup.add(eyeMesh);
+            // Detailed Eyes (White Sclera + Dark Pupils)
+            for (let eyeX of [-0.09, 0.09]) {
+                const eyeWhiteGeo = new THREE.SphereGeometry(0.045, 12, 12);
+                const eyeWhiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const eyeWhite = new THREE.Mesh(eyeWhiteGeo, eyeWhiteMat);
+                eyeWhite.position.set(eyeX, headY + 0.04, 0.22);
+                avatarGroup.add(eyeWhite);
+
+                const pupilGeo = new THREE.SphereGeometry(0.024, 8, 8);
+                const pupilMat = new THREE.MeshBasicMaterial({ color: 0x090d16 });
+                const pupil = new THREE.Mesh(pupilGeo, pupilMat);
+                pupil.position.set(eyeX, headY + 0.04, 0.255);
+                avatarGroup.add(pupil);
             }
 
-            // Role Headwear (Chef Hat or Courier Helmet)
+            // Hair Strands / Layer
+            const hairGeo = new THREE.SphereGeometry(0.28, 16, 12, 0, Math.PI * 2, 0, Math.PI / 1.8);
+            hairGeo.scale(1.02, 1.05, 1.02);
+            const hairMesh = new THREE.Mesh(hairGeo, hairMat);
+            hairMesh.position.set(0, headY + 0.04, -0.02);
+            avatarGroup.add(hairMesh);
+
+            // Role Headwear
             if (role === 'chef') {
                 const hatMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
-                const hatBase = new THREE.Mesh(new THREE.CylinderGeometry(0.33, 0.33, 0.25, 24), hatMat);
-                hatBase.position.y = 2.65;
+                const hatBase = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.27, 0.22, 24), hatMat);
+                hatBase.position.y = headY + 0.24;
                 avatarGroup.add(hatBase);
 
-                const hatTop = new THREE.Mesh(new THREE.SphereGeometry(0.48, 24, 16), hatMat);
-                hatTop.position.y = 2.95;
+                const hatTop = new THREE.Mesh(new THREE.SphereGeometry(0.4, 24, 16), hatMat);
+                hatTop.position.y = headY + 0.5;
                 hatTop.scale.set(1, 0.7, 1);
                 avatarGroup.add(hatTop);
             } else if (role === 'courier') {
                 const helmetMat = new THREE.MeshStandardMaterial({ color: 0xe11d48, roughness: 0.3, metalness: 0.4 });
-                const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.38, 24, 16), helmetMat);
-                helmet.position.y = 2.45;
+                const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.32, 24, 16), helmetMat);
+                helmet.position.y = headY + 0.06;
                 avatarGroup.add(helmet);
 
                 const visorMat = new THREE.MeshPhysicalMaterial({ color: 0x0f172a, roughness: 0.1, transmission: 0.8 });
-                const visor = new THREE.Mesh(new THREE.CylinderGeometry(0.39, 0.39, 0.18, 16, 1, false, -Math.PI / 3, (2 * Math.PI) / 3), visorMat);
-                visor.position.set(0, 2.42, 0.05);
+                const visor = new THREE.Mesh(new THREE.CylinderGeometry(0.33, 0.33, 0.15, 16, 1, false, -Math.PI / 3, (2 * Math.PI) / 3), visorMat);
+                visor.position.set(0, headY + 0.02, 0.05);
                 avatarGroup.add(visor);
             }
 
             // 2. Neck
-            const neckGeo = new THREE.CylinderGeometry(0.12, 0.14, 0.2, 16);
+            const neckGeo = new THREE.CylinderGeometry(0.1, 0.12, 0.18, 16);
             const neckMesh = new THREE.Mesh(neckGeo, skinMat);
-            neckMesh.position.y = isSeated ? 1.4 : 2.1;
+            neckMesh.position.y = neckY;
             avatarGroup.add(neckMesh);
 
-            // 3. Torso Body
-            const torsoGeo = new THREE.CylinderGeometry(0.38, 0.32, 1.1, 24);
-            const torsoMesh = new THREE.Mesh(torsoGeo, shirtMat);
-            torsoMesh.position.y = isSeated ? 0.75 : 1.45;
-            torsoMesh.castShadow = true;
-            avatarGroup.add(torsoMesh);
+            // 3. Torso Chest & Waist Taper
+            const chestGeo = new THREE.BoxGeometry(0.56, 0.65, 0.32);
+            const chestMesh = new THREE.Mesh(chestGeo, shirtMat);
+            chestMesh.position.y = torsoY + 0.12;
+            chestMesh.castShadow = true;
+            avatarGroup.add(chestMesh);
+
+            const waistGeo = new THREE.CylinderGeometry(0.24, 0.22, 0.38, 16);
+            const waistMesh = new THREE.Mesh(waistGeo, pantsMat);
+            waistMesh.position.y = torsoY - 0.28;
+            avatarGroup.add(waistMesh);
+
+            // Collar / Lapels
+            const collarGeo = new THREE.TorusGeometry(0.16, 0.03, 12, 16, Math.PI);
+            const collarMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4 });
+            const collar = new THREE.Mesh(collarGeo, collarMat);
+            collar.position.set(0, torsoY + 0.42, 0.12);
+            collar.rotation.x = Math.PI / 3;
+            avatarGroup.add(collar);
 
             // Apron Layer
             if (apronColor) {
-                const apronGeo = new THREE.BoxGeometry(0.55, 0.85, 0.05);
+                const apronGeo = new THREE.BoxGeometry(0.48, 0.75, 0.04);
                 const apronMat = new THREE.MeshStandardMaterial({ color: apronColor, roughness: 0.6 });
                 const apronMesh = new THREE.Mesh(apronGeo, apronMat);
-                apronMesh.position.set(0, isSeated ? 0.65 : 1.25, 0.33);
+                apronMesh.position.set(0, torsoY - 0.05, 0.18);
                 avatarGroup.add(apronMesh);
             }
 
-            // 4. Arm Articulated Groups (Left & Right)
-            const armGeo = new THREE.CylinderGeometry(0.09, 0.08, 0.85, 16);
-
-            // Left Arm
+            // 4. Arms with Biceps, Forearm & Hands
+            const armMat = shirtMat;
+            
+            // Left Arm Group
             const leftArmGroup = new THREE.Group();
-            leftArmGroup.position.set(-0.44, isSeated ? 1.2 : 1.9, 0);
-            const leftArmMesh = new THREE.Mesh(armGeo, shirtMat);
-            leftArmMesh.position.y = -0.42;
-            leftArmGroup.add(leftArmMesh);
+            leftArmGroup.position.set(-0.35, torsoY + 0.35, 0);
+            
+            const leftUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.07, 0.45, 16), armMat);
+            leftUpperArm.position.y = -0.225;
+            leftArmGroup.add(leftUpperArm);
 
-            const leftHand = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 12), skinMat);
-            leftHand.position.y = -0.88;
+            const leftForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.06, 0.45, 16), skinMat);
+            leftForearm.position.y = -0.65;
+            leftArmGroup.add(leftForearm);
+
+            const leftHand = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 0.04), skinMat);
+            leftHand.position.y = -0.92;
             leftArmGroup.add(leftHand);
             avatarGroup.add(leftArmGroup);
 
-            // Right Arm
+            // Right Arm Group
             const rightArmGroup = new THREE.Group();
-            rightArmGroup.position.set(0.44, isSeated ? 1.2 : 1.9, 0);
-            const rightArmMesh = new THREE.Mesh(armGeo, shirtMat);
-            rightArmMesh.position.y = -0.42;
-            rightArmGroup.add(rightArmMesh);
+            rightArmGroup.position.set(0.35, torsoY + 0.35, 0);
 
-            const rightHand = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 12), skinMat);
-            rightHand.position.y = -0.88;
+            const rightUpperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.07, 0.45, 16), armMat);
+            rightUpperArm.position.y = -0.225;
+            rightArmGroup.add(rightUpperArm);
+
+            const rightForearm = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.06, 0.45, 16), skinMat);
+            rightForearm.position.y = -0.65;
+            rightArmGroup.add(rightForearm);
+
+            const rightHand = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 0.04), skinMat);
+            rightHand.position.y = -0.92;
             rightArmGroup.add(rightHand);
             avatarGroup.add(rightArmGroup);
 
-            // 5. Legs (Standing vs Seated pose)
+            // 5. Legs (Seated vs Standing Proportions)
             if (isSeated) {
-                // Thighs bending forward
-                for (let lx of [-0.2, 0.2]) {
-                    const thighGeo = new THREE.CylinderGeometry(0.12, 0.1, 0.6, 16);
+                // Thighs extend forward horizontally at chair height
+                for (let lx of [-0.16, 0.16]) {
+                    const thighGeo = new THREE.CylinderGeometry(0.1, 0.09, 0.62, 16);
                     const thighMesh = new THREE.Mesh(thighGeo, pantsMat);
-                    thighMesh.position.set(lx, 0.3, 0.3);
+                    thighMesh.position.set(lx, hipY - 0.08, 0.32);
                     thighMesh.rotation.x = Math.PI / 2;
                     avatarGroup.add(thighMesh);
 
-                    const shinGeo = new THREE.CylinderGeometry(0.1, 0.09, 0.6, 16);
+                    const shinGeo = new THREE.CylinderGeometry(0.09, 0.08, 0.58, 16);
                     const shinMesh = new THREE.Mesh(shinGeo, pantsMat);
-                    shinMesh.position.set(lx, -0.2, 0.58);
+                    shinMesh.position.set(lx, hipY - 0.38, 0.62);
                     avatarGroup.add(shinMesh);
-                }
-            } else {
-                for (let lx of [-0.2, 0.2]) {
-                    const legGeo = new THREE.CylinderGeometry(0.12, 0.1, 1.0, 16);
-                    const legMesh = new THREE.Mesh(legGeo, pantsMat);
-                    legMesh.position.set(lx, 0.5, 0);
-                    avatarGroup.add(legMesh);
 
-                    const shoeGeo = new THREE.BoxGeometry(0.16, 0.12, 0.32);
+                    const shoeGeo = new THREE.BoxGeometry(0.14, 0.1, 0.28);
                     const shoeMat = new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.3 });
                     const shoeMesh = new THREE.Mesh(shoeGeo, shoeMat);
-                    shoeMesh.position.set(lx, 0.06, 0.08);
+                    shoeMesh.position.set(lx, 0.05, 0.68);
+                    avatarGroup.add(shoeMesh);
+                }
+            } else {
+                for (let lx of [-0.16, 0.16]) {
+                    const legGeo = new THREE.CylinderGeometry(0.1, 0.085, 0.95, 16);
+                    const legMesh = new THREE.Mesh(legGeo, pantsMat);
+                    legMesh.position.set(lx, 0.48, 0);
+                    avatarGroup.add(legMesh);
+
+                    const shoeGeo = new THREE.BoxGeometry(0.14, 0.1, 0.28);
+                    const shoeMat = new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.3 });
+                    const shoeMesh = new THREE.Mesh(shoeGeo, shoeMat);
+                    shoeMesh.position.set(lx, 0.05, 0.08);
                     avatarGroup.add(shoeMesh);
                 }
             }
@@ -544,17 +589,17 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         tableLegMesh.position.set(0, 0.65, -1);
         diningGroup.add(tableLegMesh);
 
-        // Flickering Candle on Dining Table
-        const candleGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.4, 16);
+        // Flickering Candle on Dining Table Edge
+        const candleGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.3, 16);
         const candleMat = new THREE.MeshStandardMaterial({ color: 0xfffbe6, roughness: 0.2 });
         const candleMesh = new THREE.Mesh(candleGeo, candleMat);
-        candleMesh.position.set(0, 1.7, -1);
+        candleMesh.position.set(1.4, 1.64, -1.4);
         diningGroup.add(candleMesh);
 
-        const flameGeo = new THREE.SphereGeometry(0.08, 12, 12);
+        const flameGeo = new THREE.SphereGeometry(0.06, 12, 12);
         const flameMat = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
         const flameMesh = new THREE.Mesh(flameGeo, flameMat);
-        flameMesh.position.set(0, 1.95, -1);
+        flameMesh.position.set(1.4, 1.82, -1.4);
         diningGroup.add(flameMesh);
 
         // Sliding Velvet Chairs (North, South, East, West around main table)
@@ -603,7 +648,7 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         threeRef.current.chairs = chairsList;
 
         // -------------------------------------------------------------
-        // AVATARS 2 & 3: SEATED DINING CUSTOMERS AT TABLE (CH 1)
+        // AVATARS 2 & 3: REALISTIC SEATED DINING CUSTOMERS AT TABLE (CH 1)
         // -------------------------------------------------------------
         const cust1Person = buildRealisticHuman({
             role: 'customer',
@@ -613,7 +658,8 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
             hairColor: 0x0f172a,
             isSeated: true
         });
-        cust1Person.avatarGroup.position.set(1.8, 0.7, -1);
+        // Seated comfortably in East chair with bottom resting at y=0.0
+        cust1Person.avatarGroup.position.set(2.0, 0, -1.0);
         cust1Person.avatarGroup.rotation.y = -Math.PI / 2;
         diningGroup.add(cust1Person.avatarGroup);
         threeRef.current.customer1Avatar = cust1Person;
@@ -621,12 +667,13 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         const cust2Person = buildRealisticHuman({
             role: 'customer',
             skinTone: 0xf5d0a9,
-            shirtColor: 0xe11d48, // Crimson Red Dress
+            shirtColor: 0xe11d48, // Crimson Red Evening Dress
             pantsColor: 0x1e293b,
             hairColor: 0xd97706,
             isSeated: true
         });
-        cust2Person.avatarGroup.position.set(-1.8, 0.7, -1);
+        // Seated comfortably in West chair
+        cust2Person.avatarGroup.position.set(-2.0, 0, -1.0);
         cust2Person.avatarGroup.rotation.y = Math.PI / 2;
         diningGroup.add(cust2Person.avatarGroup);
         threeRef.current.customer2Avatar = cust2Person;
@@ -655,130 +702,131 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         threeRef.current.hangingLights = hangingLightsList;
 
         // -------------------------------------------------------------
-        // ENVIRONMENT 3: MICRO-ANIMATION DISH STAGE (CH 2)
+        // ENVIRONMENT 3: 3D DISH PREPARATION PLACED ON CENTER OF TABLE (CH 2)
+        // Table top surface is at Y = 1.49, Z = -1.0
         // -------------------------------------------------------------
         const dishStageGroup = new THREE.Group();
-        dishStageGroup.position.set(0, 3.2, -1);
+        dishStageGroup.position.set(0, 1.49, -1.0);
         rootGroup.add(dishStageGroup);
         threeRef.current.dishGroup = dishStageGroup;
 
-        // Pedestal Spotlight Base
-        const pedBaseGeo = new THREE.CylinderGeometry(1.6, 1.8, 0.3, 32);
+        // Thin Gold Table Centerpiece Mat
+        const pedBaseGeo = new THREE.CylinderGeometry(0.85, 0.85, 0.02, 32);
         const pedBaseMesh = new THREE.Mesh(pedBaseGeo, goldMat);
-        pedBaseMesh.position.y = -0.15;
+        pedBaseMesh.position.y = 0.01;
         dishStageGroup.add(pedBaseMesh);
 
-        // 3A. COFFEE EXPERIENCE DISH
+        // 3A. COFFEE EXPERIENCE DISH (On Table Center)
         const coffeeGroup = new THREE.Group();
         dishStageGroup.add(coffeeGroup);
         threeRef.current.coffeeMug = coffeeGroup;
 
         // Coffee Saucer
-        const saucerGeo = new THREE.CylinderGeometry(1.1, 0.9, 0.08, 32);
+        const saucerGeo = new THREE.CylinderGeometry(0.55, 0.45, 0.04, 32);
         const saucerMesh = new THREE.Mesh(saucerGeo, whiteMarbleMat);
-        saucerMesh.position.y = 0.04;
+        saucerMesh.position.y = 0.03;
         coffeeGroup.add(saucerMesh);
 
         // Coffee Ceramic Cup
-        const mugGeo = new THREE.CylinderGeometry(0.75, 0.6, 1.1, 32);
+        const mugGeo = new THREE.CylinderGeometry(0.38, 0.3, 0.55, 32);
         const mugMesh = new THREE.Mesh(mugGeo, whiteMarbleMat);
-        mugMesh.position.y = 0.6;
+        mugMesh.position.y = 0.31;
         mugMesh.castShadow = true;
         coffeeGroup.add(mugMesh);
 
         // Mug Handle
-        const handleGeo = new THREE.TorusGeometry(0.3, 0.08, 16, 24, Math.PI);
+        const handleGeo = new THREE.TorusGeometry(0.15, 0.04, 16, 24, Math.PI);
         const handleMesh = new THREE.Mesh(handleGeo, whiteMarbleMat);
-        handleMesh.position.set(0.78, 0.6, 0);
+        handleMesh.position.set(0.39, 0.31, 0);
         handleMesh.rotation.z = -Math.PI / 2;
         coffeeGroup.add(handleMesh);
 
         // Liquid Surface (Espresso & Milk Foam Swirl)
-        const liquidGeo = new THREE.CylinderGeometry(0.7, 0.7, 0.05, 32);
+        const liquidGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.03, 32);
         const liquidMat = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.3 });
         const liquidMesh = new THREE.Mesh(liquidGeo, liquidMat);
-        liquidMesh.position.y = 1.08;
+        liquidMesh.position.y = 0.55;
         coffeeGroup.add(liquidMesh);
 
         // Steam Particles
         const steamParticlesList = [];
         for (let i = 0; i < 15; i++) {
-            const sGeo = new THREE.SphereGeometry(0.08 + Math.random() * 0.08, 8, 8);
+            const sGeo = new THREE.SphereGeometry(0.04 + Math.random() * 0.04, 8, 8);
             const sMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35 });
             const sMesh = new THREE.Mesh(sGeo, sMat);
             sMesh.position.set(
-                (Math.random() - 0.5) * 0.4,
-                1.2 + Math.random() * 0.6,
-                (Math.random() - 0.5) * 0.4
+                (Math.random() - 0.5) * 0.2,
+                0.6 + Math.random() * 0.3,
+                (Math.random() - 0.5) * 0.2
             );
             coffeeGroup.add(sMesh);
-            steamParticlesList.push({ mesh: sMesh, speedY: 0.015 + Math.random() * 0.015 });
+            steamParticlesList.push({ mesh: sMesh, speedY: 0.01 + Math.random() * 0.01 });
         }
         threeRef.current.steamParticles = steamParticlesList;
 
         // Floating Coffee Beans Orbiting Cup
         const beansList = [];
         for (let i = 0; i < 8; i++) {
-            const beanGeo = new THREE.SphereGeometry(0.12, 12, 8);
+            const beanGeo = new THREE.SphereGeometry(0.06, 12, 8);
             const beanMat = new THREE.MeshStandardMaterial({ color: 0x271406, roughness: 0.8 });
             const beanMesh = new THREE.Mesh(beanGeo, beanMat);
             beanMesh.scale.set(1.4, 0.8, 0.9);
             coffeeGroup.add(beanMesh);
-            beansList.push({ mesh: beanMesh, angle: (i / 8) * Math.PI * 2, radius: 1.4 + Math.random() * 0.4, height: 0.5 + Math.random() * 0.8 });
+            beansList.push({ mesh: beanMesh, angle: (i / 8) * Math.PI * 2, radius: 0.7 + Math.random() * 0.2, height: 0.3 + Math.random() * 0.4 });
         }
         threeRef.current.coffeeBeans = beansList;
 
-        // 3B. PIZZA ARTISANSHIP DISH
+        // 3B. PIZZA ARTISANSHIP DISH (On Table Center)
         const pizzaGroup = new THREE.Group();
         pizzaGroup.visible = false;
         dishStageGroup.add(pizzaGroup);
         threeRef.current.pizzaGroup = pizzaGroup;
 
         // Pizza Wooden Peel Plate
-        const pizzaPlateGeo = new THREE.CylinderGeometry(1.6, 1.6, 0.06, 32);
+        const pizzaPlateGeo = new THREE.CylinderGeometry(0.8, 0.8, 0.03, 32);
         const pizzaPlateMesh = new THREE.Mesh(pizzaPlateGeo, mahoganyMat);
-        pizzaPlateMesh.position.y = 0.03;
+        pizzaPlateMesh.position.y = 0.02;
         pizzaGroup.add(pizzaPlateMesh);
 
         // Golden Pizza Crust Base
-        const crustGeo = new THREE.TorusGeometry(1.3, 0.16, 16, 32);
+        const crustGeo = new THREE.TorusGeometry(0.65, 0.08, 16, 32);
         const crustMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.6 });
         const crustMesh = new THREE.Mesh(crustGeo, crustMat);
-        crustMesh.position.y = 0.12;
+        crustMesh.position.y = 0.06;
         crustMesh.rotation.x = Math.PI / 2;
         pizzaGroup.add(crustMesh);
 
         // Sauce & Melted Cheese Inner Base
-        const cheeseBaseGeo = new THREE.CylinderGeometry(1.28, 1.28, 0.06, 32);
+        const cheeseBaseGeo = new THREE.CylinderGeometry(0.64, 0.64, 0.03, 32);
         const cheeseBaseMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.4 });
         const cheeseBaseMesh = new THREE.Mesh(cheeseBaseGeo, cheeseBaseMat);
-        cheeseBaseMesh.position.y = 0.1;
+        cheeseBaseMesh.position.y = 0.05;
         pizzaGroup.add(cheeseBaseMesh);
 
-        // Falling Toppings (Pepperoni Slices & Basil Leaves)
+        // Falling Toppings (Pepperoni Slices)
         const toppingsList = [];
         for (let i = 0; i < 10; i++) {
-            const pepGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.03, 16);
+            const pepGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.02, 16);
             const pepMat = new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.5 });
             const pepMesh = new THREE.Mesh(pepGeo, pepMat);
             
-            const r = 0.3 + Math.random() * 0.7;
+            const r = 0.15 + Math.random() * 0.35;
             const a = Math.random() * Math.PI * 2;
-            pepMesh.position.set(Math.cos(a) * r, 0.16 + i * 0.05, Math.sin(a) * r);
+            pepMesh.position.set(Math.cos(a) * r, 0.08 + i * 0.03, Math.sin(a) * r);
             pizzaGroup.add(pepMesh);
-            toppingsList.push({ mesh: pepMesh, targetY: 0.14, startY: 1.5 + i * 0.2 });
+            toppingsList.push({ mesh: pepMesh, targetY: 0.07, startY: 0.8 + i * 0.1 });
         }
         threeRef.current.pizzaToppings = toppingsList;
 
-        // 3C. GOURMET BURGER ASSEMBLY DISH
+        // 3C. GOURMET BURGER ASSEMBLY DISH (On Table Center)
         const burgerGroup = new THREE.Group();
         burgerGroup.visible = false;
         dishStageGroup.add(burgerGroup);
         threeRef.current.burgerGroup = burgerGroup;
 
-        const burgerPlateGeo = new THREE.CylinderGeometry(1.4, 1.2, 0.06, 32);
+        const burgerPlateGeo = new THREE.CylinderGeometry(0.7, 0.6, 0.03, 32);
         const burgerPlateMesh = new THREE.Mesh(burgerPlateGeo, whiteMarbleMat);
-        burgerPlateMesh.position.y = 0.03;
+        burgerPlateMesh.position.y = 0.02;
         burgerGroup.add(burgerPlateMesh);
 
         // Stacked Burger Layer Components
@@ -789,107 +837,107 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         const burgerMatLettuce = new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.6 });
 
         // Bun Bottom
-        const bBunBot = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 0.15, 24), burgerMatBun);
-        bBunBot.position.y = 0.12;
+        const bBunBot = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.08, 24), burgerMatBun);
+        bBunBot.position.y = 0.06;
         burgerGroup.add(bBunBot);
 
         // Patty
-        const bPatty = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.75, 0.16, 24), burgerMatPatty);
-        bPatty.position.y = 0.32;
+        const bPatty = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.08, 24), burgerMatPatty);
+        bPatty.position.y = 0.16;
         burgerGroup.add(bPatty);
 
         // Cheese Slice
-        const bCheese = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.04, 0.9), burgerMatCheese);
-        bCheese.position.y = 0.44;
+        const bCheese = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.02, 0.45), burgerMatCheese);
+        bCheese.position.y = 0.22;
         bCheese.rotation.y = Math.PI / 4;
         burgerGroup.add(bCheese);
 
         // Tomato Slice
-        const bTomato = new THREE.Mesh(new THREE.CylinderGeometry(0.68, 0.68, 0.08, 24), burgerMatTomato);
-        bTomato.position.y = 0.52;
+        const bTomato = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.04, 24), burgerMatTomato);
+        bTomato.position.y = 0.26;
         burgerGroup.add(bTomato);
 
         // Lettuce Leaf Layer
-        const bLettuce = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.75, 0.05, 24), burgerMatLettuce);
-        bLettuce.position.y = 0.6;
+        const bLettuce = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.38, 0.03, 24), burgerMatLettuce);
+        bLettuce.position.y = 0.3;
         burgerGroup.add(bLettuce);
 
         // Bun Top (Dome)
-        const bBunTop = new THREE.Mesh(new THREE.SphereGeometry(0.72, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2), burgerMatBun);
-        bBunTop.position.y = 0.64;
+        const bBunTop = new THREE.Mesh(new THREE.SphereGeometry(0.36, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2), burgerMatBun);
+        bBunTop.position.y = 0.32;
         burgerGroup.add(bBunTop);
 
         threeRef.current.burgerParts = [
-            { mesh: bBunBot, targetY: 0.12, initialY: 0.12 },
-            { mesh: bPatty, targetY: 0.32, initialY: 1.2 },
-            { mesh: bCheese, targetY: 0.44, initialY: 1.8 },
-            { mesh: bTomato, targetY: 0.52, initialY: 2.4 },
-            { mesh: bLettuce, targetY: 0.6, initialY: 3.0 },
-            { mesh: bBunTop, targetY: 0.64, initialY: 3.6 },
+            { mesh: bBunBot, targetY: 0.06, initialY: 0.06 },
+            { mesh: bPatty, targetY: 0.16, initialY: 0.6 },
+            { mesh: bCheese, targetY: 0.22, initialY: 0.9 },
+            { mesh: bTomato, targetY: 0.26, initialY: 1.2 },
+            { mesh: bLettuce, targetY: 0.3, initialY: 1.5 },
+            { mesh: bBunTop, targetY: 0.32, initialY: 1.8 },
         ];
 
-        // 3D. SIGNATURE DESSERT DISH
+        // 3D. SIGNATURE DESSERT DISH (On Table Center)
         const dessertGroup = new THREE.Group();
         dessertGroup.visible = false;
         dishStageGroup.add(dessertGroup);
         threeRef.current.dessertGroup = dessertGroup;
 
-        const dessertPlateGeo = new THREE.CylinderGeometry(1.3, 1.1, 0.06, 32);
+        const dessertPlateGeo = new THREE.CylinderGeometry(0.65, 0.55, 0.03, 32);
         const dessertPlateMesh = new THREE.Mesh(dessertPlateGeo, whiteMarbleMat);
-        dessertPlateMesh.position.y = 0.03;
+        dessertPlateMesh.position.y = 0.02;
         dessertGroup.add(dessertPlateMesh);
 
         // Lava Cake / Brownie Base
-        const cakeGeo = new THREE.CylinderGeometry(0.6, 0.7, 0.6, 24);
+        const cakeGeo = new THREE.CylinderGeometry(0.3, 0.35, 0.3, 24);
         const cakeMat = new THREE.MeshStandardMaterial({ color: 0x3f1d0b, roughness: 0.8 });
         const cakeMesh = new THREE.Mesh(cakeGeo, cakeMat);
-        cakeMesh.position.y = 0.36;
+        cakeMesh.position.y = 0.18;
         dessertGroup.add(cakeMesh);
 
         // Cream Swirl Top
-        const creamGeo = new THREE.SphereGeometry(0.35, 16, 16);
+        const creamGeo = new THREE.SphereGeometry(0.18, 16, 16);
         const creamMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
         const creamMesh = new THREE.Mesh(creamGeo, creamMat);
-        creamMesh.position.y = 0.82;
+        creamMesh.position.y = 0.41;
         dessertGroup.add(creamMesh);
         threeRef.current.dessertCream = creamMesh;
 
         // Strawberry & Mint Garnish
-        const berryGeo = new THREE.ConeGeometry(0.14, 0.25, 16);
+        const berryGeo = new THREE.ConeGeometry(0.07, 0.13, 16);
         const berryMat = new THREE.MeshStandardMaterial({ color: 0xe11d48, roughness: 0.3 });
         const berryMesh = new THREE.Mesh(berryGeo, berryMat);
-        berryMesh.position.set(0.15, 1.1, 0.1);
+        berryMesh.position.set(0.08, 0.55, 0.05);
         berryMesh.rotation.z = 0.4;
         dessertGroup.add(berryMesh);
 
-        // 3E. CRAFT COCKTAIL DRINK DISH
+        // 3E. CRAFT COCKTAIL DRINK DISH (On Table Center)
         const drinkGroup = new THREE.Group();
         drinkGroup.visible = false;
         dishStageGroup.add(drinkGroup);
         threeRef.current.drinkGroup = drinkGroup;
 
         // Highball Glass
-        const glassGeo = new THREE.CylinderGeometry(0.55, 0.48, 1.5, 32);
+        const glassGeo = new THREE.CylinderGeometry(0.28, 0.24, 0.75, 32);
         const glassMesh = new THREE.Mesh(glassGeo, glassMat);
-        glassMesh.position.y = 0.8;
+        glassMesh.position.y = 0.4;
         drinkGroup.add(glassMesh);
 
         // Amber Liquid Fill
-        const liquidFillGeo = new THREE.CylinderGeometry(0.5, 0.44, 1.2, 32);
+        const liquidFillGeo = new THREE.CylinderGeometry(0.25, 0.22, 0.6, 32);
         const liquidFillMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.85, roughness: 0.1 });
         const liquidFillMesh = new THREE.Mesh(liquidFillGeo, liquidFillMat);
-        liquidFillMesh.position.y = 0.68;
+        liquidFillMesh.position.y = 0.34;
         drinkGroup.add(liquidFillMesh);
 
         // Floating Ice Cubes inside Glass
         for (let i = 0; i < 3; i++) {
-            const iceGeo = new THREE.BoxGeometry(0.24, 0.24, 0.24);
+            const iceGeo = new THREE.BoxGeometry(0.12, 0.12, 0.12);
             const iceMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, transparent: true, opacity: 0.7, transmission: 0.9 });
             const iceMesh = new THREE.Mesh(iceGeo, iceMat);
             iceMesh.position.set(
-                (Math.random() - 0.5) * 0.3,
-                0.5 + i * 0.3,
-                (Math.random() - 0.5) * 0.3
+                (Math.random() - 0.5) * 0.15,
+                0.25 + i * 0.15,
+                (Math.random() - 0.5) * 0.15
             );
             iceMesh.rotation.set(Math.random(), Math.random(), Math.random());
             drinkGroup.add(iceMesh);
@@ -898,16 +946,16 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         // Effervescent Bubbles Rising
         const bubblesList = [];
         for (let i = 0; i < 15; i++) {
-            const bGeo = new THREE.SphereGeometry(0.03, 8, 8);
+            const bGeo = new THREE.SphereGeometry(0.015, 8, 8);
             const bMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 });
             const bMesh = new THREE.Mesh(bGeo, bMat);
             bMesh.position.set(
-                (Math.random() - 0.5) * 0.4,
-                0.2 + Math.random() * 1.0,
-                (Math.random() - 0.5) * 0.4
+                (Math.random() - 0.5) * 0.2,
+                0.1 + Math.random() * 0.5,
+                (Math.random() - 0.5) * 0.2
             );
             drinkGroup.add(bMesh);
-            bubblesList.push({ mesh: bMesh, speedY: 0.01 + Math.random() * 0.01 });
+            bubblesList.push({ mesh: bMesh, speedY: 0.008 + Math.random() * 0.008 });
         }
         threeRef.current.drinkBubbles = bubblesList;
 
@@ -1128,9 +1176,9 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
             threeRef.current.steamParticles.forEach(s => {
                 s.mesh.position.y += s.speedY;
                 s.mesh.position.x += Math.sin(elapsed * 3 + s.mesh.position.y) * 0.003;
-                s.mesh.material.opacity = Math.max(0, 0.4 - ((s.mesh.position.y - 1.2) / 1.5));
-                if (s.mesh.position.y > 2.7) {
-                    s.mesh.position.y = 1.2;
+                s.mesh.material.opacity = Math.max(0, 0.4 - ((s.mesh.position.y - 0.6) / 1.0));
+                if (s.mesh.position.y > 1.6) {
+                    s.mesh.position.y = 0.6;
                     s.mesh.material.opacity = 0.4;
                 }
             });
@@ -1140,7 +1188,7 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
                 b.angle += delta * 0.8;
                 b.mesh.position.x = Math.cos(b.angle) * b.radius;
                 b.mesh.position.z = Math.sin(b.angle) * b.radius;
-                b.mesh.position.y = b.height + Math.sin(elapsed * 2 + b.angle) * 0.1;
+                b.mesh.position.y = b.height + Math.sin(elapsed * 2 + b.angle) * 0.05;
                 b.mesh.rotation.x += delta * 2;
                 b.mesh.rotation.y += delta * 1.5;
             });
@@ -1148,8 +1196,8 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
             // 5. DRINK BUBBLES RISING
             threeRef.current.drinkBubbles.forEach(b => {
                 b.mesh.position.y += b.speedY;
-                if (b.mesh.position.y > 1.4) {
-                    b.mesh.position.y = 0.2;
+                if (b.mesh.position.y > 0.7) {
+                    b.mesh.position.y = 0.1;
                 }
             });
 
@@ -1169,7 +1217,7 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
             }
 
             // -------------------------------------------------------------
-            // 8. WORKING HUMAN AVATARS LIVE ANIMATION LOOPS
+            // 8. REALISTIC WORKING HUMAN AVATARS LIVE ANIMATIONS
             // -------------------------------------------------------------
 
             // 8A. HOSTESS WELCOMING GESTURE AT PODIUM
@@ -1236,12 +1284,12 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
             if (!isOrbitMode) {
                 // Smooth interpolation targets based on active chapter
                 let targetEye = new THREE.Vector3(0, 8, 25);
-                let targetLook = new THREE.Vector3(0, 2, 0);
+                let targetLook = new THREE.Vector3(0, 1.5, -1);
 
                 if (activeChapter === 0) {
                     // Chapter 0: Entrance Fly-In & Hostess Greeting
-                    targetEye.set(0, 7 - scrollProgress * 5, 26 - scrollProgress * 15);
-                    targetLook.set(0, 4, 10);
+                    targetEye.set(0, 6.5 - scrollProgress * 5, 26 - scrollProgress * 15);
+                    targetLook.set(0, 3.5, 6);
 
                     // Open entrance doors as camera moves closer
                     const doorOpenDist = Math.min(1.8, Math.max(0, (scrollProgress - 0.05) * 12));
@@ -1249,7 +1297,7 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
                     if (threeRef.current.doorsRight) threeRef.current.doorsRight.position.x = 0.95 + doorOpenDist;
                 } else if (activeChapter === 1) {
                     // Chapter 1: Dining Walkthrough & Seated Customers
-                    targetEye.set(3, 4.5, 7);
+                    targetEye.set(3.2, 4.2, 5.5);
                     targetLook.set(0, 1.4, -1);
 
                     // Chairs slide smoothly into table
@@ -1260,22 +1308,22 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
                         c.group.position.z = -1 + Math.sin(c.group.rotation.y + Math.PI / 2) * dist;
                     });
                 } else if (activeChapter === 2) {
-                    // Chapter 2: Micro-Animation Dish Crafting Close-Up
-                    targetEye.set(0, 5.2, 3.2);
-                    targetLook.set(0, 3.4, -1);
+                    // Chapter 2: 3D Micro-Animation Dish Crafting ON CENTER OF TABLE
+                    targetEye.set(0, 2.75, 1.6);
+                    targetLook.set(0, 1.52, -1.0);
 
                     // Rotate active dish stage slowly
                     if (threeRef.current.dishGroup) {
-                        threeRef.current.dishGroup.rotation.y += delta * 0.5;
+                        threeRef.current.dishGroup.rotation.y += delta * 0.4;
                     }
                 } else if (activeChapter === 3) {
                     // Chapter 3: Master Chef Kitchen Workflow
-                    targetEye.set(-7, 4.2, -3);
-                    targetLook.set(-10, 2, -8);
+                    targetEye.set(-7.5, 3.8, -4);
+                    targetLook.set(-10, 1.8, -8);
                 } else if (activeChapter === 4) {
                     // Chapter 4: Waiter Service & Courier Partner Delivery
-                    targetEye.set(6, 4.0, 1);
-                    targetLook.set(8, 1.8, -4);
+                    targetEye.set(5.5, 3.5, 0.5);
+                    targetLook.set(8, 1.6, -4);
                 }
 
                 // Smooth Lerp Camera
@@ -1366,7 +1414,7 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
                     {/* Active Staff Indicator Badge */}
                     <div className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-2xl bg-slate-900/80 backdrop-blur-xl border border-slate-700/80 text-emerald-400 font-bold text-xs">
                         <Users size={15} className="animate-pulse" />
-                        <span>Live Working Avatars (Staff & Guests)</span>
+                        <span>Realistic 3D Human Avatars & Table Center Dish</span>
                     </div>
 
                     {/* Mute / Audio Toggle */}
@@ -1417,7 +1465,7 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
                     {activeChapter === 2 && (
                         <div className="pt-2 border-t border-slate-800 space-y-2">
                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
-                                Choose Signature Dish Experience:
+                                Choose Table Center Dish Experience:
                             </span>
                             <div className="flex flex-wrap gap-1.5">
                                 {[
