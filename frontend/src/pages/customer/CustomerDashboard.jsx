@@ -4,7 +4,8 @@ import {
     Calendar, Heart, MessageSquare, Settings, 
     Crown, Sparkles, Plus, Trash2, CheckCircle, 
     ChevronRight, LogOut, Wallet, Star, ShieldAlert,
-    MapPin, Phone, Mail, Lock, Clock, Gift, User
+    MapPin, Phone, Mail, Lock, Clock, Gift, User,
+    Bike, Store, Truck, Navigation
 } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { Link } from 'react-router-dom';
@@ -103,6 +104,8 @@ const CustomerDashboard = () => {
     useEffect(() => {
         if (api) {
             fetchOrders();
+            const interval = setInterval(fetchOrders, 10000);
+            return () => clearInterval(interval);
         }
     }, [api]);
 
@@ -539,6 +542,103 @@ const CustomerDashboard = () => {
                                                     <span className="font-mono font-black text-base text-amber-950 bg-white px-3.5 py-1 rounded-lg border border-amber-300 shadow-sm tracking-[0.25em]">
                                                         {order.deliveryOtp || '4829'}
                                                     </span>
+                                                </div>
+                                            )}
+
+                                            {/* Delivery Pickup & Destination Route Details Card (Zomato Style) */}
+                                            {order.orderType === 'Delivery' && (
+                                                <div className="bg-slate-900 text-white p-4 sm:p-5 rounded-2xl space-y-4 border border-slate-800 shadow-md">
+                                                    {/* Pickup & Delivery Addresses */}
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs border-b border-slate-800 pb-3">
+                                                        <div className="flex items-start gap-2 bg-slate-800/60 p-2.5 rounded-xl border border-slate-700">
+                                                            <Store size={16} className="text-amber-400 shrink-0 mt-0.5" />
+                                                            <div>
+                                                                <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest block">Pickup Store</span>
+                                                                <p className="font-extrabold text-white text-xs mt-0.5">
+                                                                    {order.restaurantId?.name || 'Juice Box Main Hub'}
+                                                                </p>
+                                                                <p className="text-[10px] text-slate-400">Branch Central Kitchen Counter</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex items-start gap-2 bg-slate-800/60 p-2.5 rounded-xl border border-slate-700">
+                                                            <MapPin size={16} className="text-emerald-400 shrink-0 mt-0.5" />
+                                                            <div>
+                                                                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest block">Delivered To</span>
+                                                                <p className="font-extrabold text-white text-xs mt-0.5 truncate">
+                                                                    {typeof order.shippingAddress === 'object' 
+                                                                        ? (order.shippingAddress?.address || 'Customer Home Location')
+                                                                        : (order.shippingAddress || 'Customer Home Location')}
+                                                                </p>
+                                                                <p className="text-[10px] text-slate-400">Home Delivery Address</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Delivery Partner Executive Details */}
+                                                    <div className="flex justify-between items-center flex-wrap gap-3">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center font-bold text-sm shrink-0">
+                                                                <Bike size={20} />
+                                                            </div>
+                                                            <div>
+                                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Delivery Executive</span>
+                                                                <p className="font-extrabold text-white text-sm">
+                                                                    {order.deliveryPartner ? (typeof order.deliveryPartner === 'object' ? order.deliveryPartner.name : 'Assigned Executive') : 'Assigning nearest rider...'}
+                                                                </p>
+                                                                {order.deliveryPartner && typeof order.deliveryPartner === 'object' && (
+                                                                    <p className="text-[10px] text-slate-400 font-medium">
+                                                                        Vehicle: {order.deliveryPartner.vehicleDetails?.type || 'Bike'} {order.deliveryPartner.vehicleDetails?.model ? `(${order.deliveryPartner.vehicleDetails.model})` : ''}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {order.deliveryPartner && typeof order.deliveryPartner === 'object' && order.deliveryPartner.phoneNumber && (
+                                                            <a
+                                                                href={`tel:${order.deliveryPartner.phoneNumber}`}
+                                                                className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-md"
+                                                            >
+                                                                <Phone size={14} /> Call Rider
+                                                            </a>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Mini Zomato-Style Live Route Tracking Progress */}
+                                                    <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+                                                        <div className="flex justify-between items-center text-[10px] font-extrabold text-slate-400">
+                                                            <span className="flex items-center gap-1 text-emerald-400">
+                                                                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Live Route Progress (Zomato Style)
+                                                            </span>
+                                                            <span className="text-white font-mono">{order.status}</span>
+                                                        </div>
+
+                                                        <div className="relative h-2 bg-slate-800 rounded-full overflow-hidden">
+                                                            <div 
+                                                                className="absolute h-full bg-gradient-to-r from-amber-500 via-orange-500 to-emerald-500 rounded-full transition-all duration-1000"
+                                                                style={{
+                                                                    width: order.status === 'Completed' || order.status === 'Delivered' ? '100%' :
+                                                                           order.status === 'Out for Delivery' || order.status === 'On the Way' ? '75%' :
+                                                                           order.status === 'Picked Up' ? '50%' :
+                                                                           order.status === 'Preparing' ? '25%' : '10%'
+                                                                }}
+                                                            ></div>
+                                                        </div>
+
+                                                        <div className="flex justify-between items-center pt-1 text-[9px] font-bold text-slate-400">
+                                                            <span>🏪 Shop Pickup Hub</span>
+                                                            <span>🚴 Rider En Route</span>
+                                                            <span>🏠 Home Delivered</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* View Full Route Map Button */}
+                                                    <Link 
+                                                        to={`/track/${order._id}?restaurantId=${order.restaurantId?._id || order.restaurantId || ''}`}
+                                                        className="w-full py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black text-xs rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition-all uppercase tracking-wider"
+                                                    >
+                                                        <Bike size={16} className="animate-bounce" /> Open Live Zomato Map Route ➔
+                                                    </Link>
                                                 </div>
                                             )}
                                         </div>

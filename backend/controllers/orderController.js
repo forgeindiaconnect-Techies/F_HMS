@@ -199,7 +199,13 @@ export const getOrderById = async (req, res) => {
 // @route   GET /api/orders/myorders
 // @access  Private
 export const getMyOrders = async (req, res) => {
-    const orders = await Order.find({ user: req.user._id }).populate('restaurantId', 'name').sort({ createdAt: -1 });
+    const orders = await Order.find({ user: req.user._id })
+        .populate('restaurantId', 'name deliverySettings')
+        .populate({
+            path: 'deliveryPartner',
+            select: 'name phoneNumber vehicleDetails status'
+        })
+        .sort({ createdAt: -1 });
     res.json(orders);
 };
 
