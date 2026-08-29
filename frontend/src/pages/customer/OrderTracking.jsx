@@ -48,7 +48,10 @@ const OrderTracking = () => {
         if (!order) return;
         
         const isSelf = order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup';
-        const isMoving = !isSelf && ['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status);
+        const isMoving = !isSelf && (
+            ['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) ||
+            ['Picked Up', 'On the Way'].includes(order.deliveryStatus)
+        );
         
         if (!isMoving) {
             setRiderProgress(0);
@@ -63,9 +66,16 @@ const OrderTracking = () => {
         }, 800);
 
         return () => clearInterval(timer);
-    }, [order?.status, order?.orderType]);
+    }, [order?.status, order?.deliveryStatus, order?.orderType]);
 
     const isSelfPickup = order && (order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup');
+
+    const isRiderAssigned = Boolean(order?.deliveryPartner || order?.deliveryStatus === 'Accepted');
+    const isRiderMoving = ['Picked Up', 'On the Way', 'Out for Delivery'].includes(order?.status) || ['Picked Up', 'On the Way'].includes(order?.deliveryStatus);
+    const isDelivered = order?.status === 'Delivered' || order?.deliveryStatus === 'Delivered';
+    const riderName = typeof order?.deliveryPartner === 'object' ? order.deliveryPartner.name : 'Delivery Executive';
+    const vehicleModel = typeof order?.deliveryPartner === 'object' ? order.deliveryPartner.vehicleDetails?.model : '';
+    const currentProgress = isDelivered ? 100 : (isRiderMoving ? riderProgress : 0);
 
     const steps = isSelfPickup ? [
         { num: 1, title: 'Order Received', desc: 'We have received your order.', icon: PackageOpen },
@@ -138,8 +148,8 @@ const OrderTracking = () => {
                                 <line 
                                     x1="20%" 
                                     y1="40%" 
-                                    x2={`${20 + (['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) ? riderProgress : 0) * 0.6}%`} 
-                                    y2={`${40 + (['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) ? riderProgress : 0) * 0.3}%`} 
+                                    x2={`${20 + currentProgress * 0.6}%`} 
+                                    y2={`${40 + currentProgress * 0.3}%`} 
                                     stroke="#10b981" 
                                     strokeWidth="3" 
                                     strokeLinecap="round" 
@@ -164,13 +174,13 @@ const OrderTracking = () => {
                                 <span className="block text-[8px] font-black text-white bg-slate-900/90 border border-slate-800 px-2 py-0.5 rounded shadow-md mt-2 uppercase tracking-widest leading-none">Home</span>
                             </div>
 
-                            {/* Moving Delivery Partner (Bike) */}
-                            {['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) ? (
+                            {/* Delivery Executive Person & Bike Marker */}
+                            {(isRiderAssigned || isRiderMoving || isDelivered) ? (
                                 <div 
                                     className="absolute -translate-x-1/2 -translate-y-1/2 text-center z-25 transition-all duration-300 ease-out"
                                     style={{
-                                        left: `${20 + riderProgress * 0.6}%`,
-                                        top: `${40 + riderProgress * 0.3}%`
+                                        left: `${20 + currentProgress * 0.6}%`,
+                                        top: `${40 + currentProgress * 0.3}%`
                                     }}
                                 >
                                     <div className="relative flex h-12 w-12 items-center justify-center bg-emerald-500 text-white rounded-full shadow-2xl border-2 border-slate-950">
@@ -181,7 +191,7 @@ const OrderTracking = () => {
                                         </div>
                                     </div>
                                     <span className="block text-[8px] font-black text-emerald-400 bg-slate-900 border border-slate-800 px-2 py-1 rounded shadow-lg mt-1 whitespace-nowrap leading-none">
-                                        {order.deliveryPartner?.name || 'Partner'} (Out for Delivery)
+                                        🚴 {riderName} {vehicleModel ? `(${vehicleModel})` : ''} · {isDelivered ? 'Delivered' : isRiderMoving ? 'Out for Delivery' : 'Awaiting Kitchen Pickup'}
                                     </span>
                                 </div>
                             ) : (
@@ -191,20 +201,20 @@ const OrderTracking = () => {
                                         <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
                                     </span>
                                     <span className="text-xs text-slate-350 font-black uppercase tracking-wider">
-                                        {order.status === 'Preparing' ? 'Preparing Food in Kitchen' : 'Awaiting Delivery Assignment'}
+                                        {order.status === 'Preparing' ? 'Kitchen Preparing Food' : 'Assigning Nearest Delivery Partner...'}
                                     </span>
                                 </div>
                             )}
 
                             {/* Live HUD Card (Top‑Left) */}
-                            {['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) && (
+                            {(isRiderMoving || isDelivered) && (
                                 <div className="absolute top-4 left-4 z-20 bg-slate-900/90 border border-slate-800 p-3 rounded-2xl backdrop-blur text-left shadow-lg flex flex-col gap-1 min-w-[140px]">
                                     <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest leading-none">Live Tracking</span>
                                     <h4 className="text-base font-extrabold text-white leading-none mt-1">
-                                        {Math.max(1, Math.ceil(((order.deliveryDistance || 3.2) * 3) * (1 - riderProgress / 100)))} mins
+                                        {isDelivered ? '0 mins' : `${Math.max(1, Math.ceil(((order.deliveryDistance || 3.2) * 3) * (1 - riderProgress / 100)))} mins`}
                                     </h4>
                                     <p className="text-[9px] font-semibold text-slate-400 mt-0.5">
-                                        {Math.max(0.1, Number(((order.deliveryDistance || 3.2) * (1 - riderProgress / 100)).toFixed(1)))} km remaining
+                                        {isDelivered ? 'Arrived at Destination' : `${Math.max(0.1, Number(((order.deliveryDistance || 3.2) * (1 - riderProgress / 100)).toFixed(1)))} km remaining`}
                                     </p>
                                 </div>
                             )}

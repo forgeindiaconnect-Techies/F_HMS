@@ -744,8 +744,8 @@ const DeliveryManagement = () => {
                                             <div 
                                                 className="absolute -translate-x-1/2 -translate-y-1/2 text-center group z-20 transition-all duration-300 ease-out"
                                                 style={{
-                                                    left: `${20 + (['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) ? riderProgress : 0) * 0.6}%`,
-                                                    top: `${40 + (['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) ? riderProgress : 0) * 0.3}%`
+                                                    left: `${20 + ((selectedTrackingOrder.status === 'Delivered' || selectedTrackingOrder.deliveryStatus === 'Delivered') ? 100 : (['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) || ['Picked Up', 'On the Way'].includes(selectedTrackingOrder.deliveryStatus) ? riderProgress : 0)) * 0.6}%`,
+                                                    top: `${40 + ((selectedTrackingOrder.status === 'Delivered' || selectedTrackingOrder.deliveryStatus === 'Delivered') ? 100 : (['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) || ['Picked Up', 'On the Way'].includes(selectedTrackingOrder.deliveryStatus) ? riderProgress : 0)) * 0.3}%`
                                                 }}
                                             >
                                                 <div className="relative flex h-11 w-11 items-center justify-center bg-emerald-500 text-white rounded-full shadow-2xl border-2 border-white cursor-pointer transition-all group-hover:scale-110">
@@ -761,7 +761,7 @@ const DeliveryManagement = () => {
                                                     </div>
                                                 </div>
                                                 <span className="block text-[8px] font-black text-emerald-400 bg-slate-950 border border-slate-800 px-2 py-1 rounded shadow-lg mt-1 whitespace-nowrap leading-none">
-                                                    {typeof selectedTrackingOrder.deliveryPartner === 'object' ? selectedTrackingOrder.deliveryPartner.name : 'Rider'} ({selectedTrackingOrder.deliveryStatus || 'Transit'})
+                                                    🚴 {typeof selectedTrackingOrder.deliveryPartner === 'object' ? selectedTrackingOrder.deliveryPartner.name : 'Rider'} ({selectedTrackingOrder.deliveryStatus || 'Assigned'})
                                                 </span>
                                             </div>
                                         )}
