@@ -186,8 +186,16 @@ const MenuManagement = () => {
                         <option value="Pizza">Pizza</option>
                         <option value="Burger">Burger</option>
                         <option value="Dessert">Dessert</option>
+                        <option value="Drink">Drink</option>
+                        <option value="Beverages">Beverages</option>
+                        {categories.map(c => (
+                            !['Meal','Starter','Pizza','Burger','Dessert','Drink','Beverages'].includes(c.name) && (
+                                <option key={c._id || c.name} value={c.name}>{c.name}</option>
+                            )
+                        ))}
                     </select>
                     <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-green-500">
+
                         <option>All Statuses</option>
                         <option>Available</option>
                         <option>Unavailable</option>
@@ -343,8 +351,16 @@ const MenuManagement = () => {
                                             <option value="Pizza">Pizza</option>
                                             <option value="Burger">Burger</option>
                                             <option value="Dessert">Dessert</option>
+                                            <option value="Drink">Drink</option>
+                                            <option value="Beverages">Beverages</option>
+                                            {categories.map(c => (
+                                                !['Meal','Starter','Pizza','Burger','Dessert','Drink','Beverages'].includes(c.name) && (
+                                                    <option key={c._id || c.name} value={c.name}>{c.name}</option>
+                                                )
+                                            ))}
                                         </select>
                                     </div>
+
                                 </div>
 
                                 <div>
