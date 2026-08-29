@@ -25,6 +25,15 @@ const Explore = () => {
     const [isLocationOpen, setIsLocationOpen] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    const availableLocations = [
+        'Chennai, Tamil Nadu',
+        'Mumbai, Maharashtra',
+        'Bengaluru, Karnataka',
+        'Delhi NCR',
+        'Hyderabad, Telangana',
+        'Kolkata, West Bengal'
+    ];
+
     const foodItems = [
         { name: 'Pizza', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80' },
         { name: 'Burger', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80' },
