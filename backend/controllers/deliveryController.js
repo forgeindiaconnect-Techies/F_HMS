@@ -174,10 +174,8 @@ export const updateOrderDeliveryStatus = async (req, res) => {
         order.deliveryStatus = status;
 
         if (status === 'Accepted') {
-            order.status = 'Out for Delivery';
-        } else if (status === 'Picked Up') {
-            order.status = 'Out for Delivery';
-        } else if (status === 'On the Way') {
+            // Delivery partner accepted the run; keep kitchen order.status as is until picked up!
+        } else if (status === 'Picked Up' || status === 'On the Way') {
             order.status = 'Out for Delivery';
         } else if (status === 'Delivered') {
             // Ensure delivery OTP exists
