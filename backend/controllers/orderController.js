@@ -365,7 +365,13 @@ export const updateOrderToPaid = async (req, res) => {
     if (order) {
         order.isPaid = true;
         order.paidAt = Date.now();
-        order.status = 'Delivered';
+        
+        // Preserve order status for Delivery orders (let Kitchen & Delivery Partner update status)
+        if (req.body.status) {
+            order.status = req.body.status;
+        } else if (order.orderType !== 'Delivery' && !order.status) {
+            order.status = 'Completed';
+        }
         
         if (paymentMethod) order.paymentMethod = paymentMethod;
         if (taxPrice !== undefined) order.taxPrice = taxPrice;

@@ -496,10 +496,20 @@ const CustomerDashboard = () => {
                                                     </span>
                                                 </div>
                                                 <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
-                                                    order.status === 'Completed' || order.status === 'Delivered' || order.status === 'Picked Up'
-                                                    ? 'bg-green-50 text-green-700 border border-green-200' 
-                                                    : 'bg-orange-50 text-orange-700 border border-orange-200'
-                                                }`}>{order.status}</span>
+                                                     (order.status === 'Delivered' || order.deliveryStatus === 'Delivered' || order.status === 'Completed')
+                                                     ? 'bg-green-50 text-green-700 border border-green-200'
+                                                     : (order.status === 'Out for Delivery' || order.deliveryStatus === 'On the Way' || order.deliveryStatus === 'Picked Up')
+                                                     ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                                                     : (order.status === 'Preparing' || order.status === 'Ready')
+                                                     ? 'bg-orange-50 text-orange-700 border border-orange-200'
+                                                     : 'bg-blue-50 text-blue-700 border border-blue-200'
+                                                 }`}>
+                                                     {order.orderType === 'Delivery' ? (
+                                                         (order.status === 'Delivered' || order.deliveryStatus === 'Delivered') ? 'Delivered' :
+                                                         (order.status === 'Out for Delivery' || order.deliveryStatus === 'On the Way' || order.deliveryStatus === 'Picked Up') ? 'Out for Delivery' :
+                                                         (order.status === 'Preparing' || order.status === 'Ready') ? 'Kitchen Preparing' : 'Order Placed (Pending)'
+                                                     ) : order.status}
+                                                 </span>
                                             </div>
 
                                             <div className="flex justify-between items-center flex-wrap gap-4 text-xs">
@@ -610,17 +620,20 @@ const CustomerDashboard = () => {
                                                             <span className="flex items-center gap-1 text-emerald-400">
                                                                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Live Route Progress (Zomato Style)
                                                             </span>
-                                                            <span className="text-white font-mono">{order.status}</span>
+                                                            <span className="text-white font-mono uppercase">
+                                                                 {(order.status === 'Delivered' || order.deliveryStatus === 'Delivered') ? 'Delivered' :
+                                                                  (order.status === 'Out for Delivery' || order.deliveryStatus === 'On the Way' || order.deliveryStatus === 'Picked Up') ? 'Out for Delivery' :
+                                                                  (order.status === 'Preparing' || order.status === 'Ready') ? 'Kitchen Preparing' : 'Order Placed (Pending)'}
+                                                            </span>
                                                         </div>
 
                                                         <div className="relative h-2 bg-slate-800 rounded-full overflow-hidden">
                                                             <div 
                                                                 className="absolute h-full bg-gradient-to-r from-amber-500 via-orange-500 to-emerald-500 rounded-full transition-all duration-1000"
                                                                 style={{
-                                                                    width: order.status === 'Completed' || order.status === 'Delivered' ? '100%' :
-                                                                           order.status === 'Out for Delivery' || order.status === 'On the Way' ? '75%' :
-                                                                           order.status === 'Picked Up' ? '50%' :
-                                                                           order.status === 'Preparing' ? '25%' : '10%'
+                                                                    width: (order.status === 'Delivered' || order.deliveryStatus === 'Delivered') ? '100%' :
+                                                                           (order.status === 'Out for Delivery' || order.deliveryStatus === 'On the Way' || order.deliveryStatus === 'Picked Up') ? '66%' :
+                                                                           (order.status === 'Preparing' || order.status === 'Ready') ? '35%' : '10%'
                                                                 }}
                                                             ></div>
                                                         </div>
