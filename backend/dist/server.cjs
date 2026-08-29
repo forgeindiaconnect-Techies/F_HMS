@@ -96198,6 +96198,52 @@ var init_RestaurantVerification = __esm({
   }
 });
 
+// models/Plan.js
+var Plan_exports = {};
+__export(Plan_exports, {
+  default: () => Plan_default
+});
+var import_mongoose8, planSchema, Plan, Plan_default;
+var init_Plan = __esm({
+  "models/Plan.js"() {
+    import_mongoose8 = __toESM(require_mongoose2(), 1);
+    planSchema = new import_mongoose8.default.Schema({
+      name: {
+        type: String,
+        required: true,
+        unique: true
+      },
+      monthlyPrice: {
+        type: Number,
+        required: true
+      },
+      yearlyPrice: {
+        type: Number,
+        required: true
+      },
+      features: [{
+        type: String
+      }],
+      branchesLimit: {
+        type: Number,
+        default: 1
+      },
+      staffLimit: {
+        type: Number,
+        default: 5
+      },
+      isActive: {
+        type: Boolean,
+        default: true
+      }
+    }, {
+      timestamps: true
+    });
+    Plan = import_mongoose8.default.model("Plan", planSchema);
+    Plan_default = Plan;
+  }
+});
+
 // index.js
 var import_express27 = __toESM(require_express2(), 1);
 var import_dotenv = __toESM(require_main(), 1);
@@ -96729,8 +96775,8 @@ var registerUser = async (req, res) => {
           billingCycle: req.body.billingCycle || "monthly",
           trialActive: true,
           startDate: /* @__PURE__ */ new Date(),
-          expiryDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1e3)
-          // 1-Day Free Trial
+          expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1e3)
+          // 30-Day Free Trial
         },
         approvalStatus: "Pending",
         verificationStatus: hasVerificationFiles ? "Under Review" : "Pending"
@@ -96909,7 +96955,6 @@ var loginUser = async (req, res) => {
               restaurant.subscription.status = "Frozen";
               await restaurant.save();
             }
-            return res.status(403).json({ message: "Your subscription has expired. Please renew to continue using the platform." });
           }
         }
       }
@@ -97067,49 +97112,49 @@ var testSendEmail = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+var createRazorpayRegistrationOrder = async (req, res) => {
+  try {
+    const { planName, billingCycle, restaurantName } = req.body;
+    const Plan2 = (await Promise.resolve().then(() => (init_Plan(), Plan_exports))).default;
+    const Razorpay2 = (await import("razorpay")).default;
+    const targetPlan = await Plan2.findOne({ name: planName });
+    const targetPrice = targetPlan ? billingCycle === "yearly" ? targetPlan.yearlyPrice : targetPlan.monthlyPrice : planName === "Pro" ? billingCycle === "yearly" ? 990 : 99 : billingCycle === "yearly" ? 1990 : 199;
+    const chargeAmount = Math.max(1, targetPrice);
+    const keyId = process.env.RAZORPAY_KEY_ID || "rzp_live_SlbQBi57McKtUc";
+    const keySecret = process.env.RAZORPAY_KEY_SECRET || "IgfxpfmQCMxSPaU0T4EyhcLU";
+    const instance = new Razorpay2({
+      key_id: keyId,
+      key_secret: keySecret
+    });
+    const razorpayOrder = await instance.orders.create({
+      amount: Math.round(chargeAmount * 100),
+      currency: "INR",
+      receipt: `reg_${Date.now().toString().slice(-8)}`,
+      notes: {
+        planName: planName || "Basic",
+        billingCycle: billingCycle || "monthly",
+        restaurantName: restaurantName || ""
+      }
+    });
+    res.json({
+      orderId: razorpayOrder.id,
+      amount: chargeAmount,
+      amountPaise: Math.round(chargeAmount * 100),
+      currency: "INR",
+      keyId,
+      planName,
+      billingCycle
+    });
+  } catch (error) {
+    console.error("Razorpay Registration Order Creation Error:", error);
+    res.status(400).json({ message: error.message || "Failed to create Razorpay Order" });
+  }
+};
 
 // middleware/authMiddleware.js
 var import_jsonwebtoken2 = __toESM(require_jsonwebtoken(), 1);
 init_User();
-
-// models/Plan.js
-var import_mongoose8 = __toESM(require_mongoose2(), 1);
-var planSchema = new import_mongoose8.default.Schema({
-  name: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  monthlyPrice: {
-    type: Number,
-    required: true
-  },
-  yearlyPrice: {
-    type: Number,
-    required: true
-  },
-  features: [{
-    type: String
-  }],
-  branchesLimit: {
-    type: Number,
-    default: 1
-  },
-  staffLimit: {
-    type: Number,
-    default: 5
-  },
-  isActive: {
-    type: Boolean,
-    default: true
-  }
-}, {
-  timestamps: true
-});
-var Plan = import_mongoose8.default.model("Plan", planSchema);
-var Plan_default = Plan;
-
-// middleware/authMiddleware.js
+init_Plan();
 var protect = async (req, res, next) => {
   let token;
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
@@ -97172,7 +97217,7 @@ var checkSubscription = async (req, res, next) => {
   if (!req.user || !req.user.restaurantId || req.user.role === "DeliveryPartner") {
     return next();
   }
-  if (req.originalUrl.includes("/subscribe") || req.method === "GET" && req.originalUrl.includes("/mine")) {
+  if (req.originalUrl.includes("/subscribe") || req.originalUrl.includes("/upgrade") || req.originalUrl.includes("/renew") || req.originalUrl.includes("/razorpay") || req.method === "GET" && req.originalUrl.includes("/mine")) {
     return next();
   }
   try {
@@ -97691,6 +97736,7 @@ router.post("/login", loginUser);
 router.post("/logout", protect, logoutUser);
 router.post("/resend-welcome-email", resendWelcomeEmail);
 router.post("/test-email", testSendEmail);
+router.post("/razorpay-order", createRazorpayRegistrationOrder);
 router.get("/profile", protect, (req, res) => {
   res.json({ user: req.user });
 });
@@ -97807,6 +97853,7 @@ var SubscriptionPayment = import_mongoose10.default.model("SubscriptionPayment",
 var SubscriptionPayment_default = SubscriptionPayment;
 
 // controllers/restaurantController.js
+init_Plan();
 var import_multer2 = __toESM(require("multer"), 1);
 var import_path3 = __toESM(require("path"), 1);
 var import_fs3 = __toESM(require("fs"), 1);
@@ -98094,18 +98141,28 @@ var getMyBillingHistory = async (req, res) => {
 var upgradeSubscription = async (req, res) => {
   try {
     const { planName, billingCycle } = req.body;
-    const restaurant = await Restaurant_default.findById(req.user.restaurantId);
+    let restId = req.user.restaurantId || req.user.restaurant;
+    let restaurant;
+    if (restId) {
+      restaurant = await Restaurant_default.findById(restId);
+    }
     if (!restaurant) {
-      return res.status(404).json({ message: "Restaurant not found" });
+      restaurant = await Restaurant_default.findOne({ ownerId: req.user._id });
+    }
+    if (!restaurant) {
+      restaurant = await Restaurant_default.findOne();
+    }
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant profile not found." });
     }
     const targetPlan = await Plan_default.findOne({ name: planName });
     const targetPrice = targetPlan ? billingCycle === "yearly" ? targetPlan.yearlyPrice : targetPlan.monthlyPrice : planName === "Pro" ? billingCycle === "yearly" ? 990 : 99 : billingCycle === "yearly" ? 1990 : 199;
     const currentPlanName = restaurant.subscription?.plan || "Basic";
     const currentPlan = await Plan_default.findOne({ name: currentPlanName });
-    const currentPrice = currentPlan ? restaurant.subscription.billingCycle === "yearly" ? currentPlan.yearlyPrice : currentPlan.monthlyPrice : 0;
+    const currentPrice = currentPlan ? restaurant.subscription?.billingCycle === "yearly" ? currentPlan.yearlyPrice : currentPlan.monthlyPrice : 0;
     const now = /* @__PURE__ */ new Date();
-    const expiry = restaurant.subscription.expiryDate ? new Date(restaurant.subscription.expiryDate) : now;
-    const totalDuration = restaurant.subscription.billingCycle === "yearly" ? 365 : 30;
+    const expiry = restaurant.subscription?.expiryDate ? new Date(restaurant.subscription.expiryDate) : now;
+    const totalDuration = restaurant.subscription?.billingCycle === "yearly" ? 365 : 30;
     const remainingDays = Math.max(0, Math.ceil((expiry - now) / (1e3 * 60 * 60 * 24)));
     const remainingCredit = Math.floor(currentPrice / totalDuration * remainingDays);
     const chargeAmount = Math.max(0, targetPrice - remainingCredit);
@@ -98118,7 +98175,7 @@ var upgradeSubscription = async (req, res) => {
     restaurant.subscription = {
       status: "Active",
       plan: planName,
-      billingCycle,
+      billingCycle: billingCycle || "monthly",
       trialActive: false,
       expiryDate: newExpiry,
       startDate: /* @__PURE__ */ new Date(),
@@ -98132,7 +98189,7 @@ var upgradeSubscription = async (req, res) => {
       restaurantId: restaurant._id,
       planName,
       amount: chargeAmount,
-      billingCycle,
+      billingCycle: billingCycle || "monthly",
       paymentMethod: "Card",
       transactionId,
       status: "Completed",
@@ -98158,9 +98215,19 @@ var upgradeSubscription = async (req, res) => {
 var downgradeSubscription = async (req, res) => {
   try {
     const { planName } = req.body;
-    const restaurant = await Restaurant_default.findById(req.user.restaurantId);
+    let restId = req.user.restaurantId || req.user.restaurant;
+    let restaurant;
+    if (restId) {
+      restaurant = await Restaurant_default.findById(restId);
+    }
     if (!restaurant) {
-      return res.status(404).json({ message: "Restaurant not found" });
+      restaurant = await Restaurant_default.findOne({ ownerId: req.user._id });
+    }
+    if (!restaurant) {
+      restaurant = await Restaurant_default.findOne();
+    }
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant profile not found." });
     }
     const expiryDate = restaurant.subscription?.expiryDate || /* @__PURE__ */ new Date();
     restaurant.subscription.downgradeScheduledPlan = planName;
@@ -98182,9 +98249,19 @@ var downgradeSubscription = async (req, res) => {
 };
 var renewSubscription = async (req, res) => {
   try {
-    const restaurant = await Restaurant_default.findById(req.user.restaurantId);
+    let restId = req.user.restaurantId || req.user.restaurant;
+    let restaurant;
+    if (restId) {
+      restaurant = await Restaurant_default.findById(restId);
+    }
     if (!restaurant) {
-      return res.status(404).json({ message: "Restaurant not found" });
+      restaurant = await Restaurant_default.findOne({ ownerId: req.user._id });
+    }
+    if (!restaurant) {
+      restaurant = await Restaurant_default.findOne();
+    }
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant profile not found." });
     }
     const planName = restaurant.subscription?.plan || "Basic";
     const billingCycle = restaurant.subscription?.billingCycle || "monthly";
@@ -98234,9 +98311,19 @@ var renewSubscription = async (req, res) => {
 var createRazorpaySubscriptionOrder = async (req, res) => {
   try {
     const { planName, billingCycle } = req.body;
-    const restaurant = await Restaurant_default.findById(req.user.restaurantId);
+    let restId = req.user.restaurantId || req.user.restaurant;
+    let restaurant;
+    if (restId) {
+      restaurant = await Restaurant_default.findById(restId);
+    }
     if (!restaurant) {
-      return res.status(404).json({ message: "Restaurant not found" });
+      restaurant = await Restaurant_default.findOne({ ownerId: req.user._id });
+    }
+    if (!restaurant) {
+      restaurant = await Restaurant_default.findOne();
+    }
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant profile not found." });
     }
     const targetPlan = await Plan_default.findOne({ name: planName });
     const targetPrice = targetPlan ? billingCycle === "yearly" ? targetPlan.yearlyPrice : targetPlan.monthlyPrice : planName === "Pro" ? billingCycle === "yearly" ? 990 : 99 : billingCycle === "yearly" ? 1990 : 199;
@@ -98249,33 +98336,23 @@ var createRazorpaySubscriptionOrder = async (req, res) => {
     const remainingDays = Math.max(0, Math.ceil((expiry - now) / (1e3 * 60 * 60 * 24)));
     const remainingCredit = Math.floor(currentPrice / totalDuration * remainingDays);
     const chargeAmount = Math.max(1, targetPrice - remainingCredit);
-    const keyId = process.env.RAZORPAY_KEY_ID || "rzp_live_SlbQBi57McKtUc";
-    const keySecret = process.env.RAZORPAY_KEY_SECRET || "IgfxpfmQCMxSPaU0T4EyhcLU";
-    let razorpayOrder;
-    try {
-      const instance = new import_razorpay.default({
-        key_id: keyId,
-        key_secret: keySecret
-      });
-      razorpayOrder = await instance.orders.create({
-        amount: Math.round(chargeAmount * 100),
-        // in paise
-        currency: "INR",
-        receipt: `sub_${restaurant._id.toString().slice(-6)}_${Date.now().toString().slice(-6)}`,
-        notes: {
-          restaurantId: restaurant._id.toString(),
-          planName,
-          billingCycle
-        }
-      });
-    } catch (rzpErr) {
-      console.error("Razorpay SDK Order Error, generating fallback order ID", rzpErr.message || rzpErr);
-      razorpayOrder = {
-        id: `order_live_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-        amount: Math.round(chargeAmount * 100),
-        currency: "INR"
-      };
-    }
+    const keyId = (process.env.RAZORPAY_KEY_ID || "rzp_live_SlbQBi57McKtUc").trim();
+    const keySecret = (process.env.RAZORPAY_KEY_SECRET || "IgfxpfmQCMxSPaU0T4EyhcLU").trim();
+    const instance = new import_razorpay.default({
+      key_id: keyId,
+      key_secret: keySecret
+    });
+    const razorpayOrder = await instance.orders.create({
+      amount: Math.round(chargeAmount * 100),
+      // in paise
+      currency: "INR",
+      receipt: `sub_${restaurant._id.toString().slice(-6)}_${Date.now().toString().slice(-6)}`,
+      notes: {
+        restaurantId: restaurant._id.toString(),
+        planName,
+        billingCycle
+      }
+    });
     res.json({
       orderId: razorpayOrder.id,
       amount: chargeAmount,
@@ -98287,23 +98364,35 @@ var createRazorpaySubscriptionOrder = async (req, res) => {
       restaurantName: restaurant.name
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error("Razorpay Subscription Order Creation Failed:", error);
+    res.status(400).json({ message: error.message || "Failed to create Razorpay Order" });
   }
 };
 var verifyRazorpaySubscriptionPayment = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planName, billingCycle } = req.body;
-    const restaurant = await Restaurant_default.findById(req.user.restaurantId);
-    if (!restaurant) {
-      return res.status(404).json({ message: "Restaurant not found" });
+    let restId = req.user.restaurantId || req.user.restaurant;
+    let restaurant;
+    if (restId) {
+      restaurant = await Restaurant_default.findById(restId);
     }
-    const keySecret = process.env.RAZORPAY_KEY_SECRET || "IgfxpfmQCMxSPaU0T4EyhcLU";
-    if (razorpay_order_id && razorpay_payment_id && razorpay_signature) {
-      const body = razorpay_order_id + "|" + razorpay_payment_id;
-      const expectedSignature = import_crypto.default.createHmac("sha256", keySecret).update(body.toString()).digest("hex");
-      if (expectedSignature !== razorpay_signature) {
-        console.warn("Razorpay signature mismatch warning - processing with payment ID fallback");
-      }
+    if (!restaurant) {
+      restaurant = await Restaurant_default.findOne({ ownerId: req.user._id });
+    }
+    if (!restaurant) {
+      restaurant = await Restaurant_default.findOne();
+    }
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant profile not found." });
+    }
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ message: "Missing Razorpay payment verification parameters" });
+    }
+    const keySecret = (process.env.RAZORPAY_KEY_SECRET || "IgfxpfmQCMxSPaU0T4EyhcLU").trim();
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+    const expectedSignature = import_crypto.default.createHmac("sha256", keySecret).update(body.toString()).digest("hex");
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ message: "Razorpay payment signature verification failed!" });
     }
     const targetPlan = await Plan_default.findOne({ name: planName });
     const targetPrice = targetPlan ? billingCycle === "yearly" ? targetPlan.yearlyPrice : targetPlan.monthlyPrice : planName === "Pro" ? billingCycle === "yearly" ? 990 : 99 : billingCycle === "yearly" ? 1990 : 199;
@@ -98325,7 +98414,7 @@ var verifyRazorpaySubscriptionPayment = async (req, res) => {
       downgradeScheduledDate: null
     };
     await restaurant.save();
-    const txnId = razorpay_payment_id || `PAY-RZP-${Date.now().toString().slice(-8)}`;
+    const txnId = razorpay_payment_id;
     await SubscriptionPayment_default.create({
       restaurantId: restaurant._id,
       planName,
@@ -98338,7 +98427,7 @@ var verifyRazorpaySubscriptionPayment = async (req, res) => {
       expiryDate: newExpiry
     });
     await Notification_default.create({
-      title: "Subscription Activated (Razorpay Realtime)",
+      title: "Subscription Activated (Razorpay)",
       desc: `Your subscription to the ${planName} plan has been successfully activated via Razorpay (Txn ID: ${txnId}).`,
       type: "System",
       restaurantId: restaurant._id
@@ -98399,7 +98488,7 @@ var generateRazorpaySubscriptionQR = async (req, res) => {
         if (qrCode.upi_link) upiString = qrCode.upi_link;
       }
     } catch (qrErr) {
-      console.warn("Official Razorpay QR API call fallback (using standard UPI payload):", qrErr.message || qrErr);
+      console.warn("Official Razorpay QR API call fallback:", qrErr.message || qrErr);
     }
     if (!qrImageUrl) {
       qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiString)}`;
@@ -98489,15 +98578,15 @@ router2.route("/verification/all").get(protect, authorize("SuperAdmin"), getAllV
 router2.route("/verification/:id").get(protect, authorize("SuperAdmin"), getVerificationById).delete(protect, authorize("SuperAdmin"), deleteVerification);
 router2.route("/verification/:id/review").put(protect, authorize("SuperAdmin"), reviewVerification);
 router2.route("/mine").get(protect, getMyRestaurant).put(protect, authorize("RestaurantAdmin"), logoUpload, updateMyRestaurant);
-router2.route("/mine/billing-history").get(protect, authorize("RestaurantAdmin"), getMyBillingHistory);
-router2.route("/mine/upgrade").post(protect, authorize("RestaurantAdmin"), upgradeSubscription);
-router2.route("/mine/downgrade").post(protect, authorize("RestaurantAdmin"), downgradeSubscription);
-router2.route("/mine/renew").post(protect, authorize("RestaurantAdmin"), renewSubscription);
-router2.route("/mine/razorpay-order").post(protect, authorize("RestaurantAdmin"), createRazorpaySubscriptionOrder);
-router2.route("/mine/razorpay-verify").post(protect, authorize("RestaurantAdmin"), verifyRazorpaySubscriptionPayment);
-router2.route("/mine/razorpay-qr").post(protect, authorize("RestaurantAdmin"), generateRazorpaySubscriptionQR);
-router2.route("/mine/confirm-qr-payment").post(protect, authorize("RestaurantAdmin"), confirmSubscriptionQRPayment);
-router2.route("/subscribe").put(protect, authorize("RestaurantAdmin"), selfSubscribe);
+router2.route("/mine/billing-history").get(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), getMyBillingHistory);
+router2.route("/mine/upgrade").post(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), upgradeSubscription);
+router2.route("/mine/downgrade").post(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), downgradeSubscription);
+router2.route("/mine/renew").post(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), renewSubscription);
+router2.route("/mine/razorpay-order").post(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), createRazorpaySubscriptionOrder);
+router2.route("/mine/razorpay-verify").post(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), verifyRazorpaySubscriptionPayment);
+router2.route("/mine/razorpay-qr").post(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), generateRazorpaySubscriptionQR);
+router2.route("/mine/confirm-qr-payment").post(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), confirmSubscriptionQRPayment);
+router2.route("/subscribe").put(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), selfSubscribe);
 router2.route("/").get(getRestaurants).post(protect, authorize("SuperAdmin"), createRestaurant);
 router2.route("/:id").get(getRestaurantById);
 router2.route("/:id/subscription").put(protect, authorize("SuperAdmin"), updateSubscription);
@@ -98509,6 +98598,7 @@ var import_express3 = __toESM(require_express2(), 1);
 
 // controllers/branchController.js
 init_Branch();
+init_Plan();
 var getBranches2 = async (req, res) => {
   try {
     let branches = await Branch_default.find({ restaurantId: req.user.restaurantId }).populate("manager", "name email");
@@ -99115,9 +99205,82 @@ var refundOrder = async (req, res) => {
     res.status(500).json({ message: "Refund failed", error: error.message });
   }
 };
+var createRazorpayCustomerOrder = async (req, res) => {
+  try {
+    const { amount, currency = "INR", restaurantId } = req.body;
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ message: "Valid payment amount is required." });
+    }
+    const Razorpay2 = (await import("razorpay")).default;
+    const keyId = process.env.RAZORPAY_KEY_ID || "rzp_live_SlbQBi57McKtUc";
+    const keySecret = process.env.RAZORPAY_KEY_SECRET || "IgfxpfmQCMxSPaU0T4EyhcLU";
+    const instance = new Razorpay2({
+      key_id: keyId,
+      key_secret: keySecret
+    });
+    const razorpayOrder = await instance.orders.create({
+      amount: Math.round(amount * 100),
+      // in paise
+      currency,
+      receipt: `food_${Date.now().toString().slice(-8)}`,
+      notes: {
+        restaurantId: restaurantId || "",
+        type: "Customer Food Order"
+      }
+    });
+    res.json({
+      orderId: razorpayOrder.id,
+      amount,
+      amountPaise: Math.round(amount * 100),
+      currency,
+      keyId
+    });
+  } catch (error) {
+    console.error("Razorpay Customer Order Error:", error);
+    res.status(400).json({ message: error.message || "Failed to create Razorpay payment order" });
+  }
+};
+var verifyRazorpayCustomerPayment = async (req, res) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId, paymentMethod } = req.body;
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ message: "Missing Razorpay signature verification parameters." });
+    }
+    const crypto2 = (await import("crypto")).default;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET || "IgfxpfmQCMxSPaU0T4EyhcLU";
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+    const expectedSignature = crypto2.createHmac("sha256", keySecret).update(body.toString()).digest("hex");
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ message: "Razorpay payment signature verification failed." });
+    }
+    if (orderId) {
+      const order = await Order_default.findById(orderId);
+      if (order) {
+        order.isPaid = true;
+        order.paidAt = /* @__PURE__ */ new Date();
+        order.paymentMethod = paymentMethod || "Razorpay UPI";
+        order.paymentResult = {
+          id: razorpay_payment_id,
+          status: "captured",
+          update_time: (/* @__PURE__ */ new Date()).toISOString()
+        };
+        await order.save();
+        broadcastToRestaurant(order.restaurantId, "order_updated", order);
+        broadcastToCustomerOrder(order._id, "order_status_updated", order);
+        return res.json({ success: true, message: "Payment verified and order updated!", order });
+      }
+    }
+    res.json({ success: true, message: "Razorpay payment verified successfully!", paymentId: razorpay_payment_id });
+  } catch (error) {
+    console.error("Razorpay Customer Payment Verification Error:", error);
+    res.status(400).json({ message: error.message || "Payment verification failed" });
+  }
+};
 
 // routes/orderRoutes.js
 var router4 = import_express4.default.Router();
+router4.route("/razorpay-order").post(createRazorpayCustomerOrder);
+router4.route("/razorpay-verify").post(verifyRazorpayCustomerPayment);
 router4.route("/").post(optionalProtect, addOrderItems).get(protect, getOrders);
 router4.route("/myorders").get(protect, getMyOrders);
 router4.route("/:id").get(optionalProtect, getOrderById);
@@ -99479,6 +99642,7 @@ var import_express7 = __toESM(require_express2(), 1);
 
 // controllers/superAdminController.js
 init_User();
+init_Plan();
 
 // models/Ticket.js
 var import_mongoose16 = __toESM(require_mongoose2(), 1);
@@ -100225,6 +100389,7 @@ var import_express10 = __toESM(require_express2(), 1);
 // controllers/staffController.js
 init_User();
 init_Branch();
+init_Plan();
 var updateStaff = async (req, res) => {
   const { name, phone, role, branchId, password } = req.body;
   try {
@@ -101323,6 +101488,7 @@ var taxRoutes_default = router18;
 var import_express19 = __toESM(require_express2(), 1);
 
 // controllers/reportController.js
+init_Plan();
 var generateReport = async (req, res) => {
   const { reportType, startDate, endDate, branch } = req.body;
   try {
@@ -101567,6 +101733,7 @@ var import_express21 = __toESM(require_express2(), 1);
 
 // controllers/planController.js
 var import_mongoose27 = __toESM(require_mongoose2(), 1);
+init_Plan();
 var getPublicPlans = async (req, res) => {
   try {
     if (import_mongoose27.default.connection.readyState !== 1) {
@@ -103339,6 +103506,7 @@ router26.route("/admin/:id").put(protect, authorize("SuperAdmin"), updateInquiry
 var inquiryRoutes_default = router26;
 
 // index.js
+init_Plan();
 import_dotenv.default.config();
 var app = (0, import_express27.default)();
 app.use((req, res, next) => {
@@ -103363,6 +103531,9 @@ app.use(import_express27.default.urlencoded({ limit: "50mb", extended: true }));
 app.use((0, import_cookie_parser.default)());
 app.get("/api/health", (req, res) => {
   res.status(200).json({ status: "ok", time: (/* @__PURE__ */ new Date()).toISOString() });
+});
+app.get("/api", (req, res) => {
+  res.status(200).json({ status: "ok", message: "Restaurant SaaS API Root Service" });
 });
 app.use("/api/auth", authRoutes_default);
 app.use("/api/menu", menuRoutes_default);
