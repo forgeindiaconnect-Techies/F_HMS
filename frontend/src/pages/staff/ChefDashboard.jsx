@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 
 const ChefDashboard = () => {
     const { api } = useAuth();
@@ -237,6 +238,9 @@ const ChefDashboard = () => {
     return (
         <div className="w-full max-w-[1700px] mx-auto font-sans space-y-6 pb-24 text-slate-900 dark:text-slate-100 transition-colors">
             
+            {/* Shift Attendance Clock In / Clock Out Status Bar */}
+            <StaffShiftClockWidget userRole="Head Chef / Kitchen Lead" userName="Master Chef" />
+
             {/* 1. Live Ingredient 86-List Warning Banner */}
             {outOfStock.length > 0 && (
                 <div className="bg-gradient-to-r from-red-50 via-white to-red-50 dark:from-red-950 dark:via-slate-900 dark:to-red-950 border border-red-200 dark:border-red-500/40 rounded-3xl p-4 md:p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl dark:shadow-2xl relative overflow-hidden">

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Plus, Calendar, Clock, UserCheck, UserX, AlertTriangle, MessageSquare, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 
 const ManagerStaff = () => {
     const { api, user } = useAuth();
@@ -172,6 +173,9 @@ const ManagerStaff = () => {
                     </button>
                 </div>
             </div>
+
+            {/* Shift Attendance Clock In / Clock Out Status Bar */}
+            <StaffShiftClockWidget userRole="Shift Operations Manager" userName={user?.name || "Manager"} />
 
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

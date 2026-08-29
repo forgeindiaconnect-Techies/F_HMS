@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Store, Users, AlertTriangle, TrendingUp, MoreVertical, Clock, ShoppingBag, Phone, Mail, MapPin, X, Eye, Info, Search, ShieldCheck, Truck } from 'lucide-react';
 import toast from 'react-hot-toast';
+import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 
 const ManagerDashboard = () => {
   const navigate = useNavigate();
-  const { api } = useAuth();
+  const { api, user } = useAuth();
   const [suppliers, setSuppliers] = useState([]);
   const [loadingSuppliers, setLoadingSuppliers] = useState(true);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
@@ -53,6 +54,10 @@ const ManagerDashboard = () => {
 
   return (
     <div className="w-full max-w-[1600px] mx-auto space-y-6">
+      
+      {/* Shift Attendance Clock In / Clock Out Status Bar */}
+      <StaffShiftClockWidget userRole="Branch Manager" userName={user?.name || "Manager"} />
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden group">

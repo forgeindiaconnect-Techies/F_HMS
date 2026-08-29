@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 
 const DeliveryPartnerDashboard = () => {
     const navigate = useNavigate();
@@ -291,6 +292,9 @@ const DeliveryPartnerDashboard = () => {
 
             {/* TAB CONTAINER */}
             <main className="flex-1 px-6 py-10 w-full max-w-6xl mx-auto space-y-6">
+
+                {/* Shift Attendance Clock In / Clock Out Status Bar */}
+                <StaffShiftClockWidget userRole="Delivery Runner Partner" userName={user?.name || "Delivery Agent"} />
 
                 {/* ─── TAB 1: ACTIVE TASKS ────────────────────────────────── */}
                 {activeSection === 'tasks' && (

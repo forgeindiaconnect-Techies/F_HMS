@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 
 const WaiterDashboard = () => {
     const { api, user } = useAuth();
@@ -293,6 +294,9 @@ const WaiterDashboard = () => {
     return (
         <div className="max-w-[1600px] mx-auto space-y-6 relative h-full flex flex-col">
             
+            {/* Shift Attendance Clock In / Clock Out Status Bar */}
+            <StaffShiftClockWidget userRole="Waiter / Server" userName={user?.name || "Server"} />
+
             {/* View Mode Switcher */}
             <div className="flex gap-4 bg-white p-2 rounded-2xl border border-gray-200 shadow-sm shrink-0">
                 <button

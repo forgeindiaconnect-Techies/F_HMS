@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 
 const CashierDashboard = () => {
     const { api } = useAuth();
@@ -852,7 +853,12 @@ const CashierDashboard = () => {
     }
 
     return (
-        <div className="h-full flex gap-6">
+        <div className="h-full flex flex-col gap-4">
+            
+            {/* Shift Attendance Clock In / Clock Out Status Bar */}
+            <StaffShiftClockWidget userRole="POS Cashier / Billing Agent" userName="Cashier" />
+
+            <div className="flex-1 flex gap-6 min-h-0">
             
             {/* Left Queue View */}
             <div className="w-80 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col min-h-0 shrink-0">
@@ -1178,6 +1184,7 @@ const CashierDashboard = () => {
                     </div>
                 )}
             </div>
+        </div>
         </div>
     );
 };
