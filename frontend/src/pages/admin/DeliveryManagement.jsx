@@ -104,8 +104,8 @@ const DeliveryManagement = () => {
 
     const trackingPartner = getTrackingPartnerDetails();
 
-    const initData = async () => {
-        setLoading(true);
+    const initData = async (isInitialLoading = false) => {
+        if (isInitialLoading) setLoading(true);
         if (restaurant && restaurant.deliverySettings) {
             setSettings(prev => ({
                 ...prev,
@@ -118,12 +118,22 @@ const DeliveryManagement = () => {
             fetchAnalytics(),
             fetchActiveOrders()
         ]);
-        setLoading(false);
+        if (isInitialLoading) setLoading(false);
     };
 
     useEffect(() => {
-        initData();
-    }, [restaurant]);
+        initData(true);
+        
+        // Silent background polling every 30 seconds for live order status without UI restarts
+        const pollInterval = setInterval(() => {
+            fetchPartners();
+            fetchAnalytics();
+            fetchActiveOrders();
+        }, 30000);
+
+        return () => clearInterval(pollInterval);
+    }, []);
+
 
     useEffect(() => {
         if (!selectedTrackingOrder) return;
