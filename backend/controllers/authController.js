@@ -71,7 +71,7 @@ export const registerUser = async (req, res) => {
                     billingCycle: req.body.billingCycle || 'monthly',
                     trialActive: true,
                     startDate: new Date(),
-                    expiryDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000) // 1-Day Free Trial
+                    expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30-Day Free Trial
                 },
                 approvalStatus: 'Pending',
                 verificationStatus: hasVerificationFiles ? 'Under Review' : 'Pending'
@@ -272,7 +272,7 @@ export const loginUser = async (req, res) => {
                 }
             }
 
-            // Check subscription if user belongs to a restaurant
+            // Check subscription if user belongs to a restaurant (flag status as Frozen if expired, but do NOT block login)
             if (user.restaurantId && user.role !== 'SuperAdmin') {
                 const restaurant = await Restaurant.findById(user.restaurantId);
                 if (restaurant) {
@@ -281,7 +281,7 @@ export const loginUser = async (req, res) => {
                             restaurant.subscription.status = 'Frozen';
                             await restaurant.save();
                         }
-                        return res.status(403).json({ message: 'Your subscription has expired. Please renew to continue using the platform.' });
+                        // Allow login so user can access dashboard and use SubscriptionFreezeOverlay / QR payment to upgrade
                     }
                 }
             }
