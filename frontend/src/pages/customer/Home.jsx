@@ -3,11 +3,12 @@ import {
     Utensils, ArrowRight, Star, ChevronDown, CheckCircle2, 
     Monitor, QrCode, Boxes, Users, LineChart, Store, Calculator, CalendarDays, 
     PlayCircle, ChefHat, Clock, Globe, Plus, Minus, X, Sparkles, Zap, Shield, Flame,
-    ShoppingBag, ShoppingCart, ChevronRight, Menu as MenuIcon
+    ShoppingBag, ShoppingCart, ChevronRight, ChevronLeft, Smartphone, Receipt, Menu as MenuIcon
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
+
 const Home = () => {
     // Dummy data fallback for instant zero-delay rendering
     const dummyRestaurants = [
@@ -35,6 +36,12 @@ const Home = () => {
     const [demoStep, setDemoStep] = useState(1);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [mobileFeaturesOpen, setMobileFeaturesOpen] = useState(false);
+
+    // Interactive Workflow Carousel State
+    const [workflowTab, setWorkflowTab] = useState('customer'); // 'customer' | 'restaurant'
+    const [customerStep, setCustomerStep] = useState(0);
+    const [restaurantStep, setRestaurantStep] = useState(0);
+    const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
     useEffect(() => {
         const fetchRestaurants = async () => {
@@ -72,6 +79,19 @@ const Home = () => {
         fetchPlans();
         document.documentElement.classList.remove('dark');
     }, []);
+
+    // Auto-advance workflow carousel cards every 4.5 seconds
+    useEffect(() => {
+        if (!isAutoPlaying) return;
+        const timer = setInterval(() => {
+            if (workflowTab === 'customer') {
+                setCustomerStep(prev => (prev + 1) % 4);
+            } else {
+                setRestaurantStep(prev => (prev + 1) % 4);
+            }
+        }, 4500);
+        return () => clearInterval(timer);
+    }, [workflowTab, isAutoPlaying]);
 
     const coreFeatures = [
         { name: 'Multi Branch', icon: <Store size={24} />, color: 'text-[#FF2D55]' },
@@ -445,71 +465,467 @@ const Home = () => {
 
 
 
-                {/* Kitchen KDS Showcase */}
-                <section id="workflow" className="rounded-[20px] p-8 sm:p-12 bg-white border border-slate-200 shadow-xl relative overflow-hidden">
+                {/* Complete End-to-End Workflow Section (Customer Side & Restaurant Side) */}
+                <section id="workflow" className="rounded-[24px] p-6 sm:p-12 bg-white border border-slate-200 shadow-xl relative overflow-hidden">
                     <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#FF2D55]/10 rounded-full blur-3xl pointer-events-none" />
-                    
-                    <div className="text-center mb-16 relative z-10 max-w-3xl mx-auto">
-                        <h2 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight mb-4">Interactive Kitchen Workflow (KDS)</h2>
-                        <p className="text-slate-600 font-medium text-lg">Digitize your kitchen line. Route orders directly to specific stations without paper tickets.</p>
+                    <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-[#FF6A00]/10 rounded-full blur-3xl pointer-events-none" />
+
+                    <div className="text-center mb-10 relative z-10 max-w-3xl mx-auto space-y-3">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FF2D55]/10 border border-[#FF2D55]/20 text-[#FF2D55] font-black text-xs uppercase tracking-wider">
+                            <Sparkles size={14} /> Unified Platform Experience
+                        </div>
+                        <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
+                            Interactive Platform Workflows
+                        </h2>
+                        <p className="text-slate-600 font-medium text-base sm:text-lg">
+                            Experience seamless operations from both the customer ordering perspective and the restaurant management side.
+                        </p>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 relative z-10 items-center">
-                        <div className="space-y-8">
-                            <div className="flex items-start gap-5">
-                                <div className="w-14 h-14 bg-[#FF2D55]/10 border border-[#FF2D55]/20 rounded-2xl flex items-center justify-center text-[#FF2D55] shrink-0"><ChefHat size={28} /></div>
-                                <div>
-                                    <h4 className="font-bold text-xl text-slate-900 mb-1">Color-Coded Station Tickets</h4>
-                                    <p className="text-slate-600 text-sm font-medium leading-relaxed">Orders dynamically change colors based on preparation timers to keep kitchen staff synchronized during peak rush hours.</p>
-                                </div>
+                    {/* Dual Mode Tab Selector */}
+                    <div className="flex justify-center mb-10 relative z-10">
+                        <div className="inline-flex p-1.5 bg-slate-100 border border-slate-200 rounded-2xl gap-2 shadow-inner">
+                            <button
+                                onClick={() => { setWorkflowTab('customer'); setCustomerStep(0); }}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-extrabold text-sm transition-all cursor-pointer ${
+                                    workflowTab === 'customer' 
+                                        ? 'bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] text-white shadow-lg shadow-[#FF2D55]/25 scale-[1.02]' 
+                                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                                }`}
+                            >
+                                <Smartphone size={18} />
+                                <span>📱 Customer Ordering Experience</span>
+                            </button>
+                            <button
+                                onClick={() => { setWorkflowTab('restaurant'); setRestaurantStep(0); }}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-extrabold text-sm transition-all cursor-pointer ${
+                                    workflowTab === 'restaurant' 
+                                        ? 'bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-lg shadow-slate-900/25 scale-[1.02]' 
+                                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                                }`}
+                            >
+                                <ChefHat size={18} />
+                                <span>👨‍🍳 Restaurant Partner & Staff Ops</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Carousel Content Container */}
+                    {workflowTab === 'customer' ? (
+                        /* Customer Workflow Carousel */
+                        <div className="relative z-10 space-y-8" onMouseEnter={() => setIsAutoPlaying(false)} onMouseLeave={() => setIsAutoPlaying(true)}>
+                            {/* Step Indicator Pills */}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-4xl mx-auto">
+                                {[
+                                    { step: 0, title: '01. Scan QR & Menu', icon: <QrCode size={16} /> },
+                                    { step: 1, title: '02. Order & Customize', icon: <ShoppingBag size={16} /> },
+                                    { step: 2, title: '03. Live Cook Tracker', icon: <Clock size={16} /> },
+                                    { step: 3, title: '04. Table Service & Bill', icon: <Receipt size={16} /> },
+                                ].map((item) => (
+                                    <button
+                                        key={item.step}
+                                        onClick={() => setCustomerStep(item.step)}
+                                        className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-xs transition-all cursor-pointer border ${
+                                            customerStep === item.step
+                                                ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-md shadow-[#FF2D55]/30'
+                                                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                                        }`}
+                                    >
+                                        {item.icon}
+                                        <span>{item.title}</span>
+                                    </button>
+                                ))}
                             </div>
 
-                            <div className="flex items-start gap-5">
-                                <div className="w-14 h-14 bg-[#FF6A00]/10 border border-[#FF6A00]/20 rounded-2xl flex items-center justify-center text-[#FF6A00] shrink-0"><Clock size={28} /></div>
-                                <div>
-                                    <h4 className="font-bold text-xl text-slate-900 mb-1">Preparation Time Analytics</h4>
-                                    <p className="text-slate-600 text-sm font-medium leading-relaxed">Track precise prep durations per dish and resolve operational bottlenecks with real-time station metrics.</p>
-                                </div>
-                            </div>
+                            {/* Carousel Card Container */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center bg-slate-50 border border-slate-200 rounded-[20px] p-6 sm:p-10 shadow-lg">
+                                {/* Left Explanation Card */}
+                                <div className="space-y-6">
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FF2D55]/10 border border-[#FF2D55]/20 text-[#FF2D55] font-black text-xs rounded-full">
+                                        STEP 0{customerStep + 1} OF 04 • CUSTOMER WORKFLOW
+                                    </div>
+                                    
+                                    {customerStep === 0 && (
+                                        <div className="space-y-4 animate-fadeIn">
+                                            <h3 className="text-2xl sm:text-3xl font-black text-slate-900">1. Instant QR Code & Digital Menu Access</h3>
+                                            <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                                                Customers sit at any table and scan the table QR code with their mobile camera, or open the online web storefront. Zero app download required!
+                                            </p>
+                                            <ul className="space-y-2 text-xs sm:text-sm font-semibold text-slate-700">
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Instant photo-rich digital menu with live search</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Auto-assigned table number identification</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Filter by Vegetarian, Vegan, Gluten-Free, Chef Special</li>
+                                            </ul>
+                                        </div>
+                                    )}
 
-                            <div className="flex items-start gap-5">
-                                <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-600 shrink-0"><Monitor size={28} /></div>
-                                <div>
-                                    <h4 className="font-bold text-xl text-slate-900 mb-1">Multi-Station Auto Routing</h4>
-                                    <p className="text-slate-600 text-sm font-medium leading-relaxed">Automatically dispatch drink orders to the bar terminal and hot food items directly to the grill display.</p>
+                                    {customerStep === 1 && (
+                                        <div className="space-y-4 animate-fadeIn">
+                                            <h3 className="text-2xl sm:text-3xl font-black text-slate-900">2. Custom Dish Options & Seamless Order</h3>
+                                            <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                                                Guests customize spice levels, select optional toppings, add cooking notes (e.g. "Less oil, extra crisp"), and submit order directly to kitchen.
+                                            </p>
+                                            <ul className="space-y-2 text-xs sm:text-sm font-semibold text-slate-700">
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Custom add-ons & allergen warnings</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Pay via Mock UPI / Razorpay QR or Pay Cash at Table</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Real-time order confirmation token</li>
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {customerStep === 2 && (
+                                        <div className="space-y-4 animate-fadeIn">
+                                            <h3 className="text-2xl sm:text-3xl font-black text-slate-900">3. Live Cook Timer & Station Tracking</h3>
+                                            <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                                                No more asking "Where is my food?". Customers see live progress updating automatically from the kitchen KDS terminal screen.
+                                            </p>
+                                            <ul className="space-y-2 text-xs sm:text-sm font-semibold text-slate-700">
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Live Status: Received ➔ Cooking ➔ Plated ➔ Served</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Estimated prep timer countdown (e.g. ~ 8 mins)</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Instant waiter call button right from phone screen</li>
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {customerStep === 3 && (
+                                        <div className="space-y-4 animate-fadeIn">
+                                            <h3 className="text-2xl sm:text-3xl font-black text-slate-900">4. Table Service & Instant Digital Receipt</h3>
+                                            <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                                                Food is served directly to table. Guests can view itemized GST tax breakdown, request digital invoice copy, rate dishes, and leave feedback.
+                                            </p>
+                                            <ul className="space-y-2 text-xs sm:text-sm font-semibold text-slate-700">
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Paperless Eco-Friendly Digital Receipts</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Split-Bill with dining companions easily</li>
+                                                <li className="flex items-center gap-2 text-emerald-600"><CheckCircle2 size={16} /> Earn customer loyalty reward points automatically</li>
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {/* Carousel Navigation Controls */}
+                                    <div className="flex items-center gap-4 pt-4 border-t border-slate-200">
+                                        <button
+                                            onClick={() => setCustomerStep(prev => (prev === 0 ? 3 : prev - 1))}
+                                            className="w-10 h-10 rounded-full border border-slate-300 bg-white hover:bg-slate-100 flex items-center justify-center text-slate-700 transition-colors shadow-sm cursor-pointer"
+                                        >
+                                            <ChevronLeft size={20} />
+                                        </button>
+                                        <div className="flex items-center gap-1.5">
+                                            {[0, 1, 2, 3].map(dot => (
+                                                <button
+                                                    key={dot}
+                                                    onClick={() => setCustomerStep(dot)}
+                                                    className={`h-2.5 rounded-full transition-all cursor-pointer ${customerStep === dot ? 'w-8 bg-[#FF2D55]' : 'w-2.5 bg-slate-300'}`}
+                                                />
+                                            ))}
+                                        </div>
+                                        <button
+                                            onClick={() => setCustomerStep(prev => (prev === 3 ? 0 : prev + 1))}
+                                            className="w-10 h-10 rounded-full border border-slate-300 bg-white hover:bg-slate-100 flex items-center justify-center text-slate-700 transition-colors shadow-sm cursor-pointer"
+                                        >
+                                            <ChevronRight size={20} />
+                                        </button>
+                                        <span className="text-xs font-bold text-slate-500 ml-auto">Auto-sliding (Hover to pause)</span>
+                                    </div>
+                                </div>
+
+                                {/* Right Interactive Mockup Container */}
+                                <div className="bg-white border border-slate-200 rounded-[20px] p-6 shadow-md relative overflow-hidden">
+                                    <div className="flex justify-between items-center pb-4 border-b border-slate-100 mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping" />
+                                            <span className="font-extrabold text-xs text-slate-800 uppercase tracking-wider">Customer Screen Preview</span>
+                                        </div>
+                                        <span className="text-xs bg-red-50 text-[#FF2D55] px-2.5 py-1 rounded-full font-bold border border-red-100">Live Demo</span>
+                                    </div>
+
+                                    {customerStep === 0 && (
+                                        <div className="space-y-4">
+                                            <div className="bg-slate-900 text-white p-4 rounded-2xl flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-[#FF2D55] rounded-xl flex items-center justify-center font-black text-white">RH</div>
+                                                    <div>
+                                                        <div className="font-bold text-sm">Table #04 • Pizza Palace</div>
+                                                        <div className="text-xs text-slate-400">Scanned QR Code • Live Menu</div>
+                                                    </div>
+                                                </div>
+                                                <span className="text-xs bg-emerald-500/20 text-emerald-400 font-bold px-2.5 py-1 rounded-lg border border-emerald-500/30">Active Session</span>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                                    <div className="font-bold text-xs text-slate-900">🍕 Truffle Pizza</div>
+                                                    <div className="text-xs text-[#FF2D55] font-black mt-1">₹499</div>
+                                                </div>
+                                                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                                    <div className="font-bold text-xs text-slate-900">🍔 Wagyu Burger</div>
+                                                    <div className="text-xs text-[#FF2D55] font-black mt-1">₹399</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {customerStep === 1 && (
+                                        <div className="space-y-3">
+                                            <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl flex justify-between items-center">
+                                                <div className="flex items-center gap-2">
+                                                    <CheckCircle2 size={18} className="text-emerald-600" />
+                                                    <span className="font-bold text-xs text-emerald-900">Item Added to Table Cart</span>
+                                                </div>
+                                                <span className="text-xs font-black text-emerald-700">₹898</span>
+                                            </div>
+                                            <div className="p-4 bg-white rounded-xl border border-slate-200 space-y-2">
+                                                <div className="flex justify-between text-xs font-bold text-slate-800">
+                                                    <span>1x Truffle Pizza (Extra Cheese)</span>
+                                                    <span>₹499</span>
+                                                </div>
+                                                <div className="flex justify-between text-xs font-bold text-slate-800">
+                                                    <span>1x Wagyu Burger (Medium Rare)</span>
+                                                    <span>₹399</span>
+                                                </div>
+                                                <div className="pt-2 border-t border-slate-100 flex justify-between font-black text-sm text-[#FF2D55]">
+                                                    <span>Total Payable</span>
+                                                    <span>₹898</span>
+                                                </div>
+                                            </div>
+                                            <button className="w-full bg-[#FF2D55] text-white py-2.5 rounded-xl font-bold text-xs shadow-md">Confirm Order & Pay via UPI</button>
+                                        </div>
+                                    )}
+
+                                    {customerStep === 2 && (
+                                        <div className="space-y-4">
+                                            <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between">
+                                                <div>
+                                                    <div className="text-xs font-bold text-amber-800">Chef is preparing your dish!</div>
+                                                    <div className="text-xs text-amber-600 mt-0.5">Estimated Prep Time: ~ 6 mins</div>
+                                                </div>
+                                                <span className="text-xs bg-amber-500 text-white font-black px-3 py-1 rounded-full animate-pulse">Cooking</span>
+                                            </div>
+                                            <div className="space-y-2 text-xs">
+                                                <div className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-xl">
+                                                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                                                    <span className="font-bold text-slate-800">Order Received by Kitchen</span>
+                                                    <span className="ml-auto text-slate-400">10:42 AM</span>
+                                                </div>
+                                                <div className="flex items-center gap-3 p-2.5 bg-amber-50 rounded-xl border border-amber-200">
+                                                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
+                                                    <span className="font-bold text-amber-900">Station 1: Pizza Oven Active</span>
+                                                    <span className="ml-auto text-amber-700 font-bold">10:44 AM</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {customerStep === 3 && (
+                                        <div className="space-y-3">
+                                            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-center space-y-1">
+                                                <div className="text-sm font-black text-emerald-900">🎉 Order Completed & Served!</div>
+                                                <div className="text-xs text-emerald-700 font-medium">Thank you for dining at Pizza Palace.</div>
+                                            </div>
+                                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center text-xs">
+                                                <div>
+                                                    <div className="font-bold text-slate-900">Receipt #INV-2026-9912</div>
+                                                    <div className="text-slate-500">VAT/GST Paid • Instant PDF Download</div>
+                                                </div>
+                                                <span className="bg-slate-900 text-white font-bold px-3 py-1.5 rounded-lg text-[11px]">Download</span>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
-
-                        {/* KDS Card Display */}
-                        <div className="bg-slate-50 border border-slate-200 rounded-[20px] p-6 shadow-md space-y-4">
-                            <div className="flex justify-between items-center pb-4 border-b border-slate-200">
-                                <div className="flex items-center gap-2.5">
-                                    <span className="w-3 h-3 rounded-full bg-[#FF2D55] animate-ping" />
-                                    <span className="font-black text-xs text-slate-800 uppercase tracking-wider">KDS Live Feed</span>
-                                </div>
-                                <span className="text-xs bg-emerald-100 border border-emerald-200 text-emerald-700 px-3 py-1 rounded-full font-bold">3 Active Tickets</span>
+                    ) : (
+                        /* Restaurant Partner Workflow Carousel */
+                        <div className="relative z-10 space-y-8" onMouseEnter={() => setIsAutoPlaying(false)} onMouseLeave={() => setIsAutoPlaying(true)}>
+                            {/* Step Indicator Pills */}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-4xl mx-auto">
+                                {[
+                                    { step: 0, title: '01. POS & QR Billing', icon: <Calculator size={16} /> },
+                                    { step: 1, title: '02. KDS Kitchen Routing', icon: <ChefHat size={16} /> },
+                                    { step: 2, title: '03. Auto Inventory Stock', icon: <Boxes size={16} /> },
+                                    { step: 3, title: '04. Executive Analytics', icon: <LineChart size={16} /> },
+                                ].map((item) => (
+                                    <button
+                                        key={item.step}
+                                        onClick={() => setRestaurantStep(item.step)}
+                                        className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-xs transition-all cursor-pointer border ${
+                                            restaurantStep === item.step
+                                                ? 'bg-slate-900 text-white border-slate-900 shadow-md shadow-slate-900/30'
+                                                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                                        }`}
+                                    >
+                                        {item.icon}
+                                        <span>{item.title}</span>
+                                    </button>
+                                ))}
                             </div>
-                            
-                            <div className="space-y-3">
-                                <div className="bg-white p-4 rounded-xl border-l-4 border-[#FF2D55] flex justify-between items-center border border-red-100 shadow-sm">
-                                    <div>
-                                        <div className="font-bold text-slate-900 text-sm">Table 04 • #ORD-9912</div>
-                                        <div className="text-xs text-slate-500 mt-1">1x Truffle Pizza, 2x Fresh Lemonade</div>
+
+                            {/* Carousel Card Container */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center bg-slate-900 text-white rounded-[20px] p-6 sm:p-10 shadow-2xl">
+                                {/* Left Explanation Card */}
+                                <div className="space-y-6">
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 border border-white/20 text-[#FF6A00] font-black text-xs rounded-full">
+                                        STEP 0{restaurantStep + 1} OF 04 • RESTAURANT OPERATIONS
                                     </div>
-                                    <span className="text-xs bg-[#FF2D55]/10 text-[#FF2D55] font-bold px-2.5 py-1 rounded-lg">Cooking • 4m</span>
+
+                                    {restaurantStep === 0 && (
+                                        <div className="space-y-4 animate-fadeIn">
+                                            <h3 className="text-2xl sm:text-3xl font-black text-white">1. Smart Multi-Terminal POS & Billing</h3>
+                                            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+                                                Unified cashier billing console handling Dine-in table bills, Takeaway orders, and incoming table QR submissions in real-time with zero lag.
+                                            </p>
+                                            <ul className="space-y-2 text-xs sm:text-sm font-semibold text-slate-300">
+                                                <li className="flex items-center gap-2 text-emerald-400"><CheckCircle2 size={16} /> Quick split-billing, discounts & custom GST taxes</li>
+                                                <li className="flex items-center gap-2 text-emerald-400"><CheckCircle2 size={16} /> Offline order fallback & thermal receipt printing</li>
+                                                <li className="flex items-center gap-2 text-emerald-400"><CheckCircle2 size={16} /> Staff Role permissions for Cashiers, Waiters & Managers</li>
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {restaurantStep === 1 && (
+                                        <div className="space-y-4 animate-fadeIn">
+                                            <h3 className="text-2xl sm:text-3xl font-black text-white">2. Color-Coded Kitchen Display System (KDS)</h3>
+                                            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+                                                Orders instantly dispatch to paperless kitchen displays. Drinks route to the bar display, while hot meals route to the main line chef terminal.
+                                            </p>
+                                            <ul className="space-y-2 text-xs sm:text-sm font-semibold text-slate-300">
+                                                <li className="flex items-center gap-2 text-emerald-400"><CheckCircle2 size={16} /> Color timers: Green (1m) ➔ Orange (5m) ➔ Red Alert (10m)</li>
+                                                <li className="flex items-center gap-2 text-emerald-400"><CheckCircle2 size={16} /> One-touch bump tickets when food plating is complete</li>
+                                                <li className="flex items-center gap-2 text-emerald-400"><CheckCircle2 size={16} /> Eliminates lost paper tickets and kitchen confusion</li>
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {restaurantStep === 2 && (
+                                        <div className="space-y-4 animate-fadeIn">
+                                            <h3 className="text-2xl sm:text-3xl font-black text-white">3. Automated Ingredient Inventory Deductions</h3>
+                                            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+                                                Every dish sold automatically deducts exact raw ingredient quantities (g, ml, pcs) from your stock inventory based on recipe formulas.
+                                            </p>
+                                            <ul className="space-y-2 text-xs sm:text-sm font-semibold text-slate-300">
+                                                <li className="flex items-center gap-2 text-emerald-400"><CheckCircle2 size={16} /> Automated Low-Stock notifications for suppliers</li>
+                                                <li className="flex items-center gap-2 text-emerald-400"><CheckCircle2 size={16} /> Multi-branch central kitchen stock transfer logs</li>
+                                                <li className="flex items-center gap-2 text-emerald-400"><CheckCircle2 size={16} /> Waste management & variance auditing</li>
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {restaurantStep === 3 && (
+                                        <div className="space-y-4 animate-fadeIn">
+                                            <h3 className="text-2xl sm:text-3xl font-black text-white">4. Executive BI Analytics & Multi-Branch Control</h3>
+                                            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+                                                Owners and Super Admins get real-time revenue stats, profit margins, peak hour heatmaps, dish popularity metrics, and franchise control.
+                                            </p>
+                                            <ul className="space-y-2 text-xs sm:text-sm font-semibold text-slate-300">
+                                                <li className="flex items-center gap-2 text-emerald-400"><CheckCircle2 size={16} /> Real-time sales, tax reports & profit margins</li>
+                                                <li className="flex items-center gap-2 text-emerald-400"><CheckCircle2 size={16} /> Staff attendance, waiter sales leaderboard & commission</li>
+                                                <li className="flex items-center gap-2 text-emerald-400"><CheckCircle2 size={16} /> Centralized franchise catalog & global pricing rules</li>
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {/* Carousel Navigation Controls */}
+                                    <div className="flex items-center gap-4 pt-4 border-t border-slate-800">
+                                        <button
+                                            onClick={() => setRestaurantStep(prev => (prev === 0 ? 3 : prev - 1))}
+                                            className="w-10 h-10 rounded-full border border-slate-700 bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-white transition-colors shadow-sm cursor-pointer"
+                                        >
+                                            <ChevronLeft size={20} />
+                                        </button>
+                                        <div className="flex items-center gap-1.5">
+                                            {[0, 1, 2, 3].map(dot => (
+                                                <button
+                                                    key={dot}
+                                                    onClick={() => setRestaurantStep(dot)}
+                                                    className={`h-2.5 rounded-full transition-all cursor-pointer ${restaurantStep === dot ? 'w-8 bg-[#FF6A00]' : 'w-2.5 bg-slate-700'}`}
+                                                />
+                                            ))}
+                                        </div>
+                                        <button
+                                            onClick={() => setRestaurantStep(prev => (prev === 3 ? 0 : prev + 1))}
+                                            className="w-10 h-10 rounded-full border border-slate-700 bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-white transition-colors shadow-sm cursor-pointer"
+                                        >
+                                            <ChevronRight size={20} />
+                                        </button>
+                                        <span className="text-xs font-bold text-slate-400 ml-auto">Auto-sliding (Hover to pause)</span>
+                                    </div>
                                 </div>
-                                
-                                <div className="bg-white p-4 rounded-xl border-l-4 border-[#FF6A00] flex justify-between items-center border border-orange-100 shadow-sm">
-                                    <div>
-                                        <div className="font-bold text-slate-900 text-sm">Table 09 • #ORD-9915</div>
-                                        <div className="text-xs text-slate-500 mt-1">2x Wagyu Smash Burger, 1x Fries</div>
+
+                                {/* Right Interactive Mockup Container */}
+                                <div className="bg-slate-800 border border-slate-700 rounded-[20px] p-6 shadow-md relative overflow-hidden">
+                                    <div className="flex justify-between items-center pb-4 border-b border-slate-700 mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 h-3 rounded-full bg-[#FF6A00] animate-ping" />
+                                            <span className="font-extrabold text-xs text-white uppercase tracking-wider">Staff POS Console</span>
+                                        </div>
+                                        <span className="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full font-bold">Online</span>
                                     </div>
-                                    <span className="text-xs bg-[#FF6A00]/10 text-[#FF6A00] font-bold px-2.5 py-1 rounded-lg">Received • 1m</span>
+
+                                    {restaurantStep === 0 && (
+                                        <div className="space-y-3">
+                                            <div className="p-3 bg-slate-900 rounded-xl border border-slate-700 flex justify-between items-center text-xs">
+                                                <div>
+                                                    <div className="font-bold text-white">Table #04 Bill • Cashier Screen</div>
+                                                    <div className="text-slate-400">2 Items • Dine-In</div>
+                                                </div>
+                                                <span className="text-emerald-400 font-black text-sm">₹898</span>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <button className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg text-xs">Print Thermal Receipt</button>
+                                                <button className="bg-[#FF2D55] hover:bg-[#E0264A] text-white font-bold py-2 rounded-lg text-xs">Split Bill 50/50</button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {restaurantStep === 1 && (
+                                        <div className="space-y-3">
+                                            <div className="p-3 bg-slate-900 border-l-4 border-[#FF2D55] rounded-xl flex justify-between items-center">
+                                                <div>
+                                                    <div className="font-bold text-xs text-white">KDS Station 1 • Grill Line</div>
+                                                    <div className="text-[11px] text-slate-400">Table 04: 1x Truffle Pizza</div>
+                                                </div>
+                                                <span className="text-xs bg-[#FF2D55]/20 text-[#FF2D55] font-bold px-2 py-1 rounded">Cooking (4m)</span>
+                                            </div>
+                                            <div className="p-3 bg-slate-900 border-l-4 border-[#FF6A00] rounded-xl flex justify-between items-center">
+                                                <div>
+                                                    <div className="font-bold text-xs text-white">KDS Station 2 • Bar Display</div>
+                                                    <div className="text-[11px] text-slate-400">Table 09: 2x Fresh Mojito</div>
+                                                </div>
+                                                <span className="text-xs bg-[#FF6A00]/20 text-[#FF6A00] font-bold px-2 py-1 rounded">New (1m)</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {restaurantStep === 2 && (
+                                        <div className="space-y-3 text-xs">
+                                            <div className="p-3 bg-slate-900 rounded-xl border border-slate-700 flex justify-between items-center">
+                                                <span>Mozzarella Cheese (Kg)</span>
+                                                <span className="text-emerald-400 font-bold">14.5 Kg Remaining</span>
+                                            </div>
+                                            <div className="p-3 bg-red-900/30 border border-red-500/40 rounded-xl flex justify-between items-center text-red-200">
+                                                <span>Tomato Sauce (Liters)</span>
+                                                <span className="font-black text-red-400">2.1 L (Low Stock Alert!)</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {restaurantStep === 3 && (
+                                        <div className="space-y-3">
+                                            <div className="p-4 bg-slate-900 rounded-2xl border border-slate-700 flex items-center justify-between">
+                                                <div>
+                                                    <div className="text-xs text-slate-400">Today's Total Gross Sales</div>
+                                                    <div className="text-xl font-black text-emerald-400 mt-0.5">₹48,250.00</div>
+                                                </div>
+                                                <span className="text-xs bg-emerald-500/20 text-emerald-400 font-bold px-2.5 py-1 rounded-full border border-emerald-500/30">+24.5% vs Yesterday</span>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-2 text-xs">
+                                                <div className="p-2.5 bg-slate-900 rounded-xl border border-slate-700 text-slate-300">Total Orders: <b className="text-white">142</b></div>
+                                                <div className="p-2.5 bg-slate-900 rounded-xl border border-slate-700 text-slate-300">Avg Bill: <b className="text-white">₹340</b></div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </section>
 
                 {/* Customer Storefront Demo Section */}
