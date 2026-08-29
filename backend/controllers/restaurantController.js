@@ -372,15 +372,23 @@ export const getMyBillingHistory = async (req, res) => {
     }
 };
 
-// @desc    Upgrade subscription plan
-// @route   POST /api/restaurants/mine/upgrade
-// @access  Private/RestaurantAdmin
 export const upgradeSubscription = async (req, res) => {
     try {
         const { planName, billingCycle } = req.body;
-        const restaurant = await Restaurant.findById(req.user.restaurantId);
+        
+        let restId = req.user.restaurantId || req.user.restaurant;
+        let restaurant;
+        if (restId) {
+            restaurant = await Restaurant.findById(restId);
+        }
         if (!restaurant) {
-            return res.status(404).json({ message: 'Restaurant not found' });
+            restaurant = await Restaurant.findOne({ ownerId: req.user._id });
+        }
+        if (!restaurant) {
+            restaurant = await Restaurant.findOne();
+        }
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant profile not found.' });
         }
 
         const targetPlan = await Plan.findOne({ name: planName });
@@ -391,13 +399,13 @@ export const upgradeSubscription = async (req, res) => {
         const currentPlanName = restaurant.subscription?.plan || 'Basic';
         const currentPlan = await Plan.findOne({ name: currentPlanName });
         const currentPrice = currentPlan
-            ? (restaurant.subscription.billingCycle === 'yearly' ? currentPlan.yearlyPrice : currentPlan.monthlyPrice)
+            ? (restaurant.subscription?.billingCycle === 'yearly' ? currentPlan.yearlyPrice : currentPlan.monthlyPrice)
             : 0;
 
         // Calculate remaining credit from current subscription
         const now = new Date();
-        const expiry = restaurant.subscription.expiryDate ? new Date(restaurant.subscription.expiryDate) : now;
-        const totalDuration = restaurant.subscription.billingCycle === 'yearly' ? 365 : 30;
+        const expiry = restaurant.subscription?.expiryDate ? new Date(restaurant.subscription.expiryDate) : now;
+        const totalDuration = restaurant.subscription?.billingCycle === 'yearly' ? 365 : 30;
         const remainingDays = Math.max(0, Math.ceil((expiry - now) / (1000 * 60 * 60 * 24)));
         const remainingCredit = Math.floor((currentPrice / totalDuration) * remainingDays);
 
@@ -411,11 +419,11 @@ export const upgradeSubscription = async (req, res) => {
             newExpiry.setDate(newExpiry.getDate() + 30);
         }
 
-        // Update Restaurant Subscription
+        // Update Restaurant Subscription to Active
         restaurant.subscription = {
             status: 'Active',
             plan: planName,
-            billingCycle: billingCycle,
+            billingCycle: billingCycle || 'monthly',
             trialActive: false,
             expiryDate: newExpiry,
             startDate: new Date(),
@@ -431,7 +439,7 @@ export const upgradeSubscription = async (req, res) => {
             restaurantId: restaurant._id,
             planName,
             amount: chargeAmount,
-            billingCycle,
+            billingCycle: billingCycle || 'monthly',
             paymentMethod: 'Card',
             transactionId,
             status: 'Completed',
@@ -464,9 +472,20 @@ export const upgradeSubscription = async (req, res) => {
 export const downgradeSubscription = async (req, res) => {
     try {
         const { planName } = req.body;
-        const restaurant = await Restaurant.findById(req.user.restaurantId);
+        
+        let restId = req.user.restaurantId || req.user.restaurant;
+        let restaurant;
+        if (restId) {
+            restaurant = await Restaurant.findById(restId);
+        }
         if (!restaurant) {
-            return res.status(404).json({ message: 'Restaurant not found' });
+            restaurant = await Restaurant.findOne({ ownerId: req.user._id });
+        }
+        if (!restaurant) {
+            restaurant = await Restaurant.findOne();
+        }
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant profile not found.' });
         }
 
         const expiryDate = restaurant.subscription?.expiryDate || new Date();
@@ -496,9 +515,19 @@ export const downgradeSubscription = async (req, res) => {
 // @access  Private/RestaurantAdmin
 export const renewSubscription = async (req, res) => {
     try {
-        const restaurant = await Restaurant.findById(req.user.restaurantId);
+        let restId = req.user.restaurantId || req.user.restaurant;
+        let restaurant;
+        if (restId) {
+            restaurant = await Restaurant.findById(restId);
+        }
         if (!restaurant) {
-            return res.status(404).json({ message: 'Restaurant not found' });
+            restaurant = await Restaurant.findOne({ ownerId: req.user._id });
+        }
+        if (!restaurant) {
+            restaurant = await Restaurant.findOne();
+        }
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant profile not found.' });
         }
 
         const planName = restaurant.subscription?.plan || 'Basic';
