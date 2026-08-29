@@ -31,7 +31,17 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
     (response) => response,
-    (error) => {
+    async (error) => {
+        const config = error.config;
+        if (config && (!config._retryCount || config._retryCount < 10)) {
+            const status = error.response ? error.response.status : 0;
+            if (status === 502 || status === 503 || status === 504 || !error.response || error.code === 'ERR_NETWORK') {
+                config._retryCount = (config._retryCount || 0) + 1;
+                console.log(`[Render Server Cold-Start] Retrying customer request (${status || 'Network Error'}). Attempt ${config._retryCount}/10...`);
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+                return api(config);
+            }
+        }
         if (error.response && error.response.status === 401) {
             localStorage.removeItem('restosys_customer_user');
             if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {

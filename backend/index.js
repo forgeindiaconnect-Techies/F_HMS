@@ -52,7 +52,7 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
     
     if (req.method === 'OPTIONS') {
-        return res.status(204).end();
+        return res.status(200).end();
     }
     next();
 });
