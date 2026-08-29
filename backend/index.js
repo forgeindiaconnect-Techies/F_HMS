@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import fs from 'fs';
 import path from 'path';
 import http from 'http';
+import https from 'https';
 
 import connectDB from './config/db.js';
 import { initWebSocket } from './config/websocket.js';
@@ -132,6 +133,15 @@ initWebSocket(server);
 // Bind port immediately on process start so Render detects open port instantly
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
+    
+    // Automated Self-Ping Keep-Alive service for Render free tier (pings every 4 minutes to prevent sleep)
+    setInterval(() => {
+        https.get('https://f-hms-1.onrender.com/api/health', (res) => {
+            console.log(`[Keep-Alive] Render server ping status: ${res.statusCode}`);
+        }).on('error', () => {
+            // Silently swallow network glitches
+        });
+    }, 4 * 60 * 1000);
     
     // Connect to MongoDB Atlas asynchronously in background
     connectDB().then(async () => {
