@@ -300,22 +300,14 @@ const Home = () => {
             </header>
 
 
-            {/* Hero Section - Dedicated Cinematic Background Video Container ONLY */}
+            {/* Hero Section */}
             <section id="demo" className="min-h-[92vh] sm:min-h-screen flex flex-col justify-center items-center text-center px-4 py-20 sm:py-28 relative z-10 overflow-hidden bg-slate-950">
                 
-                {/* Vivid Background Video Player */}
+                {/* Ambient Background Gradient & Glow Effects */}
                 <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-                    <video
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        className="w-full h-full object-cover scale-110 filter brightness-110 contrast-110 opacity-85"
-                    >
-                        <source src="/hero-bg.mp4" type="video/mp4" />
-                    </video>
-                    {/* Vignette Overlay so video is crisp while text is readable */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#050816]/60 via-[#050816]/20 to-[#050816]/90 backdrop-blur-[0.5px]" />
+                    <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#FF2D55]/15 rounded-full blur-[140px]" />
+                    <div className="absolute bottom-10 right-10 w-[450px] h-[450px] bg-[#FF6A00]/15 rounded-full blur-[120px]" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#050816] via-[#090d20] to-[#050816]" />
                 </div>
 
 

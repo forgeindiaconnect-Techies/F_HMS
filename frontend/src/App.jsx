@@ -105,6 +105,7 @@ import Contact from './pages/customer/Contact';
 import ManagementFeatures from './pages/ManagementFeatures';
 import ModuleDetails from './pages/ModuleDetails';
 import ThemeToggle from './components/ThemeToggle';
+import FloatingVideoWidget from './components/FloatingVideoWidget';
 
 import { useEffect } from 'react';
 import api from './utils/axiosInstance';
@@ -127,6 +128,8 @@ function App() {
     <>
       <Toaster position="top-right" />
       <ThemeToggle />
+      <FloatingVideoWidget />
+
       <Routes>
         {/* Customer Facing Application */}
         <Route path="/" element={<CustomerAuthProvider><CartProvider><PublicLayout /></CartProvider></CustomerAuthProvider>}>
