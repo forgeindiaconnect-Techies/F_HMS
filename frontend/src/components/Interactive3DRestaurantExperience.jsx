@@ -1491,11 +1491,22 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
                 <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-[#FF2D55]/15 rounded-full blur-[120px]" />
             </div>
 
-            {/* Main Three.js WebGL Canvas */}
-            <canvas 
-                ref={canvasRef} 
-                className={`w-full h-full z-10 ${isOrbitMode ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`} 
-            />
+            {/* Main Three.js WebGL Canvas or Photorealistic Fallback Image */}
+            {hasWebGLError ? (
+                <div className="absolute inset-0 z-10 w-full h-full">
+                    <img 
+                        src={`/assets/images/saas-hero-scene-${(activeChapter % 4) + 1}.png`} 
+                        alt="Restaurant SaaS Experience" 
+                        className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+                </div>
+            ) : (
+                <canvas 
+                    ref={canvasRef} 
+                    className={`w-full h-full z-10 ${isOrbitMode ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`} 
+                />
+            )}
 
             {/* TOP HEADER CONTROLS BAR */}
             <div className="absolute top-6 left-6 right-6 z-30 flex items-center justify-between pointer-events-auto">
