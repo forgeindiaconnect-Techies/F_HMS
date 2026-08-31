@@ -12,6 +12,7 @@ const Restaurant3DHero = ({ isBackground = false, className = "" }) => {
     // Workflow stage state for overlay sync: 'new' | 'preparing' | 'ready' | 'delivery'
     const [orderStage, setOrderStage] = useState('new');
     const [prepTimer, setPrepTimer] = useState(12);
+    const [hasWebGLError, setHasWebGLError] = useState(false);
 
     useEffect(() => {
         // Stage cycling timer for UI synchronization
@@ -50,17 +51,31 @@ const Restaurant3DHero = ({ isBackground = false, className = "" }) => {
         camera.position.set(14, 13, 16);
         camera.lookAt(0, 0, 0);
 
-        // 3. Renderer Setup
-        const renderer = new THREE.WebGLRenderer({
-            canvas: canvasRef.current,
-            antialias: true,
-            alpha: true,
-            powerPreference: 'high-performance'
-        });
-        renderer.setSize(width, height);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        // 3. Renderer Setup with WebGL Context Safety Check
+        let renderer;
+        try {
+            const gl = canvasRef.current.getContext('webgl2') || canvasRef.current.getContext('webgl') || canvasRef.current.getContext('experimental-webgl');
+            if (!gl) {
+                console.warn("WebGL Context unavailable");
+                setHasWebGLError(true);
+                return;
+            }
+            renderer = new THREE.WebGLRenderer({
+                canvas: canvasRef.current,
+                context: gl,
+                antialias: true,
+                alpha: true,
+                powerPreference: 'high-performance'
+            });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        } catch (err) {
+            console.warn("WebGL initialization error caught safely:", err);
+            setHasWebGLError(true);
+            return;
+        }
 
         // 4. Lighting
         const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);

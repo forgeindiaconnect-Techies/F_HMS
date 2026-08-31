@@ -18,6 +18,7 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
     const [isOrbitMode, setIsOrbitMode] = useState(false);
     const [isAudioMuted, setIsAudioMuted] = useState(true);
     const [zoomLevel, setZoomLevel] = useState(1.0); // 0.5 to 2.5x
+    const [hasWebGLError, setHasWebGLError] = useState(false);
 
     // Audio Context Ref for Synthesized Ambient Sound (Zero external audio file dependencies)
     const audioCtxRef = useRef(null);
@@ -209,20 +210,34 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         camera.position.set(0, 8, 25);
         threeRef.current.camera = camera;
 
-        // 3. RENDERER SETUP
-        const renderer = new THREE.WebGLRenderer({
-            canvas: canvasRef.current,
-            antialias: true,
-            alpha: true,
-            powerPreference: 'high-performance'
-        });
-        renderer.setSize(width, height);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.3;
-        threeRef.current.renderer = renderer;
+        // 3. RENDERER SETUP WITH SAFE WEBGL CONTEXT CHECK
+        let renderer;
+        try {
+            const gl = canvasRef.current.getContext('webgl2') || canvasRef.current.getContext('webgl') || canvasRef.current.getContext('experimental-webgl');
+            if (!gl) {
+                console.warn("WebGL Context unavailable");
+                setHasWebGLError(true);
+                return;
+            }
+            renderer = new THREE.WebGLRenderer({
+                canvas: canvasRef.current,
+                context: gl,
+                antialias: true,
+                alpha: true,
+                powerPreference: 'high-performance'
+            });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.3;
+            threeRef.current.renderer = renderer;
+        } catch (err) {
+            console.warn("WebGL initialization error caught safely:", err);
+            setHasWebGLError(true);
+            return;
+        }
 
         // 4. LIGHTING SYSTEM
         const ambientLight = new THREE.AmbientLight(0xffedd5, 1.4);
