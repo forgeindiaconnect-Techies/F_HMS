@@ -152,9 +152,6 @@ const Home = () => {
                             </div>
                         </div>
 
-                        <Link to="/chai-theory" className="text-[#6B3F1D] hover:text-[#E38A2C] transition-colors font-extrabold flex items-center gap-1">
-                            ☕ Chai Theory
-                        </Link>
                         <a href="#workflow" className="text-slate-700 hover:text-slate-950 transition-colors">Workflow</a>
                         <a href="#pricing" className="text-slate-700 hover:text-slate-950 transition-colors">Pricing</a>
                         <Link to="/contact" className="text-slate-700 hover:text-slate-950 transition-colors">Contact</Link>
