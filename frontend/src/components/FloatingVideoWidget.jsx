@@ -110,7 +110,7 @@ const FloatingVideoWidget = () => {
                     playsInline
                     className="w-full h-full object-cover"
                 >
-                    <source src="/hero-bg.mp4" type="video/mp4" />
+                    <source src="/demo-video.mp4" type="video/mp4" />
                 </video>
 
                 {/* Controls overlay on hover */}

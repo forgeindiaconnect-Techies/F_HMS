@@ -301,27 +301,34 @@ const Home = () => {
             </header>
 
 
-            {/* Hero Section */}
+            {/* Hero Section - Full-Screen Crystal Clear Background Video */}
             <section id="demo" className="min-h-[92vh] sm:min-h-screen flex flex-col justify-center items-center text-center px-4 py-20 sm:py-28 relative z-10 overflow-hidden bg-slate-950">
                 
-                {/* Ambient Background Gradient & Glow Effects */}
-                <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-                    <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#FF2D55]/15 rounded-full blur-[140px]" />
-                    <div className="absolute bottom-10 right-10 w-[450px] h-[450px] bg-[#FF6A00]/15 rounded-full blur-[120px]" />
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#050816] via-[#090d20] to-[#050816]" />
+                {/* 100% Crystal Clear Background Video */}
+                <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                    <video
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="absolute inset-0 w-full h-full object-cover opacity-100 scale-100"
+                    >
+                        <source src="/hero-bg.mp4" type="video/mp4" />
+                    </video>
+                    {/* Very subtle gradient overlay for header readability */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none" />
                 </div>
 
-
-
+                {/* Hero Text Directly Placed On Video (No Card Box) */}
                 <div className="flex flex-col items-center justify-center my-auto relative z-10 max-w-4xl mx-auto pt-4">
                     {/* Small Badge */}
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#050816]/70 border border-white/[0.15] text-[#FF2D55] font-extrabold text-xs sm:text-sm mb-6 shadow-2xl backdrop-blur-md drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/85 border border-white/20 text-[#FF2D55] font-extrabold text-xs sm:text-sm mb-6 shadow-2xl backdrop-blur-md">
                         <Star size={14} className="fill-[#FF2D55] text-[#FF2D55]" />
-                        <span>Rated #1 Restaurant POS Platform 2026</span>
+                        <span className="text-white">Rated #1 Restaurant POS Platform 2026</span>
                     </div>
 
-                    {/* Large Heading */}
-                    <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.12] mb-6 drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
+                    {/* Large Heading Directly On Video */}
+                    <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.12] mb-6 drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]">
                         The Ultimate <br className="hidden sm:inline" />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF2D55] via-[#FF551C] to-[#FF6A00]">
                             Operating System
@@ -329,33 +336,27 @@ const Home = () => {
                         for Restaurants
                     </h1>
 
-                    {/* Subtitle */}
-                    <p className="text-base sm:text-lg text-slate-200 font-semibold max-w-2xl leading-relaxed mb-8 drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
+                    {/* Subtitle Directly On Video */}
+                    <p className="text-base sm:text-lg text-slate-100 font-semibold max-w-2xl leading-relaxed mb-8 drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">
                         Streamline your restaurant operations, increase revenue, manage inventory, and delight customers with our all-in-one Restaurant POS platform.
                     </p>
 
-                    {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md sm:max-w-none mb-12">
+                    {/* Action Buttons Directly On Video */}
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md sm:max-w-none">
                         <Link 
                             to="/staff/register" 
-                            className="w-full sm:w-auto bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] text-white font-extrabold text-base px-8 py-3.5 rounded-2xl shadow-xl shadow-[#FF2D55]/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2.5 group"
+                            className="w-full sm:w-auto bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] text-white font-extrabold text-base px-8 py-3.5 rounded-2xl shadow-2xl shadow-[#FF2D55]/40 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2.5 group"
                         >
-                            Subscribe Now 
+                            Get Started Free 
                             <ArrowRight size={18} className="group-hover:translate-x-1.5 transition-transform" />
                         </Link>
 
-                        <Link 
-                            to="/3d-demo" 
-                            className="w-full sm:w-auto bg-slate-900/80 hover:bg-slate-800 text-white font-extrabold text-base px-8 py-3.5 rounded-2xl border border-slate-700 shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2.5 group"
+                        <a 
+                            href="#features" 
+                            className="w-full sm:w-auto bg-black/60 hover:bg-black/80 text-white font-extrabold text-base px-8 py-3.5 rounded-2xl border border-white/30 shadow-2xl backdrop-blur-md hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2.5"
                         >
-                            <Sparkles size={18} className="text-amber-400 animate-spin" />
-                            Full 3D Showcase Mode
-                        </Link>
-                    </div>
-
-                    {/* Interactive 3D Animatic WebGL Hero Experience */}
-                    <div className="w-full max-w-6xl mx-auto my-4 relative z-20">
-                        <Interactive3DRestaurantExperience height="h-[550px] sm:h-[650px] lg:h-[720px]" />
+                            Explore Features
+                        </a>
                     </div>
                 </div>
             </section>

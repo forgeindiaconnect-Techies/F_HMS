@@ -262,11 +262,15 @@ const ChaiTheoryShowcase = () => {
                 
                 {/* Background Hero Media Container */}
                 <div className="absolute inset-0 z-0 overflow-hidden">
-                    <img 
-                        src="/assets/images/hero-chai-pour.png" 
-                        alt="Chai Theory Masala Chai Pour"
-                        className="hero-bg-media w-full h-full object-cover opacity-90 scale-105 transition-transform duration-700"
-                    />
+                    <video
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="hero-bg-media w-full h-full object-cover opacity-70 scale-105 transition-transform duration-700"
+                    >
+                        <source src="/hero-bg.mp4" type="video/mp4" />
+                    </video>
                     <div className="absolute inset-0 bg-gradient-to-t from-[#FAFAF8] via-[#FAFAF8]/60 to-transparent" />
                     <div className="absolute inset-0 bg-gradient-to-r from-[#FAFAF8]/90 via-transparent to-[#FAFAF8]/90" />
                 </div>
