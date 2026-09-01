@@ -7,7 +7,7 @@
     <meta http-equiv="Expires" content="0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RestoSys - Restaurant Management Platform</title>
+    <title>RestaurantHub - Restaurant POS Platform</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <script>
@@ -25,9 +25,13 @@
       body {
         margin: 0;
         padding: 0;
+        background-color: #FAFAF8;
+        color: #0f172a;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      html.dark body {
         background-color: #0f172a;
         color: #ffffff;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       }
       .instant-splash {
         display: flex;
@@ -35,8 +39,11 @@
         align-items: center;
         justify-content: center;
         min-height: 100vh;
-        background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+        background: #FAFAF8;
         text-align: center;
+      }
+      html.dark .instant-splash {
+        background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
       }
       .instant-splash-brand {
         display: flex;
@@ -47,24 +54,27 @@
       .instant-splash-icon {
         width: 44px;
         height: 44px;
-        background: #f97316;
+        background: linear-gradient(135deg, #FF2D55 0%, #FF6A00 100%);
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 8px 20px rgba(249, 115, 22, 0.35);
+        box-shadow: 0 8px 20px rgba(255, 45, 85, 0.35);
       }
       .instant-splash-title {
         font-size: 26px;
         font-weight: 800;
-        color: #ffffff;
+        color: #0f172a;
         letter-spacing: -0.5px;
+      }
+      html.dark .instant-splash-title {
+        color: #ffffff;
       }
       .instant-splash-spinner {
         width: 32px;
         height: 32px;
-        border: 3px solid rgba(249, 115, 22, 0.2);
-        border-top-color: #f97316;
+        border: 3px solid rgba(255, 45, 85, 0.2);
+        border-top-color: #FF2D55;
         border-radius: 50%;
         animation: instant-spin 0.7s linear infinite;
         margin-bottom: 12px;
@@ -87,7 +97,7 @@
               <path d="M18 18h6"/>
             </svg>
           </div>
-          <span class="instant-splash-title">RestoSys</span>
+          <span class="instant-splash-title">RestaurantHub</span>
         </div>
         <div class="instant-splash-spinner"></div>
       </div>

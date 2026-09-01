@@ -1,18 +1,15 @@
 import express from 'express';
-import { getOffers, createOffer, deleteOffer } from '../controllers/offerController.js';
+import { getOffers, createOffer, updateOffer, deleteOffer } from '../controllers/offerController.js';
 import { protect, authorize, checkSubscription } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.use(protect);
-router.use(authorize('RestaurantAdmin', 'BranchManager'));
-router.use(checkSubscription);
+// Public / Customer endpoint to get offers
+router.get('/', getOffers);
 
-router.route('/')
-    .get(getOffers)
-    .post(createOffer);
-
-router.route('/:id')
-    .delete(deleteOffer);
+// Protected routes for Admin & Manager to create, update, delete offers
+router.post('/', protect, authorize('RestaurantAdmin', 'BranchManager'), checkSubscription, createOffer);
+router.put('/:id', protect, authorize('RestaurantAdmin', 'BranchManager'), checkSubscription, updateOffer);
+router.delete('/:id', protect, authorize('RestaurantAdmin', 'BranchManager'), checkSubscription, deleteOffer);
 
 export default router;

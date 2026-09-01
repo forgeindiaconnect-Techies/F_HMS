@@ -17,3 +17,5 @@ build/
 .vercel
 backend/uploads/
 .vercel
+scratch/
+frontend/scratch/

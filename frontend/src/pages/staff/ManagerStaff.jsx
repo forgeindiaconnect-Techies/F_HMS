@@ -14,6 +14,14 @@ const ManagerStaff = () => {
     const [selectedStaffForMessage, setSelectedStaffForMessage] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
+    const [assignShiftData, setAssignShiftData] = useState({
+        staffId: '',
+        date: new Date().toISOString().split('T')[0],
+        startTime: '09:00',
+        endTime: '17:00',
+        station: 'Main Counter'
+    });
+
     const fetchStaff = async () => {
         try {
             const res = await api.get('/staff');
@@ -27,6 +35,9 @@ const ManagerStaff = () => {
                 return staffBranchId && managerBranchId && staffBranchId.toString() === managerBranchId.toString();
             });
             setStaffList(filtered);
+            if (filtered.length > 0 && !assignShiftData.staffId) {
+                setAssignShiftData(prev => ({ ...prev, staffId: filtered[0]._id }));
+            }
         } catch (error) {
             console.error('Failed to fetch staff for manager dashboard', error);
         } finally {
@@ -38,14 +49,75 @@ const ManagerStaff = () => {
         fetchStaff();
     }, []);
 
+    const formatTime12h = (isoString) => {
+        if (!isoString) return '-';
+        const d = new Date(isoString);
+        if (isNaN(d.getTime())) return '-';
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    };
+
+    const calculateShiftHours = (startTimeIso) => {
+        if (!startTimeIso) return '-';
+        const start = new Date(startTimeIso).getTime();
+        if (isNaN(start)) return '-';
+        const now = Date.now();
+        const diffMs = Math.max(0, now - start);
+        const hrs = Math.floor(diffMs / (1000 * 60 * 60));
+        const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        return `${hrs}h ${mins.toString().padStart(2, '0')}m`;
+    };
+
     const displayStaff = staffList.map((staff, index) => {
         const isUserActive = staff.isActive !== false;
-        const simulatedStatus = !isUserActive ? 'Absent' : (index % 3 === 0 ? 'Active' : index % 3 === 1 ? 'Break' : 'Active');
+
+        // Check if there is a saved shift clock state in localStorage for this employee
+        const storageKeyName = `staff_shift_clock_${(staff.name || '').replace(/\s+/g, '_')}`;
+        let savedState = null;
+        try {
+            const raw = localStorage.getItem(storageKeyName);
+            if (raw) savedState = JSON.parse(raw);
+        } catch (_) {}
+
+        let status = 'Active';
+        let timeIn = '-';
+        let hours = '-';
+
+        if (savedState && savedState.status) {
+            if (savedState.status === 'ClockedIn') {
+                status = 'Active';
+                timeIn = formatTime12h(savedState.clockInTime);
+                hours = calculateShiftHours(savedState.clockInTime);
+            } else if (savedState.status === 'OnBreak') {
+                status = 'Break';
+                timeIn = formatTime12h(savedState.clockInTime);
+                hours = calculateShiftHours(savedState.clockInTime);
+            } else if (savedState.status === 'ClockedOut') {
+                status = 'Absent';
+                timeIn = savedState.lastClockOutTime ? formatTime12h(savedState.lastClockOutTime) : '-';
+                const totalSec = savedState.totalShiftSecondsToday || 0;
+                const hrs = Math.floor(totalSec / 3600);
+                const mins = Math.floor((totalSec % 3600) / 60);
+                hours = `${hrs}h ${mins.toString().padStart(2, '0')}m`;
+            }
+        } else {
+            // Default when staff member is added by admin without logging into dashboard yet
+            if (isUserActive) {
+                status = index % 4 === 3 ? 'Break' : 'Active';
+                const refTime = staff.createdAt || new Date(Date.now() - (3600000 * (index + 2))).toISOString();
+                timeIn = formatTime12h(refTime);
+                hours = calculateShiftHours(refTime);
+            } else {
+                status = 'Absent';
+                timeIn = '-';
+                hours = '-';
+            }
+        }
+
         return {
             ...staff,
-            status: simulatedStatus,
-            timeIn: isUserActive ? '09:00 AM' : '-',
-            hours: isUserActive ? '8h 00m' : '-',
+            status,
+            timeIn,
+            hours,
             alert: isUserActive && index % 5 === 2
         };
     }).filter(s => 
@@ -336,10 +408,47 @@ const ManagerStaff = () => {
                                 <X size={20} />
                             </button>
                         </div>
-                        <div className="p-6 space-y-4">
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            if (!assignShiftData.staffId) {
+                                toast.error('Please select an employee');
+                                return;
+                            }
+
+                            const staffObj = staffList.find(s => s._id === assignShiftData.staffId);
+                            if (!staffObj) return;
+
+                            const [startH, startM] = assignShiftData.startTime.split(':');
+                            const shiftDate = new Date(assignShiftData.date || Date.now());
+                            shiftDate.setHours(parseInt(startH || '9', 10), parseInt(startM || '0', 10), 0);
+
+                            const clockStorageKey = `staff_shift_clock_${(staffObj.name || '').replace(/\s+/g, '_')}`;
+                            const newShiftState = {
+                                status: 'ClockedIn',
+                                clockInTime: shiftDate.toISOString(),
+                                breakStartTime: null,
+                                totalBreakSeconds: 0,
+                                totalShiftSecondsToday: 0,
+                                assignedStartTime: assignShiftData.startTime,
+                                assignedEndTime: assignShiftData.endTime,
+                                station: assignShiftData.station
+                            };
+
+                            try {
+                                localStorage.setItem(clockStorageKey, JSON.stringify(newShiftState));
+                            } catch (_) {}
+
+                            setShowAssignModal(false);
+                            toast.success(`Assigned ${assignShiftData.startTime} - ${assignShiftData.endTime} shift (${assignShiftData.station}) to ${staffObj.name}! 🎉`);
+                        }} className="p-6 space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Employee</label>
-                                <select className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Employee *</label>
+                                <select 
+                                    value={assignShiftData.staffId}
+                                    onChange={(e) => setAssignShiftData({ ...assignShiftData, staffId: e.target.value })}
+                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500 font-bold"
+                                    required
+                                >
                                     <option value="">Select Employee...</option>
                                     {staffList.map(staff => (
                                         <option key={staff._id} value={staff._id}>
@@ -349,28 +458,53 @@ const ManagerStaff = () => {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Date</label>
-                                <input type="date" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500" />
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Shift Date</label>
+                                <input 
+                                    type="date" 
+                                    value={assignShiftData.date}
+                                    onChange={(e) => setAssignShiftData({ ...assignShiftData, date: e.target.value })}
+                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500 font-medium"
+                                    required
+                                />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">Start Time</label>
-                                    <input type="time" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500" />
+                                    <input 
+                                        type="time" 
+                                        value={assignShiftData.startTime}
+                                        onChange={(e) => setAssignShiftData({ ...assignShiftData, startTime: e.target.value })}
+                                        className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500 font-medium"
+                                        required
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">End Time</label>
-                                    <input type="time" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500" />
+                                    <input 
+                                        type="time" 
+                                        value={assignShiftData.endTime}
+                                        onChange={(e) => setAssignShiftData({ ...assignShiftData, endTime: e.target.value })}
+                                        className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500 font-medium"
+                                        required
+                                    />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Role / Station</label>
-                                <input type="text" placeholder="e.g. Grill Station" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500" />
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Role / Station Assignment</label>
+                                <input 
+                                    type="text" 
+                                    value={assignShiftData.station}
+                                    onChange={(e) => setAssignShiftData({ ...assignShiftData, station: e.target.value })}
+                                    placeholder="e.g. Main Counter / Grill Station" 
+                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500 font-medium" 
+                                    required
+                                />
                             </div>
-                        </div>
-                        <div className="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-                            <button onClick={() => setShowAssignModal(false)} className="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">Cancel</button>
-                            <button onClick={() => { setShowAssignModal(false); toast.success('Shift assigned successfully!'); }} className="px-5 py-2.5 text-sm font-bold text-white bg-green-600 rounded-xl hover:bg-green-700 transition-colors">Confirm Assignment</button>
-                        </div>
+                            <div className="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 -mx-6 -mb-6 mt-4">
+                                <button type="button" onClick={() => setShowAssignModal(false)} className="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">Cancel</button>
+                                <button type="submit" className="px-5 py-2.5 text-sm font-bold text-white bg-green-600 hover:bg-green-700 rounded-xl transition-colors shadow-md">Confirm Assignment</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
@@ -385,10 +519,45 @@ const ManagerStaff = () => {
                                 <X size={20} />
                             </button>
                         </div>
-                        <div className="p-6 space-y-4">
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            const form = e.target;
+                            const newStatus = form.elements.statusSelect.value;
+                            const newTimeIn = form.elements.timeInInput.value;
+
+                            const clockStorageKey = `staff_shift_clock_${(selectedStaffForManage.name || '').replace(/\s+/g, '_')}`;
+
+                            let clockInTime = new Date().toISOString();
+                            if (newTimeIn) {
+                                const [h, m] = newTimeIn.split(':');
+                                const d = new Date();
+                                d.setHours(parseInt(h, 10), parseInt(m, 10), 0);
+                                clockInTime = d.toISOString();
+                            }
+
+                            const updatedState = {
+                                status: newStatus === 'Active' ? 'ClockedIn' : newStatus === 'Break' ? 'OnBreak' : 'ClockedOut',
+                                clockInTime,
+                                lastClockOutTime: newStatus === 'Off' ? new Date().toISOString() : null,
+                                breakStartTime: newStatus === 'Break' ? new Date().toISOString() : null,
+                                totalBreakSeconds: 0,
+                                totalShiftSecondsToday: 28800
+                            };
+
+                            try {
+                                localStorage.setItem(clockStorageKey, JSON.stringify(updatedState));
+                            } catch (_) {}
+
+                            setSelectedStaffForManage(null);
+                            toast.success(`Updated shift schedule & status for ${selectedStaffForManage.name}!`);
+                        }} className="p-6 space-y-4">
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">Current Status</label>
-                                <select defaultValue={selectedStaffForManage.status} className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <select 
+                                    name="statusSelect"
+                                    defaultValue={selectedStaffForManage.status === 'Break' ? 'Break' : selectedStaffForManage.status === 'Active' ? 'Active' : 'Off'} 
+                                    className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold"
+                                >
                                     <option value="Active">Active (Clocked In)</option>
                                     <option value="Break">On Break</option>
                                     <option value="Off">Clocked Out</option>
@@ -397,18 +566,28 @@ const ManagerStaff = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">Adjust Time In</label>
-                                    <input type="time" defaultValue={selectedStaffForManage.timeIn.replace(/[^0-9:]/g, '') || "08:00"} className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                    <input 
+                                        name="timeInInput"
+                                        type="time" 
+                                        defaultValue="09:00" 
+                                        className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium" 
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">Adjust Time Out</label>
-                                    <input type="time" className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                    <input 
+                                        name="timeOutInput"
+                                        type="time" 
+                                        defaultValue="17:00" 
+                                        className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium" 
+                                    />
                                 </div>
                             </div>
-                        </div>
-                        <div className="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-                            <button onClick={() => setSelectedStaffForManage(null)} className="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">Cancel</button>
-                            <button onClick={() => { setSelectedStaffForManage(null); toast.success(`Updated schedule for ${selectedStaffForManage.name}`); }} className="px-5 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors">Save Changes</button>
-                        </div>
+                            <div className="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 -mx-6 -mb-6 mt-4">
+                                <button type="button" onClick={() => setSelectedStaffForManage(null)} className="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">Cancel</button>
+                                <button type="submit" className="px-5 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-md">Save Changes</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

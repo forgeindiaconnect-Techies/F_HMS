@@ -84,6 +84,7 @@ const Sidebar = () => {
             items: [
                 { name: 'Business Overview', path: '/admin', icon: LayoutDashboard },
                 { name: 'Sales Analytics', path: '/admin/analytics', icon: PieChart },
+                { name: 'Expense Summary', path: '/admin/expenses', icon: ReceiptText },
             ]
         },
         {

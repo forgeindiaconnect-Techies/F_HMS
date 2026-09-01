@@ -101,10 +101,31 @@ const CustomerDashboard = () => {
         }
     };
 
+    // Live Offers State from Admin
+    const [liveOffers, setLiveOffers] = useState([]);
+    const [loadingOffers, setLoadingOffers] = useState(true);
+
+    const fetchLiveOffers = async () => {
+        try {
+            const { data } = await api.get('/offers');
+            if (Array.isArray(data)) {
+                setLiveOffers(data.filter(o => o.isActive !== false));
+            }
+        } catch (err) {
+            console.error("Failed to fetch live offers", err);
+        } finally {
+            setLoadingOffers(false);
+        }
+    };
+
     useEffect(() => {
         if (api) {
             fetchOrders();
-            const interval = setInterval(fetchOrders, 10000);
+            fetchLiveOffers();
+            const interval = setInterval(() => {
+                fetchOrders();
+                fetchLiveOffers();
+            }, 10000);
             return () => clearInterval(interval);
         }
     }, [api]);
@@ -916,46 +937,57 @@ const CustomerDashboard = () => {
                         <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
                             <div>
                                 <h3 className="text-xl font-bold text-gray-900">Offers & Coupons</h3>
-                                <p className="text-gray-500 text-xs mt-0.5">Apply promotional codes and get menu item discounts</p>
+                                <p className="text-gray-500 text-xs mt-0.5">Apply promotional codes created in Admin Dashboard and get discounts</p>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-300">
-                                <div className="border border-orange-100 bg-orange-50/50 p-6 rounded-2xl space-y-4 border-dashed relative overflow-hidden flex flex-col justify-between">
-                                    <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full blur-2xl"></div>
-                                    <div>
-                                        <span className="bg-orange-600 text-white font-extrabold text-[9px] px-2 py-0.5 rounded tracking-wide uppercase">Active Promo</span>
-                                        <h4 className="font-black text-gray-900 text-lg mt-3">20% OFF WEEKEND</h4>
-                                        <p className="text-xs text-gray-600 mt-1">Get 20% discount on food bills above ₹300.</p>
-                                    </div>
-                                    <div className="flex justify-between items-center pt-4 border-t border-orange-100/50 text-xs">
-                                        <span className="font-bold text-orange-950 font-mono tracking-wider bg-orange-100 px-2.5 py-1 rounded-lg">RESTOWEEKEND20</span>
-                                        <button 
-                                            onClick={() => { navigator.clipboard.writeText('RESTOWEEKEND20'); toast.success('Coupon copied!'); }}
-                                            className="text-xs font-bold text-orange-600 hover:text-orange-700"
-                                        >
-                                            Copy Code
-                                        </button>
-                                    </div>
+                            {loadingOffers ? (
+                                <div className="text-center py-10">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
                                 </div>
-
-                                <div className="border border-purple-100 bg-purple-50/50 p-6 rounded-2xl space-y-4 border-dashed relative overflow-hidden flex flex-col justify-between">
-                                    <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-full blur-2xl"></div>
-                                    <div>
-                                        <span className="bg-purple-600 text-white font-extrabold text-[9px] px-2 py-0.5 rounded tracking-wide uppercase">Active Promo</span>
-                                        <h4 className="font-black text-gray-900 text-lg mt-3">FREE DESSERT DELIGHT</h4>
-                                        <p className="text-xs text-gray-600 mt-1">Unlock one free chocolate fudge cake dessert.</p>
-                                    </div>
-                                    <div className="flex justify-between items-center pt-4 border-t border-purple-100/50 text-xs">
-                                        <span className="font-bold text-purple-950 font-mono tracking-wider bg-purple-100 px-2.5 py-1 rounded-lg">FREEDESSERT</span>
-                                        <button 
-                                            onClick={() => { navigator.clipboard.writeText('FREEDESSERT'); toast.success('Coupon copied!'); }}
-                                            className="text-xs font-bold text-purple-600 hover:text-purple-700"
-                                        >
-                                            Copy Code
-                                        </button>
-                                    </div>
+                            ) : liveOffers.length === 0 ? (
+                                <div className="text-center py-12 text-gray-400 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+                                    <p className="text-sm font-bold text-gray-700">No active coupons available right now.</p>
+                                    <p className="text-xs text-gray-500 mt-1">Check back soon when new restaurant offers are released!</p>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-300">
+                                    {liveOffers.map((offer) => (
+                                        <div key={offer._id || offer.code} className="border border-orange-100 bg-orange-50/50 p-6 rounded-2xl space-y-4 border-dashed relative overflow-hidden flex flex-col justify-between shadow-sm">
+                                            <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full blur-2xl"></div>
+                                            <div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="bg-orange-600 text-white font-extrabold text-[9px] px-2 py-0.5 rounded tracking-wide uppercase">Active Promo</span>
+                                                    {offer.expiresAt && (
+                                                        <span className="text-[10px] font-bold text-gray-500">
+                                                            Expires: {new Date(offer.expiresAt).toLocaleDateString()}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <h4 className="font-black text-gray-900 text-xl mt-3">{offer.code}</h4>
+                                                <p className="text-sm font-bold text-orange-600 mt-0.5">
+                                                    {offer.type === 'Percentage' ? `${offer.discountValue}% OFF Total Bill` : 
+                                                     offer.type === 'Fixed Amount' ? `₹${offer.discountValue.toFixed(2)} Flat Discount` : 
+                                                     'FREE SHIPPING ON ORDER'}
+                                                </p>
+                                                {offer.minSpend > 0 && (
+                                                    <p className="text-xs text-gray-600 mt-1 font-medium">Valid on orders above ₹{offer.minSpend}.</p>
+                                                )}
+                                            </div>
+                                            <div className="flex justify-between items-center pt-4 border-t border-orange-100/50 text-xs">
+                                                <span className="font-extrabold text-orange-950 font-mono tracking-wider bg-orange-100 px-3 py-1 rounded-lg text-sm border border-orange-200">
+                                                    {offer.code}
+                                                </span>
+                                                <button 
+                                                    onClick={() => { navigator.clipboard.writeText(offer.code); toast.success(`Coupon code ${offer.code} copied!`); }}
+                                                    className="text-xs font-bold bg-white hover:bg-orange-100 text-orange-600 px-3 py-1.5 rounded-lg border border-orange-200 transition-colors shadow-sm"
+                                                >
+                                                    Copy Code
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     )}
 

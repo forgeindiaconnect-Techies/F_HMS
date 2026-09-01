@@ -108,6 +108,7 @@ const FloatingVideoWidget = () => {
                     loop
                     muted={isMuted}
                     playsInline
+                    poster="/assets/images/saas-hero-scene-2.png"
                     className="w-full h-full object-cover"
                 >
                     <source src="/demo-video.mp4" type="video/mp4" />

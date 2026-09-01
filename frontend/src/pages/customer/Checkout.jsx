@@ -184,13 +184,60 @@ const Checkout = () => {
         }
     }, [restaurantId, selectedRestaurantId]);
 
-    const handleApplyCoupon = (e) => {
+    const handleApplyCoupon = async (e) => {
         e.preventDefault();
-        if (coupon.toUpperCase() === 'WELCOME20') {
-            setDiscount(cartTotal * 0.20);
-        } else {
-            toast.error('Invalid coupon code');
-            setDiscount(0);
+        if (!coupon || !coupon.trim()) {
+            toast.error('Please enter a coupon code');
+            return;
+        }
+
+        try {
+            let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
+            if (!API_URL.endsWith('/api')) API_URL += '/api';
+
+            const { data } = await axios.get(`${API_URL}/offers`);
+            const matchedOffer = data.find(o => o.code.toUpperCase() === coupon.trim().toUpperCase());
+
+            if (!matchedOffer || matchedOffer.isActive === false) {
+                toast.error('Invalid or inactive coupon code');
+                setDiscount(0);
+                return;
+            }
+
+            if (matchedOffer.expiresAt && new Date(matchedOffer.expiresAt) < new Date()) {
+                toast.error('This coupon code has expired');
+                setDiscount(0);
+                return;
+            }
+
+            if (matchedOffer.minSpend > 0 && cartTotal < matchedOffer.minSpend) {
+                toast.error(`Minimum cart spend of ₹${matchedOffer.minSpend} required for code ${matchedOffer.code}`);
+                setDiscount(0);
+                return;
+            }
+
+            let computedDiscount = 0;
+            if (matchedOffer.type === 'Percentage') {
+                computedDiscount = cartTotal * (matchedOffer.discountValue / 100);
+            } else if (matchedOffer.type === 'Fixed Amount') {
+                computedDiscount = Math.min(cartTotal, matchedOffer.discountValue);
+            } else if (matchedOffer.type === 'Free Shipping') {
+                computedDiscount = calculatedDeliveryFee;
+            }
+
+            setDiscount(computedDiscount);
+            toast.success(`Coupon '${matchedOffer.code}' applied! Saved ₹${computedDiscount.toFixed(2)} 🎉`);
+
+        } catch (err) {
+            // Fallback for offline or static check
+            if (coupon.toUpperCase() === 'WELCOME20') {
+                setDiscount(cartTotal * 0.20);
+                toast.success('Coupon WELCOME20 applied! 20% Discount');
+            } else {
+                toast.error('Invalid coupon code');
+                setDiscount(0);
+            }
         }
     };
 
@@ -629,7 +676,7 @@ const Checkout = () => {
                                 Apply
                             </button>
                         </div>
-                        <p className="text-xs text-orange-600 mb-6 font-medium">Try code: WELCOME20</p>
+                        <p className="text-xs text-orange-600 mb-6 font-medium">Enter promo code created in Admin Dashboard</p>
                         
                         {/* Totals */}
                         <div className="space-y-3 pt-6 border-t border-gray-100">

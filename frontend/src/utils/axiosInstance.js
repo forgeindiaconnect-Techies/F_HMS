@@ -1,13 +1,13 @@
 import axios from 'axios';
 
 export const getApiUrl = () => {
-    let envUrl = import.meta.env.VITE_API_URL;
-    if (envUrl && envUrl.includes('f-hms')) {
-        return 'https://f-hms-1.onrender.com/api';
-    }
     const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
         return 'http://localhost:5000/api';
+    }
+    let envUrl = import.meta.env.VITE_API_URL;
+    if (envUrl) {
+        return envUrl;
     }
     return 'https://f-hms-1.onrender.com/api';
 };

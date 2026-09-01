@@ -29,6 +29,7 @@ import CentralKitchen from './pages/admin/CentralKitchen';
 import DeveloperConfig from './pages/admin/DeveloperConfig';
 import AuditLogs from './pages/admin/AuditLogs';
 import BusinessIntelligence from './pages/admin/BusinessIntelligence';
+import ExpenseSummaryAdmin from './pages/admin/ExpenseSummaryAdmin';
 import VerificationManagement from './pages/superadmin/VerificationManagement';
 import CustomerCareDashboard from './pages/admin/CustomerCareDashboard';
 import CreateTicket from './pages/admin/CreateTicket';
@@ -222,6 +223,7 @@ function App() {
           {/* Insights */}
           <Route path="reports" element={<Reports />} />
           <Route path="analytics" element={<Analytics />} />
+          <Route path="expenses" element={<ExpenseSummaryAdmin />} />
           
           {/* System */}
           <Route path="settings" element={<Settings />} />
