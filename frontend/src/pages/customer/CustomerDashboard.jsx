@@ -28,6 +28,8 @@ const CustomerDashboard = () => {
     const [loadingOrders, setLoadingOrders] = useState(true);
     const [reservations, setReservations] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const [registeredRestaurants, setRegisteredRestaurants] = useState([]);
+    const [selectedRestaurantFilter, setSelectedRestaurantFilter] = useState('All');
     
     // Add Funds Modal States
     const [isAddFundsOpen, setIsAddFundsOpen] = useState(false);
@@ -70,13 +72,27 @@ const CustomerDashboard = () => {
     }, [user]);
 
     const dashboardFoods = [
-        { id: 'd_m1', name: 'Margherita Pizza', price: 299, category: 'Mains', description: 'Classic cheese and tomato pizza with basil.', image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80&w=800' },
-        { id: 'd_m2', name: 'Pepperoni Pizza', price: 399, category: 'Mains', description: 'Double pepperoni and mozzarella cheese.', image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=800' },
-        { id: 'd_m4', name: 'Greek Salad', price: 199, category: 'Salads', description: 'Fresh cucumbers, tomatoes, olives, and feta cheese.', image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=800' },
-        { id: 'd_m5', name: 'Chocolate Lava Cake', price: 159, category: 'Desserts', description: 'Rich chocolate cake with a molten center.', image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=800' },
-        { id: 'd_m6', name: 'Mango Smoothie', price: 129, category: 'Beverages', description: 'Creamy yogurt smoothie with fresh mango pulp.', image: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?q=80&w=800' },
-        { id: 'd_m7', name: 'Paneer Tikka', price: 280, category: 'Starters', description: 'Spiced cottage cheese cubes grilled to perfection.', image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=800' }
+        { id: 'd_m1', name: 'Margherita Pizza', price: 299, category: 'Mains', restaurantName: registeredRestaurants[0]?.name || 'Grand Bistro', description: 'Classic cheese and tomato pizza with basil.', image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80&w=800' },
+        { id: 'd_m2', name: 'Pepperoni Pizza', price: 399, category: 'Mains', restaurantName: registeredRestaurants[1]?.name || 'Chai Theory Cafe', description: 'Double pepperoni and mozzarella cheese.', image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=800' },
+        { id: 'd_m4', name: 'Greek Salad', price: 199, category: 'Salads', restaurantName: registeredRestaurants[2]?.name || 'Spice Route Diner', description: 'Fresh cucumbers, tomatoes, olives, and feta cheese.', image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=800' },
+        { id: 'd_m5', name: 'Chocolate Lava Cake', price: 159, category: 'Desserts', restaurantName: registeredRestaurants[0]?.name || 'Grand Bistro', description: 'Rich chocolate cake with a molten center.', image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=800' },
+        { id: 'd_m6', name: 'Mango Smoothie', price: 129, category: 'Beverages', restaurantName: registeredRestaurants[1]?.name || 'Chai Theory Cafe', description: 'Creamy yogurt smoothie with fresh mango pulp.', image: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?q=80&w=800' },
+        { id: 'd_m7', name: 'Paneer Tikka', price: 280, category: 'Starters', restaurantName: registeredRestaurants[2]?.name || 'Spice Route Diner', description: 'Spiced cottage cheese cubes grilled to perfection.', image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=800' }
     ];
+
+    useEffect(() => {
+        const fetchRegisteredRestaurants = async () => {
+            try {
+                const { data } = await api.get('/restaurants');
+                if (Array.isArray(data) && data.length > 0) {
+                    setRegisteredRestaurants(data);
+                }
+            } catch (err) {
+                console.error('Failed to load registered restaurants for menu page', err);
+            }
+        };
+        fetchRegisteredRestaurants();
+    }, []);
 
     // Safe short ID helper
     const getShortId = (id) => {
@@ -416,12 +432,51 @@ const CustomerDashboard = () => {
                                 </div>
                             </div>
 
+                            {/* Registered Restaurants & Cafes Filter Section */}
+                            {registeredRestaurants.length > 0 && (
+                                <div className="bg-orange-50/70 border border-orange-100 p-4 rounded-2xl space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="text-xs font-black uppercase text-orange-800 tracking-wider flex items-center gap-1.5">
+                                            <Store size={14} className="text-orange-600" /> Registered Restaurants &amp; Cafes
+                                        </h4>
+                                        <span className="text-[10px] font-bold text-orange-600 bg-white px-2.5 py-0.5 rounded-full border border-orange-200">
+                                            {registeredRestaurants.length} Verified Outlets
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        <button
+                                            onClick={() => setSelectedRestaurantFilter('All')}
+                                            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                                                selectedRestaurantFilter === 'All'
+                                                    ? 'bg-orange-600 text-white shadow-sm'
+                                                    : 'bg-white text-gray-700 border border-gray-200 hover:bg-orange-100/50'
+                                            }`}
+                                        >
+                                            All Registered Places
+                                        </button>
+                                        {registeredRestaurants.map((rest) => (
+                                            <button
+                                                key={rest._id}
+                                                onClick={() => setSelectedRestaurantFilter(rest.name)}
+                                                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                                                    selectedRestaurantFilter === rest.name
+                                                        ? 'bg-orange-600 text-white shadow-sm'
+                                                        : 'bg-white text-gray-700 border border-gray-200 hover:bg-orange-100/50'
+                                                }`}
+                                            >
+                                                <Store size={12} /> {rest.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Quick Order Section (Browse Menu & Place Order) */}
                             <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
                                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                                     <div>
-                                        <h3 className="text-xl font-bold text-gray-900 font-sans">Quick Order Menu</h3>
-                                        <p className="text-gray-500 text-sm mt-0.5">Order your favorite types directly from your dashboard</p>
+                                        <h3 className="text-xl font-bold text-gray-900 font-sans">Quick Order Menu Items</h3>
+                                        <p className="text-gray-500 text-sm mt-0.5">Order directly from verified registered restaurants &amp; cafes</p>
                                     </div>
                                     
                                     {/* Categories Row */}
@@ -440,12 +495,11 @@ const CustomerDashboard = () => {
                                             </button>
                                         ))}
                                     </div>
-                                </div>
-
-                                {/* Foods Grid */}
+                                </div>                                 {/* Foods Grid */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 pt-2">
                                     {dashboardFoods
-                                        .filter(food => selectedCategory === 'All' || food.category === selectedCategory)
+                                        .filter(food => (selectedCategory === 'All' || food.category === selectedCategory) &&
+                                                        (selectedRestaurantFilter === 'All' || food.restaurantName === selectedRestaurantFilter))
                                         .map(food => (
                                             <div 
                                                 key={food.id}
@@ -464,6 +518,11 @@ const CustomerDashboard = () => {
                                                 </div>
                                                 <div className="p-4 flex flex-col flex-1 justify-between gap-3">
                                                     <div>
+                                                        <div className="mb-1">
+                                                            <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md border border-orange-100">
+                                                                <Store size={12} /> {food.restaurantName || 'Chai Theory Cafe'}
+                                                            </span>
+                                                        </div>
                                                         <h4 className="font-bold text-gray-900 font-sans text-base line-clamp-1 group-hover:text-orange-600 transition-colors">
                                                             {food.name}
                                                         </h4>
