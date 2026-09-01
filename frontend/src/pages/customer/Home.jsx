@@ -950,10 +950,103 @@ const Home = () => {
                         </div>
                     </section>
 
+                    {/* ========================================================================= */}
+                    {/* SUBSCRIPTION PLANS & PRICING SECTION (DYNAMICALLY SYNCED WITH SUPER ADMIN) */}
+                    {/* ========================================================================= */}
+                    <section id="pricing" className="space-y-12 py-8">
+                        <div className="text-center space-y-4 max-w-3xl mx-auto">
+                            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#FF2D55]/10 border border-[#FF2D55]/20 text-[#FF2D55] font-bold text-xs uppercase tracking-wider">
+                                💎 Transparent Pricing Plans
+                            </div>
+                            <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
+                                Simple, Predictable Pricing for Any Scale
+                            </h2>
+                            <p className="text-slate-600 font-medium text-base sm:text-lg">
+                                Live subscription tiers synced directly with the Super Admin Dashboard.
+                            </p>
 
+                            {/* Monthly vs Yearly Toggle */}
+                            <div className="flex items-center justify-center gap-4 pt-4">
+                                <span className={`text-sm font-bold ${!isYearly ? 'text-slate-900' : 'text-slate-500'}`}>Monthly Billing</span>
+                                <button
+                                    onClick={() => setIsYearly(!isYearly)}
+                                    className="w-14 h-8 bg-slate-200 rounded-full p-1 transition-colors relative focus:outline-none"
+                                >
+                                    <div className={`w-6 h-6 rounded-full bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] shadow-md transition-transform ${isYearly ? 'translate-x-6' : 'translate-x-0'}`} />
+                                </button>
+                                <span className={`text-sm font-bold flex items-center gap-2 ${isYearly ? 'text-slate-900' : 'text-slate-500'}`}>
+                                    Yearly Billing
+                                    <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-black border border-emerald-200">
+                                        Save 20%
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
 
+                        {/* Pricing Cards Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {plans.map((plan, idx) => {
+                                const isPopular = plan.name.toLowerCase().includes('pro');
+                                const price = isYearly ? (plan.yearlyPrice || Math.round(plan.monthlyPrice * 0.8)) : plan.monthlyPrice;
 
+                                return (
+                                    <div 
+                                        key={plan._id || idx}
+                                        className={`rounded-3xl p-8 bg-white border transition-all relative flex flex-col justify-between space-y-6 ${
+                                            isPopular 
+                                                ? 'border-[#FF2D55] shadow-2xl scale-[1.03] ring-4 ring-[#FF2D55]/15' 
+                                                : 'border-slate-200 shadow-md hover:shadow-xl hover:border-slate-300'
+                                        }`}
+                                    >
+                                        {isPopular && (
+                                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] text-white font-black text-xs uppercase px-4 py-1 rounded-full shadow-md tracking-wider">
+                                                ★ Most Popular Choice
+                                            </div>
+                                        )}
 
+                                        <div className="space-y-4">
+                                            <div className="flex justify-between items-center">
+                                                <h3 className="text-2xl font-black text-slate-900">{plan.name}</h3>
+                                                <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                                                    {plan.name === 'Basic' || plan.name === 'Starter' ? 'Single Branch' : plan.name === 'Pro' || plan.name === 'Professional' ? 'Multi Branch' : 'Custom Enterprise'}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-baseline gap-1">
+                                                <span className="text-4xl sm:text-5xl font-black text-slate-900">₹{price.toLocaleString('en-IN')}</span>
+                                                <span className="text-slate-500 font-bold text-sm">/month</span>
+                                            </div>
+
+                                            <p className="text-xs text-slate-500 font-medium">
+                                                {isYearly ? 'Billed annually (₹' + (price * 12).toLocaleString('en-IN') + '/yr)' : 'Billed monthly'}
+                                            </p>
+
+                                            <div className="pt-4 border-t border-slate-100 space-y-3">
+                                                {(plan.features || []).map((feat, fIdx) => (
+                                                    <div key={fIdx} className="flex items-start gap-2.5 text-xs text-slate-700 font-bold">
+                                                        <CheckCircle2 size={16} className="text-emerald-500 shrink-0 mt-0.5" />
+                                                        <span>{feat}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <Link
+                                            to="/register"
+                                            className={`w-full text-center font-extrabold py-3.5 px-6 rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 ${
+                                                isPopular 
+                                                    ? 'bg-[#FF2D55] text-white hover:bg-[#E0264A] shadow-[#FF2D55]/30' 
+                                                    : 'bg-slate-900 hover:bg-slate-800 text-white'
+                                            }`}
+                                        >
+                                            <span>Start 14-Day Free Trial</span>
+                                            <ArrowRight size={16} />
+                                        </Link>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </section>
                     {/* ========================================================================= */}
                     {/* FREQUENTLY ASKED QUESTIONS (FAQ) SECTION */}
                     {/* ========================================================================= */}
