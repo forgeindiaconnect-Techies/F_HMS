@@ -110,6 +110,7 @@ app.use('/api/plans', planRoutes);
 app.use('/api/service-requests', serviceRequestRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/delivery', deliveryRoutes);
+app.use('/api/auth/delivery', deliveryRoutes);
 app.use('/api/inquiries', inquiryRoutes);
 app.use('/api/expenses', expenseRoutes);
 
