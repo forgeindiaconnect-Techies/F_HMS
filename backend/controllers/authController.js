@@ -251,7 +251,11 @@ export const loginUser = async (req, res) => {
         let user = await User.findOne({ email: { $regex: `^${normalizedEmail}$`, $options: 'i' } });
 
         const cleanPassword = String(password).trim();
-        if (user && (await user.matchPassword(cleanPassword))) {
+        if (!user) {
+            return res.status(401).json({ message: 'No account found with this email address. Please register first.' });
+        }
+
+        if (await user.matchPassword(cleanPassword)) {
             if (loginType === 'staff' && user.role === 'Customer') {
                 return res.status(403).json({ message: 'Customers cannot log into the staff portal' });
             }
@@ -314,7 +318,7 @@ export const loginUser = async (req, res) => {
                 token: token,
             });
         } else {
-            res.status(401).json({ message: 'Invalid email or password' });
+            res.status(401).json({ message: 'Incorrect password. Please check your credentials and try again.' });
         }
     } catch (error) {
         res.status(500).json({ message: error.message });
