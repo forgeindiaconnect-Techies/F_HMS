@@ -243,19 +243,25 @@ export const loginUser = async (req, res) => {
     const { email, password, loginType } = req.body;
 
     try {
-        let user = await User.findOne({ email });
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Email and password are required' });
+        }
+
+        const normalizedEmail = String(email).trim().toLowerCase();
+        let user = await User.findOne({ email: { $regex: `^${normalizedEmail}$`, $options: 'i' } });
 
         // Auto-seed SuperAdmin if logging in for the first time
-        if (!user && (email === 'admin@restauranthub.com' || email === 'superadmin@restauranthub.com') && password === 'password123') {
+        if (!user && (normalizedEmail === 'admin@restosys.com' || normalizedEmail === 'admin@restauranthub.com' || normalizedEmail === 'superadmin@restauranthub.com') && String(password).trim() === 'password123') {
             user = await User.create({
                 name: 'Super Admin',
-                email: email,
+                email: normalizedEmail,
                 password: 'password123',
                 role: 'SuperAdmin'
             });
         }
 
-        if (user && (await user.matchPassword(password))) {
+        const cleanPassword = String(password).trim();
+        if (user && (await user.matchPassword(cleanPassword))) {
             if (loginType === 'staff' && user.role === 'Customer') {
                 return res.status(403).json({ message: 'Customers cannot log into the staff portal' });
             }
