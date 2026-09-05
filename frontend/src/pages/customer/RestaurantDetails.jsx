@@ -6,15 +6,6 @@ import { useCart } from '../../context/CartContext';
 import { getItemImage } from '../../utils/imageHelper';
 import toast from 'react-hot-toast';
 
-const dummyRestaurants = [
-    { _id: 'demo1', name: 'Pizza Palace', logo: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
-    { _id: 'demo2', name: 'Burger Hub', logo: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
-    { _id: 'demo3', name: 'South Indian Cafe', logo: 'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
-    { _id: 'demo4', name: 'Chinese Bowl', logo: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
-    { _id: 'demo5', name: 'BBQ Nation', logo: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
-    { _id: 'demo6', name: 'Juice Corner', logo: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' }
-];
-
 const dummyBranches = [
     { _id: 'b1', name: 'Downtown Branch', address: '123 Main St, Downtown' },
     { _id: 'b2', name: 'Uptown Branch', address: '456 High St, Uptown' }
