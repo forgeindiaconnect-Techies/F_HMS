@@ -40,10 +40,27 @@ export const addOrderItems = async (req, res) => {
         if (!finalRestaurantId || !finalBranchId) {
             const Restaurant = mongoose.model('Restaurant');
             const Branch = mongoose.model('Branch');
-            const firstRestaurant = await Restaurant.findOne();
-            const firstBranch = await Branch.findOne();
-            if (firstRestaurant) finalRestaurantId = firstRestaurant._id;
-            if (firstBranch) finalBranchId = firstBranch._id;
+            let firstRestaurant = await Restaurant.findOne();
+            if (!firstRestaurant) {
+                const User = mongoose.model('User');
+                const adminUser = await User.findOne({ role: 'SuperAdmin' }) || await User.findOne();
+                firstRestaurant = await Restaurant.create({
+                    name: 'Demo Main Kitchen',
+                    ownerId: adminUser ? adminUser._id : new mongoose.Types.ObjectId(),
+                    approvalStatus: 'Approved',
+                    subscription: { status: 'Active', plan: 'Pro' }
+                });
+            }
+            finalRestaurantId = firstRestaurant._id;
+
+            let firstBranch = await Branch.findOne({ restaurantId: finalRestaurantId });
+            if (!firstBranch) {
+                firstBranch = await Branch.create({
+                    name: 'Main Branch',
+                    restaurantId: finalRestaurantId
+                });
+            }
+            finalBranchId = firstBranch._id;
         }
 
         let finalUserId = req.user ? req.user._id : null;

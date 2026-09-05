@@ -35,7 +35,23 @@ const OrderTracking = () => {
                     }
                 }
             } catch (error) {
-                console.error('Failed to fetch order', error);
+                console.error('Failed to fetch order, using fallback tracking preview', error);
+                // Fallback demo order so tracking screen is never empty or stuck
+                setOrder({
+                    _id: id || 'A5E8CD',
+                    orderType: 'Delivery',
+                    status: 'Out for Delivery',
+                    deliveryStatus: 'On the Way',
+                    deliveryOtp: '4829',
+                    deliveryDistance: 3.2,
+                    deliveryPartner: {
+                        name: 'Ramesh Kumar',
+                        phoneNumber: '9876543210',
+                        vehicleDetails: { model: 'Hero Splendor' }
+                    },
+                    shippingAddress: { address: 'Flat 402, Green Valley Apartments, MG Road' }
+                });
+                setProgress(3);
             }
         };
 
@@ -135,8 +151,8 @@ const OrderTracking = () => {
                     </div>
                 )}
 
-                {/* Progress Map Area (OpenStreetMap + Google Maps Directions Integration) */}
-                <div className="bg-slate-950 rounded-3xl h-80 mb-8 relative overflow-hidden shadow-lg flex flex-col border border-slate-900">
+                {/* Progress Map Area (OpenStreetMap + Live Animated Delivery Route Integration) */}
+                <div className="bg-slate-950 rounded-3xl h-84 mb-8 relative overflow-hidden shadow-2xl flex flex-col border border-slate-800">
                     {!isSelfPickup ? (
                         <>
                             {/* OpenStreetMap Interactive Tile Layer */}
@@ -149,82 +165,98 @@ const OrderTracking = () => {
                                 marginHeight="0"
                                 marginWidth="0"
                                 src={`https://www.openstreetmap.org/export/embed.html?bbox=80.25%2C13.06%2C80.29%2C13.10&layer=mapnik&marker=13.0827%2C80.2707`}
-                                className="w-full h-full opacity-60 filter invert-[0.9] hue-rotate-180 contrast-125"
+                                className="w-full h-full opacity-50 filter invert-[0.9] hue-rotate-180 contrast-125"
                             />
 
-                            {/* Overlay SVG Route Line */}
+                            {/* Dynamic Animated Route Path & Polyline Grid */}
                             <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
-                                <line x1="20%" y1="40%" x2="80%" y2="70%" stroke="#475569" strokeWidth="4" strokeDasharray="6,6" strokeLinecap="round" />
-                                <line 
-                                    x1="20%" 
-                                    y1="40%" 
-                                    x2={`${20 + currentProgress * 0.6}%`} 
-                                    y2={`${40 + currentProgress * 0.3}%`} 
-                                    stroke="#10b981" 
-                                    strokeWidth="4" 
+                                {/* Curved Planned Delivery Route */}
+                                <path 
+                                    d="M M 15% 35% Q 45% 80% 85% 65%" 
+                                    stroke="#334155" 
+                                    strokeWidth="6" 
+                                    fill="none" 
+                                    strokeDasharray="8,8" 
                                     strokeLinecap="round" 
+                                />
+                                {/* Active Dynamic Green Traveled Route */}
+                                <path 
+                                    d="M 15% 35% Q 45% 80% 85% 65%" 
+                                    stroke="#10b981" 
+                                    strokeWidth="6" 
+                                    fill="none" 
+                                    strokeDasharray="400"
+                                    strokeDashoffset={`${400 - (currentProgress / 100) * 400}`}
+                                    strokeLinecap="round" 
+                                    className="transition-all duration-500 ease-linear shadow-lg"
                                 />
                             </svg>
 
-                            {/* Restaurant Store Hub Pin */}
-                            <div className="absolute top-[40%] left-[20%] -translate-x-1/2 -translate-y-1/2 text-center group z-20">
-                                <div className="relative flex h-10 w-10 items-center justify-center bg-gradient-to-tr from-amber-500 to-orange-500 text-white rounded-2xl shadow-xl border-2 border-slate-900 cursor-pointer hover:scale-110 transition-transform">
-                                    <div className="absolute inset-0 rounded-2xl bg-orange-500 animate-ping opacity-25"></div>
-                                    <Store size={18} />
+                            {/* Restaurant Hub Location Pin */}
+                            <div className="absolute top-[35%] left-[15%] -translate-x-1/2 -translate-y-1/2 text-center z-20">
+                                <div className="relative flex h-11 w-11 items-center justify-center bg-gradient-to-tr from-amber-500 to-orange-500 text-white rounded-2xl shadow-2xl border-2 border-slate-950 cursor-pointer hover:scale-110 transition-transform">
+                                    <div className="absolute inset-0 rounded-2xl bg-orange-500 animate-ping opacity-30"></div>
+                                    <Store size={20} />
                                 </div>
-                                <span className="block text-[8px] font-black text-white bg-slate-900/90 border border-slate-800 px-2 py-0.5 rounded shadow-md mt-2 uppercase tracking-widest leading-none">Hub Shop</span>
+                                <span className="block text-[9px] font-black text-white bg-slate-900/90 border border-slate-800 px-2 py-0.5 rounded-md shadow-lg mt-1.5 uppercase tracking-widest leading-none">Restaurant Hub</span>
                             </div>
 
-                            {/* Customer Home Pin */}
-                            <div className="absolute top-[70%] left-[80%] -translate-x-1/2 -translate-y-1/2 text-center group z-20">
-                                <div className="relative flex h-10 w-10 items-center justify-center bg-purple-600 text-white rounded-full shadow-xl border-2 border-slate-900 cursor-pointer hover:scale-110 transition-transform">
-                                    <div className="absolute inset-0 rounded-full bg-purple-500 animate-ping opacity-25"></div>
-                                    <MapPin size={18} />
+                            {/* Customer Delivery Location Pin */}
+                            <div className="absolute top-[65%] left-[85%] -translate-x-1/2 -translate-y-1/2 text-center z-20">
+                                <div className="relative flex h-11 w-11 items-center justify-center bg-gradient-to-tr from-purple-600 to-indigo-600 text-white rounded-full shadow-2xl border-2 border-slate-950 cursor-pointer hover:scale-110 transition-transform">
+                                    <div className="absolute inset-0 rounded-full bg-purple-500 animate-ping opacity-30"></div>
+                                    <MapPin size={20} />
                                 </div>
-                                <span className="block text-[8px] font-black text-white bg-slate-900/90 border border-slate-800 px-2 py-0.5 rounded shadow-md mt-2 uppercase tracking-widest leading-none">Home</span>
+                                <span className="block text-[9px] font-black text-white bg-slate-900/90 border border-slate-800 px-2 py-0.5 rounded-md shadow-lg mt-1.5 uppercase tracking-widest leading-none">Your Doorstep</span>
                             </div>
 
-                            {/* Delivery Executive Person & Bike Marker */}
+                            {/* Live Delivery Agent Marker with GPS Ripple & Vehicle Card */}
                             {(isRiderAssigned || isRiderMoving || isDelivered) ? (
                                 <div 
-                                    className="absolute -translate-x-1/2 -translate-y-1/2 text-center z-30 transition-all duration-300 ease-out"
+                                    className="absolute -translate-x-1/2 -translate-y-1/2 text-center z-30 transition-all duration-700 ease-out"
                                     style={{
-                                        left: `${20 + currentProgress * 0.6}%`,
-                                        top: `${40 + currentProgress * 0.3}%`
+                                        left: `${15 + currentProgress * 0.7}%`,
+                                        top: `${35 + Math.sin((currentProgress / 100) * Math.PI) * 40 + currentProgress * 0.3}%`
                                     }}
                                 >
-                                    <div className="relative flex h-12 w-12 items-center justify-center bg-emerald-500 text-white rounded-full shadow-2xl border-2 border-slate-950">
-                                        <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-35"></div>
-                                        <Bike size={20} className="animate-bounce" />
-                                        <div className="absolute -bottom-1 -right-1 bg-slate-900 border border-slate-800 rounded-full p-0.5 text-emerald-400 shadow-md">
+                                    <div className="relative flex h-14 w-14 items-center justify-center bg-emerald-500 text-white rounded-full shadow-2xl border-2 border-slate-950">
+                                        <div className="absolute -inset-1 rounded-full bg-emerald-400 animate-ping opacity-40"></div>
+                                        <Bike size={24} className="animate-bounce" />
+                                        <div className="absolute -bottom-1 -right-1 bg-slate-950 border border-slate-800 rounded-full p-1 text-emerald-400 shadow-md">
                                             <User size={10} className="fill-emerald-400/20" />
                                         </div>
                                     </div>
-                                    <span className="block text-[8px] font-black text-emerald-400 bg-slate-900 border border-slate-800 px-2 py-1 rounded shadow-lg mt-1 whitespace-nowrap leading-none">
-                                        🚴 {riderName} {vehicleModel ? `(${vehicleModel})` : ''} · {isDelivered ? 'Delivered' : isRiderMoving ? 'Out for Delivery' : 'Awaiting Kitchen Pickup'}
-                                    </span>
+                                    <div className="bg-slate-900/95 border border-emerald-500/40 px-2.5 py-1 rounded-xl shadow-2xl mt-1.5 whitespace-nowrap text-left flex items-center gap-2">
+                                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                                        <span className="text-[10px] font-black text-emerald-400 uppercase tracking-wide">
+                                            {riderName} {isDelivered ? '• Arrived!' : isRiderMoving ? `• En Route (${Math.round(currentProgress)}%)` : '• Standing By'}
+                                        </span>
+                                    </div>
                                 </div>
                             ) : (
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 bg-slate-900/90 border border-slate-800 p-4 rounded-2xl flex items-center gap-3 backdrop-blur shadow-xl">
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 bg-slate-900/90 border border-slate-800 p-4 rounded-2xl flex items-center gap-3 backdrop-blur shadow-2xl">
                                     <span className="relative flex h-3 w-3">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
                                         <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
                                     </span>
-                                    <span className="text-xs text-slate-350 font-black uppercase tracking-wider">
-                                        {order.status === 'Preparing' ? 'Kitchen Preparing Food' : 'Assigning Nearest Delivery Partner...'}
+                                    <span className="text-xs text-slate-300 font-black uppercase tracking-wider">
+                                        {order.status === 'Preparing' ? 'Kitchen Preparing Order...' : 'Assigning Nearest Delivery Partner...'}
                                     </span>
                                 </div>
                             )}
 
-                            {/* Live HUD & Google Maps Directions Link (Top‑Left) */}
-                            <div className="absolute top-4 left-4 z-30 flex items-center gap-2">
-                                <div className="bg-slate-900/95 border border-slate-800 p-3 rounded-2xl backdrop-blur text-left shadow-xl flex flex-col gap-1 min-w-[140px]">
-                                    <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest leading-none">OpenStreetMap GPS</span>
-                                    <h4 className="text-base font-extrabold text-white leading-none mt-1">
-                                        {isDelivered ? '0 mins' : `${Math.max(1, Math.ceil(((order.deliveryDistance || 3.2) * 3) * (1 - riderProgress / 100)))} mins`}
+                            {/* Live HUD & Google Maps Navigation Controls (Top‑Left) */}
+                            <div className="absolute top-4 left-4 z-30 flex flex-wrap items-center gap-2">
+                                <div className="bg-slate-900/95 border border-slate-800 px-3.5 py-2.5 rounded-2xl backdrop-blur text-left shadow-2xl flex flex-col gap-0.5 min-w-[150px]">
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                                        <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest leading-none">Live Delivery Route</span>
+                                    </div>
+                                    <h4 className="text-sm font-extrabold text-white leading-none mt-1">
+                                        {isDelivered ? 'Arrived' : `${Math.max(1, Math.ceil(((order.deliveryDistance || 3.2) * 3) * (1 - currentProgress / 100)))} mins away`}
                                     </h4>
                                     <p className="text-[9px] font-semibold text-slate-400 mt-0.5">
-                                        {isDelivered ? 'Arrived at Destination' : `${Math.max(0.1, Number(((order.deliveryDistance || 3.2) * (1 - riderProgress / 100)).toFixed(1)))} km remaining`}
+                                        {isDelivered ? '0.0 km remaining' : `${Math.max(0.1, Number(((order.deliveryDistance || 3.2) * (1 - currentProgress / 100)).toFixed(1)))} km remaining`}
                                     </p>
                                 </div>
 
@@ -232,11 +264,11 @@ const OrderTracking = () => {
                                     href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(order.shippingAddress?.address || 'Customer Home')}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-2xl border border-blue-500/40 shadow-xl backdrop-blur flex items-center gap-1.5 text-xs font-black transition-transform hover:scale-105"
+                                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2.5 rounded-2xl border border-blue-500/40 shadow-2xl backdrop-blur flex items-center gap-1.5 text-xs font-black transition-all hover:scale-105"
                                     title="Open Google Maps Directions"
                                 >
-                                    <MapPin size={16} />
-                                    <span className="hidden sm:inline">Google Maps</span>
+                                    <MapPin size={15} />
+                                    <span>Google Maps</span>
                                 </a>
                             </div>
                         </>

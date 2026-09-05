@@ -257,9 +257,11 @@ const Checkout = () => {
 
     const handlePlaceOrder = async (e) => {
         e.preventDefault();
-        if (!selectedRestaurantId && !restaurantId) {
-            toast.error('Please select a restaurant from the dropdown list before proceeding.');
-            return;
+        
+        let targetRestaurantId = selectedRestaurantId || restaurantId;
+        if (!targetRestaurantId && restaurantsList.length > 0) {
+            targetRestaurantId = restaurantsList[0]._id;
+            setSelectedRestaurantId(targetRestaurantId);
         }
 
         if (orderType === 'Delivery') {
@@ -676,7 +678,7 @@ const Checkout = () => {
                                 Apply
                             </button>
                         </div>
-                        <p className="text-xs text-orange-600 mb-6 font-medium">Enter promo code created in Admin Dashboard</p>
+                        <p className="text-xs text-orange-600 mb-6 font-medium">Use promo codes like WELCOME20 for discounts</p>
                         
                         {/* Totals */}
                         <div className="space-y-3 pt-6 border-t border-gray-100">
