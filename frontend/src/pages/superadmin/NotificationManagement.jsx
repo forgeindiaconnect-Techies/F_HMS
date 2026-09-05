@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Bell, Plus, Trash2, CheckCheck, Send, AlertCircle, Info, Megaphone, X } from 'lucide-react';
+import { Bell, Plus, Trash2, CheckCheck, Send, AlertCircle, Info, Megaphone, X, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const TYPE_CONFIG = {
@@ -126,8 +127,11 @@ const NotificationManagement = () => {
 
             {/* Notification List */}
             <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+                <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
                     <h3 className="font-bold text-gray-900 text-lg">All Notifications</h3>
+                    <Link to="/super-admin/notifications" className="flex items-center gap-2 text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors bg-blue-50 hover:bg-blue-100 px-3.5 py-2 rounded-xl">
+                        View Full Notifications <ArrowRight size={14} />
+                    </Link>
                 </div>
                 <div className="divide-y divide-gray-50">
                     {notifications.length === 0 ? (

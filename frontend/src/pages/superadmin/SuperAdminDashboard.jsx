@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Store, Users, CreditCard, ShoppingBag, TrendingUp, AlertCircle, ArrowRight, X, MessageSquare, Trash2, ShieldCheck, CheckCircle } from 'lucide-react';
+import { Store, Users, CreditCard, ShoppingBag, TrendingUp, AlertCircle, ArrowRight, X, MessageSquare, Trash2, ShieldCheck, CheckCircle, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -17,6 +17,7 @@ const SuperAdminDashboard = () => {
     const [verifications, setVerifications] = useState([]);
     const [inquiries, setInquiries] = useState([]);
     const [tickets, setTickets] = useState([]);
+    const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [viewingRestaurant, setViewingRestaurant] = useState(null);
 
@@ -32,18 +33,20 @@ const SuperAdminDashboard = () => {
 
     const fetchDashboardData = async () => {
         try {
-            const [statsRes, restsRes, verifsRes, inquiriesRes, ticketsRes] = await Promise.all([
+            const [statsRes, restsRes, verifsRes, inquiriesRes, ticketsRes, notifsRes] = await Promise.all([
                 api.get('/super-admin/stats'),
                 api.get('/super-admin/restaurants'),
                 api.get('/restaurants/verification/all'),
                 api.get('/inquiries/admin'),
-                api.get('/super-admin/tickets')
+                api.get('/super-admin/tickets'),
+                api.get('/super-admin/notifications')
             ]);
             setStats(statsRes.data);
             setRestaurants(restsRes.data || []);
             setVerifications(verifsRes.data || []);
             setInquiries(inquiriesRes.data || []);
             setTickets(ticketsRes.data || []);
+            setNotifications(notifsRes.data || []);
         } catch (error) {
             console.error("Failed to fetch super admin data", error);
         } finally {
@@ -512,8 +515,44 @@ const SuperAdminDashboard = () => {
                                 </td>
                             </tr>
                         )}
-                    </tbody>
-                </table>
+        {/* System & Broadcast Notifications Preview */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <div>
+                    <h2 className="text-xl font-bold text-gray-900 font-sans tracking-tight">Recent System Notifications</h2>
+                    <p className="text-sm text-gray-500 mt-1">Platform broadcasts, system alerts, and automated activity notifications.</p>
+                </div>
+                <Link to="/super-admin/notifications" className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl">
+                    View Full Notifications <ArrowRight size={16} />
+                </Link>
+            </div>
+            <div className="divide-y divide-gray-50">
+                {notifications.slice(0, 5).map(n => (
+                    <div key={n._id} className="p-5 flex items-start justify-between gap-4 hover:bg-gray-50/50 transition-colors">
+                        <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <Bell size={18} />
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <h4 className="font-bold text-gray-900 text-sm">{n.title}</h4>
+                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 uppercase tracking-wider">{n.type || 'System'}</span>
+                                    {!n.read && <span className="w-2 h-2 rounded-full bg-blue-500"></span>}
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">{n.desc}</p>
+                            </div>
+                        </div>
+                        <span className="text-[11px] text-gray-400 font-medium shrink-0">
+                            {new Date(n.createdAt).toLocaleDateString()}
+                        </span>
+                    </div>
+                ))}
+                {notifications.length === 0 && (
+                    <div className="p-10 text-center">
+                        <Bell className="mx-auto text-gray-300 mb-3" size={40} />
+                        <p className="text-gray-500 font-medium text-lg">No notifications found.</p>
+                    </div>
+                )}
             </div>
         </div>
 
