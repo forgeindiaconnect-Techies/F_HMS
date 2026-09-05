@@ -4,18 +4,29 @@ import { useLocation } from 'react-router-dom';
 
 const FloatingVideoWidget = () => {
     const location = useLocation();
-    const [isVisible, setIsVisible] = useState(true);
+    const [isSkipped, setIsSkipped] = useState(() => {
+        return localStorage.getItem('demo_video_skipped') === 'true';
+    });
     const [isMuted, setIsMuted] = useState(true);
     const [isPlaying, setIsPlaying] = useState(true);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [isHeroVisible, setIsHeroVisible] = useState(true);
     const videoRef = useRef(null);
 
     useEffect(() => {
         const handleFullscreenChange = () => {
             setIsFullscreen(!!document.fullscreenElement);
         };
+        const handleOpenDemo = () => {
+            setIsSkipped(false);
+            setIsPlaying(true);
+        };
+        window.addEventListener('open_demo_video', handleOpenDemo);
         document.addEventListener('fullscreenchange', handleFullscreenChange);
-        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+        return () => {
+            window.removeEventListener('open_demo_video', handleOpenDemo);
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+        };
     }, []);
 
     // Only display on the main restaurant landing page ('/')
@@ -23,18 +34,20 @@ const FloatingVideoWidget = () => {
         return null;
     }
 
+    const handleSkip = (e) => {
+        if (e) e.stopPropagation();
+        localStorage.setItem('demo_video_skipped', 'true');
+        setIsSkipped(true);
+    };
 
-    if (!isVisible) {
-        return (
-            <button
-                onClick={() => setIsVisible(true)}
-                className="fixed bottom-5 right-5 z-50 bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] text-white p-3 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all flex items-center gap-2 font-bold text-xs cursor-pointer group"
-                title="Show Demo Video"
-            >
-                <Play size={16} className="fill-white" />
-                <span className="hidden sm:inline">Watch Demo</span>
-            </button>
-        );
+    const handleWatchDemo = () => {
+        localStorage.removeItem('demo_video_skipped');
+        setIsSkipped(false);
+        setIsPlaying(true);
+    };
+
+    if (isSkipped) {
+        return null;
     }
 
     const togglePlay = () => {
@@ -90,7 +103,7 @@ const FloatingVideoWidget = () => {
                         <Maximize size={14} />
                     </button>
                     <button
-                        onClick={() => setIsVisible(false)}
+                        onClick={handleSkip}
                         className="flex items-center gap-1 bg-[#FF2D55] hover:bg-[#E0264A] text-white px-2.5 py-1 rounded-lg text-xs font-black shadow-lg transition-all active:scale-95 cursor-pointer"
                         title="Skip Video"
                     >

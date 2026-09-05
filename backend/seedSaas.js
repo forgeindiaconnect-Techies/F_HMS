@@ -258,14 +258,6 @@ const importData = async () => {
                 category: 'Pizza',
                 restaurantId: restaurant._id,
                 image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=800&auto=format&fit=crop'
-            },
-            {
-                name: 'Garlic Bread',
-                description: 'Toasted with garlic butter',
-                price: 6,
-                category: 'Sides',
-                restaurantId: restaurant._id,
-                image: 'https://images.unsplash.com/photo-1573140247632-f8fd74997d5c?q=80&w=800&auto=format&fit=crop'
             }
         ]);
 

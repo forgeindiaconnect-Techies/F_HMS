@@ -21,7 +21,6 @@ export const getItemImage = (item) => {
     
     const imgUrl = item.image || item.img || item.imageUrl || '';
     if (imgUrl && (imgUrl.startsWith('http://') || imgUrl.startsWith('https://') || imgUrl.startsWith('/') || imgUrl.startsWith('data:image'))) {
-        // Exclude HTML webpage links that aren't image files
         if (!imgUrl.includes('.html') && !imgUrl.includes('/recipe-')) {
             return imgUrl;
         }

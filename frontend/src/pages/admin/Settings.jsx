@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import { Save, Upload, User, ArrowRight, Camera, X } from 'lucide-react';
+import { Save, Upload, User, ArrowRight, Camera, X, Sun } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
+import { ThemeSettingCard } from '../../components/ThemeToggle';
 
 const Settings = () => {
     const { api, fetchRestaurant } = useAuth();
@@ -153,16 +153,29 @@ const Settings = () => {
                 <div className="w-full md:w-64 shrink-0">
                     <nav className="flex flex-col gap-1">
                         <button 
+                            type="button"
                             onClick={() => setActiveTab('profile')}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-sm ${activeTab === 'profile' ? 'bg-green-50 text-green-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-sm ${activeTab === 'profile' ? 'bg-green-50 text-green-700 font-bold' : 'text-gray-600 hover:bg-gray-50'}`}
                         >
                             <User size={18} /> Profile
+                        </button>
+                        <button 
+                            type="button"
+                            onClick={() => setActiveTab('appearance')}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-sm ${activeTab === 'appearance' ? 'bg-green-50 text-green-700 font-bold' : 'text-gray-600 hover:bg-gray-50'}`}
+                        >
+                            <Sun size={18} /> Appearance & Theme
                         </button>
                     </nav>
                 </div>
 
                 {/* Settings Form Area */}
                 <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
+                    {activeTab === 'appearance' ? (
+                        <div className="space-y-6">
+                            <ThemeSettingCard />
+                        </div>
+                    ) : (
                     <form onSubmit={handleSubmit}>
                         
                         {activeTab === 'profile' && (
@@ -361,6 +374,7 @@ const Settings = () => {
                             </button>
                         </div>
                     </form>
+                    )}
                 </div>
             </div>
         </div>

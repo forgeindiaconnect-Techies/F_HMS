@@ -267,14 +267,15 @@ const RestaurantDetails = () => {
                                                      <Plus size={14} /> Add
                                                  </button>
                                              </div>
-                                             <div className="w-32 h-32 shrink-0 relative overflow-hidden rounded-xl bg-gray-100 dark:bg-slate-800">
-                                                 <img 
-                                                     src={getItemImage(item)} 
-                                                     onError={(e) => { e.target.onerror = null; e.target.src = getItemImage({ ...item, image: '' }); }}
-                                                     alt={item.name} 
-                                                     className="w-full h-full object-cover rounded-xl shadow-sm group-hover:scale-105 transition-transform duration-300" 
-                                                 />
-                                             </div>
+                                             {item.image && item.image.trim() !== '' && !item.image.includes('unsplash.com') && !item.image.includes('placeholder') && (
+                                                 <div className="w-32 h-32 shrink-0 relative overflow-hidden rounded-xl bg-gray-100 dark:bg-slate-800">
+                                                     <img 
+                                                         src={item.image} 
+                                                         alt={item.name} 
+                                                         className="w-full h-full object-cover rounded-xl shadow-sm group-hover:scale-105 transition-transform duration-300" 
+                                                     />
+                                                 </div>
+                                             )}
                                          </div>
                                     ))}
                                 </div>

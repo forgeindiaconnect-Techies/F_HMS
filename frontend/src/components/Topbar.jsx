@@ -442,27 +442,6 @@ const Topbar = () => {
                 </div>
 
                 <div className="flex items-center gap-2 md:gap-6 ml-2 md:ml-0 shrink-0">
-                    {/* Theme Toggle Button */}
-                    <button
-                        type="button"
-                        onClick={() => {
-                            const isDarkNow = document.documentElement.classList.contains('dark');
-                            if (isDarkNow) {
-                                document.documentElement.classList.remove('dark');
-                                localStorage.setItem('theme', 'light');
-                            } else {
-                                document.documentElement.classList.add('dark');
-                                localStorage.setItem('theme', 'dark');
-                            }
-                            window.dispatchEvent(new Event('toggle-theme'));
-                        }}
-                        className="p-2 text-gray-500 dark:text-slate-400 hover:text-amber-500 dark:hover:text-emerald-400 transition-colors cursor-pointer rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800"
-                        title="Toggle Light / Dark Mode"
-                    >
-                        <Sun size={20} className="hidden dark:block text-amber-400" />
-                        <Moon size={20} className="block dark:hidden text-slate-600" />
-                    </button>
-
                     {/* Notifications */}
                     <Link
                         to={

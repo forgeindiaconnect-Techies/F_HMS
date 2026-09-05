@@ -12,14 +12,14 @@ const getTypeIcon = (type) => {
 };
 
 const getStatusColor = (status, isDelayed) => {
-    if (isDelayed) return 'bg-red-50 border-red-200';
+    if (isDelayed) return 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/60';
     switch (status) {
         case 'Pending':
-        case 'New': return 'bg-blue-50 border-blue-200';
-        case 'Preparing': return 'bg-orange-50 border-orange-200';
-        case 'Ready': return 'bg-green-50 border-green-200';
-        case 'Dispatched': return 'bg-purple-50 border-purple-200';
-        default: return 'bg-gray-50 border-gray-200';
+        case 'New': return 'bg-blue-50/70 dark:bg-slate-900 border-blue-200 dark:border-slate-800';
+        case 'Preparing': return 'bg-orange-50/70 dark:bg-slate-900 border-orange-200 dark:border-slate-800';
+        case 'Ready': return 'bg-green-50/70 dark:bg-slate-900 border-green-200 dark:border-slate-800';
+        case 'Dispatched': return 'bg-purple-50/70 dark:bg-slate-900 border-purple-200 dark:border-slate-800';
+        default: return 'bg-gray-50 dark:bg-slate-900 border-gray-200 dark:border-slate-800';
     }
 };
 
@@ -76,7 +76,9 @@ const ManagerOrderMonitoring = () => {
             diffMins,
             isDelayed,
             displayTime: `${diffMins} mins ago`,
-            itemsCount: order.orderItems ? order.orderItems.reduce((acc, item) => acc + item.quantity, 0) : 0
+            itemsCount: (order.orderItems || order.items) 
+                ? (order.orderItems || order.items).reduce((acc, item) => acc + (item.quantity || item.qty || 1), 0) 
+                : 0
         };
     });
 
@@ -103,14 +105,14 @@ const ManagerOrderMonitoring = () => {
         <div className="p-8 max-w-[1600px] mx-auto space-y-6 font-sans relative">
             <div className="flex justify-between items-end mb-6">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>Live Order Monitoring</h2>
-                    <p className="text-gray-500 text-sm mt-1">Real-time view of all branch orders and fulfillment bottlenecks.</p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>Live Order Monitoring</h2>
+                    <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Real-time view of all branch orders and fulfillment bottlenecks.</p>
                 </div>
                 <div className="flex gap-2">
-                    <span className={`flex items-center gap-2 text-sm font-bold px-3 py-1.5 rounded-lg border ${delayedCount > 0 ? 'text-red-600 bg-red-50 border-red-200' : 'text-gray-500 bg-gray-50 border-gray-200'}`}>
+                    <span className={`flex items-center gap-2 text-sm font-bold px-3 py-1.5 rounded-lg border ${delayedCount > 0 ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800' : 'text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-900 border-gray-200 dark:border-slate-800'}`}>
                         <AlertCircle size={16} /> {delayedCount} Delayed Order{delayedCount !== 1 ? 's' : ''}
                     </span>
-                    <span className="flex items-center gap-2 text-sm font-bold text-green-700 bg-green-50 px-3 py-1.5 rounded-lg border border-green-200">
+                    <span className="flex items-center gap-2 text-sm font-bold text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950/40 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-800">
                         <CheckCircle2 size={16} /> {completedTodayCount} Completed Today
                     </span>
                 </div>
@@ -122,7 +124,7 @@ const ManagerOrderMonitoring = () => {
                     <button 
                         key={filter} 
                         onClick={() => setFilterStatus(filter)}
-                        className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-colors ${filterStatus === filter ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                        className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-colors ${filterStatus === filter ? 'bg-gray-900 dark:bg-green-600 text-white' : 'bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
                     >
                         {filter === 'All' ? 'All Active' : filter} ({counts[filter] || 0})
                     </button>
@@ -132,11 +134,11 @@ const ManagerOrderMonitoring = () => {
             {/* Active Orders Grid */}
             {loading ? (
                 <div className="flex justify-center p-20">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
                 </div>
             ) : filteredOrders.length === 0 ? (
-                <div className="text-center p-20 bg-white rounded-2xl border border-gray-100">
-                    <p className="text-gray-500 font-medium">No live orders matching this filter.</p>
+                <div className="text-center p-20 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800">
+                    <p className="text-gray-500 dark:text-slate-400 font-medium">No live orders matching this filter.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -150,35 +152,35 @@ const ManagerOrderMonitoring = () => {
                             
                             <div className="flex justify-between items-start mb-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-white rounded-lg shadow-sm text-gray-700">
+                                    <div className="p-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm text-gray-700 dark:text-slate-200 border border-gray-100 dark:border-slate-700">
                                         {getTypeIcon(order.orderType)}
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-gray-900 text-lg">#{order._id.substring(order._id.length - 6).toUpperCase()}</h3>
-                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                                        <h3 className="font-bold text-gray-900 dark:text-white text-lg">#{order._id.substring(order._id.length - 6).toUpperCase()}</h3>
+                                        <p className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide">
                                             {order.orderType || 'Dine-in'} 
                                             {order.table && ` • Table ${order.table.number || order.table}`}
                                         </p>
                                     </div>
                                 </div>
-                                <h3 className="font-bold text-gray-900 text-lg">₹{(order.totalPrice || 0).toFixed(2)}</h3>
+                                <h3 className="font-bold text-gray-900 dark:text-white text-lg">₹{(order.totalPrice || 0).toFixed(2)}</h3>
                             </div>
 
-                            <div className="flex items-center justify-between mb-4 bg-white/60 rounded-xl p-3 border border-white/40">
+                            <div className="flex items-center justify-between mb-4 bg-white/70 dark:bg-slate-800/80 rounded-xl p-3 border border-white/50 dark:border-slate-700/60">
                                 <div className="flex items-center gap-2">
                                     <span className={`w-2.5 h-2.5 rounded-full ${order.status === 'Pending' ? 'bg-blue-500' : order.status === 'Preparing' ? 'bg-orange-500' : order.status === 'Ready' ? 'bg-green-500' : 'bg-purple-500'}`}></span>
-                                    <span className="text-sm font-bold text-gray-700">{order.status}</span>
+                                    <span className="text-sm font-bold text-gray-700 dark:text-slate-200">{order.status}</span>
                                 </div>
-                                <div className="flex items-center gap-1.5 text-sm font-medium text-gray-600">
-                                    <Clock size={14} className={order.isDelayed ? 'text-red-500' : 'text-gray-400'} /> {order.displayTime}
+                                <div className="flex items-center gap-1.5 text-sm font-medium text-gray-600 dark:text-slate-300">
+                                    <Clock size={14} className={order.isDelayed ? 'text-red-500' : 'text-gray-400 dark:text-slate-400'} /> {order.displayTime}
                                 </div>
                             </div>
 
                             <div className="flex justify-between items-center pt-2">
-                                <p className="text-sm font-medium text-gray-600">{order.itemsCount} Items</p>
+                                <p className="text-sm font-medium text-gray-600 dark:text-slate-300">{order.itemsCount} Items</p>
                                 <button 
                                     onClick={() => setSelectedOrder(order)}
-                                    className="text-sm font-bold text-gray-900 bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-1"
+                                    className="text-sm font-bold text-gray-900 dark:text-white bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-sm flex items-center gap-1 cursor-pointer"
                                 >
                                     Action <ChevronRight size={14} />
                                 </button>

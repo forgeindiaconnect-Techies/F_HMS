@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
-import { LayoutGrid, ClipboardList, Clock, CheckSquare, LogOut, Utensils } from 'lucide-react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { 
+    LayoutGrid, ClipboardList, Clock, CheckSquare, LogOut, Utensils, Settings,
+    Flame, ChefHat, UserCheck, TrendingUp, Bell, Star
+} from 'lucide-react';
 import clsx from 'clsx';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const WaiterSidebar = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { logout, restaurant } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [logoError, setLogoError] = useState(false);
@@ -45,15 +48,32 @@ const WaiterSidebar = () => {
         {
             title: 'Floor Operations',
             items: [
-                { name: 'Table Layout', path: '/waiter', icon: LayoutGrid },
+                { name: 'Waiter Desk Overview', path: '/waiter', icon: LayoutGrid },
+                { name: 'Priority Action Center', path: '/waiter/priority-actions', icon: Flame, badge: 'Urgent', badgeColor: 'bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300' },
+                { name: 'Interactive Floor Plan', path: '/waiter/floor-plan', icon: Utensils },
                 { name: 'Active Orders', path: '/waiter/orders', icon: ClipboardList },
             ]
         },
         {
-            title: 'Service',
+            title: 'Kitchen & Service',
             items: [
-                { name: 'Pending Serves', path: '/waiter/pending', icon: Clock },
-                { name: 'Completed', path: '/waiter/completed', icon: CheckSquare },
+                { name: 'Kitchen Live Tracker', path: '/waiter/kitchen-tracker', icon: ChefHat, badge: 'Live', badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300' },
+                { name: 'Food Ready / Pending', path: '/waiter/pending', icon: Clock, badge: 'Hot', badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300' },
+                { name: 'Completed Serves', path: '/waiter/completed', icon: CheckSquare },
+            ]
+        },
+        {
+            title: 'Shift & Performance',
+            items: [
+                { name: 'Today\'s Tasks', path: '/waiter/tasks', icon: CheckSquare },
+                { name: 'Performance & Tips', path: '/waiter/performance', icon: TrendingUp },
+                { name: 'Shift Status & Clock-In', path: '/waiter/shift-status', icon: UserCheck },
+            ]
+        },
+        {
+            title: 'Preferences',
+            items: [
+                { name: 'Dashboard Settings', path: '/waiter/settings', icon: Settings },
             ]
         }
     ];
@@ -83,7 +103,7 @@ const WaiterSidebar = () => {
                         />
                     </div>
                 ) : (
-                    <div className="bg-green-600 text-white p-2 rounded-xl shadow-sm shrink-0">
+                    <div className="bg-emerald-600 text-white p-2 rounded-xl shadow-sm shrink-0">
                         <Utensils size={24} />
                     </div>
                 )}
@@ -91,7 +111,7 @@ const WaiterSidebar = () => {
                     <h1 className="text-lg font-bold text-gray-900 dark:text-slate-100 leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
                         {restaurant && restaurant.name ? restaurant.name : 'RestoSys'}
                     </h1>
-                    <span className="text-[10px] font-bold text-green-600 dark:text-green-400 uppercase tracking-wider block mt-0.5">Service</span>
+                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block mt-0.5">Floor Desk</span>
                 </div>
             </div>
             
@@ -105,23 +125,30 @@ const WaiterSidebar = () => {
                         <div className="space-y-1">
                             {group.items.map((item) => {
                                 const Icon = item.icon;
+                                const isActive = item.path === '/waiter' 
+                                    ? location.pathname === '/waiter' 
+                                    : location.pathname === item.path;
+
                                 return (
                                     <NavLink
                                         key={item.name}
                                         to={item.path}
                                         end={item.path === '/waiter'}
-                                        className={({ isActive }) => clsx(
-                                            "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm",
+                                        className={clsx(
+                                            "flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm",
                                             isActive 
-                                            ? "bg-green-50 dark:bg-green-950/50 text-green-700 dark:text-green-300 font-bold" 
+                                            ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-bold" 
                                             : "text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-100 font-medium"
                                         )}
                                     >
-                                        {({ isActive }) => (
-                                            <>
-                                                <Icon size={18} className={clsx("transition-transform group-hover:scale-110", "shrink-0", isActive ? "text-green-600 dark:text-green-400" : "text-gray-400 dark:text-slate-500")} />
-                                                <span>{item.name}</span>
-                                            </>
+                                        <div className="flex items-center gap-3 truncate">
+                                            <Icon size={18} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-emerald-600 dark:text-emerald-400" : "text-gray-400 dark:text-slate-500")} />
+                                            <span className="truncate">{item.name}</span>
+                                        </div>
+                                        {item.badge && (
+                                            <span className={clsx("text-[10px] font-black uppercase px-2 py-0.5 rounded-md shrink-0 ml-1", item.badgeColor)}>
+                                                {item.badge}
+                                            </span>
                                         )}
                                     </NavLink>
                                 );
@@ -144,3 +171,4 @@ const WaiterSidebar = () => {
 };
 
 export default WaiterSidebar;
+

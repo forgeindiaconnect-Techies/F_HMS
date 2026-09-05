@@ -111,7 +111,7 @@ const CustomerMenu = () => {
         const storedCustomer = localStorage.getItem('restosys_customer_user');
         if (!storedCustomer) {
             toast.error('Please sign in or create an account to place your order.');
-            navigate('/customer/login', { state: { from: location } });
+            navigate('/customer/login', { state: { from: `${location.pathname}${location.search}` } });
             return;
         }
 

@@ -54,9 +54,6 @@ const ManagerDashboard = () => {
 
   return (
     <div className="w-full max-w-[1600px] mx-auto space-y-6">
-      
-      {/* Shift Attendance Clock In / Clock Out Status Bar */}
-      <StaffShiftClockWidget userRole="Branch Manager" userName={user?.name || "Manager"} />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

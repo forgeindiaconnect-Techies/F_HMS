@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Settings, Save, Bell, Lock, User, Store } from 'lucide-react';
+import { Settings, Save, Bell, Lock, User, Store, Sun } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { ThemeSettingCard } from '../../components/ThemeToggle';
 
 const ManagerSettings = () => {
     const [activeTab, setActiveTab] = useState('My Profile');
@@ -9,8 +10,8 @@ const ManagerSettings = () => {
         <div className="p-8 max-w-[1600px] mx-auto space-y-6 font-sans">
             <div className="flex justify-between items-end mb-6">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>Branch Settings</h2>
-                    <p className="text-gray-500 text-sm mt-1">Manage local branch preferences, notifications, and profile.</p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>Branch Settings</h2>
+                    <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Manage local branch preferences, notifications, and profile.</p>
                 </div>
                 <button onClick={() => toast.success('Saving settings...')} className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold transition-colors flex items-center gap-2 text-sm shadow-md">
                     <Save size={18} /> Save Changes
@@ -23,16 +24,20 @@ const ManagerSettings = () => {
                     {[
                         { name: 'My Profile', icon: User },
                         { name: 'Branch Details', icon: Store },
+                        { name: 'Appearance & Theme', icon: Sun },
                         { name: 'Security', icon: Lock },
                     ].map((item, i) => (
-                        <button key={i} onClick={() => setActiveTab(item.name)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-bold text-sm ${activeTab === item.name ? 'bg-green-50 text-green-700' : 'bg-white text-gray-600 hover:bg-gray-50 border border-transparent hover:border-gray-200'}`}>
-                            <item.icon size={18} className={activeTab === item.name ? 'text-green-600' : 'text-gray-400'} /> {item.name}
+                        <button key={i} onClick={() => setActiveTab(item.name)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-bold text-sm ${activeTab === item.name ? 'bg-green-50 dark:bg-slate-800 text-green-700 dark:text-green-400' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 border border-transparent hover:border-gray-200'}`}>
+                            <item.icon size={18} className={activeTab === item.name ? 'text-green-600 dark:text-green-400' : 'text-gray-400'} /> {item.name}
                         </button>
                     ))}
                 </div>
 
                 {/* Settings Content */}
                 <div className="lg:col-span-2 space-y-6">
+                    {activeTab === 'Appearance & Theme' && (
+                        <ThemeSettingCard />
+                    )}
                     
                     {activeTab === 'My Profile' && (
                         <>

@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { getItemImage } from '../../utils/imageHelper';
 import toast from 'react-hot-toast';
+import { ThemeSettingCard } from '../../components/ThemeToggle';
 
 const CustomerDashboard = () => {
     const { user, logout, api } = useCustomerAuth();
@@ -500,22 +501,23 @@ const CustomerDashboard = () => {
                                     {dashboardFoods
                                         .filter(food => (selectedCategory === 'All' || food.category === selectedCategory) &&
                                                         (selectedRestaurantFilter === 'All' || food.restaurantName === selectedRestaurantFilter))
-                                        .map(food => (
-                                            <div 
-                                                key={food.id}
-                                                className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all group flex flex-col justify-between"
-                                            >
-                                                <div className="relative aspect-[4/3] w-full overflow-hidden">
-                                                    <img 
-                                                        src={getItemImage(food)} 
-                                                        onError={(e) => { e.target.onerror = null; e.target.src = getItemImage({ ...food, image: '' }); }}
-                                                        alt={food.name} 
-                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                    />
-                                                    <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[10px] font-bold text-gray-800 px-2.5 py-1 rounded-lg uppercase tracking-wider">
-                                                        {food.category}
-                                                    </span>
-                                                </div>
+                                        .map(food => {
+                                            return (
+                                                <div 
+                                                    key={food.id}
+                                                    className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all group flex flex-col justify-between"
+                                                >
+                                                    <div className="relative aspect-[4/3] w-full overflow-hidden">
+                                                        <img 
+                                                            src={getItemImage(food)} 
+                                                            onError={(e) => { e.target.onerror = null; e.target.src = getFallbackFoodImage(food.name || food.category); }}
+                                                            alt={food.name} 
+                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                        />
+                                                        <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[10px] font-bold text-gray-800 px-2.5 py-1 rounded-lg uppercase tracking-wider">
+                                                            {food.category}
+                                                        </span>
+                                                    </div>
                                                 <div className="p-4 flex flex-col flex-1 justify-between gap-3">
                                                     <div>
                                                         <div className="mb-1">
@@ -541,7 +543,8 @@ const CustomerDashboard = () => {
                                                     </div>
                                                 </div>
                                             </div>
-                                        ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
@@ -925,14 +928,39 @@ const CustomerDashboard = () => {
                                                 <p className="font-bold text-gray-900 text-sm">₹100 Store Credit</p>
                                                 <p className="text-xs text-gray-500 mt-1">Requires 1000 points</p>
                                             </div>
-                                            <button className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-xl shadow-sm">Redeem</button>
+                                            <button 
+                                                onClick={() => {
+                                                    if (userPoints >= 1000) {
+                                                        setUserPoints(prev => prev - 1000);
+                                                        setWalletBalance(prev => prev + 100);
+                                                        toast.success('Successfully redeemed 1000 points for ₹100 Store Credit!');
+                                                    } else {
+                                                        toast.error('Insufficient points! You need 1000 points.');
+                                                    }
+                                                }}
+                                                className="px-4 py-2 bg-orange-600 hover:bg-orange-700 active:scale-95 transition-all text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer"
+                                            >
+                                                Redeem
+                                            </button>
                                         </div>
                                         <div className="border border-gray-150 p-4 rounded-2xl flex justify-between items-center bg-gray-50/50">
                                             <div>
                                                 <p className="font-bold text-gray-900 text-sm">Free Double Cheese Pizza</p>
                                                 <p className="text-xs text-gray-500 mt-1">Requires 2000 points</p>
                                             </div>
-                                            <button className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-xl shadow-sm">Redeem</button>
+                                            <button 
+                                                onClick={() => {
+                                                    if (userPoints >= 2000) {
+                                                        setUserPoints(prev => prev - 2000);
+                                                        toast.success('🎉 Voucher for Free Double Cheese Pizza redeemed!');
+                                                    } else {
+                                                        toast.error('Insufficient points! You need 2000 points.');
+                                                    }
+                                                }}
+                                                className="px-4 py-2 bg-orange-600 hover:bg-orange-700 active:scale-95 transition-all text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer"
+                                            >
+                                                Redeem
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -996,7 +1024,6 @@ const CustomerDashboard = () => {
                         <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
                             <div>
                                 <h3 className="text-xl font-bold text-gray-900">Offers & Coupons</h3>
-                                <p className="text-gray-500 text-xs mt-0.5">Apply promotional codes created in Admin Dashboard and get discounts</p>
                             </div>
 
                             {loadingOffers ? (
@@ -1106,11 +1133,13 @@ const CustomerDashboard = () => {
 
                     {/* Tab: Profile & Settings */}
                     {activeTab === 'profile' && (
-                        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-900">Profile & Settings</h3>
-                                <p className="text-gray-500 text-xs mt-0.5">Manage your contact name, phone, address, and password settings</p>
-                            </div>
+                        <div className="space-y-6">
+                            <ThemeSettingCard />
+                            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
+                                <div>
+                                    <h3 className="text-lg font-bold text-gray-900">Profile & Settings</h3>
+                                    <p className="text-gray-500 text-xs mt-0.5">Manage your contact name, phone, address, and password settings</p>
+                                </div>
 
                             <form onSubmit={handleUpdateProfile} className="space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1195,6 +1224,7 @@ const CustomerDashboard = () => {
                                 </div>
                             </form>
                         </div>
+                    </div>
                     )}
 
                 </div>

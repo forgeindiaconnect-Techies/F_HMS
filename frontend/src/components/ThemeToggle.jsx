@@ -1,25 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Sun, Moon } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { Sun, Moon, Check } from 'lucide-react';
 
-const ThemeToggle = () => {
-    const location = useLocation();
-    const isChefRoute = location.pathname.startsWith('/chef');
-
-    const [isDark, setIsDark] = useState(() => {
+export const ThemeSettingCard = () => {
+    const [theme, setTheme] = useState(() => {
         const stored = localStorage.getItem('theme');
-        if (stored) {
-            return stored === 'dark';
-        }
-        return document.documentElement.classList.contains('dark');
+        if (stored) return stored;
+        return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
     });
 
-    const toggleTheme = () => {
-        setIsDark(prev => !prev);
-    };
-
-    useEffect(() => {
-        if (isDark) {
+    const applyTheme = (mode) => {
+        setTheme(mode);
+        if (mode === 'dark') {
             document.documentElement.classList.add('dark');
             localStorage.setItem('theme', 'dark');
         } else {
@@ -27,47 +18,82 @@ const ThemeToggle = () => {
             localStorage.setItem('theme', 'light');
         }
         window.dispatchEvent(new Event('theme-changed'));
-    }, [isDark]);
+        window.dispatchEvent(new Event('toggle-theme'));
+    };
 
     useEffect(() => {
-        // Sync when the Topbar's theme button fires either event
-        const syncFromDOM = () => {
-            const currentlyDark = document.documentElement.classList.contains('dark');
-            setIsDark(currentlyDark);
+        const syncTheme = () => {
+            const isDarkNow = document.documentElement.classList.contains('dark');
+            setTheme(isDarkNow ? 'dark' : 'light');
         };
-        window.addEventListener('toggle-theme', syncFromDOM);
-        window.addEventListener('theme-changed', syncFromDOM);
+        window.addEventListener('theme-changed', syncTheme);
+        window.addEventListener('toggle-theme', syncTheme);
         return () => {
-            window.removeEventListener('toggle-theme', syncFromDOM);
-            window.removeEventListener('theme-changed', syncFromDOM);
+            window.removeEventListener('theme-changed', syncTheme);
+            window.removeEventListener('toggle-theme', syncTheme);
         };
     }, []);
 
-    const dashboardPrefixes = [
-        '/admin',
-        '/manager',
-        '/chef',
-        '/waiter',
-        '/cashier',
-        '/super-admin',
-        '/delivery/dashboard',
-        '/profile'
-    ];
-    const isDashboardRoute = dashboardPrefixes.some(prefix => location.pathname.startsWith(prefix));
-
-    if (!isDashboardRoute) return null;
-
     return (
-        <div className="fixed bottom-6 right-6 z-[9999] font-sans">
-            <button
-                onClick={toggleTheme}
-                className="w-12 h-12 rounded-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-amber-500 dark:text-emerald-400 flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all cursor-pointer"
-                title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            >
-                {isDark ? <Sun size={22} className="text-amber-400" /> : <Moon size={22} className="text-slate-700" />}
-            </button>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-4">
+                <div>
+                    <h3 className="font-bold text-gray-900 dark:text-white text-base">Appearance & Theme</h3>
+                    <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Customize your workspace visual mode across all dashboard screens.</p>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                {/* Light Mode Selector Card */}
+                <button
+                    type="button"
+                    onClick={() => applyTheme('light')}
+                    className={`relative p-5 rounded-2xl border-2 flex items-center gap-4 transition-all cursor-pointer text-left ${
+                        theme === 'light'
+                            ? 'border-green-600 bg-green-50/50 dark:bg-green-950/20 shadow-sm'
+                            : 'border-gray-200 dark:border-slate-800 hover:border-gray-300 dark:hover:border-slate-700 bg-gray-50/50 dark:bg-slate-800/40'
+                    }`}
+                >
+                    <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+                        <Sun size={24} />
+                    </div>
+                    <div className="flex-1">
+                        <p className="font-bold text-gray-900 dark:text-white text-sm">Light Theme</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400">Clean, crisp light background</p>
+                    </div>
+                    {theme === 'light' && (
+                        <div className="w-6 h-6 rounded-full bg-green-600 text-white flex items-center justify-center shrink-0">
+                            <Check size={14} />
+                        </div>
+                    )}
+                </button>
+
+                {/* Dark Mode Selector Card */}
+                <button
+                    type="button"
+                    onClick={() => applyTheme('dark')}
+                    className={`relative p-5 rounded-2xl border-2 flex items-center gap-4 transition-all cursor-pointer text-left ${
+                        theme === 'dark'
+                            ? 'border-green-600 bg-slate-900 text-white shadow-sm'
+                            : 'border-gray-200 dark:border-slate-800 hover:border-gray-300 dark:hover:border-slate-700 bg-slate-900/90 text-white'
+                    }`}
+                >
+                    <div className="w-12 h-12 rounded-xl bg-slate-800 text-indigo-400 flex items-center justify-center shrink-0">
+                        <Moon size={24} />
+                    </div>
+                    <div className="flex-1">
+                        <p className="font-bold text-white text-sm">Dark Theme</p>
+                        <p className="text-xs text-slate-400">Premium low-light dark workspace</p>
+                    </div>
+                    {theme === 'dark' && (
+                        <div className="w-6 h-6 rounded-full bg-green-600 text-white flex items-center justify-center shrink-0">
+                            <Check size={14} />
+                        </div>
+                    )}
+                </button>
+            </div>
         </div>
     );
 };
 
-export default ThemeToggle;
+export default ThemeSettingCard;

@@ -137,14 +137,14 @@ const ManagerInventory = () => {
         <div className="p-8 max-w-[1600px] mx-auto space-y-6 font-sans">
             <div className="flex justify-between items-end mb-6">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>Branch Inventory Monitor</h2>
-                    <p className="text-gray-500 text-sm mt-1">Track local branch stock levels and manage reorder requests.</p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>Branch Inventory Monitor</h2>
+                    <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Track local branch stock levels and manage reorder requests.</p>
                 </div>
                 <div className="flex gap-3">
-                    <button onClick={() => setShowCreateModal(true)} className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-xl font-medium transition-colors text-sm shadow-sm">
+                    <button onClick={() => setShowCreateModal(true)} className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-700 dark:text-slate-200 px-4 py-2.5 rounded-xl font-medium transition-colors text-sm shadow-sm cursor-pointer">
                         + Create Item
                     </button>
-                    <button onClick={() => { setSelectedItemForAction(null); setActionType('reorder'); setShowReorderModal(true); }} className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold transition-colors flex items-center gap-2 text-sm shadow-md">
+                    <button onClick={() => { setSelectedItemForAction(null); setActionType('reorder'); setShowReorderModal(true); }} className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold transition-colors flex items-center gap-2 text-sm shadow-md cursor-pointer">
                         <ShoppingCart size={18} /> New Reorder
                     </button>
                 </div>
@@ -152,37 +152,37 @@ const ManagerInventory = () => {
 
             {/* Status Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-red-50/50 border border-red-200 p-5 rounded-2xl flex items-center gap-4 shadow-sm">
-                    <div className="p-3 bg-red-100 text-red-600 rounded-xl"><AlertTriangle size={24} /></div>
+                <div className="bg-red-50/50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 p-5 rounded-2xl flex items-center gap-4 shadow-sm">
+                    <div className="p-3 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 rounded-xl"><AlertTriangle size={24} /></div>
                     <div>
-                        <p className="text-xs text-red-600 font-bold uppercase tracking-wider">Critical / Low Stock</p>
-                        <h3 className="text-2xl font-extrabold text-red-900">{criticalCount} Items</h3>
+                        <p className="text-xs text-red-600 dark:text-red-400 font-bold uppercase tracking-wider">Critical / Low Stock</p>
+                        <h3 className="text-2xl font-extrabold text-red-900 dark:text-red-300">{criticalCount} Items</h3>
                     </div>
                 </div>
-                <div className="bg-green-50/50 border border-green-200 p-5 rounded-2xl flex items-center gap-4 shadow-sm">
-                    <div className="p-3 bg-green-100 text-green-600 rounded-xl"><CheckCircle2 size={24} /></div>
+                <div className="bg-green-50/50 dark:bg-green-950/20 border border-green-200 dark:border-green-900/50 p-5 rounded-2xl flex items-center gap-4 shadow-sm">
+                    <div className="p-3 bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 rounded-xl"><CheckCircle2 size={24} /></div>
                     <div>
-                        <p className="text-xs text-green-700 font-bold uppercase tracking-wider">Healthy Stock</p>
-                        <h3 className="text-2xl font-extrabold text-green-900">{healthyCount} Items</h3>
+                        <p className="text-xs text-green-700 dark:text-green-400 font-bold uppercase tracking-wider">Healthy Stock</p>
+                        <h3 className="text-2xl font-extrabold text-green-900 dark:text-green-300">{healthyCount} Items</h3>
                     </div>
                 </div>
-                <div className="bg-blue-50/50 border border-blue-200 p-5 rounded-2xl flex items-center gap-4 shadow-sm">
-                    <div className="p-3 bg-blue-100 text-blue-600 rounded-xl"><ArrowDown size={24} /></div>
+                <div className="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/50 p-5 rounded-2xl flex items-center gap-4 shadow-sm">
+                    <div className="p-3 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-xl"><ArrowDown size={24} /></div>
                     <div>
-                        <p className="text-xs text-blue-700 font-bold uppercase tracking-wider">Active Inventory Records</p>
-                        <h3 className="text-2xl font-extrabold text-blue-900">{inventory.length} total</h3>
+                        <p className="text-xs text-blue-700 dark:text-blue-400 font-bold uppercase tracking-wider">Active Inventory Records</p>
+                        <h3 className="text-2xl font-extrabold text-blue-900 dark:text-blue-300">{inventory.length} total</h3>
                     </div>
                 </div>
             </div>
 
             {/* Inventory List */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                    <h3 className="font-bold text-gray-900 text-lg" style={{ fontFamily: 'Poppins, sans-serif' }}>Stock Alerts & Status</h3>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden">
+                <div className="p-5 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-950/50">
+                    <h3 className="font-bold text-gray-900 dark:text-white text-lg" style={{ fontFamily: 'Poppins, sans-serif' }}>Stock Alerts & Status</h3>
                     <select 
                         value={categoryFilter}
                         onChange={(e) => setCategoryFilter(e.target.value)}
-                        className="bg-white border border-gray-200 text-sm font-medium rounded-lg px-3 py-1.5 focus:outline-none focus:border-green-500"
+                        className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm font-medium rounded-lg px-3 py-1.5 focus:outline-none focus:border-green-500"
                     >
                         <option value="All Categories">All Categories</option>
                         <option value="Meat">Meat</option>
@@ -198,47 +198,47 @@ const ManagerInventory = () => {
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
                     </div>
                 ) : filteredInventory.length === 0 ? (
-                    <div className="p-12 text-center text-gray-400">
+                    <div className="p-12 text-center text-gray-400 dark:text-slate-400">
                         No inventory items found. Add items to track stock.
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left whitespace-nowrap">
-                            <thead className="bg-gray-50/50 border-b border-gray-100">
+                            <thead className="bg-gray-50/50 dark:bg-slate-950/50 border-b border-gray-100 dark:border-slate-800">
                                 <tr>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Item Name</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Category</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Current Stock</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Min Required</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Action</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Item Name</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Category</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Current Stock</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Min Required</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider text-right">Action</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100">
+                            <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
                                 {filteredInventory.map((item, i) => (
-                                    <tr key={i} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-6 py-4 font-bold text-gray-900 text-sm">{item.itemName}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">{item.category}</td>
-                                        <td className={`px-6 py-4 font-extrabold text-sm ${item.status === 'Critical' ? 'text-red-600' : item.status === 'Low Stock' ? 'text-orange-600' : 'text-gray-900'}`}>
+                                    <tr key={i} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <td className="px-6 py-4 font-bold text-gray-900 dark:text-white text-sm">{item.itemName}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-400">{item.category}</td>
+                                        <td className={`px-6 py-4 font-extrabold text-sm ${item.status === 'Critical' ? 'text-red-600 dark:text-red-400' : item.status === 'Low Stock' ? 'text-orange-600 dark:text-orange-400' : 'text-gray-900 dark:text-white'}`}>
                                             {item.stockStr}
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">{item.minStr}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-400">{item.minStr}</td>
                                         <td className="px-6 py-4">
                                             <span className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
-                                                item.status === 'In Stock' ? 'bg-green-100 text-green-700' :
-                                                item.status === 'Critical' ? 'bg-red-100 text-red-700' :
-                                                'bg-orange-100 text-orange-700'
+                                                item.status === 'In Stock' ? 'bg-green-100 dark:bg-green-950/60 text-green-700 dark:text-green-400' :
+                                                item.status === 'Critical' ? 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400' :
+                                                'bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-400'
                                             }`}>
                                                 {item.status}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             {item.status !== 'In Stock' ? (
-                                                <button onClick={() => { setSelectedItemForAction(item); setActionType('reorder'); setQuantityInput(''); setShowReorderModal(true); }} className="text-sm font-bold text-white bg-green-600 px-4 py-1.5 rounded-lg hover:bg-green-700 transition-colors shadow-sm">
+                                                <button onClick={() => { setSelectedItemForAction(item); setActionType('reorder'); setQuantityInput(''); setShowReorderModal(true); }} className="text-sm font-bold text-white bg-green-600 px-4 py-1.5 rounded-lg hover:bg-green-700 transition-colors shadow-sm cursor-pointer">
                                                     Reorder
                                                 </button>
                                             ) : (
-                                                <button onClick={() => { setSelectedItemForAction(item); setActionType('adjust'); setQuantityInput(item.quantity.toString()); setShowReorderModal(true); }} className="text-sm font-bold text-gray-500 bg-gray-100 px-4 py-1.5 rounded-lg hover:bg-gray-200 transition-colors">
+                                                <button onClick={() => { setSelectedItemForAction(item); setActionType('adjust'); setQuantityInput(item.quantity.toString()); setShowReorderModal(true); }} className="text-sm font-bold text-gray-500 dark:text-slate-300 bg-gray-100 dark:bg-slate-800 px-4 py-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors cursor-pointer">
                                                     Adjust
                                                 </button>
                                             )}

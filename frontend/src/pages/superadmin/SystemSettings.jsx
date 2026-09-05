@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Settings, Globe, Mail, Percent, Shield, AlertTriangle, Moon, Sun, Save, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { ThemeSettingCard } from '../../components/ThemeToggle';
 
 const SystemSettings = () => {
     const [saving, setSaving] = useState(false);
@@ -89,6 +90,9 @@ const SystemSettings = () => {
                     <p className="font-bold text-sm">Platform is currently in Maintenance Mode. All user-facing pages will show a maintenance notice.</p>
                 </div>
             )}
+
+            {/* Theme & Appearance Settings Card */}
+            <ThemeSettingCard />
 
             {/* General */}
             <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">

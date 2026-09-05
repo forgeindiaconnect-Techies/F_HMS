@@ -38,6 +38,7 @@ import TicketDetails from './pages/admin/TicketDetails';
 import SupportKnowledgeBase from './pages/admin/SupportKnowledgeBase';
 import SupportAnnouncements from './pages/admin/SupportAnnouncements';
 import WaiterDashboard from './pages/staff/WaiterDashboard';
+import WaiterSettings from './pages/staff/WaiterSettings';
 import ChefDashboard from './pages/staff/ChefDashboard';
 import ChefPrepList from './pages/staff/ChefPrepList';
 import ChefRecipes from './pages/staff/ChefRecipes';
@@ -62,6 +63,12 @@ import WaiterLayout from './layouts/WaiterLayout';
 import WaiterActiveOrders from './pages/staff/WaiterActiveOrders';
 import WaiterPendingServes from './pages/staff/WaiterPendingServes';
 import WaiterCompleted from './pages/staff/WaiterCompleted';
+import WaiterPriorityActions from './pages/staff/WaiterPriorityActions';
+import WaiterFloorPlan from './pages/staff/WaiterFloorPlan';
+import WaiterKitchenTracker from './pages/staff/WaiterKitchenTracker';
+import WaiterTasks from './pages/staff/WaiterTasks';
+import WaiterPerformance from './pages/staff/WaiterPerformance';
+import WaiterShiftStatus from './pages/staff/WaiterShiftStatus';
 import CashierLayout from './layouts/CashierLayout';
 import CashierOverview from './pages/staff/CashierOverview';
 import CashierDashboard from './pages/staff/CashierDashboard';
@@ -129,7 +136,6 @@ function App() {
   return (
     <>
       <Toaster position="top-right" />
-      <ThemeToggle />
       <FloatingVideoWidget />
 
       <Routes>
@@ -267,9 +273,16 @@ function App() {
         {/* Staff Dashboards */}
         <Route path="/waiter" element={<ProtectedRoute allowedRoles={['Waiter', 'RestaurantAdmin', 'BranchManager']}><WaiterLayout /></ProtectedRoute>}>
           <Route index element={<WaiterDashboard />} />
+          <Route path="priority-actions" element={<WaiterPriorityActions />} />
+          <Route path="floor-plan" element={<WaiterFloorPlan />} />
           <Route path="orders" element={<WaiterActiveOrders />} />
+          <Route path="kitchen-tracker" element={<WaiterKitchenTracker />} />
           <Route path="pending" element={<WaiterPendingServes />} />
           <Route path="completed" element={<WaiterCompleted />} />
+          <Route path="tasks" element={<WaiterTasks />} />
+          <Route path="performance" element={<WaiterPerformance />} />
+          <Route path="shift-status" element={<WaiterShiftStatus />} />
+          <Route path="settings" element={<WaiterSettings />} />
         </Route>
         
         <Route path="/chef" element={<ProtectedRoute allowedRoles={['Chef', 'RestaurantAdmin', 'BranchManager']}><ChefLayout /></ProtectedRoute>}>

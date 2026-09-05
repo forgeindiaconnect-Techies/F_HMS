@@ -149,7 +149,7 @@ const Menu = () => {
                             const isWished = wishlist.some(w => (w._id || w.id) === (item._id || item.id));
                             
                             return (
-                                <div key={item._id || item.id} className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 group flex flex-col">
+                                <div key={item._id || item.id} className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 group flex flex-col relative">
                                     <div className="relative h-56 overflow-hidden">
                                         <img 
                                             src={getItemImage(item)} 
@@ -164,7 +164,7 @@ const Menu = () => {
                                         
                                         {/* Tags */}
                                         <div className="absolute top-4 left-4 flex flex-col gap-2">
-                                            {item.tags.map(tag => (
+                                            {item.tags?.map(tag => (
                                                 <span key={tag} className="px-2.5 py-1 bg-white/90 backdrop-blur-sm text-gray-900 text-[10px] font-bold uppercase tracking-wider rounded-lg flex items-center gap-1 shadow-sm">
                                                     {tag === 'Spicy' && <Flame size={12} className="text-red-500" />}
                                                     {tag === 'Vegetarian' && <Leaf size={12} className="text-green-500" />}
@@ -174,17 +174,17 @@ const Menu = () => {
                                                 </span>
                                             ))}
                                         </div>
-                                        
-                                        {/* Wishlist Button */}
-                                        <button 
-                                            onClick={() => toggleWishlist(item)}
-                                            className={`absolute top-4 right-4 p-2.5 rounded-full backdrop-blur-md transition-all shadow-sm ${
-                                                isWished ? 'bg-red-500 text-white' : 'bg-white/80 text-gray-600 hover:bg-white'
-                                            }`}
-                                        >
-                                            <Heart size={18} className={isWished ? 'fill-white' : ''} />
-                                        </button>
                                     </div>
+
+                                    {/* Wishlist Button */}
+                                    <button 
+                                        onClick={() => toggleWishlist(item)}
+                                        className={`absolute top-4 right-4 p-2.5 rounded-full backdrop-blur-md transition-all shadow-sm z-10 ${
+                                            isWished ? 'bg-red-500 text-white' : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200'
+                                        }`}
+                                    >
+                                        <Heart size={18} className={isWished ? 'fill-white' : ''} />
+                                    </button>
                                     
                                     <div className="p-6 flex flex-col flex-1">
                                         <div className="flex justify-between items-start mb-2">

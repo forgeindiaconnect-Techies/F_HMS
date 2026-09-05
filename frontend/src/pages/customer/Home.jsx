@@ -588,6 +588,30 @@ const Home = () => {
                     {/* Subtle Overlay for header contrast while keeping video crystal clear */}
                     <div className="absolute inset-0 bg-slate-950/20 pointer-events-none" />
                     <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-transparent to-black/50 pointer-events-none" />
+
+                    {/* Watermark Cover Watch Demo Button inside Hero Video */}
+                    <div className="absolute bottom-6 right-6 sm:bottom-8 sm:right-8 z-30 pointer-events-auto">
+                        <button
+                            onClick={() => {
+                                localStorage.removeItem('demo_video_skipped');
+                                window.dispatchEvent(new Event('open_demo_video'));
+                            }}
+                            className="flex items-center gap-3 bg-[#0f172a]/95 hover:bg-[#0f172a] text-white px-5 py-3 rounded-full border border-slate-700/80 shadow-2xl shadow-black/80 backdrop-blur-xl transition-all duration-300 hover:scale-105 active:scale-95 group cursor-pointer"
+                            title="Watch Demo Video"
+                        >
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#FF2D55] to-[#FF6A00] flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform shrink-0">
+                                <Utensils size={16} className="fill-white" />
+                            </div>
+                            <div className="flex flex-col text-left pr-1">
+                                <span className="text-sm font-black tracking-wide text-white group-hover:text-[#FF2D55] transition-colors leading-snug">
+                                    Watch Demo
+                                </span>
+                                <span className="text-[11px] font-bold text-slate-400 leading-none">
+                                    Interactive Video
+                                </span>
+                            </div>
+                        </button>
+                    </div>
                 </div>
 
                 <div className="flex flex-col items-center justify-center my-auto relative z-10 max-w-5xl mx-auto pt-4 space-y-6">
@@ -660,45 +684,57 @@ const Home = () => {
                     
                     {/* Top Feature Cards Bar */}
                     <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="bg-white border border-slate-200 p-5 rounded-[20px] shadow-sm flex items-start gap-4 text-left hover:-translate-y-1 hover:border-[#FF2D55]/40 transition-all duration-300 group cursor-pointer">
+                        <Link 
+                            to="/features/details?module=intelligence&feature=0"
+                            className="bg-white border border-slate-200 p-5 rounded-[20px] shadow-sm flex items-start gap-4 text-left hover:-translate-y-1 hover:border-[#FF2D55]/40 hover:shadow-md transition-all duration-300 group cursor-pointer"
+                        >
                             <div className="p-3 bg-[#FF2D55]/10 border border-[#FF2D55]/20 text-[#FF2D55] rounded-xl shrink-0 group-hover:scale-110 transition-transform">
                                 <Calculator size={22} />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-900 text-sm mb-1">POS Management</h4>
+                                <h4 className="font-bold text-slate-900 text-sm mb-1 group-hover:text-[#FF2D55] transition-colors">POS Management</h4>
                                 <p className="text-xs text-slate-600 font-medium leading-relaxed">Manage orders, billing, and tables effortlessly.</p>
                             </div>
-                        </div>
+                        </Link>
 
-                        <div className="bg-white border border-slate-200 p-5 rounded-[20px] shadow-sm flex items-start gap-4 text-left hover:-translate-y-1 hover:border-[#FF6A00]/40 transition-all duration-300 group cursor-pointer">
+                        <Link 
+                            to="/features/details?module=manager&feature=2"
+                            className="bg-white border border-slate-200 p-5 rounded-[20px] shadow-sm flex items-start gap-4 text-left hover:-translate-y-1 hover:border-[#FF6A00]/40 hover:shadow-md transition-all duration-300 group cursor-pointer"
+                        >
                             <div className="p-3 bg-[#FF6A00]/10 border border-[#FF6A00]/20 text-[#FF6A00] rounded-xl shrink-0 group-hover:scale-110 transition-transform">
                                 <Boxes size={22} />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-900 text-sm mb-1">Smart Inventory</h4>
+                                <h4 className="font-bold text-slate-900 text-sm mb-1 group-hover:text-[#FF6A00] transition-colors">Smart Inventory</h4>
                                 <p className="text-xs text-slate-600 font-medium leading-relaxed">Track ingredients in real-time and reduce waste.</p>
                             </div>
-                        </div>
+                        </Link>
 
-                        <div className="bg-white border border-slate-200 p-5 rounded-[20px] shadow-sm flex items-start gap-4 text-left hover:-translate-y-1 hover:border-[#FF2D55]/40 transition-all duration-300 group cursor-pointer">
+                        <Link 
+                            to="/features/details?module=intelligence&feature=1"
+                            className="bg-white border border-slate-200 p-5 rounded-[20px] shadow-sm flex items-start gap-4 text-left hover:-translate-y-1 hover:border-[#FF2D55]/40 hover:shadow-md transition-all duration-300 group cursor-pointer"
+                        >
                             <div className="p-3 bg-[#FF2D55]/10 border border-[#FF2D55]/20 text-[#FF2D55] rounded-xl shrink-0 group-hover:scale-110 transition-transform">
                                 <LineChart size={22} />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-900 text-sm mb-1">Boost Revenue</h4>
+                                <h4 className="font-bold text-slate-900 text-sm mb-1 group-hover:text-[#FF2D55] transition-colors">Boost Revenue</h4>
                                 <p className="text-xs text-slate-600 font-medium leading-relaxed">Increase sales with analytics and customer insights.</p>
                             </div>
-                        </div>
+                        </Link>
 
-                        <div className="bg-white border border-slate-200 p-5 rounded-[20px] shadow-sm flex items-start gap-4 text-left hover:-translate-y-1 hover:border-[#FF6A00]/40 transition-all duration-300 group cursor-pointer">
+                        <Link 
+                            to="/features/details?module=orders&feature=1"
+                            className="bg-white border border-slate-200 p-5 rounded-[20px] shadow-sm flex items-start gap-4 text-left hover:-translate-y-1 hover:border-[#FF6A00]/40 hover:shadow-md transition-all duration-300 group cursor-pointer"
+                        >
                             <div className="p-3 bg-[#FF6A00]/10 border border-[#FF6A00]/20 text-[#FF6A00] rounded-xl shrink-0 group-hover:scale-110 transition-transform">
                                 <QrCode size={22} />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-900 text-sm mb-1">Dine-In QR Ordering</h4>
+                                <h4 className="font-bold text-slate-900 text-sm mb-1 group-hover:text-[#FF6A00] transition-colors">Dine-In QR Ordering</h4>
                                 <p className="text-xs text-slate-600 font-medium leading-relaxed">Let guests order and pay directly from their phone.</p>
                             </div>
-                        </div>
+                        </Link>
                     </div>
 
                     {/* Enterprise Platform Summary Grid */}
