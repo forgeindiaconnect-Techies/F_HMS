@@ -145,7 +145,7 @@ server.listen(PORT, '0.0.0.0', () => {
     
     // Automated Self-Ping Keep-Alive service for Render free tier (pings every 4 minutes to prevent sleep)
     setInterval(() => {
-        https.get('https://f-hms-1.onrender.com/api/health', (res) => {
+        https.get('https://f-hms.onrender.com/api/health', (res) => {
             console.log(`[Keep-Alive] Render server ping status: ${res.statusCode}`);
         }).on('error', () => {
             // Silently swallow network glitches
