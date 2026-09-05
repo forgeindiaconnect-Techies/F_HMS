@@ -18,12 +18,18 @@ export const getStats = async (req, res) => {
         const totalUsers = await User.countDocuments();
         const totalOrders = await Order.countDocuments();
 
-        // Calculate total revenue from all paid orders
-        const revenueAggregation = await Order.aggregate([
-            { $match: { isPaid: true } },
-            { $group: { _id: null, totalRevenue: { $sum: "$totalPrice" } } }
-        ]);
-        const totalRevenue = revenueAggregation.length > 0 ? revenueAggregation[0].totalRevenue : 0;
+        // Calculate real MRR from active restaurant subscriptions
+        const activeSubscribedRestaurants = await Restaurant.find({ 
+            approvalStatus: 'Approved', 
+            'subscription.status': 'Active' 
+        });
+
+        let totalRevenue = 0;
+        activeSubscribedRestaurants.forEach(r => {
+            const planPrice = r.subscription?.price || (r.subscription?.plan === 'Enterprise' ? 199 : r.subscription?.plan === 'Pro' ? 99 : 49);
+            const cycle = r.subscription?.billingCycle || 'monthly';
+            totalRevenue += cycle === 'yearly' ? Math.round(planPrice / 12) : planPrice;
+        });
 
         res.json({
             totalRestaurants,
