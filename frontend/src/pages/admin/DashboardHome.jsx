@@ -3,7 +3,6 @@ import { TrendingUp, Users, ShoppingBag, DollarSign } from 'lucide-react';
 import StatCard from '../../components/StatCard';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { useAuth } from '../../context/AuthContext';
-import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 
 const DashboardHome = () => {
     const { api } = useAuth();
@@ -74,9 +73,6 @@ const DashboardHome = () => {
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100" style={{ fontFamily: 'Poppins, sans-serif' }}>Business Overview</h2>
                 <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Welcome back! Manage your overall business operations, sales, staff, and customer orders.</p>
             </div>
-
-            {/* Shift Attendance Clock In / Clock Out Status Bar */}
-            <StaffShiftClockWidget userRole="Admin / Restaurant Owner" userName="Owner" />
 
             {/* KPI Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
