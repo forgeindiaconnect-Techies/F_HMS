@@ -84,7 +84,7 @@ const ManagerFeedback = () => {
                         filterType === 'All' ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
                     }`}
                 >
-                    <Filter size={16} /> All Reviews ({feedback.length})
+                    All Reviews ({feedback.length})
                 </button>
                 {[
                     { id: 'Requires Action', label: `Requires Action (${feedback.filter(f => f.status === 'Requires Action').length})` },
