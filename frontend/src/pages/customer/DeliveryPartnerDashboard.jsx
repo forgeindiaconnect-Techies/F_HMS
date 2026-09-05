@@ -748,114 +748,83 @@ const DeliveryPartnerDashboard = () => {
                 </div>
             )}
 
-            {/* MOCK MAPS / DIRECTIONS MODAL */}
+            {/* GOOGLE MAPS DIRECTIONS & OPENSTREETMAP TRACKING MODAL */}
             {showNavigationModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-[2.5rem] shadow-2xl w-full max-w-sm relative text-center space-y-5">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-[2.5rem] shadow-2xl w-full max-w-lg relative text-center space-y-5">
                         
-                        {/* Simulated Route Header */}
+                        {/* Header with GPS Status */}
                         <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-950/60 p-3 rounded-2xl border border-slate-200 dark:border-slate-800">
-                            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-extrabold text-[10px] uppercase tracking-widest">
-                                <Navigation size={14} className={isSimulating ? "animate-bounce text-emerald-500" : "text-slate-400"} />
-                                <span className={isSimulating ? "text-emerald-600 dark:text-emerald-400" : "text-slate-500"}>
-                                    {isSimulating ? "GPS Tracking Active" : "GPS Signal Idle"}
-                                </span>
+                            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-extrabold text-[11px] uppercase tracking-widest">
+                                <Navigation size={16} className={isSimulating ? "animate-bounce text-emerald-500" : "text-emerald-500"} />
+                                <span>OpenStreetMap Live Tracking</span>
                             </div>
-                            <span className="text-[10px] bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded font-black text-slate-700 dark:text-slate-400 uppercase tracking-widest font-mono">
-                                {simulatedProgress === 100 ? 'Arrived' : `${simulatedProgress}%`}
-                            </span>
-                        </div>
-
-                        {/* Coordinates Box */}
-                        <div className="bg-slate-50 dark:bg-slate-950 border border-emerald-500/20 p-4 rounded-2xl flex items-center gap-3 text-left">
-                            <Navigation size={18} className="text-emerald-500 dark:text-emerald-400 shrink-0 transform rotate-45" />
-                            <div className="font-semibold text-xs space-y-1">
-                                <p className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Simulated Geolocation</p>
-                                <p className="text-slate-900 dark:text-slate-100 font-black font-mono">
-                                    Lat: {simLat.toFixed(6)}° N
-                                </p>
-                                <p className="text-slate-900 dark:text-slate-100 font-black font-mono">
-                                    Lng: {simLng.toFixed(6)}° E
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Progress Route Map Graphic */}
-                        <div className="space-y-3 text-left">
-                            <div className="flex justify-between text-[9px] font-black text-slate-500 uppercase tracking-widest">
-                                <span>Kitchen Counter</span>
-                                <span>Customer Home</span>
-                            </div>
-                            
-                            {/* Visual Progress Bar */}
-                            <div className="w-full bg-slate-100 dark:bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-200 dark:border-slate-800">
-                                <div 
-                                    className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500" 
-                                    style={{ width: `${simulatedProgress}%` }}
-                                />
-                            </div>
-
-                            {/* Journey stats */}
-                            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/60 text-center">
-                                <div>
-                                    <span className="text-[8px] text-slate-500 uppercase tracking-wider block">Remaining</span>
-                                    <strong className="text-xs font-black text-slate-900 dark:text-slate-200">{simDistance} km</strong>
-                                </div>
-                                <div>
-                                    <span className="text-[8px] text-slate-500 uppercase tracking-wider block">Est. Time</span>
-                                    <strong className="text-xs font-black text-slate-900 dark:text-slate-200">{simEta} Mins</strong>
-                                </div>
-                                <div>
-                                    <span className="text-[8px] text-slate-500 uppercase tracking-wider block">Speed</span>
-                                    <strong className="text-xs font-black text-emerald-600 dark:text-emerald-400 font-mono">
-                                        {!isSimulating && simulatedProgress === 0 ? '0 km/h' : simulatedProgress === 100 ? '0 km/h' : '32 km/h'}
-                                    </strong>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Leg description */}
-                        <div className="text-[10px] bg-slate-50 dark:bg-slate-950/40 p-2.5 rounded-xl text-slate-700 dark:text-slate-400 font-bold border border-slate-200 dark:border-slate-800 min-h-[40px] flex items-center justify-center text-center">
-                            {!isSimulating && simulatedProgress === 0 ? (
-                                <span className="text-slate-500">🚦 Ready to start route navigation simulation.</span>
-                            ) : (
-                                <>
-                                    {simulatedProgress === 0 && "📍 Starting navigation run..."}
-                                    {simulatedProgress > 0 && simulatedProgress <= 25 && "🛵 Departing Hub. Navigating main bypass road."}
-                                    {simulatedProgress > 25 && simulatedProgress <= 60 && "🛵 Cruising. Traffic flow normal."}
-                                    {simulatedProgress > 60 && simulatedProgress <= 90 && "🛵 Entering customer neighborhood zone."}
-                                    {simulatedProgress > 90 && simulatedProgress < 100 && "🛵 Searching for building block & door number."}
-                                    {simulatedProgress === 100 && "🎉 Arrived! Deliver order to customer counter."}
-                                </>
-                            )}
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="space-y-2">
-                            {!isSimulating && simulatedProgress === 0 && (
-                                <button
-                                    type="button"
-                                    onClick={() => setIsSimulating(true)}
-                                    className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-650 text-white font-black rounded-xl text-xs uppercase tracking-wider transition-colors shadow-lg shadow-emerald-500/20 cursor-pointer"
-                                >
-                                    Start Navigation
-                                </button>
-                            )}
-
-                            {isSimulating && (
-                                <div className="py-2 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold animate-pulse uppercase tracking-widest font-black">
-                                    Simulating Rider Transit...
-                                </div>
-                            )}
-
                             <button
-                                type="button"
                                 onClick={() => setShowNavigationModal(false)}
-                                className="w-full py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-black rounded-xl text-xs uppercase tracking-wider transition-colors cursor-pointer"
+                                className="p-1 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:opacity-80 transition-opacity"
                             >
-                                Close Directions
+                                <X size={16} />
                             </button>
                         </div>
+
+                        {/* Interactive OpenStreetMap iframe View */}
+                        <div className="w-full h-64 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 relative bg-slate-950 shadow-inner">
+                            <iframe
+                                title="OpenStreetMap Live Tracking"
+                                width="100%"
+                                height="100%"
+                                frameBorder="0"
+                                scrolling="no"
+                                marginHeight="0"
+                                marginWidth="0"
+                                src={`https://www.openstreetmap.org/export/embed.html?bbox=${simLng - 0.02}%2C${simLat - 0.02}%2C${simLng + 0.02}%2C${simLat + 0.02}&layer=mapnik&marker=${simLat}%2C${simLng}`}
+                                className="w-full h-full filter contrast-[1.05]"
+                            />
+                            
+                            {/* Overlay Live Marker Badge */}
+                            <div className="absolute top-3 left-3 bg-slate-900/90 text-white px-3 py-1.5 rounded-xl border border-white/10 text-[10px] font-black backdrop-blur-md shadow-lg flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                <span>Rider GPS: {simLat.toFixed(4)}°, {simLng.toFixed(4)}°</span>
+                            </div>
+                        </div>
+
+                        {/* Google Maps Directions Action Buttons */}
+                        <div className="grid grid-cols-2 gap-3 pt-1">
+                            <a
+                                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(assignedOrders[0]?.shippingAddress?.address || 'Restaurant Customer Destination')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 active:scale-95 transition-all cursor-pointer"
+                            >
+                                <MapPin size={16} /> Google Maps Delivery
+                            </a>
+
+                            <a
+                                href={`https://www.google.com/maps/dir/?api=1&destination=13.0827,80.2707`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="py-3 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer"
+                            >
+                                <Navigation size={16} /> Google Maps Pickup
+                            </a>
+                        </div>
+
+                        {/* Journey Stats */}
+                        <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/60 text-center">
+                            <div>
+                                <span className="text-[9px] text-slate-500 uppercase tracking-wider block font-bold">Distance</span>
+                                <strong className="text-xs font-black text-slate-900 dark:text-slate-200">{simDistance} km</strong>
+                            </div>
+                            <div>
+                                <span className="text-[9px] text-slate-500 uppercase tracking-wider block font-bold">EST. ETA</span>
+                                <strong className="text-xs font-black text-slate-900 dark:text-slate-200">{simEta} Mins</strong>
+                            </div>
+                            <div>
+                                <span className="text-[9px] text-slate-500 uppercase tracking-wider block font-bold">Map Engine</span>
+                                <strong className="text-xs font-black text-emerald-600 dark:text-emerald-400 font-mono">OpenStreetMap</strong>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             )}

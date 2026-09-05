@@ -135,29 +135,39 @@ const OrderTracking = () => {
                     </div>
                 )}
 
-                {/* Progress Map Area */}
+                {/* Progress Map Area (OpenStreetMap + Google Maps Directions Integration) */}
                 <div className="bg-slate-950 rounded-3xl h-80 mb-8 relative overflow-hidden shadow-lg flex flex-col border border-slate-900">
-                    {/* Grid Background */}
-                    <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:25px_25px]"></div>
-                    
                     {!isSelfPickup ? (
                         <>
-                            {/* SVG Route lines */}
-                            <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                                <line x1="20%" y1="40%" x2="80%" y2="70%" stroke="#334155" strokeWidth="3" strokeDasharray="6,6" strokeLinecap="round" />
+                            {/* OpenStreetMap Interactive Tile Layer */}
+                            <iframe
+                                title="OpenStreetMap Live Tracking"
+                                width="100%"
+                                height="100%"
+                                frameBorder="0"
+                                scrolling="no"
+                                marginHeight="0"
+                                marginWidth="0"
+                                src={`https://www.openstreetmap.org/export/embed.html?bbox=80.25%2C13.06%2C80.29%2C13.10&layer=mapnik&marker=13.0827%2C80.2707`}
+                                className="w-full h-full opacity-60 filter invert-[0.9] hue-rotate-180 contrast-125"
+                            />
+
+                            {/* Overlay SVG Route Line */}
+                            <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
+                                <line x1="20%" y1="40%" x2="80%" y2="70%" stroke="#475569" strokeWidth="4" strokeDasharray="6,6" strokeLinecap="round" />
                                 <line 
                                     x1="20%" 
                                     y1="40%" 
                                     x2={`${20 + currentProgress * 0.6}%`} 
                                     y2={`${40 + currentProgress * 0.3}%`} 
                                     stroke="#10b981" 
-                                    strokeWidth="3" 
+                                    strokeWidth="4" 
                                     strokeLinecap="round" 
                                 />
                             </svg>
 
                             {/* Restaurant Store Hub Pin */}
-                            <div className="absolute top-[40%] left-[20%] -translate-x-1/2 -translate-y-1/2 text-center group z-10">
+                            <div className="absolute top-[40%] left-[20%] -translate-x-1/2 -translate-y-1/2 text-center group z-20">
                                 <div className="relative flex h-10 w-10 items-center justify-center bg-gradient-to-tr from-amber-500 to-orange-500 text-white rounded-2xl shadow-xl border-2 border-slate-900 cursor-pointer hover:scale-110 transition-transform">
                                     <div className="absolute inset-0 rounded-2xl bg-orange-500 animate-ping opacity-25"></div>
                                     <Store size={18} />
@@ -166,7 +176,7 @@ const OrderTracking = () => {
                             </div>
 
                             {/* Customer Home Pin */}
-                            <div className="absolute top-[70%] left-[80%] -translate-x-1/2 -translate-y-1/2 text-center group z-10">
+                            <div className="absolute top-[70%] left-[80%] -translate-x-1/2 -translate-y-1/2 text-center group z-20">
                                 <div className="relative flex h-10 w-10 items-center justify-center bg-purple-600 text-white rounded-full shadow-xl border-2 border-slate-900 cursor-pointer hover:scale-110 transition-transform">
                                     <div className="absolute inset-0 rounded-full bg-purple-500 animate-ping opacity-25"></div>
                                     <MapPin size={18} />
@@ -177,7 +187,7 @@ const OrderTracking = () => {
                             {/* Delivery Executive Person & Bike Marker */}
                             {(isRiderAssigned || isRiderMoving || isDelivered) ? (
                                 <div 
-                                    className="absolute -translate-x-1/2 -translate-y-1/2 text-center z-25 transition-all duration-300 ease-out"
+                                    className="absolute -translate-x-1/2 -translate-y-1/2 text-center z-30 transition-all duration-300 ease-out"
                                     style={{
                                         left: `${20 + currentProgress * 0.6}%`,
                                         top: `${40 + currentProgress * 0.3}%`
@@ -195,7 +205,7 @@ const OrderTracking = () => {
                                     </span>
                                 </div>
                             ) : (
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-slate-900/90 border border-slate-800 p-4 rounded-2xl flex items-center gap-3 backdrop-blur shadow-xl">
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 bg-slate-900/90 border border-slate-800 p-4 rounded-2xl flex items-center gap-3 backdrop-blur shadow-xl">
                                     <span className="relative flex h-3 w-3">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
                                         <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
@@ -206,10 +216,10 @@ const OrderTracking = () => {
                                 </div>
                             )}
 
-                            {/* Live HUD Card (Top‑Left) */}
-                            {(isRiderMoving || isDelivered) && (
-                                <div className="absolute top-4 left-4 z-20 bg-slate-900/90 border border-slate-800 p-3 rounded-2xl backdrop-blur text-left shadow-lg flex flex-col gap-1 min-w-[140px]">
-                                    <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest leading-none">Live Tracking</span>
+                            {/* Live HUD & Google Maps Directions Link (Top‑Left) */}
+                            <div className="absolute top-4 left-4 z-30 flex items-center gap-2">
+                                <div className="bg-slate-900/95 border border-slate-800 p-3 rounded-2xl backdrop-blur text-left shadow-xl flex flex-col gap-1 min-w-[140px]">
+                                    <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest leading-none">OpenStreetMap GPS</span>
                                     <h4 className="text-base font-extrabold text-white leading-none mt-1">
                                         {isDelivered ? '0 mins' : `${Math.max(1, Math.ceil(((order.deliveryDistance || 3.2) * 3) * (1 - riderProgress / 100)))} mins`}
                                     </h4>
@@ -217,7 +227,18 @@ const OrderTracking = () => {
                                         {isDelivered ? 'Arrived at Destination' : `${Math.max(0.1, Number(((order.deliveryDistance || 3.2) * (1 - riderProgress / 100)).toFixed(1)))} km remaining`}
                                     </p>
                                 </div>
-                            )}
+
+                                <a
+                                    href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(order.shippingAddress?.address || 'Customer Home')}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-2xl border border-blue-500/40 shadow-xl backdrop-blur flex items-center gap-1.5 text-xs font-black transition-transform hover:scale-105"
+                                    title="Open Google Maps Directions"
+                                >
+                                    <MapPin size={16} />
+                                    <span className="hidden sm:inline">Google Maps</span>
+                                </a>
+                            </div>
                         </>
                     ) : (
                         /* Self-Pickup Tracking Area */
