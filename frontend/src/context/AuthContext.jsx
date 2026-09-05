@@ -43,13 +43,14 @@ api.interceptors.response.use(
             }
         }
         if (error.response && error.response.status === 401) {
-            localStorage.removeItem('restosys_staff_user');
-            if (window.location.pathname.startsWith('/delivery')) {
-                if (window.location.pathname !== '/delivery/login') {
+            const path = window.location.pathname;
+            const isLoginRoute = path === '/login' || path === '/register' || path === '/delivery/login' || path === '/customer/login' || path === '/staff/login';
+            
+            if (!isLoginRoute) {
+                localStorage.removeItem('restosys_staff_user');
+                if (path.startsWith('/delivery')) {
                     window.location.href = '/delivery/login';
-                }
-            } else {
-                if (window.location.pathname !== '/staff/login' && window.location.pathname !== '/staff/register') {
+                } else {
                     window.location.href = '/staff/login';
                 }
             }
