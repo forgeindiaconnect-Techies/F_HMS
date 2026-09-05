@@ -39,6 +39,16 @@ const importData = async () => {
         
         console.log('Default system roles initialized!');
 
+        // Seed initial SuperAdmin account
+        await User.create({
+            name: 'Super Admin',
+            email: 'admin@restosys.com',
+            password: 'password123',
+            role: 'SuperAdmin'
+        });
+
+        console.log('SuperAdmin user initialized: admin@restosys.com / password123');
+
         process.exit();
     } catch (error) {
         console.error(`Error: ${error.message}`);
