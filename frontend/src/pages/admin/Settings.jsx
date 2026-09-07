@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { ThemeSettingCard } from '../../components/ThemeToggle';
+import { getApiUrl } from '../../utils/axiosInstance';
 
 const Settings = () => {
     const { api, fetchRestaurant } = useAuth();
@@ -61,7 +62,7 @@ const Settings = () => {
     const getLogoUrl = (logoPath) => {
         if (!logoPath) return null;
         if (logoPath.startsWith('http') || logoPath.startsWith('data:')) return logoPath;
-        const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const apiBase = getApiUrl();
         try {
             const origin = new URL(apiBase).origin;
             return `${origin}${logoPath.startsWith('/') ? '' : '/'}${logoPath}`;

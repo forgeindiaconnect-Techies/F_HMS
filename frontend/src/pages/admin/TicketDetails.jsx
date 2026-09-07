@@ -6,6 +6,7 @@ import {
     Star, Clock, Check, CheckCheck, Lock, ShieldAlert
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getApiUrl } from '../../utils/axiosInstance';
 
 const TicketDetails = () => {
     const { id } = useParams();
@@ -246,7 +247,7 @@ const TicketDetails = () => {
                                         {ticket.attachments.map((url, i) => (
                                             <a 
                                                 key={i} 
-                                                href={`${new URL(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').origin}${url}`}
+                                                href={`${new URL(getApiUrl()).origin}${url}`}
                                                 target="_blank" 
                                                 rel="noreferrer"
                                                 className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg text-[10px] font-bold text-gray-600 dark:text-slate-300 border border-gray-100 dark:border-slate-700 transition-colors"
@@ -306,7 +307,7 @@ const TicketDetails = () => {
                                                 {reply.attachments.map((url, idx) => (
                                                     <a 
                                                         key={idx} 
-                                                        href={`${new URL(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').origin}${url}`}
+                                                        href={`${new URL(getApiUrl()).origin}${url}`}
                                                         target="_blank" 
                                                         rel="noreferrer"
                                                         className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg text-[10px] font-bold text-gray-600 dark:text-slate-300 border border-gray-100 dark:border-slate-700 transition-colors"
@@ -512,7 +513,7 @@ const TicketDetails = () => {
                             <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 overflow-hidden flex items-center justify-center font-bold text-gray-700 dark:text-slate-200 shrink-0 uppercase">
                                 {ticket.restaurantId?.logo ? (
                                     <img 
-                                        src={ticket.restaurantId.logo.startsWith('http') ? ticket.restaurantId.logo : `${new URL(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').origin}${ticket.restaurantId.logo}`}
+                                        src={ticket.restaurantId.logo.startsWith('http') ? ticket.restaurantId.logo : `${new URL(getApiUrl()).origin}${ticket.restaurantId.logo}`}
                                         alt="Logo"
                                         className="w-full h-full object-cover"
                                     />

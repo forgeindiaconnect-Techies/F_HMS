@@ -5,6 +5,9 @@ export const getApiUrl = () => {
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
         return 'http://localhost:5000/api';
     }
+    if (hostname.startsWith('192.168.') || hostname.startsWith('10.') || hostname.startsWith('172.')) {
+        return `http://${hostname}:5000/api`;
+    }
     let envUrl = import.meta.env.VITE_API_URL || 'https://f-hms.onrender.com/api';
     if (envUrl.endsWith('/')) envUrl = envUrl.slice(0, -1);
     if (!envUrl.endsWith('/api')) envUrl += '/api';

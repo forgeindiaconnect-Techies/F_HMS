@@ -4,6 +4,7 @@ import axios from 'axios';
 import { MapPin, Star, Clock, Info, ShoppingBag, Plus, Minus, CheckCircle } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { getItemImage } from '../../utils/imageHelper';
+import { getApiUrl } from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
 
 const dummyBranches = [
@@ -112,9 +113,7 @@ const RestaurantDetails = () => {
                 return;
             }
             try {
-                let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-                if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
-                if (!API_URL.endsWith('/api')) API_URL += '/api';
+                let API_URL = getApiUrl();
                 // Fetch branches
                 const branchRes = await axios.get(`${API_URL}/restaurants/${id}/branches`);
                 setBranches(branchRes.data);
@@ -166,7 +165,7 @@ const RestaurantDetails = () => {
                         restaurant.logo 
                             ? (restaurant.logo.startsWith('http') || restaurant.logo.startsWith('data:')
                                 ? restaurant.logo 
-                                : `${new URL(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').origin}${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`)
+                                : `${new URL(getApiUrl()).origin}${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`)
                             : "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2000&auto=format&fit=crop"
                     } 
                     alt={restaurant.name}

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Utensils, Mail, Phone, MapPin, MessageSquare, Send, CheckCircle2, Star, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
+import { getApiUrl } from '../../utils/axiosInstance';
 
 const Contact = () => {
     const [formData, setFormData] = useState({
@@ -15,12 +16,6 @@ const Contact = () => {
     });
     const [loading, setLoading] = useState(false);
 
-    const getApiUrl = () => {
-        let baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-        if (baseURL.endsWith('/')) baseURL = baseURL.slice(0, -1);
-        if (!baseURL.endsWith('/api')) baseURL += '/api';
-        return baseURL;
-    };
     const API_URL = getApiUrl();
 
     const handleSubmit = async (e) => {

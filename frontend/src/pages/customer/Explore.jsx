@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import { getApiUrl } from '../../utils/axiosInstance';
 
 const Explore = () => {
     // Dummy data for the landing page grid (instant 0ms load)
@@ -103,9 +104,7 @@ const Explore = () => {
     useEffect(() => {
         const fetchRestaurants = async () => {
             try {
-                let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-                if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
-                if (!API_URL.endsWith('/api')) API_URL += '/api';
+                let API_URL = getApiUrl();
                 const res = await axios.get(`${API_URL}/restaurants`);
                 let realRest = res.data.filter(r => r.subscription?.status === 'Active' && r.isActive !== false);
                 let combined = [...realRest];
@@ -290,7 +289,7 @@ const Explore = () => {
                                                     : restaurant.logo 
                                                         ? (restaurant.logo.startsWith('http') || restaurant.logo.startsWith('data:')
                                                             ? restaurant.logo 
-                                                            : `${new URL(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').origin}${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`)
+                                                            : `${new URL(getApiUrl()).origin}${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`)
                                                         : "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
                                             } 
                                             alt={restaurant.name} 

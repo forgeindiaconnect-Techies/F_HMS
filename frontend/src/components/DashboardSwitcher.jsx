@@ -2,20 +2,11 @@ import { useState } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Sliders, RefreshCw, ChevronUp, ShieldAlert, Check } from 'lucide-react';
+import { getApiUrl } from '../utils/axiosInstance';
 
 const DashboardSwitcher = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [loadingRole, setLoadingRole] = useState(null);
-
-    const getApiUrl = () => {
-        let baseURL = import.meta.env.VITE_API_URL;
-        if (baseURL) {
-            if (baseURL.endsWith('/')) baseURL = baseURL.slice(0, -1);
-            if (!baseURL.endsWith('/api')) baseURL += '/api';
-            return baseURL;
-        }
-        return 'http://localhost:5000/api';
-    };
 
     const API_URL = getApiUrl();
 

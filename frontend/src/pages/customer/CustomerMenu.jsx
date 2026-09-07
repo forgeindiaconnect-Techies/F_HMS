@@ -4,6 +4,7 @@ import axios from 'axios';
 import { ShoppingBag, ChevronRight, Plus, Minus, Send, MessageSquare, BookOpen, Clock, Heart } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getItemImage } from '../../utils/imageHelper';
+import { getApiUrl } from '../../utils/axiosInstance';
 
 const CustomerMenu = () => {
     const [searchParams] = useSearchParams();
@@ -25,22 +26,6 @@ const CustomerMenu = () => {
     const [itemNotes, setItemNotes] = useState({}); // itemId -> note string
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const getApiUrl = () => {
-        let baseURL = import.meta.env.VITE_API_URL;
-        if (baseURL) {
-            if (baseURL.endsWith('/')) baseURL = baseURL.slice(0, -1);
-            if (!baseURL.endsWith('/api')) baseURL += '/api';
-            return baseURL;
-        }
-        const hostname = window.location.hostname;
-        const isLocalIp = hostname.startsWith('192.168.') || 
-                          hostname.startsWith('10.') || 
-                          hostname.startsWith('172.');
-        if (isLocalIp) {
-            return `http://${hostname}:5000/api`;
-        }
-        return 'http://localhost:5000/api';
-    };
     const API_URL = getApiUrl();
 
     useEffect(() => {

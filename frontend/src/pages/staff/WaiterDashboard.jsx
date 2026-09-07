@@ -7,6 +7,7 @@ import {
     HelpCircle, ChevronRight, Award, Layers, TrendingUp, CheckSquare, HeartPulse, Filter, Settings
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { getApiUrl } from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
 import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 import ThemeSettingCard from '../../components/ThemeToggle';
@@ -166,7 +167,7 @@ const WaiterDashboard = () => {
 
         let ws;
         const connectWS = () => {
-            let baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+            let baseURL = getApiUrl();
             let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
             
             ws = new WebSocket(wsURL);

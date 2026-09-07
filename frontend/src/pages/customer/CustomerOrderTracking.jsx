@@ -7,6 +7,7 @@ import {
     Bike, MapPin, Store, User
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getApiUrl } from '../../utils/axiosInstance';
 
 const CustomerOrderTracking = () => {
     const { orderId } = useParams();
@@ -30,22 +31,6 @@ const CustomerOrderTracking = () => {
     const [reviewText, setReviewText] = useState('');
     const [isRatingLoading, setIsRatingLoading] = useState(false);
 
-    const getApiUrl = () => {
-        let baseURL = import.meta.env.VITE_API_URL;
-        if (baseURL) {
-            if (baseURL.endsWith('/')) baseURL = baseURL.slice(0, -1);
-            if (!baseURL.endsWith('/api')) baseURL += '/api';
-            return baseURL;
-        }
-        const hostname = window.location.hostname;
-        const isLocalIp = hostname.startsWith('192.168.') || 
-                          hostname.startsWith('10.') || 
-                          hostname.startsWith('172.');
-        if (isLocalIp) {
-            return `http://${hostname}:5000/api`;
-        }
-        return 'http://localhost:5000/api';
-    };
     const API_URL = getApiUrl();
 
     const handleSubmitRating = async (e) => {

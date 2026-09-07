@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Phone, Lock, ArrowRight, Truck, Smartphone } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../context/AuthContext';
+import { getApiUrl } from '../../utils/axiosInstance';
 
 const DeliveryPartnerLogin = () => {
     const navigate = useNavigate();
@@ -18,22 +18,6 @@ const DeliveryPartnerLogin = () => {
     const [step, setStep] = useState('phone'); // phone, otp
     const [loading, setLoading] = useState(false);
 
-    const getApiUrl = () => {
-        let baseURL = import.meta.env.VITE_API_URL;
-        if (baseURL) {
-            if (baseURL.endsWith('/')) baseURL = baseURL.slice(0, -1);
-            if (!baseURL.endsWith('/api')) baseURL += '/api';
-            return baseURL;
-        }
-        const hostname = window.location.hostname;
-        const isLocalIp = hostname.startsWith('192.168.') || 
-                          hostname.startsWith('10.') || 
-                          hostname.startsWith('172.');
-        if (isLocalIp) {
-            return `http://${hostname}:5000/api`;
-        }
-        return 'http://localhost:5000/api';
-    };
     const API_URL = getApiUrl();
 
     const handleSendOtp = async (e) => {

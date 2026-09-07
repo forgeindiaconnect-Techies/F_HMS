@@ -5,6 +5,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { CreditCard, MapPin, Ticket, ChevronRight, Utensils, CheckCircle, ShieldCheck, ArrowRight, Store, AlertTriangle } from 'lucide-react';
 import axios from 'axios';
 import { getItemImage } from '../../utils/imageHelper';
+import { getApiUrl } from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
 
 const Checkout = () => {
@@ -42,9 +43,7 @@ const Checkout = () => {
             ];
             
             try {
-                let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-                if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
-                if (!API_URL.endsWith('/api')) API_URL += '/api';
+                let API_URL = getApiUrl();
                 const res = await axios.get(`${API_URL}/restaurants`);
                 const activeList = res.data.filter(r => r.isActive !== false);
                 
@@ -192,9 +191,7 @@ const Checkout = () => {
         }
 
         try {
-            let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-            if (API_URL.endsWith('/')) API_URL = API_URL.slice(0, -1);
-            if (!API_URL.endsWith('/api')) API_URL += '/api';
+            let API_URL = getApiUrl();
 
             const { data } = await axios.get(`${API_URL}/offers`);
             const matchedOffer = data.find(o => o.code.toUpperCase() === coupon.trim().toUpperCase());
