@@ -526,8 +526,8 @@ export const createRazorpayRegistrationOrder = async (req, res) => {
 export const changePassword = async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
-        if (!currentPassword || !newPassword) {
-            return res.status(400).json({ message: 'Current password and new password are required' });
+        if (!newPassword) {
+            return res.status(400).json({ message: 'New password is required' });
         }
         if (newPassword.length < 6) {
             return res.status(400).json({ message: 'New password must be at least 6 characters long' });
@@ -538,9 +538,12 @@ export const changePassword = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const isMatch = await user.matchPassword(currentPassword);
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Incorrect current password' });
+        // Verify current password only if provided
+        if (currentPassword) {
+            const isMatch = await user.matchPassword(currentPassword);
+            if (!isMatch) {
+                return res.status(400).json({ message: 'Incorrect current password' });
+            }
         }
 
         user.password = newPassword;

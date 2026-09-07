@@ -226,14 +226,15 @@ const Settings = () => {
 
                             <div className="space-y-4 max-w-md pt-2">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Current Password</label>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                                        Current Password <span className="text-gray-400 font-normal text-xs">(Leave blank if forgotten)</span>
+                                    </label>
                                     <div className="relative">
                                         <input
                                             type={showCurrentPassword ? 'text' : 'password'}
                                             value={passwordData.currentPassword}
                                             onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
-                                            required
-                                            placeholder="Enter your current password"
+                                            placeholder="Enter current password or leave blank"
                                             className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all pr-10"
                                         />
                                         <button
