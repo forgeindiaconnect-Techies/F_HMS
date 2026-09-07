@@ -1,5 +1,5 @@
 import express from 'express';
-import { registerUser, loginUser, logoutUser, resendWelcomeEmail, testSendEmail, createRazorpayRegistrationOrder } from '../controllers/authController.js';
+import { registerUser, loginUser, logoutUser, resendWelcomeEmail, testSendEmail, createRazorpayRegistrationOrder, changePassword } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { verificationUpload } from '../controllers/verificationController.js';
 
@@ -16,6 +16,7 @@ router.post('/register', (req, res, next) => {
 }, registerUser);
 router.post('/login', loginUser);
 router.post('/logout', protect, logoutUser);
+router.put('/change-password', protect, changePassword);
 router.post('/resend-welcome-email', resendWelcomeEmail);
 router.post('/test-email', testSendEmail);
 router.post('/razorpay-order', createRazorpayRegistrationOrder);

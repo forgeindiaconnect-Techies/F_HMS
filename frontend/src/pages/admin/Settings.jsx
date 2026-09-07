@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Save, Upload, User, ArrowRight, Camera, X, Sun } from 'lucide-react';
+import { Save, Upload, User, ArrowRight, Camera, X, Sun, Key, Lock, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
@@ -16,12 +16,46 @@ const Settings = () => {
     const [logoFile, setLogoFile] = useState(null);
     const logoInputRef = useRef(null);
 
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+    });
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [changingPassword, setChangingPassword] = useState(false);
+
     const [formData, setFormData] = useState({
         name: '',
         contactEmail: '',
         phone: '',
         address: ''
     });
+
+    const handlePasswordChangeSubmit = async (e) => {
+        e.preventDefault();
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            toast.error('New password and confirm password do not match');
+            return;
+        }
+        if (passwordData.newPassword.length < 6) {
+            toast.error('Password must be at least 6 characters long');
+            return;
+        }
+        setChangingPassword(true);
+        try {
+            await api.put('/auth/change-password', {
+                currentPassword: passwordData.currentPassword,
+                newPassword: passwordData.newPassword
+            });
+            toast.success('Password updated successfully!');
+            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to update password');
+        } finally {
+            setChangingPassword(false);
+        }
+    };
 
     // Build full URL for a logo path from the backend
     const getLogoUrl = (logoPath) => {
@@ -167,6 +201,13 @@ const Settings = () => {
                         >
                             <Sun size={18} /> Appearance & Theme
                         </button>
+                        <button 
+                            type="button"
+                            onClick={() => setActiveTab('security')}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-sm ${activeTab === 'security' ? 'bg-green-50 text-green-700 font-bold' : 'text-gray-600 hover:bg-gray-50'}`}
+                        >
+                            <Lock size={18} /> Security & Password
+                        </button>
                     </nav>
                 </div>
 
@@ -176,6 +217,85 @@ const Settings = () => {
                         <div className="space-y-6">
                             <ThemeSettingCard />
                         </div>
+                    ) : activeTab === 'security' ? (
+                        <form onSubmit={handlePasswordChangeSubmit} className="space-y-6">
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>Change Account Password</h3>
+                                <p className="text-gray-500 text-xs">Update your login password securely for your admin account.</p>
+                            </div>
+
+                            <div className="space-y-4 max-w-md pt-2">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Current Password</label>
+                                    <div className="relative">
+                                        <input
+                                            type={showCurrentPassword ? 'text' : 'password'}
+                                            value={passwordData.currentPassword}
+                                            onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                                            required
+                                            placeholder="Enter your current password"
+                                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all pr-10"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                        >
+                                            {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">New Password</label>
+                                    <div className="relative">
+                                        <input
+                                            type={showNewPassword ? 'text' : 'password'}
+                                            value={passwordData.newPassword}
+                                            onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                                            required
+                                            minLength={6}
+                                            placeholder="Enter new password (min. 6 characters)"
+                                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all pr-10"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowNewPassword(!showNewPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                        >
+                                            {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Confirm New Password</label>
+                                    <input
+                                        type="password"
+                                        value={passwordData.confirmPassword}
+                                        onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                                        required
+                                        placeholder="Re-enter new password"
+                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="pt-6 border-t border-gray-100 flex justify-end">
+                                <button
+                                    type="submit"
+                                    disabled={changingPassword}
+                                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm shadow-md shadow-green-900/10 disabled:opacity-70"
+                                >
+                                    {changingPassword ? (
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    ) : (
+                                        <Key size={16} />
+                                    )}
+                                    Update Password
+                                </button>
+                            </div>
+                        </form>
                     ) : (
                     <form onSubmit={handleSubmit}>
                         
