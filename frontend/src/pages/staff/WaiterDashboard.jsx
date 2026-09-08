@@ -58,86 +58,10 @@ const WaiterDashboard = () => {
     const [assignedOnly, setAssignedOnly] = useState(false);
 
     // Checklist Tasks state
-    const [tasks, setTasks] = useState([
-        { id: 1, text: 'Serve Table 5 - Main Course', done: false, urgent: true },
-        { id: 2, text: 'Collect Payment for Table 7', done: false, urgent: true },
-        { id: 3, text: 'Refill Water at Table 3', done: false, urgent: false },
-        { id: 4, text: 'Deliver Dessert to Table 12', done: true, urgent: false },
-        { id: 5, text: 'Clean & Sanitize Table 8', done: false, urgent: false },
-        { id: 6, text: 'Restock Cutlery & Napkins', done: false, urgent: false },
-    ]);
+    const [tasks, setTasks] = useState([]);
 
     // Priority Actions state for Priority Action Center
-    const [priorityActions, setPriorityActions] = useState([
-        {
-            id: 'pa-1',
-            type: 'urgent',
-            table: 'Table 5',
-            tableNumber: 5,
-            label: 'URGENT',
-            time: 'Waiting 2m',
-            title: 'Food Ready in Kitchen',
-            details: '2x Grilled Salmon, 1x Truffle Pasta',
-            buttonLabel: 'Serve Now',
-            icon: Utensils,
-            color: 'rose',
-            action: (id) => {
-                toast.success("Table 5 food served!");
-                setPriorityActions(prev => prev.filter(item => item.id !== id));
-            }
-        },
-        {
-            id: 'pa-2',
-            type: 'important',
-            table: 'Table 7',
-            tableNumber: 7,
-            label: 'IMPORTANT',
-            time: 'Waiting 4m',
-            title: 'Bill Requested by Customer',
-            details: 'Card Payment • Total: ₹2,450',
-            buttonLabel: 'Generate Bill',
-            icon: Receipt,
-            color: 'amber',
-            action: (id) => {
-                toast.success("Bill generated for Table 7");
-                setPriorityActions(prev => prev.filter(item => item.id !== id));
-            }
-        },
-        {
-            id: 'pa-3',
-            type: 'info',
-            table: 'Table 3',
-            tableNumber: 3,
-            label: 'INFO REQUEST',
-            time: 'Just now',
-            title: 'Customer Requested Water',
-            details: 'Warm water & extra lemon requested',
-            buttonLabel: 'Acknowledge',
-            icon: CheckCircle2,
-            color: 'blue',
-            action: (id) => {
-                toast.success("Acknowledged water request for Table 3");
-                setPriorityActions(prev => prev.filter(item => item.id !== id));
-            }
-        },
-        {
-            id: 'pa-4',
-            type: 'assistance',
-            table: 'Table 8',
-            tableNumber: 8,
-            label: 'ASSISTANCE',
-            time: 'Waiting 1m',
-            title: 'Customer Needs Assistance',
-            details: 'Wants recommendations on dessert menu',
-            buttonLabel: 'Attend Table',
-            icon: Users,
-            color: 'emerald',
-            action: (id) => {
-                toast.success("Assigned to assist Table 8");
-                setPriorityActions(prev => prev.filter(item => item.id !== id));
-            }
-        }
-    ]);
+    const [priorityActions, setPriorityActions] = useState([]);
 
     // Order Panel State
     const [cart, setCart] = useState([]);
@@ -288,11 +212,12 @@ const WaiterDashboard = () => {
         const id = `T-${num}`;
         const order = activeOrders.find(o => o.tableNumber === id || o.tableNumber === String(num));
         let status = 'Available';
-        if (num === 5) status = 'Needs Attention';
-        else if (num === 7) status = 'Billing';
-        else if (num === 3) status = 'Waiting for Food';
-        else if (num === 8) status = 'Reserved';
-        else if (order) status = order.status === 'Served' ? 'Billing' : 'Occupied';
+        if (order) {
+            if (order.status === 'Served') status = 'Billing';
+            else if (order.status === 'Ready') status = 'Needs Attention';
+            else if (order.status === 'Preparing') status = 'Waiting for Food';
+            else status = 'Occupied';
+        }
 
         return { 
             id: `Table ${num}`, 
@@ -300,8 +225,8 @@ const WaiterDashboard = () => {
             status: status, 
             seats: 4, 
             orders: order, 
-            customers: status !== 'Available' ? 3 : 0,
-            timeAgo: `${10 + num * 2}m ago`
+            customers: order ? 2 : 0,
+            timeAgo: order ? 'Active' : 'Empty'
         };
     });
 
@@ -507,10 +432,10 @@ const WaiterDashboard = () => {
                             </div>
                         </div>
                         <div className="text-2xl font-black text-slate-900 tracking-tight">
-                            {activeOrdersCount || 12} <span className="text-xs font-bold text-slate-400">Orders</span>
+                            {activeOrdersCount} <span className="text-xs font-bold text-slate-400">Orders</span>
                         </div>
                         <div className="mt-1.5 text-[10px] font-semibold text-blue-600">
-                            4 preparing in kitchen
+                            {activeOrders.filter(o => o.status === 'Preparing' || o.status === 'Accepted').length} preparing in kitchen
                         </div>
                     </div>
 
@@ -523,7 +448,7 @@ const WaiterDashboard = () => {
                             </div>
                         </div>
                         <div className="text-2xl font-black text-amber-600 tracking-tight flex items-center gap-1.5">
-                            {foodReadyCount || 3} <span className="text-xs font-bold text-slate-400">Waiting</span>
+                            {foodReadyCount} <span className="text-xs font-bold text-slate-400">Waiting</span>
                         </div>
                         <div className="mt-1.5 text-[10px] font-extrabold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md w-fit">
                             Serve Immediately 🔥
