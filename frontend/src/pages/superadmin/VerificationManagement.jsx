@@ -546,6 +546,7 @@ const VerificationManagement = () => {
                                     alt={previewDoc.label}
                                     className="max-w-full max-h-[60vh] object-contain rounded-xl shadow-lg border border-gray-800"
                                 />
+                            )}
                         </div>
                     </div>
                 </div>
