@@ -35,23 +35,7 @@ const OrderTracking = () => {
                     }
                 }
             } catch (error) {
-                console.error('Failed to fetch order, using fallback tracking preview', error);
-                // Fallback demo order so tracking screen is never empty or stuck
-                setOrder({
-                    _id: id || 'A5E8CD',
-                    orderType: 'Delivery',
-                    status: 'Out for Delivery',
-                    deliveryStatus: 'On the Way',
-                    deliveryOtp: '4829',
-                    deliveryDistance: 3.2,
-                    deliveryPartner: {
-                        name: 'Ramesh Kumar',
-                        phoneNumber: '9876543210',
-                        vehicleDetails: { model: 'Hero Splendor' }
-                    },
-                    shippingAddress: { address: 'Flat 402, Green Valley Apartments, MG Road' }
-                });
-                setProgress(3);
+                console.error('Failed to fetch order details', error);
             }
         };
 
