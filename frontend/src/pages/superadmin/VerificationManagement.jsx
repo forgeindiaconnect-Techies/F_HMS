@@ -164,13 +164,21 @@ const VerificationManagement = () => {
         setDeletingId(id);
         try {
             await api.delete(`/restaurants/verification/${id}`);
-            setVerifications(prev => prev.filter(v => v._id !== id));
-            if (selectedReview?._id === id) setSelectedReview(null);
+            setVerifications(prev => prev.filter(v => v._id !== id && v.restaurantId?._id !== id));
+            if (selectedReview?._id === id || selectedReview?.restaurantId?._id === id) setSelectedReview(null);
             setDeleteConfirmModal({ isOpen: false, id: null, name: '' });
             toast.success('Verification record deleted successfully!');
         } catch (error) {
-            console.error("Failed to delete verification record:", error);
-            toast.error(error.response?.data?.message || 'Failed to delete verification record');
+            console.error("Delete verification record attempt:", error);
+            // If 404, the record was already removed from backend, update UI accordingly
+            if (error.response?.status === 404) {
+                setVerifications(prev => prev.filter(v => v._id !== id && v.restaurantId?._id !== id));
+                if (selectedReview?._id === id || selectedReview?.restaurantId?._id === id) setSelectedReview(null);
+                setDeleteConfirmModal({ isOpen: false, id: null, name: '' });
+                toast.success('Verification record deleted.');
+            } else {
+                toast.error(error.response?.data?.message || 'Failed to delete verification record');
+            }
         } finally {
             setDeletingId(null);
         }
