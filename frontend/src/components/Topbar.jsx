@@ -113,19 +113,38 @@ const UpiModal = ({ plan, planPrice, restaurantId, api, onClose, onSuccess }) =>
                             <button
                                 onClick={handleQrClick}
                                 disabled={activating}
-                                className="w-56 h-56 flex items-center justify-center rounded-2xl overflow-hidden bg-gray-50 border-2 border-gray-100 shadow-inner hover:border-green-400 hover:scale-[1.02] transition-all cursor-pointer disabled:opacity-60 relative"
+                                className="w-56 h-56 flex items-center justify-center rounded-2xl overflow-hidden bg-gray-50 border-2 border-gray-100 shadow-inner hover:border-green-400 hover:scale-[1.02] transition-all cursor-pointer disabled:opacity-60 relative group"
                                 title="Click to activate plan instantly"
                             >
                                 <img src={qrDataUrl} alt="QR Code" className="w-full h-full object-contain p-4 bg-white" />
                                 {activating && (
-                                    <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-2xl">
-                                        <Loader2 size={32} className="animate-spin text-green-500" />
+                                    <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center rounded-2xl gap-2">
+                                        <Loader2 size={36} className="animate-spin text-green-500" />
+                                        <span className="text-xs font-bold text-gray-700">Activating...</span>
                                     </div>
                                 )}
                             </button>
-                            <div>
-                                <p className="text-sm font-semibold text-gray-800">Click QR to Activate Instantly</p>
-                                <p className="text-xs text-gray-400 mt-1">Or scan with your phone on the same WiFi network.</p>
+                            <div className="space-y-2">
+                                <p className="text-sm font-semibold text-gray-800">Scan QR Code with Phone OR Click Below</p>
+                                <button
+                                    type="button"
+                                    onClick={handleQrClick}
+                                    disabled={activating}
+                                    className="w-full py-3 px-6 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-extrabold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-50"
+                                >
+                                    {activating ? (
+                                        <>
+                                            <Loader2 size={16} className="animate-spin" />
+                                            Activating Plan...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <CheckCircle2 size={16} />
+                                            Confirm & Activate {plan} Plan
+                                        </>
+                                    )}
+                                </button>
+                                <p className="text-[11px] text-gray-400">Or scan QR with your phone to open activation page directly.</p>
                             </div>
                         </div>
                     )}
