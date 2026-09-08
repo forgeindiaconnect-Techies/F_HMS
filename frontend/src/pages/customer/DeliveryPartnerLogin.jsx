@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Phone, Lock, ArrowRight, Truck, Smartphone } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { getApiUrl } from '../../utils/axiosInstance';
+import { useAuth } from '../../context/AuthContext';
 
 const DeliveryPartnerLogin = () => {
     const navigate = useNavigate();
