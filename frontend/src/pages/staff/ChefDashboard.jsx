@@ -587,7 +587,7 @@ const ChefDashboard = () => {
 
                                     {/* Action Buttons Footer */}
                                     <div className="p-4 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/60 shrink-0">
-                                        {order.status === 'Pending' && (
+                                        {(!order.status || order.status === 'Pending') && (
                                             <button 
                                                 onClick={() => updateStatus(order._id, 'Accepted')} 
                                                 className="w-full bg-orange-600 hover:bg-orange-500 text-white font-extrabold py-3 rounded-2xl transition-all shadow-lg shadow-orange-600/20 text-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95"
