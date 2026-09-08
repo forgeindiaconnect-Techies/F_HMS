@@ -59,32 +59,15 @@ const DeliveryPartnerDashboard = () => {
     };
     const API_URL = getApiUrl();
 
-    // Axios client with auth header
-    const getClient = () => {
-        const stored = localStorage.getItem('restosys_staff_user');
-        if (!stored) return null;
-        const parsed = JSON.parse(stored);
-        return axios.create({
-            baseURL: API_URL,
-            headers: {
-                Authorization: `Bearer ${parsed.token}`
-            }
-        });
-    };
-
-    const client = getClient();
+    const { user: authUser, api } = useAuth();
 
     const loadData = async () => {
-        if (!client) {
-            navigate('/delivery/login');
-            return;
-        }
         try {
             const [profileRes, ordersRes, earningsRes, withdrawalsRes] = await Promise.all([
-                client.get('/delivery/profile'),
-                client.get('/delivery/orders/assigned'),
-                client.get('/delivery/earnings'),
-                client.get('/delivery/withdrawals')
+                api.get('/delivery/profile'),
+                api.get('/delivery/orders/assigned'),
+                api.get('/delivery/earnings'),
+                api.get('/delivery/withdrawals')
             ]);
             setProfile(profileRes.data);
             setAssignedOrders(ordersRes.data);
@@ -92,10 +75,6 @@ const DeliveryPartnerDashboard = () => {
             setWithdrawals(withdrawalsRes.data);
         } catch (error) {
             console.error('Failed to load dashboard data', error);
-            if (error.response && error.response.status === 401) {
-                localStorage.removeItem('restosys_staff_user');
-                navigate('/delivery/login');
-            }
         } finally {
             setLoading(false);
         }
@@ -103,13 +82,13 @@ const DeliveryPartnerDashboard = () => {
 
     useEffect(() => {
         const stored = localStorage.getItem('restosys_staff_user');
-        if (!stored) {
+        if (!stored && !authUser) {
             navigate('/delivery/login');
             return;
         }
-        setUser(JSON.parse(stored));
+        setUser(authUser || JSON.parse(stored));
         loadData();
-    }, []);
+    }, [authUser]);
 
     useEffect(() => {
         if (!showNavigationModal) {
