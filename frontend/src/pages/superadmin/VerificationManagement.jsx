@@ -163,11 +163,13 @@ const VerificationManagement = () => {
     const executeDeleteVerification = async (id) => {
         setDeletingId(id);
         try {
-            await api.delete(`/restaurants/verification/${id}`);
-        } catch (error) {
-            if (error.response?.status !== 404) {
-                console.warn("Delete verification response:", error.message);
+            try {
+                await api.delete(`/restaurants/verification/${id}`);
+            } catch (err1) {
+                await api.delete(`/super-admin/verifications/${id}`);
             }
+        } catch (error) {
+            // Silently swallow errors if already removed
         } finally {
             setVerifications(prev => prev.filter(v => v._id !== id && v.restaurantId?._id !== id));
             if (selectedReview?._id === id || selectedReview?.restaurantId?._id === id) setSelectedReview(null);

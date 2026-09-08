@@ -7,6 +7,7 @@ import {
     broadcastNotification, deleteSuperAdminNotification,
     getSubscriptionPayments, getSubscriptionAnalytics
 } from '../controllers/superAdminController.js';
+import { deleteVerification } from '../controllers/verificationController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -18,6 +19,8 @@ router.route('/restaurants').get(getRestaurants);
 router.route('/restaurants/:id').delete(deleteRestaurant);
 router.route('/restaurants/:id/subscription').put(updateSubscription);
 router.route('/restaurants/:id/approval').put(updateApprovalStatus);
+
+router.route('/verifications/:id').delete(deleteVerification);
 
 router.route('/notifications').get(getSuperAdminNotifications);
 router.route('/notifications/broadcast').post(broadcastNotification);
