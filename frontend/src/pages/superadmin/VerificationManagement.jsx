@@ -125,14 +125,10 @@ const VerificationManagement = () => {
         };
 
         const targetRestaurantId = selectedReview.restaurantId?._id || selectedReview._id;
+        const reviewTargetId = selectedReview._id || targetRestaurantId;
 
         try {
-            // Try standard verification endpoint review
-            try {
-                await api.put(`/restaurants/verification/${selectedReview._id}/review`, payload);
-            } catch (vErr) {
-                console.warn("Verification endpoint review fallback trigger:", vErr.message);
-            }
+            await api.put(`/restaurants/verification/${reviewTargetId}/review`, payload);
 
             // Sync direct restaurant approval status
             const approvalPayload = {

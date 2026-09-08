@@ -6,6 +6,7 @@ import { sendApprovalEmail } from '../utils/emailService.js';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import mongoose from 'mongoose';
 
 const uploadDir = 'uploads/verification';
 if (!fs.existsSync(uploadDir)) {
@@ -120,8 +121,6 @@ export const submitVerification = async (req, res) => {
                     ...(expiry && { expiryDate: new Date(expiry) })
                 };
             } else if (verification && verification.documents[field]) {
-                // Keep existing, but if it was rejected, check if we provided a new one
-                // (if no new file was provided, keep old status/path)
                 if (expiry && fssaiExpiryDate) {
                     documents[field].expiryDate = new Date(fssaiExpiryDate);
                 }
@@ -153,7 +152,7 @@ export const submitVerification = async (req, res) => {
             };
         }
 
-        // Optional Logo (Supports image & PDF converted to Base64)
+        // Optional Logo
         if (req.body.logoBase64) {
             documents.logo = { filePath: req.body.logoBase64 };
             restaurant.logo = req.body.logoBase64;
@@ -184,12 +183,10 @@ export const submitVerification = async (req, res) => {
         }
 
         if (verification) {
-            // Update existing
             verification.documents = documents;
             verification.status = 'Under Review';
             verification.rejectionReason = '';
             
-            // Set all individual rejected document statuses back to 'Pending' so Super Admin knows they are re-uploaded
             const fields = ['fssai', 'businessRegistration', 'panCard', 'aadhaarCard', 'addressProof', 'bankProof'];
             fields.forEach(f => {
                 if (verification.documents[f] && verification.documents[f].status === 'Rejected') {
@@ -200,7 +197,6 @@ export const submitVerification = async (req, res) => {
 
             await verification.save();
         } else {
-            // Create new
             verification = await RestaurantVerification.create({
                 restaurantId,
                 documents,
@@ -208,12 +204,10 @@ export const submitVerification = async (req, res) => {
             });
         }
 
-        // Update restaurant status
         restaurant.verificationStatus = 'Under Review';
         restaurant.approvalStatus = 'Pending';
         await restaurant.save();
 
-        // Notify Super Admins only
         await Notification.create({
             title: 'Verification Under Review',
             desc: `Restaurant "${restaurant.name}" has submitted verification documents for review.`,
@@ -265,7 +259,6 @@ export const getAllVerifications = async (req, res) => {
             .sort({ createdAt: -1 })
             .lean();
 
-        // Ensure array is returned and null/broken restaurantId references are handled safely
         verifications = (verifications || []).map(v => {
             if (!v.restaurantId) {
                 v.restaurantId = {
@@ -294,14 +287,35 @@ export const getAllVerifications = async (req, res) => {
 // @access  Private/SuperAdmin
 export const getVerificationById = async (req, res) => {
     try {
-        const verification = await RestaurantVerification.findById(req.params.id)
-            .populate({
-                path: 'restaurantId',
-                populate: { path: 'ownerId', select: 'name email' }
-            })
-            .populate('history.actionBy', 'name email');
+        const { id } = req.params;
+        let verification = null;
+        if (mongoose.Types.ObjectId.isValid(id)) {
+            verification = await RestaurantVerification.findById(id)
+                .populate({
+                    path: 'restaurantId',
+                    populate: { path: 'ownerId', select: 'name email' }
+                })
+                .populate('history.actionBy', 'name email');
+        }
+        if (!verification) {
+            verification = await RestaurantVerification.findOne({ restaurantId: id })
+                .populate({
+                    path: 'restaurantId',
+                    populate: { path: 'ownerId', select: 'name email' }
+                })
+                .populate('history.actionBy', 'name email');
+        }
 
         if (!verification) {
+            const restaurant = mongoose.Types.ObjectId.isValid(id) ? await Restaurant.findById(id).populate('ownerId', 'name email') : null;
+            if (restaurant) {
+                return res.json({
+                    _id: restaurant._id,
+                    restaurantId: restaurant,
+                    status: restaurant.approvalStatus === 'Approved' ? 'Verified' : 'Pending',
+                    documents: {}
+                });
+            }
             return res.status(404).json({ message: 'Verification record not found' });
         }
 
@@ -317,6 +331,7 @@ export const getVerificationById = async (req, res) => {
 export const reviewVerification = async (req, res) => {
     try {
         const { status, rejectionReason, documentStatus } = req.body;
+        const { id } = req.params;
         
         if (!['Verified', 'Rejected', 'Re-upload Required'].includes(status)) {
             return res.status(400).json({ message: 'Invalid review status value' });
@@ -326,31 +341,46 @@ export const reviewVerification = async (req, res) => {
             return res.status(400).json({ message: 'Rejection reason is mandatory when status is Rejected' });
         }
 
-        const verification = await RestaurantVerification.findById(req.params.id);
+        let verification = null;
+        if (mongoose.Types.ObjectId.isValid(id)) {
+            verification = await RestaurantVerification.findById(id);
+        }
         if (!verification) {
-            return res.status(404).json({ message: 'Verification record not found' });
+            verification = await RestaurantVerification.findOne({ restaurantId: id });
         }
 
-        const restaurant = await Restaurant.findById(verification.restaurantId);
+        let restaurant = null;
+        if (verification) {
+            restaurant = await Restaurant.findById(verification.restaurantId);
+        } else if (mongoose.Types.ObjectId.isValid(id)) {
+            restaurant = await Restaurant.findById(id);
+        }
+
         if (!restaurant) {
             return res.status(404).json({ message: 'Associated restaurant not found' });
         }
 
-        // Apply document-level status overrides if provided (for Re-upload Required)
-        if (documentStatus) {
-            Object.keys(documentStatus).forEach(key => {
-                if (verification.documents[key]) {
-                    verification.documents[key].status = documentStatus[key].status || verification.documents[key].status;
-                    verification.documents[key].rejectReason = documentStatus[key].rejectReason || '';
-                }
+        if (!verification) {
+            verification = new RestaurantVerification({
+                restaurantId: restaurant._id,
+                documents: {},
+                status,
+                rejectionReason: status === 'Rejected' ? rejectionReason : ''
             });
+        } else {
+            if (documentStatus) {
+                Object.keys(documentStatus).forEach(key => {
+                    if (verification.documents && verification.documents[key]) {
+                        verification.documents[key].status = documentStatus[key].status || verification.documents[key].status;
+                        verification.documents[key].rejectReason = documentStatus[key].rejectReason || '';
+                    }
+                });
+            }
+            verification.status = status;
+            verification.rejectionReason = status === 'Rejected' ? rejectionReason : '';
         }
 
-        // Set status and history
-        verification.status = status;
-        verification.rejectionReason = status === 'Rejected' ? rejectionReason : '';
-        
-        // Log action in history
+        verification.history = verification.history || [];
         verification.history.push({
             status,
             actionBy: req.user._id,
@@ -358,13 +388,11 @@ export const reviewVerification = async (req, res) => {
             comments: status === 'Verified' ? 'Verification successfully completed.' : 'Review processed.'
         });
 
-        // Set restaurant statuses and subscription hooks
         restaurant.verificationStatus = status;
 
         if (status === 'Verified') {
             restaurant.approvalStatus = 'Approved';
             
-            // Activate subscription: set status to Active and calculate expiryDate
             const billingCycle = restaurant.subscription?.billingCycle || 'monthly';
             const expiry = new Date();
             if (billingCycle === 'yearly') {
@@ -376,16 +404,14 @@ export const reviewVerification = async (req, res) => {
             restaurant.subscription.status = 'Active';
             restaurant.subscription.expiryDate = expiry;
 
-            // Direct individual document overrides to Approved
             const fields = ['fssai', 'businessRegistration', 'panCard', 'aadhaarCard', 'addressProof', 'bankProof'];
             fields.forEach(f => {
-                if (verification.documents[f]) {
+                if (verification.documents && verification.documents[f]) {
                     verification.documents[f].status = 'Approved';
                     verification.documents[f].rejectReason = '';
                 }
             });
 
-            // Create notification for restaurant owner only
             await Notification.create({
                 title: 'Verification Approved',
                 desc: `Congratulations! Your restaurant verification has been approved. Your plan "${restaurant.subscription.plan}" is now active until ${expiry.toLocaleDateString()}.`,
@@ -394,7 +420,6 @@ export const reviewVerification = async (req, res) => {
                 targetRole: ['RestaurantAdmin', 'Admin']
             });
 
-            // Send Approval Email to owner
             try {
                 const ownerUser = await User.findById(restaurant.ownerId);
                 if (ownerUser && ownerUser.email) {
@@ -412,16 +437,14 @@ export const reviewVerification = async (req, res) => {
             restaurant.approvalStatus = 'Rejected';
             restaurant.subscription.status = 'Inactive';
 
-            // Mark all individual documents as rejected
             const fields = ['fssai', 'businessRegistration', 'panCard', 'aadhaarCard', 'addressProof', 'bankProof'];
             fields.forEach(f => {
-                if (verification.documents[f]) {
+                if (verification.documents && verification.documents[f]) {
                     verification.documents[f].status = 'Rejected';
                     verification.documents[f].rejectReason = rejectionReason;
                 }
             });
 
-            // Create notification
             await Notification.create({
                 title: 'Verification Rejected',
                 desc: `Your restaurant verification was rejected. Reason: ${rejectionReason}. Please correct the issues and try again.`,
@@ -433,7 +456,6 @@ export const reviewVerification = async (req, res) => {
             restaurant.approvalStatus = 'Pending';
             restaurant.subscription.status = 'Inactive';
 
-            // Create notification
             await Notification.create({
                 title: 'Re-upload Documents Required',
                 desc: `Verification review: Some documents require correction and re-uploading. Please check the verification panel for details.`,
