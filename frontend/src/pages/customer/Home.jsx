@@ -481,7 +481,7 @@ const Home = () => {
                         </Link>
 
                         <Link 
-                            to="/register" 
+                            to="/customer/register" 
                             onMouseMove={handleMagneticMove}
                             onMouseLeave={handleMagneticLeave}
                             className="hidden lg:flex bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] text-white font-extrabold px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl shadow-lg shadow-[#FF2D55]/25 transition-all focus:outline-none"

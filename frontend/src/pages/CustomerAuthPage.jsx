@@ -40,7 +40,7 @@ const CustomerAuthPage = () => {
         setLoading(false);
 
         if (result.success) {
-            const target = location.state?.from || '/profile';
+            const target = location.state?.from || '/menu';
             navigate(target, { replace: true });
         } else {
             setAuthError(result.message);
