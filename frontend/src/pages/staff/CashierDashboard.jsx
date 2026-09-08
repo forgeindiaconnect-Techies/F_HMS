@@ -29,7 +29,7 @@ const CashierDashboard = () => {
         try {
             const { data } = await api.get('/orders');
             setQueue(data.filter(o => !o.isPaid && o.orderType !== 'Self-Pickup' && o.orderType !== 'Self Pickup' && (o.status === 'Served' || o.status === 'Billing Requested' || o.status === 'Delivered')));
-            setSelfPickupQueue(data.filter(o => (o.orderType === 'Self-Pickup' || o.orderType === 'Self Pickup') && o.status === 'Picked Up'));
+            setSelfPickupQueue(data.filter(o => (o.orderType === 'Self-Pickup' || o.orderType === 'Self Pickup') && ['Ready for Pickup', 'Picked Up', 'Ready'].includes(o.status) && o.status !== 'Completed'));
             setHistory(data.filter(o => o.isPaid || o.status === 'Completed'));
         } catch (error) {
             console.error('Failed to fetch orders', error);

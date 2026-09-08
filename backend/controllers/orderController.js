@@ -269,6 +269,36 @@ export const updateOrderStatus = async (req, res) => {
         const newStatus = req.body.status || order.status;
         
         if (newStatus !== oldStatus) {
+            // Strict workflow validation to prevent premature completion
+            const isSelfPickup = order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup';
+            const isDelivery = order.orderType === 'Delivery';
+
+            if (newStatus === 'Completed') {
+                if (isSelfPickup) {
+                    // For Self-Pickup: Chef -> 'Ready for Pickup', Waiter/Staff -> 'Picked Up' (or counter hand-off), Cashier -> 'Completed'
+                    if (!['Ready for Pickup', 'Picked Up'].includes(oldStatus)) {
+                        return res.status(400).json({ 
+                            message: `Cannot mark Self-Pickup order as Completed until Chef marks it as Ready for Pickup and food is collected at the counter.` 
+                        });
+                    }
+                } else if (isDelivery) {
+                    // For Delivery: Delivery partner MUST mark 'Delivered' first
+                    if (oldStatus !== 'Delivered' && order.deliveryStatus !== 'Delivered') {
+                        return res.status(400).json({ 
+                            message: `Cannot mark Delivery order as Completed until the delivery partner completes delivery via OTP.` 
+                        });
+                    }
+                }
+            }
+
+            if (newStatus === 'Picked Up' && isSelfPickup) {
+                if (!['Ready', 'Ready for Pickup'].includes(oldStatus)) {
+                    return res.status(400).json({ 
+                        message: `Cannot mark Self-Pickup order as Picked Up until Chef finishes preparing food.` 
+                    });
+                }
+            }
+
             order.status = newStatus;
             order.statusHistory.push({
                 status: newStatus,
@@ -327,7 +357,7 @@ export const updateOrderStatus = async (req, res) => {
 
             if (newStatus === 'Completed') {
                 order.pickupTime = Date.now();
-                if (order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup') {
+                if (isSelfPickup) {
                     order.isPaid = true;
                     order.paidAt = Date.now();
                 }

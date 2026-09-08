@@ -618,12 +618,25 @@ const ChefDashboard = () => {
                                             </button>
                                         )}
                                         {['Ready', 'Ready for Pickup'].includes(order.status) && (
-                                            <button 
-                                                onClick={() => updateStatus(order._id, 'Completed')}
-                                                className="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-emerald-700 dark:text-emerald-400 font-extrabold py-3 rounded-2xl transition-all border border-emerald-500/30 text-xs flex justify-center items-center gap-2 cursor-pointer"
-                                            >
-                                                <Sparkles size={14} /> Bump to Completed
-                                            </button>
+                                            order.orderType === 'Dine In' ? (
+                                                <button 
+                                                    onClick={() => updateStatus(order._id, 'Served')}
+                                                    className="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-emerald-700 dark:text-emerald-400 font-extrabold py-3 rounded-2xl transition-all border border-emerald-500/30 text-xs flex justify-center items-center gap-2 cursor-pointer"
+                                                >
+                                                    <Sparkles size={14} /> Mark as Served
+                                                </button>
+                                            ) : (order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup') ? (
+                                                <button 
+                                                    onClick={() => updateStatus(order._id, 'Picked Up')}
+                                                    className="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-emerald-700 dark:text-emerald-400 font-extrabold py-3 rounded-2xl transition-all border border-emerald-500/30 text-xs flex justify-center items-center gap-2 cursor-pointer"
+                                                >
+                                                    <Sparkles size={14} /> Transfer to Pickup Counter
+                                                </button>
+                                            ) : (
+                                                <div className="text-center py-2 text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center justify-center gap-1.5 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-200">
+                                                    <CheckCircle size={14} className="text-amber-500" /> Ready for Delivery Partner Pickup
+                                                </div>
+                                            )
                                         )}
                                         {['Completed', 'Served', 'Delivered'].includes(order.status) && (
                                             <div className="text-center py-2 text-xs font-bold text-slate-500 flex items-center justify-center gap-1.5">
