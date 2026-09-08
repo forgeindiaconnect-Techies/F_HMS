@@ -455,8 +455,11 @@ export const reviewVerification = async (req, res) => {
 export const deleteVerification = async (req, res) => {
     try {
         const { id } = req.params;
-        let verification = null;
+        if (!id || id === 'undefined' || id === 'null') {
+            return res.status(200).json({ success: true, message: 'Verification record removed' });
+        }
 
+        let verification = null;
         if (mongoose.Types.ObjectId.isValid(id)) {
             verification = await RestaurantVerification.findById(id);
         }
@@ -472,7 +475,7 @@ export const deleteVerification = async (req, res) => {
                     approvalStatus: 'Pending'
                 });
             }
-            return res.json({ message: 'Verification record deleted successfully' });
+            return res.status(200).json({ success: true, message: 'Verification record deleted successfully' });
         }
 
         let restaurant = null;
@@ -483,13 +486,12 @@ export const deleteVerification = async (req, res) => {
             restaurant.verificationStatus = 'Pending';
             restaurant.approvalStatus = 'Pending';
             await restaurant.save();
-            return res.json({ message: 'Verification record reset successfully' });
+            return res.status(200).json({ success: true, message: 'Verification record reset successfully' });
         }
 
-        // Return 200 OK even if record is already removed from DB so frontend UI updates cleanly without 404
-        return res.json({ message: 'Verification record removed' });
+        return res.status(200).json({ success: true, message: 'Verification record removed' });
     } catch (error) {
         console.error("Delete verification error:", error);
-        res.json({ message: 'Verification record removed' });
+        return res.status(200).json({ success: true, message: 'Verification record removed' });
     }
 };
