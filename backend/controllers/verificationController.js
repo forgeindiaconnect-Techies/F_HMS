@@ -306,27 +306,6 @@ export const getAllVerifications = async (req, res) => {
             console.error("Self-heal admin users error:", adminSelfHealErr.message);
         }
 
-        // Self-heal Step 2: Ensure ALL restaurants in DB have a RestaurantVerification record
-        try {
-            const allRestaurants = await Restaurant.find().lean();
-            for (const rest of allRestaurants) {
-                try {
-                    const existingVerif = await RestaurantVerification.findOne({ restaurantId: rest._id });
-                    if (!existingVerif) {
-                        await RestaurantVerification.create({
-                            restaurantId: rest._id,
-                            documents: {},
-                            status: rest.approvalStatus === 'Approved' ? 'Verified' : 'Pending'
-                        });
-                    }
-                } catch (vErr) {
-                    console.error("Self-heal verification record error for rest:", rest._id, vErr.message);
-                }
-            }
-        } catch (sErr) {
-            console.error("Self-heal outer loop error:", sErr.message);
-        }
-
         let verifications = await RestaurantVerification.find()
             .populate({
                 path: 'restaurantId',
@@ -524,13 +503,32 @@ export const reviewVerification = async (req, res) => {
 
 export const deleteVerification = async (req, res) => {
     try {
-        const verification = await RestaurantVerification.findById(req.params.id);
+        const { id } = req.params;
+        let verification = await RestaurantVerification.findById(id);
         if (!verification) {
-            return res.status(404).json({ message: 'Verification record not found' });
+            verification = await RestaurantVerification.findOne({ restaurantId: id });
         }
-        await RestaurantVerification.findByIdAndDelete(req.params.id);
-        res.json({ message: 'Verification record deleted successfully' });
+        
+        if (verification) {
+            await RestaurantVerification.findByIdAndDelete(verification._id);
+            await Restaurant.findByIdAndUpdate(verification.restaurantId, {
+                verificationStatus: 'Pending',
+                approvalStatus: 'Pending'
+            });
+            return res.json({ message: 'Verification record deleted successfully' });
+        }
+
+        const restaurant = await Restaurant.findById(id);
+        if (restaurant) {
+            restaurant.verificationStatus = 'Pending';
+            restaurant.approvalStatus = 'Pending';
+            await restaurant.save();
+            return res.json({ message: 'Verification record deleted successfully' });
+        }
+
+        return res.status(404).json({ message: 'Verification record not found' });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error("Delete verification error:", error);
+        res.status(500).json({ message: error.message || 'Failed to delete verification record' });
     }
 };

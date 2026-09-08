@@ -16,6 +16,7 @@ const VerificationManagement = () => {
     const [docReviews, setDocReviews] = useState({}); // { fssai: { status: 'Approved', reason: '' } }
     const [submittingReview, setSubmittingReview] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
+    const [deleteConfirmModal, setDeleteConfirmModal] = useState({ isOpen: false, id: null, name: '' });
 
     const loadVerifications = async () => {
         try {
@@ -151,17 +152,24 @@ const VerificationManagement = () => {
         }
     };
 
-    const handleDeleteVerification = async (id, restaurantName) => {
-        if (!window.confirm(`Are you sure you want to permanently delete the verification record for "${restaurantName}"? This action cannot be undone.`)) {
-            return;
-        }
+    const handleDeleteClick = (id, restaurantName) => {
+        setDeleteConfirmModal({
+            isOpen: true,
+            id,
+            name: restaurantName || 'this restaurant'
+        });
+    };
+
+    const executeDeleteVerification = async (id) => {
         setDeletingId(id);
         try {
             await api.delete(`/restaurants/verification/${id}`);
-            setVerifications(verifications.filter(v => v._id !== id));
+            setVerifications(prev => prev.filter(v => v._id !== id));
             if (selectedReview?._id === id) setSelectedReview(null);
+            setDeleteConfirmModal({ isOpen: false, id: null, name: '' });
             toast.success('Verification record deleted successfully!');
         } catch (error) {
+            console.error("Failed to delete verification record:", error);
             toast.error(error.response?.data?.message || 'Failed to delete verification record');
         } finally {
             setDeletingId(null);
@@ -262,7 +270,7 @@ const VerificationManagement = () => {
                                                     Review Details
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDeleteVerification(v._id, v.restaurantId?.name || 'Unknown')}
+                                                    onClick={() => handleDeleteClick(v._id, v.restaurantId?.name || 'Unknown')}
                                                     disabled={deletingId === v._id}
                                                     className="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl border border-red-100 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center shrink-0"
                                                     title="Delete Verification Record"
@@ -539,6 +547,45 @@ const VerificationManagement = () => {
                                     className="max-w-full max-h-[60vh] object-contain rounded-xl shadow-lg border border-gray-800"
                                 />
                             )}
+            {/* Delete Confirmation Modal */}
+            {deleteConfirmModal.isOpen && (
+                <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="absolute inset-0" onClick={() => setDeleteConfirmModal({ isOpen: false, id: null, name: '' })}></div>
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl max-w-md w-full relative z-10 border border-gray-100 dark:border-slate-800 space-y-5 animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-100 dark:border-red-900/50 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0">
+                                <AlertTriangle size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black text-gray-900 dark:text-white tracking-tight">Delete Verification Record?</h3>
+                                <p className="text-xs text-gray-500 dark:text-slate-400 font-semibold mt-0.5">This action cannot be undone.</p>
+                            </div>
+                        </div>
+
+                        <div className="p-4 bg-gray-50 dark:bg-slate-950 rounded-2xl border border-gray-100 dark:border-slate-800 text-xs font-semibold text-gray-700 dark:text-slate-300">
+                            Are you sure you want to permanently delete the verification record for <span className="font-bold text-gray-900 dark:text-white">"{deleteConfirmModal.name}"</span>?
+                        </div>
+
+                        <div className="flex items-center justify-end gap-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => setDeleteConfirmModal({ isOpen: false, id: null, name: '' })}
+                                className="px-5 py-2.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 text-xs font-extrabold rounded-xl transition-all cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                disabled={deletingId === deleteConfirmModal.id}
+                                onClick={() => executeDeleteVerification(deleteConfirmModal.id)}
+                                className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white text-xs font-extrabold rounded-xl shadow-md shadow-red-600/20 transition-all flex items-center gap-1.5 active:scale-95 disabled:opacity-50 cursor-pointer"
+                            >
+                                {deletingId === deleteConfirmModal.id ? 'Deleting...' : (
+                                    <>
+                                        <Trash2 size={14} /> Delete Permanently
+                                    </>
+                                )}
+                            </button>
                         </div>
                     </div>
                 </div>
