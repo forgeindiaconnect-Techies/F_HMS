@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Save, Upload, User, ArrowRight, Camera, X, Sun, Key, Lock, Eye, EyeOff } from 'lucide-react';
+import { Save, Upload, User, ArrowRight, Camera, X, Sun, Key, Lock, Eye, EyeOff, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
@@ -15,6 +15,7 @@ const Settings = () => {
     const [logoPreview, setLogoPreview] = useState(null);
     const [currentLogo, setCurrentLogo] = useState(null);
     const [logoFile, setLogoFile] = useState(null);
+    const [removeLogo, setRemoveLogo] = useState(false);
     const logoInputRef = useRef(null);
 
     const [passwordData, setPasswordData] = useState({
@@ -112,6 +113,7 @@ const Settings = () => {
             return;
         }
         setLogoFile(file);
+        setRemoveLogo(false);
         
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -128,6 +130,12 @@ const Settings = () => {
         if (logoInputRef.current) logoInputRef.current.value = '';
     };
 
+    const handleRemoveLogo = () => {
+        clearLogoSelection();
+        setCurrentLogo(null);
+        setRemoveLogo(true);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSaving(true);
@@ -139,7 +147,9 @@ const Settings = () => {
                 phone: formData.phone,
                 address: formData.address,
             };
-            if (logoBase64) {
+            if (removeLogo) {
+                payload.removeLogo = true;
+            } else if (logoBase64) {
                 payload.logoBase64 = logoBase64;
             }
 
@@ -149,10 +159,13 @@ const Settings = () => {
             if (res.data?.logo) {
                 const savedUrl = getLogoUrl(res.data.logo);
                 setCurrentLogo(savedUrl);
-                setLogoPreview(null);
-                setLogoFile(null);
-                setLogoBase64(null);
+            } else {
+                setCurrentLogo(null);
             }
+            setLogoPreview(null);
+            setLogoFile(null);
+            setLogoBase64(null);
+            setRemoveLogo(false);
 
             // Refresh global restaurant context so sidebar logo updates
             if (fetchRestaurant) await fetchRestaurant();
@@ -334,7 +347,7 @@ const Settings = () => {
                                             )}
                                         </div>
 
-                                        {/* Upload Controls */}
+                                        {/* Upload & Remove Controls */}
                                         <div>
                                             <input
                                                 ref={logoInputRef}
@@ -344,16 +357,31 @@ const Settings = () => {
                                                 id="logo-upload"
                                                 onChange={handleLogoChange}
                                             />
-                                            <label
-                                                htmlFor="logo-upload"
-                                                className="cursor-pointer inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm px-4 py-2.5 rounded-xl transition-all"
-                                            >
-                                                <Upload size={15} />
-                                                {logoPreview ? 'Change Logo' : (currentLogo ? 'Replace Logo' : 'Upload Logo')}
-                                            </label>
+                                            <div className="flex items-center gap-2">
+                                                <label
+                                                    htmlFor="logo-upload"
+                                                    className="cursor-pointer inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm px-4 py-2.5 rounded-xl transition-all"
+                                                >
+                                                    <Upload size={15} />
+                                                    {logoPreview ? 'Change Logo' : (currentLogo ? 'Replace Logo' : 'Upload Logo')}
+                                                </label>
+                                                {(currentLogo || logoPreview) && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleRemoveLogo}
+                                                        className="inline-flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-sm px-3.5 py-2.5 rounded-xl transition-all"
+                                                    >
+                                                        <Trash2 size={15} />
+                                                        Remove Logo
+                                                    </button>
+                                                )}
+                                            </div>
                                             <p className="text-xs text-gray-400 mt-1.5">JPG, PNG, WebP or SVG · Max 5 MB</p>
                                             {logoPreview && (
-                                                <p className="text-xs text-green-600 mt-1 font-medium">✓ New logo selected — save to apply</p>
+                                                <p className="text-xs text-green-600 mt-1 font-medium">✓ New logo selected — click Save Settings to apply</p>
+                                            )}
+                                            {removeLogo && (
+                                                <p className="text-xs text-red-600 mt-1 font-medium">✓ Logo will be removed — click Save Settings to apply</p>
                                             )}
                                         </div>
                                     </div>
