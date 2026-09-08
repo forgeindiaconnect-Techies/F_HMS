@@ -48,51 +48,11 @@ export const getStats = async (req, res) => {
 // @desc    Get all restaurants
 // @route   GET /api/super-admin/restaurants
 // @access  Private/SuperAdmin
+// @desc    Get all restaurants
+// @route   GET /api/super-admin/restaurants
+// @access  Private/SuperAdmin
 export const getRestaurants = async (req, res) => {
     try {
-        // Self-heal: Find any admin users with role matching admin who do NOT have a restaurantId set
-        const unlinkedAdmins = await User.find({
-            role: { $in: ['RestaurantAdmin', 'Admin', 'restaurantadmin', 'admin'] },
-            $or: [
-                { restaurantId: { $exists: false } },
-                { restaurantId: null }
-            ]
-        });
-
-        for (const admin of unlinkedAdmins) {
-            let existingRest = await Restaurant.findOne({ ownerId: admin._id });
-            if (!existingRest) {
-                existingRest = await Restaurant.create({
-                    name: `${admin.name || 'Partner'}'s Restaurant`,
-                    ownerId: admin._id,
-                    subscription: {
-                        status: 'Active',
-                        plan: 'Basic',
-                        billingCycle: 'monthly',
-                        trialActive: true,
-                        expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-                    },
-                    approvalStatus: 'Pending',
-                    verificationStatus: 'Pending'
-                });
-
-                try {
-                    const Branch = (await import('../models/Branch.js')).default;
-                    await Branch.create({
-                        restaurantId: existingRest._id,
-                        name: `${existingRest.name} Branch`,
-                        location: { address: 'Primary Location' },
-                        contact: { phone: admin.phoneNumber || '' },
-                        isActive: true
-                    });
-                } catch (bErr) {
-                    console.error("Failed to create self-heal branch", bErr);
-                }
-            }
-            admin.restaurantId = existingRest._id;
-            await admin.save();
-        }
-
         const restaurants = await Restaurant.find().populate('ownerId', 'name email').sort({ createdAt: -1 }).lean();
 
         // Auto-repair any restaurants with blank, null, or 'Unnamed' names
@@ -154,14 +114,42 @@ export const updateSubscription = async (req, res) => {
 // @access  Private/SuperAdmin
 export const deleteRestaurant = async (req, res) => {
     try {
-        const restaurant = await Restaurant.findById(req.params.id);
-        if (!restaurant) {
-            return res.status(404).json({ message: 'Restaurant not found' });
+        const { id } = req.params;
+
+        // Dynamic imports for related models
+        const Branch = (await import('../models/Branch.js')).default;
+        const RestaurantVerification = (await import('../models/RestaurantVerification.js')).default;
+        const Menu = (await import('../models/Menu.js')).default;
+        const Order = (await import('../models/Order.js')).default;
+        const Table = (await import('../models/Table.js')).default;
+        const Category = (await import('../models/Category.js')).default;
+        const Inventory = (await import('../models/Inventory.js')).default;
+
+        const restaurant = await Restaurant.findById(id);
+        if (restaurant) {
+            // Delete associated owner user and staff accounts
+            if (restaurant.ownerId) {
+                await User.findByIdAndDelete(restaurant.ownerId);
+            }
+            await User.deleteMany({ restaurantId: id });
+
+            // Cascade delete sub-resources
+            await Branch.deleteMany({ restaurantId: id });
+            await RestaurantVerification.deleteMany({ restaurantId: id });
+            await Menu.deleteMany({ restaurantId: id });
+            await Order.deleteMany({ restaurantId: id });
+            await Table.deleteMany({ restaurantId: id });
+            await Category.deleteMany({ restaurantId: id });
+            await Inventory.deleteMany({ restaurantId: id });
+
+            // Delete restaurant record
+            await Restaurant.findByIdAndDelete(id);
         }
-        await Restaurant.findByIdAndDelete(req.params.id);
+
         res.json({ message: 'Restaurant deleted successfully' });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error("Failed to delete restaurant:", error);
+        res.status(500).json({ message: error.message || 'Failed to delete restaurant' });
     }
 };
 
