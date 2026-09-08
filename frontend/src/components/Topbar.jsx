@@ -64,15 +64,26 @@ const UpiModal = ({ plan, planPrice, restaurantId, api, onClose, onSuccess }) =>
         if (activating) return;
         setActivating(true);
         try {
+            // Direct API call to activate plan in backend DB
             await api.get(`/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`);
+            
+            // Also call /restaurants/subscribe for compatibility
+            try {
+                await api.put('/restaurants/subscribe', { plan, billingCycle: 'monthly' });
+            } catch (subErr) {
+                // Non-critical if scan-activate already updated restaurant
+            }
+
             setStep('processing');
             setTimeout(() => {
                 setStep('success');
-                setTimeout(() => onSuccess(), 2000);
-            }, 1500);
+                setTimeout(() => {
+                    onSuccess();
+                }, 1500);
+            }, 1000);
         } catch (err) {
+            console.error('Plan activation error:', err);
             toast.error('Failed to activate subscription. Please try again.');
-        } finally {
             setActivating(false);
         }
     };
@@ -212,6 +223,10 @@ const PlanUpgradeModal = ({ currentPlan, plans, api, restaurant, onClose, onUpgr
             await api.put('/restaurants/subscribe', { plan: planItem.name, billingCycle: 'monthly' });
             onUpgraded(planItem.name);
             onClose();
+            toast.success(`Successfully upgraded to ${planItem.name} Plan!`);
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
         } catch (err) {
             console.error('Subscription update failed', err);
             toast.error(err.response?.data?.message || 'Failed to update subscription');
