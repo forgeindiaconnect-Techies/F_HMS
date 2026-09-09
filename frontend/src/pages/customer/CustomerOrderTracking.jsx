@@ -357,8 +357,9 @@ const CustomerOrderTracking = () => {
                     {/* Steps Timeline Visual */}
                     <div className="relative pl-8 space-y-8 before:content-[''] before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200">
                         {stepsList.map((step, idx) => {
-                            const isDone = idx <= currentStep;
+                            const isDone = idx < currentStep;
                             const isCurrent = idx === currentStep;
+                            const isActiveOrDone = idx <= currentStep;
 
                             return (
                                 <div key={idx} className="relative">
@@ -366,12 +367,14 @@ const CustomerOrderTracking = () => {
                                     <div className={`absolute -left-8 top-1 w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all ${
                                         isDone 
                                         ? 'bg-green-600 border-green-600 text-white' 
+                                        : isCurrent
+                                        ? 'bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/20 animate-pulse'
                                         : 'bg-white border-gray-200 text-gray-300'
                                     }`}>
-                                        <CheckCircle2 size={14} className={isDone ? 'opacity-100' : 'opacity-30'} />
+                                        <CheckCircle2 size={14} className={isActiveOrDone ? 'opacity-100' : 'opacity-30'} />
                                     </div>
                                     <div>
-                                        <h4 className={`text-sm font-black transition-colors ${isDone ? 'text-gray-900' : 'text-gray-400'}`}>{step.title}</h4>
+                                        <h4 className={`text-sm font-black transition-colors ${isCurrent ? 'text-orange-600' : isDone ? 'text-gray-900' : 'text-gray-400'}`}>{step.title}</h4>
                                         <p className="text-xs text-gray-400 mt-0.5 font-medium">{step.desc}</p>
                                     </div>
                                 </div>

@@ -292,19 +292,24 @@ const OrderTracking = () => {
 
                         <div className="space-y-12">
                             {steps.map((step, idx) => {
-                                const isCompleted = progress >= step.num;
+                                const isCompleted = progress > step.num;
                                 const isCurrent = progress === step.num;
+                                const isActiveOrDone = progress >= step.num;
                                 const Icon = step.icon;
                                 
                                 return (
-                                    <div key={idx} className={`relative flex gap-6 ${isCompleted ? 'opacity-100' : 'opacity-40'}`}>
+                                    <div key={idx} className={`relative flex gap-6 ${isActiveOrDone ? 'opacity-100' : 'opacity-40'}`}>
                                         <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative z-10 transition-colors duration-500 ${
-                                            isCompleted ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30' : 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500'
+                                            isCompleted 
+                                            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' 
+                                            : isCurrent
+                                            ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30 animate-pulse'
+                                            : 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500'
                                         }`}>
                                             <Icon size={24} />
                                         </div>
                                         <div>
-                                            <h3 className={`text-lg font-bold font-sans ${isCurrent ? 'text-orange-600 dark:text-orange-400' : 'text-gray-900 dark:text-white'}`}>
+                                            <h3 className={`text-lg font-bold font-sans ${isCurrent ? 'text-orange-600 dark:text-orange-400' : isCompleted ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-slate-500'}`}>
                                                 {step.title}
                                             </h3>
                                             <p className="text-gray-500 dark:text-slate-400 mt-1">{step.desc}</p>
