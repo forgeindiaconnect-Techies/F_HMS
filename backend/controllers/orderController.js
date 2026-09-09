@@ -91,6 +91,7 @@ export const addOrderItems = async (req, res) => {
             taxPrice,
             totalPrice,
             deliveryOtp,
+            status: 'Pending', // Strictly force new order to Pending status
             isPaid: false, // Will be paid later or by cashier
             statusHistory: [{
                 status: 'Pending',
@@ -457,10 +458,8 @@ export const updateOrderToPaid = async (req, res) => {
         order.isPaid = true;
         order.paidAt = Date.now();
         
-        // Preserve kitchen workflow status (do not overwrite with COMPLETED during checkout)
-        if (req.body.status && req.body.status !== 'COMPLETED' && req.body.status !== 'Completed') {
-            order.status = req.body.status;
-        }
+        // IMPORTANT: Never mutate order.status during payment processing!
+        // Kitchen workflow status is managed exclusively via updateOrderStatus.
         
         if (paymentMethod) order.paymentMethod = paymentMethod;
         if (taxPrice !== undefined) order.taxPrice = taxPrice;
