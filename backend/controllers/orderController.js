@@ -413,8 +413,8 @@ export const updateOrderToPaid = async (req, res) => {
         order.isPaid = true;
         order.paidAt = Date.now();
         
-        // Preserve order status (let Kitchen, Waiter, and Cashier update status step-by-step)
-        if (req.body.status) {
+        // Preserve kitchen workflow status (do not overwrite with COMPLETED during checkout)
+        if (req.body.status && req.body.status !== 'COMPLETED' && req.body.status !== 'Completed') {
             order.status = req.body.status;
         }
         

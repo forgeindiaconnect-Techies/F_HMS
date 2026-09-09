@@ -306,7 +306,7 @@ const Checkout = () => {
             try {
                 await api.put(`/orders/${createdOrder._id}/pay`, {
                     id: `PAY_MOCK_${Date.now()}`,
-                    status: 'COMPLETED',
+                    paymentStatus: 'COMPLETED',
                     update_time: new Date().toISOString(),
                     email_address: 'customer@gmail.com'
                 });
