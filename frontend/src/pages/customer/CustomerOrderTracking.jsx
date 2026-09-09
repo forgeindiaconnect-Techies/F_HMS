@@ -164,7 +164,7 @@ const CustomerOrderTracking = () => {
             if (st === 'Out for Delivery' || delSt === 'On the Way' || delSt === 'Picked Up' || st === 'Picked Up') return 3;
             if (st === 'Ready' || st === 'Ready for Pickup') return 2;
             if (st === 'Preparing' || st === 'Accepted' || delSt === 'Accepted') return 1;
-            return 0; // Strictly Step 0 (Order Received) for 'Pending' or initial orders
+            return 0; // Step 0: Order Received (Pending)
         }
         if (isSelfPickup) {
             if (status === 'Completed') return 5;

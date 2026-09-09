@@ -34,7 +34,7 @@ const OrderTracking = () => {
                     } else if (st === 'Preparing' || st === 'Accepted' || st === 'Ready' || st === 'Ready for Pickup' || delSt === 'Accepted') {
                         setProgress(2);
                     } else {
-                        // Strictly Step 1: Order Received for Pending
+                        // Step 1: Order Received (Pending)
                         setProgress(1);
                     }
                 }
