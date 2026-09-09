@@ -132,7 +132,8 @@ export const addOrderItems = async (req, res) => {
                 targetRole: ['Chef', 'Kitchen', 'Waiter', 'Cashier', 'RestaurantAdmin', 'Admin'],
                 read: false
             });
-            broadcastToRestaurant(finalRestaurantId, 'new_notification', notif);
+            const notifObj = notif.toObject ? notif.toObject() : notif;
+            broadcastToRestaurant(finalRestaurantId, 'new_notification', { ...notifObj, orderData: createdOrder });
         } catch (notifErr) {
             console.error('Failed to create order notification', notifErr);
         }

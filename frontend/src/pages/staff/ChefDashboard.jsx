@@ -100,7 +100,7 @@ const ChefDashboard = () => {
                 ws.onmessage = (event) => {
                     try {
                         const msg = JSON.parse(event.data);
-                        if (msg.type === 'new_order' || msg.type === 'order_updated') {
+                        if (msg.type === 'new_order' || msg.type === 'order_updated' || msg.type === 'new_notification') {
                             if (msg.data && msg.data._id) {
                                 // Instantly update local orders state in real-time so incoming ticket renders immediately
                                 setOrders(prev => {
@@ -113,8 +113,9 @@ const ChefDashboard = () => {
                             }
                             fetchOrders();
 
-                            if (msg.type === 'new_order') {
-                                if (msg.data) setNewTicketModalOrder(msg.data);
+                            if (msg.type === 'new_order' || msg.type === 'new_notification') {
+                                const orderData = msg.type === 'new_notification' ? (msg.data?.orderData || msg.data) : msg.data;
+                                if (orderData) setNewTicketModalOrder(orderData);
                                 try {
                                     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                                     const osc = audioCtx.createOscillator();
@@ -132,7 +133,7 @@ const ChefDashboard = () => {
                                     console.error('Audio alert chime error:', e);
                                 }
 
-                                const ticketNum = msg.data?._id ? msg.data._id.substring(msg.data._id.length - 5).toUpperCase() : '';
+                                const ticketNum = orderData?._id ? String(orderData._id).substring(String(orderData._id).length - 5).toUpperCase() : 'NEW';
                                 toast.success(`🔔 NEW ORDER RECEIVED! Ticket #${ticketNum}`, {
                                     duration: 8000,
                                     position: 'top-right'
