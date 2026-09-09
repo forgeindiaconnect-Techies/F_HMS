@@ -266,7 +266,7 @@ html.dark main {
 
 /* Text Colors */
 html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6,
-html.dark .text-gray-900, html.dark .text-[#1e293b], html.dark .text-gray-800 {
+html.dark .text-gray-900, html.dark .text-slate-800, html.dark .text-gray-800 {
   color: #ffffff !important;
 }
 
