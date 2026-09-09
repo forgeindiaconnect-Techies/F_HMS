@@ -287,7 +287,7 @@ const OrderTracking = () => {
                         <div className="absolute left-[23px] top-[40px] bottom-[40px] w-1 bg-gray-100 dark:bg-slate-800 rounded-full"></div>
                         <div 
                             className="absolute left-[23px] top-[40px] w-1 bg-orange-500 rounded-full transition-all duration-1000 ease-in-out"
-                            style={{ height: `${(progress - 1) * 33}%` }}
+                            style={{ height: `${Math.max(0, (progress - 1) * 33)}%` }}
                         ></div>
 
                         <div className="space-y-12">

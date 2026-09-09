@@ -355,7 +355,12 @@ const CustomerOrderTracking = () => {
                     </div>
 
                     {/* Steps Timeline Visual */}
-                    <div className="relative pl-8 space-y-8 before:content-[''] before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200">
+                    <div className="relative pl-8 space-y-8">
+                        <div className="absolute left-3.5 top-2 bottom-2 w-0.5 bg-gray-200"></div>
+                        <div 
+                            className="absolute left-3.5 top-2 w-0.5 bg-orange-500 transition-all duration-700 ease-in-out"
+                            style={{ height: `${Math.min(100, (currentStep / (stepsList.length - 1)) * 100)}%` }}
+                        ></div>
                         {stepsList.map((step, idx) => {
                             const isDone = idx < currentStep;
                             const isCurrent = idx === currentStep;
