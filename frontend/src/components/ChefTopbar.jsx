@@ -18,6 +18,12 @@ const ChefTopbar = () => {
     }, []);
 
     useEffect(() => {
+        fetchNotifications();
+        const pollInterval = setInterval(fetchNotifications, 5000);
+        return () => clearInterval(pollInterval);
+    }, []);
+
+    useEffect(() => {
         if (showNotifs) {
             fetchNotifications();
         }

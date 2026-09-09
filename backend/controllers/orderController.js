@@ -120,16 +120,18 @@ export const addOrderItems = async (req, res) => {
             }
         }
 
-        // Create a notification for the chef
+        // Create a notification for kitchen & staff
         try {
             const Notification = (await import('../models/Notification.js')).default;
-            await Notification.create({
-                title: `New Dine-In Order: Table ${tableNumber || 'Any'}`,
-                desc: `${orderItems.map(i => `${i.qty}x ${i.name}`).join(', ')}`,
+            const notif = await Notification.create({
+                title: `🔔 New Order #${createdOrder._id.toString().substring(createdOrder._id.toString().length - 5).toUpperCase()}`,
+                desc: `${orderType} ${tableNumber ? `(Table ${tableNumber})` : ''} - ${orderItems.map(i => `${i.qty}x ${i.name}`).join(', ')} (₹${totalPrice})`,
                 type: 'Order',
                 restaurantId: finalRestaurantId,
+                targetRole: ['Chef', 'Kitchen', 'Waiter', 'Cashier', 'RestaurantAdmin', 'Admin'],
                 read: false
             });
+            broadcastToRestaurant(finalRestaurantId, 'new_notification', notif);
         } catch (notifErr) {
             console.error('Failed to create order notification', notifErr);
         }
