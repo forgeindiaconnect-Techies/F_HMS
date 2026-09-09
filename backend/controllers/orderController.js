@@ -239,11 +239,18 @@ export const getOrders = async (req, res) => {
         filter.isPaid = req.query.isPaid === 'true';
     }
 
-    // Filter by branchId if explicitly requested in query, otherwise filter by restaurantId so all kitchen staff see orders for their restaurant
+    // Filter by branchId if explicitly requested in query, otherwise match restaurantId or branchId so all kitchen staff see orders
     if (req.query.branchId && mongoose.Types.ObjectId.isValid(req.query.branchId)) {
         filter.branchId = req.query.branchId;
     } else if (req.user && req.user.restaurantId) {
-        filter.restaurantId = req.user.restaurantId;
+        if (req.user.branchId) {
+            filter.$or = [
+                { restaurantId: req.user.restaurantId },
+                { branchId: req.user.branchId }
+            ];
+        } else {
+            filter.restaurantId = req.user.restaurantId;
+        }
     } else if (req.user && req.user.branchId) {
         filter.branchId = req.user.branchId;
     } else if (req.user && req.user.role !== 'SuperAdmin') {

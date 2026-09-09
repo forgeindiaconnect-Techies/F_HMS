@@ -41,11 +41,27 @@ const ChefDashboard = () => {
         '☕ Beverages & Bar'
     ];
 
-    // Poll live orders
+    // Poll live orders and merge with real-time socket state
     const fetchOrders = async () => {
         try {
             const { data } = await api.get('/orders');
-            setOrders(data);
+            if (Array.isArray(data)) {
+                setOrders(prev => {
+                    const fetchedMap = new Map(data.map(o => [o._id, o]));
+                    const merged = [...data];
+                    
+                    // Retain any active socket tickets that may not be in the current HTTP response yet
+                    prev.forEach(p => {
+                        if (p && p._id && !fetchedMap.has(p._id)) {
+                            if (!['Completed', 'Cancelled', 'Delivered', 'Served'].includes(p.status)) {
+                                merged.push(p);
+                            }
+                        }
+                    });
+                    
+                    return merged.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                });
+            }
         } catch (error) {
             console.error('Failed to fetch kitchen orders', error);
         } finally {
