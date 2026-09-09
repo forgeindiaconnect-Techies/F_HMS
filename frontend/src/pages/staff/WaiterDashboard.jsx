@@ -78,9 +78,41 @@ const WaiterDashboard = () => {
             ]);
             setMenu(menuRes.data);
             setAllOrders(ordersRes.data);
-            setActiveOrders(ordersRes.data.filter(o => o.orderType === 'Dine In' && !['Delivered', 'Completed'].includes(o.status)));
+            setActiveOrders(ordersRes.data.filter(o => !['Delivered', 'Completed'].includes(o.status)));
             setDbTables(tablesRes.data);
             setServiceRequests(requestsRes.data);
+
+            // Generate Priority Actions dynamically from Ready orders and service requests
+            const dynamicActions = [];
+            ordersRes.data.forEach(o => {
+                const isSelf = o.orderType === 'Self-Pickup' || o.orderType === 'Self Pickup';
+                if (['Ready', 'Ready for Pickup'].includes(o.status)) {
+                    dynamicActions.push({
+                        id: `pa-ready-${o._id}`,
+                        orderId: o._id,
+                        type: 'urgent',
+                        table: isSelf ? 'Self-Pickup' : (o.tableNumber ? `Table ${o.tableNumber}` : 'Takeout'),
+                        label: 'FOOD READY',
+                        time: 'Just now',
+                        title: isSelf ? 'Self-Pickup Counter Transfer' : 'Food Ready in Kitchen',
+                        details: o.orderItems.map(i => `${i.qty}x ${i.name}`).join(', '),
+                        buttonLabel: isSelf ? 'Mark Ready at Counter' : 'Mark Served',
+                        icon: Utensils,
+                        color: isSelf ? 'amber' : 'rose',
+                        action: async (actionId) => {
+                            try {
+                                const nextStatus = isSelf ? 'Picked Up' : 'Served';
+                                await api.put(`/orders/${o._id}/status`, { status: nextStatus });
+                                toast.success(isSelf ? 'Notified customer: Ready for pickup at counter!' : 'Order marked as served!');
+                                fetchData();
+                            } catch (err) {
+                                toast.error('Failed to update status');
+                            }
+                        }
+                    });
+                }
+            });
+            setPriorityActions(dynamicActions);
         } catch (error) {
             console.error('Failed to fetch data', error);
         }
