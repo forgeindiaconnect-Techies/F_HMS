@@ -157,11 +157,14 @@ const CustomerOrderTracking = () => {
 
     const getStatusStep = (status, deliveryStatus) => {
         if (isDelivery) {
-            if (status === 'Delivered' || status === 'Completed' || deliveryStatus === 'Delivered') return 4;
-            if (status === 'Out for Delivery' || deliveryStatus === 'On the Way' || deliveryStatus === 'Picked Up' || status === 'Picked Up') return 3;
-            if (['Ready', 'Ready for Pickup'].includes(status)) return 2;
-            if (['Preparing', 'Accepted'].includes(status) || deliveryStatus === 'Accepted') return 1;
-            return 0; // Step 0: Order Received
+            const st = String(status || '').trim();
+            const delSt = String(deliveryStatus || '').trim();
+
+            if (st === 'Delivered' || st === 'Completed' || delSt === 'Delivered') return 4;
+            if (st === 'Out for Delivery' || delSt === 'On the Way' || delSt === 'Picked Up' || st === 'Picked Up') return 3;
+            if (st === 'Ready' || st === 'Ready for Pickup') return 2;
+            if (st === 'Preparing' || st === 'Accepted' || delSt === 'Accepted') return 1;
+            return 0; // Strictly Step 0 (Order Received) for 'Pending' or initial orders
         }
         if (isSelfPickup) {
             if (status === 'Completed') return 5;
