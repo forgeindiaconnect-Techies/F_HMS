@@ -90,6 +90,7 @@ const CashierDashboard = () => {
                 taxPrice: taxAmount,
                 totalPrice: total
             });
+            await api.put(`/orders/${activeBill._id}/status`, { status: 'Completed' });
             
             handlePrintReceipt({
                 ...activeBill,
