@@ -27,14 +27,14 @@ const OrderTracking = () => {
                     const st = String(data.status || '').trim();
                     const delSt = String(data.deliveryStatus || '').trim();
 
-                    if (st === 'Delivered' || st === 'Completed' || delSt === 'Delivered') {
+                    if (st === 'Delivered' || delSt === 'Delivered') {
                         setProgress(4);
                     } else if (st === 'Out for Delivery' || delSt === 'On the Way' || delSt === 'Picked Up' || st === 'Picked Up') {
                         setProgress(3);
-                    } else if (st === 'Preparing' || st === 'Accepted' || st === 'Ready' || st === 'Ready for Pickup' || delSt === 'Accepted') {
+                    } else if (st === 'Preparing' || st === 'Accepted' || st === 'Ready' || st === 'Ready for Pickup') {
                         setProgress(2);
                     } else {
-                        // Step 1: Order Received (Pending)
+                        // Step 1: Order Placed (Pending)
                         setProgress(1);
                     }
                 }
@@ -87,10 +87,10 @@ const OrderTracking = () => {
         { num: 3, title: 'Ready for Pickup', desc: 'Please collect it from the Pickup Counter.', icon: PackageOpen },
         { num: 4, title: 'Completed', desc: 'Thank you! Enjoy your meal.', icon: CheckCircle }
     ] : [
-        { num: 1, title: 'Order Received', desc: 'We have received your order.', icon: PackageOpen },
-        { num: 2, title: 'Preparing', desc: 'The kitchen is preparing your food.', icon: ChefHat },
-        { num: 3, title: 'On the Way', desc: 'Your order is out for delivery.', icon: Bike },
-        { num: 4, title: 'Delivered', desc: 'Enjoy your meal!', icon: CheckCircle }
+        { num: 1, title: 'Order Placed', desc: 'We have received your order. Awaiting kitchen accept.', icon: PackageOpen },
+        { num: 2, title: 'Preparing Food', desc: 'Kitchen accepted & preparing your meal.', icon: ChefHat },
+        { num: 3, title: 'Out for Delivery', desc: 'Delivery partner claimed order and is on the way.', icon: Bike },
+        { num: 4, title: 'Delivered', desc: 'Food delivered safely! Enjoy your meal.', icon: CheckCircle }
     ];
 
     return (

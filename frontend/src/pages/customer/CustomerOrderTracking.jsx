@@ -160,10 +160,10 @@ const CustomerOrderTracking = () => {
             const st = String(status || '').trim();
             const delSt = String(deliveryStatus || '').trim();
 
-            if (st === 'Delivered' || st === 'Completed' || delSt === 'Delivered') return 3; // Step 4 (index 3): Delivered
-            if (st === 'Out for Delivery' || delSt === 'On the Way' || delSt === 'Picked Up' || st === 'Picked Up') return 2; // Step 3 (index 2): On the Way
-            if (st === 'Preparing' || st === 'Accepted' || st === 'Ready' || st === 'Ready for Pickup' || delSt === 'Accepted') return 1; // Step 2 (index 1): Preparing
-            return 0; // Step 1 (index 0): Order Received (Pending)
+            if (st === 'Delivered' || delSt === 'Delivered') return 3; // Step 4 (index 3): Delivered
+            if (st === 'Out for Delivery' || delSt === 'On the Way' || delSt === 'Picked Up' || st === 'Picked Up') return 2; // Step 3 (index 2): Out for Delivery
+            if (st === 'Preparing' || st === 'Accepted' || st === 'Ready' || st === 'Ready for Pickup') return 1; // Step 2 (index 1): Preparing
+            return 0; // Step 1 (index 0): Order Placed
         }
         if (isSelfPickup) {
             if (status === 'Completed') return 5;
@@ -205,10 +205,10 @@ const CustomerOrderTracking = () => {
 
     const currentStep = getStatusStep(order.status, order.deliveryStatus);
     const stepsList = isDelivery ? [
-        { title: 'Order Received', desc: 'We have received your order.' },
-        { title: 'Preparing', desc: 'The kitchen is preparing your food.' },
-        { title: 'On the Way', desc: 'Your order is out for delivery.' },
-        { title: 'Delivered', desc: 'Enjoy your meal!' }
+        { title: 'Order Placed', desc: 'We have received your order. Awaiting kitchen accept.' },
+        { title: 'Preparing Food', desc: 'Kitchen accepted & preparing your meal.' },
+        { title: 'Out for Delivery', desc: 'Delivery partner claimed order and is on the way.' },
+        { title: 'Delivered', desc: 'Food delivered safely! Enjoy your meal.' }
     ] : isSelfPickup ? [
         { title: 'Order Received', desc: 'Awaiting kitchen accept' },
         { title: 'Accepted', desc: 'Chef accepted your order' },
