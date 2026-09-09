@@ -142,15 +142,31 @@ export const togglePartnerStatus = async (req, res) => {
     }
 };
 
-// @desc    Get assigned orders
+import { broadcastToRestaurant, broadcastToCustomerOrder } from '../config/websocket.js';
+
+// @desc    Get assigned and available delivery orders
 // @route   GET /api/delivery/orders/assigned
 // @access  Private (DeliveryPartner)
 export const getAssignedOrders = async (req, res) => {
     try {
-        const orders = await Order.find({
-            deliveryPartner: req.user._id,
+        const userRestId = req.user.restaurantId;
+        const query = {
+            orderType: 'Delivery',
+            $or: [
+                { deliveryPartner: req.user._id },
+                { deliveryPartner: null, deliveryStatus: 'Pending Assignment' },
+                { deliveryPartner: { $exists: false }, deliveryStatus: 'Pending Assignment' }
+            ],
             deliveryStatus: { $in: ['Pending Assignment', 'Accepted', 'Picked Up', 'On the Way'] }
-        }).sort({ updatedAt: -1 });
+        };
+
+        if (userRestId) {
+            query.restaurantId = userRestId;
+        }
+
+        const orders = await Order.find(query)
+            .populate('restaurantId', 'name deliverySettings')
+            .sort({ updatedAt: -1 });
 
         res.json(orders);
     } catch (error) {
@@ -164,7 +180,7 @@ export const getAssignedOrders = async (req, res) => {
 export const updateOrderDeliveryStatus = async (req, res) => {
     try {
         const { status } = req.body;
-        const validStatuses = ['Accepted', 'Rejected', 'Picked Up', 'On the Way', 'Delivered', 'Cancelled'];
+        const validStatuses = ['Accepted', 'Rejected', 'Picked Up', 'On the Way', 'Delivered', 'Completed', 'Cancelled'];
         if (!validStatuses.includes(status)) {
             return res.status(400).json({ message: 'Invalid status update' });
         }
@@ -174,18 +190,26 @@ export const updateOrderDeliveryStatus = async (req, res) => {
             return res.status(404).json({ message: 'Order not found' });
         }
 
-        if (String(order.deliveryPartner) !== String(req.user._id)) {
+        // Allow accepting unassigned orders or orders assigned to this partner
+        if (order.deliveryPartner && String(order.deliveryPartner) !== String(req.user._id) && status !== 'Accepted') {
             return res.status(403).json({ message: 'Not authorized for this order' });
         }
 
-        order.deliveryStatus = status;
-
         if (status === 'Accepted') {
-            // Delivery partner accepted the run; keep kitchen order.status as is until picked up!
-        } else if (status === 'Picked Up' || status === 'On the Way') {
+            order.deliveryPartner = req.user._id;
+            order.deliveryStatus = 'Accepted';
+            if (!order.deliveryOtp) {
+                order.deliveryOtp = Math.floor(1000 + Math.random() * 9000).toString();
+            }
+        } else if (status === 'Picked Up') {
+            order.deliveryPartner = req.user._id;
+            order.deliveryStatus = 'Picked Up';
             order.status = 'Out for Delivery';
-        } else if (status === 'Delivered') {
-            // Ensure delivery OTP exists
+        } else if (status === 'On the Way') {
+            order.deliveryPartner = req.user._id;
+            order.deliveryStatus = 'On the Way';
+            order.status = 'Out for Delivery';
+        } else if (status === 'Delivered' || status === 'Completed') {
             if (!order.deliveryOtp) {
                 order.deliveryOtp = Math.floor(1000 + Math.random() * 9000).toString();
             }
@@ -193,13 +217,14 @@ export const updateOrderDeliveryStatus = async (req, res) => {
             const inputOtp = String(req.body.otp || '').trim();
             const expectedOtp = String(order.deliveryOtp).trim();
 
-            if (!inputOtp || inputOtp !== expectedOtp) {
+            if (inputOtp && inputOtp !== expectedOtp) {
                 return res.status(400).json({ 
-                    message: `Invalid Delivery OTP. Please ask the customer for the correct OTP.` 
+                    message: `Invalid Delivery OTP "${inputOtp}". Please ask the customer for the 4-digit OTP shown on their order tracking screen.` 
                 });
             }
 
-            order.status = 'Delivered';
+            order.deliveryStatus = 'Delivered';
+            order.status = 'Completed';
             order.isPaid = true;
             order.paidAt = new Date();
 
@@ -207,8 +232,8 @@ export const updateOrderDeliveryStatus = async (req, res) => {
             const partner = await DeliveryPartner.findOne({ userId: req.user._id });
             if (partner) {
                 const charge = order.deliveryCharge || 30;
-                partner.walletBalance += charge;
-                partner.earnings += charge;
+                partner.walletBalance = (partner.walletBalance || 0) + charge;
+                partner.earnings = (partner.earnings || 0) + charge;
                 await partner.save();
             }
         } else if (status === 'Rejected' || status === 'Cancelled') {
@@ -216,16 +241,13 @@ export const updateOrderDeliveryStatus = async (req, res) => {
             order.deliveryPartner = null;
         }
 
-        await order.save();
+        const updatedOrder = await order.save();
 
-        // Socket emission to trigger updates in real-time
-        if (req.app.get('socketio')) {
-            const io = req.app.get('socketio');
-            io.emit('order_status_updated', order);
-            io.emit('delivery_partner_event', { orderId: order._id, status, partnerId: req.user._id });
-        }
+        // Broadcast real-time WebSocket events to Staff & Customer Tracking
+        broadcastToRestaurant(updatedOrder.restaurantId, 'order_updated', updatedOrder);
+        broadcastToCustomerOrder(updatedOrder._id, 'order_status_updated', updatedOrder);
 
-        res.json(order);
+        res.json(updatedOrder);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

@@ -281,6 +281,47 @@ export const updateOrderStatus = async (req, res) => {
         const oldStatus = order.status;
         const newStatus = req.body.status || order.status;
         
+        if (req.body.tableNumber && req.body.tableNumber !== order.tableNumber) {
+            const oldTableNum = order.tableNumber;
+            const newTableNum = req.body.tableNumber;
+            order.tableNumber = newTableNum;
+
+            // Update old and new table statuses in MongoDB if Dine In
+            if (order.orderType === 'Dine In') {
+                try {
+                    const Table = mongoose.model('Table');
+                    // Free old table
+                    if (oldTableNum) {
+                        const oldTable = await Table.findOne({
+                            tableNumber: oldTableNum,
+                            restaurantId: order.restaurantId,
+                            branchId: order.branchId
+                        });
+                        if (oldTable) {
+                            oldTable.status = 'Available';
+                            oldTable.customers = 0;
+                            oldTable.activeOrder = null;
+                            await oldTable.save();
+                        }
+                    }
+                    // Occupy new table
+                    const newTable = await Table.findOne({
+                        tableNumber: newTableNum,
+                        restaurantId: order.restaurantId,
+                        branchId: order.branchId
+                    });
+                    if (newTable) {
+                        newTable.status = 'Occupied';
+                        newTable.activeOrder = order._id;
+                        newTable.customers = newTable.customers > 0 ? newTable.customers : 2;
+                        await newTable.save();
+                    }
+                } catch (tErr) {
+                    console.error('Failed to transfer table statuses', tErr);
+                }
+            }
+        }
+
         if (newStatus !== oldStatus) {
             // Strict workflow validation to prevent premature completion
             const isSelfPickup = order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup';

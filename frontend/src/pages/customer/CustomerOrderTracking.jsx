@@ -380,6 +380,23 @@ const CustomerOrderTracking = () => {
                     </div>
                 </div>
 
+                {/* Delivery Security Code (OTP) Card for Home Delivery */}
+                {isDelivery && order.deliveryOtp && (
+                    <div className="bg-amber-500/10 border-2 border-amber-500/30 rounded-3xl p-6 shadow-sm space-y-3 text-center backdrop-blur">
+                        <div className="flex items-center justify-center gap-2 text-amber-600 dark:text-amber-400">
+                            <span className="relative flex h-3 w-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                            </span>
+                            <h3 className="font-black text-sm uppercase tracking-wider">Delivery Security Code</h3>
+                        </div>
+                        <p className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Share this 4-digit PIN with the delivery executive upon arrival to confirm delivery:</p>
+                        <div className="bg-white dark:bg-slate-900 border border-amber-500/40 text-amber-600 dark:text-amber-400 py-3.5 px-6 rounded-2xl font-mono text-3xl font-black tracking-[0.4em] inline-block shadow-md">
+                            {order.deliveryOtp}
+                        </div>
+                    </div>
+                )}
+
                 {/* Pickup Counter Verification Card */}
                 {isSelfPickup && (
                     <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4 text-center">

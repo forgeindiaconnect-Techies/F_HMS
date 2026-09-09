@@ -88,6 +88,48 @@ const DeliveryPartnerDashboard = () => {
         }
         setUser(authUser || JSON.parse(stored));
         loadData();
+
+        // WebSocket Connection for instant delivery updates
+        let ws;
+        const connectWS = () => {
+            let baseURL = API_URL;
+            let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
+            ws = new WebSocket(wsURL);
+
+            ws.onopen = () => {
+                ws.send(JSON.stringify({
+                    type: 'register',
+                    role: 'delivery'
+                }));
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const msg = JSON.parse(event.data);
+                    if (['order_status_updated', 'new_order', 'delivery_status_updated'].includes(msg.type)) {
+                        loadData();
+                    }
+                } catch (e) {
+                    console.error("Error reading websocket message", e);
+                }
+            };
+
+            ws.onclose = () => {
+                setTimeout(connectWS, 5000);
+            };
+        };
+
+        connectWS();
+
+        // 10s fallback polling
+        const pollInterval = setInterval(() => {
+            loadData();
+        }, 10000);
+
+        return () => {
+            if (ws) ws.close();
+            clearInterval(pollInterval);
+        };
     }, [authUser]);
 
     useEffect(() => {
