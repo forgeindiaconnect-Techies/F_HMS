@@ -32,24 +32,50 @@ export const initWebSocket = (server) => {
     });
 };
 
+const extractId = (id) => {
+    if (!id) return '';
+    if (typeof id === 'object') return String(id._id || id.id || id);
+    return String(id);
+};
+
 export const broadcastToRestaurant = (restaurantId, eventType, payload) => {
     if (!wss) return;
+
+    const targetRestId = extractId(restaurantId);
     const message = JSON.stringify({ type: eventType, data: payload });
 
     clients.forEach((clientInfo, ws) => {
-        if (ws.readyState === 1 && String(clientInfo.restaurantId) === String(restaurantId)) {
-            ws.send(message);
+        if (ws.readyState === 1) {
+            const clientRestId = extractId(clientInfo?.restaurantId);
+            
+            // Broadcast if target matches client, or if client/target is generic staff connection
+            if (!targetRestId || !clientRestId || clientRestId === targetRestId || clientRestId === '[object Object]') {
+                try {
+                    ws.send(message);
+                } catch (e) {
+                    console.error('Error broadcasting to WS client', e);
+                }
+            }
         }
     });
 };
 
 export const broadcastToCustomerOrder = (orderId, eventType, payload) => {
     if (!wss) return;
+
+    const targetOrderId = extractId(orderId);
     const message = JSON.stringify({ type: eventType, data: payload });
 
     clients.forEach((clientInfo, ws) => {
-        if (ws.readyState === 1 && String(clientInfo.orderId) === String(orderId)) {
-            ws.send(message);
+        if (ws.readyState === 1) {
+            const clientOrderId = extractId(clientInfo?.orderId);
+            if (!targetOrderId || !clientOrderId || clientOrderId === targetOrderId || clientOrderId === '[object Object]') {
+                try {
+                    ws.send(message);
+                } catch (e) {
+                    console.error('Error broadcasting customer order WS', e);
+                }
+            }
         }
     });
 };

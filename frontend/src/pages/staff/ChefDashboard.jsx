@@ -87,13 +87,13 @@ const ChefDashboard = () => {
                 ws = new WebSocket(wsURL);
 
                 ws.onopen = () => {
-                    if (user && user.restaurantId) {
-                        ws.send(JSON.stringify({
-                            type: 'register',
-                            restaurantId: user.restaurantId,
-                            role: 'kitchen'
-                        }));
-                    }
+                    const rawRestId = user?.restaurantId;
+                    const cleanRestId = (rawRestId && typeof rawRestId === 'object') ? (rawRestId._id || rawRestId.id) : rawRestId;
+                    ws.send(JSON.stringify({
+                        type: 'register',
+                        restaurantId: cleanRestId || null,
+                        role: 'kitchen'
+                    }));
                 };
 
                 ws.onmessage = (event) => {
