@@ -750,15 +750,9 @@ const ChefDashboard = () => {
                         { title: '✨ Plated & Ready', keys: ['Ready', 'Ready for Pickup'], accent: 'from-emerald-600 to-teal-600', key: 'Ready' },
                         { title: '✅ Served & Completed', keys: ['Completed', 'Served', 'Picked Up', 'Delivered'], accent: 'from-slate-700 to-slate-900', key: 'Completed' }
                     ].map(column => {
-                        // Filter orders for this column using active tab, station & search criteria
+                        // Filter orders for this column using station & search criteria
                         const colOrders = orders.filter(o => {
                             if (!column.keys.includes(o.status)) return false;
-                            
-                            // Active Tab Filter (if tab is specified, e.g. Incoming, Cooking, Ready, Completed)
-                            if (activeTab === 'Pending' && !['Pending', 'Accepted'].includes(o.status)) return false;
-                            if (activeTab === 'Preparing' && o.status !== 'Preparing') return false;
-                            if (activeTab === 'Ready' && !['Ready', 'Ready for Pickup'].includes(o.status)) return false;
-                            if (activeTab === 'Completed' && !['Completed', 'Served', 'Picked Up', 'Delivered'].includes(o.status)) return false;
 
                             if (searchQuery.trim()) {
                                 const q = searchQuery.toLowerCase();
