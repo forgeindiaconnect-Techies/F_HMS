@@ -63,7 +63,7 @@ const WaiterTasks = () => {
 
     useEffect(() => {
         fetchLiveTasks();
-        const interval = setInterval(fetchLiveTasks, 10000);
+        const interval = setInterval(fetchLiveTasks, 3000);
         return () => clearInterval(interval);
     }, [api, user]);
 

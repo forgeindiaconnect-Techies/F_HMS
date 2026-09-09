@@ -141,23 +141,70 @@ const WaiterDashboard = () => {
             ws.onmessage = (event) => {
                 try {
                     const msg = JSON.parse(event.data);
-                    if (msg.type === 'new_order' || msg.type === 'order_updated' || msg.type === 'ready_to_serve') {
+                    if (['new_order', 'order_updated', 'ready_to_serve', 'new_notification'].includes(msg.type)) {
                         fetchData();
 
-                        if (msg.data && (msg.data.orderType === 'Self-Pickup' || msg.data.orderType === 'Self Pickup') && msg.data.status === 'Ready for Pickup') {
-                            toast.success(`Self-Pickup Order #${msg.data._id.substring(msg.data._id.length - 6).toUpperCase()} is ready!`, {
+                        if (msg.type === 'new_order' || msg.type === 'new_notification') {
+                            const orderData = msg.data?.orderData || msg.data;
+                            if (orderData && orderData.tableNumber) {
+                                try {
+                                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                                    const osc = audioCtx.createOscillator();
+                                    const gain = audioCtx.createGain();
+                                    osc.type = 'sine';
+                                    osc.frequency.setValueAtTime(784, audioCtx.currentTime); // G5
+                                    osc.frequency.exponentialRampToValueAtTime(523, audioCtx.currentTime + 0.3); // C5
+                                    gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                                    osc.connect(gain);
+                                    gain.connect(audioCtx.destination);
+                                    osc.start();
+                                    osc.stop(audioCtx.currentTime + 0.3);
+                                } catch (e) {}
+
+                                toast.success(`🔔 New Order at Table ${orderData.tableNumber}!`, {
+                                    duration: 6000,
+                                    position: 'top-right'
+                                });
+                            }
+                        }
+
+                        if (msg.data && msg.data.status === 'Ready') {
+                            toast.success(`🍽️ Food READY for Table ${msg.data.tableNumber || 'Takeout'}!`, {
                                 duration: 8000,
-                                position: 'top-right',
-                                icon: '📦'
+                                position: 'top-right'
+                            });
+                        } else if (msg.data && (msg.data.orderType === 'Self-Pickup' || msg.data.orderType === 'Self Pickup') && msg.data.status === 'Ready for Pickup') {
+                            toast.success(`📦 Self-Pickup Order #${String(msg.data._id).substring(String(msg.data._id).length - 6).toUpperCase()} is ready!`, {
+                                duration: 8000,
+                                position: 'top-right'
                             });
                         }
                     } else if (msg.type === 'new_service_request') {
+                        fetchData();
                         setServiceRequests(prev => {
                             if (prev.some(r => r._id === msg.data._id)) return prev;
                             return [msg.data, ...prev];
                         });
-                        toast(`New Customer Request at Table ${msg.data.tableNumber}!`, { icon: '🔔' });
+                        try {
+                            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+                            osc.type = 'triangle';
+                            osc.frequency.setValueAtTime(987.77, audioCtx.currentTime); // B5
+                            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.start();
+                            osc.stop(audioCtx.currentTime + 0.4);
+                        } catch (e) {}
+                        toast(`🔔 Customer Request: ${msg.data.requestType} at Table ${msg.data.tableNumber}!`, { 
+                            duration: 7000,
+                            position: 'top-right' 
+                        });
                     } else if (msg.type === 'service_request_updated') {
+                        fetchData();
                         if (msg.data.status === 'Completed') {
                             setServiceRequests(prev => prev.filter(r => r._id !== msg.data._id));
                         }

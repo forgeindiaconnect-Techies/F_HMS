@@ -23,7 +23,7 @@ const WaiterKitchenTracker = () => {
 
     useEffect(() => {
         fetchOrders();
-        const interval = setInterval(fetchOrders, 8000);
+        const interval = setInterval(fetchOrders, 3000);
         return () => clearInterval(interval);
     }, [api]);
 
