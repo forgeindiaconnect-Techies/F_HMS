@@ -80,57 +80,7 @@ const WaiterPriorityActions = () => {
         }))
     ];
 
-    // Default mock fallback items if backend arrays are empty to give a rich interactive demo
-    const displayItems = priorityItems.length > 0 ? priorityItems : [
-        {
-            id: 'mock-1',
-            table: 'Table 5',
-            type: 'URGENT',
-            title: 'Food Ready in Kitchen',
-            subtitle: '2x Grilled Salmon, 1x Truffle Pasta',
-            time: 'Waiting 2m',
-            actionText: 'Serve Now',
-            icon: Utensils,
-            color: 'rose',
-            handler: () => toast.success('Table 5 served!')
-        },
-        {
-            id: 'mock-2',
-            table: 'Table 7',
-            type: 'IMPORTANT',
-            title: 'Bill Requested by Customer',
-            subtitle: 'Card Payment • Total: ₹2,450',
-            time: 'Waiting 4m',
-            actionText: 'Generate Bill',
-            icon: Receipt,
-            color: 'amber',
-            handler: () => toast.success('Bill generated for Table 7!')
-        },
-        {
-            id: 'mock-3',
-            table: 'Table 3',
-            type: 'INFO REQUEST',
-            title: 'Customer Requested Water',
-            subtitle: 'Warm water & extra lemon requested',
-            time: 'Just now',
-            actionText: 'Acknowledge',
-            icon: Bell,
-            color: 'blue',
-            handler: () => toast.success('Acknowledged Table 3 request!')
-        },
-        {
-            id: 'mock-4',
-            table: 'Table 8',
-            type: 'ASSISTANCE',
-            title: 'Customer Needs Assistance',
-            subtitle: 'Wants recommendations on dessert menu',
-            time: 'Waiting 1m',
-            actionText: 'Attend Table',
-            icon: Users,
-            color: 'emerald',
-            handler: () => toast.success('Assigned to assist Table 8!')
-        }
-    ];
+    const displayItems = priorityItems;
 
     const filteredItems = filter === 'All' 
         ? displayItems 

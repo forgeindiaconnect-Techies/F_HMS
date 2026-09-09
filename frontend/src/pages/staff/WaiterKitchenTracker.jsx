@@ -48,30 +48,7 @@ const WaiterKitchenTracker = () => {
         }
     };
 
-    // Synthesize mock kitchen tickets if backend is empty
-    const displayOrders = orders.length > 0 ? orders : [
-        {
-            _id: 'ord-101',
-            tableNumber: 'Table 1',
-            status: 'Preparing',
-            createdAt: new Date(Date.now() - 10 * 60000),
-            orderItems: [{ name: 'Margherita Pizza', qty: 1 }, { name: 'Garlic Bread', qty: 2 }]
-        },
-        {
-            _id: 'ord-102',
-            tableNumber: 'Table 5',
-            status: 'Ready',
-            createdAt: new Date(Date.now() - 15 * 60000),
-            orderItems: [{ name: 'Grilled Salmon', qty: 2 }, { name: 'Truffle Pasta', qty: 1 }]
-        },
-        {
-            _id: 'ord-103',
-            tableNumber: 'Table 3',
-            status: 'Order Received',
-            createdAt: new Date(Date.now() - 3 * 60000),
-            orderItems: [{ name: 'Cold Coffee', qty: 2 }]
-        }
-    ];
+    const displayOrders = orders;
 
     const filteredOrders = stageFilter === 'All'
         ? displayOrders
