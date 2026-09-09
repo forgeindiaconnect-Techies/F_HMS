@@ -15,7 +15,7 @@ const ChefDashboard = () => {
     // Core State
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('All');
+    const [activeTab, setActiveTab] = useState('Pending');
     const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'kanban'
     const [selectedStation, setSelectedStation] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
