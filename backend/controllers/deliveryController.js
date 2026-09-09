@@ -217,9 +217,9 @@ export const updateOrderDeliveryStatus = async (req, res) => {
             const inputOtp = String(req.body.otp || '').trim();
             const expectedOtp = String(order.deliveryOtp).trim();
 
-            if (inputOtp && inputOtp !== expectedOtp) {
+            if (!inputOtp || inputOtp !== expectedOtp) {
                 return res.status(400).json({ 
-                    message: `Invalid Delivery OTP "${inputOtp}". Please ask the customer for the 4-digit OTP shown on their order tracking screen.` 
+                    message: `Invalid Delivery OTP. Please enter the 4-digit OTP shown on the customer's order tracking screen.` 
                 });
             }
 

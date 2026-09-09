@@ -826,9 +826,15 @@ const ChefDashboard = () => {
                                                             </button>
                                                         )}
                                                         {['Ready', 'Ready for Pickup'].includes(order.status) && (
-                                                            <button onClick={() => updateStatus(order._id, order.orderType === 'Dine In' ? 'Served' : isSelf ? 'Picked Up' : 'Completed')} className="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-emerald-600 dark:text-emerald-400 font-bold py-2 rounded-xl text-xs cursor-pointer flex items-center justify-center gap-1 active:scale-95 transition-all">
-                                                                <Check size={14} /> Bump Complete
-                                                            </button>
+                                                            order.orderType === 'Delivery' ? (
+                                                                <div className="text-center text-[11px] font-bold text-amber-500 bg-amber-500/10 py-1.5 rounded-xl flex items-center justify-center gap-1 border border-amber-500/20">
+                                                                    <Clock size={13} /> Food Ready • Awaiting Driver
+                                                                </div>
+                                                            ) : (
+                                                                <button onClick={() => updateStatus(order._id, order.orderType === 'Dine In' ? 'Served' : 'Picked Up')} className="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-emerald-600 dark:text-emerald-400 font-bold py-2 rounded-xl text-xs cursor-pointer flex items-center justify-center gap-1 active:scale-95 transition-all">
+                                                                    <Check size={14} /> Bump Complete
+                                                                </button>
+                                                            )
                                                         )}
                                                         {['Completed', 'Served', 'Picked Up', 'Delivered'].includes(order.status) && (
                                                             <div className="text-center text-[11px] font-bold text-slate-500 flex items-center justify-center gap-1 py-1">
