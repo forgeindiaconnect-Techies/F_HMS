@@ -6,35 +6,54 @@ import Notification from '../models/Notification.js';
 export const getNotifications = async (req, res) => {
     try {
         const { role, restaurantId } = req.user;
+        const userId = req.user._id;
 
         let query = {};
 
         if (role === 'SuperAdmin') {
-            // SuperAdmin sees only system/global notifications (no restaurantId)
             query = { isSuperAdminOnly: true };
         } else if (role === 'RestaurantAdmin' || role === 'Admin') {
-            // RestaurantAdmin sees their restaurant notifications targeted at admins
-            // or broadcast notifications (no targetRole restriction)
             query = {
-                restaurantId,
                 $or: [
-                    { targetRole: null },
-                    { targetRole: { $size: 0 } },
-                    { targetRole: { $in: ['RestaurantAdmin', 'Admin'] } }
+                    { userId },
+                    {
+                        restaurantId,
+                        $or: [
+                            { targetRole: null },
+                            { targetRole: { $size: 0 } },
+                            { targetRole: { $in: ['RestaurantAdmin', 'Admin'] } }
+                        ]
+                    }
+                ]
+            };
+        } else if (role === 'Customer') {
+            query = {
+                $or: [
+                    { userId },
+                    {
+                        restaurantId,
+                        $or: [
+                            { targetRole: null },
+                            { targetRole: { $size: 0 } },
+                            { targetRole: { $in: ['Customer'] } }
+                        ]
+                    }
                 ]
             };
         } else {
-            // Other staff (Waiter, Cashier, Kitchen, etc.) see notifications
-            // targeted at their specific role or with no role restriction
+            // Other staff (Chef, Waiter, Cashier, Kitchen, Delivery)
             query = {
-                restaurantId,
                 $or: [
-                    { targetRole: null },
-                    { targetRole: { $size: 0 } },
-                    { targetRole: { $in: [role] } }
-                ],
-                // Don't show admin-only notifications to staff
-                'targetRole': { $not: { $in: ['RestaurantAdmin', 'Admin'] } }
+                    { userId },
+                    {
+                        restaurantId,
+                        $or: [
+                            { targetRole: null },
+                            { targetRole: { $size: 0 } },
+                            { targetRole: { $in: [role, 'Kitchen'] } }
+                        ]
+                    }
+                ]
             };
         }
 

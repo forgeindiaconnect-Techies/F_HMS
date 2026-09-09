@@ -317,14 +317,62 @@ export const updateOrderStatus = async (req, res) => {
                 updatedBy: req.user ? req.user._id : null
             });
 
-            if (newStatus === 'Ready') {
-                // Delivery partner notification
+            const ticketNum = order._id.toString().substring(order._id.toString().length - 5).toUpperCase();
+
+            if (newStatus === 'Preparing') {
+                try {
+                    const Notification = (await import('../models/Notification.js')).default;
+                    await Notification.create({
+                        title: `🍳 Order Under Preparation`,
+                        desc: `Chef is now preparing Order #${ticketNum}.`,
+                        type: 'Order',
+                        restaurantId: order.restaurantId,
+                        userId: order.user,
+                        read: false
+                    });
+                } catch (err) {
+                    console.error('Failed to create preparing notification', err);
+                }
+            }
+
+            if (newStatus === 'Ready' || newStatus === 'Ready for Pickup') {
+                // Waiter & Cashier notification
+                try {
+                    const Notification = (await import('../models/Notification.js')).default;
+                    const notif = await Notification.create({
+                        title: `✨ Order #${ticketNum} is Ready!`,
+                        desc: `Order #${ticketNum} ${order.tableNumber ? `(Table ${order.tableNumber})` : ''} is plated and ready for pickup/service.`,
+                        type: 'Order',
+                        restaurantId: order.restaurantId,
+                        targetRole: ['Waiter', 'Cashier', 'RestaurantAdmin', 'Admin'],
+                        read: false
+                    });
+                    broadcastToRestaurant(order.restaurantId, 'new_notification', notif);
+                } catch (err) {
+                    console.error('Failed to create waiter notification', err);
+                }
+
+                // Customer notification
+                try {
+                    const Notification = (await import('../models/Notification.js')).default;
+                    await Notification.create({
+                        title: `✨ Order Ready!`,
+                        desc: `Your order #${ticketNum} is freshly prepared and ready!`,
+                        type: 'Order',
+                        restaurantId: order.restaurantId,
+                        userId: order.user,
+                        read: false
+                    });
+                } catch (err) {
+                    console.error('Failed to create customer notification', err);
+                }
+
                 if (order.orderType === 'Delivery' && order.deliveryPartner) {
                     try {
                         const Notification = (await import('../models/Notification.js')).default;
                         await Notification.create({
                             title: `Delivery Order Ready`,
-                            desc: `Order #${order._id.toString().substring(order._id.toString().length - 4).toUpperCase()} is prepared. Pick it up from the kitchen.`,
+                            desc: `Order #${ticketNum} is prepared. Pick it up from the kitchen.`,
                             type: 'Order',
                             restaurantId: order.restaurantId,
                             read: false
@@ -335,34 +383,19 @@ export const updateOrderStatus = async (req, res) => {
                 }
             }
 
-            if (newStatus === 'Ready for Pickup') {
-                // Waiter notification
+            if (['Served', 'Delivered', 'Completed'].includes(newStatus)) {
                 try {
                     const Notification = (await import('../models/Notification.js')).default;
                     await Notification.create({
-                        title: `Counter Transfer Required`,
-                        desc: `Order #${order._id.toString().substring(order._id.toString().length - 4).toUpperCase()} is ready. Move to counter.`,
-                        type: 'Order',
-                        restaurantId: order.restaurantId,
-                        read: false
-                    });
-                } catch (err) {
-                    console.error('Failed to create waiter notification', err);
-                }
-
-                // Customer notification
-                try {
-                    const Notification = (await import('../models/Notification.js')).default;
-                    await Notification.create({
-                        title: `Self-Pickup Order Ready`,
-                        desc: `Your order is ready. Please collect it from the Pickup Counter.`,
+                        title: `🎉 Order Served / Completed`,
+                        desc: `Order #${ticketNum} has been served. Thank you!`,
                         type: 'Order',
                         restaurantId: order.restaurantId,
                         userId: order.user,
                         read: false
                     });
                 } catch (err) {
-                    console.error('Failed to create customer notification', err);
+                    console.error('Failed to create completed notification', err);
                 }
             }
 

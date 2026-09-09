@@ -26,6 +26,7 @@ const ChefDashboard = () => {
     const [outOfStock, setOutOfStock] = useState(['Avocado (Haas)', 'Fresh Basil', 'Truffle Oil']);
     const [newIngredient, setNewIngredient] = useState('');
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+    const [newTicketModalOrder, setNewTicketModalOrder] = useState(null);
     
     // Priorities and item completion checklists (local ticket overrides)
     const [manualPriority, setManualPriority] = useState({}); // orderId -> boolean
@@ -113,6 +114,7 @@ const ChefDashboard = () => {
                             fetchOrders();
 
                             if (msg.type === 'new_order') {
+                                if (msg.data) setNewTicketModalOrder(msg.data);
                                 try {
                                     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                                     const osc = audioCtx.createOscillator();
@@ -745,8 +747,8 @@ const ChefDashboard = () => {
                 /* KANBAN QUEUE COLUMNS VIEW */
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                     {[
-                        { title: '📥 Incoming Queue', keys: ['Pending', 'Accepted'], accent: 'from-amber-600 to-orange-600', key: 'Incoming' },
-                        { title: '🍳 Cooking / Preparation', keys: ['Preparing'], accent: 'from-blue-600 to-indigo-600', key: 'Cooking' },
+                        { title: '📥 Incoming Queue', keys: ['Pending'], accent: 'from-amber-600 to-orange-600', key: 'Incoming' },
+                        { title: '🍳 Cooking / Preparation', keys: ['Accepted', 'Preparing'], accent: 'from-blue-600 to-indigo-600', key: 'Cooking' },
                         { title: '✨ Plated & Ready', keys: ['Ready', 'Ready for Pickup'], accent: 'from-emerald-600 to-teal-600', key: 'Ready' },
                         { title: '✅ Served & Completed', keys: ['Completed', 'Served', 'Picked Up', 'Delivered'], accent: 'from-slate-700 to-slate-900', key: 'Completed' }
                     ].map(column => {
@@ -808,22 +810,22 @@ const ChefDashboard = () => {
 
                                                     <div className="pt-2 border-t border-slate-200 dark:border-slate-800/80">
                                                         {order.status === 'Pending' && (
-                                                            <button onClick={() => updateStatus(order._id, 'Accepted')} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded-xl text-xs cursor-pointer">
-                                                                Accept Order
+                                                            <button onClick={() => updateStatus(order._id, 'Preparing')} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded-xl text-xs cursor-pointer active:scale-95 transition-all">
+                                                                Accept &amp; Prepare
                                                             </button>
                                                         )}
                                                         {order.status === 'Accepted' && (
-                                                            <button onClick={() => updateStatus(order._id, 'Preparing')} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-xl text-xs cursor-pointer">
+                                                            <button onClick={() => updateStatus(order._id, 'Preparing')} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-xl text-xs cursor-pointer active:scale-95 transition-all">
                                                                 Start Cooking
                                                             </button>
                                                         )}
                                                         {order.status === 'Preparing' && (
-                                                            <button onClick={() => updateStatus(order._id, isSelf ? 'Ready for Pickup' : 'Ready')} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs cursor-pointer">
+                                                            <button onClick={() => updateStatus(order._id, isSelf ? 'Ready for Pickup' : 'Ready')} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs cursor-pointer active:scale-95 transition-all">
                                                                 Mark Ticket Ready
                                                             </button>
                                                         )}
                                                         {['Ready', 'Ready for Pickup'].includes(order.status) && (
-                                                            <button onClick={() => updateStatus(order._id, order.orderType === 'Dine In' ? 'Served' : isSelf ? 'Picked Up' : 'Completed')} className="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-emerald-600 dark:text-emerald-400 font-bold py-2 rounded-xl text-xs cursor-pointer flex items-center justify-center gap-1">
+                                                            <button onClick={() => updateStatus(order._id, order.orderType === 'Dine In' ? 'Served' : isSelf ? 'Picked Up' : 'Completed')} className="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-emerald-600 dark:text-emerald-400 font-bold py-2 rounded-xl text-xs cursor-pointer flex items-center justify-center gap-1 active:scale-95 transition-all">
                                                                 <Check size={14} /> Bump Complete
                                                             </button>
                                                         )}
@@ -844,7 +846,56 @@ const ChefDashboard = () => {
                 </div>
             )}
 
-            {/* 4. Manage 86 List (Out-of-Stock Ingredients) Modal */}
+            {/* 4. New Ticket Popup Modal */}
+            {newTicketModalOrder && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-slate-900 border-2 border-orange-500 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5 text-white animate-in zoom-in-95 duration-200">
+                        <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-3">
+                                <div className="p-3 bg-orange-500/20 text-orange-400 rounded-2xl border border-orange-500/30">
+                                    <Flame className="animate-bounce" size={28} />
+                                </div>
+                                <div>
+                                    <h3 className="font-black text-xl text-orange-400 tracking-tight">NEW TICKET ARRIVED!</h3>
+                                    <p className="text-xs text-slate-400 font-mono font-bold">Ticket #{newTicketModalOrder._id?.substring(newTicketModalOrder._id.length - 5).toUpperCase()}</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setNewTicketModalOrder(null)} className="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
+                        </div>
+                        
+                        <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2 text-xs">
+                            <p className="font-bold text-slate-300">Type: <span className="text-amber-400 font-mono">{newTicketModalOrder.orderType}</span> {newTicketModalOrder.tableNumber ? `(Table ${newTicketModalOrder.tableNumber})` : ''}</p>
+                            <div className="space-y-1.5 pt-2 border-t border-slate-800">
+                                {newTicketModalOrder.orderItems?.map((it, idx) => (
+                                    <p key={idx} className="font-extrabold text-slate-200 text-xs">
+                                        {it.qty}× {it.name}
+                                    </p>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 pt-2">
+                            <button 
+                                onClick={() => {
+                                    updateStatus(newTicketModalOrder._id, 'Preparing');
+                                    setNewTicketModalOrder(null);
+                                }}
+                                className="flex-1 bg-orange-600 hover:bg-orange-500 text-white font-black py-3 rounded-2xl text-xs transition-all shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                            >
+                                <ChefHat size={16} /> Accept &amp; Start Cooking
+                            </button>
+                            <button 
+                                onClick={() => setNewTicketModalOrder(null)}
+                                className="px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-2xl text-xs cursor-pointer active:scale-95 transition-all"
+                            >
+                                View Queue
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 5. Manage 86 List (Out-of-Stock Ingredients) Modal */}
             {isAlertModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/60 dark:bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setIsAlertModalOpen(false)}></div>
