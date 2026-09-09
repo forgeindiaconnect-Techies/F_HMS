@@ -161,7 +161,7 @@ const CustomerOrderTracking = () => {
             if (status === 'Out for Delivery' || deliveryStatus === 'On the Way' || deliveryStatus === 'Picked Up' || status === 'Picked Up') return 3;
             if (['Ready', 'Ready for Pickup'].includes(status)) return 2;
             if (['Preparing', 'Accepted'].includes(status) || deliveryStatus === 'Accepted') return 1;
-            return 0;
+            return 0; // Step 0: Order Received
         }
         if (isSelfPickup) {
             if (status === 'Completed') return 5;
