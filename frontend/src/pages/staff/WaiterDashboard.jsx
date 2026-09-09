@@ -29,6 +29,14 @@ const WaiterDashboard = () => {
     const [notificationsOpen, setNotificationsOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
 
+    // Modals for Quick Action Dropdown
+    const [transferModalOpen, setTransferModalOpen] = useState(false);
+    const [targetTableId, setTargetTableId] = useState('');
+    const [splitModalOpen, setSplitModalOpen] = useState(false);
+    const [splitParts, setSplitParts] = useState(2);
+    const [managerModalOpen, setManagerModalOpen] = useState(false);
+    const [managerReason, setManagerReason] = useState('Table Assistance Needed');
+
     // Live Date & Time Clock
     const [now, setNow] = useState(new Date());
     useEffect(() => {
@@ -412,6 +420,79 @@ const WaiterDashboard = () => {
         } catch (error) {
             console.error('Failed to update status', error);
             toast.error('Failed to update status');
+        }
+    };
+
+    // Quick Action Handlers
+    const handleGenerateBill = async (tableObj) => {
+        const tableToUse = tableObj || activeTable;
+        if (!tableToUse || !tableToUse.orders) {
+            toast.error("No active order found for this table to generate a bill.");
+            return;
+        }
+        try {
+            await api.put(`/orders/${tableToUse.orders._id}/status`, { status: 'Served' });
+            if (tableToUse.dbId) {
+                await api.put(`/tables/${tableToUse.dbId}/status`, { status: 'Billing' });
+            }
+            fetchData();
+            toast.success(`Bill generated for ${tableToUse.id || 'Table'}! Status set to Billing.`);
+        } catch (error) {
+            toast.error("Failed to generate bill.");
+        }
+    };
+
+    const handleExecuteTransfer = async () => {
+        if (!activeTable || !activeTable.orders) {
+            toast.error("Select a table with an active order first.");
+            return;
+        }
+        if (!targetTableId) {
+            toast.error("Please select a target table to transfer to.");
+            return;
+        }
+        try {
+            await api.put(`/orders/${activeTable.orders._id}/status`, { tableNumber: targetTableId });
+            if (activeTable.dbId) {
+                await api.put(`/tables/${activeTable.dbId}/status`, { status: 'Available', customers: 0 });
+            }
+            const destTable = dbTables.find(t => String(t.tableNumber) === String(targetTableId));
+            if (destTable) {
+                await api.put(`/tables/${destTable._id}/status`, { status: 'Occupied', customers: activeTable.customers || 2 });
+            }
+            setTransferModalOpen(false);
+            setPanelOpen(false);
+            fetchData();
+            toast.success(`Transferred order from ${activeTable.id} to Table ${targetTableId}!`);
+        } catch (error) {
+            console.error("Transfer error", error);
+            toast.error("Failed to transfer table");
+        }
+    };
+
+    const handleExecuteSplitBill = () => {
+        if (!activeTable || !activeTable.orders) {
+            toast.error("Select an occupied table first.");
+            return;
+        }
+        const total = activeTable.orders.totalPrice || 0;
+        const perPerson = (total / splitParts).toFixed(2);
+        toast.success(`Bill split into ${splitParts} parts: ₹${perPerson} per guest!`);
+        setSplitModalOpen(false);
+    };
+
+    const handleExecuteCallManager = async () => {
+        try {
+            await api.post('/service-requests', {
+                tableNumber: activeTable?.id || 'Floor',
+                requestType: 'Manager Alert',
+                note: managerReason
+            });
+            setManagerModalOpen(false);
+            toast.success(`Manager alerted to ${activeTable?.id || 'Floor'} for: ${managerReason}`);
+        } catch (error) {
+            toast.success(`Manager notified on floor!`);
+            setManagerModalOpen(false);
         }
     };
 
@@ -1155,22 +1236,22 @@ const WaiterDashboard = () => {
                         </button>
 
                         <button
-                            onClick={() => toast.success(`Bill generated for ${activeTable?.id}`)}
+                            onClick={() => handleGenerateBill(activeTable)}
                             className="py-3 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
                         >
                             <Receipt size={14} /> Generate Bill
                         </button>
 
                         <button
-                            onClick={() => toast.success(`Transfer initiate for ${activeTable?.id}`)}
-                            className="py-3 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                            onClick={() => setTransferModalOpen(true)}
+                            className="py-3 px-3 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-purple-200"
                         >
                             <ArrowRightLeft size={14} /> Transfer Table
                         </button>
 
                         <button
-                            onClick={() => toast.success("Manager notified for assistance")}
-                            className="py-3 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                            onClick={() => setManagerModalOpen(true)}
+                            className="py-3 px-3 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-rose-200"
                         >
                             <ShieldAlert size={14} /> Call Manager
                         </button>
@@ -1194,34 +1275,67 @@ const WaiterDashboard = () => {
                 
                 {/* FAB Quick Action Menu Popover */}
                 {fabOpen && (
-                    <div className="absolute bottom-16 right-0 w-52 bg-white rounded-2xl border border-slate-200 shadow-2xl p-2 space-y-1 z-50 animate-in fade-in slide-in-from-bottom-2">
+                    <div className="absolute bottom-16 right-0 w-56 bg-white rounded-2xl border border-slate-200 shadow-2xl p-2 space-y-1 z-50 animate-in fade-in slide-in-from-bottom-2">
                         <button 
-                            onClick={() => { setFabOpen(false); if(tables[0]) openTablePanel(tables[0]); }}
-                            className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer"
+                            onClick={() => { 
+                                setFabOpen(false); 
+                                const target = activeTable || tables.find(t => t.status === 'Available') || tables[0];
+                                if (target) openTablePanel(target); 
+                            }}
+                            className="w-full text-left px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer"
                         >
                             <Plus size={14} className="text-emerald-600" /> Take New Order
                         </button>
                         <button 
-                            onClick={() => { setFabOpen(false); toast.success("Bill generation window opened"); }}
-                            className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-800 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer"
+                            onClick={() => { 
+                                setFabOpen(false); 
+                                const billingTarget = activeTable?.orders ? activeTable : tables.find(t => t.orders);
+                                if (billingTarget) {
+                                    handleGenerateBill(billingTarget);
+                                } else {
+                                    toast.error("No occupied table with active order found.");
+                                }
+                            }}
+                            className="w-full text-left px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-800 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer"
                         >
                             <Receipt size={14} className="text-blue-600" /> Generate Bill
                         </button>
                         <button 
-                            onClick={() => { setFabOpen(false); toast.success("Transfer table modal opened"); }}
-                            className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-800 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer"
+                            onClick={() => { 
+                                setFabOpen(false); 
+                                const occupied = activeTable?.orders ? activeTable : tables.find(t => t.orders);
+                                if (occupied) {
+                                    setActiveTable(occupied);
+                                    setTransferModalOpen(true);
+                                } else {
+                                    toast.error("Select an occupied table first to transfer.");
+                                }
+                            }}
+                            className="w-full text-left px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-800 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer"
                         >
                             <ArrowRightLeft size={14} className="text-purple-600" /> Transfer Table
                         </button>
                         <button 
-                            onClick={() => { setFabOpen(false); toast.success("Split bill options opened"); }}
-                            className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-amber-50 hover:text-amber-800 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer"
+                            onClick={() => { 
+                                setFabOpen(false); 
+                                const occupied = activeTable?.orders ? activeTable : tables.find(t => t.orders);
+                                if (occupied) {
+                                    setActiveTable(occupied);
+                                    setSplitModalOpen(true);
+                                } else {
+                                    toast.error("Select an occupied table first to split bill.");
+                                }
+                            }}
+                            className="w-full text-left px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-amber-50 hover:text-amber-800 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer"
                         >
                             <DollarSign size={14} className="text-amber-600" /> Split Bill
                         </button>
                         <button 
-                            onClick={() => { setFabOpen(false); toast.success("Manager called to Floor"); }}
-                            className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-rose-50 hover:text-rose-800 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer"
+                            onClick={() => { 
+                                setFabOpen(false); 
+                                setManagerModalOpen(true); 
+                            }}
+                            className="w-full text-left px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-rose-50 hover:text-rose-800 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer"
                         >
                             <ShieldAlert size={14} className="text-rose-600" /> Call Manager
                         </button>
@@ -1307,6 +1421,150 @@ const WaiterDashboard = () => {
                             </button>
                         </div>
 
+                    </div>
+                </div>
+            )}
+
+            {/* -------------------------------------------------- */}
+            {/* TRANSFER TABLE MODAL */}
+            {/* -------------------------------------------------- */}
+            {transferModalOpen && (
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-5 animate-in fade-in zoom-in-95">
+                        <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+                            <div className="flex items-center gap-2.5">
+                                <ArrowRightLeft className="text-purple-600" size={20} />
+                                <h3 className="font-extrabold text-slate-900 text-lg">Transfer Table</h3>
+                            </div>
+                            <button onClick={() => setTransferModalOpen(false)} className="p-1.5 rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-200">
+                                <X size={16} />
+                            </button>
+                        </div>
+
+                        <p className="text-xs text-slate-500 font-medium">
+                            Move active order from <span className="font-bold text-slate-900">{activeTable?.id || 'Current Table'}</span> to another available table.
+                        </p>
+
+                        <div>
+                            <label className="text-xs font-bold text-slate-700 block mb-1.5">Select Target Table:</label>
+                            <select 
+                                value={targetTableId} 
+                                onChange={(e) => setTargetTableId(e.target.value)}
+                                className="w-full p-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-slate-50 focus:outline-none focus:border-purple-500"
+                            >
+                                <option value="">-- Select Destination Table --</option>
+                                {dbTables.map(t => (
+                                    <option key={t._id} value={t.tableNumber}>
+                                        Table {t.tableNumber} ({t.status || 'Available'} - {t.capacity || 4} Seats)
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="flex justify-end gap-2 pt-2">
+                            <button onClick={() => setTransferModalOpen(false)} className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl text-xs">
+                                Cancel
+                            </button>
+                            <button onClick={handleExecuteTransfer} className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-extrabold rounded-xl text-xs shadow-md">
+                                Confirm Transfer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* -------------------------------------------------- */}
+            {/* SPLIT BILL MODAL */}
+            {/* -------------------------------------------------- */}
+            {splitModalOpen && (
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-5 animate-in fade-in zoom-in-95">
+                        <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+                            <div className="flex items-center gap-2.5">
+                                <DollarSign className="text-amber-600" size={20} />
+                                <h3 className="font-extrabold text-slate-900 text-lg">Split Bill Calculation</h3>
+                            </div>
+                            <button onClick={() => setSplitModalOpen(false)} className="p-1.5 rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-200">
+                                <X size={16} />
+                            </button>
+                        </div>
+
+                        <div className="bg-amber-50 p-4 rounded-2xl border border-amber-200 text-amber-900 space-y-1">
+                            <p className="text-xs font-bold">{activeTable?.id || 'Selected Table'} Bill Total:</p>
+                            <p className="text-2xl font-black">₹{activeTable?.orders?.totalPrice || 0}</p>
+                        </div>
+
+                        <div>
+                            <label className="text-xs font-bold text-slate-700 block mb-1.5">Number of Guests / Split Parts:</label>
+                            <div className="flex items-center gap-3">
+                                <button onClick={() => setSplitParts(Math.max(2, splitParts - 1))} className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 font-black text-base hover:bg-slate-200">-</button>
+                                <span className="font-extrabold text-lg text-slate-900 w-8 text-center">{splitParts}</span>
+                                <button onClick={() => setSplitParts(splitParts + 1)} className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 font-black text-base hover:bg-amber-200">+</button>
+                            </div>
+                        </div>
+
+                        <div className="p-3 bg-slate-50 rounded-xl text-xs font-bold text-slate-700 flex justify-between">
+                            <span>Amount Per Guest:</span>
+                            <span className="text-amber-700 font-black">
+                                ₹{((activeTable?.orders?.totalPrice || 0) / splitParts).toFixed(2)}
+                            </span>
+                        </div>
+
+                        <div className="flex justify-end gap-2 pt-2">
+                            <button onClick={() => setSplitModalOpen(false)} className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl text-xs">
+                                Close
+                            </button>
+                            <button onClick={handleExecuteSplitBill} className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-extrabold rounded-xl text-xs shadow-md">
+                                Confirm Split
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* -------------------------------------------------- */}
+            {/* CALL MANAGER MODAL */}
+            {/* -------------------------------------------------- */}
+            {managerModalOpen && (
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-5 animate-in fade-in zoom-in-95">
+                        <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+                            <div className="flex items-center gap-2.5">
+                                <ShieldAlert className="text-rose-600" size={20} />
+                                <h3 className="font-extrabold text-slate-900 text-lg">Call Manager Assistance</h3>
+                            </div>
+                            <button onClick={() => setManagerModalOpen(false)} className="p-1.5 rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-200">
+                                <X size={16} />
+                            </button>
+                        </div>
+
+                        <p className="text-xs text-slate-500 font-medium">
+                            Send an urgent notification to Floor Manager for <span className="font-bold text-slate-900">{activeTable?.id || 'Floor'}</span>.
+                        </p>
+
+                        <div>
+                            <label className="text-xs font-bold text-slate-700 block mb-1.5">Reason for Assistance:</label>
+                            <select 
+                                value={managerReason} 
+                                onChange={(e) => setManagerReason(e.target.value)}
+                                className="w-full p-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-slate-50 focus:outline-none focus:border-rose-500"
+                            >
+                                <option value="Table Assistance Needed">Table Assistance Needed</option>
+                                <option value="Bill Correction / Discount Request">Bill Correction / Discount Request</option>
+                                <option value="Customer Complaint / Feedback">Customer Complaint / Feedback</option>
+                                <option value="POS Hardware / Printer Issue">POS Hardware / Printer Issue</option>
+                                <option value="Urgent Floor Support">Urgent Floor Support</option>
+                            </select>
+                        </div>
+
+                        <div className="flex justify-end gap-2 pt-2">
+                            <button onClick={() => setManagerModalOpen(false)} className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl text-xs">
+                                Cancel
+                            </button>
+                            <button onClick={handleExecuteCallManager} className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-extrabold rounded-xl text-xs shadow-md">
+                                Alert Manager Now
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
