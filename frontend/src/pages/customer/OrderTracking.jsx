@@ -19,7 +19,7 @@ const OrderTracking = () => {
                 // Map status to progress dynamically step-by-step
                 const isSelf = data.orderType === 'Self-Pickup' || data.orderType === 'Self Pickup';
                 if (isSelf) {
-                    if (['Completed', 'Picked Up'].includes(data.status)) setProgress(4);
+                    if (['Completed'].includes(data.status)) setProgress(4);
                     else if (['Ready for Pickup', 'Ready'].includes(data.status)) setProgress(3);
                     else if (['Preparing', 'Accepted'].includes(data.status)) setProgress(2);
                     else setProgress(1);
@@ -34,6 +34,7 @@ const OrderTracking = () => {
                     } else if (currentStatus === 'Preparing' || currentStatus === 'Accepted' || currentStatus === 'Ready' || currentStatus === 'Ready for Pickup' || delStatus === 'Accepted') {
                         setProgress(2);
                     } else {
+                        // Pending / Order Received stage
                         setProgress(1);
                     }
                 }

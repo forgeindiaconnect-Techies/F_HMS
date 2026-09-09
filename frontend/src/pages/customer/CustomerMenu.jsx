@@ -145,16 +145,16 @@ const CustomerMenu = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-slate-950 font-sans pb-24 text-gray-800 dark:text-slate-100 transition-colors">
+        <div className="min-h-screen bg-slate-50 font-sans pb-24 text-slate-800 transition-colors">
             {/* Header */}
-            <header className="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-5 sticky top-0 z-25 flex justify-between items-center shadow-sm">
+            <header className="bg-white/90 backdrop-blur-md border-b border-slate-200 px-6 py-5 sticky top-0 z-25 flex justify-between items-center shadow-sm">
                 <div>
-                    <span className="text-[10px] bg-green-50 dark:bg-green-950/60 text-green-700 dark:text-green-400 font-extrabold uppercase px-2.5 py-1 rounded-full border border-green-100 dark:border-green-900/50 flex items-center gap-1 w-max mb-1">
+                    <span className="text-[10px] bg-emerald-50 text-emerald-700 font-extrabold uppercase px-2.5 py-1 rounded-full border border-emerald-200 flex items-center gap-1 w-max mb-1">
                         <BookOpen size={10} /> Smart QR Menu
                     </span>
-                    <h1 className="text-xl font-black text-gray-900 dark:text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>{restaurantName}</h1>
+                    <h1 className="text-xl font-black text-slate-900" style={{ fontFamily: 'Poppins, sans-serif' }}>{restaurantName}</h1>
                     {tableNumber && (
-                        <p className="text-xs text-gray-500 dark:text-slate-400 font-medium mt-0.5">Seated at: <strong className="text-green-600 dark:text-green-400">Table {tableNumber}</strong></p>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">Seated at: <strong className="text-emerald-600">Table {tableNumber}</strong></p>
                     )}
                 </div>
                 
@@ -162,11 +162,11 @@ const CustomerMenu = () => {
                     {activeOrderId && (
                         <button 
                             onClick={() => navigate(`/customer/track/${activeOrderId}?restaurantId=${restaurantId}&branchId=${branchId || ''}&tableNumber=${tableNumber || ''}`)}
-                            className="bg-green-50 dark:bg-green-950/60 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/60 px-3.5 py-2 rounded-2xl flex items-center gap-2 text-xs font-bold transition-all border border-green-200 dark:border-green-800"
+                            className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-3.5 py-2 rounded-2xl flex items-center gap-2 text-xs font-bold transition-all border border-emerald-200"
                         >
                             <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                             </span>
                             View Order
                         </button>
@@ -174,10 +174,10 @@ const CustomerMenu = () => {
                     {cart.length > 0 && (
                         <button 
                             onClick={() => setShowCartModal(true)}
-                            className="bg-green-600 text-white p-3 rounded-2xl flex items-center gap-2 relative shadow-lg shadow-green-600/20 hover:scale-105 active:scale-95 transition-all"
+                            className="bg-emerald-600 text-white p-3 rounded-2xl flex items-center gap-2 relative shadow-lg shadow-emerald-600/20 hover:scale-105 active:scale-95 transition-all"
                         >
                             <ShoppingBag size={20} />
-                            <span className="absolute -top-1.5 -right-1.5 bg-orange-500 text-white rounded-full w-5 h-5 text-[10px] font-bold flex items-center justify-center border-2 border-white dark:border-slate-900">
+                            <span className="absolute -top-1.5 -right-1.5 bg-amber-500 text-white rounded-full w-5 h-5 text-[10px] font-bold flex items-center justify-center border-2 border-white">
                                 {cart.reduce((acc, curr) => acc + curr.qty, 0)}
                             </span>
                         </button>
@@ -186,10 +186,10 @@ const CustomerMenu = () => {
             </header>
 
             {/* Banner */}
-            <div className="bg-gradient-to-r from-emerald-500 to-green-600 text-white px-6 py-6 flex justify-between items-center shadow-sm overflow-hidden relative">
+            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-6 flex justify-between items-center shadow-sm overflow-hidden relative">
                 <div className="space-y-1 relative z-10">
                     <h2 className="text-lg font-black" style={{ fontFamily: 'Poppins, sans-serif' }}>Order Directly from Table</h2>
-                    <p className="text-xs text-green-50 opacity-90 max-w-[250px]">Choose your food, specify instructions, and start preparation instantly.</p>
+                    <p className="text-xs text-emerald-50 opacity-90 max-w-[250px]">Choose your food, specify instructions, and start preparation instantly.</p>
                 </div>
                 <div className="absolute right-0 bottom-0 top-0 opacity-15 transform translate-x-12 translate-y-4">
                     <ShoppingBag size={180} />
@@ -197,15 +197,15 @@ const CustomerMenu = () => {
             </div>
 
             {/* Category Selector */}
-            <div className="sticky top-[81px] z-20 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 py-3 flex gap-2 overflow-x-auto px-6 scrollbar-none shadow-sm">
+            <div className="sticky top-[81px] z-20 bg-white/95 backdrop-blur-md border-b border-slate-200 py-3 flex gap-2 overflow-x-auto px-6 scrollbar-none shadow-sm">
                 {categories.map(cat => (
                     <button
                         key={cat}
                         onClick={() => setActiveCategory(cat)}
                         className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 border ${
                             activeCategory === cat 
-                            ? 'bg-green-600 text-white border-green-600 shadow-md shadow-green-500/10' 
-                            : 'bg-gray-50 dark:bg-slate-950 border-gray-150 dark:border-slate-800 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'
+                            ? 'bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-500/20' 
+                            : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'
                         }`}
                     >
                         {cat}
