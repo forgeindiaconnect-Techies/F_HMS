@@ -6,11 +6,12 @@ import {
     Search, Clock, ArrowRight, Utensils, Sparkles
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { getApiUrl } from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
 import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 
 const ChefDashboard = () => {
-    const { api } = useAuth();
+    const { api, user } = useAuth();
     
     // Core State
     const [orders, setOrders] = useState([]);
@@ -54,18 +55,82 @@ const ChefDashboard = () => {
 
     useEffect(() => {
         fetchOrders();
-        const pollInterval = setInterval(fetchOrders, 5000);
+        const pollInterval = setInterval(fetchOrders, 4000);
         
         // Ticking stopwatch timer every second
         const timeInterval = setInterval(() => {
             setCurrentTime(new Date());
         }, 1000);
 
+        // Real-time WebSocket setup
+        let ws;
+        const connectWS = () => {
+            try {
+                let baseURL = getApiUrl();
+                let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
+                ws = new WebSocket(wsURL);
+
+                ws.onopen = () => {
+                    if (user && user.restaurantId) {
+                        ws.send(JSON.stringify({
+                            type: 'register',
+                            restaurantId: user.restaurantId,
+                            role: 'kitchen'
+                        }));
+                    }
+                };
+
+                ws.onmessage = (event) => {
+                    try {
+                        const msg = JSON.parse(event.data);
+                        if (msg.type === 'new_order' || msg.type === 'order_updated') {
+                            fetchOrders();
+                            if (msg.type === 'new_order') {
+                                try {
+                                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                                    const osc = audioCtx.createOscillator();
+                                    const gain = audioCtx.createGain();
+                                    osc.type = 'sine';
+                                    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                                    osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.4);
+                                    gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                                    osc.connect(gain);
+                                    gain.connect(audioCtx.destination);
+                                    osc.start();
+                                    osc.stop(audioCtx.currentTime + 0.4);
+                                } catch (e) {
+                                    console.error('Audio alert chime error:', e);
+                                }
+
+                                const ticketNum = msg.data?._id ? msg.data._id.substring(msg.data._id.length - 5).toUpperCase() : '';
+                                toast.success(`🔔 NEW ORDER RECEIVED! Ticket #${ticketNum}`, {
+                                    duration: 8000,
+                                    position: 'top-right'
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Error parsing websocket message in ChefDashboard', e);
+                    }
+                };
+
+                ws.onclose = () => {
+                    setTimeout(connectWS, 5000);
+                };
+            } catch (err) {
+                console.error('WebSocket error in ChefDashboard', err);
+            }
+        };
+
+        connectWS();
+
         return () => {
             clearInterval(pollInterval);
             clearInterval(timeInterval);
+            if (ws) ws.close();
         };
-    }, [api]);
+    }, [api, user]);
 
     // Update order status on backend
     const updateStatus = async (id, newStatus) => {
@@ -653,18 +718,30 @@ const ChefDashboard = () => {
                 /* KANBAN QUEUE COLUMNS VIEW */
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                     {[
-                        { title: '📥 Incoming (Pending)', statusKey: 'Pending', accent: 'from-amber-600 to-orange-600', border: 'border-amber-500/30' },
-                        { title: '👨‍🍳 Accepted Queue', statusKey: 'Accepted', accent: 'from-blue-600 to-cyan-600', border: 'border-blue-500/30' },
-                        { title: '🍳 Cooking (Preparing)', statusKey: 'Preparing', accent: 'from-purple-600 to-indigo-600', border: 'border-purple-500/30' },
-                        { title: '✨ Plated & Ready', statusKey: 'Ready', accent: 'from-emerald-600 to-teal-600', border: 'border-emerald-500/30' }
+                        { title: '📥 Incoming Queue', keys: ['Pending', 'Accepted'], accent: 'from-amber-600 to-orange-600', key: 'Incoming' },
+                        { title: '🍳 Cooking / Preparation', keys: ['Preparing'], accent: 'from-blue-600 to-indigo-600', key: 'Cooking' },
+                        { title: '✨ Plated & Ready', keys: ['Ready', 'Ready for Pickup'], accent: 'from-emerald-600 to-teal-600', key: 'Ready' },
+                        { title: '✅ Served & Completed', keys: ['Completed', 'Served', 'Picked Up', 'Delivered'], accent: 'from-slate-700 to-slate-900', key: 'Completed' }
                     ].map(column => {
-                        const colOrders = sortedOrders.filter(o => {
-                            if (column.statusKey === 'Ready') return ['Ready', 'Ready for Pickup'].includes(o.status);
-                            return o.status === column.statusKey;
-                        });
+                        // Filter orders for this column using station & search criteria
+                        const colOrders = orders.filter(o => {
+                            if (!column.keys.includes(o.status)) return false;
+                            if (searchQuery.trim()) {
+                                const q = searchQuery.toLowerCase();
+                                const idMatch = o._id.toLowerCase().includes(q);
+                                const tableMatch = String(o.tableNumber || '').toLowerCase().includes(q);
+                                const itemMatch = o.orderItems?.some(i => i.name.toLowerCase().includes(q));
+                                if (!idMatch && !tableMatch && !itemMatch) return false;
+                            }
+                            if (selectedStation !== 'All') {
+                                const hasStationItem = o.orderItems?.some(item => isItemInStation(item, selectedStation));
+                                if (!hasStationItem) return false;
+                            }
+                            return true;
+                        }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
                         return (
-                            <div key={column.statusKey} className="bg-white dark:bg-slate-900/70 rounded-3xl border border-slate-200 dark:border-slate-800/90 flex flex-col min-h-[600px] overflow-hidden shadow-lg">
+                            <div key={column.key} className="bg-white dark:bg-slate-900/70 rounded-3xl border border-slate-200 dark:border-slate-800/90 flex flex-col min-h-[600px] overflow-hidden shadow-lg">
                                 {/* Column Header */}
                                 <div className={`p-4 bg-gradient-to-r ${column.accent} text-white font-extrabold flex justify-between items-center shadow-md`}>
                                     <h3 className="text-sm tracking-wide">{column.title}</h3>
@@ -675,51 +752,57 @@ const ChefDashboard = () => {
                                 <div className="p-4 space-y-4 flex-1 overflow-y-auto custom-scrollbar">
                                     {colOrders.length === 0 ? (
                                         <div className="py-16 text-center text-slate-400 text-xs font-bold border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
-                                            Queue empty
+                                            No {column.key.toLowerCase()} orders
                                         </div>
                                     ) : (
                                         colOrders.map(order => {
                                             const timeDiffMinutes = Math.floor((currentTime - new Date(order.createdAt)) / 60000);
+                                            const isSelf = order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup';
                                             return (
                                                 <div key={order._id} className="bg-slate-50 dark:bg-slate-950/80 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 space-y-3 shadow-md">
                                                     <div className="flex justify-between items-center">
-                                                        <span className="font-mono font-black text-sm text-slate-900 dark:text-white">#{order._id.substring(order._id.length - 4).toUpperCase()}</span>
+                                                        <span className="font-mono font-black text-sm text-slate-900 dark:text-white">#{order._id.substring(order._id.length - 5).toUpperCase()}</span>
                                                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${getTimerColorClass(timeDiffMinutes)}`}>
                                                             {timeDiffMinutes}m
                                                         </span>
                                                     </div>
                                                     
                                                     <div className="space-y-1">
-                                                        {order.orderItems?.slice(0, 3).map((it, idx) => (
+                                                        {order.orderItems?.slice(0, 4).map((it, idx) => (
                                                             <p key={idx} className="text-xs text-slate-800 dark:text-slate-300 font-bold truncate">
                                                                 {it.qty}× {it.name}
                                                             </p>
                                                         ))}
-                                                        {order.orderItems?.length > 3 && (
-                                                            <p className="text-[10px] text-slate-500 font-bold">+{order.orderItems.length - 3} more items...</p>
+                                                        {order.orderItems?.length > 4 && (
+                                                            <p className="text-[10px] text-slate-500 font-bold">+{order.orderItems.length - 4} more items...</p>
                                                         )}
                                                     </div>
 
                                                     <div className="pt-2 border-t border-slate-200 dark:border-slate-800/80">
-                                                        {column.statusKey === 'Pending' && (
+                                                        {order.status === 'Pending' && (
                                                             <button onClick={() => updateStatus(order._id, 'Accepted')} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded-xl text-xs cursor-pointer">
-                                                                Accept
+                                                                Accept Order
                                                             </button>
                                                         )}
-                                                        {column.statusKey === 'Accepted' && (
+                                                        {order.status === 'Accepted' && (
                                                             <button onClick={() => updateStatus(order._id, 'Preparing')} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-xl text-xs cursor-pointer">
                                                                 Start Cooking
                                                             </button>
                                                         )}
-                                                        {column.statusKey === 'Preparing' && (
-                                                            <button onClick={() => updateStatus(order._id, 'Ready')} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs cursor-pointer">
-                                                                Mark Ready
+                                                        {order.status === 'Preparing' && (
+                                                            <button onClick={() => updateStatus(order._id, isSelf ? 'Ready for Pickup' : 'Ready')} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs cursor-pointer">
+                                                                Mark Ticket Ready
                                                             </button>
                                                         )}
-                                                        {column.statusKey === 'Ready' && (
-                                                            <button onClick={() => updateStatus(order._id, 'Completed')} className="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-emerald-600 dark:text-emerald-400 font-bold py-2 rounded-xl text-xs cursor-pointer">
-                                                                Bump Complete
+                                                        {['Ready', 'Ready for Pickup'].includes(order.status) && (
+                                                            <button onClick={() => updateStatus(order._id, order.orderType === 'Dine In' ? 'Served' : isSelf ? 'Picked Up' : 'Completed')} className="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-emerald-600 dark:text-emerald-400 font-bold py-2 rounded-xl text-xs cursor-pointer flex items-center justify-center gap-1">
+                                                                <Check size={14} /> Bump Complete
                                                             </button>
+                                                        )}
+                                                        {['Completed', 'Served', 'Picked Up', 'Delivered'].includes(order.status) && (
+                                                            <div className="text-center text-[11px] font-bold text-slate-500 flex items-center justify-center gap-1 py-1">
+                                                                <CheckCircle size={13} className="text-emerald-500" /> Done
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </div>
