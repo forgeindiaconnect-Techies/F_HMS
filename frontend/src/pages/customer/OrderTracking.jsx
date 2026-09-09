@@ -19,22 +19,22 @@ const OrderTracking = () => {
                 // Map status to progress dynamically step-by-step
                 const isSelf = data.orderType === 'Self-Pickup' || data.orderType === 'Self Pickup';
                 if (isSelf) {
-                    if (['Completed'].includes(data.status)) setProgress(4);
-                    else if (['Ready for Pickup', 'Ready'].includes(data.status)) setProgress(3);
-                    else if (['Preparing', 'Accepted'].includes(data.status)) setProgress(2);
+                    if (data.status === 'Completed' || data.status === 'Picked Up') setProgress(4);
+                    else if (data.status === 'Ready for Pickup' || data.status === 'Ready') setProgress(3);
+                    else if (data.status === 'Preparing' || data.status === 'Accepted') setProgress(2);
                     else setProgress(1);
                 } else {
-                    const currentStatus = data.status;
-                    const delStatus = data.deliveryStatus;
+                    const st = String(data.status || '').trim();
+                    const delSt = String(data.deliveryStatus || '').trim();
 
-                    if (currentStatus === 'Delivered' || currentStatus === 'Completed' || delStatus === 'Delivered') {
+                    if (st === 'Delivered' || st === 'Completed' || delSt === 'Delivered') {
                         setProgress(4);
-                    } else if (currentStatus === 'Out for Delivery' || delStatus === 'On the Way' || delStatus === 'Picked Up' || currentStatus === 'Picked Up') {
+                    } else if (st === 'Out for Delivery' || delSt === 'On the Way' || delSt === 'Picked Up' || st === 'Picked Up') {
                         setProgress(3);
-                    } else if (currentStatus === 'Preparing' || currentStatus === 'Accepted' || currentStatus === 'Ready' || currentStatus === 'Ready for Pickup' || delStatus === 'Accepted') {
+                    } else if (st === 'Preparing' || st === 'Accepted' || st === 'Ready' || st === 'Ready for Pickup' || delSt === 'Accepted') {
                         setProgress(2);
                     } else {
-                        // Pending / Order Received stage
+                        // Strictly Step 1: Order Received for Pending
                         setProgress(1);
                     }
                 }
