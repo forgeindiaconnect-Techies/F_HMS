@@ -120,10 +120,19 @@ export const deleteRestaurant = async (req, res) => {
         const Branch = (await import('../models/Branch.js')).default;
         const RestaurantVerification = (await import('../models/RestaurantVerification.js')).default;
         const Menu = (await import('../models/Menu.js')).default;
+        const MenuItem = (await import('../models/MenuItem.js')).default;
         const Order = (await import('../models/Order.js')).default;
         const Table = (await import('../models/Table.js')).default;
         const Category = (await import('../models/Category.js')).default;
         const Inventory = (await import('../models/Inventory.js')).default;
+        const Expense = (await import('../models/Expense.js')).default;
+        const DeliveryPartner = (await import('../models/DeliveryPartner.js')).default;
+        const ServiceRequest = (await import('../models/ServiceRequest.js')).default;
+        const Role = (await import('../models/Role.js')).default;
+        const WastageLog = (await import('../models/WastageLog.js')).default;
+        const Ticket = (await import('../models/Ticket.js')).default;
+        const Notification = (await import('../models/Notification.js')).default;
+        const SubscriptionPayment = (await import('../models/SubscriptionPayment.js')).default;
 
         const restaurant = await Restaurant.findById(id);
         if (restaurant) {
@@ -137,12 +146,27 @@ export const deleteRestaurant = async (req, res) => {
             await Branch.deleteMany({ restaurantId: id });
             await RestaurantVerification.deleteMany({ restaurantId: id });
             await Menu.deleteMany({ restaurantId: id });
+            await MenuItem.deleteMany({ restaurantId: id });
             await Order.deleteMany({ restaurantId: id });
             await Table.deleteMany({ restaurantId: id });
             await Category.deleteMany({ restaurantId: id });
             await Inventory.deleteMany({ restaurantId: id });
+            await Expense.deleteMany({ restaurantId: id });
+            await DeliveryPartner.deleteMany({ restaurantId: id });
+            await ServiceRequest.deleteMany({ restaurantId: id });
+            await Role.deleteMany({ restaurantId: id });
+            await WastageLog.deleteMany({ restaurantId: id });
+            await Ticket.deleteMany({ restaurantId: id });
+            await Notification.deleteMany({ restaurantId: id });
+            await SubscriptionPayment.deleteMany({ restaurantId: id });
 
             // Delete restaurant record
+            await Restaurant.findByIdAndDelete(id);
+        } else {
+            // If restaurant was already deleted or not found, try cleanup by ID anyway
+            await User.deleteMany({ restaurantId: id });
+            await Branch.deleteMany({ restaurantId: id });
+            await RestaurantVerification.deleteMany({ restaurantId: id });
             await Restaurant.findByIdAndDelete(id);
         }
 

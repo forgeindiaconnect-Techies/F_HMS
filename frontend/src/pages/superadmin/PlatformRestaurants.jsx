@@ -64,13 +64,11 @@ const PlatformRestaurants = () => {
             onConfirm: async () => {
                 try {
                     await api.delete(`/super-admin/restaurants/${id}`);
-                } catch (error) {
-                    if (error.response?.status !== 404) {
-                        console.error("Failed to delete restaurant", error);
-                    }
-                } finally {
                     setRestaurants(prev => prev.filter(r => r._id !== id));
                     toast.success('Restaurant deleted successfully!');
+                } catch (error) {
+                    console.error("Failed to delete restaurant", error);
+                    toast.error(error.response?.data?.message || 'Failed to delete restaurant');
                 }
             },
             isDestructive: true
