@@ -155,28 +155,25 @@ const CustomerOrderTracking = () => {
     const isDelivery = order?.orderType === 'Delivery';
     const isSelfPickup = order?.orderType === 'Self-Pickup' || order?.orderType === 'Self Pickup';
 
-    const getStatusStep = (status) => {
+    const getStatusStep = (status, deliveryStatus) => {
         if (isDelivery) {
-            if (status === 'Pending') return 0;
-            if (status === 'Preparing') return 1;
-            if (status === 'Ready') return 2;
-            if (status === 'Out for Delivery') return 3;
-            if (status === 'Delivered') return 4;
+            if (status === 'Delivered' || status === 'Completed' || deliveryStatus === 'Delivered') return 4;
+            if (status === 'Out for Delivery' || deliveryStatus === 'On the Way' || deliveryStatus === 'Picked Up' || status === 'Picked Up') return 3;
+            if (['Ready', 'Ready for Pickup'].includes(status)) return 2;
+            if (['Preparing', 'Accepted'].includes(status) || deliveryStatus === 'Accepted') return 1;
             return 0;
         }
         if (isSelfPickup) {
-            if (status === 'Pending') return 0;
-            if (status === 'Accepted') return 1;
-            if (status === 'Preparing') return 2;
-            if (status === 'Ready for Pickup') return 3;
-            if (status === 'Picked Up') return 4;
             if (status === 'Completed') return 5;
+            if (status === 'Picked Up') return 4;
+            if (['Ready for Pickup', 'Ready'].includes(status)) return 3;
+            if (status === 'Preparing') return 2;
+            if (status === 'Accepted') return 1;
             return 0;
         }
-        if (status === 'Pending') return 0;
-        if (status === 'Preparing') return 1;
-        if (status === 'Ready') return 2;
         if (['Served', 'Billing Requested', 'Delivered', 'Completed'].includes(status)) return 3;
+        if (['Ready', 'Ready for Pickup'].includes(status)) return 2;
+        if (['Preparing', 'Accepted'].includes(status)) return 1;
         return 0;
     };
 
@@ -204,7 +201,7 @@ const CustomerOrderTracking = () => {
         );
     }
 
-    const currentStep = getStatusStep(order.status);
+    const currentStep = getStatusStep(order.status, order.deliveryStatus);
     const stepsList = isDelivery ? [
         { title: 'Order Received', desc: 'Awaiting restaurant accept' },
         { title: 'Preparing Food', desc: 'Chef is cooking your recipe' },

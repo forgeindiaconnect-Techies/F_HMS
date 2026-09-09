@@ -24,11 +24,14 @@ const OrderTracking = () => {
                     else if (['Preparing', 'Accepted'].includes(data.status)) setProgress(2);
                     else setProgress(1);
                 } else {
-                    if (['Delivered', 'Completed'].includes(data.status) || data.deliveryStatus === 'Delivered') {
+                    const currentStatus = data.status;
+                    const delStatus = data.deliveryStatus;
+
+                    if (currentStatus === 'Delivered' || currentStatus === 'Completed' || delStatus === 'Delivered') {
                         setProgress(4);
-                    } else if (['Out for Delivery', 'On the Way', 'Picked Up'].includes(data.status) || ['Picked Up', 'On the Way'].includes(data.deliveryStatus)) {
+                    } else if (currentStatus === 'Out for Delivery' || delStatus === 'On the Way' || delStatus === 'Picked Up' || currentStatus === 'Picked Up') {
                         setProgress(3);
-                    } else if (['Preparing', 'Ready'].includes(data.status)) {
+                    } else if (currentStatus === 'Preparing' || currentStatus === 'Accepted' || currentStatus === 'Ready' || currentStatus === 'Ready for Pickup' || delStatus === 'Accepted') {
                         setProgress(2);
                     } else {
                         setProgress(1);
