@@ -84,7 +84,18 @@ const ChefDashboard = () => {
                     try {
                         const msg = JSON.parse(event.data);
                         if (msg.type === 'new_order' || msg.type === 'order_updated') {
+                            if (msg.data && msg.data._id) {
+                                // Instantly update local orders state in real-time so incoming ticket renders immediately
+                                setOrders(prev => {
+                                    const exists = prev.some(o => o._id === msg.data._id);
+                                    if (exists) {
+                                        return prev.map(o => o._id === msg.data._id ? msg.data : o);
+                                    }
+                                    return [msg.data, ...prev];
+                                });
+                            }
                             fetchOrders();
+
                             if (msg.type === 'new_order') {
                                 try {
                                     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
