@@ -359,8 +359,13 @@ export const updateOrderStatus = async (req, res) => {
             }
 
             order.status = newStatus;
-            if (isDelivery && ['Ready', 'Ready for Pickup'].includes(newStatus)) {
-                order.deliveryStatus = 'Pending Assignment';
+            if (isDelivery) {
+                if (['Pending', 'Accepted', 'Preparing'].includes(newStatus)) {
+                    order.deliveryStatus = 'None';
+                    order.deliveryPartner = null;
+                } else if (['Ready', 'Ready for Pickup'].includes(newStatus)) {
+                    order.deliveryStatus = 'Pending Assignment';
+                }
             }
             order.statusHistory.push({
                 status: newStatus,
