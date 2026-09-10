@@ -247,97 +247,123 @@ const CustomerOrderTracking = () => {
             {/* Tracking Status Timeline */}
             <main className="flex-1 px-6 py-6 max-w-md mx-auto w-full space-y-6">
                 
-                {/* Progress Map Area (Live Zomato/Swiggy visual style) */}
-                {isDelivery && (
-                    <div className="bg-slate-950 rounded-3xl h-72 relative overflow-hidden shadow-lg flex flex-col border border-slate-900 w-full">
-                        {/* Grid Background */}
-                        <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:25px_25px]"></div>
-                        
-                        {/* SVG Route lines */}
-                        <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                            {/* Dotted route path */}
-                            <line x1="20%" y1="40%" x2="80%" y2="70%" stroke="#334155" strokeWidth="3" strokeDasharray="6,6" strokeLinecap="round" />
-                            {/* Traversed path (glowing green line) */}
-                            <line 
-                                x1="20%" 
-                                y1="40%" 
-                                x2={`${20 + (['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) ? riderProgress : 0) * 0.6}%`} 
-                                y2={`${40 + (['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) ? riderProgress : 0) * 0.3}%`} 
-                                stroke="#10b981" 
-                                strokeWidth="3" 
-                                strokeLinecap="round" 
+                {/* Progress Map Area (OpenStreetMap + Live Animated Delivery Route Integration) */}
+                {isDelivery && (() => {
+                    const isDelivered = order.status === 'Delivered' || order.status === 'Completed' || order.deliveryStatus === 'Delivered';
+                    const isRiderMoving = ['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) || ['Picked Up', 'On the Way'].includes(order.deliveryStatus);
+                    const isRiderAssigned = Boolean(order.deliveryPartner || order.deliveryStatus === 'Accepted');
+                    const currentProgress = isDelivered ? 100 : (isRiderMoving ? 65 : isRiderAssigned ? 25 : 0);
+
+                    const pT = currentProgress / 100;
+                    const invT = 1 - pT;
+                    const riderLeft = invT * invT * 15 + 2 * invT * pT * 50 + pT * pT * 85;
+                    const riderTop = invT * invT * 35 + 2 * invT * pT * 80 + pT * pT * 65;
+
+                    return (
+                        <div className="bg-slate-950 rounded-3xl h-80 relative overflow-hidden shadow-2xl flex flex-col border border-slate-800 w-full">
+                            {/* OpenStreetMap Interactive Tile Layer */}
+                            <iframe
+                                title="OpenStreetMap Live Tracking"
+                                width="100%"
+                                height="100%"
+                                frameBorder="0"
+                                scrolling="no"
+                                marginHeight="0"
+                                marginWidth="0"
+                                src={`https://www.openstreetmap.org/export/embed.html?bbox=80.25%2C13.06%2C80.29%2C13.10&layer=mapnik&marker=13.0827%2C80.2707`}
+                                className="w-full h-full opacity-50 filter invert-[0.9] hue-rotate-180 contrast-125"
                             />
-                        </svg>
 
-                        {/* Restaurant Store Hub Pin */}
-                        <div className="absolute top-[40%] left-[20%] -translate-x-1/2 -translate-y-1/2 text-center group z-10">
-                            <div className="relative flex h-9 w-9 items-center justify-center bg-gradient-to-tr from-amber-500 to-orange-500 text-white rounded-2xl shadow-xl border-2 border-slate-900 cursor-pointer hover:scale-110 transition-transform">
-                                <div className="absolute inset-0 rounded-2xl bg-orange-500 animate-ping opacity-25"></div>
-                                <Store size={16} />
+                            {/* Dynamic Animated Route Path & Polyline Grid */}
+                            <svg viewBox="0 0 1000 600" className="absolute inset-0 w-full h-full pointer-events-none z-10">
+                                {/* Curved Planned Delivery Route */}
+                                <path 
+                                    d="M 150 210 Q 500 480 850 390" 
+                                    stroke="#334155" 
+                                    strokeWidth="8" 
+                                    fill="none" 
+                                    strokeDasharray="12,12" 
+                                    strokeLinecap="round" 
+                                />
+                                {/* Active Dynamic Green Traveled Route */}
+                                <path 
+                                    d="M 150 210 Q 500 480 850 390" 
+                                    stroke="#10b981" 
+                                    strokeWidth="8" 
+                                    fill="none" 
+                                    strokeDasharray="800"
+                                    strokeDashoffset={`${800 - (currentProgress / 100) * 800}`}
+                                    strokeLinecap="round" 
+                                    className="transition-all duration-700 ease-linear shadow-lg"
+                                />
+                            </svg>
+
+                            {/* Restaurant Store Hub Pin */}
+                            <div className="absolute top-[35%] left-[15%] -translate-x-1/2 -translate-y-1/2 text-center group z-20">
+                                <div className="relative flex h-10 w-10 items-center justify-center bg-gradient-to-tr from-amber-500 to-orange-500 text-white rounded-2xl shadow-xl border-2 border-slate-950 cursor-pointer hover:scale-110 transition-transform">
+                                    <div className="absolute inset-0 rounded-2xl bg-orange-500 animate-ping opacity-30"></div>
+                                    <Store size={18} />
+                                </div>
+                                <span className="block text-[8px] font-black text-white bg-slate-900/90 border border-slate-800 px-2 py-0.5 rounded shadow-md mt-1 uppercase tracking-widest leading-none">Hub Shop</span>
                             </div>
-                            <span className="block text-[8px] font-black text-white bg-slate-900/90 border border-slate-800 px-2 py-0.5 rounded shadow-md mt-2 uppercase tracking-widest leading-none">Hub Shop</span>
-                        </div>
 
-                        {/* Customer Home Pin */}
-                        <div className="absolute top-[70%] left-[80%] -translate-x-1/2 -translate-y-1/2 text-center group z-10">
-                            <div className="relative flex h-9 w-9 items-center justify-center bg-purple-600 text-white rounded-full shadow-xl border-2 border-slate-900 cursor-pointer hover:scale-110 transition-transform">
-                                <div className="absolute inset-0 rounded-full bg-purple-500 animate-ping opacity-25"></div>
-                                <MapPin size={16} />
+                            {/* Customer Home Pin */}
+                            <div className="absolute top-[65%] left-[85%] -translate-x-1/2 -translate-y-1/2 text-center group z-20">
+                                <div className="relative flex h-10 w-10 items-center justify-center bg-purple-600 text-white rounded-full shadow-xl border-2 border-slate-950 cursor-pointer hover:scale-110 transition-transform">
+                                    <div className="absolute inset-0 rounded-full bg-purple-500 animate-ping opacity-30"></div>
+                                    <MapPin size={18} />
+                                </div>
+                                <span className="block text-[8px] font-black text-white bg-slate-900/90 border border-slate-800 px-2 py-0.5 rounded shadow-md mt-1 uppercase tracking-widest leading-none">Home</span>
                             </div>
-                            <span className="block text-[8px] font-black text-white bg-slate-900/90 border border-slate-800 px-2 py-0.5 rounded shadow-md mt-2 uppercase tracking-widest leading-none">Home</span>
-                        </div>
 
-                        {/* Moving Delivery Partner (Bike) with overlay profile photo */}
-                        {['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) ? (
-                            <div 
-                                className="absolute -translate-x-1/2 -translate-y-1/2 text-center z-25 transition-all duration-300 ease-out"
-                                style={{
-                                    left: `${20 + riderProgress * 0.6}%`,
-                                    top: `${40 + riderProgress * 0.3}%`
-                                }}
-                            >
-                                <div className="relative flex h-11 w-11 items-center justify-center bg-emerald-500 text-white rounded-full shadow-2xl border-2 border-slate-950">
-                                    {/* Pulser */}
-                                    <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-35"></div>
-                                    
-                                    <Bike size={18} className="animate-bounce" />
-
-                                    {/* Avatar Mini Icon */}
-                                    <div className="absolute -bottom-1 -right-1 bg-slate-900 border border-slate-800 rounded-full p-0.5 text-emerald-400 shadow-md">
-                                        <User size={8} className="fill-emerald-400/20" />
+                            {/* Moving Delivery Partner Marker */}
+                            {(isRiderAssigned || isRiderMoving || isDelivered) ? (
+                                <div 
+                                    className="absolute -translate-x-1/2 -translate-y-1/2 text-center z-30 transition-all duration-700 ease-out"
+                                    style={{
+                                        left: `${riderLeft}%`,
+                                        top: `${riderTop}%`
+                                    }}
+                                >
+                                    <div className="relative flex h-12 w-12 items-center justify-center bg-emerald-500 text-white rounded-full shadow-2xl border-2 border-slate-950">
+                                        <div className="absolute -inset-1 rounded-full bg-emerald-400 animate-ping opacity-40"></div>
+                                        <Bike size={20} className="animate-bounce" />
+                                        <div className="absolute -bottom-1 -right-1 bg-slate-950 border border-slate-800 rounded-full p-0.5 text-emerald-400 shadow-md">
+                                            <User size={9} className="fill-emerald-400/20" />
+                                        </div>
+                                    </div>
+                                    <div className="bg-slate-900/95 border border-emerald-500/40 px-2 py-0.5 rounded-xl shadow-2xl mt-1 whitespace-nowrap text-left flex items-center gap-1.5">
+                                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                                        <span className="text-[9px] font-black text-emerald-400 uppercase tracking-wide">
+                                            {typeof order.deliveryPartner === 'object' ? order.deliveryPartner.name : 'Rider'} {isDelivered ? '• Arrived!' : isRiderMoving ? `• En Route (${Math.round(currentProgress)}%)` : '• Assigned'}
+                                        </span>
                                     </div>
                                 </div>
-                                <span className="block text-[8px] font-black text-emerald-400 bg-slate-900 border border-slate-800 px-2 py-1 rounded shadow-lg mt-1 whitespace-nowrap leading-none">
-                                    {order.deliveryPartner?.name || 'Partner'} (Out for Delivery)
-                                </span>
-                            </div>
-                        ) : (
-                            /* Waiting/Assigning Rider Floating Overlay */
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-slate-900/90 border border-slate-800 p-4 rounded-2xl flex items-center gap-3 backdrop-blur shadow-xl">
-                                <span className="relative flex h-3 w-3">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
-                                </span>
-                                <span className="text-xs text-slate-350 font-black uppercase tracking-wider">
-                                    {order.status === 'Preparing' ? 'Preparing Food in Kitchen' : 'Awaiting Delivery Assignment'}
-                                </span>
-                            </div>
-                        )}
+                            ) : (
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 bg-slate-900/90 border border-slate-800 p-3.5 rounded-2xl flex items-center gap-3 backdrop-blur shadow-2xl">
+                                    <span className="relative flex h-3 w-3">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
+                                    </span>
+                                    <span className="text-xs text-slate-300 font-black uppercase tracking-wider">
+                                        {order.status === 'Preparing' || order.status === 'Accepted' ? 'Kitchen Preparing Order...' : 'Awaiting Kitchen & Driver Dispatch...'}
+                                    </span>
+                                </div>
+                            )}
 
-                        {/* Live HUD Card (Top‑Left) */}
-                        {['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) && (
-                            <div className="absolute top-4 left-4 z-20 bg-slate-900/90 border border-slate-800 p-3 rounded-2xl backdrop-blur text-left shadow-lg flex flex-col gap-1 min-w-[140px]">
+                            {/* Live HUD Card (Top‑Left) */}
+                            <div className="absolute top-4 left-4 z-30 bg-slate-900/95 border border-slate-800 p-3 rounded-2xl backdrop-blur text-left shadow-2xl flex flex-col gap-0.5 min-w-[140px]">
                                 <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest leading-none">Live Tracking</span>
-                                <h4 className="text-base font-extrabold text-white leading-none mt-1">
-                                    {Math.max(1, Math.ceil(((order.deliveryDistance || 3.2) * 3) * (1 - riderProgress / 100)))} mins
+                                <h4 className="text-sm font-extrabold text-white leading-none mt-1">
+                                    {isDelivered ? 'Arrived' : `${Math.max(1, Math.ceil(((order.deliveryDistance || 3.2) * 3) * (1 - currentProgress / 100)))} mins`}
                                 </h4>
                                 <p className="text-[9px] font-semibold text-slate-400 mt-0.5">
-                                    {Math.max(0.1, Number(((order.deliveryDistance || 3.2) * (1 - riderProgress / 100)).toFixed(1)))} km remaining
+                                    {isDelivered ? '0.0 km remaining' : `${Math.max(0.1, Number(((order.deliveryDistance || 3.2) * (1 - currentProgress / 100)).toFixed(1)))} km remaining`}
                                 </p>
                             </div>
-                        )}
-                    </div>
-                )}
+                        </div>
+                    );
+                })()}
 
                 {/* Timeline Box */}
                 <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-6">

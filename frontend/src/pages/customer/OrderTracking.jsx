@@ -48,14 +48,24 @@ const OrderTracking = () => {
         return () => clearInterval(interval);
     }, [id, api]);
 
-    const isSelfPickup = order && (order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup');
+    const st = String(order?.status || '').trim();
+    const delSt = String(order?.deliveryStatus || '').trim();
 
-    const isRiderAssigned = Boolean(order?.deliveryPartner || order?.deliveryStatus === 'Accepted');
-    const isRiderMoving = ['Picked Up', 'On the Way', 'Out for Delivery'].includes(order?.status) || ['Picked Up', 'On the Way'].includes(order?.deliveryStatus);
-    const isDelivered = order?.status === 'Delivered' || order?.deliveryStatus === 'Delivered';
+    const isSelfPickup = order && (order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup');
+    const isRiderAssigned = Boolean(order?.deliveryPartner || delSt === 'Accepted');
+    const isRiderMoving = ['Picked Up', 'On the Way', 'Out for Delivery'].includes(st) || ['Picked Up', 'On the Way'].includes(delSt);
+    const isDelivered = st === 'Delivered' || delSt === 'Delivered';
     const riderName = typeof order?.deliveryPartner === 'object' ? order.deliveryPartner.name : 'Delivery Partner';
     const vehicleModel = typeof order?.deliveryPartner === 'object' ? order.deliveryPartner.vehicleDetails?.model : '';
+    
+    // Exact progress percent for map polyline and rider pin position
     const currentProgress = isDelivered ? 100 : (isRiderMoving ? 65 : isRiderAssigned ? 25 : 0);
+
+    // Calculate Bezier curve (15, 35) -> (50, 80) -> (85, 65) position for rider bike marker
+    const pT = currentProgress / 100;
+    const invT = 1 - pT;
+    const riderLeft = invT * invT * 15 + 2 * invT * pT * 50 + pT * pT * 85;
+    const riderTop = invT * invT * 35 + 2 * invT * pT * 80 + pT * pT * 65;
 
     const steps = isSelfPickup ? [
         { num: 1, title: 'Order Received', desc: 'We have received your order.', icon: PackageOpen },
@@ -97,7 +107,7 @@ const OrderTracking = () => {
                 <>
 
                 {/* Delivery Verification OTP Banner */}
-                {!isSelfPickup && order.deliveryOtp && order.status !== 'Completed' && order.status !== 'Delivered' && (
+                {!isSelfPickup && order.deliveryOtp && !isDelivered && (
                     <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white rounded-3xl p-6 mb-8 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-amber-300/40 relative overflow-hidden">
                         <div className="flex items-center gap-4 text-left relative z-10">
                             <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shrink-0 shadow-inner">
@@ -135,26 +145,26 @@ const OrderTracking = () => {
                             />
 
                             {/* Dynamic Animated Route Path & Polyline Grid */}
-                            <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
+                            <svg viewBox="0 0 1000 600" className="absolute inset-0 w-full h-full pointer-events-none z-10">
                                 {/* Curved Planned Delivery Route */}
                                 <path 
-                                    d="M M 15% 35% Q 45% 80% 85% 65%" 
+                                    d="M 150 210 Q 500 480 850 390" 
                                     stroke="#334155" 
-                                    strokeWidth="6" 
+                                    strokeWidth="8" 
                                     fill="none" 
-                                    strokeDasharray="8,8" 
+                                    strokeDasharray="12,12" 
                                     strokeLinecap="round" 
                                 />
                                 {/* Active Dynamic Green Traveled Route */}
                                 <path 
-                                    d="M 15% 35% Q 45% 80% 85% 65%" 
+                                    d="M 150 210 Q 500 480 850 390" 
                                     stroke="#10b981" 
-                                    strokeWidth="6" 
+                                    strokeWidth="8" 
                                     fill="none" 
-                                    strokeDasharray="400"
-                                    strokeDashoffset={`${400 - (currentProgress / 100) * 400}`}
+                                    strokeDasharray="800"
+                                    strokeDashoffset={`${800 - (currentProgress / 100) * 800}`}
                                     strokeLinecap="round" 
-                                    className="transition-all duration-500 ease-linear shadow-lg"
+                                    className="transition-all duration-700 ease-linear shadow-lg"
                                 />
                             </svg>
 
@@ -181,8 +191,8 @@ const OrderTracking = () => {
                                 <div 
                                     className="absolute -translate-x-1/2 -translate-y-1/2 text-center z-30 transition-all duration-700 ease-out"
                                     style={{
-                                        left: `${15 + currentProgress * 0.7}%`,
-                                        top: `${35 + Math.sin((currentProgress / 100) * Math.PI) * 40 + currentProgress * 0.3}%`
+                                        left: `${riderLeft}%`,
+                                        top: `${riderTop}%`
                                     }}
                                 >
                                     <div className="relative flex h-14 w-14 items-center justify-center bg-emerald-500 text-white rounded-full shadow-2xl border-2 border-slate-950">
@@ -195,7 +205,7 @@ const OrderTracking = () => {
                                     <div className="bg-slate-900/95 border border-emerald-500/40 px-2.5 py-1 rounded-xl shadow-2xl mt-1.5 whitespace-nowrap text-left flex items-center gap-2">
                                         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
                                         <span className="text-[10px] font-black text-emerald-400 uppercase tracking-wide">
-                                            {riderName} {isDelivered ? '• Arrived!' : isRiderMoving ? `• En Route (${Math.round(currentProgress)}%)` : '• Standing By'}
+                                            {riderName} {isDelivered ? '• Arrived & Delivered!' : isRiderMoving ? `• En Route (${Math.round(currentProgress)}%)` : '• Assigned'}
                                         </span>
                                     </div>
                                 </div>
@@ -206,7 +216,7 @@ const OrderTracking = () => {
                                         <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
                                     </span>
                                     <span className="text-xs text-slate-300 font-black uppercase tracking-wider">
-                                        {order.status === 'Preparing' ? 'Kitchen Preparing Order...' : 'Assigning Nearest Delivery Partner...'}
+                                        {st === 'Preparing' || st === 'Accepted' ? 'Kitchen Preparing Order...' : 'Awaiting Kitchen & Driver Dispatch...'}
                                     </span>
                                 </div>
                             )}

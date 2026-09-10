@@ -734,31 +734,41 @@ const DeliveryManagement = () => {
                                         </div>
 
                                         {/* Dynamic Rider Bike & Driver Avatar Marker */}
-                                        {selectedTrackingOrder.deliveryPartner && (
-                                            <div 
-                                                className="absolute -translate-x-1/2 -translate-y-1/2 text-center group z-20 transition-all duration-300 ease-out"
-                                                style={{
-                                                    left: `${20 + ((selectedTrackingOrder.status === 'Delivered' || selectedTrackingOrder.deliveryStatus === 'Delivered') ? 100 : (['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) || ['Picked Up', 'On the Way'].includes(selectedTrackingOrder.deliveryStatus) ? riderProgress : 0)) * 0.6}%`,
-                                                    top: `${40 + ((selectedTrackingOrder.status === 'Delivered' || selectedTrackingOrder.deliveryStatus === 'Delivered') ? 100 : (['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) || ['Picked Up', 'On the Way'].includes(selectedTrackingOrder.deliveryStatus) ? riderProgress : 0)) * 0.3}%`
-                                                }}
-                                            >
-                                                <div className="relative flex h-11 w-11 items-center justify-center bg-emerald-500 text-white rounded-full shadow-2xl border-2 border-white cursor-pointer transition-all group-hover:scale-110">
-                                                    {/* Outer pulsing ping wave */}
-                                                    <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-35"></div>
-                                                    
-                                                    {/* Bike animation */}
-                                                    <Bike size={20} className="animate-bounce" />
-                                                    
-                                                    {/* Small driver user overlay badge */}
-                                                    <div className="absolute -bottom-1 -right-1 bg-slate-900 border border-slate-800 rounded-full p-0.5 text-emerald-400 shadow-md">
-                                                        <User size={10} className="fill-emerald-400/20" />
+                                        {selectedTrackingOrder.deliveryPartner && (() => {
+                                            const isDel = selectedTrackingOrder.status === 'Delivered' || selectedTrackingOrder.status === 'Completed' || selectedTrackingOrder.deliveryStatus === 'Delivered';
+                                            const isMov = ['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) || ['Picked Up', 'On the Way'].includes(selectedTrackingOrder.deliveryStatus);
+                                            const progVal = isDel ? 100 : (isMov ? riderProgress : 25);
+                                            const pT = progVal / 100;
+                                            const invT = 1 - pT;
+                                            const rLeft = invT * invT * 15 + 2 * invT * pT * 50 + pT * pT * 85;
+                                            const rTop = invT * invT * 35 + 2 * invT * pT * 80 + pT * pT * 65;
+
+                                            return (
+                                                <div 
+                                                    className="absolute -translate-x-1/2 -translate-y-1/2 text-center group z-20 transition-all duration-300 ease-out"
+                                                    style={{
+                                                        left: `${rLeft}%`,
+                                                        top: `${rTop}%`
+                                                    }}
+                                                >
+                                                    <div className="relative flex h-11 w-11 items-center justify-center bg-emerald-500 text-white rounded-full shadow-2xl border-2 border-white cursor-pointer transition-all group-hover:scale-110">
+                                                        {/* Outer pulsing ping wave */}
+                                                        <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-35"></div>
+                                                        
+                                                        {/* Bike animation */}
+                                                        <Bike size={20} className="animate-bounce" />
+                                                        
+                                                        {/* Small driver user overlay badge */}
+                                                        <div className="absolute -bottom-1 -right-1 bg-slate-900 border border-slate-800 rounded-full p-0.5 text-emerald-400 shadow-md">
+                                                            <User size={10} className="fill-emerald-400/20" />
+                                                        </div>
                                                     </div>
+                                                    <span className="block text-[8px] font-black text-emerald-400 bg-slate-950 border border-slate-800 px-2 py-1 rounded shadow-lg mt-1 whitespace-nowrap leading-none">
+                                                        🚴 {typeof selectedTrackingOrder.deliveryPartner === 'object' ? selectedTrackingOrder.deliveryPartner.name : 'Rider'} ({selectedTrackingOrder.deliveryStatus || 'Assigned'})
+                                                    </span>
                                                 </div>
-                                                <span className="block text-[8px] font-black text-emerald-400 bg-slate-950 border border-slate-800 px-2 py-1 rounded shadow-lg mt-1 whitespace-nowrap leading-none">
-                                                    🚴 {typeof selectedTrackingOrder.deliveryPartner === 'object' ? selectedTrackingOrder.deliveryPartner.name : 'Rider'} ({selectedTrackingOrder.deliveryStatus || 'Assigned'})
-                                                </span>
-                                            </div>
-                                        )}
+                                            );
+                                        })()}
 
                                         {/* Route Details overlay card */}
                                         <div className="absolute bottom-4 right-4 bg-slate-900/95 backdrop-blur-md p-4 rounded-2xl border border-slate-800 shadow-2xl text-[10px] space-y-1.5 max-w-[240px] text-slate-300 z-10">
