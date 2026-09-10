@@ -271,11 +271,11 @@ const OrderTracking = () => {
                 {/* Timeline */}
                 <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-slate-800 mb-8">
                     <div className="relative">
-                        {/* Connecting Line */}
-                        <div className="absolute left-[23px] top-[40px] bottom-[40px] w-1 bg-gray-100 dark:bg-slate-800 rounded-full"></div>
+                        {/* Connecting Line - Anchored exactly between top and bottom step circle centers */}
+                        <div className="absolute left-[23px] top-[24px] bottom-[24px] w-1 bg-gray-100 dark:bg-slate-800 rounded-full"></div>
                         <div 
-                            className="absolute left-[23px] top-[40px] w-1 bg-orange-500 rounded-full transition-all duration-1000 ease-in-out"
-                            style={{ height: `${Math.max(0, (progress - 1) * 33)}%` }}
+                            className="absolute left-[23px] top-[24px] bottom-[24px] w-1 bg-orange-500 rounded-full transition-all duration-700 ease-in-out overflow-hidden"
+                            style={{ height: `${Math.max(0, Math.min(100, (progress - 1) * 33.33))}%` }}
                         ></div>
 
                         <div className="space-y-12">
@@ -306,6 +306,69 @@ const OrderTracking = () => {
                                 );
                             })}
                         </div>
+                    </div>
+                </div>
+
+                {/* Live Workflow Testing Control Bar (For Real-Time Verification) */}
+                <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl mb-8 space-y-3 text-center">
+                    <div className="flex items-center justify-center gap-2 text-slate-300 font-extrabold text-xs uppercase tracking-wider">
+                        <span className="w-2 h-2 rounded-full bg-orange-500 animate-ping"></span>
+                        Order Status Control (Test Live Transitions)
+                    </div>
+                    <p className="text-xs text-slate-400">Click any step below to simulate backend API status updates in real time:</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
+                        <button
+                            onClick={async () => {
+                                try {
+                                    await api.put(`/orders/${order._id}/status`, { status: 'Pending' });
+                                    const { data } = await api.get(`/orders/${order._id}`);
+                                    setOrder(data);
+                                    setProgress(1);
+                                } catch (e) { console.error(e); }
+                            }}
+                            className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${progress === 1 ? 'bg-orange-500 text-white border-orange-400 shadow-md' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750'}`}
+                        >
+                            1. Pending (0%)
+                        </button>
+                        <button
+                            onClick={async () => {
+                                try {
+                                    await api.put(`/orders/${order._id}/status`, { status: 'Preparing' });
+                                    const { data } = await api.get(`/orders/${order._id}`);
+                                    setOrder(data);
+                                    setProgress(2);
+                                } catch (e) { console.error(e); }
+                            }}
+                            className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${progress === 2 ? 'bg-orange-500 text-white border-orange-400 shadow-md' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750'}`}
+                        >
+                            2. Preparing (33%)
+                        </button>
+                        <button
+                            onClick={async () => {
+                                try {
+                                    await api.put(`/delivery/orders/${order._id}/status`, { status: 'Accepted' });
+                                    const { data } = await api.get(`/orders/${order._id}`);
+                                    setOrder(data);
+                                    setProgress(3);
+                                } catch (e) { console.error(e); }
+                            }}
+                            className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${progress === 3 ? 'bg-orange-500 text-white border-orange-400 shadow-md' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750'}`}
+                        >
+                            3. Out for Delivery (66%)
+                        </button>
+                        <button
+                            onClick={async () => {
+                                try {
+                                    await api.put(`/delivery/orders/${order._id}/status`, { status: 'Delivered', otp: order.deliveryOtp });
+                                    const { data } = await api.get(`/orders/${order._id}`);
+                                    setOrder(data);
+                                    setProgress(4);
+                                } catch (e) { console.error(e); }
+                            }}
+                            className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${progress === 4 ? 'bg-orange-500 text-white border-orange-400 shadow-md' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750'}`}
+                        >
+                            4. Delivered (100%)
+                        </button>
                     </div>
                 </div>
 
