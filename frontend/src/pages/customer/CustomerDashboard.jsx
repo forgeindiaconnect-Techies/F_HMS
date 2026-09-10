@@ -579,18 +579,19 @@ const CustomerDashboard = () => {
                                                     </span>
                                                 </div>
                                                 <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
-                                                     (order.status === 'Delivered' || order.deliveryStatus === 'Delivered' || order.status === 'Completed')
+                                                     (order.status === 'Delivered' || order.deliveryStatus === 'Delivered')
                                                      ? 'bg-green-50 text-green-700 border border-green-200'
                                                      : (order.status === 'Out for Delivery' || order.deliveryStatus === 'On the Way' || order.deliveryStatus === 'Picked Up')
                                                      ? 'bg-purple-50 text-purple-700 border border-purple-200'
-                                                     : (order.status === 'Preparing' || order.status === 'Ready')
+                                                     : (order.status === 'Preparing' || order.status === 'Ready' || order.status === 'Accepted')
                                                      ? 'bg-orange-50 text-orange-700 border border-orange-200'
                                                      : 'bg-blue-50 text-blue-700 border border-blue-200'
                                                  }`}>
                                                      {order.orderType === 'Delivery' ? (
                                                          (order.status === 'Delivered' || order.deliveryStatus === 'Delivered') ? 'Delivered' :
                                                          (order.status === 'Out for Delivery' || order.deliveryStatus === 'On the Way' || order.deliveryStatus === 'Picked Up') ? 'Out for Delivery' :
-                                                         (order.status === 'Preparing' || order.status === 'Ready') ? 'Kitchen Preparing' : 'Order Placed (Pending)'
+                                                         (order.status === 'Preparing' || order.status === 'Ready') ? 'Kitchen Preparing' :
+                                                         (order.status === 'Accepted') ? 'Order Accepted' : 'Order Placed (Pending)'
                                                      ) : order.status}
                                                  </span>
                                             </div>
@@ -604,13 +605,24 @@ const CustomerDashboard = () => {
                                                     <span className="font-extrabold text-gray-950 text-sm">₹{order.totalPrice ? order.totalPrice.toFixed(2) : '0.00'}</span>
                                                     
                                                     {/* Tracking button */}
-                                                    {order.status !== 'Completed' && order.status !== 'Delivered' && order.status !== 'Served' && (
-                                                        <Link 
-                                                            to={`/track/${order._id}?restaurantId=${order.restaurantId?._id || order.restaurantId}&branchId=${order.branchId?._id || order.branchId || ''}`}
-                                                            className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg transition-colors text-xs shadow-sm"
-                                                        >
-                                                            Track Live
-                                                        </Link>
+                                                    {order.orderType === 'Delivery' ? (
+                                                        (order.status !== 'Delivered' && order.deliveryStatus !== 'Delivered') && (
+                                                            <Link 
+                                                                to={`/track/${order._id}?restaurantId=${order.restaurantId?._id || order.restaurantId}&branchId=${order.branchId?._id || order.branchId || ''}`}
+                                                                className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg transition-colors text-xs shadow-sm"
+                                                            >
+                                                                Track Live
+                                                            </Link>
+                                                        )
+                                                    ) : (
+                                                        (order.status !== 'Completed' && order.status !== 'Served' && order.status !== 'Delivered') && (
+                                                            <Link 
+                                                                to={`/customer/track/${order._id}?restaurantId=${order.restaurantId?._id || order.restaurantId}&branchId=${order.branchId?._id || order.branchId || ''}`}
+                                                                className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg transition-colors text-xs shadow-sm"
+                                                            >
+                                                                Track Live
+                                                            </Link>
+                                                        )
                                                     )}
                                                     
                                                     <button 

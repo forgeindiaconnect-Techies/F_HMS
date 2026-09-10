@@ -73,7 +73,9 @@ const DeliveryManagement = () => {
             // Filter only delivery orders that are active
             const active = res.data.filter(o => 
                 o.orderType === 'Delivery' && 
-                !['Delivered', 'Cancelled', 'Completed'].includes(o.status)
+                o.status !== 'Delivered' && 
+                o.deliveryStatus !== 'Delivered' && 
+                o.status !== 'Cancelled'
             );
             setActiveOrders(active);
             
