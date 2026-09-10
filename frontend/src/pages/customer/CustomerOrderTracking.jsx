@@ -112,22 +112,21 @@ const CustomerOrderTracking = () => {
         if (!order) return;
         
         const isSelf = order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup';
-        const isMoving = !isSelf && ['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status);
+        const isMoving = !isSelf && (
+            ['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) ||
+            ['Picked Up', 'On the Way'].includes(order.deliveryStatus)
+        );
         
-        if (!isMoving) {
+        if (order.status === 'Delivered' || order.deliveryStatus === 'Delivered') {
+            setRiderProgress(100);
+        } else if (isMoving) {
+            setRiderProgress(65);
+        } else if (order.deliveryPartner || order.deliveryStatus === 'Accepted') {
+            setRiderProgress(25);
+        } else {
             setRiderProgress(0);
-            return;
         }
-
-        const timer = setInterval(() => {
-            setRiderProgress(p => {
-                if (p >= 95) return 10;
-                return p + 2;
-            });
-        }, 800);
-
-        return () => clearInterval(timer);
-    }, [order?.status, order?.orderType]);
+    }, [order?.status, order?.deliveryStatus, order?.orderType, order?.deliveryPartner]);
 
     const handleServiceRequest = async (requestType) => {
         if (!restaurantId) {

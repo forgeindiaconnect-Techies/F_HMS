@@ -211,6 +211,10 @@ export const getOrderById = async (req, res) => {
         .populate('deliveryPartner', 'name email phoneNumber');
 
     if (order) {
+        if (order.orderType === 'Delivery' && !order.deliveryOtp) {
+            order.deliveryOtp = Math.floor(1000 + Math.random() * 9000).toString();
+            await order.save();
+        }
         res.json(order);
     } else {
         res.status(404).json({ message: 'Order not found' });

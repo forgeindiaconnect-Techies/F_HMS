@@ -48,38 +48,14 @@ const OrderTracking = () => {
         return () => clearInterval(interval);
     }, [id, api]);
 
-    useEffect(() => {
-        if (!order) return;
-        
-        const isSelf = order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup';
-        const isMoving = !isSelf && (
-            ['Picked Up', 'On the Way', 'Out for Delivery'].includes(order.status) ||
-            ['Picked Up', 'On the Way'].includes(order.deliveryStatus)
-        );
-        
-        if (!isMoving) {
-            setRiderProgress(0);
-            return;
-        }
-
-        const timer = setInterval(() => {
-            setRiderProgress(p => {
-                if (p >= 95) return 10;
-                return p + 2;
-            });
-        }, 800);
-
-        return () => clearInterval(timer);
-    }, [order?.status, order?.deliveryStatus, order?.orderType]);
-
     const isSelfPickup = order && (order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup');
 
     const isRiderAssigned = Boolean(order?.deliveryPartner || order?.deliveryStatus === 'Accepted');
     const isRiderMoving = ['Picked Up', 'On the Way', 'Out for Delivery'].includes(order?.status) || ['Picked Up', 'On the Way'].includes(order?.deliveryStatus);
     const isDelivered = order?.status === 'Delivered' || order?.deliveryStatus === 'Delivered';
-    const riderName = typeof order?.deliveryPartner === 'object' ? order.deliveryPartner.name : 'Delivery Executive';
+    const riderName = typeof order?.deliveryPartner === 'object' ? order.deliveryPartner.name : 'Delivery Partner';
     const vehicleModel = typeof order?.deliveryPartner === 'object' ? order.deliveryPartner.vehicleDetails?.model : '';
-    const currentProgress = isDelivered ? 100 : (isRiderMoving ? riderProgress : 0);
+    const currentProgress = isDelivered ? 100 : (isRiderMoving ? 65 : isRiderAssigned ? 25 : 0);
 
     const steps = isSelfPickup ? [
         { num: 1, title: 'Order Received', desc: 'We have received your order.', icon: PackageOpen },
@@ -103,7 +79,9 @@ const OrderTracking = () => {
                         <ChevronLeft size={24} />
                     </Link>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white font-sans tracking-tight">Track Order #{id ? id.substring(id.length - 6).toUpperCase() : 'ORD-8824'}</h1>
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white font-sans tracking-tight">
+                            Track Order #{order ? order._id.substring(order._id.length - 6).toUpperCase() : (id ? id.substring(id.length - 6).toUpperCase() : '')}
+                        </h1>
                         <p className="text-gray-500 dark:text-slate-400">
                             {isSelfPickup ? 'Order Method: ' : 'Estimated Delivery: '}
                             <span className="font-bold text-gray-900 dark:text-white">
@@ -119,7 +97,7 @@ const OrderTracking = () => {
                 <>
 
                 {/* Delivery Verification OTP Banner */}
-                {!isSelfPickup && (order.deliveryOtp || order.status !== 'Completed') && (
+                {!isSelfPickup && order.deliveryOtp && order.status !== 'Completed' && order.status !== 'Delivered' && (
                     <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white rounded-3xl p-6 mb-8 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-amber-300/40 relative overflow-hidden">
                         <div className="flex items-center gap-4 text-left relative z-10">
                             <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shrink-0 shadow-inner">
@@ -134,7 +112,7 @@ const OrderTracking = () => {
                             </div>
                         </div>
                         <div className="bg-white text-slate-900 px-6 py-3 rounded-2xl font-black text-3xl tracking-[0.35em] shadow-lg shrink-0 border-2 border-amber-200 font-mono relative z-10">
-                            {order.deliveryOtp || '4829'}
+                            {order.deliveryOtp}
                         </div>
                     </div>
                 )}

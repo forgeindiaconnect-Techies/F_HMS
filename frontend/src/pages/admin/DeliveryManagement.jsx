@@ -140,27 +140,19 @@ const DeliveryManagement = () => {
     useEffect(() => {
         if (!selectedTrackingOrder) return;
         
-        // Reset progress when selecting a new order
-        setRiderProgress(0);
-
-        // If the order is out for delivery, simulate live movement!
+        const isDelivered = selectedTrackingOrder.status === 'Delivered' || selectedTrackingOrder.deliveryStatus === 'Delivered';
         const isMoving = ['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) || 
                          ['Picked Up', 'On the Way'].includes(selectedTrackingOrder.deliveryStatus);
         
-        if (!isMoving) {
+        if (isDelivered) {
+            setRiderProgress(100);
+        } else if (isMoving) {
+            setRiderProgress(65);
+        } else if (selectedTrackingOrder.deliveryPartner || selectedTrackingOrder.deliveryStatus === 'Accepted') {
+            setRiderProgress(25);
+        } else {
             setRiderProgress(0);
-            return;
         }
-
-        // Loop simulation progress from 10% to 95% repeatedly to show live movement!
-        const timer = setInterval(() => {
-            setRiderProgress(p => {
-                if (p >= 95) return 10; // Reset to simulate next leg
-                return p + 2;
-            });
-        }, 800);
-
-        return () => clearInterval(timer);
     }, [selectedTrackingOrder]);
 
     const handleSaveSettings = async (e) => {

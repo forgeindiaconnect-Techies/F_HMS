@@ -644,9 +644,11 @@ const CustomerDashboard = () => {
                                                             <span className="text-[10px] text-amber-700 font-medium">Share with delivery agent upon arrival</span>
                                                         </div>
                                                     </div>
-                                                    <span className="font-mono font-black text-base text-amber-950 bg-white px-3.5 py-1 rounded-lg border border-amber-300 shadow-sm tracking-[0.25em]">
-                                                        {order.deliveryOtp || '4829'}
-                                                    </span>
+                                                    {order.deliveryOtp && (
+                                                        <span className="font-mono font-black text-base text-amber-950 bg-white px-3.5 py-1 rounded-lg border border-amber-300 shadow-sm tracking-[0.25em]">
+                                                            {order.deliveryOtp}
+                                                        </span>
+                                                    )}
                                                 </div>
                                             )}
 
