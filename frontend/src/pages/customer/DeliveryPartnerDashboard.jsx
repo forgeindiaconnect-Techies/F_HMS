@@ -480,22 +480,23 @@ const DeliveryPartnerDashboard = () => {
                                                     )
                                                 )}
 
-                                                {order.deliveryStatus === 'Picked Up' && (
-                                                    <button
-                                                        onClick={() => handleUpdateOrderStatus(order._id, 'On the Way')}
-                                                        className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl text-xs font-black tracking-wider uppercase transition-all shadow-md shadow-emerald-500/10 cursor-pointer active:scale-98"
-                                                    >
-                                                        Start Transit (Mark On the Way)
-                                                    </button>
-                                                )}
-
-                                                {order.deliveryStatus === 'On the Way' && (
-                                                    <button
-                                                        onClick={() => handleOpenOtpModal(order)}
-                                                        className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-650 text-white rounded-2xl text-xs font-black tracking-wider uppercase transition-all shadow-lg shadow-emerald-500/15 cursor-pointer active:scale-98 flex items-center justify-center gap-2"
-                                                    >
-                                                        <ShieldCheck size={16} /> Complete Delivery (Verify Customer OTP)
-                                                    </button>
+                                                {(order.deliveryStatus === 'Picked Up' || order.deliveryStatus === 'On the Way') && (
+                                                    <div className="space-y-2.5">
+                                                        {order.deliveryStatus === 'Picked Up' && (
+                                                            <button
+                                                                onClick={() => handleUpdateOrderStatus(order._id, 'On the Way')}
+                                                                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-black tracking-wider uppercase transition-all shadow-md cursor-pointer active:scale-98"
+                                                            >
+                                                                Start Transit (Mark On the Way)
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            onClick={() => handleOpenOtpModal(order)}
+                                                            className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-650 text-white rounded-2xl text-xs font-black tracking-wider uppercase transition-all shadow-lg shadow-emerald-500/15 cursor-pointer active:scale-98 flex items-center justify-center gap-2"
+                                                        >
+                                                            <ShieldCheck size={16} /> Complete Delivery (Verify Customer OTP)
+                                                        </button>
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>
