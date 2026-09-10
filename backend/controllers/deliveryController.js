@@ -198,6 +198,7 @@ export const updateOrderDeliveryStatus = async (req, res) => {
         if (status === 'Accepted') {
             order.deliveryPartner = req.user._id;
             order.deliveryStatus = 'Accepted';
+            order.status = 'Out for Delivery';
             if (!order.deliveryOtp) {
                 order.deliveryOtp = Math.floor(1000 + Math.random() * 9000).toString();
             }

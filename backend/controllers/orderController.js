@@ -354,6 +354,9 @@ export const updateOrderStatus = async (req, res) => {
             }
 
             order.status = newStatus;
+            if (isDelivery && ['Ready', 'Ready for Pickup'].includes(newStatus)) {
+                order.deliveryStatus = 'Pending Assignment';
+            }
             order.statusHistory.push({
                 status: newStatus,
                 timestamp: Date.now(),
