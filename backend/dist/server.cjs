@@ -95981,65 +95981,44 @@ var require_bcryptjs = __commonJS({
   }
 });
 
-// models/User.js
-var User_exports = {};
-__export(User_exports, {
-  default: () => User_default
+// models/Role.js
+var Role_exports = {};
+__export(Role_exports, {
+  default: () => Role_default
 });
-var import_mongoose2, import_bcryptjs, userSchema, User2, User_default;
-var init_User = __esm({
-  "models/User.js"() {
-    import_mongoose2 = __toESM(require_mongoose2(), 1);
-    import_bcryptjs = __toESM(require_bcryptjs(), 1);
-    userSchema = new import_mongoose2.default.Schema({
+var import_mongoose3, roleSchema, Role, Role_default;
+var init_Role = __esm({
+  "models/Role.js"() {
+    import_mongoose3 = __toESM(require_mongoose2(), 1);
+    roleSchema = new import_mongoose3.default.Schema({
       name: {
         type: String,
         required: true
       },
-      email: {
-        type: String,
-        required: true,
-        unique: true
-      },
-      password: {
-        type: String,
-        required: true
-      },
-      phoneNumber: {
-        type: String
-      },
-      role: {
-        type: String,
-        required: true
-      },
       restaurantId: {
-        type: import_mongoose2.default.Schema.Types.ObjectId,
-        ref: "Restaurant"
+        type: import_mongoose3.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: function() {
+          return !this.isCoreRole;
+        }
       },
-      branchId: {
-        type: import_mongoose2.default.Schema.Types.ObjectId,
-        ref: "Branch"
+      description: {
+        type: String,
+        default: ""
       },
-      isActive: {
+      isCoreRole: {
         type: Boolean,
-        default: true
+        default: false
       },
-      refreshToken: {
-        type: String
+      permissions: {
+        type: Map,
+        of: [Boolean],
+        // Array of 4 booleans for [View Data, Create Records, Edit Records, Delete Records]
+        default: {}
       }
     }, { timestamps: true });
-    userSchema.pre("save", async function() {
-      if (!this.isModified("password")) {
-        return;
-      }
-      const salt = await import_bcryptjs.default.genSalt(10);
-      this.password = await import_bcryptjs.default.hash(this.password, salt);
-    });
-    userSchema.methods.matchPassword = async function(enteredPassword) {
-      return await import_bcryptjs.default.compare(enteredPassword, this.password);
-    };
-    User2 = import_mongoose2.default.model("User", userSchema);
-    User_default = User2;
+    Role = import_mongoose3.default.model("Role", roleSchema);
+    Role_default = Role;
   }
 });
 
@@ -96244,6 +96223,696 @@ var init_Plan = __esm({
   }
 });
 
+// models/DeliveryPartner.js
+var DeliveryPartner_exports = {};
+__export(DeliveryPartner_exports, {
+  default: () => DeliveryPartner_default
+});
+var import_mongoose10, deliveryPartnerSchema, DeliveryPartner, DeliveryPartner_default;
+var init_DeliveryPartner = __esm({
+  "models/DeliveryPartner.js"() {
+    import_mongoose10 = __toESM(require_mongoose2(), 1);
+    deliveryPartnerSchema = new import_mongoose10.default.Schema({
+      userId: {
+        type: import_mongoose10.default.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+        unique: true
+      },
+      restaurantId: {
+        type: import_mongoose10.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true
+      },
+      status: {
+        type: String,
+        enum: ["Online", "Offline", "Busy", "On Delivery"],
+        default: "Offline"
+      },
+      verificationStatus: {
+        type: String,
+        enum: ["Pending", "Approved", "Rejected", "Suspended"],
+        default: "Pending"
+      },
+      vehicleDetails: {
+        type: { type: String, default: "Bike" },
+        // Bike, Scooter, Car, etc.
+        model: { type: String, default: "" },
+        rcNumber: { type: String, default: "" },
+        licenseNumber: { type: String, default: "" }
+      },
+      documents: {
+        drivingLicense: { type: String, default: "" },
+        aadhaarProof: { type: String, default: "" },
+        vehicleRc: { type: String, default: "" },
+        vehicleInsurance: { type: String, default: "" },
+        profilePhoto: { type: String, default: "" }
+      },
+      walletBalance: {
+        type: Number,
+        default: 0
+      },
+      earnings: {
+        type: Number,
+        default: 0
+      },
+      currentLocation: {
+        latitude: { type: Number, default: 12.9716 },
+        // Defaults to center coordinates
+        longitude: { type: Number, default: 77.5946 }
+      }
+    }, { timestamps: true });
+    DeliveryPartner = import_mongoose10.default.model("DeliveryPartner", deliveryPartnerSchema);
+    DeliveryPartner_default = DeliveryPartner;
+  }
+});
+
+// models/SubscriptionPayment.js
+var SubscriptionPayment_exports = {};
+__export(SubscriptionPayment_exports, {
+  default: () => SubscriptionPayment_default
+});
+var import_mongoose11, subscriptionPaymentSchema, SubscriptionPayment, SubscriptionPayment_default;
+var init_SubscriptionPayment = __esm({
+  "models/SubscriptionPayment.js"() {
+    import_mongoose11 = __toESM(require_mongoose2(), 1);
+    subscriptionPaymentSchema = new import_mongoose11.default.Schema({
+      restaurantId: {
+        type: import_mongoose11.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true
+      },
+      planName: {
+        type: String,
+        required: true
+      },
+      amount: {
+        type: Number,
+        required: true
+      },
+      billingCycle: {
+        type: String,
+        enum: ["monthly", "yearly"],
+        required: true
+      },
+      paymentMethod: {
+        type: String,
+        required: true
+      },
+      transactionId: {
+        type: String,
+        required: true
+      },
+      status: {
+        type: String,
+        enum: ["Pending", "Completed", "Failed"],
+        default: "Completed"
+      },
+      effectiveDate: {
+        type: Date,
+        default: Date.now
+      },
+      expiryDate: {
+        type: Date
+      }
+    }, {
+      timestamps: true
+    });
+    SubscriptionPayment = import_mongoose11.default.model("SubscriptionPayment", subscriptionPaymentSchema);
+    SubscriptionPayment_default = SubscriptionPayment;
+  }
+});
+
+// models/Order.js
+var Order_exports = {};
+__export(Order_exports, {
+  default: () => Order_default
+});
+var import_mongoose13, orderSchema, Order, Order_default;
+var init_Order = __esm({
+  "models/Order.js"() {
+    import_mongoose13 = __toESM(require_mongoose2(), 1);
+    orderSchema = new import_mongoose13.default.Schema({
+      user: {
+        type: import_mongoose13.default.Schema.Types.ObjectId,
+        required: true,
+        ref: "User"
+      },
+      orderItems: [
+        {
+          name: { type: String, required: true },
+          qty: { type: Number, required: true },
+          image: { type: String, required: true },
+          price: { type: Number, required: true },
+          product: {
+            type: import_mongoose13.default.Schema.Types.ObjectId,
+            ref: "MenuItem"
+          }
+        }
+      ],
+      restaurantId: {
+        type: import_mongoose13.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true
+      },
+      branchId: {
+        type: import_mongoose13.default.Schema.Types.ObjectId,
+        ref: "Branch",
+        required: true
+      },
+      source: {
+        type: String,
+        enum: ["Walk-in", "QR", "Self-Pickup"],
+        default: "Walk-in"
+      },
+      orderType: {
+        type: String,
+        required: true,
+        enum: ["Dine In", "Self-Pickup", "Delivery"],
+        default: "Dine In"
+      },
+      tableNumber: {
+        type: String
+      },
+      notes: {
+        type: String
+      },
+      shippingAddress: {
+        address: { type: String },
+        city: { type: String },
+        postalCode: { type: String }
+      },
+      paymentMethod: {
+        type: String,
+        required: true,
+        default: "Card"
+      },
+      subscriptionPlan: {
+        type: String,
+        default: "One-time Order"
+      },
+      paymentResult: {
+        id: { type: String },
+        status: { type: String },
+        update_time: { type: String },
+        email_address: { type: String }
+      },
+      taxPrice: {
+        type: Number,
+        required: true,
+        default: 0
+      },
+      totalPrice: {
+        type: Number,
+        required: true,
+        default: 0
+      },
+      isPaid: {
+        type: Boolean,
+        required: true,
+        default: false
+      },
+      paidAt: {
+        type: Date
+      },
+      status: {
+        type: String,
+        required: true,
+        enum: ["Pending", "Accepted", "Preparing", "Ready", "Ready for Pickup", "Picked Up", "Served", "Billing Requested", "Out for Delivery", "Delivered", "Cancelled", "Completed"],
+        default: "Pending"
+      },
+      statusHistory: [
+        {
+          status: { type: String, required: true },
+          timestamp: { type: Date, default: Date.now },
+          updatedBy: { type: import_mongoose13.default.Schema.Types.ObjectId, ref: "User" }
+        }
+      ],
+      pickupTime: {
+        type: Date
+      },
+      // Delivery partner details
+      deliveryPartner: {
+        type: import_mongoose13.default.Schema.Types.ObjectId,
+        ref: "User"
+      },
+      deliveryStatus: {
+        type: String,
+        enum: ["None", "Pending Assignment", "Accepted", "Rejected", "Picked Up", "On the Way", "Delivered", "Cancelled"],
+        default: "None"
+      },
+      deliveryDistance: {
+        type: Number,
+        default: 0
+      },
+      deliveryCharge: {
+        type: Number,
+        default: 0
+      },
+      deliveryETA: {
+        type: Date
+      },
+      deliveryOtp: {
+        type: String,
+        default: null
+      },
+      deliveryRating: {
+        speed: { type: Number, default: 0 },
+        behaviour: { type: Number, default: 0 },
+        foodHandling: { type: Number, default: 0 },
+        overall: { type: Number, default: 0 },
+        review: { type: String, default: "" }
+      },
+      internalRating: {
+        type: Number,
+        default: 0
+      }
+    }, { timestamps: true });
+    Order = import_mongoose13.default.model("Order", orderSchema);
+    Order_default = Order;
+  }
+});
+
+// models/MenuItem.js
+var MenuItem_exports = {};
+__export(MenuItem_exports, {
+  default: () => MenuItem_default
+});
+var import_mongoose16, menuItemSchema, MenuItem, MenuItem_default;
+var init_MenuItem = __esm({
+  "models/MenuItem.js"() {
+    import_mongoose16 = __toESM(require_mongoose2(), 1);
+    menuItemSchema = new import_mongoose16.default.Schema({
+      name: {
+        type: String,
+        required: true
+      },
+      description: {
+        type: String
+      },
+      price: {
+        type: Number,
+        required: true
+      },
+      category: {
+        type: String,
+        required: true
+      },
+      image: {
+        type: String,
+        default: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop"
+      },
+      rating: {
+        type: Number,
+        default: 0
+      },
+      reviews: {
+        type: Number,
+        default: 0
+      },
+      tags: [{
+        type: String
+      }],
+      isActive: {
+        type: Boolean,
+        default: true
+      },
+      restaurantId: {
+        type: import_mongoose16.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true
+      },
+      branchId: {
+        type: import_mongoose16.default.Schema.Types.ObjectId,
+        ref: "Branch"
+      }
+    }, { timestamps: true });
+    MenuItem = import_mongoose16.default.model("MenuItem", menuItemSchema);
+    MenuItem_default = MenuItem;
+  }
+});
+
+// models/Ticket.js
+var Ticket_exports = {};
+__export(Ticket_exports, {
+  default: () => Ticket_default
+});
+var import_mongoose17, ticketSchema, Ticket, Ticket_default;
+var init_Ticket = __esm({
+  "models/Ticket.js"() {
+    import_mongoose17 = __toESM(require_mongoose2(), 1);
+    ticketSchema = new import_mongoose17.default.Schema({
+      ticketId: {
+        type: String,
+        required: true,
+        unique: true
+      },
+      restaurantId: {
+        type: import_mongoose17.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true
+      },
+      branchId: {
+        type: import_mongoose17.default.Schema.Types.ObjectId,
+        ref: "Branch"
+      },
+      subject: {
+        type: String,
+        required: true
+      },
+      category: {
+        type: String,
+        enum: [
+          "Billing",
+          "Subscription",
+          "Orders",
+          "Kitchen",
+          "Inventory",
+          "POS",
+          "QR Digital Menu",
+          "Delivery",
+          "Staff Management",
+          "Technical Issue",
+          "Feature Request",
+          "Other"
+        ],
+        required: true
+      },
+      priority: {
+        type: String,
+        enum: ["Low", "Medium", "High", "Critical"],
+        default: "Medium"
+      },
+      status: {
+        type: String,
+        enum: ["Open", "Assigned", "In Progress", "Waiting for Customer", "Resolved", "Closed"],
+        default: "Open"
+      },
+      description: {
+        type: String,
+        required: true
+      },
+      assignedAgentId: {
+        type: import_mongoose17.default.Schema.Types.ObjectId,
+        ref: "User"
+      },
+      attachments: [{
+        type: String
+      }],
+      resolutionTime: {
+        type: Number,
+        // in minutes
+        default: null
+      },
+      csatRating: {
+        type: Number,
+        // 1 to 5 stars
+        min: 1,
+        max: 5,
+        default: null
+      },
+      csatFeedback: {
+        type: String,
+        default: ""
+      },
+      lastUpdated: {
+        type: Date,
+        default: Date.now
+      }
+    }, {
+      timestamps: true
+    });
+    ticketSchema.pre("save", function(next) {
+      this.lastUpdated = /* @__PURE__ */ new Date();
+      next();
+    });
+    Ticket = import_mongoose17.default.model("Ticket", ticketSchema);
+    Ticket_default = Ticket;
+  }
+});
+
+// models/Table.js
+var Table_exports = {};
+__export(Table_exports, {
+  default: () => Table_default
+});
+var import_mongoose18, tableSchema, Table, Table_default;
+var init_Table = __esm({
+  "models/Table.js"() {
+    import_mongoose18 = __toESM(require_mongoose2(), 1);
+    tableSchema = new import_mongoose18.default.Schema({
+      restaurantId: {
+        type: import_mongoose18.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true
+      },
+      branchId: {
+        type: import_mongoose18.default.Schema.Types.ObjectId,
+        ref: "Branch",
+        required: true
+      },
+      tableNumber: {
+        type: Number,
+        required: true
+      },
+      capacity: {
+        type: Number,
+        required: true,
+        default: 4
+      },
+      status: {
+        type: String,
+        enum: ["Available", "Occupied", "Reserved", "Cleaning", "Billing"],
+        default: "Available"
+      },
+      activeOrder: {
+        type: import_mongoose18.default.Schema.Types.ObjectId,
+        ref: "Order",
+        default: null
+      },
+      customers: {
+        type: Number,
+        default: 0
+      }
+    }, { timestamps: true });
+    Table = import_mongoose18.default.model("Table", tableSchema);
+    Table_default = Table;
+  }
+});
+
+// models/Category.js
+var Category_exports = {};
+__export(Category_exports, {
+  default: () => Category_default
+});
+var import_mongoose19, categorySchema, Category, Category_default;
+var init_Category = __esm({
+  "models/Category.js"() {
+    import_mongoose19 = __toESM(require_mongoose2(), 1);
+    categorySchema = new import_mongoose19.default.Schema({
+      branch: {
+        type: import_mongoose19.default.Schema.Types.ObjectId,
+        ref: "Branch",
+        required: true
+      },
+      name: {
+        type: String,
+        required: true
+      },
+      description: {
+        type: String
+      },
+      image: {
+        type: String
+      },
+      isActive: {
+        type: Boolean,
+        default: true
+      }
+    }, { timestamps: true });
+    Category = import_mongoose19.default.model("Category", categorySchema);
+    Category_default = Category;
+  }
+});
+
+// models/Inventory.js
+var Inventory_exports = {};
+__export(Inventory_exports, {
+  default: () => Inventory_default
+});
+var import_mongoose20, inventorySchema, Inventory, Inventory_default;
+var init_Inventory = __esm({
+  "models/Inventory.js"() {
+    import_mongoose20 = __toESM(require_mongoose2(), 1);
+    inventorySchema = new import_mongoose20.default.Schema({
+      branch: {
+        type: import_mongoose20.default.Schema.Types.ObjectId,
+        ref: "Branch",
+        required: true
+      },
+      supplier: {
+        type: import_mongoose20.default.Schema.Types.ObjectId,
+        ref: "Supplier"
+      },
+      itemName: {
+        type: String,
+        required: true
+      },
+      category: {
+        type: String
+        // e.g., 'Vegetables', 'Meat', 'Dairy', 'Packaging'
+      },
+      quantity: {
+        type: Number,
+        required: true,
+        default: 0
+      },
+      unit: {
+        type: String,
+        // e.g., 'kg', 'ltr', 'pcs'
+        required: true
+      },
+      minStockLevel: {
+        type: Number,
+        default: 10
+      },
+      pricePerUnit: {
+        type: Number
+      }
+    }, { timestamps: true });
+    Inventory = import_mongoose20.default.model("Inventory", inventorySchema);
+    Inventory_default = Inventory;
+  }
+});
+
+// models/Expense.js
+var Expense_exports = {};
+__export(Expense_exports, {
+  default: () => Expense_default
+});
+var import_mongoose21, expenseSchema, Expense, Expense_default;
+var init_Expense = __esm({
+  "models/Expense.js"() {
+    import_mongoose21 = __toESM(require_mongoose2(), 1);
+    expenseSchema = new import_mongoose21.default.Schema({
+      category: {
+        type: String,
+        required: true,
+        enum: ["Kitchen Supplies", "Utility Bill", "Maintenance", "Staff Welfare", "Marketing", "Others"]
+      },
+      amount: {
+        type: Number,
+        required: true
+      },
+      description: {
+        type: String,
+        required: true
+      },
+      date: {
+        type: Date,
+        required: true,
+        default: Date.now
+      },
+      staff: {
+        type: String,
+        required: true
+      },
+      restaurantId: {
+        type: import_mongoose21.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true
+      },
+      branchId: {
+        type: import_mongoose21.default.Schema.Types.ObjectId,
+        ref: "Branch"
+      }
+    }, { timestamps: true });
+    Expense = import_mongoose21.default.model("Expense", expenseSchema);
+    Expense_default = Expense;
+  }
+});
+
+// models/ServiceRequest.js
+var ServiceRequest_exports = {};
+__export(ServiceRequest_exports, {
+  default: () => ServiceRequest_default
+});
+var import_mongoose22, serviceRequestSchema, ServiceRequest, ServiceRequest_default;
+var init_ServiceRequest = __esm({
+  "models/ServiceRequest.js"() {
+    import_mongoose22 = __toESM(require_mongoose2(), 1);
+    serviceRequestSchema = new import_mongoose22.default.Schema({
+      restaurantId: {
+        type: import_mongoose22.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true
+      },
+      branchId: {
+        type: import_mongoose22.default.Schema.Types.ObjectId,
+        ref: "Branch",
+        required: true
+      },
+      tableNumber: {
+        type: Number,
+        required: true
+      },
+      requestType: {
+        type: String,
+        enum: ["Call Waiter", "Request Water", "Request Cutlery", "Request Bill"],
+        required: true
+      },
+      status: {
+        type: String,
+        enum: ["Pending", "Completed"],
+        default: "Pending"
+      }
+    }, { timestamps: true });
+    ServiceRequest = import_mongoose22.default.model("ServiceRequest", serviceRequestSchema);
+    ServiceRequest_default = ServiceRequest;
+  }
+});
+
+// models/WastageLog.js
+var WastageLog_exports = {};
+__export(WastageLog_exports, {
+  default: () => WastageLog_default
+});
+var import_mongoose23, wastageLogSchema, WastageLog, WastageLog_default;
+var init_WastageLog = __esm({
+  "models/WastageLog.js"() {
+    import_mongoose23 = __toESM(require_mongoose2(), 1);
+    wastageLogSchema = new import_mongoose23.default.Schema({
+      ingredientName: {
+        type: String,
+        required: true
+      },
+      quantity: {
+        type: Number,
+        required: true
+      },
+      unit: {
+        type: String,
+        required: true
+      },
+      reason: {
+        type: String,
+        required: true
+      },
+      restaurantId: {
+        type: import_mongoose23.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true
+      },
+      branchId: {
+        type: import_mongoose23.default.Schema.Types.ObjectId,
+        ref: "Branch"
+      }
+    }, { timestamps: true });
+    WastageLog = import_mongoose23.default.model("WastageLog", wastageLogSchema);
+    WastageLog_default = WastageLog;
+  }
+});
+
 // index.js
 var import_express27 = __toESM(require_express2(), 1);
 var import_dotenv = __toESM(require_main(), 1);
@@ -96252,6 +96921,7 @@ var import_cookie_parser = __toESM(require_cookie_parser(), 1);
 var import_fs5 = __toESM(require("fs"), 1);
 var import_path5 = __toESM(require("path"), 1);
 var import_http = __toESM(require("http"), 1);
+var import_https = __toESM(require("https"), 1);
 
 // config/db.js
 var import_mongoose = __toESM(require_mongoose2(), 1);
@@ -96303,21 +96973,42 @@ var initWebSocket = (server2) => {
     });
   });
 };
+var extractId = (id) => {
+  if (!id) return "";
+  if (typeof id === "object") return String(id._id || id.id || id);
+  return String(id);
+};
 var broadcastToRestaurant = (restaurantId, eventType, payload) => {
   if (!wss) return;
+  const targetRestId = extractId(restaurantId);
   const message = JSON.stringify({ type: eventType, data: payload });
   clients.forEach((clientInfo, ws) => {
-    if (ws.readyState === 1 && String(clientInfo.restaurantId) === String(restaurantId)) {
-      ws.send(message);
+    if (ws.readyState === 1) {
+      const clientRestId = extractId(clientInfo?.restaurantId);
+      if (!targetRestId || !clientRestId || clientRestId === targetRestId || clientRestId === "[object Object]") {
+        try {
+          ws.send(message);
+        } catch (e) {
+          console.error("Error broadcasting to WS client", e);
+        }
+      }
     }
   });
 };
 var broadcastToCustomerOrder = (orderId, eventType, payload) => {
   if (!wss) return;
+  const targetOrderId = extractId(orderId);
   const message = JSON.stringify({ type: eventType, data: payload });
   clients.forEach((clientInfo, ws) => {
-    if (ws.readyState === 1 && String(clientInfo.orderId) === String(orderId)) {
-      ws.send(message);
+    if (ws.readyState === 1) {
+      const clientOrderId = extractId(clientInfo?.orderId);
+      if (!targetOrderId || !clientOrderId || clientOrderId === targetOrderId || clientOrderId === "[object Object]") {
+        try {
+          ws.send(message);
+        } catch (e) {
+          console.error("Error broadcasting customer order WS", e);
+        }
+      }
     }
   });
 };
@@ -96352,39 +97043,62 @@ var import_express = __toESM(require_express2(), 1);
 var import_jsonwebtoken = __toESM(require_jsonwebtoken(), 1);
 var import_fs = __toESM(require("fs"), 1);
 var import_path = __toESM(require("path"), 1);
-init_User();
 
-// models/Role.js
-var import_mongoose3 = __toESM(require_mongoose2(), 1);
-var roleSchema = new import_mongoose3.default.Schema({
+// models/User.js
+var import_mongoose2 = __toESM(require_mongoose2(), 1);
+var import_bcryptjs = __toESM(require_bcryptjs(), 1);
+var userSchema = new import_mongoose2.default.Schema({
   name: {
     type: String,
     required: true
   },
-  restaurantId: {
-    type: import_mongoose3.default.Schema.Types.ObjectId,
-    ref: "Restaurant",
-    required: function() {
-      return !this.isCoreRole;
-    }
-  },
-  description: {
+  email: {
     type: String,
-    default: ""
+    required: true,
+    unique: true
   },
-  isCoreRole: {
+  password: {
+    type: String,
+    required: true
+  },
+  phoneNumber: {
+    type: String
+  },
+  role: {
+    type: String,
+    required: true
+  },
+  restaurantId: {
+    type: import_mongoose2.default.Schema.Types.ObjectId,
+    ref: "Restaurant"
+  },
+  branchId: {
+    type: import_mongoose2.default.Schema.Types.ObjectId,
+    ref: "Branch"
+  },
+  isActive: {
     type: Boolean,
-    default: false
+    default: true
   },
-  permissions: {
-    type: Map,
-    of: [Boolean],
-    // Array of 4 booleans for [View Data, Create Records, Edit Records, Delete Records]
-    default: {}
+  refreshToken: {
+    type: String
   }
 }, { timestamps: true });
-var Role = import_mongoose3.default.model("Role", roleSchema);
-var Role_default = Role;
+userSchema.pre("save", async function() {
+  if (!this.isModified("password")) {
+    return;
+  }
+  const salt = await import_bcryptjs.default.genSalt(10);
+  this.password = await import_bcryptjs.default.hash(this.password, salt);
+});
+userSchema.methods.matchPassword = async function(enteredPassword) {
+  return await import_bcryptjs.default.compare(enteredPassword, this.password);
+};
+var User2 = import_mongoose2.default.model("User", userSchema);
+var User_default = User2;
+
+// controllers/authController.js
+init_Role();
 
 // models/Restaurant.js
 var import_mongoose4 = __toESM(require_mongoose2(), 1);
@@ -96924,16 +97638,16 @@ var registerUser = async (req, res) => {
 var loginUser = async (req, res) => {
   const { email, password, loginType } = req.body;
   try {
-    let user = await User_default.findOne({ email });
-    if (!user && (email === "admin@restauranthub.com" || email === "superadmin@restauranthub.com") && password === "password123") {
-      user = await User_default.create({
-        name: "Super Admin",
-        email,
-        password: "password123",
-        role: "SuperAdmin"
-      });
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
     }
-    if (user && await user.matchPassword(password)) {
+    const normalizedEmail = String(email).trim().toLowerCase();
+    let user = await User_default.findOne({ email: { $regex: `^${normalizedEmail}$`, $options: "i" } });
+    const cleanPassword = String(password).trim();
+    if (!user) {
+      return res.status(401).json({ message: "No account found with this email address. Please register first." });
+    }
+    if (await user.matchPassword(cleanPassword)) {
       if (loginType === "staff" && user.role === "Customer") {
         return res.status(403).json({ message: "Customers cannot log into the staff portal" });
       }
@@ -96988,7 +97702,7 @@ var loginUser = async (req, res) => {
         token
       });
     } else {
-      res.status(401).json({ message: "Invalid email or password" });
+      res.status(401).json({ message: "Incorrect password. Please check your credentials and try again." });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -97150,10 +97864,36 @@ var createRazorpayRegistrationOrder = async (req, res) => {
     res.status(400).json({ message: error.message || "Failed to create Razorpay Order" });
   }
 };
+var changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!newPassword) {
+      return res.status(400).json({ message: "New password is required" });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: "New password must be at least 6 characters long" });
+    }
+    const user = await User_default.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (currentPassword) {
+      const isMatch = await user.matchPassword(currentPassword);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Incorrect current password" });
+      }
+    }
+    user.password = newPassword;
+    await user.save();
+    res.json({ message: "Password changed successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Failed to change password" });
+  }
+};
 
 // middleware/authMiddleware.js
 var import_jsonwebtoken2 = __toESM(require_jsonwebtoken(), 1);
-init_User();
+init_Role();
 init_Plan();
 var protect = async (req, res, next) => {
   let token;
@@ -97302,10 +98042,10 @@ var checkFeature = (featureName) => {
 // controllers/verificationController.js
 init_RestaurantVerification();
 init_Notification();
-init_User();
 var import_multer = __toESM(require("multer"), 1);
 var import_path2 = __toESM(require("path"), 1);
 var import_fs2 = __toESM(require("fs"), 1);
+var import_mongoose9 = __toESM(require_mongoose2(), 1);
 var uploadDir = "uploads/verification";
 if (!import_fs2.default.existsSync(uploadDir)) {
   import_fs2.default.mkdirSync(uploadDir, { recursive: true });
@@ -97496,71 +98236,8 @@ var getMyVerification = async (req, res) => {
 };
 var getAllVerifications = async (req, res) => {
   try {
-    if (mongoose.connection.readyState !== 1) {
+    if (import_mongoose9.default.connection.readyState !== 1) {
       return res.json([]);
-    }
-    try {
-      const User3 = (await Promise.resolve().then(() => (init_User(), User_exports))).default;
-      const Branch2 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
-      const unlinkedAdmins = await User3.find({
-        role: { $in: ["RestaurantAdmin", "Admin", "restaurantadmin", "admin"] },
-        $or: [
-          { restaurantId: { $exists: false } },
-          { restaurantId: null }
-        ]
-      });
-      for (const admin of unlinkedAdmins) {
-        let existingRest = await Restaurant_default.findOne({ ownerId: admin._id });
-        if (!existingRest) {
-          existingRest = await Restaurant_default.create({
-            name: `${admin.name || "Partner"}'s Restaurant`,
-            ownerId: admin._id,
-            subscription: {
-              status: "Active",
-              plan: "Basic",
-              billingCycle: "monthly",
-              trialActive: true,
-              expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1e3)
-            },
-            approvalStatus: "Pending",
-            verificationStatus: "Pending"
-          });
-          try {
-            await Branch2.create({
-              restaurantId: existingRest._id,
-              name: `${existingRest.name} Branch`,
-              location: { address: "Primary Location" },
-              contact: { phone: admin.phoneNumber || "" },
-              isActive: true
-            });
-          } catch (bErr) {
-            console.error("Self-heal branch error:", bErr.message);
-          }
-        }
-        admin.restaurantId = existingRest._id;
-        await admin.save();
-      }
-    } catch (adminSelfHealErr) {
-      console.error("Self-heal admin users error:", adminSelfHealErr.message);
-    }
-    try {
-      const allRestaurants = await Restaurant_default.find().lean();
-      for (const rest of allRestaurants) {
-        try {
-          const existingVerif = await RestaurantVerification_default.findOne({ restaurantId: rest._id });
-          if (!existingVerif) {
-            await RestaurantVerification_default.create({
-              restaurantId: rest._id,
-              documents: {},
-              status: rest.approvalStatus === "Approved" ? "Verified" : "Pending"
-            });
-          }
-        } catch (vErr) {
-          console.error("Self-heal verification record error for rest:", rest._id, vErr.message);
-        }
-      }
-    } catch (sErr) {
-      console.error("Self-heal outer loop error:", sErr.message);
     }
     let verifications = await RestaurantVerification_default.find().populate({
       path: "restaurantId",
@@ -97589,11 +98266,30 @@ var getAllVerifications = async (req, res) => {
 };
 var getVerificationById = async (req, res) => {
   try {
-    const verification = await RestaurantVerification_default.findById(req.params.id).populate({
-      path: "restaurantId",
-      populate: { path: "ownerId", select: "name email" }
-    }).populate("history.actionBy", "name email");
+    const { id } = req.params;
+    let verification = null;
+    if (import_mongoose9.default.Types.ObjectId.isValid(id)) {
+      verification = await RestaurantVerification_default.findById(id).populate({
+        path: "restaurantId",
+        populate: { path: "ownerId", select: "name email" }
+      }).populate("history.actionBy", "name email");
+    }
     if (!verification) {
+      verification = await RestaurantVerification_default.findOne({ restaurantId: id }).populate({
+        path: "restaurantId",
+        populate: { path: "ownerId", select: "name email" }
+      }).populate("history.actionBy", "name email");
+    }
+    if (!verification) {
+      const restaurant = import_mongoose9.default.Types.ObjectId.isValid(id) ? await Restaurant_default.findById(id).populate("ownerId", "name email") : null;
+      if (restaurant) {
+        return res.json({
+          _id: restaurant._id,
+          restaurantId: restaurant,
+          status: restaurant.approvalStatus === "Approved" ? "Verified" : "Pending",
+          documents: {}
+        });
+      }
       return res.status(404).json({ message: "Verification record not found" });
     }
     res.json(verification);
@@ -97604,30 +98300,49 @@ var getVerificationById = async (req, res) => {
 var reviewVerification = async (req, res) => {
   try {
     const { status, rejectionReason, documentStatus } = req.body;
+    const { id } = req.params;
     if (!["Verified", "Rejected", "Re-upload Required"].includes(status)) {
       return res.status(400).json({ message: "Invalid review status value" });
     }
     if (status === "Rejected" && !rejectionReason) {
       return res.status(400).json({ message: "Rejection reason is mandatory when status is Rejected" });
     }
-    const verification = await RestaurantVerification_default.findById(req.params.id);
-    if (!verification) {
-      return res.status(404).json({ message: "Verification record not found" });
+    let verification = null;
+    if (import_mongoose9.default.Types.ObjectId.isValid(id)) {
+      verification = await RestaurantVerification_default.findById(id);
     }
-    const restaurant = await Restaurant_default.findById(verification.restaurantId);
+    if (!verification) {
+      verification = await RestaurantVerification_default.findOne({ restaurantId: id });
+    }
+    let restaurant = null;
+    if (verification) {
+      restaurant = await Restaurant_default.findById(verification.restaurantId);
+    } else if (import_mongoose9.default.Types.ObjectId.isValid(id)) {
+      restaurant = await Restaurant_default.findById(id);
+    }
     if (!restaurant) {
       return res.status(404).json({ message: "Associated restaurant not found" });
     }
-    if (documentStatus) {
-      Object.keys(documentStatus).forEach((key) => {
-        if (verification.documents[key]) {
-          verification.documents[key].status = documentStatus[key].status || verification.documents[key].status;
-          verification.documents[key].rejectReason = documentStatus[key].rejectReason || "";
-        }
+    if (!verification) {
+      verification = new RestaurantVerification_default({
+        restaurantId: restaurant._id,
+        documents: {},
+        status,
+        rejectionReason: status === "Rejected" ? rejectionReason : ""
       });
+    } else {
+      if (documentStatus) {
+        Object.keys(documentStatus).forEach((key) => {
+          if (verification.documents && verification.documents[key]) {
+            verification.documents[key].status = documentStatus[key].status || verification.documents[key].status;
+            verification.documents[key].rejectReason = documentStatus[key].rejectReason || "";
+          }
+        });
+      }
+      verification.status = status;
+      verification.rejectionReason = status === "Rejected" ? rejectionReason : "";
     }
-    verification.status = status;
-    verification.rejectionReason = status === "Rejected" ? rejectionReason : "";
+    verification.history = verification.history || [];
     verification.history.push({
       status,
       actionBy: req.user._id,
@@ -97648,7 +98363,7 @@ var reviewVerification = async (req, res) => {
       restaurant.subscription.expiryDate = expiry;
       const fields = ["fssai", "businessRegistration", "panCard", "aadhaarCard", "addressProof", "bankProof"];
       fields.forEach((f) => {
-        if (verification.documents[f]) {
+        if (verification.documents && verification.documents[f]) {
           verification.documents[f].status = "Approved";
           verification.documents[f].rejectReason = "";
         }
@@ -97678,7 +98393,7 @@ var reviewVerification = async (req, res) => {
       restaurant.subscription.status = "Inactive";
       const fields = ["fssai", "businessRegistration", "panCard", "aadhaarCard", "addressProof", "bankProof"];
       fields.forEach((f) => {
-        if (verification.documents[f]) {
+        if (verification.documents && verification.documents[f]) {
           verification.documents[f].status = "Rejected";
           verification.documents[f].rejectReason = rejectionReason;
         }
@@ -97710,14 +98425,41 @@ var reviewVerification = async (req, res) => {
 };
 var deleteVerification = async (req, res) => {
   try {
-    const verification = await RestaurantVerification_default.findById(req.params.id);
-    if (!verification) {
-      return res.status(404).json({ message: "Verification record not found" });
+    const { id } = req.params;
+    if (!id || id === "undefined" || id === "null") {
+      return res.status(200).json({ success: true, message: "Verification record removed" });
     }
-    await RestaurantVerification_default.findByIdAndDelete(req.params.id);
-    res.json({ message: "Verification record deleted successfully" });
+    let verification = null;
+    if (import_mongoose9.default.Types.ObjectId.isValid(id)) {
+      verification = await RestaurantVerification_default.findById(id);
+    }
+    if (!verification) {
+      verification = await RestaurantVerification_default.findOne({ restaurantId: id });
+    }
+    if (verification) {
+      await RestaurantVerification_default.findByIdAndDelete(verification._id);
+      if (verification.restaurantId) {
+        await Restaurant_default.findByIdAndUpdate(verification.restaurantId, {
+          verificationStatus: "Pending",
+          approvalStatus: "Pending"
+        });
+      }
+      return res.status(200).json({ success: true, message: "Verification record deleted successfully" });
+    }
+    let restaurant = null;
+    if (import_mongoose9.default.Types.ObjectId.isValid(id)) {
+      restaurant = await Restaurant_default.findById(id);
+    }
+    if (restaurant) {
+      restaurant.verificationStatus = "Pending";
+      restaurant.approvalStatus = "Pending";
+      await restaurant.save();
+      return res.status(200).json({ success: true, message: "Verification record reset successfully" });
+    }
+    return res.status(200).json({ success: true, message: "Verification record removed" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Delete verification error:", error);
+    return res.status(200).json({ success: true, message: "Verification record removed" });
   }
 };
 
@@ -97734,6 +98476,7 @@ router.post("/register", (req, res, next) => {
 }, registerUser);
 router.post("/login", loginUser);
 router.post("/logout", protect, logoutUser);
+router.put("/change-password", protect, changePassword);
 router.post("/resend-welcome-email", resendWelcomeEmail);
 router.post("/test-email", testSendEmail);
 router.post("/razorpay-order", createRazorpayRegistrationOrder);
@@ -97746,113 +98489,11 @@ var authRoutes_default = router;
 var import_express2 = __toESM(require_express2(), 1);
 
 // controllers/restaurantController.js
-var import_mongoose11 = __toESM(require_mongoose2(), 1);
+var import_mongoose12 = __toESM(require_mongoose2(), 1);
 init_Branch();
 init_Notification();
-
-// models/DeliveryPartner.js
-var import_mongoose9 = __toESM(require_mongoose2(), 1);
-var deliveryPartnerSchema = new import_mongoose9.default.Schema({
-  userId: {
-    type: import_mongoose9.default.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-    unique: true
-  },
-  restaurantId: {
-    type: import_mongoose9.default.Schema.Types.ObjectId,
-    ref: "Restaurant",
-    required: true
-  },
-  status: {
-    type: String,
-    enum: ["Online", "Offline", "Busy", "On Delivery"],
-    default: "Offline"
-  },
-  verificationStatus: {
-    type: String,
-    enum: ["Pending", "Approved", "Rejected", "Suspended"],
-    default: "Pending"
-  },
-  vehicleDetails: {
-    type: { type: String, default: "Bike" },
-    // Bike, Scooter, Car, etc.
-    model: { type: String, default: "" },
-    rcNumber: { type: String, default: "" },
-    licenseNumber: { type: String, default: "" }
-  },
-  documents: {
-    drivingLicense: { type: String, default: "" },
-    aadhaarProof: { type: String, default: "" },
-    vehicleRc: { type: String, default: "" },
-    vehicleInsurance: { type: String, default: "" },
-    profilePhoto: { type: String, default: "" }
-  },
-  walletBalance: {
-    type: Number,
-    default: 0
-  },
-  earnings: {
-    type: Number,
-    default: 0
-  },
-  currentLocation: {
-    latitude: { type: Number, default: 12.9716 },
-    // Defaults to center coordinates
-    longitude: { type: Number, default: 77.5946 }
-  }
-}, { timestamps: true });
-var DeliveryPartner = import_mongoose9.default.model("DeliveryPartner", deliveryPartnerSchema);
-var DeliveryPartner_default = DeliveryPartner;
-
-// models/SubscriptionPayment.js
-var import_mongoose10 = __toESM(require_mongoose2(), 1);
-var subscriptionPaymentSchema = new import_mongoose10.default.Schema({
-  restaurantId: {
-    type: import_mongoose10.default.Schema.Types.ObjectId,
-    ref: "Restaurant",
-    required: true
-  },
-  planName: {
-    type: String,
-    required: true
-  },
-  amount: {
-    type: Number,
-    required: true
-  },
-  billingCycle: {
-    type: String,
-    enum: ["monthly", "yearly"],
-    required: true
-  },
-  paymentMethod: {
-    type: String,
-    required: true
-  },
-  transactionId: {
-    type: String,
-    required: true
-  },
-  status: {
-    type: String,
-    enum: ["Pending", "Completed", "Failed"],
-    default: "Completed"
-  },
-  effectiveDate: {
-    type: Date,
-    default: Date.now
-  },
-  expiryDate: {
-    type: Date
-  }
-}, {
-  timestamps: true
-});
-var SubscriptionPayment = import_mongoose10.default.model("SubscriptionPayment", subscriptionPaymentSchema);
-var SubscriptionPayment_default = SubscriptionPayment;
-
-// controllers/restaurantController.js
+init_DeliveryPartner();
+init_SubscriptionPayment();
 init_Plan();
 var import_multer2 = __toESM(require("multer"), 1);
 var import_path3 = __toESM(require("path"), 1);
@@ -97883,7 +98524,7 @@ var logoUpload = (0, import_multer2.default)({
 }).single("logo");
 var getRestaurants = async (req, res) => {
   try {
-    if (import_mongoose11.default.connection.readyState !== 1) {
+    if (import_mongoose12.default.connection.readyState !== 1) {
       return res.json([]);
     }
     const restaurants = await Restaurant_default.find({}).populate("ownerId", "name email").lean();
@@ -97980,7 +98621,7 @@ var createRestaurant = async (req, res) => {
 };
 var getMyRestaurant = async (req, res) => {
   try {
-    if (import_mongoose11.default.connection.readyState !== 1) {
+    if (import_mongoose12.default.connection.readyState !== 1) {
       return res.json(null);
     }
     let restaurantId = req.user?.restaurantId;
@@ -98062,7 +98703,9 @@ var updateMyRestaurant = async (req, res) => {
           tableReservations: features.tableReservations !== void 0 ? features.tableReservations : restaurant.features?.tableReservations
         };
       }
-      if (req.body.logoBase64) {
+      if (req.body.removeLogo === true || req.body.removeLogo === "true" || req.body.logo === "") {
+        restaurant.logo = "";
+      } else if (req.body.logoBase64) {
         restaurant.logo = req.body.logoBase64;
       } else if (req.file) {
         restaurant.logo = `/uploads/logos/${req.file.filename}`;
@@ -98711,154 +99354,14 @@ var branchRoutes_default = router3;
 // routes/orderRoutes.js
 var import_express4 = __toESM(require_express2(), 1);
 
-// models/Order.js
-var import_mongoose12 = __toESM(require_mongoose2(), 1);
-var orderSchema = new import_mongoose12.default.Schema({
-  user: {
-    type: import_mongoose12.default.Schema.Types.ObjectId,
-    required: true,
-    ref: "User"
-  },
-  orderItems: [
-    {
-      name: { type: String, required: true },
-      qty: { type: Number, required: true },
-      image: { type: String, required: true },
-      price: { type: Number, required: true },
-      product: {
-        type: import_mongoose12.default.Schema.Types.ObjectId,
-        ref: "MenuItem"
-      }
-    }
-  ],
-  restaurantId: {
-    type: import_mongoose12.default.Schema.Types.ObjectId,
-    ref: "Restaurant",
-    required: true
-  },
-  branchId: {
-    type: import_mongoose12.default.Schema.Types.ObjectId,
-    ref: "Branch",
-    required: true
-  },
-  source: {
-    type: String,
-    enum: ["Walk-in", "QR", "Self-Pickup"],
-    default: "Walk-in"
-  },
-  orderType: {
-    type: String,
-    required: true,
-    enum: ["Dine In", "Self-Pickup", "Delivery"],
-    default: "Dine In"
-  },
-  tableNumber: {
-    type: String
-  },
-  notes: {
-    type: String
-  },
-  shippingAddress: {
-    address: { type: String },
-    city: { type: String },
-    postalCode: { type: String }
-  },
-  paymentMethod: {
-    type: String,
-    required: true,
-    default: "Card"
-  },
-  subscriptionPlan: {
-    type: String,
-    default: "One-time Order"
-  },
-  paymentResult: {
-    id: { type: String },
-    status: { type: String },
-    update_time: { type: String },
-    email_address: { type: String }
-  },
-  taxPrice: {
-    type: Number,
-    required: true,
-    default: 0
-  },
-  totalPrice: {
-    type: Number,
-    required: true,
-    default: 0
-  },
-  isPaid: {
-    type: Boolean,
-    required: true,
-    default: false
-  },
-  paidAt: {
-    type: Date
-  },
-  status: {
-    type: String,
-    required: true,
-    enum: ["Pending", "Accepted", "Preparing", "Ready", "Ready for Pickup", "Picked Up", "Served", "Billing Requested", "Out for Delivery", "Delivered", "Cancelled", "Completed"],
-    default: "Pending"
-  },
-  statusHistory: [
-    {
-      status: { type: String, required: true },
-      timestamp: { type: Date, default: Date.now },
-      updatedBy: { type: import_mongoose12.default.Schema.Types.ObjectId, ref: "User" }
-    }
-  ],
-  pickupTime: {
-    type: Date
-  },
-  // Delivery partner details
-  deliveryPartner: {
-    type: import_mongoose12.default.Schema.Types.ObjectId,
-    ref: "User"
-  },
-  deliveryStatus: {
-    type: String,
-    enum: ["None", "Pending Assignment", "Accepted", "Rejected", "Picked Up", "On the Way", "Delivered", "Cancelled"],
-    default: "None"
-  },
-  deliveryDistance: {
-    type: Number,
-    default: 0
-  },
-  deliveryCharge: {
-    type: Number,
-    default: 0
-  },
-  deliveryETA: {
-    type: Date
-  },
-  deliveryOtp: {
-    type: String,
-    default: null
-  },
-  deliveryRating: {
-    speed: { type: Number, default: 0 },
-    behaviour: { type: Number, default: 0 },
-    foodHandling: { type: Number, default: 0 },
-    overall: { type: Number, default: 0 },
-    review: { type: String, default: "" }
-  },
-  internalRating: {
-    type: Number,
-    default: 0
-  }
-}, { timestamps: true });
-var Order = import_mongoose12.default.model("Order", orderSchema);
-var Order_default = Order;
-
 // controllers/orderController.js
-var import_mongoose13 = __toESM(require_mongoose2(), 1);
+init_Order();
+var import_mongoose14 = __toESM(require_mongoose2(), 1);
 var sanitizeOrderItems = (items) => {
   if (!items) return items;
   return items.map((item) => {
     const sanitizedItem = { ...item };
-    if (sanitizedItem.product && !import_mongoose13.default.Types.ObjectId.isValid(sanitizedItem.product)) {
+    if (sanitizedItem.product && !import_mongoose14.default.Types.ObjectId.isValid(sanitizedItem.product)) {
       delete sanitizedItem.product;
     }
     return sanitizedItem;
@@ -98870,26 +99373,42 @@ var addOrderItems = async (req, res) => {
     res.status(400).json({ message: "No order items" });
     return;
   } else {
-    let finalBranchId = branchId && import_mongoose13.default.Types.ObjectId.isValid(branchId) ? branchId : req.user ? req.user.branchId : null;
-    let finalRestaurantId = restaurantId && import_mongoose13.default.Types.ObjectId.isValid(restaurantId) ? restaurantId : req.user ? req.user.restaurantId : null;
+    let finalBranchId = branchId && import_mongoose14.default.Types.ObjectId.isValid(branchId) ? branchId : req.user ? req.user.branchId : null;
+    let finalRestaurantId = restaurantId && import_mongoose14.default.Types.ObjectId.isValid(restaurantId) ? restaurantId : req.user ? req.user.restaurantId : null;
     if (!finalBranchId && finalRestaurantId) {
-      const Branch2 = import_mongoose13.default.model("Branch");
+      const Branch2 = import_mongoose14.default.model("Branch");
       const firstBranch = await Branch2.findOne({ restaurantId: finalRestaurantId });
       if (firstBranch) {
         finalBranchId = firstBranch._id;
       }
     }
     if (!finalRestaurantId || !finalBranchId) {
-      const Restaurant2 = import_mongoose13.default.model("Restaurant");
-      const Branch2 = import_mongoose13.default.model("Branch");
-      const firstRestaurant = await Restaurant2.findOne();
-      const firstBranch = await Branch2.findOne();
-      if (firstRestaurant) finalRestaurantId = firstRestaurant._id;
-      if (firstBranch) finalBranchId = firstBranch._id;
+      const Restaurant2 = import_mongoose14.default.model("Restaurant");
+      const Branch2 = import_mongoose14.default.model("Branch");
+      let firstRestaurant = await Restaurant2.findOne();
+      if (!firstRestaurant) {
+        const User3 = import_mongoose14.default.model("User");
+        const adminUser = await User3.findOne({ role: "SuperAdmin" }) || await User3.findOne();
+        firstRestaurant = await Restaurant2.create({
+          name: "Demo Main Kitchen",
+          ownerId: adminUser ? adminUser._id : new import_mongoose14.default.Types.ObjectId(),
+          approvalStatus: "Approved",
+          subscription: { status: "Active", plan: "Pro" }
+        });
+      }
+      finalRestaurantId = firstRestaurant._id;
+      let firstBranch = await Branch2.findOne({ restaurantId: finalRestaurantId });
+      if (!firstBranch) {
+        firstBranch = await Branch2.create({
+          name: "Main Branch",
+          restaurantId: finalRestaurantId
+        });
+      }
+      finalBranchId = firstBranch._id;
     }
     let finalUserId = req.user ? req.user._id : null;
     if (!finalUserId) {
-      const User3 = import_mongoose13.default.model("User");
+      const User3 = import_mongoose14.default.model("User");
       let guestUser = await User3.findOne({ role: "Customer" });
       if (!guestUser) {
         guestUser = await User3.findOne();
@@ -98911,6 +99430,10 @@ var addOrderItems = async (req, res) => {
       taxPrice,
       totalPrice,
       deliveryOtp,
+      status: "Pending",
+      // Strictly force new order to Pending status
+      deliveryStatus: "None",
+      // Strictly force None on creation until kitchen marks Ready for Pickup
       isPaid: false,
       // Will be paid later or by cashier
       statusHistory: [{
@@ -98921,7 +99444,7 @@ var addOrderItems = async (req, res) => {
     const createdOrder = await order.save();
     if (orderType === "Dine In" && tableNumber) {
       try {
-        const Table2 = import_mongoose13.default.model("Table");
+        const Table2 = import_mongoose14.default.model("Table");
         const table = await Table2.findOne({
           tableNumber,
           restaurantId: finalRestaurantId,
@@ -98939,13 +99462,16 @@ var addOrderItems = async (req, res) => {
     }
     try {
       const Notification2 = (await Promise.resolve().then(() => (init_Notification(), Notification_exports))).default;
-      await Notification2.create({
-        title: `New Dine-In Order: Table ${tableNumber || "Any"}`,
-        desc: `${orderItems.map((i) => `${i.qty}x ${i.name}`).join(", ")}`,
+      const notif = await Notification2.create({
+        title: `\u{1F514} New Order #${createdOrder._id.toString().substring(createdOrder._id.toString().length - 5).toUpperCase()}`,
+        desc: `${orderType} ${tableNumber ? `(Table ${tableNumber})` : ""} - ${orderItems.map((i) => `${i.qty}x ${i.name}`).join(", ")} (\u20B9${totalPrice})`,
         type: "Order",
         restaurantId: finalRestaurantId,
+        targetRole: ["Chef", "Kitchen", "Waiter", "Cashier", "RestaurantAdmin", "Admin"],
         read: false
       });
+      const notifObj = notif.toObject ? notif.toObject() : notif;
+      broadcastToRestaurant(finalRestaurantId, "new_notification", { ...notifObj, orderData: createdOrder });
     } catch (notifErr) {
       console.error("Failed to create order notification", notifErr);
     }
@@ -98996,13 +99522,20 @@ ${notes}` : notes;
 var getOrderById = async (req, res) => {
   const order = await Order_default.findById(req.params.id).populate("user", "name email").populate("deliveryPartner", "name email phoneNumber");
   if (order) {
+    if (order.orderType === "Delivery" && !order.deliveryOtp) {
+      order.deliveryOtp = Math.floor(1e3 + Math.random() * 9e3).toString();
+      await order.save();
+    }
     res.json(order);
   } else {
     res.status(404).json({ message: "Order not found" });
   }
 };
 var getMyOrders = async (req, res) => {
-  const orders = await Order_default.find({ user: req.user._id }).populate("restaurantId", "name").sort({ createdAt: -1 });
+  const orders = await Order_default.find({ user: req.user._id }).populate("restaurantId", "name deliverySettings").populate({
+    path: "deliveryPartner",
+    select: "name phoneNumber vehicleDetails status"
+  }).sort({ createdAt: -1 });
   res.json(orders);
 };
 var getOrders = async (req, res) => {
@@ -99011,10 +99544,19 @@ var getOrders = async (req, res) => {
   if (req.query.isPaid !== void 0) {
     filter.isPaid = req.query.isPaid === "true";
   }
-  if (req.user && req.user.branchId) {
-    filter.branchId = req.user.branchId;
+  if (req.query.branchId && import_mongoose14.default.Types.ObjectId.isValid(req.query.branchId)) {
+    filter.branchId = req.query.branchId;
   } else if (req.user && req.user.restaurantId) {
-    filter.restaurantId = req.user.restaurantId;
+    if (req.user.branchId) {
+      filter.$or = [
+        { restaurantId: req.user.restaurantId },
+        { branchId: req.user.branchId }
+      ];
+    } else {
+      filter.restaurantId = req.user.restaurantId;
+    }
+  } else if (req.user && req.user.branchId) {
+    filter.branchId = req.user.branchId;
   } else if (req.user && req.user.role !== "SuperAdmin") {
     return res.json([]);
   }
@@ -99028,20 +99570,135 @@ var updateOrderStatus = async (req, res) => {
   if (order) {
     const oldStatus = order.status;
     const newStatus = req.body.status || order.status;
+    if (req.body.tableNumber && req.body.tableNumber !== order.tableNumber) {
+      const oldTableNum = order.tableNumber;
+      const newTableNum = req.body.tableNumber;
+      order.tableNumber = newTableNum;
+      if (order.orderType === "Dine In") {
+        try {
+          const Table2 = import_mongoose14.default.model("Table");
+          if (oldTableNum) {
+            const oldTable = await Table2.findOne({
+              tableNumber: oldTableNum,
+              restaurantId: order.restaurantId,
+              branchId: order.branchId
+            });
+            if (oldTable) {
+              oldTable.status = "Available";
+              oldTable.customers = 0;
+              oldTable.activeOrder = null;
+              await oldTable.save();
+            }
+          }
+          const newTable = await Table2.findOne({
+            tableNumber: newTableNum,
+            restaurantId: order.restaurantId,
+            branchId: order.branchId
+          });
+          if (newTable) {
+            newTable.status = "Occupied";
+            newTable.activeOrder = order._id;
+            newTable.customers = newTable.customers > 0 ? newTable.customers : 2;
+            await newTable.save();
+          }
+        } catch (tErr) {
+          console.error("Failed to transfer table statuses", tErr);
+        }
+      }
+    }
     if (newStatus !== oldStatus) {
+      const isSelfPickup = order.orderType === "Self-Pickup" || order.orderType === "Self Pickup";
+      const isDelivery = order.orderType === "Delivery";
+      if (newStatus === "Completed") {
+        if (isSelfPickup) {
+          if (!["Ready for Pickup", "Picked Up"].includes(oldStatus)) {
+            return res.status(400).json({
+              message: `Cannot mark Self-Pickup order as Completed until Chef marks it as Ready for Pickup and food is collected at the counter.`
+            });
+          }
+        } else if (isDelivery) {
+          if (oldStatus !== "Delivered" && order.deliveryStatus !== "Delivered") {
+            return res.status(400).json({
+              message: `Cannot mark Delivery order as Completed until the delivery partner completes delivery via OTP.`
+            });
+          }
+        }
+      }
+      if (newStatus === "Picked Up" && isSelfPickup) {
+        if (!["Ready", "Ready for Pickup"].includes(oldStatus)) {
+          return res.status(400).json({
+            message: `Cannot mark Self-Pickup order as Picked Up until Chef finishes preparing food.`
+          });
+        }
+      }
       order.status = newStatus;
+      if (isDelivery) {
+        if (["Pending", "Accepted", "Preparing"].includes(newStatus)) {
+          order.deliveryStatus = "None";
+          order.deliveryPartner = null;
+        } else if (["Ready", "Ready for Pickup"].includes(newStatus)) {
+          order.deliveryStatus = "Pending Assignment";
+        } else if (newStatus === "Out for Delivery") {
+          order.deliveryStatus = "On the Way";
+        } else if (newStatus === "Delivered" || newStatus === "Completed") {
+          order.deliveryStatus = "Delivered";
+        }
+      }
       order.statusHistory.push({
         status: newStatus,
         timestamp: Date.now(),
         updatedBy: req.user ? req.user._id : null
       });
-      if (newStatus === "Ready") {
+      const ticketNum = order._id.toString().substring(order._id.toString().length - 5).toUpperCase();
+      if (newStatus === "Preparing") {
+        try {
+          const Notification2 = (await Promise.resolve().then(() => (init_Notification(), Notification_exports))).default;
+          await Notification2.create({
+            title: `\u{1F373} Order Under Preparation`,
+            desc: `Chef is now preparing Order #${ticketNum}.`,
+            type: "Order",
+            restaurantId: order.restaurantId,
+            userId: order.user,
+            read: false
+          });
+        } catch (err) {
+          console.error("Failed to create preparing notification", err);
+        }
+      }
+      if (newStatus === "Ready" || newStatus === "Ready for Pickup") {
+        try {
+          const Notification2 = (await Promise.resolve().then(() => (init_Notification(), Notification_exports))).default;
+          const notif = await Notification2.create({
+            title: `\u2728 Order #${ticketNum} is Ready!`,
+            desc: `Order #${ticketNum} ${order.tableNumber ? `(Table ${order.tableNumber})` : ""} is plated and ready for pickup/service.`,
+            type: "Order",
+            restaurantId: order.restaurantId,
+            targetRole: ["Waiter", "Cashier", "RestaurantAdmin", "Admin"],
+            read: false
+          });
+          broadcastToRestaurant(order.restaurantId, "new_notification", notif);
+        } catch (err) {
+          console.error("Failed to create waiter notification", err);
+        }
+        try {
+          const Notification2 = (await Promise.resolve().then(() => (init_Notification(), Notification_exports))).default;
+          await Notification2.create({
+            title: `\u2728 Order Ready!`,
+            desc: `Your order #${ticketNum} is freshly prepared and ready!`,
+            type: "Order",
+            restaurantId: order.restaurantId,
+            userId: order.user,
+            read: false
+          });
+        } catch (err) {
+          console.error("Failed to create customer notification", err);
+        }
         if (order.orderType === "Delivery" && order.deliveryPartner) {
           try {
             const Notification2 = (await Promise.resolve().then(() => (init_Notification(), Notification_exports))).default;
             await Notification2.create({
               title: `Delivery Order Ready`,
-              desc: `Order #${order._id.toString().substring(order._id.toString().length - 4).toUpperCase()} is prepared. Pick it up from the kitchen.`,
+              desc: `Order #${ticketNum} is prepared. Pick it up from the kitchen.`,
               type: "Order",
               restaurantId: order.restaurantId,
               read: false
@@ -99051,42 +99708,30 @@ var updateOrderStatus = async (req, res) => {
           }
         }
       }
-      if (newStatus === "Ready for Pickup") {
+      if (["Served", "Delivered", "Completed"].includes(newStatus)) {
         try {
           const Notification2 = (await Promise.resolve().then(() => (init_Notification(), Notification_exports))).default;
           await Notification2.create({
-            title: `Counter Transfer Required`,
-            desc: `Order #${order._id.toString().substring(order._id.toString().length - 4).toUpperCase()} is ready. Move to counter.`,
-            type: "Order",
-            restaurantId: order.restaurantId,
-            read: false
-          });
-        } catch (err) {
-          console.error("Failed to create waiter notification", err);
-        }
-        try {
-          const Notification2 = (await Promise.resolve().then(() => (init_Notification(), Notification_exports))).default;
-          await Notification2.create({
-            title: `Self-Pickup Order Ready`,
-            desc: `Your order is ready. Please collect it from the Pickup Counter.`,
+            title: `\u{1F389} Order Served / Completed`,
+            desc: `Order #${ticketNum} has been served. Thank you!`,
             type: "Order",
             restaurantId: order.restaurantId,
             userId: order.user,
             read: false
           });
         } catch (err) {
-          console.error("Failed to create customer notification", err);
+          console.error("Failed to create completed notification", err);
         }
       }
       if (newStatus === "Completed") {
         order.pickupTime = Date.now();
-        if (order.orderType === "Self-Pickup" || order.orderType === "Self Pickup") {
+        if (isSelfPickup) {
           order.isPaid = true;
           order.paidAt = Date.now();
         }
         if (order.orderType === "Dine In") {
           try {
-            const Table2 = import_mongoose13.default.model("Table");
+            const Table2 = import_mongoose14.default.model("Table");
             const table = await Table2.findOne({
               tableNumber: order.tableNumber,
               restaurantId: order.restaurantId,
@@ -99121,7 +99766,6 @@ var updateOrderToPaid = async (req, res) => {
   if (order) {
     order.isPaid = true;
     order.paidAt = Date.now();
-    order.status = "Delivered";
     if (paymentMethod) order.paymentMethod = paymentMethod;
     if (taxPrice !== void 0) order.taxPrice = taxPrice;
     if (totalPrice !== void 0) order.totalPrice = totalPrice;
@@ -99171,7 +99815,7 @@ var mergeOrders = async (req, res) => {
 Merged from table ${sourceOrder.tableNumber || "Any"}` : `Merged from table ${sourceOrder.tableNumber || "Any"}`;
     await targetOrder.save();
     if (sourceOrder.orderType === "Dine In" && sourceOrder.tableNumber) {
-      const Table2 = import_mongoose13.default.model("Table");
+      const Table2 = import_mongoose14.default.model("Table");
       const table = await Table2.findOne({
         tableNumber: sourceOrder.tableNumber,
         restaurantId: sourceOrder.restaurantId,
@@ -99295,7 +99939,8 @@ var orderRoutes_default = router4;
 var import_express5 = __toESM(require_express2(), 1);
 
 // controllers/analyticsController.js
-var import_mongoose14 = __toESM(require_mongoose2(), 1);
+var import_mongoose15 = __toESM(require_mongoose2(), 1);
+init_Order();
 var getDashboardAnalytics = async (req, res) => {
   try {
     const timeframe = parseInt(req.query.timeframe) || 7;
@@ -99313,8 +99958,8 @@ var getDashboardAnalytics = async (req, res) => {
       createdAt: { $gte: previousStartDate, $lt: startDate }
     };
     if (req.user.restaurantId) {
-      currentPeriodMatch.restaurantId = new import_mongoose14.default.Types.ObjectId(req.user.restaurantId);
-      previousPeriodMatch.restaurantId = new import_mongoose14.default.Types.ObjectId(req.user.restaurantId);
+      currentPeriodMatch.restaurantId = new import_mongoose15.default.Types.ObjectId(req.user.restaurantId);
+      previousPeriodMatch.restaurantId = new import_mongoose15.default.Types.ObjectId(req.user.restaurantId);
     } else if (req.user.role !== "SuperAdmin") {
       return res.json({
         overview: { totalRevenue: 0, revenueChange: 0, totalOrders: 0, ordersChange: 0, avgOrderValue: 0, avgChange: 0, activeCustomers: 0, customersChange: 0 },
@@ -99375,7 +100020,7 @@ var getDashboardAnalytics = async (req, res) => {
       name: item.name,
       value: item.totalSold
     })).slice(0, 4);
-    const restIdObj = req.user.restaurantId ? new import_mongoose14.default.Types.ObjectId(req.user.restaurantId) : null;
+    const restIdObj = req.user.restaurantId ? new import_mongoose15.default.Types.ObjectId(req.user.restaurantId) : null;
     let activeTables = 0;
     let currentOrders = 0;
     let pendingOrders = 0;
@@ -99386,7 +100031,7 @@ var getDashboardAnalytics = async (req, res) => {
     let avgPrepTime = 15;
     if (restIdObj) {
       try {
-        const Table2 = import_mongoose14.default.model("Table");
+        const Table2 = import_mongoose15.default.model("Table");
         activeTables = await Table2.countDocuments({
           restaurantId: restIdObj,
           status: { $in: ["Occupied", "Reserved", "Billing"] }
@@ -99434,7 +100079,7 @@ var getDashboardAnalytics = async (req, res) => {
     let totalDeliveryEarnings = 0;
     if (restIdObj) {
       try {
-        const DeliveryPartner2 = import_mongoose14.default.model("DeliveryPartner");
+        const DeliveryPartner2 = import_mongoose15.default.model("DeliveryPartner");
         onlinePartners = await DeliveryPartner2.countDocuments({
           restaurantId: restIdObj,
           status: "Online",
@@ -99510,57 +100155,8 @@ var analyticsRoutes_default = router5;
 // routes/menuRoutes.js
 var import_express6 = __toESM(require_express2(), 1);
 
-// models/MenuItem.js
-var import_mongoose15 = __toESM(require_mongoose2(), 1);
-var menuItemSchema = new import_mongoose15.default.Schema({
-  name: {
-    type: String,
-    required: true
-  },
-  description: {
-    type: String
-  },
-  price: {
-    type: Number,
-    required: true
-  },
-  category: {
-    type: String,
-    required: true
-  },
-  image: {
-    type: String,
-    default: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop"
-  },
-  rating: {
-    type: Number,
-    default: 0
-  },
-  reviews: {
-    type: Number,
-    default: 0
-  },
-  tags: [{
-    type: String
-  }],
-  isActive: {
-    type: Boolean,
-    default: true
-  },
-  restaurantId: {
-    type: import_mongoose15.default.Schema.Types.ObjectId,
-    ref: "Restaurant",
-    required: true
-  },
-  branchId: {
-    type: import_mongoose15.default.Schema.Types.ObjectId,
-    ref: "Branch"
-  }
-}, { timestamps: true });
-var MenuItem = import_mongoose15.default.model("MenuItem", menuItemSchema);
-var MenuItem_default = MenuItem;
-
 // controllers/menuController.js
+init_MenuItem();
 var getMenuItems = async (req, res) => {
   try {
     const filter = { isActive: true };
@@ -99641,101 +100237,11 @@ var menuRoutes_default = router6;
 var import_express7 = __toESM(require_express2(), 1);
 
 // controllers/superAdminController.js
-init_User();
+init_Order();
 init_Plan();
-
-// models/Ticket.js
-var import_mongoose16 = __toESM(require_mongoose2(), 1);
-var ticketSchema = new import_mongoose16.default.Schema({
-  ticketId: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  restaurantId: {
-    type: import_mongoose16.default.Schema.Types.ObjectId,
-    ref: "Restaurant",
-    required: true
-  },
-  branchId: {
-    type: import_mongoose16.default.Schema.Types.ObjectId,
-    ref: "Branch"
-  },
-  subject: {
-    type: String,
-    required: true
-  },
-  category: {
-    type: String,
-    enum: [
-      "Billing",
-      "Subscription",
-      "Orders",
-      "Kitchen",
-      "Inventory",
-      "POS",
-      "QR Digital Menu",
-      "Delivery",
-      "Staff Management",
-      "Technical Issue",
-      "Feature Request",
-      "Other"
-    ],
-    required: true
-  },
-  priority: {
-    type: String,
-    enum: ["Low", "Medium", "High", "Critical"],
-    default: "Medium"
-  },
-  status: {
-    type: String,
-    enum: ["Open", "Assigned", "In Progress", "Waiting for Customer", "Resolved", "Closed"],
-    default: "Open"
-  },
-  description: {
-    type: String,
-    required: true
-  },
-  assignedAgentId: {
-    type: import_mongoose16.default.Schema.Types.ObjectId,
-    ref: "User"
-  },
-  attachments: [{
-    type: String
-  }],
-  resolutionTime: {
-    type: Number,
-    // in minutes
-    default: null
-  },
-  csatRating: {
-    type: Number,
-    // 1 to 5 stars
-    min: 1,
-    max: 5,
-    default: null
-  },
-  csatFeedback: {
-    type: String,
-    default: ""
-  },
-  lastUpdated: {
-    type: Date,
-    default: Date.now
-  }
-}, {
-  timestamps: true
-});
-ticketSchema.pre("save", function(next) {
-  this.lastUpdated = /* @__PURE__ */ new Date();
-  next();
-});
-var Ticket = import_mongoose16.default.model("Ticket", ticketSchema);
-var Ticket_default = Ticket;
-
-// controllers/superAdminController.js
+init_Ticket();
 init_Notification();
+init_SubscriptionPayment();
 var getStats = async (req, res) => {
   try {
     const totalRestaurants = await Restaurant_default.countDocuments();
@@ -99744,11 +100250,16 @@ var getStats = async (req, res) => {
     const frozenRestaurants = await Restaurant_default.countDocuments({ "subscription.status": "Frozen" });
     const totalUsers = await User_default.countDocuments();
     const totalOrders = await Order_default.countDocuments();
-    const revenueAggregation = await Order_default.aggregate([
-      { $match: { isPaid: true } },
-      { $group: { _id: null, totalRevenue: { $sum: "$totalPrice" } } }
-    ]);
-    const totalRevenue = revenueAggregation.length > 0 ? revenueAggregation[0].totalRevenue : 0;
+    const activeSubscribedRestaurants = await Restaurant_default.find({
+      approvalStatus: "Approved",
+      "subscription.status": "Active"
+    });
+    let totalRevenue = 0;
+    activeSubscribedRestaurants.forEach((r) => {
+      const planPrice = r.subscription?.price || (r.subscription?.plan === "Enterprise" ? 199 : r.subscription?.plan === "Pro" ? 99 : 49);
+      const cycle = r.subscription?.billingCycle || "monthly";
+      totalRevenue += cycle === "yearly" ? Math.round(planPrice / 12) : planPrice;
+    });
     res.json({
       totalRestaurants,
       activeRestaurants,
@@ -99764,45 +100275,6 @@ var getStats = async (req, res) => {
 };
 var getRestaurants2 = async (req, res) => {
   try {
-    const unlinkedAdmins = await User_default.find({
-      role: { $in: ["RestaurantAdmin", "Admin", "restaurantadmin", "admin"] },
-      $or: [
-        { restaurantId: { $exists: false } },
-        { restaurantId: null }
-      ]
-    });
-    for (const admin of unlinkedAdmins) {
-      let existingRest = await Restaurant_default.findOne({ ownerId: admin._id });
-      if (!existingRest) {
-        existingRest = await Restaurant_default.create({
-          name: `${admin.name || "Partner"}'s Restaurant`,
-          ownerId: admin._id,
-          subscription: {
-            status: "Active",
-            plan: "Basic",
-            billingCycle: "monthly",
-            trialActive: true,
-            expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1e3)
-          },
-          approvalStatus: "Pending",
-          verificationStatus: "Pending"
-        });
-        try {
-          const Branch2 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
-          await Branch2.create({
-            restaurantId: existingRest._id,
-            name: `${existingRest.name} Branch`,
-            location: { address: "Primary Location" },
-            contact: { phone: admin.phoneNumber || "" },
-            isActive: true
-          });
-        } catch (bErr) {
-          console.error("Failed to create self-heal branch", bErr);
-        }
-      }
-      admin.restaurantId = existingRest._id;
-      await admin.save();
-    }
     const restaurants = await Restaurant_default.find().populate("ownerId", "name email").sort({ createdAt: -1 }).lean();
     const repairedRestaurants = await Promise.all(restaurants.map(async (r) => {
       if (!r.name || r.name.trim() === "" || r.name === "Unnamed") {
@@ -99851,14 +100323,56 @@ var updateSubscription2 = async (req, res) => {
 };
 var deleteRestaurant = async (req, res) => {
   try {
-    const restaurant = await Restaurant_default.findById(req.params.id);
-    if (!restaurant) {
-      return res.status(404).json({ message: "Restaurant not found" });
+    const { id } = req.params;
+    const Branch2 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+    const RestaurantVerification2 = (await Promise.resolve().then(() => (init_RestaurantVerification(), RestaurantVerification_exports))).default;
+    const Menu = (await import("../models/Menu.js")).default;
+    const MenuItem2 = (await Promise.resolve().then(() => (init_MenuItem(), MenuItem_exports))).default;
+    const Order2 = (await Promise.resolve().then(() => (init_Order(), Order_exports))).default;
+    const Table2 = (await Promise.resolve().then(() => (init_Table(), Table_exports))).default;
+    const Category2 = (await Promise.resolve().then(() => (init_Category(), Category_exports))).default;
+    const Inventory2 = (await Promise.resolve().then(() => (init_Inventory(), Inventory_exports))).default;
+    const Expense2 = (await Promise.resolve().then(() => (init_Expense(), Expense_exports))).default;
+    const DeliveryPartner2 = (await Promise.resolve().then(() => (init_DeliveryPartner(), DeliveryPartner_exports))).default;
+    const ServiceRequest2 = (await Promise.resolve().then(() => (init_ServiceRequest(), ServiceRequest_exports))).default;
+    const Role2 = (await Promise.resolve().then(() => (init_Role(), Role_exports))).default;
+    const WastageLog2 = (await Promise.resolve().then(() => (init_WastageLog(), WastageLog_exports))).default;
+    const Ticket2 = (await Promise.resolve().then(() => (init_Ticket(), Ticket_exports))).default;
+    const Notification2 = (await Promise.resolve().then(() => (init_Notification(), Notification_exports))).default;
+    const SubscriptionPayment2 = (await Promise.resolve().then(() => (init_SubscriptionPayment(), SubscriptionPayment_exports))).default;
+    const restaurant = await Restaurant_default.findById(id);
+    if (restaurant) {
+      if (restaurant.ownerId) {
+        await User_default.findByIdAndDelete(restaurant.ownerId);
+      }
+      await User_default.deleteMany({ restaurantId: id });
+      await Branch2.deleteMany({ restaurantId: id });
+      await RestaurantVerification2.deleteMany({ restaurantId: id });
+      await Menu.deleteMany({ restaurantId: id });
+      await MenuItem2.deleteMany({ restaurantId: id });
+      await Order2.deleteMany({ restaurantId: id });
+      await Table2.deleteMany({ restaurantId: id });
+      await Category2.deleteMany({ restaurantId: id });
+      await Inventory2.deleteMany({ restaurantId: id });
+      await Expense2.deleteMany({ restaurantId: id });
+      await DeliveryPartner2.deleteMany({ restaurantId: id });
+      await ServiceRequest2.deleteMany({ restaurantId: id });
+      await Role2.deleteMany({ restaurantId: id });
+      await WastageLog2.deleteMany({ restaurantId: id });
+      await Ticket2.deleteMany({ restaurantId: id });
+      await Notification2.deleteMany({ restaurantId: id });
+      await SubscriptionPayment2.deleteMany({ restaurantId: id });
+      await Restaurant_default.findByIdAndDelete(id);
+    } else {
+      await User_default.deleteMany({ restaurantId: id });
+      await Branch2.deleteMany({ restaurantId: id });
+      await RestaurantVerification2.deleteMany({ restaurantId: id });
+      await Restaurant_default.findByIdAndDelete(id);
     }
-    await Restaurant_default.findByIdAndDelete(req.params.id);
     res.json({ message: "Restaurant deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Failed to delete restaurant:", error);
+    res.status(500).json({ message: error.message || "Failed to delete restaurant" });
   }
 };
 var getPlans = async (req, res) => {
@@ -100138,6 +100652,7 @@ router7.route("/restaurants").get(getRestaurants2);
 router7.route("/restaurants/:id").delete(deleteRestaurant);
 router7.route("/restaurants/:id/subscription").put(updateSubscription2);
 router7.route("/restaurants/:id/approval").put(updateApprovalStatus);
+router7.route("/verifications/:id").delete(deleteVerification);
 router7.route("/notifications").get(getSuperAdminNotifications);
 router7.route("/notifications/broadcast").post(broadcastNotification);
 router7.route("/notifications/:id").delete(deleteSuperAdminNotification);
@@ -100157,49 +100672,9 @@ var superAdminRoutes_default = router7;
 var import_express8 = __toESM(require_express2(), 1);
 
 // controllers/tableController.js
-var import_mongoose18 = __toESM(require_mongoose2(), 1);
-
-// models/Table.js
-var import_mongoose17 = __toESM(require_mongoose2(), 1);
-var tableSchema = new import_mongoose17.default.Schema({
-  restaurantId: {
-    type: import_mongoose17.default.Schema.Types.ObjectId,
-    ref: "Restaurant",
-    required: true
-  },
-  branchId: {
-    type: import_mongoose17.default.Schema.Types.ObjectId,
-    ref: "Branch",
-    required: true
-  },
-  tableNumber: {
-    type: Number,
-    required: true
-  },
-  capacity: {
-    type: Number,
-    required: true,
-    default: 4
-  },
-  status: {
-    type: String,
-    enum: ["Available", "Occupied", "Reserved", "Cleaning", "Billing"],
-    default: "Available"
-  },
-  activeOrder: {
-    type: import_mongoose17.default.Schema.Types.ObjectId,
-    ref: "Order",
-    default: null
-  },
-  customers: {
-    type: Number,
-    default: 0
-  }
-}, { timestamps: true });
-var Table = import_mongoose17.default.model("Table", tableSchema);
-var Table_default = Table;
-
-// controllers/tableController.js
+var import_mongoose24 = __toESM(require_mongoose2(), 1);
+init_Table();
+init_Order();
 var getTables = async (req, res) => {
   try {
     const filter = { restaurantId: req.user.restaurantId };
@@ -100220,7 +100695,7 @@ var createTable = async (req, res) => {
   try {
     let finalBranchId = branchId || req.user.branchId;
     if (!finalBranchId) {
-      const Branch2 = import_mongoose18.default.model("Branch");
+      const Branch2 = import_mongoose24.default.model("Branch");
       const firstBranch = await Branch2.findOne({ restaurantId: req.user.restaurantId });
       if (firstBranch) {
         finalBranchId = firstBranch._id;
@@ -100287,8 +100762,8 @@ var tableRoutes_default = router8;
 var import_express9 = __toESM(require_express2(), 1);
 
 // controllers/customerController.js
-var import_mongoose19 = __toESM(require_mongoose2(), 1);
-init_User();
+var import_mongoose25 = __toESM(require_mongoose2(), 1);
+init_Order();
 var getCustomers = async (req, res) => {
   try {
     const { restaurantId } = req.user;
@@ -100296,7 +100771,7 @@ var getCustomers = async (req, res) => {
       return res.json([]);
     }
     const orderCustomerIds = await Order_default.distinct("user", {
-      restaurantId: new import_mongoose19.default.Types.ObjectId(restaurantId),
+      restaurantId: new import_mongoose25.default.Types.ObjectId(restaurantId),
       user: { $exists: true, $ne: null }
     });
     const customers = await User_default.find({
@@ -100307,7 +100782,7 @@ var getCustomers = async (req, res) => {
       ]
     }).select("name email phoneNumber createdAt");
     const orderStats = await Order_default.aggregate([
-      { $match: { restaurantId: new import_mongoose19.default.Types.ObjectId(restaurantId), user: { $exists: true, $ne: null } } },
+      { $match: { restaurantId: new import_mongoose25.default.Types.ObjectId(restaurantId), user: { $exists: true, $ne: null } } },
       {
         $group: {
           _id: "$user",
@@ -100387,8 +100862,8 @@ var customerRoutes_default = router9;
 var import_express10 = __toESM(require_express2(), 1);
 
 // controllers/staffController.js
-init_User();
 init_Branch();
+init_DeliveryPartner();
 init_Plan();
 var updateStaff = async (req, res) => {
   const { name, phone, role, branchId, password } = req.body;
@@ -100590,7 +101065,6 @@ var staffRoutes_default = router10;
 var import_express11 = __toESM(require_express2(), 1);
 
 // controllers/userController.js
-init_User();
 var getUsers = async (req, res) => {
   try {
     let query = {};
@@ -100661,7 +101135,7 @@ var userRoutes_default = router11;
 var import_express12 = __toESM(require_express2(), 1);
 
 // controllers/roleController.js
-init_User();
+init_Role();
 var DEFAULT_CORE_ROLES = [
   { name: "SuperAdmin", description: "Full platform access. Normally reserved for SaaS owners, not restaurant staff.", isCoreRole: true, permissions: { "Dashboard & Analytics": [true, true, true, true], "Order Management": [true, true, true, true], "Menu & Catalog": [true, true, true, true], "Staff Management": [true, true, true, true] } },
   { name: "RestaurantAdmin", description: "Full access to all system features and settings for this restaurant.", isCoreRole: true, permissions: { "Dashboard & Analytics": [true, true, true, true], "Order Management": [true, true, true, true], "Menu & Catalog": [true, true, true, true], "Staff Management": [true, true, true, true] } },
@@ -100797,15 +101271,15 @@ var roleRoutes_default = router12;
 var import_express13 = __toESM(require_express2(), 1);
 
 // models/Reservation.js
-var import_mongoose20 = __toESM(require_mongoose2(), 1);
-var reservationSchema = new import_mongoose20.default.Schema({
+var import_mongoose26 = __toESM(require_mongoose2(), 1);
+var reservationSchema = new import_mongoose26.default.Schema({
   branch: {
-    type: import_mongoose20.default.Schema.Types.ObjectId,
+    type: import_mongoose26.default.Schema.Types.ObjectId,
     ref: "Branch",
     required: true
   },
   customer: {
-    type: import_mongoose20.default.Schema.Types.ObjectId,
+    type: import_mongoose26.default.Schema.Types.ObjectId,
     ref: "User"
   },
   guestName: {
@@ -100830,7 +101304,7 @@ var reservationSchema = new import_mongoose20.default.Schema({
     required: true
   },
   table: {
-    type: import_mongoose20.default.Schema.Types.ObjectId,
+    type: import_mongoose26.default.Schema.Types.ObjectId,
     ref: "Table"
   },
   status: {
@@ -100842,7 +101316,7 @@ var reservationSchema = new import_mongoose20.default.Schema({
     type: String
   }
 }, { timestamps: true });
-var Reservation = import_mongoose20.default.model("Reservation", reservationSchema);
+var Reservation = import_mongoose26.default.model("Reservation", reservationSchema);
 var Reservation_default = Reservation;
 
 // controllers/reservationController.js
@@ -100905,33 +101379,8 @@ var reservationRoutes_default = router13;
 // routes/categoryRoutes.js
 var import_express14 = __toESM(require_express2(), 1);
 
-// models/Category.js
-var import_mongoose21 = __toESM(require_mongoose2(), 1);
-var categorySchema = new import_mongoose21.default.Schema({
-  branch: {
-    type: import_mongoose21.default.Schema.Types.ObjectId,
-    ref: "Branch",
-    required: true
-  },
-  name: {
-    type: String,
-    required: true
-  },
-  description: {
-    type: String
-  },
-  image: {
-    type: String
-  },
-  isActive: {
-    type: Boolean,
-    default: true
-  }
-}, { timestamps: true });
-var Category = import_mongoose21.default.model("Category", categorySchema);
-var Category_default = Category;
-
 // controllers/categoryController.js
+init_Category();
 var getCategories = async (req, res) => {
   try {
     const filter = {};
@@ -101008,80 +101457,9 @@ var categoryRoutes_default = router14;
 // routes/inventoryRoutes.js
 var import_express15 = __toESM(require_express2(), 1);
 
-// models/Inventory.js
-var import_mongoose22 = __toESM(require_mongoose2(), 1);
-var inventorySchema = new import_mongoose22.default.Schema({
-  branch: {
-    type: import_mongoose22.default.Schema.Types.ObjectId,
-    ref: "Branch",
-    required: true
-  },
-  supplier: {
-    type: import_mongoose22.default.Schema.Types.ObjectId,
-    ref: "Supplier"
-  },
-  itemName: {
-    type: String,
-    required: true
-  },
-  category: {
-    type: String
-    // e.g., 'Vegetables', 'Meat', 'Dairy', 'Packaging'
-  },
-  quantity: {
-    type: Number,
-    required: true,
-    default: 0
-  },
-  unit: {
-    type: String,
-    // e.g., 'kg', 'ltr', 'pcs'
-    required: true
-  },
-  minStockLevel: {
-    type: Number,
-    default: 10
-  },
-  pricePerUnit: {
-    type: Number
-  }
-}, { timestamps: true });
-var Inventory = import_mongoose22.default.model("Inventory", inventorySchema);
-var Inventory_default = Inventory;
-
-// models/WastageLog.js
-var import_mongoose23 = __toESM(require_mongoose2(), 1);
-var wastageLogSchema = new import_mongoose23.default.Schema({
-  ingredientName: {
-    type: String,
-    required: true
-  },
-  quantity: {
-    type: Number,
-    required: true
-  },
-  unit: {
-    type: String,
-    required: true
-  },
-  reason: {
-    type: String,
-    required: true
-  },
-  restaurantId: {
-    type: import_mongoose23.default.Schema.Types.ObjectId,
-    ref: "Restaurant",
-    required: true
-  },
-  branchId: {
-    type: import_mongoose23.default.Schema.Types.ObjectId,
-    ref: "Branch"
-  }
-}, { timestamps: true });
-var WastageLog = import_mongoose23.default.model("WastageLog", wastageLogSchema);
-var WastageLog_default = WastageLog;
-
 // controllers/inventoryController.js
+init_Inventory();
+init_WastageLog();
 init_Notification();
 var logWastage = async (req, res) => {
   const { ingredientName, quantity, unit, reason } = req.body;
@@ -101186,10 +101564,10 @@ var inventoryRoutes_default = router15;
 var import_express16 = __toESM(require_express2(), 1);
 
 // models/Supplier.js
-var import_mongoose24 = __toESM(require_mongoose2(), 1);
-var supplierSchema = new import_mongoose24.default.Schema({
+var import_mongoose27 = __toESM(require_mongoose2(), 1);
+var supplierSchema = new import_mongoose27.default.Schema({
   branch: {
-    type: import_mongoose24.default.Schema.Types.ObjectId,
+    type: import_mongoose27.default.Schema.Types.ObjectId,
     ref: "Branch",
     required: true
   },
@@ -101219,7 +101597,7 @@ var supplierSchema = new import_mongoose24.default.Schema({
     default: true
   }
 }, { timestamps: true });
-var Supplier = import_mongoose24.default.model("Supplier", supplierSchema);
+var Supplier = import_mongoose27.default.model("Supplier", supplierSchema);
 var Supplier_default = Supplier;
 
 // controllers/supplierController.js
@@ -101296,8 +101674,8 @@ var supplierRoutes_default = router16;
 var import_express17 = __toESM(require_express2(), 1);
 
 // models/Offer.js
-var import_mongoose25 = __toESM(require_mongoose2(), 1);
-var offerSchema = new import_mongoose25.default.Schema({
+var import_mongoose28 = __toESM(require_mongoose2(), 1);
+var offerSchema = new import_mongoose28.default.Schema({
   code: {
     type: String,
     required: true,
@@ -101335,7 +101713,7 @@ var offerSchema = new import_mongoose25.default.Schema({
     default: true
   }
 }, { timestamps: true });
-var Offer = import_mongoose25.default.model("Offer", offerSchema);
+var Offer = import_mongoose28.default.model("Offer", offerSchema);
 var Offer_default = Offer;
 
 // controllers/offerController.js
@@ -101368,6 +101746,26 @@ var createOffer = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+var updateOffer = async (req, res) => {
+  try {
+    const offer = await Offer_default.findById(req.params.id);
+    if (offer) {
+      offer.code = req.body.code ? req.body.code.toUpperCase() : offer.code;
+      offer.type = req.body.type || offer.type;
+      offer.discountValue = req.body.discountValue !== void 0 ? req.body.discountValue : offer.discountValue;
+      offer.minSpend = req.body.minSpend !== void 0 ? req.body.minSpend : offer.minSpend;
+      offer.expiresAt = req.body.expiresAt !== void 0 ? req.body.expiresAt : offer.expiresAt;
+      offer.usageLimit = req.body.usageLimit !== void 0 ? req.body.usageLimit : offer.usageLimit;
+      offer.isActive = req.body.isActive !== void 0 ? req.body.isActive : offer.isActive;
+      const updatedOffer = await offer.save();
+      res.json(updatedOffer);
+    } else {
+      res.status(404).json({ message: "Offer not found" });
+    }
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
 var deleteOffer = async (req, res) => {
   try {
     const offer = await Offer_default.findById(req.params.id);
@@ -101384,19 +101782,18 @@ var deleteOffer = async (req, res) => {
 
 // routes/offerRoutes.js
 var router17 = import_express17.default.Router();
-router17.use(protect);
-router17.use(authorize("RestaurantAdmin", "BranchManager"));
-router17.use(checkSubscription);
-router17.route("/").get(getOffers).post(createOffer);
-router17.route("/:id").delete(deleteOffer);
+router17.get("/", getOffers);
+router17.post("/", protect, authorize("RestaurantAdmin", "BranchManager"), checkSubscription, createOffer);
+router17.put("/:id", protect, authorize("RestaurantAdmin", "BranchManager"), checkSubscription, updateOffer);
+router17.delete("/:id", protect, authorize("RestaurantAdmin", "BranchManager"), checkSubscription, deleteOffer);
 var offerRoutes_default = router17;
 
 // routes/taxRoutes.js
 var import_express18 = __toESM(require_express2(), 1);
 
 // models/Tax.js
-var import_mongoose26 = __toESM(require_mongoose2(), 1);
-var taxSchema = new import_mongoose26.default.Schema({
+var import_mongoose29 = __toESM(require_mongoose2(), 1);
+var taxSchema = new import_mongoose29.default.Schema({
   name: {
     type: String,
     required: true,
@@ -101422,7 +101819,7 @@ var taxSchema = new import_mongoose26.default.Schema({
     default: true
   }
 }, { timestamps: true });
-var Tax = import_mongoose26.default.model("Tax", taxSchema);
+var Tax = import_mongoose29.default.model("Tax", taxSchema);
 var Tax_default = Tax;
 
 // controllers/taxController.js
@@ -101488,6 +101885,7 @@ var taxRoutes_default = router18;
 var import_express19 = __toESM(require_express2(), 1);
 
 // controllers/reportController.js
+init_Order();
 init_Plan();
 var generateReport = async (req, res) => {
   const { reportType, startDate, endDate, branch } = req.body;
@@ -101627,28 +102025,51 @@ init_Notification();
 var getNotifications = async (req, res) => {
   try {
     const { role, restaurantId } = req.user;
+    const userId = req.user._id;
     let query = {};
     if (role === "SuperAdmin") {
       query = { isSuperAdminOnly: true };
     } else if (role === "RestaurantAdmin" || role === "Admin") {
       query = {
-        restaurantId,
         $or: [
-          { targetRole: null },
-          { targetRole: { $size: 0 } },
-          { targetRole: { $in: ["RestaurantAdmin", "Admin"] } }
+          { userId },
+          {
+            restaurantId,
+            $or: [
+              { targetRole: null },
+              { targetRole: { $size: 0 } },
+              { targetRole: { $in: ["RestaurantAdmin", "Admin"] } }
+            ]
+          }
+        ]
+      };
+    } else if (role === "Customer") {
+      query = {
+        $or: [
+          { userId },
+          {
+            restaurantId,
+            $or: [
+              { targetRole: null },
+              { targetRole: { $size: 0 } },
+              { targetRole: { $in: ["Customer"] } }
+            ]
+          }
         ]
       };
     } else {
       query = {
-        restaurantId,
         $or: [
-          { targetRole: null },
-          { targetRole: { $size: 0 } },
-          { targetRole: { $in: [role] } }
-        ],
-        // Don't show admin-only notifications to staff
-        "targetRole": { $not: { $in: ["RestaurantAdmin", "Admin"] } }
+          { userId },
+          {
+            restaurantId,
+            $or: [
+              { targetRole: null },
+              { targetRole: { $size: 0 } },
+              { targetRole: { $in: [role, "Kitchen"] } }
+            ]
+          }
+        ]
       };
     }
     const notifications = await Notification_default.find(query).sort({ createdAt: -1 }).limit(100);
@@ -101732,30 +102153,30 @@ var notificationRoutes_default = router20;
 var import_express21 = __toESM(require_express2(), 1);
 
 // controllers/planController.js
-var import_mongoose27 = __toESM(require_mongoose2(), 1);
+var import_mongoose30 = __toESM(require_mongoose2(), 1);
 init_Plan();
 var getPublicPlans = async (req, res) => {
   try {
-    if (import_mongoose27.default.connection.readyState !== 1) {
+    if (import_mongoose30.default.connection.readyState !== 1) {
       return res.json([
-        { _id: "p1", name: "Starter", monthlyPrice: 2999, yearlyPrice: 2399, features: ["1 Branch", "Basic POS Billing", "QR Ordering", "Email Support"], isActive: true },
-        { _id: "p2", name: "Professional", monthlyPrice: 5999, yearlyPrice: 4799, features: ["Up to 3 Branches", "Kitchen Display System", "Online Ordering", "Advanced Analytics", "Priority Support"], isActive: true },
+        { _id: "p1", name: "Basic", monthlyPrice: 2999, yearlyPrice: 2399, features: ["1 Branch", "Basic POS Billing", "QR Ordering", "Email Support"], isActive: true },
+        { _id: "p2", name: "Pro", monthlyPrice: 5999, yearlyPrice: 4799, features: ["Up to 3 Branches", "Kitchen Display System", "Online Ordering", "Advanced Analytics", "Priority Support"], isActive: true },
         { _id: "p3", name: "Enterprise", monthlyPrice: 12999, yearlyPrice: 10399, features: ["Unlimited Branches", "Custom APIs & Webhooks", "Dedicated Account Manager", "SLA Guarantee", "White-label Branding"], isActive: true }
       ]);
     }
     const plans = await Plan_default.find({ isActive: { $ne: false } }).sort({ monthlyPrice: 1, createdAt: 1 }).maxTimeMS(3e3);
     if (!plans || plans.length === 0) {
       return res.json([
-        { _id: "p1", name: "Starter", monthlyPrice: 2999, yearlyPrice: 2399, features: ["1 Branch", "Basic POS Billing", "QR Ordering", "Email Support"], isActive: true },
-        { _id: "p2", name: "Professional", monthlyPrice: 5999, yearlyPrice: 4799, features: ["Up to 3 Branches", "Kitchen Display System", "Online Ordering", "Advanced Analytics", "Priority Support"], isActive: true },
+        { _id: "p1", name: "Basic", monthlyPrice: 2999, yearlyPrice: 2399, features: ["1 Branch", "Basic POS Billing", "QR Ordering", "Email Support"], isActive: true },
+        { _id: "p2", name: "Pro", monthlyPrice: 5999, yearlyPrice: 4799, features: ["Up to 3 Branches", "Kitchen Display System", "Online Ordering", "Advanced Analytics", "Priority Support"], isActive: true },
         { _id: "p3", name: "Enterprise", monthlyPrice: 12999, yearlyPrice: 10399, features: ["Unlimited Branches", "Custom APIs & Webhooks", "Dedicated Account Manager", "SLA Guarantee", "White-label Branding"], isActive: true }
       ]);
     }
     res.json(plans);
   } catch (error) {
     res.json([
-      { _id: "p1", name: "Starter", monthlyPrice: 2999, yearlyPrice: 2399, features: ["1 Branch", "Basic POS Billing", "QR Ordering", "Email Support"], isActive: true },
-      { _id: "p2", name: "Professional", monthlyPrice: 5999, yearlyPrice: 4799, features: ["Up to 3 Branches", "Kitchen Display System", "Online Ordering", "Advanced Analytics", "Priority Support"], isActive: true },
+      { _id: "p1", name: "Basic", monthlyPrice: 2999, yearlyPrice: 2399, features: ["1 Branch", "Basic POS Billing", "QR Ordering", "Email Support"], isActive: true },
+      { _id: "p2", name: "Pro", monthlyPrice: 5999, yearlyPrice: 4799, features: ["Up to 3 Branches", "Kitchen Display System", "Online Ordering", "Advanced Analytics", "Priority Support"], isActive: true },
       { _id: "p3", name: "Enterprise", monthlyPrice: 12999, yearlyPrice: 10399, features: ["Unlimited Branches", "Custom APIs & Webhooks", "Dedicated Account Manager", "SLA Guarantee", "White-label Branding"], isActive: true }
     ]);
   }
@@ -101855,45 +102276,15 @@ var planRoutes_default = router21;
 // routes/serviceRequestRoutes.js
 var import_express22 = __toESM(require_express2(), 1);
 
-// models/ServiceRequest.js
-var import_mongoose28 = __toESM(require_mongoose2(), 1);
-var serviceRequestSchema = new import_mongoose28.default.Schema({
-  restaurantId: {
-    type: import_mongoose28.default.Schema.Types.ObjectId,
-    ref: "Restaurant",
-    required: true
-  },
-  branchId: {
-    type: import_mongoose28.default.Schema.Types.ObjectId,
-    ref: "Branch",
-    required: true
-  },
-  tableNumber: {
-    type: Number,
-    required: true
-  },
-  requestType: {
-    type: String,
-    enum: ["Call Waiter", "Request Water", "Request Cutlery", "Request Bill"],
-    required: true
-  },
-  status: {
-    type: String,
-    enum: ["Pending", "Completed"],
-    default: "Pending"
-  }
-}, { timestamps: true });
-var ServiceRequest = import_mongoose28.default.model("ServiceRequest", serviceRequestSchema);
-var ServiceRequest_default = ServiceRequest;
-
 // controllers/serviceRequestController.js
-var import_mongoose29 = __toESM(require_mongoose2(), 1);
+init_ServiceRequest();
+var import_mongoose31 = __toESM(require_mongoose2(), 1);
 var createServiceRequest = async (req, res) => {
   const { restaurantId, branchId, tableNumber, requestType } = req.body;
   try {
     let finalBranchId = branchId;
     if (!finalBranchId) {
-      const Branch2 = import_mongoose29.default.model("Branch");
+      const Branch2 = import_mongoose31.default.model("Branch");
       const branch = await Branch2.findOne({ restaurantId });
       if (branch) finalBranchId = branch._id;
     }
@@ -101949,45 +102340,8 @@ var serviceRequestRoutes_default = router22;
 // routes/expenseRoutes.js
 var import_express23 = __toESM(require_express2(), 1);
 
-// models/Expense.js
-var import_mongoose30 = __toESM(require_mongoose2(), 1);
-var expenseSchema = new import_mongoose30.default.Schema({
-  category: {
-    type: String,
-    required: true,
-    enum: ["Kitchen Supplies", "Utility Bill", "Maintenance", "Staff Welfare", "Marketing", "Others"]
-  },
-  amount: {
-    type: Number,
-    required: true
-  },
-  description: {
-    type: String,
-    required: true
-  },
-  date: {
-    type: Date,
-    required: true,
-    default: Date.now
-  },
-  staff: {
-    type: String,
-    required: true
-  },
-  restaurantId: {
-    type: import_mongoose30.default.Schema.Types.ObjectId,
-    ref: "Restaurant",
-    required: true
-  },
-  branchId: {
-    type: import_mongoose30.default.Schema.Types.ObjectId,
-    ref: "Branch"
-  }
-}, { timestamps: true });
-var Expense = import_mongoose30.default.model("Expense", expenseSchema);
-var Expense_default = Expense;
-
 // controllers/expenseController.js
+init_Expense();
 var getExpenses = async (req, res) => {
   try {
     const filter = {};
@@ -101995,28 +102349,51 @@ var getExpenses = async (req, res) => {
       filter.branchId = req.user.branchId;
     } else if (req.user && req.user.restaurantId) {
       filter.restaurantId = req.user.restaurantId;
+      if (req.query.branchId && req.query.branchId !== "All") {
+        filter.branchId = req.query.branchId;
+      }
     } else if (req.user && req.user.role !== "SuperAdmin") {
       return res.json([]);
     }
-    const expenses = await Expense_default.find(filter).sort({ date: -1 });
+    const { period } = req.query;
+    if (period) {
+      const now = /* @__PURE__ */ new Date();
+      let startDate = /* @__PURE__ */ new Date();
+      if (period === "today") {
+        startDate.setHours(0, 0, 0, 0);
+        filter.date = { $gte: startDate };
+      } else if (period === "weekly") {
+        const day = now.getDay();
+        const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+        startDate = new Date(now.setDate(diff));
+        startDate.setHours(0, 0, 0, 0);
+        filter.date = { $gte: startDate };
+      } else if (period === "monthly") {
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        filter.date = { $gte: startDate };
+      }
+    }
+    const expenses = await Expense_default.find(filter).populate("branchId", "name").sort({ date: -1 });
     res.json(expenses);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 var createExpense = async (req, res) => {
-  const { category, amount, description, date, staff } = req.body;
+  const { category, amount, description, date, staff, branchId } = req.body;
   try {
+    const targetBranchId = branchId || req.user.branchId;
     const expense = await Expense_default.create({
       category,
       amount,
       description,
-      date,
-      staff,
+      date: date || /* @__PURE__ */ new Date(),
+      staff: staff || req.user.name || "Staff",
       restaurantId: req.user.restaurantId,
-      branchId: req.user.branchId
+      branchId: targetBranchId
     });
-    res.status(201).json(expense);
+    const populated = await Expense_default.findById(expense._id).populate("branchId", "name");
+    res.status(201).json(populated);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -102047,16 +102424,19 @@ var expenseRoutes_default = router23;
 // routes/supportRoutes.js
 var import_express24 = __toESM(require_express2(), 1);
 
+// controllers/supportController.js
+init_Ticket();
+
 // models/TicketReply.js
-var import_mongoose31 = __toESM(require_mongoose2(), 1);
-var ticketReplySchema = new import_mongoose31.default.Schema({
+var import_mongoose32 = __toESM(require_mongoose2(), 1);
+var ticketReplySchema = new import_mongoose32.default.Schema({
   ticketId: {
-    type: import_mongoose31.default.Schema.Types.ObjectId,
+    type: import_mongoose32.default.Schema.Types.ObjectId,
     ref: "Ticket",
     required: true
   },
   senderId: {
-    type: import_mongoose31.default.Schema.Types.ObjectId,
+    type: import_mongoose32.default.Schema.Types.ObjectId,
     ref: "User",
     required: true
   },
@@ -102072,20 +102452,20 @@ var ticketReplySchema = new import_mongoose31.default.Schema({
     default: false
   },
   readBy: [{
-    type: import_mongoose31.default.Schema.Types.ObjectId,
+    type: import_mongoose32.default.Schema.Types.ObjectId,
     ref: "User"
   }]
 }, {
   timestamps: true
 });
-var TicketReply = import_mongoose31.default.model("TicketReply", ticketReplySchema);
+var TicketReply = import_mongoose32.default.model("TicketReply", ticketReplySchema);
 var TicketReply_default = TicketReply;
 
 // models/SupportAgent.js
-var import_mongoose32 = __toESM(require_mongoose2(), 1);
-var supportAgentSchema = new import_mongoose32.default.Schema({
+var import_mongoose33 = __toESM(require_mongoose2(), 1);
+var supportAgentSchema = new import_mongoose33.default.Schema({
   userId: {
-    type: import_mongoose32.default.Schema.Types.ObjectId,
+    type: import_mongoose33.default.Schema.Types.ObjectId,
     ref: "User",
     required: true,
     unique: true
@@ -102116,12 +102496,12 @@ var supportAgentSchema = new import_mongoose32.default.Schema({
 }, {
   timestamps: true
 });
-var SupportAgent = import_mongoose32.default.model("SupportAgent", supportAgentSchema);
+var SupportAgent = import_mongoose33.default.model("SupportAgent", supportAgentSchema);
 var SupportAgent_default = SupportAgent;
 
 // models/KnowledgeBase.js
-var import_mongoose33 = __toESM(require_mongoose2(), 1);
-var knowledgeBaseSchema = new import_mongoose33.default.Schema({
+var import_mongoose34 = __toESM(require_mongoose2(), 1);
+var knowledgeBaseSchema = new import_mongoose34.default.Schema({
   title: {
     type: String,
     required: true
@@ -102162,12 +102542,12 @@ var knowledgeBaseSchema = new import_mongoose33.default.Schema({
 }, {
   timestamps: true
 });
-var KnowledgeBase = import_mongoose33.default.model("KnowledgeBase", knowledgeBaseSchema);
+var KnowledgeBase = import_mongoose34.default.model("KnowledgeBase", knowledgeBaseSchema);
 var KnowledgeBase_default = KnowledgeBase;
 
 // models/SupportAnnouncement.js
-var import_mongoose34 = __toESM(require_mongoose2(), 1);
-var supportAnnouncementSchema = new import_mongoose34.default.Schema({
+var import_mongoose35 = __toESM(require_mongoose2(), 1);
+var supportAnnouncementSchema = new import_mongoose35.default.Schema({
   title: {
     type: String,
     required: true
@@ -102191,21 +102571,21 @@ var supportAnnouncementSchema = new import_mongoose34.default.Schema({
     default: true
   },
   createdBy: {
-    type: import_mongoose34.default.Schema.Types.ObjectId,
+    type: import_mongoose35.default.Schema.Types.ObjectId,
     ref: "User",
     required: true
   }
 }, {
   timestamps: true
 });
-var SupportAnnouncement = import_mongoose34.default.model("SupportAnnouncement", supportAnnouncementSchema);
+var SupportAnnouncement = import_mongoose35.default.model("SupportAnnouncement", supportAnnouncementSchema);
 var SupportAnnouncement_default = SupportAnnouncement;
 
 // models/TicketActivityLog.js
-var import_mongoose35 = __toESM(require_mongoose2(), 1);
-var ticketActivityLogSchema = new import_mongoose35.default.Schema({
+var import_mongoose36 = __toESM(require_mongoose2(), 1);
+var ticketActivityLogSchema = new import_mongoose36.default.Schema({
   ticketId: {
-    type: import_mongoose35.default.Schema.Types.ObjectId,
+    type: import_mongoose36.default.Schema.Types.ObjectId,
     ref: "Ticket",
     required: true
   },
@@ -102214,7 +102594,7 @@ var ticketActivityLogSchema = new import_mongoose35.default.Schema({
     required: true
   },
   performedBy: {
-    type: import_mongoose35.default.Schema.Types.ObjectId,
+    type: import_mongoose36.default.Schema.Types.ObjectId,
     ref: "User",
     required: true
   },
@@ -102229,11 +102609,10 @@ var ticketActivityLogSchema = new import_mongoose35.default.Schema({
 }, {
   timestamps: true
 });
-var TicketActivityLog = import_mongoose35.default.model("TicketActivityLog", ticketActivityLogSchema);
+var TicketActivityLog = import_mongoose36.default.model("TicketActivityLog", ticketActivityLogSchema);
 var TicketActivityLog_default = TicketActivityLog;
 
 // controllers/supportController.js
-init_User();
 init_Notification();
 var import_multer3 = __toESM(require("multer"), 1);
 var import_path4 = __toESM(require("path"), 1);
@@ -102872,13 +103251,13 @@ var supportRoutes_default = router24;
 var import_express25 = __toESM(require_express2(), 1);
 
 // controllers/deliveryController.js
-init_User();
+init_DeliveryPartner();
 
 // models/DeliveryWithdrawal.js
-var import_mongoose36 = __toESM(require_mongoose2(), 1);
-var deliveryWithdrawalSchema = new import_mongoose36.default.Schema({
+var import_mongoose37 = __toESM(require_mongoose2(), 1);
+var deliveryWithdrawalSchema = new import_mongoose37.default.Schema({
   partnerId: {
-    type: import_mongoose36.default.Schema.Types.ObjectId,
+    type: import_mongoose37.default.Schema.Types.ObjectId,
     ref: "DeliveryPartner",
     required: true
   },
@@ -102896,10 +103275,11 @@ var deliveryWithdrawalSchema = new import_mongoose36.default.Schema({
     default: ""
   }
 }, { timestamps: true });
-var DeliveryWithdrawal = import_mongoose36.default.model("DeliveryWithdrawal", deliveryWithdrawalSchema);
+var DeliveryWithdrawal = import_mongoose37.default.model("DeliveryWithdrawal", deliveryWithdrawalSchema);
 var DeliveryWithdrawal_default = DeliveryWithdrawal;
 
 // controllers/deliveryController.js
+init_Order();
 var import_jsonwebtoken3 = __toESM(require_jsonwebtoken(), 1);
 var generateToken2 = (id) => {
   return import_jsonwebtoken3.default.sign({ id }, process.env.JWT_SECRET || "supersecretjwtkey123", {
@@ -102963,9 +103343,16 @@ var verifyOtp = async (req, res) => {
 };
 var getDeliveryProfile = async (req, res) => {
   try {
-    const partner = await DeliveryPartner_default.findOne({ userId: req.user._id }).populate("userId", "name email phoneNumber");
+    let partner = await DeliveryPartner_default.findOne({ userId: req.user._id }).populate("userId", "name email phoneNumber");
     if (!partner) {
-      return res.status(404).json({ message: "Profile not found" });
+      partner = await DeliveryPartner_default.create({
+        userId: req.user._id,
+        restaurantId: req.user.restaurantId || null,
+        vehicleDetails: { vehicleType: "Bike", registrationNumber: "MH-01-AB-1234" },
+        verificationStatus: "Approved",
+        status: "Online"
+      });
+      partner = await DeliveryPartner_default.findById(partner._id).populate("userId", "name email phoneNumber");
     }
     res.json(partner);
   } catch (error) {
@@ -102994,10 +103381,20 @@ var togglePartnerStatus = async (req, res) => {
 };
 var getAssignedOrders = async (req, res) => {
   try {
-    const orders = await Order_default.find({
-      deliveryPartner: req.user._id,
+    const userRestId = req.user.restaurantId;
+    const query = {
+      orderType: "Delivery",
+      $or: [
+        { deliveryPartner: req.user._id },
+        { deliveryPartner: null, deliveryStatus: "Pending Assignment" },
+        { deliveryPartner: { $exists: false }, deliveryStatus: "Pending Assignment" }
+      ],
       deliveryStatus: { $in: ["Pending Assignment", "Accepted", "Picked Up", "On the Way"] }
-    }).sort({ updatedAt: -1 });
+    };
+    if (userRestId) {
+      query.restaurantId = userRestId;
+    }
+    const orders = await Order_default.find(query).populate("restaurantId", "name deliverySettings").sort({ updatedAt: -1 });
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -103006,7 +103403,7 @@ var getAssignedOrders = async (req, res) => {
 var updateOrderDeliveryStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const validStatuses = ["Accepted", "Rejected", "Picked Up", "On the Way", "Delivered", "Cancelled"];
+    const validStatuses = ["Accepted", "Rejected", "Picked Up", "On the Way", "Delivered", "Completed", "Cancelled"];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: "Invalid status update" });
     }
@@ -103014,17 +103411,25 @@ var updateOrderDeliveryStatus = async (req, res) => {
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
-    if (String(order.deliveryPartner) !== String(req.user._id)) {
+    if (order.deliveryPartner && String(order.deliveryPartner) !== String(req.user._id) && status !== "Accepted") {
       return res.status(403).json({ message: "Not authorized for this order" });
     }
-    order.deliveryStatus = status;
     if (status === "Accepted") {
+      order.deliveryPartner = req.user._id;
+      order.deliveryStatus = "Accepted";
       order.status = "Out for Delivery";
+      if (!order.deliveryOtp) {
+        order.deliveryOtp = Math.floor(1e3 + Math.random() * 9e3).toString();
+      }
     } else if (status === "Picked Up") {
+      order.deliveryPartner = req.user._id;
+      order.deliveryStatus = "Picked Up";
       order.status = "Out for Delivery";
     } else if (status === "On the Way") {
+      order.deliveryPartner = req.user._id;
+      order.deliveryStatus = "On the Way";
       order.status = "Out for Delivery";
-    } else if (status === "Delivered") {
+    } else if (status === "Delivered" || status === "Completed") {
       if (!order.deliveryOtp) {
         order.deliveryOtp = Math.floor(1e3 + Math.random() * 9e3).toString();
       }
@@ -103032,30 +103437,28 @@ var updateOrderDeliveryStatus = async (req, res) => {
       const expectedOtp = String(order.deliveryOtp).trim();
       if (!inputOtp || inputOtp !== expectedOtp) {
         return res.status(400).json({
-          message: `Invalid Delivery OTP. Please ask the customer for the correct OTP.`
+          message: `Invalid Delivery OTP. Please enter the 4-digit OTP shown on the customer's order tracking screen.`
         });
       }
-      order.status = "Delivered";
+      order.deliveryStatus = "Delivered";
+      order.status = "Completed";
       order.isPaid = true;
       order.paidAt = /* @__PURE__ */ new Date();
       const partner = await DeliveryPartner_default.findOne({ userId: req.user._id });
       if (partner) {
         const charge = order.deliveryCharge || 30;
-        partner.walletBalance += charge;
-        partner.earnings += charge;
+        partner.walletBalance = (partner.walletBalance || 0) + charge;
+        partner.earnings = (partner.earnings || 0) + charge;
         await partner.save();
       }
     } else if (status === "Rejected" || status === "Cancelled") {
       order.deliveryStatus = "Cancelled";
       order.deliveryPartner = null;
     }
-    await order.save();
-    if (req.app.get("socketio")) {
-      const io = req.app.get("socketio");
-      io.emit("order_status_updated", order);
-      io.emit("delivery_partner_event", { orderId: order._id, status, partnerId: req.user._id });
-    }
-    res.json(order);
+    const updatedOrder = await order.save();
+    broadcastToRestaurant(updatedOrder.restaurantId, "order_updated", updatedOrder);
+    broadcastToCustomerOrder(updatedOrder._id, "order_status_updated", updatedOrder);
+    res.json(updatedOrder);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -103087,9 +103490,15 @@ var createWithdrawalRequest = async (req, res) => {
 };
 var getWithdrawalRequests = async (req, res) => {
   try {
-    const partner = await DeliveryPartner_default.findOne({ userId: req.user._id });
+    let partner = await DeliveryPartner_default.findOne({ userId: req.user._id });
     if (!partner) {
-      return res.status(404).json({ message: "Profile not found" });
+      partner = await DeliveryPartner_default.create({
+        userId: req.user._id,
+        restaurantId: req.user.restaurantId || null,
+        vehicleDetails: { vehicleType: "Bike", registrationNumber: "MH-01-AB-1234" },
+        verificationStatus: "Approved",
+        status: "Online"
+      });
     }
     const withdrawals = await DeliveryWithdrawal_default.find({ partnerId: partner._id }).sort({ createdAt: -1 });
     res.json(withdrawals);
@@ -103099,9 +103508,15 @@ var getWithdrawalRequests = async (req, res) => {
 };
 var getEarningsHistory = async (req, res) => {
   try {
-    const partner = await DeliveryPartner_default.findOne({ userId: req.user._id });
+    let partner = await DeliveryPartner_default.findOne({ userId: req.user._id });
     if (!partner) {
-      return res.status(404).json({ message: "Profile not found" });
+      partner = await DeliveryPartner_default.create({
+        userId: req.user._id,
+        restaurantId: req.user.restaurantId || null,
+        vehicleDetails: { vehicleType: "Bike", registrationNumber: "MH-01-AB-1234" },
+        verificationStatus: "Approved",
+        status: "Online"
+      });
     }
     const completedOrders = await Order_default.find({
       deliveryPartner: req.user._id,
@@ -103402,8 +103817,8 @@ var deliveryRoutes_default = router25;
 var import_express26 = __toESM(require_express2(), 1);
 
 // models/Inquiry.js
-var import_mongoose37 = __toESM(require_mongoose2(), 1);
-var inquirySchema = new import_mongoose37.default.Schema({
+var import_mongoose38 = __toESM(require_mongoose2(), 1);
+var inquirySchema = new import_mongoose38.default.Schema({
   name: {
     type: String,
     required: true
@@ -103436,7 +103851,7 @@ var inquirySchema = new import_mongoose37.default.Schema({
 }, {
   timestamps: true
 });
-var Inquiry = import_mongoose37.default.model("Inquiry", inquirySchema);
+var Inquiry = import_mongoose38.default.model("Inquiry", inquirySchema);
 var Inquiry_default = Inquiry;
 
 // controllers/inquiryController.js
@@ -103516,7 +103931,7 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers");
   if (req.method === "OPTIONS") {
-    return res.status(204).end();
+    return res.status(200).end();
   }
   next();
 });
@@ -103529,6 +103944,12 @@ app.use((0, import_cors.default)({
 app.use(import_express27.default.json({ limit: "50mb" }));
 app.use(import_express27.default.urlencoded({ limit: "50mb", extended: true }));
 app.use((0, import_cookie_parser.default)());
+app.get("/health", (req, res) => {
+  res.redirect(301, "/api/health");
+});
+app.get("/plans", (req, res) => {
+  res.redirect(301, "/api/plans");
+});
 app.get("/api/health", (req, res) => {
   res.status(200).json({ status: "ok", time: (/* @__PURE__ */ new Date()).toISOString() });
 });
@@ -103559,6 +103980,7 @@ app.use("/api/plans", planRoutes_default);
 app.use("/api/service-requests", serviceRequestRoutes_default);
 app.use("/api/support", supportRoutes_default);
 app.use("/api/delivery", deliveryRoutes_default);
+app.use("/api/auth/delivery", deliveryRoutes_default);
 app.use("/api/inquiries", inquiryRoutes_default);
 app.use("/api/expenses", expenseRoutes_default);
 var PORT = process.env.PORT || 5e3;
@@ -103581,13 +104003,19 @@ var server = import_http.default.createServer(app);
 initWebSocket(server);
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
+  setInterval(() => {
+    import_https.default.get("https://f-hms.onrender.com/api/health", (res) => {
+      console.log(`[Keep-Alive] Render server ping status: ${res.statusCode}`);
+    }).on("error", () => {
+    });
+  }, 4 * 60 * 1e3);
   db_default().then(async () => {
     try {
       const count = await Plan_default.countDocuments();
       if (count === 0) {
         await Plan_default.insertMany([
-          { name: "Starter", monthlyPrice: 2999, yearlyPrice: 2399, features: ["1 Branch", "Basic POS Billing", "QR Ordering", "Email Support"], isActive: true },
-          { name: "Professional", monthlyPrice: 5999, yearlyPrice: 4799, features: ["Up to 3 Branches", "Kitchen Display System", "Online Ordering", "Advanced Analytics", "Priority Support"], isActive: true },
+          { name: "Basic", monthlyPrice: 2999, yearlyPrice: 2399, features: ["1 Branch", "Basic POS Billing", "QR Ordering", "Email Support"], isActive: true },
+          { name: "Pro", monthlyPrice: 5999, yearlyPrice: 4799, features: ["Up to 3 Branches", "Kitchen Display System", "Online Ordering", "Advanced Analytics", "Priority Support"], isActive: true },
           { name: "Enterprise", monthlyPrice: 12999, yearlyPrice: 10399, features: ["Unlimited Branches", "Custom APIs & Webhooks", "Dedicated Account Manager", "SLA Guarantee", "White-label Branding"], isActive: true }
         ]);
         console.log("Default subscription plans seeded.");
