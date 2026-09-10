@@ -335,7 +335,7 @@ const CustomerOrderTracking = () => {
                                     <div className="bg-slate-900/95 border border-emerald-500/40 px-2 py-0.5 rounded-xl shadow-2xl mt-1 whitespace-nowrap text-left flex items-center gap-1.5">
                                         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
                                         <span className="text-[9px] font-black text-emerald-400 uppercase tracking-wide">
-                                            {typeof order.deliveryPartner === 'object' ? order.deliveryPartner.name : 'Rider'} {isDelivered ? '• Arrived!' : isRiderMoving ? `• En Route (${Math.round(currentProgress)}%)` : '• Assigned'}
+                                            {(order.deliveryPartner && typeof order.deliveryPartner === 'object') ? (order.deliveryPartner.name || 'Rider') : 'Rider'} {isDelivered ? '• Arrived!' : isRiderMoving ? `• En Route (${Math.round(currentProgress)}%)` : '• Assigned'}
                                         </span>
                                     </div>
                                 </div>
@@ -517,12 +517,14 @@ const CustomerOrderTracking = () => {
                             </div>
                             <div>
                                 <p className="text-sm font-bold text-gray-400 uppercase tracking-wider">Your Rider</p>
-                                <h4 className="font-bold text-gray-900 text-lg">{order.deliveryPartner.name}</h4>
+                                <h4 className="font-bold text-gray-900 text-lg">
+                                    {(order.deliveryPartner && typeof order.deliveryPartner === 'object' ? order.deliveryPartner.name : order.deliveryPartner) || 'Delivery Executive'}
+                                </h4>
                                 <p className="text-sm text-gray-500">Vehicle: Bike • 4.9 ★</p>
                             </div>
                         </div>
                         <a 
-                            href={`tel:${order.deliveryPartner.phoneNumber || '1234567890'}`}
+                            href={`tel:${(order.deliveryPartner && typeof order.deliveryPartner === 'object' ? order.deliveryPartner.phoneNumber : null) || '1234567890'}`}
                             className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center text-green-600 hover:bg-green-100 transition-colors"
                         >
                             <PhoneCall size={20} />

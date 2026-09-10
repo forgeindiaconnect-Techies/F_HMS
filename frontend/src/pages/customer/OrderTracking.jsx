@@ -55,8 +55,8 @@ const OrderTracking = () => {
     const isRiderAssigned = Boolean(order?.deliveryPartner || delSt === 'Accepted');
     const isRiderMoving = ['Picked Up', 'On the Way', 'Out for Delivery'].includes(st) || ['Picked Up', 'On the Way'].includes(delSt);
     const isDelivered = st === 'Delivered' || delSt === 'Delivered';
-    const riderName = typeof order?.deliveryPartner === 'object' ? order.deliveryPartner.name : 'Delivery Partner';
-    const vehicleModel = typeof order?.deliveryPartner === 'object' ? order.deliveryPartner.vehicleDetails?.model : '';
+    const riderName = (order?.deliveryPartner && typeof order.deliveryPartner === 'object') ? (order.deliveryPartner.name || 'Delivery Partner') : 'Delivery Partner';
+    const vehicleModel = (order?.deliveryPartner && typeof order.deliveryPartner === 'object') ? (order.deliveryPartner.vehicleDetails?.model || '') : '';
     
     // Exact progress percent for map polyline and rider pin position
     const currentProgress = isDelivered ? 100 : (isRiderMoving ? 65 : isRiderAssigned ? 25 : 0);
@@ -377,12 +377,12 @@ const OrderTracking = () => {
                             </div>
                             <div>
                                 <p className="text-sm font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Your Rider</p>
-                                <h4 className="font-bold text-gray-900 dark:text-white text-lg">{order.deliveryPartner.name}</h4>
+                                <h4 className="font-bold text-gray-900 dark:text-white text-lg">{(typeof order.deliveryPartner === 'object' ? order.deliveryPartner?.name : order.deliveryPartner) || 'Delivery Executive'}</h4>
                                 <p className="text-sm text-gray-500 dark:text-slate-400">Vehicle: Bike • 4.9 ★</p>
                             </div>
                         </div>
                         <a 
-                            href={`tel:${order.deliveryPartner.phoneNumber || '1234567890'}`}
+                            href={`tel:${(typeof order.deliveryPartner === 'object' ? order.deliveryPartner?.phoneNumber : null) || '1234567890'}`}
                             className="w-12 h-12 bg-green-50 dark:bg-green-950/60 rounded-full flex items-center justify-center text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/60 transition-colors"
                         >
                             <Phone size={20} />
