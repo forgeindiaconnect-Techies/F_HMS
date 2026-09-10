@@ -69,6 +69,7 @@ const DeliveryPartnerDashboard = () => {
     const API_URL = getApiUrl();
 
     const { user: authUser, api } = useAuth();
+    const client = api;
 
     const loadData = async () => {
         try {
@@ -488,7 +489,7 @@ const DeliveryPartnerDashboard = () => {
 
                                             {/* Status transit controls */}
                                             <div className="pt-2">
-                                                {order.deliveryStatus === 'Pending Assignment' && (
+                                                {(order.deliveryStatus === 'Pending Assignment' || order.deliveryStatus === 'None' || order.deliveryStatus === 'Pending' || !order.deliveryPartner) && (
                                                     <div className="flex gap-3">
                                                         <button
                                                             onClick={() => handleUpdateOrderStatus(order._id, 'Accepted')}
