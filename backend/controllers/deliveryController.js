@@ -684,3 +684,41 @@ export const updateDeliverySettings = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+// @desc    Add support message to order (for delivery partner or customer)
+// @route   POST /api/delivery/orders/:id/support
+// @access  Private (DeliveryPartner / Customer)
+export const addSupportMessage = async (req, res) => {
+    try {
+        const { message, sender } = req.body;
+        if (!message || !message.trim()) {
+            return res.status(400).json({ message: 'Message text is required' });
+        }
+
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        if (!order.supportMessages) {
+            order.supportMessages = [];
+        }
+
+        const msgObj = {
+            sender: sender || 'DeliveryPartner',
+            message: message.trim(),
+            timestamp: new Date()
+        };
+
+        order.supportMessages.push(msgObj);
+        const updatedOrder = await order.save();
+
+        // Real-time broadcast to Customer & Restaurant dashboard WebSocket
+        broadcastToCustomerOrder(updatedOrder._id, 'order_status_updated', updatedOrder);
+        broadcastToRestaurant(updatedOrder.restaurantId, 'order_updated', updatedOrder);
+
+        res.json(updatedOrder);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

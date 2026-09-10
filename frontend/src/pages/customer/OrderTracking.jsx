@@ -389,6 +389,29 @@ const OrderTracking = () => {
                         </a>
                     </div>
                 )}
+
+                {/* Rider Support Live Updates */}
+                {Array.isArray(order.supportMessages) && order.supportMessages.length > 0 && (
+                    <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/40 dark:to-indigo-950/40 border border-purple-200 dark:border-purple-800/40 rounded-3xl p-6 shadow-sm space-y-3 animate-in slide-in-from-bottom-4 text-left">
+                        <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300 font-extrabold text-sm uppercase tracking-wider">
+                            <MessageSquare size={18} className="text-purple-600 dark:text-purple-400 animate-pulse" />
+                            <span>Rider Live Updates</span>
+                        </div>
+                        <div className="space-y-2">
+                            {order.supportMessages.map((msg, mIdx) => (
+                                <div key={mIdx} className="bg-white/80 dark:bg-slate-900/80 backdrop-blur p-3 rounded-2xl border border-purple-100 dark:border-purple-900/40 flex items-start justify-between gap-3 shadow-xs">
+                                    <div>
+                                        <p className="text-sm font-bold text-gray-900 dark:text-white">{msg.message}</p>
+                                        <span className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold">From Delivery Partner</span>
+                                    </div>
+                                    <span className="text-[10px] text-gray-400 font-mono whitespace-nowrap">
+                                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
                 </>
                 )}
             </div>

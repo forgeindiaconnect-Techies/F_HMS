@@ -532,6 +532,29 @@ const CustomerOrderTracking = () => {
                     </div>
                 )}
 
+                {/* Rider Support Live Updates */}
+                {Array.isArray(order.supportMessages) && order.supportMessages.length > 0 && (
+                    <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-3xl p-6 shadow-sm space-y-3 animate-in slide-in-from-bottom-4 text-left">
+                        <div className="flex items-center gap-2 text-purple-700 font-extrabold text-sm uppercase tracking-wider">
+                            <MessageSquare size={18} className="text-purple-600 animate-pulse" />
+                            <span>Rider Live Updates</span>
+                        </div>
+                        <div className="space-y-2">
+                            {order.supportMessages.map((msg, mIdx) => (
+                                <div key={mIdx} className="bg-white/80 backdrop-blur p-3 rounded-2xl border border-purple-100 flex items-start justify-between gap-3 shadow-xs">
+                                    <div>
+                                        <p className="text-sm font-bold text-gray-900">{msg.message}</p>
+                                        <span className="text-[10px] text-purple-600 font-semibold">From Delivery Partner</span>
+                                    </div>
+                                    <span className="text-[10px] text-gray-400 font-mono whitespace-nowrap">
+                                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {/* Delivery Star Rating Form */}
                 {isDelivery && order.status === 'Delivered' && (!order.deliveryRating || order.deliveryRating.overall === 0) && (
                     <form onSubmit={handleSubmitRating} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">

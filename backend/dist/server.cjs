@@ -96486,7 +96486,14 @@ var init_Order = __esm({
       internalRating: {
         type: Number,
         default: 0
-      }
+      },
+      supportMessages: [
+        {
+          sender: { type: String, enum: ["DeliveryPartner", "Customer", "Restaurant", "System"], default: "DeliveryPartner" },
+          message: { type: String, required: true },
+          timestamp: { type: Date, default: Date.now }
+        }
+      ]
     }, { timestamps: true });
     Order = import_mongoose13.default.model("Order", orderSchema);
     Order_default = Order;
@@ -103792,6 +103799,33 @@ var updateDeliverySettings = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+var addSupportMessage = async (req, res) => {
+  try {
+    const { message, sender } = req.body;
+    if (!message || !message.trim()) {
+      return res.status(400).json({ message: "Message text is required" });
+    }
+    const order = await Order_default.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+    if (!order.supportMessages) {
+      order.supportMessages = [];
+    }
+    const msgObj = {
+      sender: sender || "DeliveryPartner",
+      message: message.trim(),
+      timestamp: /* @__PURE__ */ new Date()
+    };
+    order.supportMessages.push(msgObj);
+    const updatedOrder = await order.save();
+    broadcastToCustomerOrder(updatedOrder._id, "order_status_updated", updatedOrder);
+    broadcastToRestaurant(updatedOrder.restaurantId, "order_updated", updatedOrder);
+    res.json(updatedOrder);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // routes/deliveryRoutes.js
 var router25 = import_express25.default.Router();
@@ -103801,6 +103835,7 @@ router25.route("/profile").get(protect, getDeliveryProfile);
 router25.route("/profile/status").put(protect, togglePartnerStatus);
 router25.route("/orders/assigned").get(protect, getAssignedOrders);
 router25.route("/orders/:id/status").put(protect, updateOrderDeliveryStatus);
+router25.route("/orders/:id/support").post(protect, addSupportMessage);
 router25.route("/withdrawals").post(protect, createWithdrawalRequest).get(protect, getWithdrawalRequests);
 router25.route("/earnings").get(protect, getEarningsHistory);
 router25.route("/partners").get(protect, getDeliveryPartners).post(protect, addDeliveryPartner);

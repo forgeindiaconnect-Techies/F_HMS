@@ -5,7 +5,7 @@ import {
     getWithdrawalRequests, getEarningsHistory, getDeliveryPartners,
     addDeliveryPartner, updatePartnerVerificationStatus, assignDeliveryPartner,
     autoAssignDeliveryPartner, getDeliveryAnalytics, submitDeliveryRating,
-    updateDeliverySettings, togglePartnerActiveStatus
+    updateDeliverySettings, togglePartnerActiveStatus, addSupportMessage
 } from '../controllers/deliveryController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -25,6 +25,8 @@ router.route('/orders/assigned')
     .get(protect, getAssignedOrders);
 router.route('/orders/:id/status')
     .put(protect, updateOrderDeliveryStatus);
+router.route('/orders/:id/support')
+    .post(protect, addSupportMessage);
 
 router.route('/withdrawals')
     .post(protect, createWithdrawalRequest)

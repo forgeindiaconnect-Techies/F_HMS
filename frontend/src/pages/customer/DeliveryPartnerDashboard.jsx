@@ -32,6 +32,15 @@ const DeliveryPartnerDashboard = () => {
     const [withdrawDetails, setWithdrawDetails] = useState('');
     const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
 
+    // Modal states for Map, Phone, Support
+    const [selectedTrackingOrder, setSelectedTrackingOrder] = useState(null);
+    const [showPhoneModal, setShowPhoneModal] = useState(false);
+    const [selectedPhoneOrder, setSelectedPhoneOrder] = useState(null);
+    const [showSupportModal, setShowSupportModal] = useState(false);
+    const [selectedSupportOrder, setSelectedSupportOrder] = useState(null);
+    const [supportMessageInput, setSupportMessageInput] = useState('');
+    const [sendingSupport, setSendingSupport] = useState(false);
+
     // Mock maps modal
     const [showNavigationModal, setShowNavigationModal] = useState(false);
     const [isSimulating, setIsSimulating] = useState(false);
@@ -249,6 +258,27 @@ const DeliveryPartnerDashboard = () => {
         }
     };
 
+    const handleSendSupportMessage = async (msgText) => {
+        const textToSend = msgText || supportMessageInput;
+        if (!textToSend || !textToSend.trim() || !selectedSupportOrder || !client) return;
+        setSendingSupport(true);
+        try {
+            await client.post(`/delivery/orders/${selectedSupportOrder._id}/support`, {
+                message: textToSend.trim(),
+                sender: 'DeliveryPartner'
+            });
+            toast.success('💬 Live update sent to customer dashboard!');
+            setShowSupportModal(false);
+            setSupportMessageInput('');
+            setSelectedSupportOrder(null);
+            loadData();
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to send message');
+        } finally {
+            setSendingSupport(false);
+        }
+    };
+
     const handleLogout = () => {
         logout();
     };
@@ -427,23 +457,33 @@ const DeliveryPartnerDashboard = () => {
                                             {/* Quick Actions Grid */}
                                             <div className="grid grid-cols-3 gap-2 border-t border-slate-100 dark:border-slate-800/60 pt-4">
                                                 <button 
-                                                    onClick={() => setShowNavigationModal(true)}
+                                                    onClick={() => {
+                                                        setSelectedTrackingOrder(order);
+                                                        setShowNavigationModal(true);
+                                                    }}
                                                     className="py-2.5 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-750 rounded-xl flex items-center justify-center gap-1.5 text-xs font-black transition-all active:scale-95 cursor-pointer shadow-sm"
                                                 >
                                                     <Navigation size={14} className="text-emerald-500 dark:text-emerald-400" /> Map
                                                 </button>
-                                                <a 
-                                                    href="tel:12345678"
+                                                <button 
+                                                    onClick={() => {
+                                                        setSelectedPhoneOrder(order);
+                                                        setShowPhoneModal(true);
+                                                    }}
                                                     className="py-2.5 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-750 rounded-xl flex items-center justify-center gap-1.5 text-xs font-black transition-all active:scale-95 cursor-pointer shadow-sm"
                                                 >
                                                     <Phone size={14} className="text-blue-500 dark:text-blue-400" /> Phone
-                                                </a>
-                                                <a 
-                                                    href="sms:12345678"
+                                                </button>
+                                                <button 
+                                                    onClick={() => {
+                                                        setSelectedSupportOrder(order);
+                                                        setSupportMessageInput('');
+                                                        setShowSupportModal(true);
+                                                    }}
                                                     className="py-2.5 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-750 rounded-xl flex items-center justify-center gap-1.5 text-xs font-black transition-all active:scale-95 cursor-pointer shadow-sm"
                                                 >
                                                     <MessageSquare size={14} className="text-purple-500 dark:text-purple-400" /> Support
-                                                </a>
+                                                </button>
                                             </div>
 
                                             {/* Status transit controls */}
@@ -910,6 +950,152 @@ const DeliveryPartnerDashboard = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Customer Call / Phone Contact Modal */}
+            {showPhoneModal && selectedPhoneOrder && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-md p-4 animate-in fade-in">
+                    <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-7 max-w-md w-full shadow-2xl relative space-y-6 text-left">
+                        <button
+                            onClick={() => setShowPhoneModal(false)}
+                            className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-full transition-colors cursor-pointer"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <div className="flex items-center gap-3.5">
+                            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-500 flex items-center justify-center shadow-inner">
+                                <Phone size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black text-slate-900 dark:text-white leading-tight">Call Customer</h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-bold">Order #{selectedPhoneOrder._id.substring(selectedPhoneOrder._id.length - 4).toUpperCase()}</p>
+                            </div>
+                        </div>
+
+                        <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-3">
+                            <div>
+                                <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Destination Address</span>
+                                <p className="text-xs font-bold text-slate-900 dark:text-slate-100 mt-0.5">
+                                    {selectedPhoneOrder.shippingAddress?.address || 'Customer Location'}
+                                </p>
+                            </div>
+                            <div className="pt-2 border-t border-slate-200 dark:border-slate-850 flex justify-between items-center">
+                                <div>
+                                    <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Phone Number</span>
+                                    <p className="text-base font-black font-mono text-emerald-600 dark:text-emerald-400">
+                                        {selectedPhoneOrder.shippingAddress?.phone || selectedPhoneOrder.user?.phoneNumber || selectedPhoneOrder.user?.phone || '9876543210'}
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const p = selectedPhoneOrder.shippingAddress?.phone || selectedPhoneOrder.user?.phoneNumber || selectedPhoneOrder.user?.phone || '9876543210';
+                                        navigator.clipboard.writeText(p);
+                                        toast.success('Phone number copied to clipboard!');
+                                    }}
+                                    className="px-3 py-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 rounded-xl transition-all"
+                                >
+                                    Copy Number
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setShowPhoneModal(false)}
+                                className="flex-1 py-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-2xl text-xs uppercase tracking-wider transition-colors cursor-pointer"
+                            >
+                                Close
+                            </button>
+                            <a
+                                href={`tel:${selectedPhoneOrder.shippingAddress?.phone || selectedPhoneOrder.user?.phoneNumber || selectedPhoneOrder.user?.phone || '9876543210'}`}
+                                className="flex-1 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black rounded-2xl text-xs uppercase tracking-wider shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                <Phone size={16} /> Call Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Rider Support Message Modal (Broadcasts message to Customer Dashboard) */}
+            {showSupportModal && selectedSupportOrder && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-md p-4 animate-in fade-in">
+                    <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-7 max-w-md w-full shadow-2xl relative space-y-5 text-left">
+                        <button
+                            onClick={() => setShowSupportModal(false)}
+                            className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-full transition-colors cursor-pointer"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <div className="flex items-center gap-3.5">
+                            <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-500 flex items-center justify-center shadow-inner">
+                                <MessageSquare size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black text-slate-900 dark:text-white leading-tight">Send Rider Live Update</h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-bold">Appears instantly on Customer Dashboard</p>
+                            </div>
+                        </div>
+
+                        {/* Quick Presets */}
+                        <div className="space-y-2">
+                            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400">Quick Preset Updates</label>
+                            <div className="grid grid-cols-1 gap-2">
+                                {[
+                                    "🛵 I am on my way to pick up your food order.",
+                                    "🚦 Stuck in heavy traffic, arriving in ~5 mins.",
+                                    "📍 I have arrived at your building / gate location.",
+                                    "📦 Order collected successfully from kitchen counter!"
+                                ].map((preset, pIdx) => (
+                                    <button
+                                        key={pIdx}
+                                        type="button"
+                                        onClick={() => handleSendSupportMessage(preset)}
+                                        disabled={sendingSupport}
+                                        className="w-full text-left p-3 rounded-xl bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/60 border border-purple-200 dark:border-purple-800/40 text-purple-900 dark:text-purple-200 text-xs font-bold transition-all cursor-pointer flex items-center justify-between group"
+                                    >
+                                        <span>{preset}</span>
+                                        <ChevronRight size={14} className="text-purple-400 group-hover:translate-x-0.5 transition-transform" />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Custom Message Input */}
+                        <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400">Custom Message</label>
+                            <textarea
+                                rows={3}
+                                placeholder="Type a custom message for the customer..."
+                                value={supportMessageInput}
+                                onChange={(e) => setSupportMessageInput(e.target.value)}
+                                className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white font-medium focus:outline-none focus:border-purple-500 transition-all"
+                            />
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setShowSupportModal(false)}
+                                className="flex-1 py-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-2xl text-xs uppercase tracking-wider transition-colors cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleSendSupportMessage()}
+                                disabled={sendingSupport || !supportMessageInput.trim()}
+                                className="flex-1 py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black rounded-2xl text-xs uppercase tracking-wider shadow-lg shadow-purple-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                {sendingSupport ? 'Sending...' : 'Send Message'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

@@ -711,6 +711,26 @@ const CustomerDashboard = () => {
                                                         )}
                                                     </div>
 
+                                                    {/* Live Rider Support Updates Banner */}
+                                                    {Array.isArray(order.supportMessages) && order.supportMessages.length > 0 && (
+                                                        <div className="bg-purple-950/40 border border-purple-500/30 p-3.5 rounded-xl space-y-2 animate-in fade-in">
+                                                            <div className="flex items-center gap-2 text-purple-400 font-black text-xs uppercase tracking-wider">
+                                                                <MessageSquare size={14} className="text-purple-400 animate-pulse" />
+                                                                <span>Rider Live Updates</span>
+                                                            </div>
+                                                            <div className="space-y-1.5 pl-5 border-l-2 border-purple-500/40">
+                                                                {order.supportMessages.map((msg, mIdx) => (
+                                                                    <div key={mIdx} className="text-xs">
+                                                                        <p className="font-bold text-white">{msg.message}</p>
+                                                                        <span className="text-[9px] text-purple-300 font-mono">
+                                                                            {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                        </span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
                                                     {/* Mini Zomato-Style Live Route Tracking Progress */}
                                                     <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
                                                         <div className="flex justify-between items-center text-[10px] font-extrabold text-slate-400">

@@ -134,7 +134,14 @@ const orderSchema = new mongoose.Schema({
     internalRating: {
         type: Number,
         default: 0
-    }
+    },
+    supportMessages: [
+        {
+            sender: { type: String, enum: ['DeliveryPartner', 'Customer', 'Restaurant', 'System'], default: 'DeliveryPartner' },
+            message: { type: String, required: true },
+            timestamp: { type: Date, default: Date.now }
+        }
+    ]
 }, { timestamps: true });
 
 const Order = mongoose.model('Order', orderSchema);
