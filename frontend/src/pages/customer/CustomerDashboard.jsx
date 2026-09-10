@@ -716,9 +716,10 @@ const CustomerDashboard = () => {
                                                                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Live Route Progress (Zomato Style)
                                                             </span>
                                                             <span className="text-white font-mono uppercase">
-                                                                 {(order.status === 'Delivered' || order.deliveryStatus === 'Delivered') ? 'Delivered' :
-                                                                  (order.status === 'Out for Delivery' || order.deliveryStatus === 'On the Way' || order.deliveryStatus === 'Picked Up') ? 'Out for Delivery' :
-                                                                  (order.status === 'Preparing' || order.status === 'Ready') ? 'Kitchen Preparing' : 'Order Placed (Pending)'}
+                                                                {(order.status === 'Delivered' || order.deliveryStatus === 'Delivered') ? 'Delivered' :
+                                                                (order.status === 'Out for Delivery' || order.deliveryStatus === 'On the Way' || order.deliveryStatus === 'Picked Up') ? 'Out for Delivery' :
+                                                                (order.status === 'Preparing' || order.status === 'Ready') ? 'Kitchen Preparing' :
+                                                                (order.status === 'Accepted') ? 'Order Accepted' : 'Order Placed (Pending)'}
                                                             </span>
                                                         </div>
 
@@ -728,15 +729,9 @@ const CustomerDashboard = () => {
                                                                 style={{
                                                                     width: (order.status === 'Delivered' || order.deliveryStatus === 'Delivered') ? '100%' :
                                                                            (order.status === 'Out for Delivery' || order.deliveryStatus === 'On the Way' || order.deliveryStatus === 'Picked Up') ? '66%' :
-                                                                           (order.status === 'Preparing' || order.status === 'Ready') ? '35%' : '10%'
+                                                                           (order.status === 'Preparing' || order.status === 'Ready' || order.status === 'Accepted') ? '35%' : '0%'
                                                                 }}
                                                             ></div>
-                                                        </div>
-
-                                                        <div className="flex justify-between items-center pt-1 text-[9px] font-bold text-slate-400">
-                                                            <span>🏪 Shop Pickup Hub</span>
-                                                            <span>🚴 Rider En Route</span>
-                                                            <span>🏠 Home Delivered</span>
                                                         </div>
                                                     </div>
 

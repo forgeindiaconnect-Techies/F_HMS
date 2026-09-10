@@ -296,7 +296,7 @@ const Checkout = () => {
                 shippingAddress: orderType === 'Delivery' ? { address } : undefined,
                 deliveryDistance: orderType === 'Delivery' ? mockDistance : undefined,
                 deliveryCharge: orderType === 'Delivery' ? calculatedDeliveryFee : undefined,
-                deliveryStatus: orderType === 'Delivery' ? 'Pending Assignment' : undefined
+                deliveryStatus: 'None'
             };
             
             // 1. Create order initial entry

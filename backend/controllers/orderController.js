@@ -92,6 +92,7 @@ export const addOrderItems = async (req, res) => {
             totalPrice,
             deliveryOtp,
             status: 'Pending', // Strictly force new order to Pending status
+            deliveryStatus: 'None', // Strictly force None on creation until kitchen marks Ready for Pickup
             isPaid: false, // Will be paid later or by cashier
             statusHistory: [{
                 status: 'Pending',
