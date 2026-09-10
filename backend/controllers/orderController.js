@@ -365,6 +365,10 @@ export const updateOrderStatus = async (req, res) => {
                     order.deliveryPartner = null;
                 } else if (['Ready', 'Ready for Pickup'].includes(newStatus)) {
                     order.deliveryStatus = 'Pending Assignment';
+                } else if (newStatus === 'Out for Delivery') {
+                    order.deliveryStatus = 'On the Way';
+                } else if (newStatus === 'Delivered' || newStatus === 'Completed') {
+                    order.deliveryStatus = 'Delivered';
                 }
             }
             order.statusHistory.push({

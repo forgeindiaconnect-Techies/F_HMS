@@ -320,9 +320,8 @@ const OrderTracking = () => {
                         <button
                             onClick={async () => {
                                 try {
-                                    await api.put(`/orders/${order._id}/status`, { status: 'Pending' });
-                                    const { data } = await api.get(`/orders/${order._id}`);
-                                    setOrder(data);
+                                    const { data: updated } = await api.put(`/orders/${order._id}/status`, { status: 'Pending' });
+                                    setOrder(updated);
                                     setProgress(1);
                                 } catch (e) { console.error(e); }
                             }}
@@ -333,9 +332,8 @@ const OrderTracking = () => {
                         <button
                             onClick={async () => {
                                 try {
-                                    await api.put(`/orders/${order._id}/status`, { status: 'Preparing' });
-                                    const { data } = await api.get(`/orders/${order._id}`);
-                                    setOrder(data);
+                                    const { data: updated } = await api.put(`/orders/${order._id}/status`, { status: 'Preparing' });
+                                    setOrder(updated);
                                     setProgress(2);
                                 } catch (e) { console.error(e); }
                             }}
@@ -346,9 +344,8 @@ const OrderTracking = () => {
                         <button
                             onClick={async () => {
                                 try {
-                                    await api.put(`/delivery/orders/${order._id}/status`, { status: 'Accepted' });
-                                    const { data } = await api.get(`/orders/${order._id}`);
-                                    setOrder(data);
+                                    const { data: updated } = await api.put(`/orders/${order._id}/status`, { status: 'Out for Delivery' });
+                                    setOrder(updated);
                                     setProgress(3);
                                 } catch (e) { console.error(e); }
                             }}
@@ -359,9 +356,8 @@ const OrderTracking = () => {
                         <button
                             onClick={async () => {
                                 try {
-                                    await api.put(`/delivery/orders/${order._id}/status`, { status: 'Delivered', otp: order.deliveryOtp });
-                                    const { data } = await api.get(`/orders/${order._id}`);
-                                    setOrder(data);
+                                    const { data: updated } = await api.put(`/orders/${order._id}/status`, { status: 'Delivered' });
+                                    setOrder(updated);
                                     setProgress(4);
                                 } catch (e) { console.error(e); }
                             }}
