@@ -32,8 +32,15 @@ export const getMenuItems = async (req, res) => {
             }
         }
 
-        const items = await MenuItem.find(filter);
-        res.json(items);
+        const items = await MenuItem.find(filter).populate('restaurantId', 'name approvalStatus logo');
+        // Exclude menu items whose parent restaurant has been deleted by Super Admin or rejected!
+        const validItems = items.filter(item => {
+            if (!item.restaurantId) return false; // Restaurant was deleted from DB
+            if (typeof item.restaurantId === 'object' && item.restaurantId.approvalStatus === 'Rejected') return false;
+            return true;
+        });
+
+        res.json(validItems);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

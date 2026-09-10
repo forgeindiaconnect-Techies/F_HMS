@@ -106,17 +106,13 @@ const Explore = () => {
             try {
                 let API_URL = getApiUrl();
                 const res = await axios.get(`${API_URL}/restaurants`);
-                let realRest = res.data.filter(r => r.subscription?.status === 'Active' && r.isActive !== false);
-                let combined = [...realRest];
-                if (combined.length < 6) {
-                    combined.push(...dummyRestaurants.slice(0, 6 - combined.length));
-                }
-                setRestaurants(combined);
+                let realRest = Array.isArray(res.data) ? res.data.filter(r => r.subscription?.status === 'Active' && r.isActive !== false) : [];
+                setRestaurants(realRest);
             } catch (error) {
                 console.error("Failed to load restaurants", error);
-                setRestaurants(dummyRestaurants);
+                setRestaurants([]);
             } finally {
-                setTimeout(() => setLoading(false), 500);
+                setTimeout(() => setLoading(false), 300);
             }
         };
         fetchRestaurants();

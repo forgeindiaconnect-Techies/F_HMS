@@ -100187,8 +100187,13 @@ var getMenuItems = async (req, res) => {
         ];
       }
     }
-    const items = await MenuItem_default.find(filter);
-    res.json(items);
+    const items = await MenuItem_default.find(filter).populate("restaurantId", "name approvalStatus logo");
+    const validItems = items.filter((item) => {
+      if (!item.restaurantId) return false;
+      if (typeof item.restaurantId === "object" && item.restaurantId.approvalStatus === "Rejected") return false;
+      return true;
+    });
+    res.json(validItems);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

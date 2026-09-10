@@ -85,11 +85,12 @@ const CustomerDashboard = () => {
         const fetchRegisteredRestaurants = async () => {
             try {
                 const { data } = await api.get('/restaurants');
-                if (Array.isArray(data) && data.length > 0) {
+                if (Array.isArray(data)) {
                     setRegisteredRestaurants(data);
                 }
             } catch (err) {
                 console.error('Failed to load registered restaurants for menu page', err);
+                setRegisteredRestaurants([]);
             }
         };
         fetchRegisteredRestaurants();
