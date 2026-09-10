@@ -627,7 +627,7 @@ const DeliveryManagement = () => {
                                                     <div className="space-y-1 mt-2 pt-2 border-t border-gray-200/60 text-[10px] font-semibold text-gray-600">
                                                         <div className="flex justify-between">
                                                             <span>Partner:</span>
-                                                            <strong className="text-emerald-700">{typeof o.deliveryPartner === 'object' ? o.deliveryPartner.name : 'Assigned'}</strong>
+                                                            <strong className="text-emerald-700">{(o.deliveryPartner && typeof o.deliveryPartner === 'object') ? (o.deliveryPartner.name || 'Assigned') : 'Assigned'}</strong>
                                                         </div>
                                                         <div className="flex justify-between items-center">
                                                             <span>Delivery Status:</span>
@@ -764,7 +764,7 @@ const DeliveryManagement = () => {
                                                         </div>
                                                     </div>
                                                     <span className="block text-[8px] font-black text-emerald-400 bg-slate-950 border border-slate-800 px-2 py-1 rounded shadow-lg mt-1 whitespace-nowrap leading-none">
-                                                        🚴 {typeof selectedTrackingOrder.deliveryPartner === 'object' ? selectedTrackingOrder.deliveryPartner.name : 'Rider'} ({selectedTrackingOrder.deliveryStatus || 'Assigned'})
+                                                        🚴 {(selectedTrackingOrder.deliveryPartner && typeof selectedTrackingOrder.deliveryPartner === 'object') ? (selectedTrackingOrder.deliveryPartner.name || 'Rider') : 'Rider'} ({selectedTrackingOrder.deliveryStatus || 'Assigned'})
                                                     </span>
                                                 </div>
                                             );
@@ -778,7 +778,7 @@ const DeliveryManagement = () => {
                                             </p>
                                             <p className="flex justify-between">
                                                 <span className="text-slate-500">Assigned Partner:</span>
-                                                <strong className="text-emerald-400">{typeof selectedTrackingOrder.deliveryPartner === 'object' ? selectedTrackingOrder.deliveryPartner.name : 'Assigned Partner'}</strong>
+                                                <strong className="text-emerald-400">{(selectedTrackingOrder.deliveryPartner && typeof selectedTrackingOrder.deliveryPartner === 'object') ? (selectedTrackingOrder.deliveryPartner.name || 'Assigned Partner') : 'Assigned Partner'}</strong>
                                             </p>
                                             <p className="flex justify-between">
                                                 <span className="text-slate-500">Vehicle:</span>

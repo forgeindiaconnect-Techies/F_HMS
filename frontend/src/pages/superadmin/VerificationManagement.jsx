@@ -229,7 +229,7 @@ const VerificationManagement = () => {
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 border border-gray-100 shrink-0">
                                                     {v.restaurantId?.logo ? (
-                                                        <img src={getFullUrl(v.restaurantId.logo)} alt={v.restaurantId.name} className="w-full h-full object-cover" />
+                                                        <img src={getFullUrl(v.restaurantId.logo)} alt={v.restaurantId?.name || 'Restaurant'} className="w-full h-full object-cover" />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold">
                                                             {v.restaurantId?.name?.charAt(0) || '?'}

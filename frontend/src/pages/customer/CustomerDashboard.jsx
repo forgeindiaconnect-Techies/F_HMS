@@ -691,7 +691,7 @@ const CustomerDashboard = () => {
                                                             <div>
                                                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Delivery Executive</span>
                                                                 <p className="font-extrabold text-white text-sm">
-                                                                    {order.deliveryPartner ? (typeof order.deliveryPartner === 'object' ? order.deliveryPartner.name : 'Assigned Executive') : 'Assigning nearest rider...'}
+                                                                    {(order.deliveryPartner && typeof order.deliveryPartner === 'object') ? (order.deliveryPartner.name || 'Assigned Executive') : (order.deliveryPartner ? 'Assigned Executive' : 'Assigning nearest rider...')}
                                                                 </p>
                                                                 {order.deliveryPartner && typeof order.deliveryPartner === 'object' && (
                                                                     <p className="text-[10px] text-slate-400 font-medium">
