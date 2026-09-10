@@ -663,7 +663,7 @@ const CustomerDashboard = () => {
                                                             <div>
                                                                 <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest block">Pickup Store</span>
                                                                 <p className="font-extrabold text-white text-xs mt-0.5">
-                                                                    {order.restaurantId?.name || 'Juice Box Main Hub'}
+                                                                    {order.restaurantId?.name || 'Restaurant'}
                                                                 </p>
                                                                 <p className="text-[10px] text-slate-400">Branch Central Kitchen Counter</p>
                                                             </div>
