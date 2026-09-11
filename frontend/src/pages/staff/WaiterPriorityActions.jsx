@@ -95,7 +95,9 @@ const WaiterPriorityActions = () => {
 
     const filteredItems = filter === 'All' 
         ? displayItems 
-        : displayItems.filter(item => item.type === filter);
+        : (filter === 'URGENT' 
+            ? displayItems.filter(item => item.type === 'URGENT' || item.type === 'PICKUP READY')
+            : displayItems.filter(item => item.type === filter));
 
     return (
         <div className="max-w-[1400px] mx-auto space-y-6">
@@ -131,7 +133,7 @@ const WaiterPriorityActions = () => {
 
             {/* Filter Pills */}
             <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                {['All', 'URGENT', 'IMPORTANT', 'INFO REQUEST', 'ASSISTANCE'].map((t) => (
+                {['All', 'PICKUP READY', 'URGENT', 'IMPORTANT', 'ASSISTANCE'].map((t) => (
                     <button
                         key={t}
                         onClick={() => setFilter(t)}
