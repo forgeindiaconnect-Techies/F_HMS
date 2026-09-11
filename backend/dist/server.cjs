@@ -99470,7 +99470,7 @@ var addOrderItems = async (req, res) => {
     }
     try {
       const Notification2 = (await Promise.resolve().then(() => (init_Notification(), Notification_exports))).default;
-      const notif = await Notification2.create({
+      await Notification2.create({
         title: `\u{1F514} New Order #${createdOrder._id.toString().substring(createdOrder._id.toString().length - 5).toUpperCase()}`,
         desc: `${orderType} ${tableNumber ? `(Table ${tableNumber})` : ""} - ${orderItems.map((i) => `${i.qty}x ${i.name}`).join(", ")} (\u20B9${totalPrice})`,
         type: "Order",
@@ -99478,8 +99478,6 @@ var addOrderItems = async (req, res) => {
         targetRole: ["Chef", "Kitchen", "Waiter", "Cashier", "RestaurantAdmin", "Admin"],
         read: false
       });
-      const notifObj = notif.toObject ? notif.toObject() : notif;
-      broadcastToRestaurant(finalRestaurantId, "new_notification", { ...notifObj, orderData: createdOrder });
     } catch (notifErr) {
       console.error("Failed to create order notification", notifErr);
     }

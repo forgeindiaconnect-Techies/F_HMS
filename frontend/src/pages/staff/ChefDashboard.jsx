@@ -100,9 +100,8 @@ const ChefDashboard = () => {
                 ws.onmessage = (event) => {
                     try {
                         const msg = JSON.parse(event.data);
-                        if (msg.type === 'new_order' || msg.type === 'order_updated' || msg.type === 'new_notification') {
+                        if (msg.type === 'new_order' || msg.type === 'order_updated' || msg.type === 'order_status_updated') {
                             if (msg.data && msg.data._id) {
-                                // Instantly update local orders state in real-time so incoming ticket renders immediately
                                 setOrders(prev => {
                                     const exists = prev.some(o => o._id === msg.data._id);
                                     if (exists) {
@@ -113,9 +112,17 @@ const ChefDashboard = () => {
                             }
                             fetchOrders();
 
-                            if (msg.type === 'new_order' || msg.type === 'new_notification') {
-                                const orderData = msg.type === 'new_notification' ? (msg.data?.orderData || msg.data) : msg.data;
-                                if (orderData) setNewTicketModalOrder(orderData);
+                            // Trigger modal popup and chime ONLY for actual new orders
+                            if (msg.type === 'new_order' && msg.data && msg.data._id) {
+                                const orderData = msg.data;
+                                const ticketNum = String(orderData._id).substring(String(orderData._id).length - 5).toUpperCase();
+                                
+                                setNewTicketModalOrder(prev => {
+                                    // Prevent duplicate popup if already showing this ticket
+                                    if (prev && prev._id === orderData._id) return prev;
+                                    return orderData;
+                                });
+
                                 try {
                                     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                                     const osc = audioCtx.createOscillator();
@@ -129,12 +136,10 @@ const ChefDashboard = () => {
                                     gain.connect(audioCtx.destination);
                                     osc.start();
                                     osc.stop(audioCtx.currentTime + 0.4);
-                                } catch (e) {
-                                    console.error('Audio alert chime error:', e);
-                                }
+                                } catch (e) {}
 
-                                const ticketNum = orderData?._id ? String(orderData._id).substring(String(orderData._id).length - 5).toUpperCase() : 'NEW';
                                 toast.success(`🔔 NEW ORDER RECEIVED! Ticket #${ticketNum}`, {
+                                    id: `new-order-${orderData._id}`, // Deduplicate toast notification
                                     duration: 8000,
                                     position: 'top-right'
                                 });
