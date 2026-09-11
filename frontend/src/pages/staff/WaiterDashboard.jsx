@@ -979,15 +979,24 @@ const WaiterDashboard = () => {
                                                     </div>
                                                 </div>
 
-                                                {/* Serve Quick Action Button */}
-                                                {order.status === 'Ready' && (
-                                                    <div className="flex justify-end pt-1">
-                                                        <button
-                                                            onClick={() => handleUpdateStatus(order._id, 'Served')}
-                                                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-4 py-2 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
-                                                        >
-                                                            <CheckCircle2 size={14} /> Mark as Served
-                                                        </button>
+                                                {/* Serve / Pickup Quick Action Buttons */}
+                                                {(order.status === 'Ready' || order.status === 'Ready for Pickup') && (
+                                                    <div className="flex justify-end pt-1 gap-2">
+                                                        {(order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup') ? (
+                                                            <button
+                                                                onClick={() => handleUpdateStatus(order._id, 'Picked Up')}
+                                                                className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-4 py-2 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                                                            >
+                                                                <CheckCircle2 size={14} /> Collect &amp; Transfer to Cashier Counter
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => handleUpdateStatus(order._id, 'Served')}
+                                                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-4 py-2 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                                                            >
+                                                                <CheckCircle2 size={14} /> Mark as Served
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 )}
 
