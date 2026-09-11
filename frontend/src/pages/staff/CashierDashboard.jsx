@@ -68,11 +68,33 @@ const CashierDashboard = () => {
                         if (['new_order', 'order_updated', 'new_notification', 'order_status_updated'].includes(msg.type)) {
                             fetchOrders();
 
-                            if (msg.type === 'new_notification' && msg.data?.title?.includes('Placed at Cashier Counter')) {
-                                toast.success(`📦 ${msg.data.title}: ${msg.data.desc}`, {
-                                    duration: 8000,
-                                    position: 'top-right'
-                                });
+                            const orderData = msg.data?.orderData || msg.data;
+                            if (msg.type === 'order_status_updated' || msg.type === 'new_notification') {
+                                const status = orderData?.status;
+                                if (status === 'Picked Up' || status === 'Ready for Pickup') {
+                                    const ticketNum = orderData?._id ? String(orderData._id).substring(String(orderData._id).length - 5).toUpperCase() : 'ALERT';
+                                    
+                                    try {
+                                        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                                        const osc = audioCtx.createOscillator();
+                                        const gain = audioCtx.createGain();
+                                        osc.type = 'sine';
+                                        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                                        osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.4);
+                                        gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                                        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                                        osc.connect(gain);
+                                        gain.connect(audioCtx.destination);
+                                        osc.start();
+                                        osc.stop(audioCtx.currentTime + 0.4);
+                                    } catch (e) {}
+
+                                    toast.success(`📦 SELF-PICKUP QUEUE: Order #${ticketNum} arrived at Cashier counter!`, {
+                                        id: `cashier-pickup-${orderData?._id || Date.now()}`,
+                                        duration: 8000,
+                                        position: 'top-right'
+                                    });
+                                }
                             }
                         }
                     } catch (e) {}
