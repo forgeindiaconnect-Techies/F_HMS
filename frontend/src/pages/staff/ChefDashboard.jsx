@@ -276,7 +276,7 @@ const ChefDashboard = () => {
     const filterOrder = (order) => {
         // Tab Filter
         if (activeTab === 'All' && ['Completed', 'Served', 'Delivered', 'Cancelled'].includes(order.status)) return false;
-        if (activeTab === 'Pending' && !['Pending', 'Accepted'].includes(order.status)) return false;
+        if ((activeTab === 'Pending' || activeTab === 'Incoming') && !['Pending', 'Accepted'].includes(order.status)) return false;
         if (activeTab === 'Accepted' && order.status !== 'Accepted') return false;
         if (activeTab === 'Preparing' && order.status !== 'Preparing') return false;
         if (activeTab === 'Ready' && !['Ready', 'Ready for Pickup'].includes(order.status)) return false;
@@ -467,7 +467,7 @@ const ChefDashboard = () => {
                     <div className="flex flex-wrap bg-slate-100 dark:bg-slate-950/80 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800/90 gap-1 w-full lg:w-auto">
                         {[
                             { id: 'All', label: 'All Orders', count: totalLive },
-                            { id: 'Pending', label: '📥 Incoming', count: orders.filter(o => ['Pending', 'Accepted'].includes(o.status)).length },
+                            { id: 'Incoming', label: '📥 Incoming', count: orders.filter(o => ['Pending', 'Accepted'].includes(o.status)).length },
                             { id: 'Preparing', label: '🍳 Cooking', count: preparingCount },
                             { id: 'Ready', label: '✨ Ready', count: readyCount },
                             { id: 'Completed', label: '✅ Completed', count: orders.filter(o => ['Completed', 'Served'].includes(o.status)).length },
