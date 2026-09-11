@@ -515,10 +515,9 @@ export const updateOrderStatus = async (req, res) => {
 
         const updatedOrder = await order.save();
         
-        // Broadcast status update to customer tracking
+        // Broadcast status update to customer tracking & restaurant staff
         broadcastToCustomerOrder(order._id, 'order_status_updated', updatedOrder);
-        
-        // Broadcast general update to kitchen & waiters
+        broadcastToRestaurant(order.restaurantId, 'order_status_updated', updatedOrder);
         broadcastToRestaurant(order.restaurantId, 'order_updated', updatedOrder);
         
         if (updatedOrder.status === 'Ready' || updatedOrder.status === 'Ready for Pickup') {
@@ -579,6 +578,12 @@ export const updateOrderToPaid = async (req, res) => {
         }
 
         const updatedOrder = await order.save();
+
+        // Broadcast status and payment updates to customer tracking & restaurant dashboards
+        broadcastToCustomerOrder(order._id, 'order_status_updated', updatedOrder);
+        broadcastToRestaurant(order.restaurantId, 'order_status_updated', updatedOrder);
+        broadcastToRestaurant(order.restaurantId, 'order_updated', updatedOrder);
+
         res.json(updatedOrder);
     } else {
         res.status(404).json({ message: 'Order not found' });
