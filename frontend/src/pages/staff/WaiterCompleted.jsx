@@ -20,9 +20,15 @@ const WaiterCompleted = () => {
         }
     };
 
+    const isSelfOrder = (o) => {
+        if (!o) return false;
+        const type = String(o.orderType || '').toLowerCase();
+        return type.includes('pickup') || type.includes('takeaway') || type.includes('takeout') || type.includes('self') || (!o.tableNumber && type !== 'dine in' && type !== 'dine-in');
+    };
+
     useEffect(() => {
         fetchCompletedOrders();
-        const interval = setInterval(fetchCompletedOrders, 10000);
+        const interval = setInterval(fetchCompletedOrders, 5000);
         return () => clearInterval(interval);
     }, [api]);
 
@@ -31,10 +37,10 @@ const WaiterCompleted = () => {
             <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>Completed Orders</h2>
-                    <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Live record of served and completed customer orders.</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Live record of served, picked up, and completed customer orders.</p>
                 </div>
                 <div className="bg-emerald-50 dark:bg-emerald-950/60 px-4 py-2 rounded-xl border border-emerald-200 dark:border-emerald-800">
-                    <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Total Served: {completed.length}</span>
+                    <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Total Completed: {completed.length}</span>
                 </div>
             </div>
 
@@ -61,7 +67,7 @@ const WaiterCompleted = () => {
                                     <td className="p-4 font-mono font-bold text-gray-900 dark:text-white">#{order._id.substring(order._id.length - 6).toUpperCase()}</td>
                                     <td className="p-4">
                                         <span className="bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-200 font-bold px-3 py-1 rounded-lg text-xs">
-                                            {order.orderType === 'Dine In' ? `Table ${order.tableNumber || 'N/A'}` : order.orderType}
+                                            {isSelfOrder(order) ? '📦 Self-Pickup' : (order.orderType === 'Dine In' ? `Table ${order.tableNumber || 'N/A'}` : order.orderType)}
                                         </span>
                                     </td>
                                     <td className="p-4 font-medium text-gray-700 dark:text-slate-300">

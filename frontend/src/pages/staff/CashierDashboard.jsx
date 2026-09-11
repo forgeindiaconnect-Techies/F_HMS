@@ -768,7 +768,7 @@ const CashierDashboard = () => {
                                     <tr key={bill._id} className="hover:bg-gray-50/50 dark:hover:bg-slate-850/30 transition-colors text-gray-900 dark:text-gray-300">
                                         <td className="p-4 font-mono font-bold">#{bill._id.toUpperCase()}</td>
                                         <td className="p-4">{new Date(bill.paidAt || bill.updatedAt).toLocaleString()}</td>
-                                        <td className="p-4 font-semibold">{bill.orderType === 'Dine In' ? `Table ${bill.tableNumber || 'Any'}` : bill.orderType}</td>
+                                        <td className="p-4 font-semibold">{isSelfOrder(bill) ? '📦 Self-Pickup' : (bill.orderType === 'Dine In' ? `Table ${bill.tableNumber || 'Any'}` : bill.orderType)}</td>
                                         <td className="p-4"><span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 rounded-lg font-bold">{bill.paymentMethod}</span></td>
                                         <td className="p-4 font-black text-green-700 dark:text-green-400">₹{bill.totalPrice.toFixed(2)}</td>
                                         <td className="p-4 text-right space-x-2">
