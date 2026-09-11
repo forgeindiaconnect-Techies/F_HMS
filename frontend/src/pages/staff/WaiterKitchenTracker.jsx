@@ -13,7 +13,7 @@ const WaiterKitchenTracker = () => {
         setLoading(true);
         try {
             const res = await api.get('/orders');
-            setOrders(res.data.filter(o => o.orderType === 'Dine In' && !['Completed'].includes(o.status)));
+            setOrders(res.data.filter(o => !['Completed', 'Served', 'Delivered'].includes(o.status)));
         } catch (error) {
             console.error('Failed to fetch kitchen tracker orders', error);
         } finally {
@@ -27,13 +27,19 @@ const WaiterKitchenTracker = () => {
         return () => clearInterval(interval);
     }, [api]);
 
+    const isSelfOrder = (o) => {
+        if (!o) return false;
+        const type = String(o.orderType || '').toLowerCase();
+        return type.includes('pickup') || type.includes('takeaway') || type.includes('takeout') || type.includes('self') || (!o.tableNumber && type !== 'dine in' && type !== 'dine-in');
+    };
+
     const getStageStep = (status) => {
         switch (status) {
-            case 'Order Received': case 'Pending': return 1;
+            case 'Order Received': case 'Pending': case 'Accepted': return 1;
             case 'Preparing': case 'In Kitchen': return 2;
             case 'Ready': case 'Ready for Pickup': return 3;
             case 'Picked Up': return 4;
-            case 'Served': case 'Delivered': return 5;
+            case 'Served': case 'Delivered': case 'Completed': return 5;
             default: return 2;
         }
     };
@@ -85,7 +91,7 @@ const WaiterKitchenTracker = () => {
 
             {/* Stage Filter */}
             <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                {['All', 'Order Received', 'Preparing', 'Ready', 'Served'].map((st) => (
+                {['All', 'Pending', 'Preparing', 'Ready', 'Ready for Pickup'].map((st) => (
                     <button
                         key={st}
                         onClick={() => setStageFilter(st)}
@@ -104,16 +110,17 @@ const WaiterKitchenTracker = () => {
             <div className="space-y-4">
                 {filteredOrders.map((order) => {
                     const step = getStageStep(order.status);
+                    const isSelf = isSelfOrder(order);
                     return (
                         <div key={order._id} className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-xs space-y-4">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
                                 <div className="flex items-center gap-3">
-                                    <h3 className="text-xl font-black text-slate-900">{order.tableNumber || 'Dine-In Table'}</h3>
+                                    <h3 className="text-xl font-black text-slate-900">{isSelf ? '📦 Self-Pickup Counter' : (order.tableNumber ? (order.tableNumber.startsWith('Table') ? order.tableNumber : `Table ${order.tableNumber}`) : 'Takeout')}</h3>
                                     <span className="text-xs font-bold text-slate-400">#{order._id.substring(order._id.length - 6).toUpperCase()}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <span className={`px-3 py-1 rounded-xl text-xs font-extrabold uppercase ${
-                                        order.status === 'Ready' ? 'bg-emerald-100 text-emerald-800' :
+                                        (order.status === 'Ready' || order.status === 'Ready for Pickup') ? 'bg-emerald-100 text-emerald-800' :
                                         order.status === 'Preparing' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700'
                                     }`}>
                                         {order.status}
@@ -140,11 +147,11 @@ const WaiterKitchenTracker = () => {
                                 </div>
                             </div>
 
-                            {/* Serve Button */}
-                            {order.status === 'Ready' && (
+                            {/* Serve / Transfer Button */}
+                            {(order.status === 'Ready' || order.status === 'Ready for Pickup') && (
                                 <div className="flex justify-end pt-2">
-                                    <button onClick={() => handleUpdateStatus(order._id, 'Served')} className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer">
-                                        <CheckCircle2 size={16} /> Mark as Served
+                                    <button onClick={() => handleUpdateStatus(order._id, isSelf ? 'Picked Up' : 'Served')} className={`px-5 py-2.5 text-white font-extrabold rounded-xl text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer ${isSelf ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
+                                        <CheckCircle2 size={16} /> {isSelf ? 'Collect & Transfer to Cashier Counter' : 'Mark as Served'}
                                     </button>
                                 </div>
                             )}

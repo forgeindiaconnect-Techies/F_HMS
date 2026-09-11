@@ -17,7 +17,7 @@ const WaiterPriorityActions = () => {
                 api.get('/orders').catch(() => ({ data: [] })),
                 api.get('/service-requests').catch(() => ({ data: [] }))
             ]);
-            setReadyOrders(ordersRes.data.filter(o => o.orderType === 'Dine In' && o.status === 'Ready'));
+            setReadyOrders(ordersRes.data.filter(o => ['Ready', 'Ready for Pickup'].includes(o.status)));
             setServiceRequests(requestsRes.data);
         } catch (error) {
             console.error('Failed to fetch priority actions data', error);
@@ -42,30 +42,41 @@ const WaiterPriorityActions = () => {
         }
     };
 
-    const handleServeOrder = async (orderId) => {
+    const handleServeOrder = async (orderId, isSelf) => {
         try {
-            await api.put(`/orders/${orderId}/status`, { status: 'Served' });
+            const nextStatus = isSelf ? 'Picked Up' : 'Served';
+            await api.put(`/orders/${orderId}/status`, { status: nextStatus });
             setReadyOrders(prev => prev.filter(o => o._id !== orderId));
-            toast.success('Food served to table!');
+            toast.success(isSelf ? 'Transferred order to Cashier counter!' : 'Food served to table!');
         } catch (error) {
             toast.error('Failed to update order status');
         }
     };
 
+    // Helper function for self pickup
+    const isSelfOrder = (o) => {
+        if (!o) return false;
+        const type = String(o.orderType || '').toLowerCase();
+        return type.includes('pickup') || type.includes('takeaway') || type.includes('takeout') || type.includes('self') || (!o.tableNumber && type !== 'dine in' && type !== 'dine-in');
+    };
+
     // Synthesize all priority items
     const priorityItems = [
-        ...readyOrders.map(o => ({
-            id: `order-${o._id}`,
-            table: o.tableNumber || 'N/A',
-            type: 'URGENT',
-            title: 'Food Ready in Kitchen',
-            subtitle: o.orderItems?.map(i => `${i.qty}x ${i.name}`).join(', ') || 'Hot Meal Ready',
-            time: 'Just now',
-            actionText: 'Serve Now',
-            icon: Utensils,
-            color: 'rose',
-            handler: () => handleServeOrder(o._id)
-        })),
+        ...readyOrders.map(o => {
+            const isSelf = isSelfOrder(o);
+            return {
+                id: `order-${o._id}`,
+                table: isSelf ? '📦 Self-Pickup Counter' : (o.tableNumber ? (o.tableNumber.startsWith('Table') ? o.tableNumber : `Table ${o.tableNumber}`) : 'Takeout'),
+                type: isSelf ? 'PICKUP READY' : 'URGENT',
+                title: isSelf ? 'Self-Pickup Ready in Kitchen' : 'Food Ready in Kitchen',
+                subtitle: o.orderItems?.map(i => `${i.qty}x ${i.name}`).join(', ') || 'Hot Meal Ready',
+                time: 'Just now',
+                actionText: isSelf ? 'Collect & Transfer to Cashier' : 'Serve Now',
+                icon: Utensils,
+                color: isSelf ? 'amber' : 'rose',
+                handler: () => handleServeOrder(o._id, isSelf)
+            };
+        }),
         ...serviceRequests.map(r => ({
             id: `req-${r._id}`,
             table: r.tableNumber || 'Table',

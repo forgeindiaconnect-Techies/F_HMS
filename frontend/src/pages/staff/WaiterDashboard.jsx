@@ -94,28 +94,35 @@ const WaiterDashboard = () => {
             setDbTables(tablesRes.data);
             setServiceRequests(requestsRes.data);
 
+            // Helper function for identifying self-pickup / takeout orders
+            const isSelfOrder = (o) => {
+                if (!o) return false;
+                const type = String(o.orderType || '').toLowerCase();
+                return type.includes('pickup') || type.includes('takeaway') || type.includes('takeout') || type.includes('self') || (!o.tableNumber && type !== 'dine in' && type !== 'dine-in');
+            };
+
             // Generate Priority Actions dynamically from Ready orders and service requests
             const dynamicActions = [];
             ordersRes.data.forEach(o => {
-                const isSelf = o.orderType === 'Self-Pickup' || o.orderType === 'Self Pickup';
+                const isSelf = isSelfOrder(o);
                 if (['Ready', 'Ready for Pickup'].includes(o.status)) {
                     dynamicActions.push({
                         id: `pa-ready-${o._id}`,
                         orderId: o._id,
                         type: 'urgent',
-                        table: isSelf ? 'Self-Pickup' : (o.tableNumber ? `Table ${o.tableNumber}` : 'Takeout'),
-                        label: 'FOOD READY',
+                        table: isSelf ? 'Self-Pickup Counter' : (o.tableNumber ? (o.tableNumber.startsWith('Table') ? o.tableNumber : `Table ${o.tableNumber}`) : 'Takeout'),
+                        label: isSelf ? 'PICKUP READY' : 'FOOD READY',
                         time: 'Just now',
                         title: isSelf ? 'Self-Pickup Counter Transfer' : 'Food Ready in Kitchen',
-                        details: o.orderItems.map(i => `${i.qty}x ${i.name}`).join(', '),
-                        buttonLabel: isSelf ? 'Mark Ready at Counter' : 'Mark Served',
+                        details: o.orderItems?.map(i => `${i.qty}x ${i.name}`).join(', ') || 'Order items',
+                        buttonLabel: isSelf ? 'Collect & Transfer to Cashier' : 'Mark Served',
                         icon: Utensils,
                         color: isSelf ? 'amber' : 'rose',
                         action: async (actionId) => {
                             try {
                                 const nextStatus = isSelf ? 'Picked Up' : 'Served';
                                 await api.put(`/orders/${o._id}/status`, { status: nextStatus });
-                                toast.success(isSelf ? 'Notified customer: Ready for pickup at counter!' : 'Order marked as served!');
+                                toast.success(isSelf ? 'Transferred order to Cashier counter!' : 'Order marked as served!');
                                 fetchData();
                             } catch (err) {
                                 toast.error('Failed to update status');
@@ -951,7 +958,7 @@ const WaiterDashboard = () => {
                                                 <div className="flex flex-wrap items-center justify-between gap-2">
                                                     <div className="flex items-center gap-2.5">
                                                         <span className="font-black text-sm text-slate-900">
-                                                            {order.tableNumber ? (order.tableNumber.startsWith('Table') ? order.tableNumber : `Table ${order.tableNumber}`) : 'Takeout'}
+                                                            {order.tableNumber ? (order.tableNumber.startsWith('Table') ? order.tableNumber : `Table ${order.tableNumber}`) : '📦 Self-Pickup Counter'}
                                                         </span>
                                                         <span className="text-[10px] font-bold text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded-md">
                                                             #{order._id.substring(order._id.length - 5).toUpperCase()}
@@ -962,7 +969,7 @@ const WaiterDashboard = () => {
                                                             <Clock size={12} /> ETA: 8-12m
                                                         </span>
                                                         <span className={`text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border ${
-                                                            order.status === 'Ready' 
+                                                            (order.status === 'Ready' || order.status === 'Ready for Pickup') 
                                                             ? 'bg-emerald-100 text-emerald-800 border-emerald-300 animate-pulse' 
                                                             : 'bg-amber-100 text-amber-800 border-amber-300'
                                                         }`}>
@@ -973,7 +980,7 @@ const WaiterDashboard = () => {
 
                                                 {/* Ordered Items Summary */}
                                                 <p className="text-xs font-medium text-slate-700 bg-white p-2.5 rounded-xl border border-slate-200/60">
-                                                    {order.orderItems.map(i => `${i.qty}x ${i.name}`).join(' • ')}
+                                                    {order.orderItems?.map(i => `${i.qty}x ${i.name}`).join(' • ')}
                                                 </p>
 
                                                 {/* Animated 5-Stage Progress Bar */}
@@ -998,7 +1005,7 @@ const WaiterDashboard = () => {
                                                 {/* Serve / Pickup Quick Action Buttons */}
                                                 {(order.status === 'Ready' || order.status === 'Ready for Pickup') && (
                                                     <div className="flex justify-end pt-1 gap-2">
-                                                        {(order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup') ? (
+                                                        {(String(order.orderType || '').toLowerCase().includes('pickup') || String(order.orderType || '').toLowerCase().includes('take') || String(order.orderType || '').toLowerCase().includes('self') || !order.tableNumber) ? (
                                                             <button
                                                                 onClick={() => handleUpdateStatus(order._id, 'Picked Up')}
                                                                 className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-4 py-2 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
