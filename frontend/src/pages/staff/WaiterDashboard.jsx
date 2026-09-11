@@ -65,6 +65,7 @@ const WaiterDashboard = () => {
         }
     });
     const [assignedOnly, setAssignedOnly] = useState(false);
+    const assignedTablesCount = assignedIds.length;
 
     // Checklist Tasks state
     const [tasks, setTasks] = useState([]);
