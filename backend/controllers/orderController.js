@@ -254,11 +254,10 @@ export const getOrders = async (req, res) => {
         }
 
         // Role-based filtering:
-        // If the caller is a Customer, restrict to their own orders only.
-        // If explicit branchId parameter is provided in query, filter by branchId.
-        // For all staff roles (Chef, Kitchen, Waiter, Cashier, Admin, Manager, SuperAdmin), 
-        // fetch all orders across the system so no new or previous incoming tickets are ever omitted.
-        if (req.user && req.user.role === 'Customer') {
+        // Dedicated customer orders endpoint is GET /api/orders/myorders.
+        // For GET /api/orders, return ALL orders across the restaurant system so Kitchen, Waiter, Cashier,
+        // and staff dashboards always show all new and incoming customer tickets.
+        if (req.query.myOrders === 'true' && req.user) {
             filter.user = req.user._id;
         } else if (req.query.branchId && mongoose.Types.ObjectId.isValid(req.query.branchId)) {
             filter.branchId = req.query.branchId;
