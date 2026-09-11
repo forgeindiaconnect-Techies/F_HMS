@@ -25,7 +25,7 @@ export default defineConfig(({ command, mode }) => {
       'import.meta.env.VITE_API_URL': JSON.stringify(apiUrl)
     },
     build: {
-      chunkSizeWarningLimit: 1000,
+      chunkSizeWarningLimit: 3000,
       rollupOptions: {
         output: {
           manualChunks(id) {
@@ -35,6 +35,9 @@ export default defineConfig(({ command, mode }) => {
               }
               if (id.includes('lucide-react')) {
                 return 'vendor-icons';
+              }
+              if (id.includes('recharts') || id.includes('d3') || id.includes('chart')) {
+                return 'vendor-charts';
               }
               return 'vendor-libs';
             }
