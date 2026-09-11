@@ -25,12 +25,19 @@ const CashierDashboard = () => {
     const [isMerging, setIsMerging] = useState(false);
     const [mergeTargetId, setMergeTargetId] = useState('');
 
+    // Helper function for identifying self-pickup / takeout orders
+    const isSelfOrder = (o) => {
+        if (!o) return false;
+        const type = String(o.orderType || '').toLowerCase();
+        return type.includes('pickup') || type.includes('takeaway') || type.includes('takeout') || type.includes('self') || (!o.tableNumber && type !== 'dine in' && type !== 'dine-in');
+    };
+
     // Fetch orders on load & refresh
     const fetchOrders = async () => {
         try {
             const { data } = await api.get('/orders');
-            setQueue(data.filter(o => !o.isPaid && o.orderType !== 'Self-Pickup' && o.orderType !== 'Self Pickup' && ['Served', 'Billing Requested', 'Delivered', 'Ready', 'Billing', 'Preparing', 'Pending'].includes(o.status)));
-            setSelfPickupQueue(data.filter(o => (o.orderType === 'Self-Pickup' || o.orderType === 'Self Pickup') && ['Picked Up', 'Ready for Pickup', 'Ready', 'Preparing', 'Pending', 'Accepted'].includes(o.status) && o.status !== 'Completed'));
+            setQueue(data.filter(o => !o.isPaid && !isSelfOrder(o) && ['Served', 'Billing Requested', 'Delivered', 'Ready', 'Billing', 'Preparing', 'Pending'].includes(o.status)));
+            setSelfPickupQueue(data.filter(o => isSelfOrder(o) && o.status === 'Picked Up' && o.status !== 'Completed'));
             setHistory(data.filter(o => o.isPaid || o.status === 'Completed'));
         } catch (error) {
             console.error('Failed to fetch orders', error);
@@ -1216,7 +1223,7 @@ const CashierDashboard = () => {
                                     {/* Action button */}
                                     <div className="mt-auto pt-4">
                                         <button
-                                            onClick={activeBill.orderType.includes('Pickup') ? handleCompletePickup : handleSettle}
+                                            onClick={isSelfOrder(activeBill) ? handleCompletePickup : handleSettle}
                                             className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-600/20 active:scale-95 transition-all text-sm flex items-center justify-center gap-2"
                                         >
                                             <CheckCircle size={16} /> Complete Invoice & Settle
