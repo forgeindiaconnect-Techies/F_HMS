@@ -241,51 +241,26 @@ export const getOrders = async (req, res) => {
     const status = req.query.status;
     const filter = status ? { status: { $in: status.split(',') } } : {};
     
-    // Also optionally filter by paid status for Cashier
+    // Optionally filter by paid status for Cashier
     if (req.query.isPaid !== undefined) {
         filter.isPaid = req.query.isPaid === 'true';
     }
 
-    // Filter by branchId if explicitly requested in query, otherwise match restaurantId or branchId so all kitchen staff see orders
-    if (req.query.branchId && mongoose.Types.ObjectId.isValid(req.query.branchId)) {
-        filter.branchId = req.query.branchId;
-    } else if (req.user && req.user.restaurantId) {
-        const rId = (typeof req.user.restaurantId === 'object' && req.user.restaurantId._id) ? req.user.restaurantId._id : req.user.restaurantId;
-        if (req.user.branchId) {
-            const bId = (typeof req.user.branchId === 'object' && req.user.branchId._id) ? req.user.branchId._id : req.user.branchId;
-            filter.$or = [
-                { restaurantId: rId },
-                { branchId: bId }
-            ];
-        } else {
-            filter.restaurantId = rId;
-        }
-    } else if (req.user && req.user.branchId) {
-        const bId = (typeof req.user.branchId === 'object' && req.user.branchId._id) ? req.user.branchId._id : req.user.branchId;
-        filter.branchId = bId;
-    } else if (req.user && req.user.role === 'Customer') {
+    // Role-based filtering:
+    // If the caller is a Customer, restrict to their own orders only.
+    // If explicit branchId parameter is provided in query, filter by branchId.
+    // For all staff roles (Chef, Kitchen, Waiter, Cashier, Admin, Manager, SuperAdmin), 
+    // fetch all orders across the system so no new or previous incoming tickets are ever omitted.
+    if (req.user && req.user.role === 'Customer') {
         filter.user = req.user._id;
+    } else if (req.query.branchId && mongoose.Types.ObjectId.isValid(req.query.branchId)) {
+        filter.branchId = req.query.branchId;
     }
 
-    console.log('GET /api/orders called. User:', req.user?._id, 'Role:', req.user?.role, 'branchId:', req.user?.branchId, 'restaurantId:', req.user?.restaurantId);
-    console.log('Constructed filter:', filter);
-
-    let orders = await Order.find(filter)
+    const orders = await Order.find(filter)
         .populate('user', 'id name')
         .populate('deliveryPartner', 'id name')
         .sort({ createdAt: -1 });
-
-    // Fallback: If no orders found for staff with strict filter, fetch active orders so kitchen/cashier/waiter dashboards never miss incoming tickets
-    if (orders.length === 0 && req.user && req.user.role !== 'Customer') {
-        const fallbackFilter = status ? { status: { $in: status.split(',') } } : {};
-        if (req.query.isPaid !== undefined) {
-            fallbackFilter.isPaid = req.query.isPaid === 'true';
-        }
-        orders = await Order.find(fallbackFilter)
-            .populate('user', 'id name')
-            .populate('deliveryPartner', 'id name')
-            .sort({ createdAt: -1 });
-    }
 
     res.json(orders);
 };
