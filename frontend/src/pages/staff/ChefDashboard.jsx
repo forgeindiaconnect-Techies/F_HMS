@@ -16,7 +16,7 @@ const ChefDashboard = () => {
     // Core State
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('Pending');
+    const [activeTab, setActiveTab] = useState('All');
     const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'kanban'
     const [selectedStation, setSelectedStation] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
@@ -275,6 +275,7 @@ const ChefDashboard = () => {
     // Filter Logic
     const filterOrder = (order) => {
         // Tab Filter
+        if (activeTab === 'All' && ['Completed', 'Served', 'Delivered', 'Cancelled'].includes(order.status)) return false;
         if (activeTab === 'Pending' && !['Pending', 'Accepted'].includes(order.status)) return false;
         if (activeTab === 'Accepted' && order.status !== 'Accepted') return false;
         if (activeTab === 'Preparing' && order.status !== 'Preparing') return false;
