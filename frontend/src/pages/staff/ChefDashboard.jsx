@@ -170,7 +170,8 @@ const ChefDashboard = () => {
             fetchOrders();
         } catch (error) {
             console.error('Failed to update order status', error);
-            toast.error('Failed to update status.');
+            const msg = error.response?.data?.message || 'Failed to update status.';
+            toast.error(msg);
         }
     };
 
