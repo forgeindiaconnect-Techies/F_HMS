@@ -96992,7 +96992,8 @@ var broadcastToRestaurant = (restaurantId, eventType, payload) => {
   clients.forEach((clientInfo, ws) => {
     if (ws.readyState === 1) {
       const clientRestId = extractId(clientInfo?.restaurantId);
-      if (!targetRestId || !clientRestId || clientRestId === targetRestId || clientRestId === "[object Object]") {
+      const isStaffOrKitchen = ["kitchen", "chef", "waiter", "cashier", "admin", "manager", "restaurantadmin"].includes(String(clientInfo?.role || "").toLowerCase());
+      if (!targetRestId || !clientRestId || clientRestId === targetRestId || isStaffOrKitchen) {
         try {
           ws.send(message);
         } catch (e) {

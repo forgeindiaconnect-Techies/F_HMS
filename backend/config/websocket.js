@@ -47,9 +47,10 @@ export const broadcastToRestaurant = (restaurantId, eventType, payload) => {
     clients.forEach((clientInfo, ws) => {
         if (ws.readyState === 1) {
             const clientRestId = extractId(clientInfo?.restaurantId);
+            const isStaffOrKitchen = ['kitchen', 'chef', 'waiter', 'cashier', 'admin', 'manager', 'restaurantadmin'].includes(String(clientInfo?.role || '').toLowerCase());
             
-            // Broadcast if target matches client, or if client/target is generic staff connection
-            if (!targetRestId || !clientRestId || clientRestId === targetRestId || clientRestId === '[object Object]') {
+            // Broadcast if target matches client, or if client is a kitchen/staff connection, or if IDs are omitted
+            if (!targetRestId || !clientRestId || clientRestId === targetRestId || isStaffOrKitchen) {
                 try {
                     ws.send(message);
                 } catch (e) {
