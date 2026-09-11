@@ -309,64 +309,7 @@ const OrderTracking = () => {
                     </div>
                 </div>
 
-                {/* Live Workflow Testing Control Bar (For Real-Time Verification) */}
-                <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl mb-8 space-y-3 text-center">
-                    <div className="flex items-center justify-center gap-2 text-slate-300 font-extrabold text-xs uppercase tracking-wider">
-                        <span className="w-2 h-2 rounded-full bg-orange-500 animate-ping"></span>
-                        Order Status Control (Test Live Transitions)
-                    </div>
-                    <p className="text-xs text-slate-400">Click any step below to simulate backend API status updates in real time:</p>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
-                        <button
-                            onClick={async () => {
-                                try {
-                                    const { data: updated } = await api.put(`/orders/${order._id}/status`, { status: 'Pending' });
-                                    setOrder(updated);
-                                    setProgress(1);
-                                } catch (e) { console.error(e); }
-                            }}
-                            className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${progress === 1 ? 'bg-orange-500 text-white border-orange-400 shadow-md' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750'}`}
-                        >
-                            1. Pending (0%)
-                        </button>
-                        <button
-                            onClick={async () => {
-                                try {
-                                    const { data: updated } = await api.put(`/orders/${order._id}/status`, { status: 'Preparing' });
-                                    setOrder(updated);
-                                    setProgress(2);
-                                } catch (e) { console.error(e); }
-                            }}
-                            className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${progress === 2 ? 'bg-orange-500 text-white border-orange-400 shadow-md' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750'}`}
-                        >
-                            2. Preparing (33%)
-                        </button>
-                        <button
-                            onClick={async () => {
-                                try {
-                                    const { data: updated } = await api.put(`/orders/${order._id}/status`, { status: 'Out for Delivery' });
-                                    setOrder(updated);
-                                    setProgress(3);
-                                } catch (e) { console.error(e); }
-                            }}
-                            className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${progress === 3 ? 'bg-orange-500 text-white border-orange-400 shadow-md' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750'}`}
-                        >
-                            3. Out for Delivery (66%)
-                        </button>
-                        <button
-                            onClick={async () => {
-                                try {
-                                    const { data: updated } = await api.put(`/orders/${order._id}/status`, { status: 'Delivered' });
-                                    setOrder(updated);
-                                    setProgress(4);
-                                } catch (e) { console.error(e); }
-                            }}
-                            className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${progress === 4 ? 'bg-orange-500 text-white border-orange-400 shadow-md' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750'}`}
-                        >
-                            4. Delivered (100%)
-                        </button>
-                    </div>
-                </div>
+
 
                 {/* Delivery Driver Info Card */}
                 {!isSelfPickup && order.deliveryPartner && (
