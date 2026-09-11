@@ -278,11 +278,13 @@ const ChefDashboard = () => {
         if (sName.includes('dessert')) return isDessert;
         if (sName.includes('pizza')) return isPizzaOven;
         if (sName.includes('cold')) return isColdSalad;
-        if (sName.includes('grill')) {
-            return isGrillFryer || (!isBeverage && !isDessert && !isPizzaOven && !isColdSalad);
-        }
-
         return true;
+    };
+
+    const isSelfOrder = (o) => {
+        if (!o) return false;
+        const type = String(o.orderType || '').toLowerCase();
+        return type.includes('pickup') || type.includes('takeaway') || type.includes('takeout') || type.includes('self') || (!o.tableNumber && type !== 'dine in' && type !== 'dine-in');
     };
 
     const isIncomingStatus = (status) => {
@@ -709,34 +711,33 @@ const ChefDashboard = () => {
                                     </div>
 
                                     {/* Action Buttons Footer */}
-                                    <div className="p-4 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/60 shrink-0">
-                                        {(!order.status || order.status === 'Pending' || order.status === 'Accepted') && (
-                                            <button 
-                                                onClick={() => updateStatus(order._id, 'Preparing')} 
-                                                className="w-full bg-orange-600 hover:bg-orange-500 text-white font-extrabold py-3 rounded-2xl transition-all shadow-lg shadow-orange-600/20 text-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-                                            >
-                                                <ChefHat size={16} />
-                                                <span>Accept &amp; Start Cooking</span>
-                                            </button>
-                                        )}
-                                        {order.status === 'Preparing' && (
-                                            <button 
-                                                onClick={() => {
-                                                    const isSelf = order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup';
-                                                    updateStatus(order._id, isSelf ? 'Ready for Pickup' : 'Ready');
-                                                }} 
-                                                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3 rounded-2xl transition-all shadow-lg shadow-emerald-600/20 flex justify-center items-center gap-2 text-xs cursor-pointer active:scale-95"
-                                            >
-                                                <Sparkles size={16} />
-                                                <span>{(order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup') ? 'Transfer to Pickup Counter' : 'Mark Ticket Ready'}</span>
-                                            </button>
+                                    <div className="p-4 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/60 shrink-0 space-y-2">
+                                        {(!order.status || ['Pending', 'Accepted', 'Preparing'].includes(order.status)) && (
+                                            <>
+                                                {(!order.status || order.status === 'Pending' || order.status === 'Accepted') && (
+                                                    <button 
+                                                        onClick={() => updateStatus(order._id, 'Preparing')} 
+                                                        className="w-full bg-orange-600 hover:bg-orange-500 text-white font-extrabold py-2.5 rounded-2xl transition-all shadow-md shadow-orange-600/20 text-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                                                    >
+                                                        <ChefHat size={15} />
+                                                        <span>Accept &amp; Start Cooking</span>
+                                                    </button>
+                                                )}
+                                                <button 
+                                                    onClick={() => updateStatus(order._id, isSelfOrder(order) ? 'Ready for Pickup' : 'Ready')} 
+                                                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-2.5 rounded-2xl transition-all shadow-md shadow-emerald-600/20 flex justify-center items-center gap-2 text-xs cursor-pointer active:scale-95"
+                                                >
+                                                    <Sparkles size={15} />
+                                                    <span>{isSelfOrder(order) ? 'Transfer to Pickup Counter' : 'Mark Ticket Ready'}</span>
+                                                </button>
+                                            </>
                                         )}
                                         {['Ready', 'Ready for Pickup'].includes(order.status) && (
                                             <div className="text-center py-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/20 rounded-xl border border-emerald-200/80">
                                                 <CheckCircle size={14} className="text-emerald-500" /> Transferred to Waiter Pickup Queue
                                             </div>
                                         )}
-                                        {['Completed', 'Served', 'Delivered'].includes(order.status) && (
+                                        {['Completed', 'Served', 'Delivered', 'Picked Up'].includes(order.status) && (
                                             <div className="text-center py-2 text-xs font-bold text-slate-500 flex items-center justify-center gap-1.5">
                                                 <CheckCircle size={14} className="text-emerald-500" /> Served &amp; Completed
                                             </div>
