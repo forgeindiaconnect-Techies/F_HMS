@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import { getApiUrl } from '../../utils/axiosInstance';
 import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 
 const CashierDashboard = () => {
@@ -39,7 +40,49 @@ const CashierDashboard = () => {
     useEffect(() => {
         fetchOrders();
         const interval = setInterval(fetchOrders, 10000);
-        return () => clearInterval(interval);
+
+        let ws;
+        const connectWS = () => {
+            try {
+                let baseURL = getApiUrl();
+                let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
+                ws = new WebSocket(wsURL);
+
+                ws.onopen = () => {
+                    ws.send(JSON.stringify({
+                        type: 'register',
+                        role: 'cashier'
+                    }));
+                };
+
+                ws.onmessage = (event) => {
+                    try {
+                        const msg = JSON.parse(event.data);
+                        if (['new_order', 'order_updated', 'new_notification', 'order_status_updated'].includes(msg.type)) {
+                            fetchOrders();
+
+                            if (msg.type === 'new_notification' && msg.data?.title?.includes('Placed at Cashier Counter')) {
+                                toast.success(`📦 ${msg.data.title}: ${msg.data.desc}`, {
+                                    duration: 8000,
+                                    position: 'top-right'
+                                });
+                            }
+                        }
+                    } catch (e) {}
+                };
+
+                ws.onclose = () => {
+                    setTimeout(connectWS, 5000);
+                };
+            } catch (e) {}
+        };
+
+        connectWS();
+
+        return () => {
+            clearInterval(interval);
+            if (ws) ws.close();
+        };
     }, [api]);
 
     // Pathname check to dynamically switch states on sidebar clicks

@@ -99717,6 +99717,22 @@ var updateOrderStatus = async (req, res) => {
           }
         }
       }
+      if (newStatus === "Picked Up") {
+        try {
+          const Notification2 = (await Promise.resolve().then(() => (init_Notification(), Notification_exports))).default;
+          const notif = await Notification2.create({
+            title: `\u{1F4E6} Order #${ticketNum} Placed at Cashier Counter`,
+            desc: `Self-Pickup Order #${ticketNum} collected by waiter and placed at cashier counter for customer settlement.`,
+            type: "Order",
+            restaurantId: order.restaurantId,
+            targetRole: ["Cashier", "RestaurantAdmin", "Admin"],
+            read: false
+          });
+          broadcastToRestaurant(order.restaurantId, "new_notification", notif);
+        } catch (err) {
+          console.error("Failed to create cashier pickup notification", err);
+        }
+      }
       if (["Served", "Delivered", "Completed"].includes(newStatus)) {
         try {
           const Notification2 = (await Promise.resolve().then(() => (init_Notification(), Notification_exports))).default;
