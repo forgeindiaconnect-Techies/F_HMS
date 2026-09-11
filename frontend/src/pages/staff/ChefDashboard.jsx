@@ -288,18 +288,24 @@ const ChefDashboard = () => {
     const isIncomingStatus = (status) => {
         if (!status) return true;
         const s = String(status).trim();
-        return !['Preparing', 'Ready', 'Ready for Pickup', 'Served', 'Completed', 'Cancelled', 'Delivered'].includes(s);
+        return !['Preparing', 'Ready', 'Ready for Pickup', 'Picked Up', 'Served', 'Completed', 'Cancelled', 'Delivered'].includes(s);
+    };
+
+    const isDoneStatus = (status) => {
+        if (!status) return false;
+        const s = String(status).trim();
+        return ['Completed', 'Served', 'Picked Up', 'Delivered', 'Cancelled'].includes(s);
     };
 
     // Filter Logic
     const filterOrder = (order) => {
         // Tab Filter
-        if (activeTab === 'All' && ['Completed', 'Served', 'Delivered', 'Cancelled'].includes(order.status)) return false;
+        if (activeTab === 'All' && isDoneStatus(order.status)) return false;
         if ((activeTab === 'Pending' || activeTab === 'Incoming') && !isIncomingStatus(order.status)) return false;
         if (activeTab === 'Accepted' && order.status !== 'Accepted') return false;
         if (activeTab === 'Preparing' && order.status !== 'Preparing') return false;
         if (activeTab === 'Ready' && !['Ready', 'Ready for Pickup'].includes(order.status)) return false;
-        if (activeTab === 'Completed' && !['Completed', 'Served', 'Delivered'].includes(order.status)) return false;
+        if (activeTab === 'Completed' && !isDoneStatus(order.status)) return false;
 
         // Search Filter
         if (searchQuery.trim()) {
@@ -334,10 +340,11 @@ const ChefDashboard = () => {
     });
 
     // Kitchen KDS Summary Metrics
-    const totalLive = orders.filter(o => !['Completed', 'Served', 'Cancelled', 'Delivered'].includes(o.status)).length;
-    const pendingCount = orders.filter(o => o.status === 'Pending').length;
+    const totalLive = orders.filter(o => !isDoneStatus(o.status)).length;
+    const incomingCount = orders.filter(o => isIncomingStatus(o.status)).length;
     const preparingCount = orders.filter(o => o.status === 'Preparing').length;
     const readyCount = orders.filter(o => ['Ready', 'Ready for Pickup'].includes(o.status)).length;
+    const completedCount = orders.filter(o => isDoneStatus(o.status)).length;
     const overdueCount = orders.filter(o => {
         if (['Completed', 'Served', 'Delivered'].includes(o.status)) return false;
         const mins = Math.floor((currentTime - new Date(o.createdAt)) / 60000);
@@ -489,7 +496,7 @@ const ChefDashboard = () => {
                             { id: 'Incoming', label: '📥 Incoming', count: orders.filter(o => isIncomingStatus(o.status)).length },
                             { id: 'Preparing', label: '🍳 Cooking', count: preparingCount },
                             { id: 'Ready', label: '✨ Ready', count: readyCount },
-                            { id: 'Completed', label: '✅ Completed', count: orders.filter(o => ['Completed', 'Served'].includes(o.status)).length },
+                            { id: 'Completed', label: '✅ Completed', count: completedCount },
                         ].map(tab => (
                             <button
                                 key={tab.id}
@@ -778,6 +785,8 @@ const ChefDashboard = () => {
                         const colOrders = orders.filter(o => {
                             if (column.key === 'Incoming') {
                                 if (!isIncomingStatus(o.status)) return false;
+                            } else if (column.key === 'Completed') {
+                                if (!isDoneStatus(o.status)) return false;
                             } else {
                                 if (!column.keys.includes(o.status)) return false;
                             }
