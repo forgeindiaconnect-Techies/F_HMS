@@ -285,11 +285,17 @@ const ChefDashboard = () => {
         return true;
     };
 
+    const isIncomingStatus = (status) => {
+        if (!status) return true;
+        const s = String(status).trim();
+        return !['Preparing', 'Ready', 'Ready for Pickup', 'Served', 'Completed', 'Cancelled', 'Delivered'].includes(s);
+    };
+
     // Filter Logic
     const filterOrder = (order) => {
         // Tab Filter
         if (activeTab === 'All' && ['Completed', 'Served', 'Delivered', 'Cancelled'].includes(order.status)) return false;
-        if ((activeTab === 'Pending' || activeTab === 'Incoming') && !['Pending', 'Accepted'].includes(order.status)) return false;
+        if ((activeTab === 'Pending' || activeTab === 'Incoming') && !isIncomingStatus(order.status)) return false;
         if (activeTab === 'Accepted' && order.status !== 'Accepted') return false;
         if (activeTab === 'Preparing' && order.status !== 'Preparing') return false;
         if (activeTab === 'Ready' && !['Ready', 'Ready for Pickup'].includes(order.status)) return false;
@@ -480,7 +486,7 @@ const ChefDashboard = () => {
                     <div className="flex flex-wrap bg-slate-100 dark:bg-slate-950/80 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800/90 gap-1 w-full lg:w-auto">
                         {[
                             { id: 'All', label: 'All Orders', count: totalLive },
-                            { id: 'Incoming', label: '📥 Incoming', count: orders.filter(o => ['Pending', 'Accepted'].includes(o.status)).length },
+                            { id: 'Incoming', label: '📥 Incoming', count: orders.filter(o => isIncomingStatus(o.status)).length },
                             { id: 'Preparing', label: '🍳 Cooking', count: preparingCount },
                             { id: 'Ready', label: '✨ Ready', count: readyCount },
                             { id: 'Completed', label: '✅ Completed', count: orders.filter(o => ['Completed', 'Served'].includes(o.status)).length },
@@ -770,7 +776,11 @@ const ChefDashboard = () => {
                     ].map(column => {
                         // Filter orders for this column using station & search criteria
                         const colOrders = orders.filter(o => {
-                            if (!column.keys.includes(o.status)) return false;
+                            if (column.key === 'Incoming') {
+                                if (!isIncomingStatus(o.status)) return false;
+                            } else {
+                                if (!column.keys.includes(o.status)) return false;
+                            }
 
                             if (searchQuery.trim()) {
                                 const q = searchQuery.toLowerCase();
