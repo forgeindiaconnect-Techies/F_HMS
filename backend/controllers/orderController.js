@@ -237,32 +237,51 @@ export const getMyOrders = async (req, res) => {
 // @route   GET /api/orders
 // @access  Private (Admin/Manager/Chef/Waiter/Cashier)
 export const getOrders = async (req, res) => {
-    // Optionally filter by status
-    const status = req.query.status;
-    const filter = status ? { status: { $in: status.split(',') } } : {};
-    
-    // Optionally filter by paid status for Cashier
-    if (req.query.isPaid !== undefined) {
-        filter.isPaid = req.query.isPaid === 'true';
+    try {
+        const filter = {};
+
+        // Parse status query array if provided
+        if (req.query.status) {
+            const statusArr = req.query.status.split(',').map(s => s.trim()).filter(Boolean);
+            if (statusArr.length > 0) {
+                filter.status = { $in: statusArr };
+            }
+        }
+        
+        // Filter by paid status if provided
+        if (req.query.isPaid !== undefined) {
+            filter.isPaid = req.query.isPaid === 'true';
+        }
+
+        // Role-based filtering:
+        // If the caller is a Customer, restrict to their own orders only.
+        // If explicit branchId parameter is provided in query, filter by branchId.
+        // For all staff roles (Chef, Kitchen, Waiter, Cashier, Admin, Manager, SuperAdmin), 
+        // fetch all orders across the system so no new or previous incoming tickets are ever omitted.
+        if (req.user && req.user.role === 'Customer') {
+            filter.user = req.user._id;
+        } else if (req.query.branchId && mongoose.Types.ObjectId.isValid(req.query.branchId)) {
+            filter.branchId = req.query.branchId;
+        }
+
+        let query = Order.find(filter)
+            .populate('user', 'id name email')
+            .populate('deliveryPartner', 'id name phoneNumber')
+            .sort({ createdAt: -1 });
+
+        if (req.query.limit) {
+            const limit = parseInt(req.query.limit, 10);
+            if (!isNaN(limit) && limit > 0) {
+                query = query.limit(limit);
+            }
+        }
+
+        const orders = await query;
+        res.json(orders);
+    } catch (error) {
+        console.error('Failed to fetch orders', error);
+        res.status(500).json({ message: 'Failed to fetch orders' });
     }
-
-    // Role-based filtering:
-    // If the caller is a Customer, restrict to their own orders only.
-    // If explicit branchId parameter is provided in query, filter by branchId.
-    // For all staff roles (Chef, Kitchen, Waiter, Cashier, Admin, Manager, SuperAdmin), 
-    // fetch all orders across the system so no new or previous incoming tickets are ever omitted.
-    if (req.user && req.user.role === 'Customer') {
-        filter.user = req.user._id;
-    } else if (req.query.branchId && mongoose.Types.ObjectId.isValid(req.query.branchId)) {
-        filter.branchId = req.query.branchId;
-    }
-
-    const orders = await Order.find(filter)
-        .populate('user', 'id name')
-        .populate('deliveryPartner', 'id name')
-        .sort({ createdAt: -1 });
-
-    res.json(orders);
 };
 
 // @desc    Update order status
