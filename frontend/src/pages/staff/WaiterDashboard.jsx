@@ -181,14 +181,30 @@ const WaiterDashboard = () => {
                             }
                         }
 
-                        if (msg.data && msg.data.status === 'Ready') {
-                            toast.success(`🍽️ Food READY for Table ${msg.data.tableNumber || 'Takeout'}!`, {
-                                duration: 8000,
-                                position: 'top-right'
-                            });
-                        } else if (msg.data && (msg.data.orderType === 'Self-Pickup' || msg.data.orderType === 'Self Pickup') && msg.data.status === 'Ready for Pickup') {
-                            toast.success(`📦 Self-Pickup Order #${String(msg.data._id).substring(String(msg.data._id).length - 6).toUpperCase()} is ready!`, {
-                                duration: 8000,
+                        if (msg.data && (msg.data.status === 'Ready' || msg.data.status === 'Ready for Pickup')) {
+                            fetchData();
+                            try {
+                                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                                const osc = audioCtx.createOscillator();
+                                const gain = audioCtx.createGain();
+                                osc.type = 'sine';
+                                osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+                                osc.frequency.exponentialRampToValueAtTime(587.33, audioCtx.currentTime + 0.35); // D5
+                                gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+                                osc.connect(gain);
+                                gain.connect(audioCtx.destination);
+                                osc.start();
+                                osc.stop(audioCtx.currentTime + 0.35);
+                            } catch (e) {}
+
+                            const isSelf = msg.data.orderType === 'Self-Pickup' || msg.data.orderType === 'Self Pickup';
+                            const ticketNum = String(msg.data._id).substring(String(msg.data._id).length - 5).toUpperCase();
+                            toast.success(
+                                isSelf 
+                                ? `📦 Self-Pickup Ticket #${ticketNum} is READY in Kitchen! Collect & Transfer to Cashier Counter!` 
+                                : `🍽️ Food READY for Table ${msg.data.tableNumber || 'Takeout'} (Ticket #${ticketNum})!`, {
+                                duration: 9000,
                                 position: 'top-right'
                             });
                         }

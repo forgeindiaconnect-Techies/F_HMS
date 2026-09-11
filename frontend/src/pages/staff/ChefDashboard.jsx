@@ -710,22 +710,13 @@ const ChefDashboard = () => {
 
                                     {/* Action Buttons Footer */}
                                     <div className="p-4 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/60 shrink-0">
-                                        {(!order.status || order.status === 'Pending') && (
-                                            <button 
-                                                onClick={() => updateStatus(order._id, 'Accepted')} 
-                                                className="w-full bg-orange-600 hover:bg-orange-500 text-white font-extrabold py-3 rounded-2xl transition-all shadow-lg shadow-orange-600/20 text-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-                                            >
-                                                <span>Accept Order Ticket</span>
-                                                <ArrowRight size={16} />
-                                            </button>
-                                        )}
-                                        {order.status === 'Accepted' && (
+                                        {(!order.status || order.status === 'Pending' || order.status === 'Accepted') && (
                                             <button 
                                                 onClick={() => updateStatus(order._id, 'Preparing')} 
-                                                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-extrabold py-3 rounded-2xl transition-all shadow-lg shadow-blue-600/20 text-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                                                className="w-full bg-orange-600 hover:bg-orange-500 text-white font-extrabold py-3 rounded-2xl transition-all shadow-lg shadow-orange-600/20 text-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                                             >
                                                 <ChefHat size={16} />
-                                                <span>Start Preparation</span>
+                                                <span>Accept &amp; Start Cooking</span>
                                             </button>
                                         )}
                                         {order.status === 'Preparing' && (
@@ -844,14 +835,9 @@ const ChefDashboard = () => {
                                                     </div>
 
                                                     <div className="pt-2 border-t border-slate-200 dark:border-slate-800/80">
-                                                        {order.status === 'Pending' && (
+                                                        {(!order.status || order.status === 'Pending' || order.status === 'Accepted') && (
                                                             <button onClick={() => updateStatus(order._id, 'Preparing')} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded-xl text-xs cursor-pointer active:scale-95 transition-all">
-                                                                Accept &amp; Prepare
-                                                            </button>
-                                                        )}
-                                                        {order.status === 'Accepted' && (
-                                                            <button onClick={() => updateStatus(order._id, 'Preparing')} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-xl text-xs cursor-pointer active:scale-95 transition-all">
-                                                                Start Cooking
+                                                                Accept &amp; Start Cooking
                                                             </button>
                                                         )}
                                                         {order.status === 'Preparing' && (
