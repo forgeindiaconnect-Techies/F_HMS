@@ -288,13 +288,13 @@ const ChefDashboard = () => {
     const isIncomingStatus = (status) => {
         if (!status) return true;
         const s = String(status).trim();
-        return !['Preparing', 'Ready', 'Ready for Pickup', 'Picked Up', 'Served', 'Completed', 'Cancelled', 'Delivered'].includes(s);
+        return !['Served', 'Completed', 'Cancelled', 'Delivered'].includes(s);
     };
 
     const isDoneStatus = (status) => {
         if (!status) return false;
         const s = String(status).trim();
-        return ['Completed', 'Served', 'Picked Up', 'Delivered', 'Cancelled'].includes(s);
+        return ['Completed', 'Served', 'Delivered', 'Cancelled'].includes(s);
     };
 
     // Filter Logic
