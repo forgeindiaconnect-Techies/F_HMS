@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api, { getApiUrl } from '../../utils/axiosInstance';
 import { ShoppingBag, ChevronRight, Plus, Minus, Send, MessageSquare, BookOpen, Clock, Heart } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getItemImage } from '../../utils/imageHelper';
-import { getApiUrl } from '../../utils/axiosInstance';
 
 const CustomerMenu = () => {
     const [searchParams] = useSearchParams();
@@ -37,11 +36,11 @@ const CustomerMenu = () => {
         const fetchMenu = async () => {
             try {
                 // Fetch public menu items
-                const res = await axios.get(`${API_URL}/menu?restaurantId=${restaurantId}&branchId=${branchId || ''}`);
+                const res = await api.get(`/menu?restaurantId=${restaurantId}&branchId=${branchId || ''}`);
                 setMenuItems(res.data);
                 
                 // Fetch restaurant info for header display
-                const restRes = await axios.get(`${API_URL}/restaurants/${restaurantId}`).catch(() => null);
+                const restRes = await api.get(`/restaurants/${restaurantId}`).catch(() => null);
                 if (restRes && restRes.data) {
                     setRestaurantName(restRes.data.name);
                 }
@@ -125,12 +124,12 @@ const CustomerMenu = () => {
         try {
             if (activeOrderId) {
                 // Append items to existing order
-                const res = await axios.put(`${API_URL}/orders/${activeOrderId}/items`, orderData);
+                const res = await api.put(`/orders/${activeOrderId}/items`, orderData);
                 toast.success('Items added to your active order!');
                 navigate(`/customer/track/${activeOrderId}?restaurantId=${restaurantId}&branchId=${branchId || ''}&tableNumber=${tableNumber || ''}`);
             } else {
                 // Create new order
-                const res = await axios.post(`${API_URL}/orders`, orderData);
+                const res = await api.post('/orders', orderData);
                 const createdOrder = res.data;
                 toast.success('Order placed successfully!');
                 navigate(`/customer/track/${createdOrder._id}?restaurantId=${restaurantId}&branchId=${branchId || ''}&tableNumber=${tableNumber || ''}`);
