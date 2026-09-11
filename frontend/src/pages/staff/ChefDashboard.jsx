@@ -23,7 +23,7 @@ const ChefDashboard = () => {
     const [sortBy, setSortBy] = useState('priority'); // 'priority' | 'oldest' | 'newest'
     
     // 86 List (Out of Stock Ingredients)
-    const [outOfStock, setOutOfStock] = useState(['Avocado (Haas)', 'Fresh Basil', 'Truffle Oil']);
+    const [outOfStock, setOutOfStock] = useState([]);
     const [newIngredient, setNewIngredient] = useState('');
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
     const [newTicketModalOrder, setNewTicketModalOrder] = useState(null);
