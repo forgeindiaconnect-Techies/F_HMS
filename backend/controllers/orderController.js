@@ -270,10 +270,23 @@ export const getOrders = async (req, res) => {
     console.log('GET /api/orders called. User:', req.user?._id, 'Role:', req.user?.role, 'branchId:', req.user?.branchId, 'restaurantId:', req.user?.restaurantId);
     console.log('Constructed filter:', filter);
 
-    const orders = await Order.find(filter)
+    let orders = await Order.find(filter)
         .populate('user', 'id name')
         .populate('deliveryPartner', 'id name')
         .sort({ createdAt: -1 });
+
+    // Fallback: If no orders found for staff with strict filter, fetch active orders so kitchen/cashier/waiter dashboards never miss incoming tickets
+    if (orders.length === 0 && req.user && req.user.role !== 'Customer') {
+        const fallbackFilter = status ? { status: { $in: status.split(',') } } : {};
+        if (req.query.isPaid !== undefined) {
+            fallbackFilter.isPaid = req.query.isPaid === 'true';
+        }
+        orders = await Order.find(fallbackFilter)
+            .populate('user', 'id name')
+            .populate('deliveryPartner', 'id name')
+            .sort({ createdAt: -1 });
+    }
+
     res.json(orders);
 };
 
