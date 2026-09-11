@@ -252,18 +252,21 @@ export const getOrders = async (req, res) => {
     if (req.query.branchId && mongoose.Types.ObjectId.isValid(req.query.branchId)) {
         filter.branchId = req.query.branchId;
     } else if (req.user && req.user.restaurantId) {
+        const rId = (typeof req.user.restaurantId === 'object' && req.user.restaurantId._id) ? req.user.restaurantId._id : req.user.restaurantId;
         if (req.user.branchId) {
+            const bId = (typeof req.user.branchId === 'object' && req.user.branchId._id) ? req.user.branchId._id : req.user.branchId;
             filter.$or = [
-                { restaurantId: req.user.restaurantId },
-                { branchId: req.user.branchId }
+                { restaurantId: rId },
+                { branchId: bId }
             ];
         } else {
-            filter.restaurantId = req.user.restaurantId;
+            filter.restaurantId = rId;
         }
     } else if (req.user && req.user.branchId) {
-        filter.branchId = req.user.branchId;
-    } else if (req.user && req.user.role !== 'SuperAdmin') {
-        return res.json([]);
+        const bId = (typeof req.user.branchId === 'object' && req.user.branchId._id) ? req.user.branchId._id : req.user.branchId;
+        filter.branchId = bId;
+    } else if (req.user && req.user.role === 'Customer') {
+        filter.user = req.user._id;
     }
 
     console.log('GET /api/orders called. User:', req.user?._id, 'Role:', req.user?.role, 'branchId:', req.user?.branchId, 'restaurantId:', req.user?.restaurantId);
