@@ -160,12 +160,12 @@ const WaiterDashboard = () => {
             ws.onmessage = (event) => {
                 try {
                     const msg = JSON.parse(event.data);
-                    if (['new_order', 'order_updated', 'ready_to_serve', 'new_notification'].includes(msg.type)) {
+                    if (['new_order', 'order_updated', 'order_status_updated', 'ready_to_serve', 'new_notification'].includes(msg.type)) {
                         fetchData();
 
-                        if (msg.type === 'new_order' || msg.type === 'new_notification') {
+                        if (msg.type === 'new_order' || msg.type === 'new_notification' || msg.type === 'order_status_updated' || msg.type === 'ready_to_serve') {
                             const orderData = msg.data?.orderData || msg.data;
-                            if (orderData && orderData.tableNumber) {
+                            if (orderData) {
                                 try {
                                     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                                     const osc = audioCtx.createOscillator();

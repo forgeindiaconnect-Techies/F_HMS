@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Flame, Receipt, AlertTriangle, Users, CheckCircle2, RefreshCw, Clock, Utensils, Bell } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { getApiUrl } from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
 
 const WaiterPriorityActions = () => {
-    const { api } = useAuth();
+    const { api, user } = useAuth();
     const [filter, setFilter] = useState('All');
     const [serviceRequests, setServiceRequests] = useState([]);
     const [readyOrders, setReadyOrders] = useState([]);
@@ -29,8 +30,72 @@ const WaiterPriorityActions = () => {
     useEffect(() => {
         fetchData();
         const interval = setInterval(fetchData, 3000);
-        return () => clearInterval(interval);
-    }, [api]);
+
+        let ws;
+        const connectWS = () => {
+            try {
+                let baseURL = getApiUrl();
+                let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
+                ws = new WebSocket(wsURL);
+
+                ws.onopen = () => {
+                    const rawRestId = user?.restaurantId;
+                    const cleanRestId = (rawRestId && typeof rawRestId === 'object') ? (rawRestId._id || rawRestId.id) : rawRestId;
+                    ws.send(JSON.stringify({
+                        type: 'register',
+                        restaurantId: cleanRestId || null,
+                        role: 'waiter'
+                    }));
+                };
+
+                ws.onmessage = (event) => {
+                    try {
+                        const msg = JSON.parse(event.data);
+                        if (['new_order', 'order_updated', 'order_status_updated', 'ready_to_serve', 'new_notification'].includes(msg.type)) {
+                            fetchData();
+
+                            const orderData = msg.data?.orderData || msg.data;
+                            if (msg.type === 'order_status_updated' || msg.type === 'new_notification' || msg.type === 'ready_to_serve') {
+                                const ticketNum = orderData?._id ? String(orderData._id).substring(String(orderData._id).length - 5).toUpperCase() : 'ALERT';
+                                
+                                try {
+                                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                                    const osc = audioCtx.createOscillator();
+                                    const gain = audioCtx.createGain();
+                                    osc.type = 'sine';
+                                    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                                    osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.4);
+                                    gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                                    osc.connect(gain);
+                                    gain.connect(audioCtx.destination);
+                                    osc.start();
+                                    osc.stop(audioCtx.currentTime + 0.4);
+                                } catch (e) {}
+
+                                toast.success(`🔔 KITCHEN TRANSFER: Order #${ticketNum} ready for pickup!`, {
+                                    id: `ready-${orderData?._id || Date.now()}`,
+                                    duration: 8000,
+                                    position: 'top-right'
+                                });
+                            }
+                        }
+                    } catch (e) {}
+                };
+
+                ws.onclose = () => {
+                    setTimeout(connectWS, 5000);
+                };
+            } catch (err) {}
+        };
+
+        connectWS();
+
+        return () => {
+            clearInterval(interval);
+            if (ws) ws.close();
+        };
+    }, [api, user]);
 
     const handleResolveRequest = async (id) => {
         try {
