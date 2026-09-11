@@ -31,6 +31,24 @@ export const getStats = async (req, res) => {
             totalRevenue += cycle === 'yearly' ? Math.round(planPrice / 12) : planPrice;
         });
 
+        // Calculate total commission earned across all registered subscribed restaurants from customer food orders
+        const allRestaurants = await Restaurant.find().lean();
+        const paidOrders = await Order.find({ isPaid: true }).lean();
+        const restaurantRevenueMap = {};
+        paidOrders.forEach(o => {
+            if (o.restaurantId) {
+                const rId = o.restaurantId.toString();
+                restaurantRevenueMap[rId] = (restaurantRevenueMap[rId] || 0) + (o.totalPrice || 0);
+            }
+        });
+
+        let totalCommission = 0;
+        allRestaurants.forEach(r => {
+            const rev = restaurantRevenueMap[r._id.toString()] || 0;
+            const rate = r.commissionRate !== undefined && r.commissionRate !== null ? r.commissionRate : 5; // Default 5% platform commission if set
+            totalCommission += (rev * rate) / 100;
+        });
+
         res.json({
             totalRestaurants,
             activeRestaurants,
@@ -38,7 +56,8 @@ export const getStats = async (req, res) => {
             frozenRestaurants,
             totalUsers,
             totalOrders,
-            totalRevenue
+            totalRevenue,
+            totalCommission: Math.round(totalCommission)
         });
     } catch (error) {
         res.status(500).json({ message: error.message });

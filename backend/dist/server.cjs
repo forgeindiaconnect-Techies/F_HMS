@@ -100272,6 +100272,21 @@ var getStats = async (req, res) => {
       const cycle = r.subscription?.billingCycle || "monthly";
       totalRevenue += cycle === "yearly" ? Math.round(planPrice / 12) : planPrice;
     });
+    const allRestaurants = await Restaurant_default.find().lean();
+    const paidOrders = await Order_default.find({ isPaid: true }).lean();
+    const restaurantRevenueMap = {};
+    paidOrders.forEach((o) => {
+      if (o.restaurantId) {
+        const rId = o.restaurantId.toString();
+        restaurantRevenueMap[rId] = (restaurantRevenueMap[rId] || 0) + (o.totalPrice || 0);
+      }
+    });
+    let totalCommission = 0;
+    allRestaurants.forEach((r) => {
+      const rev = restaurantRevenueMap[r._id.toString()] || 0;
+      const rate = r.commissionRate !== void 0 && r.commissionRate !== null ? r.commissionRate : 5;
+      totalCommission += rev * rate / 100;
+    });
     res.json({
       totalRestaurants,
       activeRestaurants,
@@ -100279,7 +100294,8 @@ var getStats = async (req, res) => {
       frozenRestaurants,
       totalUsers,
       totalOrders,
-      totalRevenue
+      totalRevenue,
+      totalCommission: Math.round(totalCommission)
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

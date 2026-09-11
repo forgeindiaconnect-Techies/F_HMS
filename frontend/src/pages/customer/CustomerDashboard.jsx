@@ -148,6 +148,44 @@ const CustomerDashboard = () => {
         }
     }, [api]);
 
+    // Real-time WebSocket connection to receive instant order updates
+    useEffect(() => {
+        let ws;
+        const connectWS = () => {
+            try {
+                let baseURL = getApiUrl();
+                let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
+                ws = new WebSocket(wsURL);
+
+                ws.onopen = () => {
+                    ws.send(JSON.stringify({
+                        type: 'register',
+                        role: 'customer'
+                    }));
+                };
+
+                ws.onmessage = (event) => {
+                    try {
+                        const msg = JSON.parse(event.data);
+                        if (['new_order', 'order_updated', 'ready_to_serve', 'order_status_updated', 'delivery_updated'].includes(msg.type)) {
+                            fetchOrders();
+                        }
+                    } catch (e) {}
+                };
+
+                ws.onclose = () => {
+                    setTimeout(connectWS, 5000);
+                };
+            } catch (e) {}
+        };
+
+        connectWS();
+
+        return () => {
+            if (ws) ws.close();
+        };
+    }, []);
+
     // Load reservations from localStorage
     useEffect(() => {
         try {
