@@ -750,8 +750,8 @@ const ChefDashboard = () => {
                 /* KANBAN QUEUE COLUMNS VIEW */
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                     {[
-                        { title: '📥 Incoming Queue', keys: ['Pending'], accent: 'from-amber-600 to-orange-600', key: 'Incoming' },
-                        { title: '🍳 Cooking / Preparation', keys: ['Accepted', 'Preparing'], accent: 'from-blue-600 to-indigo-600', key: 'Cooking' },
+                        { title: '📥 Incoming Queue', keys: ['Pending', 'Accepted'], accent: 'from-amber-600 to-orange-600', key: 'Incoming' },
+                        { title: '🍳 Cooking / Preparation', keys: ['Preparing'], accent: 'from-blue-600 to-indigo-600', key: 'Cooking' },
                         { title: '✨ Plated & Ready', keys: ['Ready', 'Ready for Pickup'], accent: 'from-emerald-600 to-teal-600', key: 'Ready' },
                         { title: '✅ Served & Completed', keys: ['Completed', 'Served', 'Picked Up', 'Delivered'], accent: 'from-slate-700 to-slate-900', key: 'Completed' }
                     ].map(column => {
