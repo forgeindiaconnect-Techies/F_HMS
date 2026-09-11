@@ -8,7 +8,7 @@ const WaiterPriorityActions = () => {
     const { api, user } = useAuth();
     const [filter, setFilter] = useState('All');
     const [serviceRequests, setServiceRequests] = useState([]);
-    const [readyOrders, setReadyOrders] = useState([]);
+    const [activeOrders, setActiveOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const fetchData = async () => {
@@ -18,8 +18,12 @@ const WaiterPriorityActions = () => {
                 api.get('/orders').catch(() => ({ data: [] })),
                 api.get('/service-requests').catch(() => ({ data: [] }))
             ]);
-            setReadyOrders(ordersRes.data.filter(o => ['Ready', 'Ready for Pickup'].includes(o.status)));
-            setServiceRequests(requestsRes.data);
+            const ordersData = Array.isArray(ordersRes.data) ? ordersRes.data : [];
+            const reqsData = Array.isArray(requestsRes.data) ? requestsRes.data : [];
+
+            // Include all active orders that are not completed or cancelled
+            setActiveOrders(ordersData.filter(o => !['Completed', 'Cancelled', 'Delivered', 'Served', 'Picked Up'].includes(o.status)));
+            setServiceRequests(reqsData);
         } catch (error) {
             console.error('Failed to fetch priority actions data', error);
         } finally {
@@ -111,8 +115,9 @@ const WaiterPriorityActions = () => {
         try {
             const nextStatus = isSelf ? 'Picked Up' : 'Served';
             await api.put(`/orders/${orderId}/status`, { status: nextStatus });
-            setReadyOrders(prev => prev.filter(o => o._id !== orderId));
+            setActiveOrders(prev => prev.filter(o => o._id !== orderId));
             toast.success(isSelf ? 'Transferred order to Cashier counter!' : 'Food served to table!');
+            fetchData();
         } catch (error) {
             toast.error('Failed to update order status');
         }
@@ -127,19 +132,57 @@ const WaiterPriorityActions = () => {
 
     // Synthesize all priority items
     const priorityItems = [
-        ...readyOrders.map(o => {
+        ...activeOrders.map(o => {
             const isSelf = isSelfOrder(o);
+            const status = String(o.status || '').trim();
+            const isReady = ['Ready', 'Ready for Pickup'].includes(status);
+            
+            let cardType = 'URGENT';
+            let cardTitle = 'Food Ready in Kitchen';
+            let actionText = 'Serve Now';
+            let color = 'rose';
+
+            if (isSelf && isReady) {
+                cardType = 'PICKUP READY';
+                cardTitle = 'Self-Pickup Ready in Kitchen';
+                actionText = 'Collect & Transfer to Cashier Counter';
+                color = 'amber';
+            } else if (!isSelf && isReady) {
+                cardType = 'URGENT';
+                cardTitle = 'Dine-In Order Ready to Serve';
+                actionText = 'Mark Food as Served';
+                color = 'rose';
+            } else {
+                cardType = 'KITCHEN PREP';
+                cardTitle = isSelf ? 'Self-Pickup Preparing in Kitchen' : 'Dine-In Order Cooking in Kitchen';
+                actionText = 'Transfer to Pickup Counter';
+                color = 'blue';
+            }
+
             return {
                 id: `order-${o._id}`,
                 table: isSelf ? '📦 Self-Pickup Counter' : (o.tableNumber ? (o.tableNumber.startsWith('Table') ? o.tableNumber : `Table ${o.tableNumber}`) : 'Takeout'),
-                type: isSelf ? 'PICKUP READY' : 'URGENT',
-                title: isSelf ? 'Self-Pickup Ready in Kitchen' : 'Food Ready in Kitchen',
-                subtitle: o.orderItems?.map(i => `${i.qty}x ${i.name}`).join(', ') || 'Hot Meal Ready',
-                time: 'Just now',
-                actionText: isSelf ? 'Collect & Transfer to Cashier' : 'Serve Now',
+                type: cardType,
+                title: cardTitle,
+                subtitle: o.orderItems?.map(i => `${i.qty}x ${i.name}`).join(', ') || 'Order Ticket',
+                time: 'Live',
+                actionText: actionText,
                 icon: Utensils,
-                color: isSelf ? 'amber' : 'rose',
-                handler: () => handleServeOrder(o._id, isSelf)
+                color: color,
+                handler: async () => {
+                    if (isReady) {
+                        await handleServeOrder(o._id, isSelf);
+                    } else {
+                        try {
+                            const nextStatus = isSelf ? 'Ready for Pickup' : 'Ready';
+                            await api.put(`/orders/${o._id}/status`, { status: nextStatus });
+                            toast.success('Transferred ticket to Pickup Counter!');
+                            fetchData();
+                        } catch (e) {
+                            toast.error('Failed to update ticket status');
+                        }
+                    }
+                }
             };
         }),
         ...serviceRequests.map(r => ({
@@ -148,7 +191,7 @@ const WaiterPriorityActions = () => {
             type: r.requestType === 'Bill Request' ? 'IMPORTANT' : 'ASSISTANCE',
             title: r.requestType || 'Customer Service Request',
             subtitle: r.note || 'Requested immediate assistance at table',
-            time: '2m ago',
+            time: 'Live',
             actionText: r.requestType === 'Bill Request' ? 'Generate Bill' : 'Attend Table',
             icon: r.requestType === 'Bill Request' ? Receipt : Bell,
             color: r.requestType === 'Bill Request' ? 'amber' : 'emerald',
@@ -198,7 +241,7 @@ const WaiterPriorityActions = () => {
 
             {/* Filter Pills */}
             <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                {['All', 'PICKUP READY', 'URGENT', 'IMPORTANT', 'ASSISTANCE'].map((t) => (
+                {['All', 'PICKUP READY', 'KITCHEN PREP', 'URGENT', 'IMPORTANT', 'ASSISTANCE'].map((t) => (
                     <button
                         key={t}
                         onClick={() => setFilter(t)}
