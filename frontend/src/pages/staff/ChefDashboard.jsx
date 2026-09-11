@@ -27,6 +27,7 @@ const ChefDashboard = () => {
     const [newIngredient, setNewIngredient] = useState('');
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
     const [newTicketModalOrder, setNewTicketModalOrder] = useState(null);
+    const seenTicketIdsRef = useRef(new Set());
     
     // Priorities and item completion checklists (local ticket overrides)
     const [manualPriority, setManualPriority] = useState({}); // orderId -> boolean
@@ -112,37 +113,38 @@ const ChefDashboard = () => {
                             }
                             fetchOrders();
 
-                            // Trigger modal popup and chime ONLY for actual new orders
+                            // Trigger modal popup and chime ONLY for actual new, unhandled orders
                             if (msg.type === 'new_order' && msg.data && msg.data._id) {
                                 const orderData = msg.data;
-                                const ticketNum = String(orderData._id).substring(String(orderData._id).length - 5).toUpperCase();
+                                const isPendingStatus = !orderData.status || orderData.status === 'Pending' || orderData.status === 'Placed';
                                 
-                                setNewTicketModalOrder(prev => {
-                                    // Prevent duplicate popup if already showing this ticket
-                                    if (prev && prev._id === orderData._id) return prev;
-                                    return orderData;
-                                });
+                                if (isPendingStatus && !seenTicketIdsRef.current.has(orderData._id)) {
+                                    seenTicketIdsRef.current.add(orderData._id);
+                                    setNewTicketModalOrder(orderData);
 
-                                try {
-                                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                                    const osc = audioCtx.createOscillator();
-                                    const gain = audioCtx.createGain();
-                                    osc.type = 'sine';
-                                    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-                                    osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.4);
-                                    gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-                                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-                                    osc.connect(gain);
-                                    gain.connect(audioCtx.destination);
-                                    osc.start();
-                                    osc.stop(audioCtx.currentTime + 0.4);
-                                } catch (e) {}
+                                    const ticketNum = String(orderData._id).substring(String(orderData._id).length - 5).toUpperCase();
 
-                                toast.success(`🔔 NEW ORDER RECEIVED! Ticket #${ticketNum}`, {
-                                    id: `new-order-${orderData._id}`, // Deduplicate toast notification
-                                    duration: 8000,
-                                    position: 'top-right'
-                                });
+                                    try {
+                                        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                                        const osc = audioCtx.createOscillator();
+                                        const gain = audioCtx.createGain();
+                                        osc.type = 'sine';
+                                        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                                        osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.4);
+                                        gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                                        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                                        osc.connect(gain);
+                                        gain.connect(audioCtx.destination);
+                                        osc.start();
+                                        osc.stop(audioCtx.currentTime + 0.4);
+                                    } catch (e) {}
+
+                                    toast.success(`🔔 NEW ORDER RECEIVED! Ticket #${ticketNum}`, {
+                                        id: `new-order-${orderData._id}`, // Deduplicate toast notification
+                                        duration: 8000,
+                                        position: 'top-right'
+                                    });
+                                }
                             }
                         }
                     } catch (e) {
@@ -169,6 +171,12 @@ const ChefDashboard = () => {
 
     // Update order status on backend
     const updateStatus = async (id, newStatus) => {
+        // Track ticket as processed so modal popup never re-triggers for this order ID
+        if (id) {
+            seenTicketIdsRef.current.add(id);
+        }
+        setNewTicketModalOrder(prev => (prev && prev._id === id ? null : prev));
+
         try {
             await api.put(`/orders/${id}/status`, { status: newStatus });
             toast.success(`Ticket status updated to ${newStatus}`);
