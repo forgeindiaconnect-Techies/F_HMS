@@ -476,12 +476,12 @@ const Home = () => {
                             <span>Order Now</span>
                         </Link>
 
-                        <Link to="/customer/login" className="hidden xs:inline-block text-slate-700 hover:text-slate-950 transition-colors px-2.5 py-1.5 sm:px-3 rounded-xl hover:bg-slate-100">
+                        <Link to="/staff/login" className="hidden xs:inline-block text-slate-700 hover:text-slate-950 transition-colors px-2.5 py-1.5 sm:px-3 rounded-xl hover:bg-slate-100">
                             Log In
                         </Link>
 
                         <Link 
-                            to="/customer/register" 
+                            to="/staff/register" 
                             onMouseMove={handleMagneticMove}
                             onMouseLeave={handleMagneticLeave}
                             className="hidden lg:flex bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] text-white font-extrabold px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl shadow-lg shadow-[#FF2D55]/25 transition-all focus:outline-none"

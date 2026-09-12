@@ -290,7 +290,7 @@ const ChefDashboard = () => {
     const isIncomingStatus = (status) => {
         if (!status) return true;
         const s = String(status).trim();
-        return !['Served', 'Completed', 'Cancelled', 'Delivered'].includes(s);
+        return s === 'Pending' || s === 'Accepted';
     };
 
     const isDoneStatus = (status) => {
@@ -712,29 +712,27 @@ const ChefDashboard = () => {
 
                                     {/* Action Buttons Footer */}
                                     <div className="p-4 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/60 shrink-0 space-y-2">
-                                        {(!order.status || ['Pending', 'Accepted', 'Preparing'].includes(order.status)) && (
-                                            <>
-                                                {(!order.status || order.status === 'Pending' || order.status === 'Accepted') && (
-                                                    <button 
-                                                        onClick={() => updateStatus(order._id, 'Preparing')} 
-                                                        className="w-full bg-orange-600 hover:bg-orange-500 text-white font-extrabold py-2.5 rounded-2xl transition-all shadow-md shadow-orange-600/20 text-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-                                                    >
-                                                        <ChefHat size={15} />
-                                                        <span>Accept &amp; Start Cooking</span>
-                                                    </button>
-                                                )}
-                                                <button 
-                                                    onClick={() => updateStatus(order._id, isSelfOrder(order) ? 'Ready for Pickup' : 'Ready')} 
-                                                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-2.5 rounded-2xl transition-all shadow-md shadow-emerald-600/20 flex justify-center items-center gap-2 text-xs cursor-pointer active:scale-95"
-                                                >
-                                                    <Sparkles size={15} />
-                                                    <span>{isSelfOrder(order) ? 'Transfer to Pickup Counter' : 'Mark Ticket Ready'}</span>
-                                                </button>
-                                            </>
+                                        {(!order.status || order.status === 'Pending' || order.status === 'Accepted') && (
+                                            <button 
+                                                onClick={() => updateStatus(order._id, 'Preparing')} 
+                                                className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold py-2.5 rounded-2xl transition-all shadow-md shadow-orange-600/20 text-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                                            >
+                                                <ChefHat size={15} />
+                                                <span>Accept &amp; Start Cooking</span>
+                                            </button>
+                                        )}
+                                        {order.status === 'Preparing' && (
+                                            <button 
+                                                onClick={() => updateStatus(order._id, isSelfOrder(order) ? 'Ready for Pickup' : 'Ready')} 
+                                                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold py-2.5 rounded-2xl transition-all shadow-md shadow-emerald-600/20 flex justify-center items-center gap-2 text-xs cursor-pointer active:scale-95"
+                                            >
+                                                <Sparkles size={15} />
+                                                <span>{isSelfOrder(order) ? 'Transfer to Pickup Counter' : 'Mark Ticket Ready &amp; Transfer'}</span>
+                                            </button>
                                         )}
                                         {['Ready', 'Ready for Pickup'].includes(order.status) && (
-                                            <div className="text-center py-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/20 rounded-xl border border-emerald-200/80">
-                                                <CheckCircle size={14} className="text-emerald-500" /> Transferred to Waiter Pickup Queue
+                                            <div className="text-center py-2.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1.5 bg-emerald-500/10 dark:bg-emerald-950/30 rounded-2xl border border-emerald-500/20">
+                                                <CheckCircle size={14} className="text-emerald-500" /> Transferred to Waiter Priority Section
                                             </div>
                                         )}
                                         {['Completed', 'Served', 'Delivered', 'Picked Up'].includes(order.status) && (
@@ -760,7 +758,7 @@ const ChefDashboard = () => {
                         // Filter orders for this column using station & search criteria
                         const colOrders = orders.filter(o => {
                             if (column.key === 'Incoming') {
-                                if (!isIncomingStatus(o.status)) return false;
+                                if (o.status && !['Pending', 'Accepted'].includes(o.status)) return false;
                             } else if (column.key === 'Completed') {
                                 if (!isDoneStatus(o.status)) return false;
                             } else {

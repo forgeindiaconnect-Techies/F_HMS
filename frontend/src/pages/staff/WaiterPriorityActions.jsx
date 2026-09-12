@@ -57,32 +57,6 @@ const WaiterPriorityActions = () => {
                         const msg = JSON.parse(event.data);
                         if (['new_order', 'order_updated', 'order_status_updated', 'ready_to_serve', 'new_notification'].includes(msg.type)) {
                             fetchData();
-
-                            const orderData = msg.data?.orderData || msg.data;
-                            if (msg.type === 'order_status_updated' || msg.type === 'new_notification' || msg.type === 'ready_to_serve') {
-                                const ticketNum = orderData?._id ? String(orderData._id).substring(String(orderData._id).length - 5).toUpperCase() : 'ALERT';
-                                
-                                try {
-                                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                                    const osc = audioCtx.createOscillator();
-                                    const gain = audioCtx.createGain();
-                                    osc.type = 'sine';
-                                    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-                                    osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.4);
-                                    gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-                                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-                                    osc.connect(gain);
-                                    gain.connect(audioCtx.destination);
-                                    osc.start();
-                                    osc.stop(audioCtx.currentTime + 0.4);
-                                } catch (e) {}
-
-                                toast.success(`🔔 KITCHEN TRANSFER: Order #${ticketNum} ready for pickup!`, {
-                                    id: `ready-${orderData?._id || Date.now()}`,
-                                    duration: 8000,
-                                    position: 'top-right'
-                                });
-                            }
                         }
                     } catch (e) {}
                 };

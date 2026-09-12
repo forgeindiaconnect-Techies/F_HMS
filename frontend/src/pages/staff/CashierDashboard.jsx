@@ -36,9 +36,9 @@ const CashierDashboard = () => {
     const fetchOrders = async () => {
         try {
             const { data } = await api.get('/orders');
-            setQueue(data.filter(o => !o.isPaid && !isSelfOrder(o) && ['Served', 'Billing Requested', 'Delivered', 'Ready', 'Billing', 'Preparing', 'Pending'].includes(o.status)));
-            setSelfPickupQueue(data.filter(o => isSelfOrder(o) && o.status === 'Picked Up' && o.status !== 'Completed'));
-            setHistory(data.filter(o => o.isPaid || o.status === 'Completed'));
+            setQueue(data.filter(o => !isSelfOrder(o) && o.status !== 'Completed' && ['Served', 'Billing Requested', 'Delivered', 'Ready', 'Billing', 'Preparing', 'Pending'].includes(o.status)));
+            setSelfPickupQueue(data.filter(o => isSelfOrder(o) && o.status !== 'Completed'));
+            setHistory(data.filter(o => o.status === 'Completed'));
         } catch (error) {
             console.error('Failed to fetch orders', error);
         }
@@ -89,6 +89,7 @@ const CashierDashboard = () => {
                                         osc.stop(audioCtx.currentTime + 0.4);
                                     } catch (e) {}
 
+                                    setActiveTab('Self-Pickup');
                                     toast.success(`📦 SELF-PICKUP QUEUE: Order #${ticketNum} arrived at Cashier counter!`, {
                                         id: `cashier-pickup-${orderData?._id || Date.now()}`,
                                         duration: 8000,
@@ -936,15 +937,26 @@ const CashierDashboard = () => {
             {/* Left Queue View */}
             <div className="w-80 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col min-h-0 shrink-0">
                 <div className="flex bg-gray-100 p-1 rounded-xl mb-4 shrink-0">
-                    {['Pending', 'Self-Pickup', 'Paid'].map(t => (
+                    {[
+                        { id: 'Pending', label: 'Billing', count: queue.length },
+                        { id: 'Self-Pickup', label: 'Pickup', count: selfPickupQueue.length },
+                        { id: 'Paid', label: 'History', count: history.length }
+                    ].map(t => (
                         <button 
-                            key={t}
-                            onClick={() => { setActiveTab(t); setActiveBill(null); }}
-                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-                                activeTab === t ? 'bg-white shadow-sm text-green-700 font-extrabold' : 'text-gray-500 hover:text-gray-700'
+                            key={t.id}
+                            onClick={() => { setActiveTab(t.id); setActiveBill(null); }}
+                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                                activeTab === t.id ? 'bg-white shadow-sm text-green-700 font-extrabold' : 'text-gray-500 hover:text-gray-700'
                             }`}
                         >
-                            {t === 'Pending' ? 'Billing' : t === 'Self-Pickup' ? 'Pickup' : 'History'}
+                            <span>{t.label}</span>
+                            {t.count > 0 && (
+                                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                                    activeTab === t.id ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-700'
+                                }`}>
+                                    {t.count}
+                                </span>
+                            )}
                         </button>
                     ))}
                 </div>
@@ -983,7 +995,7 @@ const CashierDashboard = () => {
                     )}
 
                     {activeTab === 'Self-Pickup' && (
-                        selfPickupQueue.length === 0 ? <p className="text-center text-gray-400 py-10 text-xs">No ready self-pickups.</p> :
+                        selfPickupQueue.length === 0 ? <p className="text-center text-gray-400 py-10 text-xs font-semibold">No ready self-pickups.</p> :
                         selfPickupQueue.map(bill => (
                             <button
                                 key={bill._id}
@@ -995,10 +1007,19 @@ const CashierDashboard = () => {
                                 }`}
                             >
                                 <div>
-                                    <p className="font-bold text-gray-900">Self Pickup Counter</p>
+                                    <p className="font-bold text-gray-900">{bill.orderType || 'Self-Pickup Counter'}</p>
                                     <p className="text-[10px] text-gray-400 font-mono">#{bill._id.substring(bill._id.length - 6).toUpperCase()}</p>
+                                    {bill.orderItems && bill.orderItems.length > 0 && (
+                                        <p className="text-[10px] text-gray-500 font-medium truncate max-w-[140px] mt-0.5">
+                                            {bill.orderItems.map(i => `${i.qty}x ${i.name}`).join(', ')}
+                                        </p>
+                                    )}
                                 </div>
-                                <span className="bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded border border-green-100">Ready</span>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                                    bill.status === 'Picked Up' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-amber-50 text-amber-700 border-amber-100'
+                                }`}>
+                                    {bill.status || 'Ready'}
+                                </span>
                             </button>
                         ))
                     )}
@@ -1245,7 +1266,7 @@ const CashierDashboard = () => {
                                     {/* Action button */}
                                     <div className="mt-auto pt-4">
                                         <button
-                                            onClick={isSelfOrder(activeBill) ? handleCompletePickup : handleSettle}
+                                            onClick={handleSettle}
                                             className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-600/20 active:scale-95 transition-all text-sm flex items-center justify-center gap-2"
                                         >
                                             <CheckCircle size={16} /> Complete Invoice & Settle

@@ -163,9 +163,10 @@ const WaiterDashboard = () => {
                     if (['new_order', 'order_updated', 'order_status_updated', 'ready_to_serve', 'new_notification'].includes(msg.type)) {
                         fetchData();
 
-                        if (msg.type === 'new_order' || msg.type === 'new_notification' || msg.type === 'order_status_updated' || msg.type === 'ready_to_serve') {
+                        // 1. New Order Placement Alert
+                        if (msg.type === 'new_order') {
                             const orderData = msg.data?.orderData || msg.data;
-                            if (orderData) {
+                            if (orderData && orderData.tableNumber) {
                                 try {
                                     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                                     const osc = audioCtx.createOscillator();
@@ -188,8 +189,8 @@ const WaiterDashboard = () => {
                             }
                         }
 
-                        if (msg.data && (msg.data.status === 'Ready' || msg.data.status === 'Ready for Pickup')) {
-                            fetchData();
+                        // 2. Food Ready from Kitchen Alert
+                        if ((msg.type === 'order_status_updated' || msg.type === 'ready_to_serve') && msg.data && (msg.data.status === 'Ready' || msg.data.status === 'Ready for Pickup')) {
                             try {
                                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                                 const osc = audioCtx.createOscillator();
@@ -211,7 +212,8 @@ const WaiterDashboard = () => {
                                 isSelf 
                                 ? `📦 Self-Pickup Ticket #${ticketNum} is READY in Kitchen! Collect & Transfer to Cashier Counter!` 
                                 : `🍽️ Food READY for Table ${msg.data.tableNumber || 'Takeout'} (Ticket #${ticketNum})!`, {
-                                duration: 9000,
+                                id: `waiter-ready-${msg.data._id}`,
+                                duration: 5000,
                                 position: 'top-right'
                             });
                         }
