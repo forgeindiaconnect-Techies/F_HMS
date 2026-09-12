@@ -96500,16 +96500,65 @@ var init_Order = __esm({
   }
 });
 
+// models/Table.js
+var Table_exports = {};
+__export(Table_exports, {
+  default: () => Table_default
+});
+var import_mongoose14, tableSchema, Table, Table_default;
+var init_Table = __esm({
+  "models/Table.js"() {
+    import_mongoose14 = __toESM(require_mongoose2(), 1);
+    tableSchema = new import_mongoose14.default.Schema({
+      restaurantId: {
+        type: import_mongoose14.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true
+      },
+      branchId: {
+        type: import_mongoose14.default.Schema.Types.ObjectId,
+        ref: "Branch",
+        required: true
+      },
+      tableNumber: {
+        type: Number,
+        required: true
+      },
+      capacity: {
+        type: Number,
+        required: true,
+        default: 4
+      },
+      status: {
+        type: String,
+        enum: ["Available", "Occupied", "Reserved", "Cleaning", "Billing"],
+        default: "Available"
+      },
+      activeOrder: {
+        type: import_mongoose14.default.Schema.Types.ObjectId,
+        ref: "Order",
+        default: null
+      },
+      customers: {
+        type: Number,
+        default: 0
+      }
+    }, { timestamps: true });
+    Table = import_mongoose14.default.model("Table", tableSchema);
+    Table_default = Table;
+  }
+});
+
 // models/MenuItem.js
 var MenuItem_exports = {};
 __export(MenuItem_exports, {
   default: () => MenuItem_default
 });
-var import_mongoose16, menuItemSchema, MenuItem, MenuItem_default;
+var import_mongoose17, menuItemSchema, MenuItem, MenuItem_default;
 var init_MenuItem = __esm({
   "models/MenuItem.js"() {
-    import_mongoose16 = __toESM(require_mongoose2(), 1);
-    menuItemSchema = new import_mongoose16.default.Schema({
+    import_mongoose17 = __toESM(require_mongoose2(), 1);
+    menuItemSchema = new import_mongoose17.default.Schema({
       name: {
         type: String,
         required: true
@@ -96545,16 +96594,16 @@ var init_MenuItem = __esm({
         default: true
       },
       restaurantId: {
-        type: import_mongoose16.default.Schema.Types.ObjectId,
+        type: import_mongoose17.default.Schema.Types.ObjectId,
         ref: "Restaurant",
         required: true
       },
       branchId: {
-        type: import_mongoose16.default.Schema.Types.ObjectId,
+        type: import_mongoose17.default.Schema.Types.ObjectId,
         ref: "Branch"
       }
     }, { timestamps: true });
-    MenuItem = import_mongoose16.default.model("MenuItem", menuItemSchema);
+    MenuItem = import_mongoose17.default.model("MenuItem", menuItemSchema);
     MenuItem_default = MenuItem;
   }
 });
@@ -96564,23 +96613,23 @@ var Ticket_exports = {};
 __export(Ticket_exports, {
   default: () => Ticket_default
 });
-var import_mongoose17, ticketSchema, Ticket, Ticket_default;
+var import_mongoose18, ticketSchema, Ticket, Ticket_default;
 var init_Ticket = __esm({
   "models/Ticket.js"() {
-    import_mongoose17 = __toESM(require_mongoose2(), 1);
-    ticketSchema = new import_mongoose17.default.Schema({
+    import_mongoose18 = __toESM(require_mongoose2(), 1);
+    ticketSchema = new import_mongoose18.default.Schema({
       ticketId: {
         type: String,
         required: true,
         unique: true
       },
       restaurantId: {
-        type: import_mongoose17.default.Schema.Types.ObjectId,
+        type: import_mongoose18.default.Schema.Types.ObjectId,
         ref: "Restaurant",
         required: true
       },
       branchId: {
-        type: import_mongoose17.default.Schema.Types.ObjectId,
+        type: import_mongoose18.default.Schema.Types.ObjectId,
         ref: "Branch"
       },
       subject: {
@@ -96620,7 +96669,7 @@ var init_Ticket = __esm({
         required: true
       },
       assignedAgentId: {
-        type: import_mongoose17.default.Schema.Types.ObjectId,
+        type: import_mongoose18.default.Schema.Types.ObjectId,
         ref: "User"
       },
       attachments: [{
@@ -96653,57 +96702,8 @@ var init_Ticket = __esm({
       this.lastUpdated = /* @__PURE__ */ new Date();
       next();
     });
-    Ticket = import_mongoose17.default.model("Ticket", ticketSchema);
+    Ticket = import_mongoose18.default.model("Ticket", ticketSchema);
     Ticket_default = Ticket;
-  }
-});
-
-// models/Table.js
-var Table_exports = {};
-__export(Table_exports, {
-  default: () => Table_default
-});
-var import_mongoose18, tableSchema, Table, Table_default;
-var init_Table = __esm({
-  "models/Table.js"() {
-    import_mongoose18 = __toESM(require_mongoose2(), 1);
-    tableSchema = new import_mongoose18.default.Schema({
-      restaurantId: {
-        type: import_mongoose18.default.Schema.Types.ObjectId,
-        ref: "Restaurant",
-        required: true
-      },
-      branchId: {
-        type: import_mongoose18.default.Schema.Types.ObjectId,
-        ref: "Branch",
-        required: true
-      },
-      tableNumber: {
-        type: Number,
-        required: true
-      },
-      capacity: {
-        type: Number,
-        required: true,
-        default: 4
-      },
-      status: {
-        type: String,
-        enum: ["Available", "Occupied", "Reserved", "Cleaning", "Billing"],
-        default: "Available"
-      },
-      activeOrder: {
-        type: import_mongoose18.default.Schema.Types.ObjectId,
-        ref: "Order",
-        default: null
-      },
-      customers: {
-        type: Number,
-        default: 0
-      }
-    }, { timestamps: true });
-    Table = import_mongoose18.default.model("Table", tableSchema);
-    Table_default = Table;
   }
 });
 
@@ -99364,13 +99364,17 @@ var import_express4 = __toESM(require_express2(), 1);
 
 // controllers/orderController.js
 init_Order();
-var import_mongoose14 = __toESM(require_mongoose2(), 1);
+init_Branch();
+var import_mongoose15 = __toESM(require_mongoose2(), 1);
 var sanitizeOrderItems = (items) => {
   if (!items) return items;
   return items.map((item) => {
     const sanitizedItem = { ...item };
-    if (sanitizedItem.product && !import_mongoose14.default.Types.ObjectId.isValid(sanitizedItem.product)) {
+    if (sanitizedItem.product && !import_mongoose15.default.Types.ObjectId.isValid(sanitizedItem.product)) {
       delete sanitizedItem.product;
+    }
+    if (!sanitizedItem.image) {
+      sanitizedItem.image = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800";
     }
     return sanitizedItem;
   });
@@ -99381,25 +99385,25 @@ var addOrderItems = async (req, res) => {
     res.status(400).json({ message: "No order items" });
     return;
   } else {
-    let finalBranchId = branchId && import_mongoose14.default.Types.ObjectId.isValid(branchId) ? branchId : req.user ? req.user.branchId : null;
-    let finalRestaurantId = restaurantId && import_mongoose14.default.Types.ObjectId.isValid(restaurantId) ? restaurantId : req.user ? req.user.restaurantId : null;
+    let finalBranchId = branchId && import_mongoose15.default.Types.ObjectId.isValid(branchId) ? branchId : req.user ? req.user.branchId : null;
+    let finalRestaurantId = restaurantId && import_mongoose15.default.Types.ObjectId.isValid(restaurantId) ? restaurantId : req.user ? req.user.restaurantId : null;
     if (!finalBranchId && finalRestaurantId) {
-      const Branch2 = import_mongoose14.default.model("Branch");
+      const Branch2 = import_mongoose15.default.model("Branch");
       const firstBranch = await Branch2.findOne({ restaurantId: finalRestaurantId });
       if (firstBranch) {
         finalBranchId = firstBranch._id;
       }
     }
     if (!finalRestaurantId || !finalBranchId) {
-      const Restaurant2 = import_mongoose14.default.model("Restaurant");
-      const Branch2 = import_mongoose14.default.model("Branch");
+      const Restaurant2 = import_mongoose15.default.model("Restaurant");
+      const Branch2 = import_mongoose15.default.model("Branch");
       let firstRestaurant = await Restaurant2.findOne();
       if (!firstRestaurant) {
-        const User3 = import_mongoose14.default.model("User");
+        const User3 = import_mongoose15.default.model("User");
         const adminUser = await User3.findOne({ role: "SuperAdmin" }) || await User3.findOne();
         firstRestaurant = await Restaurant2.create({
           name: "Demo Main Kitchen",
-          ownerId: adminUser ? adminUser._id : new import_mongoose14.default.Types.ObjectId(),
+          ownerId: adminUser ? adminUser._id : new import_mongoose15.default.Types.ObjectId(),
           approvalStatus: "Approved",
           subscription: { status: "Active", plan: "Pro" }
         });
@@ -99416,7 +99420,7 @@ var addOrderItems = async (req, res) => {
     }
     let finalUserId = req.user ? req.user._id : null;
     if (!finalUserId) {
-      const User3 = import_mongoose14.default.model("User");
+      const User3 = import_mongoose15.default.model("User");
       let guestUser = await User3.findOne({ role: "Customer" });
       if (!guestUser) {
         guestUser = await User3.findOne();
@@ -99452,12 +99456,16 @@ var addOrderItems = async (req, res) => {
     const createdOrder = await order.save();
     if (orderType === "Dine In" && tableNumber) {
       try {
-        const Table2 = import_mongoose14.default.model("Table");
-        const table = await Table2.findOne({
-          tableNumber,
+        const Table2 = (await Promise.resolve().then(() => (init_Table(), Table_exports))).default;
+        const numericTable = parseInt(String(tableNumber).replace(/\D/g, ""), 10);
+        const tableQuery = {
           restaurantId: finalRestaurantId,
           branchId: finalBranchId
-        });
+        };
+        if (!isNaN(numericTable)) {
+          tableQuery.tableNumber = numericTable;
+        }
+        const table = await Table2.findOne(tableQuery);
         if (table) {
           table.status = "Occupied";
           table.activeOrder = createdOrder._id;
@@ -99545,34 +99553,35 @@ var getMyOrders = async (req, res) => {
   res.json(orders);
 };
 var getOrders = async (req, res) => {
-  const status = req.query.status;
-  const filter = status ? { status: { $in: status.split(",") } } : {};
-  if (req.query.isPaid !== void 0) {
-    filter.isPaid = req.query.isPaid === "true";
-  }
-  if (req.query.branchId && import_mongoose14.default.Types.ObjectId.isValid(req.query.branchId)) {
-    filter.branchId = req.query.branchId;
-  } else if (req.user && req.user.restaurantId) {
-    const rId = typeof req.user.restaurantId === "object" && req.user.restaurantId._id ? req.user.restaurantId._id : req.user.restaurantId;
-    if (req.user.branchId) {
-      const bId = typeof req.user.branchId === "object" && req.user.branchId._id ? req.user.branchId._id : req.user.branchId;
-      filter.$or = [
-        { restaurantId: rId },
-        { branchId: bId }
-      ];
-    } else {
-      filter.restaurantId = rId;
+  try {
+    const filter = {};
+    if (req.query.status) {
+      const statusArr = req.query.status.split(",").map((s) => s.trim()).filter(Boolean);
+      if (statusArr.length > 0) {
+        filter.status = { $in: statusArr };
+      }
     }
-  } else if (req.user && req.user.branchId) {
-    const bId = typeof req.user.branchId === "object" && req.user.branchId._id ? req.user.branchId._id : req.user.branchId;
-    filter.branchId = bId;
-  } else if (req.user && req.user.role === "Customer") {
-    filter.user = req.user._id;
+    if (req.query.isPaid !== void 0) {
+      filter.isPaid = req.query.isPaid === "true";
+    }
+    if (req.query.myOrders === "true" && req.user) {
+      filter.user = req.user._id;
+    } else if (req.query.branchId && import_mongoose15.default.Types.ObjectId.isValid(req.query.branchId)) {
+      filter.branchId = req.query.branchId;
+    }
+    let query = Order_default.find(filter).populate("user", "id name email").populate("deliveryPartner", "id name phoneNumber").sort({ createdAt: -1 });
+    if (req.query.limit) {
+      const limit = parseInt(req.query.limit, 10);
+      if (!isNaN(limit) && limit > 0) {
+        query = query.limit(limit);
+      }
+    }
+    const orders = await query;
+    res.json(orders);
+  } catch (error) {
+    console.error("Failed to fetch orders", error);
+    res.status(500).json({ message: "Failed to fetch orders" });
   }
-  console.log("GET /api/orders called. User:", req.user?._id, "Role:", req.user?.role, "branchId:", req.user?.branchId, "restaurantId:", req.user?.restaurantId);
-  console.log("Constructed filter:", filter);
-  const orders = await Order_default.find(filter).populate("user", "id name").populate("deliveryPartner", "id name").sort({ createdAt: -1 });
-  res.json(orders);
 };
 var updateOrderStatus = async (req, res) => {
   const order = await Order_default.findById(req.params.id);
@@ -99585,7 +99594,7 @@ var updateOrderStatus = async (req, res) => {
       order.tableNumber = newTableNum;
       if (order.orderType === "Dine In") {
         try {
-          const Table2 = import_mongoose14.default.model("Table");
+          const Table2 = import_mongoose15.default.model("Table");
           if (oldTableNum) {
             const oldTable = await Table2.findOne({
               tableNumber: oldTableNum,
@@ -99756,7 +99765,7 @@ var updateOrderStatus = async (req, res) => {
         }
         if (order.orderType === "Dine In") {
           try {
-            const Table2 = import_mongoose14.default.model("Table");
+            const Table2 = import_mongoose15.default.model("Table");
             const table = await Table2.findOne({
               tableNumber: order.tableNumber,
               restaurantId: order.restaurantId,
@@ -99776,6 +99785,7 @@ var updateOrderStatus = async (req, res) => {
     }
     const updatedOrder = await order.save();
     broadcastToCustomerOrder(order._id, "order_status_updated", updatedOrder);
+    broadcastToRestaurant(order.restaurantId, "order_status_updated", updatedOrder);
     broadcastToRestaurant(order.restaurantId, "order_updated", updatedOrder);
     if (updatedOrder.status === "Ready" || updatedOrder.status === "Ready for Pickup") {
       broadcastToRestaurant(order.restaurantId, "ready_to_serve", updatedOrder);
@@ -99820,6 +99830,9 @@ var updateOrderToPaid = async (req, res) => {
       }
     }
     const updatedOrder = await order.save();
+    broadcastToCustomerOrder(order._id, "order_status_updated", updatedOrder);
+    broadcastToRestaurant(order.restaurantId, "order_status_updated", updatedOrder);
+    broadcastToRestaurant(order.restaurantId, "order_updated", updatedOrder);
     res.json(updatedOrder);
   } else {
     res.status(404).json({ message: "Order not found" });
@@ -99840,7 +99853,7 @@ var mergeOrders = async (req, res) => {
 Merged from table ${sourceOrder.tableNumber || "Any"}` : `Merged from table ${sourceOrder.tableNumber || "Any"}`;
     await targetOrder.save();
     if (sourceOrder.orderType === "Dine In" && sourceOrder.tableNumber) {
-      const Table2 = import_mongoose14.default.model("Table");
+      const Table2 = import_mongoose15.default.model("Table");
       const table = await Table2.findOne({
         tableNumber: sourceOrder.tableNumber,
         restaurantId: sourceOrder.restaurantId,
@@ -99964,7 +99977,7 @@ var orderRoutes_default = router4;
 var import_express5 = __toESM(require_express2(), 1);
 
 // controllers/analyticsController.js
-var import_mongoose15 = __toESM(require_mongoose2(), 1);
+var import_mongoose16 = __toESM(require_mongoose2(), 1);
 init_Order();
 var getDashboardAnalytics = async (req, res) => {
   try {
@@ -99983,8 +99996,8 @@ var getDashboardAnalytics = async (req, res) => {
       createdAt: { $gte: previousStartDate, $lt: startDate }
     };
     if (req.user.restaurantId) {
-      currentPeriodMatch.restaurantId = new import_mongoose15.default.Types.ObjectId(req.user.restaurantId);
-      previousPeriodMatch.restaurantId = new import_mongoose15.default.Types.ObjectId(req.user.restaurantId);
+      currentPeriodMatch.restaurantId = new import_mongoose16.default.Types.ObjectId(req.user.restaurantId);
+      previousPeriodMatch.restaurantId = new import_mongoose16.default.Types.ObjectId(req.user.restaurantId);
     } else if (req.user.role !== "SuperAdmin") {
       return res.json({
         overview: { totalRevenue: 0, revenueChange: 0, totalOrders: 0, ordersChange: 0, avgOrderValue: 0, avgChange: 0, activeCustomers: 0, customersChange: 0 },
@@ -100045,7 +100058,7 @@ var getDashboardAnalytics = async (req, res) => {
       name: item.name,
       value: item.totalSold
     })).slice(0, 4);
-    const restIdObj = req.user.restaurantId ? new import_mongoose15.default.Types.ObjectId(req.user.restaurantId) : null;
+    const restIdObj = req.user.restaurantId ? new import_mongoose16.default.Types.ObjectId(req.user.restaurantId) : null;
     let activeTables = 0;
     let currentOrders = 0;
     let pendingOrders = 0;
@@ -100056,7 +100069,7 @@ var getDashboardAnalytics = async (req, res) => {
     let avgPrepTime = 15;
     if (restIdObj) {
       try {
-        const Table2 = import_mongoose15.default.model("Table");
+        const Table2 = import_mongoose16.default.model("Table");
         activeTables = await Table2.countDocuments({
           restaurantId: restIdObj,
           status: { $in: ["Occupied", "Reserved", "Billing"] }
@@ -100104,7 +100117,7 @@ var getDashboardAnalytics = async (req, res) => {
     let totalDeliveryEarnings = 0;
     if (restIdObj) {
       try {
-        const DeliveryPartner2 = import_mongoose15.default.model("DeliveryPartner");
+        const DeliveryPartner2 = import_mongoose16.default.model("DeliveryPartner");
         onlinePartners = await DeliveryPartner2.countDocuments({
           restaurantId: restIdObj,
           status: "Online",
