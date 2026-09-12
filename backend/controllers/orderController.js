@@ -12,6 +12,9 @@ const sanitizeOrderItems = (items) => {
         if (sanitizedItem.product && !mongoose.Types.ObjectId.isValid(sanitizedItem.product)) {
             delete sanitizedItem.product;
         }
+        if (!sanitizedItem.image) {
+            sanitizedItem.image = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800';
+        }
         return sanitizedItem;
     });
 };
