@@ -1,6 +1,7 @@
 import Order from '../models/Order.js';
 import Restaurant from '../models/Restaurant.js';
 import Branch from '../models/Branch.js';
+import User from '../models/User.js';
 import mongoose from 'mongoose';
 import { broadcastToRestaurant, broadcastToCustomerOrder } from '../config/websocket.js';
 
