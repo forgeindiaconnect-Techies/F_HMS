@@ -107,12 +107,16 @@ export const addOrderItems = async (req, res) => {
         // Update table occupancy status if Dine In
         if (orderType === 'Dine In' && tableNumber) {
             try {
-                const Table = mongoose.model('Table');
-                const table = await Table.findOne({
-                    tableNumber,
+                const Table = (await import('../models/Table.js')).default;
+                const numericTable = parseInt(String(tableNumber).replace(/\D/g, ''), 10);
+                const tableQuery = {
                     restaurantId: finalRestaurantId,
                     branchId: finalBranchId
-                });
+                };
+                if (!isNaN(numericTable)) {
+                    tableQuery.tableNumber = numericTable;
+                }
+                const table = await Table.findOne(tableQuery);
                 if (table) {
                     table.status = 'Occupied';
                     table.activeOrder = createdOrder._id;
