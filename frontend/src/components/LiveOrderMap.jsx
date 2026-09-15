@@ -146,15 +146,45 @@ const LiveOrderMap = ({
         const createRiderIcon = (name, isMoving) => L.divIcon({
             className: 'custom-leaflet-marker',
             html: `
-                <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
-                    <div style="background: linear-gradient(135deg, #10b981, #047857); color: white; width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.45); border: 3px solid white;">
-                        <span style="font-size: 24px; ${isMoving ? 'animation: bounce 1s infinite;' : ''}">🛵</span>
+                <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -50%);">
+                    <div style="filter: drop-shadow(0px 8px 12px rgba(0,0,0,0.35)); ${isMoving ? 'animation: pulseRider 1.5s infinite ease-in-out;' : ''}">
+                        <svg width="52" height="52" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Delivery Box (Back) -->
+                            <rect x="6" y="20" width="14" height="14" rx="3" fill="#F97316" stroke="#FFFFFF" stroke-width="2"/>
+                            <path d="M10 24H16" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+
+                            <!-- Delivery Rider (Person) -->
+                            <!-- Head / Helmet -->
+                            <circle cx="28" cy="11" r="6" fill="#1E293B" stroke="#FFFFFF" stroke-width="1.5"/>
+                            <path d="M26 11H32" stroke="#38BDF8" stroke-width="2" stroke-linecap="round"/> <!-- Helmet Visor -->
+                            <!-- Body / Jacket -->
+                            <path d="M22 23C22 18.5 25.5 17 29 17C32.5 17 36 18.5 36 23L34 32H24L22 23Z" fill="#10B981" stroke="#FFFFFF" stroke-width="1.5"/>
+                            <!-- Arms holding handlebar -->
+                            <path d="M32 22L42 26" stroke="#10B981" stroke-width="3.5" stroke-linecap="round"/>
+                            <circle cx="42" cy="26" r="2" fill="#1E293B"/> <!-- Hand -->
+
+                            <!-- Scooter Body -->
+                            <!-- Main Chassis -->
+                            <path d="M14 34L26 34L35 34L45 32L50 26C51 24.5 52.5 24 54 24H56" stroke="#059669" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                            <!-- Front Shield / Body -->
+                            <path d="M44 26L48 37H38L36 30Z" fill="#10B981" stroke="#FFFFFF" stroke-width="1.5"/>
+                            <!-- Seat -->
+                            <path d="M18 31H34C35 31 36 32 35 33H17C16 32 17 31 18 31Z" fill="#334155"/>
+
+                            <!-- Wheels -->
+                            <!-- Back Wheel -->
+                            <circle cx="16" cy="44" r="7.5" fill="#1E293B" stroke="#FFFFFF" stroke-width="2"/>
+                            <circle cx="16" cy="44" r="3" fill="#94A3B8"/>
+                            <!-- Front Wheel -->
+                            <circle cx="46" cy="44" r="7.5" fill="#1E293B" stroke="#FFFFFF" stroke-width="2"/>
+                            <circle cx="46" cy="44" r="3" fill="#94A3B8"/>
+                        </svg>
                     </div>
-                    <span style="font-size: 10px; font-weight: 900; background: #10b981; color: #ffffff; padding: 2px 10px; border-radius: 10px; border: 1.5px solid #ffffff; margin-top: 4px; white-space: nowrap; box-shadow: 0 4px 12px rgba(16,185,129,0.3); text-transform: uppercase;">${name || 'Rider'}</span>
+                    <span style="font-size: 10px; font-weight: 900; background: #059669; color: #ffffff; padding: 2px 8px; border-radius: 8px; border: 1.5px solid #ffffff; margin-top: 2px; white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.25); text-transform: uppercase;">${name || 'Rider'}</span>
                 </div>
             `,
-            iconSize: [50, 66],
-            iconAnchor: [25, 33]
+            iconSize: [52, 68],
+            iconAnchor: [26, 34]
         });
 
         // 1. Restaurant Marker
