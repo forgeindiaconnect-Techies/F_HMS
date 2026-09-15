@@ -286,6 +286,7 @@ const Checkout = () => {
         }
 
         setIsPlacingOrder(true);
+        toast.loading('Connecting to server & placing order...', { id: 'place-order-toast' });
         
         try {
             const orderData = {
@@ -329,14 +330,14 @@ const Checkout = () => {
                 }
             }
 
-            toast.success("Payment verified! Order placed successfully 🎉");
+            toast.success("Payment verified! Order placed successfully 🎉", { id: 'place-order-toast' });
             setOrderPlaced(createdOrder._id);
             clearCart();
             setIsPlacingOrder(false);
 
         } catch (error) {
             console.error('Order failed', error);
-            toast.error('Failed to place order: ' + (error.response?.data?.message || error.message));
+            toast.error('Failed to place order: ' + (error.response?.data?.message || error.message), { id: 'place-order-toast' });
             setIsPlacingOrder(false);
         }
     };
