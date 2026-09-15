@@ -35,14 +35,14 @@ api.interceptors.response.use(
         const config = error.config;
         const status = error.response ? error.response.status : 0;
         
-        // Cold-start spin-up status codes (502, 503, 504, or network drops during boot)
-        const isColdStart = status === 502 || status === 503 || status === 504 || (!error.response && error.code === 'ERR_NETWORK');
+        // Cold-start spin-up status codes (429 rate limit, 502, 503, 504, or network drops during boot)
+        const isColdStart = status === 429 || status === 502 || status === 503 || status === 504 || (!error.response && error.code === 'ERR_NETWORK');
         
-        if (config && isColdStart && (!config._retryCount || config._retryCount < 8)) {
+        if (config && isColdStart && (!config._retryCount || config._retryCount < 6)) {
             config._retryCount = (config._retryCount || 0) + 1;
-            // Linear 3.5s delay to let Render finish container boot
-            const backoffMs = 3500;
-            console.log(`[Render Cold-Start] Retrying request (attempt ${config._retryCount}/8)...`);
+            // 6.5s delay to let Render finish container boot and pass rate limiter
+            const backoffMs = 6500;
+            console.log(`[Render Cold-Start] Server warming up (${status || 'Network Error'}). Retrying attempt ${config._retryCount}/6 in 6.5s...`);
 
             await new Promise((resolve) => setTimeout(resolve, backoffMs));
             return api.request(config);
