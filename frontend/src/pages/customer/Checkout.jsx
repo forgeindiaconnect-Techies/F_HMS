@@ -12,6 +12,8 @@ const Checkout = () => {
     const { cartItems, cartTotal, clearCart } = useCart();
     const { api } = useCustomerAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const { restaurantId, branchId } = location.state || {};
     
     const [orderType, setOrderType] = useState('Self-Pickup');
     const [tableNumber, setTableNumber] = useState('');
@@ -173,9 +175,6 @@ const Checkout = () => {
     const tax = (cartTotal - totalDiscount) * 0.05; // 5% tax
     const deliveryFee = orderType === 'Delivery' ? calculatedDeliveryFee : 0;
     const grandTotal = cartTotal - totalDiscount + tax + deliveryFee;
-
-    const location = useLocation();
-    const { restaurantId, branchId } = location.state || {};
 
     useEffect(() => {
         if (restaurantId && !selectedRestaurantId) {
