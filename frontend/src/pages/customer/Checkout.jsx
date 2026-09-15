@@ -52,10 +52,13 @@ const Checkout = () => {
                 const finalRestaurants = activeList.length > 0 ? activeList : dummyRestaurants;
                 setRestaurantsList(finalRestaurants);
                 
-                const cartRestId = cartItems.length > 0 ? (cartItems[0].restaurantId || cartItems[0].restaurant) : null;
+                const rawCartRestId = cartItems.length > 0 ? cartItems[0].restaurantId : null;
+                const cartRestId = typeof rawCartRestId === 'object' ? rawCartRestId?._id : (rawCartRestId || cartItems[0]?.restaurant);
+                const cartRestName = cartItems.length > 0 ? (typeof cartItems[0].restaurantId === 'object' ? cartItems[0].restaurantId?.name : (cartItems[0].restaurantName || cartItems[0].restaurantTitle)) : null;
+
                 if (location.state?.restaurantId) {
                     setSelectedRestaurantId(location.state.restaurantId);
-                } else if (cartRestId && finalRestaurants.some(r => r._id === cartRestId)) {
+                } else if (cartRestId) {
                     setSelectedRestaurantId(cartRestId);
                 } else if (finalRestaurants.length > 0) {
                     setSelectedRestaurantId(finalRestaurants[0]._id);
@@ -63,7 +66,8 @@ const Checkout = () => {
             } catch (error) {
                 console.error("Failed to load restaurants for checkout", error);
                 setRestaurantsList(dummyRestaurants);
-                const cartRestId = cartItems.length > 0 ? (cartItems[0].restaurantId || cartItems[0].restaurant) : null;
+                const rawCartRestId = cartItems.length > 0 ? cartItems[0].restaurantId : null;
+                const cartRestId = typeof rawCartRestId === 'object' ? rawCartRestId?._id : (rawCartRestId || cartItems[0]?.restaurant);
                 if (location.state?.restaurantId) {
                     setSelectedRestaurantId(location.state.restaurantId);
                 } else if (cartRestId) {
@@ -76,10 +80,12 @@ const Checkout = () => {
         fetchRestaurants();
     }, [cartItems]);
 
-    const cartRestId = cartItems.length > 0 ? (cartItems[0].restaurantId || cartItems[0].restaurant) : null;
-    const cartRestName = cartItems.length > 0 ? (cartItems[0].restaurantName || cartItems[0].restaurantTitle) : null;
+    const rawCartRestId = cartItems.length > 0 ? cartItems[0].restaurantId : null;
+    const cartRestId = typeof rawCartRestId === 'object' ? rawCartRestId?._id : (rawCartRestId || cartItems[0]?.restaurant);
+    const cartRestName = cartItems.length > 0 ? (typeof cartItems[0].restaurantId === 'object' ? cartItems[0].restaurantId?.name : (cartItems[0].restaurantName || cartItems[0].restaurantTitle)) : null;
 
-    const selectedRestaurantObj = restaurantsList.find(r => r._id === (selectedRestaurantId || restaurantId || cartRestId)) || 
+    const targetResId = String(selectedRestaurantId || location.state?.restaurantId || cartRestId || '');
+    const selectedRestaurantObj = restaurantsList.find(r => String(r._id) === targetResId) || 
         (cartRestName ? { _id: cartRestId || 'cart_rest', name: cartRestName } : (restaurantsList.length > 0 ? restaurantsList[0] : null));
 
     const selectedRestaurantName = selectedRestaurantObj ? selectedRestaurantObj.name : (cartRestName || 'Selected Restaurant');

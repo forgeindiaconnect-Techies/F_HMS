@@ -65,12 +65,29 @@ export const CartProvider = ({ children }) => {
 
     const addToCart = (item, quantity = 1) => {
         const itemId = item.id || item._id;
+        const restId = typeof item.restaurantId === 'object' ? item.restaurantId?._id : (item.restaurantId || item.restaurant);
+        const restName = typeof item.restaurantId === 'object' ? item.restaurantId?.name : (item.restaurantName || item.restaurantTitle);
+
         setCartItems(prev => {
             const existing = prev.find(i => (i.id || i._id) === itemId);
             if (existing) {
-                return prev.map(i => (i.id || i._id) === itemId ? { ...i, quantity: i.quantity + quantity, image: getItemImage(i) } : i);
+                return prev.map(i => (i.id || i._id) === itemId ? { 
+                    ...i, 
+                    quantity: i.quantity + quantity, 
+                    image: getItemImage(i),
+                    restaurantId: restId || i.restaurantId,
+                    restaurantName: restName || i.restaurantName
+                } : i);
             }
-            return [...prev, { ...item, id: itemId, _id: itemId, quantity, image: getItemImage(item) }];
+            return [...prev, { 
+                ...item, 
+                id: itemId, 
+                _id: itemId, 
+                quantity, 
+                image: getItemImage(item),
+                restaurantId: restId,
+                restaurantName: restName
+            }];
         });
         setIsCartOpen(true); // Auto open cart when adding
     };
