@@ -302,7 +302,7 @@ const BusinessIntelligence = () => {
                             <span className="text-[10px] font-bold text-gray-400 uppercase bg-gray-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">{selectedTimeframe}</span>
                         </div>
                         <div className="h-72">
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={100}>
                                 <BarChart data={filteredData}>
                                     <XAxis dataKey="outlet" stroke="#9ca3af" fontSize={11} tickLine={false} axisLine={false} />
                                     <YAxis stroke="#9ca3af" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} />
@@ -322,7 +322,7 @@ const BusinessIntelligence = () => {
                             <span className="text-[10px] font-bold text-gray-400 uppercase bg-gray-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">{selectedTimeframe}</span>
                         </div>
                         <div className="h-72">
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={100}>
                                 <LineChart data={filteredData}>
                                     <XAxis dataKey="outlet" stroke="#9ca3af" fontSize={11} tickLine={false} axisLine={false} />
                                     <YAxis stroke="#9ca3af" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} />
