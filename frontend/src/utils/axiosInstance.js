@@ -42,8 +42,8 @@ api.interceptors.response.use(
 
         if (config && isColdStart && (!config._retryCount || config._retryCount < 8)) {
             config._retryCount = (config._retryCount || 0) + 1;
-            const backoffMs = config._retryCount * 3000;
-            console.log(`Render server spinning up (${status || 'Network Error'}). Retrying in ${backoffMs / 1000}s... (attempt ${config._retryCount}/8)`);
+            const backoffMs = 3500;
+            console.log(`Render server spinning up (${status || 'Network Error'}). Retrying in 3.5s... (attempt ${config._retryCount}/8)`);
             await new Promise((resolve) => setTimeout(resolve, backoffMs));
             return api.request(config);
         }

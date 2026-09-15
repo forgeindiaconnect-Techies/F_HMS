@@ -40,9 +40,9 @@ api.interceptors.response.use(
         
         if (config && isColdStart && (!config._retryCount || config._retryCount < 8)) {
             config._retryCount = (config._retryCount || 0) + 1;
-            // Exponential backoff: 3s, 6s, 9s, 12s... to let Render boot without triggering rate limits
-            const backoffMs = config._retryCount * 3000;
-            console.log(`[Render Cold-Start] Retrying in ${backoffMs/1000}s (attempt ${config._retryCount}/8)...`);
+            // Linear 3.5s delay to let Render finish container boot
+            const backoffMs = 3500;
+            console.log(`[Render Cold-Start] Retrying request (attempt ${config._retryCount}/8)...`);
 
             await new Promise((resolve) => setTimeout(resolve, backoffMs));
             return api.request(config);
