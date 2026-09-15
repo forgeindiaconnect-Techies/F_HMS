@@ -59,7 +59,7 @@ const Checkout = () => {
             }
         };
         fetchRestaurants();
-    }, [cartItems]);
+    }, []);
 
     const rawCartRestId = cartItems.length > 0 ? cartItems[0].restaurantId : null;
     const cartRestId = typeof rawCartRestId === 'object' ? rawCartRestId?._id : (rawCartRestId || cartItems[0]?.restaurant);
