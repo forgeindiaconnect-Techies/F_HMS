@@ -270,17 +270,14 @@ const Checkout = () => {
             
             const { data: createdOrder } = await api.post('/orders', orderData);
 
+            // Fire background payment status update without blocking order confirmation UI
             if (createdOrder && createdOrder._id) {
-                try {
-                    await api.put(`/orders/${createdOrder._id}/pay`, {
-                        paymentMethod: orderData.paymentMethod,
-                        paymentStatus: 'COMPLETED',
-                        totalPrice: grandTotal,
-                        taxPrice: tax
-                    });
-                } catch (payErr) {
-                    console.log('Payment status update background notification:', payErr.message);
-                }
+                api.put(`/orders/${createdOrder._id}/pay`, {
+                    paymentMethod: orderData.paymentMethod,
+                    paymentStatus: 'COMPLETED',
+                    totalPrice: grandTotal,
+                    taxPrice: tax
+                }).catch(payErr => console.log('Background pay update note:', payErr.message));
             }
 
             toast.success("Order placed successfully! 🎉");

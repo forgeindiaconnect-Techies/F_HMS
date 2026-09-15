@@ -35,14 +35,15 @@ api.interceptors.response.use(
         const config = error.config;
         const status = error.response ? error.response.status : 0;
         
-        // Cold-start spin-up status codes (429 rate limit, 502, 503, 504, or network drops during boot)
-        const isColdStart = status === 429 || status === 502 || status === 503 || status === 504 || (!error.response && error.code === 'ERR_NETWORK');
+        // Cold-start spin-up status codes (502, 503, 504, or network drops during boot).
+        // Exclude 429 rate-limiting from auto-retry loops so we do not spam Cloudflare / Render edge proxies.
+        const isColdStart = status === 502 || status === 503 || status === 504 || (!error.response && error.code === 'ERR_NETWORK');
         
-        if (config && isColdStart && (!config._retryCount || config._retryCount < 6)) {
+        if (config && isColdStart && (!config._retryCount || config._retryCount < 4)) {
             config._retryCount = (config._retryCount || 0) + 1;
-            // 6.5s delay to let Render finish container boot and pass rate limiter
-            const backoffMs = 6500;
-            console.log(`[Render Cold-Start] Server warming up (${status || 'Network Error'}). Retrying attempt ${config._retryCount}/6 in 6.5s...`);
+            // Exponential backoff with jitter: 4s, 7s, 11s, 15s to let Render finish container boot
+            const backoffMs = (config._retryCount * 3500) + Math.floor(Math.random() * 1000);
+            console.log(`[Render Cold-Start] Server warming up (${status || 'Network Error'}). Retrying attempt ${config._retryCount}/4 in ${(backoffMs/1000).toFixed(1)}s...`);
 
             await new Promise((resolve) => setTimeout(resolve, backoffMs));
             return api.request(config);
