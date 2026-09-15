@@ -52,7 +52,7 @@ api.interceptors.response.use(
             config._retryCount = (config._retryCount || 0) + 1;
             console.log(`Render server spinning up (${status || 'Network Error'}). Retrying in 2.5s... (attempt ${config._retryCount}/15)`);
             await new Promise((resolve) => setTimeout(resolve, 2500));
-            return api(config);
+            return api.request(config);
         }
 
         return Promise.reject(error);
