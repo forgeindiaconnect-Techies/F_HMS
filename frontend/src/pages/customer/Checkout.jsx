@@ -81,16 +81,6 @@ const Checkout = () => {
         };
     }, [paymentMethod, upiMethod, isScanned]);
 
-    // If cart is empty and order not placed, kick them out
-    if (cartItems.length === 0 && !orderPlaced) {
-        return (
-            <div className="min-h-screen flex flex-col items-center justify-center p-4">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Your cart is empty</h2>
-                <Link to="/menu" className="bg-orange-600 text-white px-6 py-3 rounded-xl font-bold">Return to Menu</Link>
-            </div>
-        );
-    }
-
     let subscriptionDiscount = 0;
     if (subscriptionPlan === 'Weekly Subscription') {
         subscriptionDiscount = cartTotal * 0.10;
@@ -164,16 +154,26 @@ const Checkout = () => {
 
     }, [selectedRestaurantObj, orderType, cartTotal]);
 
-    const totalDiscount = discount + subscriptionDiscount;
-    const tax = (cartTotal - totalDiscount) * 0.05; // 5% tax
-    const deliveryFee = orderType === 'Delivery' ? calculatedDeliveryFee : 0;
-    const grandTotal = cartTotal - totalDiscount + tax + deliveryFee;
-
     useEffect(() => {
         if (restaurantId && !selectedRestaurantId) {
             setSelectedRestaurantId(restaurantId);
         }
     }, [restaurantId, selectedRestaurantId]);
+
+    const totalDiscount = discount + subscriptionDiscount;
+    const tax = (cartTotal - totalDiscount) * 0.05; // 5% tax
+    const deliveryFee = orderType === 'Delivery' ? calculatedDeliveryFee : 0;
+    const grandTotal = cartTotal - totalDiscount + tax + deliveryFee;
+
+    // If cart is empty and order not placed, kick them out (Must be placed AFTER all hooks to observe Rules of Hooks)
+    if (cartItems.length === 0 && !orderPlaced) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center p-4">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Your cart is empty</h2>
+                <Link to="/menu" className="bg-orange-600 text-white px-6 py-3 rounded-xl font-bold">Return to Menu</Link>
+            </div>
+        );
+    }
 
     const handleApplyCoupon = async (e) => {
         e.preventDefault();
