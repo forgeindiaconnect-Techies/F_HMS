@@ -8,13 +8,8 @@ export const getApiUrl = () => {
     if (hostname.startsWith('192.168.') || hostname.startsWith('10.') || hostname.startsWith('172.')) {
         return `http://${hostname}:5000/api`;
     }
-    let envUrl = import.meta.env.VITE_API_URL || 'https://f-hms.onrender.com/api';
-    if (envUrl.includes('f-hms-1.onrender.com')) {
-        envUrl = envUrl.replace('f-hms-1.onrender.com', 'f-hms.onrender.com');
-    }
-    if (envUrl.endsWith('/')) envUrl = envUrl.slice(0, -1);
-    if (!envUrl.endsWith('/api')) envUrl += '/api';
-    return envUrl;
+    // Return relative path on Vercel production to utilize Vercel reverse proxy (vercel.json)
+    return '/api';
 };
 
 const api = axios.create({
