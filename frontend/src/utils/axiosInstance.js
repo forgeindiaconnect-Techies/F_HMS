@@ -8,8 +8,8 @@ export const getApiUrl = () => {
     if (hostname.startsWith('192.168.') || hostname.startsWith('10.') || hostname.startsWith('172.')) {
         return `http://${hostname}:5000/api`;
     }
-    // Return relative path on Vercel production to utilize Vercel reverse proxy (vercel.json)
-    return '/api';
+    // Direct backend target on Render to eliminate double-proxying bottleneck on Vercel
+    return 'https://f-hms.onrender.com/api';
 };
 
 const api = axios.create({
