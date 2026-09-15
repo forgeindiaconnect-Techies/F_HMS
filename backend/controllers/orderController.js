@@ -30,6 +30,9 @@ export const addOrderItems = async (req, res) => {
             return res.status(400).json({ message: 'No order items' });
         }
 
+        const validSources = ['Walk-in', 'QR', 'Self-Pickup'];
+        const finalSource = validSources.includes(source) ? source : (orderType === 'Delivery' ? 'Walk-in' : 'Self-Pickup');
+
         let finalBranchId = (branchId && mongoose.Types.ObjectId.isValid(branchId)) ? branchId : (req.user ? req.user.branchId : null);
         let finalRestaurantId = (restaurantId && mongoose.Types.ObjectId.isValid(restaurantId)) ? restaurantId : (req.user ? req.user.restaurantId : null);
 
@@ -108,7 +111,7 @@ export const addOrderItems = async (req, res) => {
             orderType,
             tableNumber,
             notes,
-            source,
+            source: finalSource,
             paymentMethod,
             subscriptionPlan: subscriptionPlan || 'One-time Order',
             taxPrice,

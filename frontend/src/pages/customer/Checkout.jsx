@@ -299,7 +299,7 @@ const Checkout = () => {
                 })),
                 orderType: orderType === 'Delivery' ? 'Delivery' : 'Self-Pickup',
                 source: orderType === 'Delivery' ? 'Walk-in' : 'Self-Pickup',
-                restaurantId: targetResId && targetResId !== 'cart_rest' ? targetResId : undefined,
+                restaurantId: targetResId && targetResId !== 'cart_rest' && /^[0-9a-fA-F]{24}$/.test(targetResId) ? targetResId : undefined,
                 branchId: branchId || undefined,
                 paymentMethod: paymentMethod === 'UPI' 
                     ? (upiMethod === 'QR' ? `UPI - ${upiPlatform || 'QR'}` : `UPI ID - ${upiId}`) 
