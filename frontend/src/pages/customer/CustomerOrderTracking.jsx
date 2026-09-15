@@ -4,7 +4,7 @@ import axios from 'axios';
 import { 
     Clock, RefreshCw, ChevronLeft, PhoneCall, Coffee, Utensils, 
     FileText, CheckCircle2, AlertCircle, ShoppingBag, BellRing, Star,
-    Bike, MapPin, Store, User
+    Bike, MapPin, Store, User, MessageSquare
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getApiUrl } from '../../utils/axiosInstance';
