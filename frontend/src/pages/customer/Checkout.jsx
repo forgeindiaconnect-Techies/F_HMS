@@ -591,7 +591,7 @@ const Checkout = () => {
                                     </div>
 
                                     <p className="text-xs text-gray-600 leading-relaxed font-medium">
-                                        Scan using GPay, PhonePe, Paytm, or click <strong>Pay ₹{grandTotal.toFixed(2)}</strong> below to complete your order.
+                                        Scan using GPay, PhonePe, Paytm, or click <strong>Place Order</strong> below to complete your order.
                                     </p>
                                 </div>
                             )}
@@ -716,7 +716,7 @@ const Checkout = () => {
                                             Processing Payment...
                                         </>
                                     ) : (
-                                        <>Pay ₹{grandTotal.toFixed(2)} <ChevronRight size={18} /></>
+                                        <>Place Order <ChevronRight size={18} /></>
                                     )}
                                 </button>
                                 <button 
