@@ -23,12 +23,13 @@ const sanitizeOrderItems = (items) => {
 // @route   POST /api/orders
 // @access  Private (Customer/Waiter)
 export const addOrderItems = async (req, res) => {
-    const { orderItems, orderType, source, restaurantId, branchId, paymentMethod, subscriptionPlan, taxPrice, totalPrice, tableNumber, notes } = req.body;
+    try {
+        const { orderItems, orderType, source, restaurantId, branchId, paymentMethod, subscriptionPlan, taxPrice, totalPrice, tableNumber, notes, customerLocation, restaurantLocation, shippingAddress } = req.body;
 
-    if (orderItems && orderItems.length === 0) {
-        res.status(400).json({ message: 'No order items' });
-        return;
-    } else {
+        if (!orderItems || orderItems.length === 0) {
+            return res.status(400).json({ message: 'No order items' });
+        }
+
         let finalBranchId = (branchId && mongoose.Types.ObjectId.isValid(branchId)) ? branchId : (req.user ? req.user.branchId : null);
         let finalRestaurantId = (restaurantId && mongoose.Types.ObjectId.isValid(restaurantId)) ? restaurantId : (req.user ? req.user.restaurantId : null);
 
@@ -78,8 +79,6 @@ export const addOrderItems = async (req, res) => {
             }
             if (guestUser) finalUserId = guestUser._id;
         }
-
-        const { orderItems, orderType, source, restaurantId, branchId, paymentMethod, subscriptionPlan, taxPrice, totalPrice, tableNumber, notes, customerLocation, restaurantLocation, shippingAddress } = req.body;
 
         const finalCustomerLoc = (customerLocation && customerLocation.latitude && customerLocation.longitude) ? {
             latitude: Number(customerLocation.latitude),
@@ -171,7 +170,10 @@ export const addOrderItems = async (req, res) => {
         // Broadcast real-time websocket alert to kitchen display
         broadcastToRestaurant(finalRestaurantId, 'new_order', createdOrder);
 
-        res.status(201).json(createdOrder);
+        return res.status(201).json(createdOrder);
+    } catch (error) {
+        console.error('Error creating order:', error);
+        return res.status(500).json({ message: error.message || 'Server error creating order' });
     }
 };
 
