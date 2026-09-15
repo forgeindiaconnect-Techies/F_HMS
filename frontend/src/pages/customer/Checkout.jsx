@@ -217,125 +217,69 @@ const Checkout = () => {
 
             setDiscount(computedDiscount);
             toast.success(`Coupon '${matchedOffer.code}' applied! Saved ₹${computedDiscount.toFixed(2)} 🎉`);
-
-        } catch (err) {
-            // Fallback for offline or static check
-            if (coupon.toUpperCase() === 'WELCOME20') {
-                setDiscount(cartTotal * 0.20);
-                toast.success('Coupon WELCOME20 applied! 20% Discount');
-            } else {
-                toast.error('Invalid coupon code');
-                setDiscount(0);
-            }
+        } catch (error) {
+            console.error("Failed to apply coupon", error);
+            toast.error('Failed to apply coupon');
         }
-    };
-
-    const loadRazorpayScript = () => {
-        return new Promise((resolve) => {
-            if (window.Razorpay) {
-                resolve(true);
-                return;
-            }
-            const script = document.createElement('script');
-            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-            script.onload = () => resolve(true);
-            script.onerror = () => resolve(false);
-            document.body.appendChild(script);
-        });
     };
 
     const handlePlaceOrder = async (e) => {
         e.preventDefault();
-        
-        let targetRestaurantId = selectedRestaurantId || restaurantId;
-        if (!targetRestaurantId && restaurantsList.length > 0) {
-            targetRestaurantId = restaurantsList[0]._id;
-            setSelectedRestaurantId(targetRestaurantId);
+        if (orderType === 'Delivery' && !deliveryValidation.isValid) {
+            toast.error(deliveryValidation.error || 'Please fix delivery validation errors');
+            return;
+        }
+        if (orderType === 'Delivery' && !address.trim()) {
+            toast.error('Please enter a delivery address');
+            return;
+        }
+        if (paymentMethod === 'UPI' && upiMethod === 'ID' && !upiId.trim()) {
+            toast.error('Please enter a valid UPI ID');
+            return;
         }
 
-        if (orderType === 'Delivery') {
-            if (!deliveryValidation.isValid) {
-                toast.error(`Cannot place delivery order: ${deliveryValidation.error}`);
-                return;
-            }
-            if (!address.trim()) {
-                toast.error('Please enter a delivery address.');
-                return;
-            }
-        }
-
-        setIsPlacingOrder(true);
-        toast.loading('Connecting to kitchen server...', { id: 'place-order-toast' });
-        
         try {
-            // 0. Ensure backend container is awake before posting order
-            try {
-                let API_URL = getApiUrl();
-                await axios.get(`${API_URL}/health`, { timeout: 10000 });
-            } catch (pingErr) {
-                console.log('Backend warmup ping note:', pingErr.message);
-            }
-
-            toast.loading('Placing order...', { id: 'place-order-toast' });
-
-            const orderData = {
-                orderItems: cartItems.map(item => ({
+            let API_URL = getApiUrl();
+            const orderPayload = {
+                restaurantId: targetResId,
+                items: cartItems.map(item => ({
+                    menuItem: item.menuItem || item._id,
                     name: item.name,
-                    qty: item.quantity || item.qty || 1,
-                    image: item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800',
                     price: item.price,
-                    product: (item._id || item.id) && String(item._id || item.id).length === 24 ? String(item._id || item.id) : undefined
+                    quantity: item.quantity,
+                    customizations: item.customizations || []
                 })),
-                orderType: orderType === 'Delivery' ? 'Delivery' : 'Self-Pickup',
-                source: orderType === 'Delivery' ? 'Walk-in' : 'Self-Pickup',
-                restaurantId: targetResId && targetResId !== 'cart_rest' && /^[0-9a-fA-F]{24}$/.test(targetResId) ? targetResId : undefined,
-                branchId: branchId || undefined,
-                paymentMethod: paymentMethod === 'UPI' 
-                    ? (upiMethod === 'QR' ? `UPI - ${upiPlatform || 'QR'}` : `UPI ID - ${upiId}`) 
-                    : paymentMethod,
+                orderType,
+                deliveryAddress: orderType === 'Delivery' ? address : undefined,
+                paymentMethod,
                 subscriptionPlan,
-                taxPrice: tax,
-                totalPrice: grandTotal,
-                shippingAddress: orderType === 'Delivery' ? { address } : undefined,
-                deliveryDistance: orderType === 'Delivery' ? mockDistance : undefined,
-                deliveryCharge: orderType === 'Delivery' ? calculatedDeliveryFee : undefined,
-                deliveryStatus: 'None'
+                itemTotal: cartTotal,
+                discount: totalDiscount,
+                tax,
+                deliveryFee,
+                grandTotal
             };
-            
-            // 1. Create order initial entry
-            const { data: createdOrder } = await api.post('/orders', orderData);
 
-            // Complete payment and mark order as paid
-            if (createdOrder && createdOrder._id) {
-                try {
-                    await api.put(`/orders/${createdOrder._id}/pay`, {
-                        paymentMethod: orderData.paymentMethod,
-                        paymentStatus: 'COMPLETED',
-                        totalPrice: grandTotal,
-                        taxPrice: tax
-                    });
-                } catch (payErr) {
-                    console.log('Payment status update background notification:', payErr.message);
-                }
-            }
+            const token = localStorage.getItem('token');
+            const res = await axios.post(`${API_URL}/orders`, orderPayload, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {}
+            });
 
-            toast.success("Payment verified! Order placed successfully 🎉", { id: 'place-order-toast' });
-            setOrderPlaced(createdOrder._id);
-            clearCart();
-            setIsPlacingOrder(false);
-
+            const newOrderId = res.data._id || res.data.orderId || 'ORDER_' + Date.now();
+            setOrderPlaced(newOrderId);
+            if (typeof clearCart === 'function') clearCart();
+            toast.success('Order placed successfully! 🎉');
         } catch (error) {
-            console.error('Order failed', error);
-            toast.error('Failed to place order: ' + (error.response?.data?.message || error.message), { id: 'place-order-toast' });
-            setIsPlacingOrder(false);
+            console.error("Failed to place order", error);
+            toast.error(error.response?.data?.message || 'Failed to place order. Please try again.');
         }
     };
 
     if (orderPlaced) {
         return (
-            <div className="min-h-[80vh] flex items-center justify-center p-4">
-                <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-gray-100 max-w-lg w-full text-center animate-in zoom-in duration-500">
-                    <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="min-h-screen flex flex-col items-center justify-center p-4">
+                <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full text-center border border-gray-100">
+                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                         <CheckCircle size={48} className="text-green-500" />
                     </div>
                     <h1 className="text-3xl font-bold text-gray-900 font-sans tracking-tight mb-2">Order Confirmed!</h1>
