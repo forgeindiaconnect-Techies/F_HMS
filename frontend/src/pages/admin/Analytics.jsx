@@ -130,7 +130,7 @@ const Analytics = () => {
                             </div>
                             <div className="h-[300px] w-full">
                                 {data.revenueTrend.length > 0 ? (
-                                    <ResponsiveContainer width="100%" height="100%">
+                                    <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={100}>
                                         <AreaChart data={data.revenueTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                                             <defs>
                                                 <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
@@ -160,7 +160,7 @@ const Analytics = () => {
                             <h3 className="font-bold text-gray-900 text-lg mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>Sales by Category</h3>
                             <div className="flex-1 min-h-[250px]">
                                 {data.categoryData.length > 0 ? (
-                                    <ResponsiveContainer width="100%" height="100%">
+                                    <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={100}>
                                         <PieChart>
                                             <Pie
                                                 data={data.categoryData}
@@ -195,7 +195,7 @@ const Analytics = () => {
                             <h3 className="font-bold text-gray-900 text-lg mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>Daily Order Volume</h3>
                             <div className="h-[250px] w-full">
                                 {data.revenueTrend.length > 0 ? (
-                                    <ResponsiveContainer width="100%" height="100%">
+                                    <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={100}>
                                         <BarChart data={data.revenueTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                                             <XAxis dataKey="_id" stroke="#9CA3AF" fontSize={12} tickLine={false} axisLine={false} />
                                             <YAxis stroke="#9CA3AF" fontSize={12} tickLine={false} axisLine={false} />
