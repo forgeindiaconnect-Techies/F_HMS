@@ -260,51 +260,7 @@ const StaffAuthPage = () => {
 
     const renderLoginForm = () => (
         <form onSubmit={handleSubmit(onSubmitLogin)} className="space-y-4">
-            {/* Quick Demo Test Credentials Banner */}
-            <div className="p-3 bg-green-50/80 border border-green-200/80 rounded-2xl text-left space-y-2">
-                <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-green-800">⚡ Test Local Credentials</span>
-                    <span className="text-[10px] text-green-600 font-semibold">Click to Auto-fill</span>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-1.5">
-                    <button
-                        type="button"
-                        onClick={() => reset({ email: 'chef1@pizzapalace.com', password: 'password123' })}
-                        className="text-left px-2.5 py-1.5 bg-white hover:bg-green-100/50 border border-green-200 rounded-xl transition-all text-xs group cursor-pointer"
-                    >
-                        <span className="font-bold text-gray-900 block text-[11px]">👨‍🍳 Chef / Kitchen</span>
-                        <span className="text-[9px] text-gray-500 block truncate">chef1@pizzapalace.com</span>
-                    </button>
 
-                    <button
-                        type="button"
-                        onClick={() => reset({ email: 'cashier1@pizzapalace.com', password: 'password123' })}
-                        className="text-left px-2.5 py-1.5 bg-white hover:bg-green-100/50 border border-green-200 rounded-xl transition-all text-xs group cursor-pointer"
-                    >
-                        <span className="font-bold text-gray-900 block text-[11px]">💵 Cashier POS</span>
-                        <span className="text-[9px] text-gray-500 block truncate">cashier1@pizzapalace.com</span>
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={() => reset({ email: 'branchmanager1@pizzapalace.com', password: 'password123' })}
-                        className="text-left px-2.5 py-1.5 bg-white hover:bg-green-100/50 border border-green-200 rounded-xl transition-all text-xs group cursor-pointer"
-                    >
-                        <span className="font-bold text-gray-900 block text-[11px]">📊 Manager</span>
-                        <span className="text-[9px] text-gray-500 block truncate">branchmanager1@pizzapalace.com</span>
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={() => reset({ email: 'owner@pizzapalace.com', password: 'password123' })}
-                        className="text-left px-2.5 py-1.5 bg-white hover:bg-green-100/50 border border-green-200 rounded-xl transition-all text-xs group cursor-pointer"
-                    >
-                        <span className="font-bold text-gray-900 block text-[11px]">👑 Admin / Owner</span>
-                        <span className="text-[9px] text-gray-500 block truncate">owner@pizzapalace.com</span>
-                    </button>
-                </div>
-            </div>
 
             <div>
                 <div className="relative group">

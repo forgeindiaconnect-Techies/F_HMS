@@ -86,24 +86,7 @@ const DeliveryPartnerLogin = () => {
                 {/* STEP 1: Phone input */}
                 {step === 'phone' && (
                     <form onSubmit={handleSendOtp} className="space-y-6">
-                        {/* Quick Test Local Credentials */}
-                        <div className="p-3 bg-emerald-50/80 border border-emerald-200/80 rounded-2xl text-left">
-                            <div className="flex justify-between items-center mb-1.5">
-                                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800">⚡ Test Local Credentials</span>
-                                <span className="text-[10px] text-emerald-600 font-semibold">Click to Auto-fill</span>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setPhoneNumber('9876543210')}
-                                className="w-full text-left px-3 py-2 bg-white hover:bg-emerald-100/50 border border-emerald-200 rounded-xl transition-all text-xs flex justify-between items-center group cursor-pointer"
-                            >
-                                <div>
-                                    <span className="font-bold text-gray-900 block">Delivery Partner Mobile</span>
-                                    <span className="text-[10px] text-gray-500">+91 9876543210 • OTP: 1234</span>
-                                </div>
-                                <span className="text-[10px] font-bold text-emerald-600 group-hover:translate-x-0.5 transition-transform">Fill ➔</span>
-                            </button>
-                        </div>
+
 
                         <div className="space-y-2">
                             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Mobile Number</label>

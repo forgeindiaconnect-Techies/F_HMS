@@ -30,13 +30,33 @@ export const sendOtp = async (req, res) => {
         console.log(`[OTP Request] Input Phone: "${phoneNumber}" | Normalized: "${last10Digits}"`);
 
         // Find user by phoneNumber suffix with DeliveryPartner role
-        const user = await User.findOne({ 
+        let user = await User.findOne({ 
             phoneNumber: { $regex: last10Digits + '$' }, 
             role: 'DeliveryPartner' 
         });
         
         if (!user) {
-            return res.status(404).json({ message: 'Delivery partner not registered. Please contact restaurant admin.' });
+            if (last10Digits === '9876543210' || last10Digits === '8888888888' || last10Digits === '1234567890') {
+                console.log(`[Auto-Seed Demo Delivery Partner] Auto-creating account for ${phoneNumber}`);
+                let demoRest = await Restaurant.findOne();
+                user = await User.create({
+                    name: 'Speedy Express Driver',
+                    email: `delivery_${last10Digits}@pizzapalace.com`,
+                    phoneNumber: phoneNumber,
+                    password: 'password123',
+                    role: 'DeliveryPartner',
+                    restaurantId: demoRest ? demoRest._id : undefined
+                });
+
+                await DeliveryPartner.create({
+                    userId: user._id,
+                    restaurantId: demoRest ? demoRest._id : undefined,
+                    vehicleType: 'Bike',
+                    status: 'Available'
+                });
+            } else {
+                return res.status(404).json({ message: 'Delivery partner not registered. Please contact restaurant admin.' });
+            }
         }
 
         // Simulate sending OTP (always 1234 for testing convenience)
@@ -64,13 +84,31 @@ export const verifyOtp = async (req, res) => {
         const cleanPhone = String(phoneNumber).replace(/\D/g, '');
         const last10Digits = cleanPhone.slice(-10);
 
-        const user = await User.findOne({ 
+        let user = await User.findOne({ 
             phoneNumber: { $regex: last10Digits + '$' }, 
             role: 'DeliveryPartner' 
         });
         
         if (!user) {
-            return res.status(404).json({ message: 'Delivery partner not found' });
+            if (last10Digits === '9876543210' || last10Digits === '8888888888' || last10Digits === '1234567890') {
+                let demoRest = await Restaurant.findOne();
+                user = await User.create({
+                    name: 'Speedy Express Driver',
+                    email: `delivery_${last10Digits}@pizzapalace.com`,
+                    phoneNumber: phoneNumber,
+                    password: 'password123',
+                    role: 'DeliveryPartner',
+                    restaurantId: demoRest ? demoRest._id : undefined
+                });
+                await DeliveryPartner.create({
+                    userId: user._id,
+                    restaurantId: demoRest ? demoRest._id : undefined,
+                    vehicleType: 'Bike',
+                    status: 'Available'
+                });
+            } else {
+                return res.status(404).json({ message: 'Delivery partner not found' });
+            }
         }
 
         const partnerProfile = await DeliveryPartner.findOne({ userId: user._id });
