@@ -80,20 +80,21 @@ const LiveOrderMap = ({
         });
     }, []);
 
-    // Initialize Map
+    // Initialize Map with Light Theme Tiles & Clear Labels
     useEffect(() => {
         if (!leafletReady || !mapRef.current || mapInstanceRef.current) return;
         const L = window.L;
 
         const map = L.map(mapRef.current, {
             zoomControl: false,
-            attributionControl: false
+            attributionControl: true
         }).setView([restLoc.latitude, restLoc.longitude], 13);
 
-        // Dark/Standard OpenStreetMap Tile Layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // Crisp Light Theme OpenStreetMap / CartoDB Voyager Tile Layer with clear place names & road labels
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             maxZoom: 19,
-            className: 'map-tiles'
+            subdomains: 'abcd',
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
         }).addTo(map);
 
         L.control.zoom({ position: 'bottomright' }).addTo(map);
@@ -114,47 +115,47 @@ const LiveOrderMap = ({
         const L = window.L;
         const map = mapInstanceRef.current;
 
-        // Custom DIV Icons
+        // Custom DIV Icons for Light Theme
         const createStoreIcon = () => L.divIcon({
             className: 'custom-leaflet-marker',
             html: `
                 <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
-                    <div style="background: linear-gradient(135deg, #f59e0b, #ea580c); color: white; width: 38px; height: 38px; border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.5); border: 2px solid #0f172a;">
-                        <span style="font-size: 18px;">🏪</span>
+                    <div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; width: 40px; height: 40px; border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4); border: 2.5px solid white;">
+                        <span style="font-size: 20px;">🏪</span>
                     </div>
-                    <span style="font-size: 9px; font-weight: 900; background: rgba(15, 23, 42, 0.95); color: #f59e0b; padding: 2px 6px; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.4); margin-top: 4px; white-space: nowrap; text-transform: uppercase;">Kitchen Hub</span>
+                    <span style="font-size: 10px; font-weight: 800; background: #ffffff; color: #b45309; padding: 2px 8px; border-radius: 8px; border: 1.5px solid #fde68a; margin-top: 4px; white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-transform: uppercase;">Kitchen Hub</span>
                 </div>
             `,
-            iconSize: [40, 56],
-            iconAnchor: [20, 28]
+            iconSize: [44, 60],
+            iconAnchor: [22, 30]
         });
 
         const createCustomerIcon = () => L.divIcon({
             className: 'custom-leaflet-marker',
             html: `
                 <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
-                    <div style="background: linear-gradient(135deg, #9333ea, #7e22ce); color: white; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(147, 51, 234, 0.5); border: 2px solid #0f172a;">
-                        <span style="font-size: 18px;">🏠</span>
+                    <div style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4); border: 2.5px solid white;">
+                        <span style="font-size: 20px;">🏠</span>
                     </div>
-                    <span style="font-size: 9px; font-weight: 900; background: rgba(15, 23, 42, 0.95); color: #c084fc; padding: 2px 6px; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.4); margin-top: 4px; white-space: nowrap; text-transform: uppercase;">Customer</span>
+                    <span style="font-size: 10px; font-weight: 800; background: #ffffff; color: #6d28d9; padding: 2px 8px; border-radius: 8px; border: 1.5px solid #ddd6fe; margin-top: 4px; white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-transform: uppercase;">Customer</span>
                 </div>
             `,
-            iconSize: [40, 56],
-            iconAnchor: [20, 28]
+            iconSize: [44, 60],
+            iconAnchor: [22, 30]
         });
 
         const createRiderIcon = (name, isMoving) => L.divIcon({
             className: 'custom-leaflet-marker',
             html: `
                 <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
-                    <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.6); border: 2px solid #0f172a; position: relative;">
-                        <span style="font-size: 22px; ${isMoving ? 'animation: bounce 1s infinite;' : ''}">🛵</span>
+                    <div style="background: linear-gradient(135deg, #10b981, #047857); color: white; width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.45); border: 3px solid white;">
+                        <span style="font-size: 24px; ${isMoving ? 'animation: bounce 1s infinite;' : ''}">🛵</span>
                     </div>
-                    <span style="font-size: 9px; font-weight: 900; background: rgba(15, 23, 42, 0.95); color: #34d399; padding: 2px 8px; border-radius: 8px; border: 1px solid rgba(52, 211, 153, 0.4); margin-top: 4px; white-space: nowrap; text-transform: uppercase;">${name || 'Rider'}</span>
+                    <span style="font-size: 10px; font-weight: 900; background: #10b981; color: #ffffff; padding: 2px 10px; border-radius: 10px; border: 1.5px solid #ffffff; margin-top: 4px; white-space: nowrap; box-shadow: 0 4px 12px rgba(16,185,129,0.3); text-transform: uppercase;">${name || 'Rider'}</span>
                 </div>
             `,
-            iconSize: [48, 62],
-            iconAnchor: [24, 31]
+            iconSize: [50, 66],
+            iconAnchor: [25, 33]
         });
 
         // 1. Restaurant Marker
@@ -188,7 +189,6 @@ const LiveOrderMap = ({
         }
 
         // 4. Fetch OSRM Road Route
-        // OSRM format: longitude,latitude
         const originLngLat = riderLoc 
             ? `${riderLoc.longitude},${riderLoc.latitude}` 
             : `${restLoc.longitude},${restLoc.latitude}`;
@@ -218,23 +218,23 @@ const LiveOrderMap = ({
                     // Convert OSRM [lng, lat] coordinates to Leaflet [lat, lng]
                     const latLngs = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
 
-                    // Render Background Dashed Polyline
+                    // Render Background Polyline
                     if (backgroundPolylineRef.current) {
                         map.removeLayer(backgroundPolylineRef.current);
                     }
                     backgroundPolylineRef.current = L.polyline(latLngs, {
-                        color: '#334155',
-                        weight: 6,
-                        opacity: 0.8,
-                        dashArray: '8, 8'
+                        color: '#94a3b8',
+                        weight: 7,
+                        opacity: 0.6,
+                        dashArray: '10, 10'
                     }).addTo(map);
 
-                    // Render Active Emerald Polyline
+                    // Render Active Blue/Emerald Polyline
                     if (polylineRef.current) {
                         map.removeLayer(polylineRef.current);
                     }
                     polylineRef.current = L.polyline(latLngs, {
-                        color: '#10b981',
+                        color: '#2563eb',
                         weight: 6,
                         opacity: 0.9,
                         lineCap: 'round',
@@ -269,7 +269,7 @@ const LiveOrderMap = ({
                     [custLoc.latitude, custLoc.longitude]
                 ];
                 if (polylineRef.current) map.removeLayer(polylineRef.current);
-                polylineRef.current = L.polyline(fallbackLatLngs, { color: '#10b981', weight: 4, dashArray: '6,6' }).addTo(map);
+                polylineRef.current = L.polyline(fallbackLatLngs, { color: '#2563eb', weight: 5, dashArray: '6,6' }).addTo(map);
 
                 const boundsPoints = [
                     [restLoc.latitude, restLoc.longitude],
@@ -285,24 +285,24 @@ const LiveOrderMap = ({
     }, [leafletReady, restLoc.latitude, restLoc.longitude, custLoc.latitude, custLoc.longitude, riderLoc?.latitude, riderLoc?.longitude, isRiderActive, deliveryPartnerName]);
 
     return (
-        <div className={`relative rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950 w-full ${className}`} style={{ height }}>
+        <div className={`relative rounded-3xl overflow-hidden border border-slate-200 shadow-xl bg-white w-full ${className}`} style={{ height }}>
             {/* Map Container */}
             <div ref={mapRef} className="w-full h-full z-0" />
 
-            {/* OSRM Route HUD Card */}
-            <div className="absolute top-4 left-4 z-10 bg-slate-900/95 border border-slate-800 p-3.5 rounded-2xl backdrop-blur text-left shadow-2xl flex flex-col gap-1 min-w-[150px]">
+            {/* Light Theme OSRM Route HUD Card */}
+            <div className="absolute top-4 left-4 z-10 bg-white/95 border border-slate-200 p-3.5 rounded-2xl backdrop-blur text-left shadow-xl flex flex-col gap-1 min-w-[160px]">
                 <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                    <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest leading-none">OSRM Live Route</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-ping"></span>
+                    <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest leading-none">OSRM Road Route</span>
                 </div>
-                <h4 className="text-base font-extrabold text-white leading-none mt-1">
-                    {isDelivered ? 'Delivered 🎉' : `${routeInfo.durationMins || '--'} mins`}
+                <h4 className="text-base font-extrabold text-slate-900 leading-none mt-1">
+                    {isDelivered ? 'Arrived 🎉' : `${routeInfo.durationMins || '--'} mins`}
                 </h4>
-                <p className="text-[10px] font-semibold text-slate-400 mt-0.5">
+                <p className="text-[11px] font-bold text-slate-500 mt-0.5">
                     {isDelivered ? '0.0 km' : `${routeInfo.distanceKm || '--'} km remaining`}
                 </p>
                 {deliveryPartnerLocation?.updatedAt && (
-                    <span className="text-[8px] text-slate-500 font-mono mt-1">
+                    <span className="text-[9px] text-slate-400 font-mono mt-0.5">
                         Updated: {new Date(deliveryPartnerLocation.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                     </span>
                 )}
@@ -310,15 +310,15 @@ const LiveOrderMap = ({
 
             {/* Status Warning / Info Banner */}
             {!riderLoc && isRiderActive && (
-                <div className="absolute bottom-4 left-4 right-4 z-10 bg-slate-900/90 border border-amber-500/30 p-2.5 rounded-xl text-center backdrop-blur shadow-xl">
-                    <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+                <div className="absolute bottom-4 left-4 right-4 z-10 bg-amber-50 border border-amber-200 p-2.5 rounded-xl text-center shadow-lg">
+                    <span className="text-[10px] font-extrabold text-amber-800 uppercase tracking-wider">
                         ⏳ Waiting for delivery partner GPS update...
                     </span>
                 </div>
             )}
 
             {osrmError && (
-                <div className="absolute top-4 right-4 z-10 bg-red-950/80 border border-red-500/30 px-3 py-1.5 rounded-xl text-[9px] text-red-300 font-bold backdrop-blur">
+                <div className="absolute top-4 right-4 z-10 bg-red-50 border border-red-200 px-3 py-1.5 rounded-xl text-[9px] text-red-700 font-bold shadow-md">
                     {osrmError}
                 </div>
             )}
