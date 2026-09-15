@@ -45,8 +45,7 @@ const Checkout = () => {
             ];
             
             try {
-                let API_URL = getApiUrl();
-                const res = await axios.get(`${API_URL}/restaurants`);
+                const res = await api.get('/restaurants');
                 const activeList = (res.data || []).filter(r => r.isActive !== false);
                 
                 const finalRestaurants = activeList.length > 0 ? activeList : dummyRestaurants;
