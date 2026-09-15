@@ -239,38 +239,34 @@ const Checkout = () => {
         }
 
         try {
-            let API_URL = getApiUrl();
-            const orderPayload = {
+            const orderData = {
                 restaurantId: targetResId,
                 items: cartItems.map(item => ({
                     menuItem: item.menuItem || item._id,
                     name: item.name,
                     price: item.price,
                     quantity: item.quantity,
-                    customizations: item.customizations || []
+                    selectedSize: item.selectedSize || null,
+                    selectedAddons: item.selectedAddons || []
                 })),
                 orderType,
                 deliveryAddress: orderType === 'Delivery' ? address : undefined,
                 paymentMethod,
-                subscriptionPlan,
-                itemTotal: cartTotal,
+                upiDetails: paymentMethod === 'UPI' ? { method: upiMethod, upiId: upiId || 'QR' } : undefined,
+                subscriptionPlan: subscriptionPlan !== 'None' ? subscriptionPlan : undefined,
+                subtotal: cartTotal,
                 discount: totalDiscount,
                 tax,
                 deliveryFee,
-                grandTotal
+                totalAmount: grandTotal
             };
 
-            const token = localStorage.getItem('token');
-            const res = await axios.post(`${API_URL}/orders`, orderPayload, {
-                headers: token ? { Authorization: `Bearer ${token}` } : {}
-            });
-
-            const newOrderId = res.data._id || res.data.orderId || 'ORDER_' + Date.now();
-            setOrderPlaced(newOrderId);
-            if (typeof clearCart === 'function') clearCart();
+            const { data } = await api.post('/orders', orderData);
+            const orderId = data._id || data.id || data.orderId || 'ORD' + Date.now();
+            setOrderPlaced(orderId);
             toast.success('Order placed successfully! 🎉');
         } catch (error) {
-            console.error("Failed to place order", error);
+            console.error("Failed to place order:", error);
             toast.error(error.response?.data?.message || 'Failed to place order. Please try again.');
         }
     };
