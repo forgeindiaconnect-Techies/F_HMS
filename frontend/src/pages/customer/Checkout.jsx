@@ -265,9 +265,19 @@ const Checkout = () => {
         }
 
         setIsPlacingOrder(true);
-        toast.loading('Connecting to server & placing order...', { id: 'place-order-toast' });
+        toast.loading('Connecting to kitchen server...', { id: 'place-order-toast' });
         
         try {
+            // 0. Ensure backend container is awake before posting order
+            try {
+                let API_URL = getApiUrl();
+                await axios.get(`${API_URL}/health`, { timeout: 10000 });
+            } catch (pingErr) {
+                console.log('Backend warmup ping note:', pingErr.message);
+            }
+
+            toast.loading('Placing order...', { id: 'place-order-toast' });
+
             const orderData = {
                 orderItems: cartItems.map(item => ({
                     name: item.name,
