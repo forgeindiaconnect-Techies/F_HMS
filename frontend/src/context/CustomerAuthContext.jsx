@@ -33,13 +33,13 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const config = error.config;
-        if (config && (!config._retryCount || config._retryCount < 15)) {
+        if (config && (!config._retryCount || config._retryCount < 20)) {
             const status = error.response ? error.response.status : 0;
             // Catch Render cold-start indicators (502 Bad Gateway, 503 Service Unavailable, 504 Timeout, Network Error / Preflight failure)
             if (status === 502 || status === 503 || status === 504 || !error.response || error.code === 'ERR_NETWORK') {
                 config._retryCount = (config._retryCount || 0) + 1;
-                console.log(`[Render Cold-Start] Retrying request (${status || 'Network Error'}). Attempt ${config._retryCount}/15...`);
-                await new Promise((resolve) => setTimeout(resolve, 2500));
+                console.log(`[Render Cold-Start] Retrying request (${status || 'Network Error'}). Attempt ${config._retryCount}/20...`);
+                await new Promise((resolve) => setTimeout(resolve, 3000));
                 return api.request(config);
             }
         }
