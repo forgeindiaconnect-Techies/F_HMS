@@ -76,11 +76,16 @@ export const addOrderItems = async (req, res) => {
         let finalUserId = req.user ? req.user._id : null;
         if (!finalUserId) {
             const User = mongoose.model('User');
-            let guestUser = await User.findOne({ role: 'Customer' });
+            let guestUser = await User.findOne({ role: 'Customer' }) || await User.findOne();
             if (!guestUser) {
-                guestUser = await User.findOne();
+                guestUser = await User.create({
+                    name: 'Guest Customer',
+                    email: 'guest@example.com',
+                    password: 'password123',
+                    role: 'Customer'
+                });
             }
-            if (guestUser) finalUserId = guestUser._id;
+            finalUserId = guestUser._id;
         }
 
         const finalCustomerLoc = (customerLocation && customerLocation.latitude && customerLocation.longitude) ? {

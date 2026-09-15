@@ -42,6 +42,14 @@ api.interceptors.response.use(
             config._retryCount = (config._retryCount || 0) + 1;
             const backoffMs = 4500; // 4.5s steady delay (15 attempts = 67.5s window)
             console.log(`[Render Cold-Start] Server warming up (${status || 'Network Error'}). Retrying attempt ${config._retryCount}/15 in 4.5s...`);
+            
+            try {
+                const toastModule = await import('react-hot-toast');
+                toastModule.default.loading(`Connecting to backend... (Server warming up, attempt ${config._retryCount}/15)`, { id: 'place-order-toast' });
+            } catch (tErr) {
+                // Ignore toast import error
+            }
+
             await new Promise((resolve) => setTimeout(resolve, backoffMs));
             return api.request(config);
         }
