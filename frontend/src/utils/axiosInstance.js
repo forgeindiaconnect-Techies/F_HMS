@@ -37,16 +37,14 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const config = error.config;
-        if (!config || config._retryCount >= 15) {
-            return Promise.reject(error);
-        }
-
         const status = error.response ? error.response.status : 0;
-        // 502 Bad Gateway, 503 Service Unavailable, 504 Gateway Timeout or ERR_NETWORK / CORS during spin-up
-        if (status === 502 || status === 503 || status === 504 || !error.response || error.code === 'ERR_NETWORK') {
+        const isColdStart = status === 502 || status === 503 || status === 504 || (!error.response && error.code === 'ERR_NETWORK');
+
+        if (config && isColdStart && (!config._retryCount || config._retryCount < 8)) {
             config._retryCount = (config._retryCount || 0) + 1;
-            console.log(`Render server spinning up (${status || 'Network Error'}). Retrying in 2.5s... (attempt ${config._retryCount}/15)`);
-            await new Promise((resolve) => setTimeout(resolve, 2500));
+            const backoffMs = config._retryCount * 3000;
+            console.log(`Render server spinning up (${status || 'Network Error'}). Retrying in ${backoffMs / 1000}s... (attempt ${config._retryCount}/8)`);
+            await new Promise((resolve) => setTimeout(resolve, backoffMs));
             return api.request(config);
         }
 

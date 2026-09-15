@@ -35,15 +35,14 @@ api.interceptors.response.use(
         const config = error.config;
         const status = error.response ? error.response.status : 0;
         
-        // Render cold-start or proxy errors (502, 503, 504, 429 rate limits, network errors)
-        const isColdStart = status === 502 || status === 503 || status === 504 || status === 429 || !error.response || error.code === 'ERR_NETWORK';
+        // Cold-start spin-up status codes (502, 503, 504, or network drops during boot)
+        const isColdStart = status === 502 || status === 503 || status === 504 || (!error.response && error.code === 'ERR_NETWORK');
         
-        if (config && isColdStart && (!config._retryCount || config._retryCount < 15)) {
+        if (config && isColdStart && (!config._retryCount || config._retryCount < 8)) {
             config._retryCount = (config._retryCount || 0) + 1;
-            const backoffMs = 4500; // 4.5s steady delay (15 attempts = 67.5s window)
-            console.log(`[Render Cold-Start] Server warming up (${status || 'Network Error'}). Retrying attempt ${config._retryCount}/15 in 4.5s...`);
-            
-            // Silent retry in background without displaying extra popups
+            // Exponential backoff: 3s, 6s, 9s, 12s... to let Render boot without triggering rate limits
+            const backoffMs = config._retryCount * 3000;
+            console.log(`[Render Cold-Start] Retrying in ${backoffMs/1000}s (attempt ${config._retryCount}/8)...`);
 
             await new Promise((resolve) => setTimeout(resolve, backoffMs));
             return api.request(config);
@@ -95,7 +94,6 @@ export const CustomerAuthProvider = ({ children }) => {
             const { data } = await api.post('/auth/register', { name, email, password, phoneNumber, roleName: 'Customer', loginType: 'customer' });
             setUser(data);
             localStorage.setItem('restosys_customer_user', JSON.stringify(data));
-            // Clear previous cart, wishlist and state for clean new user dashboard
             localStorage.removeItem('restosys_cart');
             localStorage.removeItem('restosys_wishlist');
             localStorage.removeItem('customerWalletBalance');
