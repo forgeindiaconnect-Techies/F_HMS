@@ -39,10 +39,11 @@ api.interceptors.response.use(
         // Exclude 429 rate-limiting from auto-retry loops so we do not spam Cloudflare / Render edge proxies.
         const isColdStart = status === 502 || status === 503 || status === 504 || (!error.response && error.code === 'ERR_NETWORK');
         
-        if (config && isColdStart && (!config._retryCount || config._retryCount < 5)) {
+        if (config && isColdStart && (!config._retryCount || config._retryCount < 3)) {
             config._retryCount = (config._retryCount || 0) + 1;
-            const backoffMs = 3500;
-            console.log(`[Render Server Check] Retrying request (attempt ${config._retryCount}/5 in 3.5s)...`);
+            // 8.5s delay to stay safely below Vercel edge rate limits (429)
+            const backoffMs = 8500;
+            console.log(`[Render Cold-Start] Server warming up (${status || 'Network Error'}). Retrying attempt ${config._retryCount}/3 in 8.5s...`);
 
             await new Promise((resolve) => setTimeout(resolve, backoffMs));
             return api.request(config);
