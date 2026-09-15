@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { CheckCircle, ChefHat, Bike, PackageOpen, ChevronLeft, Phone, MapPin, Store, User, ShieldCheck, KeyRound } from 'lucide-react';
+import { CheckCircle, ChefHat, Bike, PackageOpen, ChevronLeft, Phone, MapPin, Store, User, ShieldCheck, KeyRound, MessageSquare } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import LiveOrderMap from '../../components/LiveOrderMap';
 
