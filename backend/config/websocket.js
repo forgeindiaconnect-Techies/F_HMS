@@ -9,7 +9,7 @@ export const initWebSocket = (server) => {
     wss.on('connection', (ws) => {
         console.log('New WebSocket Connection');
 
-        ws.on('message', (message) => {
+        ws.on('message', async (message) => {
             try {
                 const data = JSON.parse(message);
                 if (data.type === 'register') {
@@ -19,6 +19,37 @@ export const initWebSocket = (server) => {
                         orderId: data.orderId || null
                     });
                     console.log(`Registered connection: role=${data.role}, restaurantId=${data.restaurantId}`);
+                } else if (data.type === 'delivery_location_update' || data.type === 'deliveryLocationUpdate') {
+                    const { orderId, latitude, longitude } = data;
+                    if (orderId && latitude != null && longitude != null) {
+                        try {
+                            const Order = (await import('../models/Order.js')).default;
+                            const order = await Order.findById(orderId);
+                            if (order) {
+                                const updatedAt = new Date();
+                                order.deliveryPartnerLocation = {
+                                    latitude: Number(latitude),
+                                    longitude: Number(longitude),
+                                    updatedAt
+                                };
+                                await order.save();
+
+                                const payload = {
+                                    orderId: String(order._id),
+                                    latitude: Number(latitude),
+                                    longitude: Number(longitude),
+                                    updatedAt,
+                                    deliveryStatus: order.deliveryStatus,
+                                    status: order.status
+                                };
+
+                                broadcastToCustomerOrder(order._id, 'delivery_location_updated', payload);
+                                broadcastToRestaurant(order.restaurantId, 'delivery_location_updated', payload);
+                            }
+                        } catch (locErr) {
+                            console.error('Error saving websocket delivery location update', locErr);
+                        }
+                    }
                 }
             } catch (err) {
                 console.error('Error parsing WebSocket message', err);

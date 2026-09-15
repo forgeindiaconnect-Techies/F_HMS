@@ -90408,6 +90408,177 @@ var require_mongoose2 = __commonJS({
   }
 });
 
+// models/Order.js
+var Order_exports = {};
+__export(Order_exports, {
+  default: () => Order_default
+});
+var import_mongoose2, orderSchema, Order, Order_default;
+var init_Order = __esm({
+  "models/Order.js"() {
+    import_mongoose2 = __toESM(require_mongoose2(), 1);
+    orderSchema = new import_mongoose2.default.Schema({
+      user: {
+        type: import_mongoose2.default.Schema.Types.ObjectId,
+        required: true,
+        ref: "User"
+      },
+      orderItems: [
+        {
+          name: { type: String, required: true },
+          qty: { type: Number, required: true },
+          image: { type: String, required: true },
+          price: { type: Number, required: true },
+          product: {
+            type: import_mongoose2.default.Schema.Types.ObjectId,
+            ref: "MenuItem"
+          }
+        }
+      ],
+      restaurantId: {
+        type: import_mongoose2.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true
+      },
+      branchId: {
+        type: import_mongoose2.default.Schema.Types.ObjectId,
+        ref: "Branch",
+        required: true
+      },
+      source: {
+        type: String,
+        enum: ["Walk-in", "QR", "Self-Pickup"],
+        default: "Walk-in"
+      },
+      orderType: {
+        type: String,
+        required: true,
+        enum: ["Dine In", "Self-Pickup", "Delivery"],
+        default: "Dine In"
+      },
+      tableNumber: {
+        type: String
+      },
+      notes: {
+        type: String
+      },
+      shippingAddress: {
+        address: { type: String },
+        city: { type: String },
+        postalCode: { type: String }
+      },
+      paymentMethod: {
+        type: String,
+        required: true,
+        default: "Card"
+      },
+      subscriptionPlan: {
+        type: String,
+        default: "One-time Order"
+      },
+      paymentResult: {
+        id: { type: String },
+        status: { type: String },
+        update_time: { type: String },
+        email_address: { type: String }
+      },
+      taxPrice: {
+        type: Number,
+        required: true,
+        default: 0
+      },
+      totalPrice: {
+        type: Number,
+        required: true,
+        default: 0
+      },
+      isPaid: {
+        type: Boolean,
+        required: true,
+        default: false
+      },
+      paidAt: {
+        type: Date
+      },
+      status: {
+        type: String,
+        required: true,
+        enum: ["Pending", "Accepted", "Preparing", "Ready", "Ready for Pickup", "Picked Up", "Served", "Billing Requested", "Out for Delivery", "Delivered", "Cancelled", "Completed"],
+        default: "Pending"
+      },
+      statusHistory: [
+        {
+          status: { type: String, required: true },
+          timestamp: { type: Date, default: Date.now },
+          updatedBy: { type: import_mongoose2.default.Schema.Types.ObjectId, ref: "User" }
+        }
+      ],
+      pickupTime: {
+        type: Date
+      },
+      // Location Coordinates for Live OSRM Road Tracking
+      customerLocation: {
+        latitude: { type: Number, default: null },
+        longitude: { type: Number, default: null }
+      },
+      restaurantLocation: {
+        latitude: { type: Number, default: null },
+        longitude: { type: Number, default: null }
+      },
+      deliveryPartnerLocation: {
+        latitude: { type: Number, default: null },
+        longitude: { type: Number, default: null },
+        updatedAt: { type: Date, default: null }
+      },
+      // Delivery partner details
+      deliveryPartner: {
+        type: import_mongoose2.default.Schema.Types.ObjectId,
+        ref: "User"
+      },
+      deliveryStatus: {
+        type: String,
+        enum: ["None", "Pending Assignment", "Accepted", "Rejected", "Picked Up", "On the Way", "Delivered", "Cancelled"],
+        default: "None"
+      },
+      deliveryDistance: {
+        type: Number,
+        default: 0
+      },
+      deliveryCharge: {
+        type: Number,
+        default: 0
+      },
+      deliveryETA: {
+        type: Date
+      },
+      deliveryOtp: {
+        type: String,
+        default: null
+      },
+      deliveryRating: {
+        speed: { type: Number, default: 0 },
+        behaviour: { type: Number, default: 0 },
+        foodHandling: { type: Number, default: 0 },
+        overall: { type: Number, default: 0 },
+        review: { type: String, default: "" }
+      },
+      internalRating: {
+        type: Number,
+        default: 0
+      },
+      supportMessages: [
+        {
+          sender: { type: String, enum: ["DeliveryPartner", "Customer", "Restaurant", "System"], default: "DeliveryPartner" },
+          message: { type: String, required: true },
+          timestamp: { type: Date, default: Date.now }
+        }
+      ]
+    }, { timestamps: true });
+    Order = import_mongoose2.default.model("Order", orderSchema);
+    Order_default = Order;
+  }
+});
+
 // node_modules/jws/lib/data-stream.js
 var require_data_stream = __commonJS({
   "node_modules/jws/lib/data-stream.js"(exports2, module2) {
@@ -95986,17 +96157,17 @@ var Role_exports = {};
 __export(Role_exports, {
   default: () => Role_default
 });
-var import_mongoose3, roleSchema, Role, Role_default;
+var import_mongoose4, roleSchema, Role, Role_default;
 var init_Role = __esm({
   "models/Role.js"() {
-    import_mongoose3 = __toESM(require_mongoose2(), 1);
-    roleSchema = new import_mongoose3.default.Schema({
+    import_mongoose4 = __toESM(require_mongoose2(), 1);
+    roleSchema = new import_mongoose4.default.Schema({
       name: {
         type: String,
         required: true
       },
       restaurantId: {
-        type: import_mongoose3.default.Schema.Types.ObjectId,
+        type: import_mongoose4.default.Schema.Types.ObjectId,
         ref: "Restaurant",
         required: function() {
           return !this.isCoreRole;
@@ -96017,7 +96188,7 @@ var init_Role = __esm({
         default: {}
       }
     }, { timestamps: true });
-    Role = import_mongoose3.default.model("Role", roleSchema);
+    Role = import_mongoose4.default.model("Role", roleSchema);
     Role_default = Role;
   }
 });
@@ -96027,13 +96198,13 @@ var Branch_exports = {};
 __export(Branch_exports, {
   default: () => Branch_default
 });
-var import_mongoose5, branchSchema, Branch, Branch_default;
+var import_mongoose6, branchSchema, Branch, Branch_default;
 var init_Branch = __esm({
   "models/Branch.js"() {
-    import_mongoose5 = __toESM(require_mongoose2(), 1);
-    branchSchema = new import_mongoose5.default.Schema({
+    import_mongoose6 = __toESM(require_mongoose2(), 1);
+    branchSchema = new import_mongoose6.default.Schema({
       restaurantId: {
-        type: import_mongoose5.default.Schema.Types.ObjectId,
+        type: import_mongoose6.default.Schema.Types.ObjectId,
         ref: "Restaurant",
         required: true
       },
@@ -96053,7 +96224,7 @@ var init_Branch = __esm({
         email: String
       },
       manager: {
-        type: import_mongoose5.default.Schema.Types.ObjectId,
+        type: import_mongoose6.default.Schema.Types.ObjectId,
         ref: "User"
       },
       isActive: {
@@ -96061,7 +96232,7 @@ var init_Branch = __esm({
         default: true
       }
     }, { timestamps: true });
-    Branch = import_mongoose5.default.model("Branch", branchSchema);
+    Branch = import_mongoose6.default.model("Branch", branchSchema);
     Branch_default = Branch;
   }
 });
@@ -96071,11 +96242,11 @@ var Notification_exports = {};
 __export(Notification_exports, {
   default: () => Notification_default
 });
-var import_mongoose6, notificationSchema, Notification, Notification_default;
+var import_mongoose7, notificationSchema, Notification, Notification_default;
 var init_Notification = __esm({
   "models/Notification.js"() {
-    import_mongoose6 = __toESM(require_mongoose2(), 1);
-    notificationSchema = new import_mongoose6.default.Schema({
+    import_mongoose7 = __toESM(require_mongoose2(), 1);
+    notificationSchema = new import_mongoose7.default.Schema({
       title: {
         type: String,
         required: true
@@ -96094,11 +96265,11 @@ var init_Notification = __esm({
         default: false
       },
       restaurantId: {
-        type: import_mongoose6.default.Schema.Types.ObjectId,
+        type: import_mongoose7.default.Schema.Types.ObjectId,
         ref: "Restaurant"
       },
       branchId: {
-        type: import_mongoose6.default.Schema.Types.ObjectId,
+        type: import_mongoose7.default.Schema.Types.ObjectId,
         ref: "Branch"
       },
       // Role-scoping: if set, only these roles can see this notification
@@ -96112,7 +96283,7 @@ var init_Notification = __esm({
         default: false
       }
     }, { timestamps: true });
-    Notification = import_mongoose6.default.model("Notification", notificationSchema);
+    Notification = import_mongoose7.default.model("Notification", notificationSchema);
     Notification_default = Notification;
   }
 });
@@ -96122,20 +96293,20 @@ var RestaurantVerification_exports = {};
 __export(RestaurantVerification_exports, {
   default: () => RestaurantVerification_default
 });
-var import_mongoose7, documentSchema, restaurantVerificationSchema, RestaurantVerification, RestaurantVerification_default;
+var import_mongoose8, documentSchema, restaurantVerificationSchema, RestaurantVerification, RestaurantVerification_default;
 var init_RestaurantVerification = __esm({
   "models/RestaurantVerification.js"() {
-    import_mongoose7 = __toESM(require_mongoose2(), 1);
-    documentSchema = new import_mongoose7.default.Schema({
+    import_mongoose8 = __toESM(require_mongoose2(), 1);
+    documentSchema = new import_mongoose8.default.Schema({
       filePath: { type: String, default: "" },
       status: { type: String, enum: ["Pending", "Approved", "Rejected"], default: "Pending" },
       rejectReason: { type: String, default: "" },
       expiryDate: { type: Date }
       // For FSSAI license
     });
-    restaurantVerificationSchema = new import_mongoose7.default.Schema({
+    restaurantVerificationSchema = new import_mongoose8.default.Schema({
       restaurantId: {
-        type: import_mongoose7.default.Schema.Types.ObjectId,
+        type: import_mongoose8.default.Schema.Types.ObjectId,
         ref: "Restaurant",
         required: true,
         unique: true
@@ -96165,14 +96336,14 @@ var init_RestaurantVerification = __esm({
       history: [
         {
           status: { type: String, required: true },
-          actionBy: { type: import_mongoose7.default.Schema.Types.ObjectId, ref: "User" },
+          actionBy: { type: import_mongoose8.default.Schema.Types.ObjectId, ref: "User" },
           actionDate: { type: Date, default: Date.now },
           reason: { type: String, default: "" },
           comments: { type: String, default: "" }
         }
       ]
     }, { timestamps: true });
-    RestaurantVerification = import_mongoose7.default.model("RestaurantVerification", restaurantVerificationSchema);
+    RestaurantVerification = import_mongoose8.default.model("RestaurantVerification", restaurantVerificationSchema);
     RestaurantVerification_default = RestaurantVerification;
   }
 });
@@ -96182,11 +96353,11 @@ var Plan_exports = {};
 __export(Plan_exports, {
   default: () => Plan_default
 });
-var import_mongoose8, planSchema, Plan, Plan_default;
+var import_mongoose9, planSchema, Plan, Plan_default;
 var init_Plan = __esm({
   "models/Plan.js"() {
-    import_mongoose8 = __toESM(require_mongoose2(), 1);
-    planSchema = new import_mongoose8.default.Schema({
+    import_mongoose9 = __toESM(require_mongoose2(), 1);
+    planSchema = new import_mongoose9.default.Schema({
       name: {
         type: String,
         required: true,
@@ -96218,7 +96389,7 @@ var init_Plan = __esm({
     }, {
       timestamps: true
     });
-    Plan = import_mongoose8.default.model("Plan", planSchema);
+    Plan = import_mongoose9.default.model("Plan", planSchema);
     Plan_default = Plan;
   }
 });
@@ -96228,19 +96399,19 @@ var DeliveryPartner_exports = {};
 __export(DeliveryPartner_exports, {
   default: () => DeliveryPartner_default
 });
-var import_mongoose10, deliveryPartnerSchema, DeliveryPartner, DeliveryPartner_default;
+var import_mongoose11, deliveryPartnerSchema, DeliveryPartner, DeliveryPartner_default;
 var init_DeliveryPartner = __esm({
   "models/DeliveryPartner.js"() {
-    import_mongoose10 = __toESM(require_mongoose2(), 1);
-    deliveryPartnerSchema = new import_mongoose10.default.Schema({
+    import_mongoose11 = __toESM(require_mongoose2(), 1);
+    deliveryPartnerSchema = new import_mongoose11.default.Schema({
       userId: {
-        type: import_mongoose10.default.Schema.Types.ObjectId,
+        type: import_mongoose11.default.Schema.Types.ObjectId,
         ref: "User",
         required: true,
         unique: true
       },
       restaurantId: {
-        type: import_mongoose10.default.Schema.Types.ObjectId,
+        type: import_mongoose11.default.Schema.Types.ObjectId,
         ref: "Restaurant",
         required: true
       },
@@ -96282,7 +96453,7 @@ var init_DeliveryPartner = __esm({
         longitude: { type: Number, default: 77.5946 }
       }
     }, { timestamps: true });
-    DeliveryPartner = import_mongoose10.default.model("DeliveryPartner", deliveryPartnerSchema);
+    DeliveryPartner = import_mongoose11.default.model("DeliveryPartner", deliveryPartnerSchema);
     DeliveryPartner_default = DeliveryPartner;
   }
 });
@@ -96292,13 +96463,13 @@ var SubscriptionPayment_exports = {};
 __export(SubscriptionPayment_exports, {
   default: () => SubscriptionPayment_default
 });
-var import_mongoose11, subscriptionPaymentSchema, SubscriptionPayment, SubscriptionPayment_default;
+var import_mongoose12, subscriptionPaymentSchema, SubscriptionPayment, SubscriptionPayment_default;
 var init_SubscriptionPayment = __esm({
   "models/SubscriptionPayment.js"() {
-    import_mongoose11 = __toESM(require_mongoose2(), 1);
-    subscriptionPaymentSchema = new import_mongoose11.default.Schema({
+    import_mongoose12 = __toESM(require_mongoose2(), 1);
+    subscriptionPaymentSchema = new import_mongoose12.default.Schema({
       restaurantId: {
-        type: import_mongoose11.default.Schema.Types.ObjectId,
+        type: import_mongoose12.default.Schema.Types.ObjectId,
         ref: "Restaurant",
         required: true
       },
@@ -96338,165 +96509,8 @@ var init_SubscriptionPayment = __esm({
     }, {
       timestamps: true
     });
-    SubscriptionPayment = import_mongoose11.default.model("SubscriptionPayment", subscriptionPaymentSchema);
+    SubscriptionPayment = import_mongoose12.default.model("SubscriptionPayment", subscriptionPaymentSchema);
     SubscriptionPayment_default = SubscriptionPayment;
-  }
-});
-
-// models/Order.js
-var Order_exports = {};
-__export(Order_exports, {
-  default: () => Order_default
-});
-var import_mongoose13, orderSchema, Order, Order_default;
-var init_Order = __esm({
-  "models/Order.js"() {
-    import_mongoose13 = __toESM(require_mongoose2(), 1);
-    orderSchema = new import_mongoose13.default.Schema({
-      user: {
-        type: import_mongoose13.default.Schema.Types.ObjectId,
-        required: true,
-        ref: "User"
-      },
-      orderItems: [
-        {
-          name: { type: String, required: true },
-          qty: { type: Number, required: true },
-          image: { type: String, required: true },
-          price: { type: Number, required: true },
-          product: {
-            type: import_mongoose13.default.Schema.Types.ObjectId,
-            ref: "MenuItem"
-          }
-        }
-      ],
-      restaurantId: {
-        type: import_mongoose13.default.Schema.Types.ObjectId,
-        ref: "Restaurant",
-        required: true
-      },
-      branchId: {
-        type: import_mongoose13.default.Schema.Types.ObjectId,
-        ref: "Branch",
-        required: true
-      },
-      source: {
-        type: String,
-        enum: ["Walk-in", "QR", "Self-Pickup"],
-        default: "Walk-in"
-      },
-      orderType: {
-        type: String,
-        required: true,
-        enum: ["Dine In", "Self-Pickup", "Delivery"],
-        default: "Dine In"
-      },
-      tableNumber: {
-        type: String
-      },
-      notes: {
-        type: String
-      },
-      shippingAddress: {
-        address: { type: String },
-        city: { type: String },
-        postalCode: { type: String }
-      },
-      paymentMethod: {
-        type: String,
-        required: true,
-        default: "Card"
-      },
-      subscriptionPlan: {
-        type: String,
-        default: "One-time Order"
-      },
-      paymentResult: {
-        id: { type: String },
-        status: { type: String },
-        update_time: { type: String },
-        email_address: { type: String }
-      },
-      taxPrice: {
-        type: Number,
-        required: true,
-        default: 0
-      },
-      totalPrice: {
-        type: Number,
-        required: true,
-        default: 0
-      },
-      isPaid: {
-        type: Boolean,
-        required: true,
-        default: false
-      },
-      paidAt: {
-        type: Date
-      },
-      status: {
-        type: String,
-        required: true,
-        enum: ["Pending", "Accepted", "Preparing", "Ready", "Ready for Pickup", "Picked Up", "Served", "Billing Requested", "Out for Delivery", "Delivered", "Cancelled", "Completed"],
-        default: "Pending"
-      },
-      statusHistory: [
-        {
-          status: { type: String, required: true },
-          timestamp: { type: Date, default: Date.now },
-          updatedBy: { type: import_mongoose13.default.Schema.Types.ObjectId, ref: "User" }
-        }
-      ],
-      pickupTime: {
-        type: Date
-      },
-      // Delivery partner details
-      deliveryPartner: {
-        type: import_mongoose13.default.Schema.Types.ObjectId,
-        ref: "User"
-      },
-      deliveryStatus: {
-        type: String,
-        enum: ["None", "Pending Assignment", "Accepted", "Rejected", "Picked Up", "On the Way", "Delivered", "Cancelled"],
-        default: "None"
-      },
-      deliveryDistance: {
-        type: Number,
-        default: 0
-      },
-      deliveryCharge: {
-        type: Number,
-        default: 0
-      },
-      deliveryETA: {
-        type: Date
-      },
-      deliveryOtp: {
-        type: String,
-        default: null
-      },
-      deliveryRating: {
-        speed: { type: Number, default: 0 },
-        behaviour: { type: Number, default: 0 },
-        foodHandling: { type: Number, default: 0 },
-        overall: { type: Number, default: 0 },
-        review: { type: String, default: "" }
-      },
-      internalRating: {
-        type: Number,
-        default: 0
-      },
-      supportMessages: [
-        {
-          sender: { type: String, enum: ["DeliveryPartner", "Customer", "Restaurant", "System"], default: "DeliveryPartner" },
-          message: { type: String, required: true },
-          timestamp: { type: Date, default: Date.now }
-        }
-      ]
-    }, { timestamps: true });
-    Order = import_mongoose13.default.model("Order", orderSchema);
-    Order_default = Order;
   }
 });
 
@@ -96959,7 +96973,7 @@ var initWebSocket = (server2) => {
   wss = new import_ws.WebSocketServer({ server: server2 });
   wss.on("connection", (ws) => {
     console.log("New WebSocket Connection");
-    ws.on("message", (message) => {
+    ws.on("message", async (message) => {
       try {
         const data = JSON.parse(message);
         if (data.type === "register") {
@@ -96969,6 +96983,35 @@ var initWebSocket = (server2) => {
             orderId: data.orderId || null
           });
           console.log(`Registered connection: role=${data.role}, restaurantId=${data.restaurantId}`);
+        } else if (data.type === "delivery_location_update" || data.type === "deliveryLocationUpdate") {
+          const { orderId, latitude, longitude } = data;
+          if (orderId && latitude != null && longitude != null) {
+            try {
+              const Order2 = (await Promise.resolve().then(() => (init_Order(), Order_exports))).default;
+              const order = await Order2.findById(orderId);
+              if (order) {
+                const updatedAt = /* @__PURE__ */ new Date();
+                order.deliveryPartnerLocation = {
+                  latitude: Number(latitude),
+                  longitude: Number(longitude),
+                  updatedAt
+                };
+                await order.save();
+                const payload = {
+                  orderId: String(order._id),
+                  latitude: Number(latitude),
+                  longitude: Number(longitude),
+                  updatedAt,
+                  deliveryStatus: order.deliveryStatus,
+                  status: order.status
+                };
+                broadcastToCustomerOrder(order._id, "delivery_location_updated", payload);
+                broadcastToRestaurant(order.restaurantId, "delivery_location_updated", payload);
+              }
+            } catch (locErr) {
+              console.error("Error saving websocket delivery location update", locErr);
+            }
+          }
         }
       } catch (err) {
         console.error("Error parsing WebSocket message", err);
@@ -97053,9 +97096,9 @@ var import_fs = __toESM(require("fs"), 1);
 var import_path = __toESM(require("path"), 1);
 
 // models/User.js
-var import_mongoose2 = __toESM(require_mongoose2(), 1);
+var import_mongoose3 = __toESM(require_mongoose2(), 1);
 var import_bcryptjs = __toESM(require_bcryptjs(), 1);
-var userSchema = new import_mongoose2.default.Schema({
+var userSchema = new import_mongoose3.default.Schema({
   name: {
     type: String,
     required: true
@@ -97077,11 +97120,11 @@ var userSchema = new import_mongoose2.default.Schema({
     required: true
   },
   restaurantId: {
-    type: import_mongoose2.default.Schema.Types.ObjectId,
+    type: import_mongoose3.default.Schema.Types.ObjectId,
     ref: "Restaurant"
   },
   branchId: {
-    type: import_mongoose2.default.Schema.Types.ObjectId,
+    type: import_mongoose3.default.Schema.Types.ObjectId,
     ref: "Branch"
   },
   isActive: {
@@ -97102,15 +97145,15 @@ userSchema.pre("save", async function() {
 userSchema.methods.matchPassword = async function(enteredPassword) {
   return await import_bcryptjs.default.compare(enteredPassword, this.password);
 };
-var User2 = import_mongoose2.default.model("User", userSchema);
+var User2 = import_mongoose3.default.model("User", userSchema);
 var User_default = User2;
 
 // controllers/authController.js
 init_Role();
 
 // models/Restaurant.js
-var import_mongoose4 = __toESM(require_mongoose2(), 1);
-var restaurantSchema = new import_mongoose4.default.Schema({
+var import_mongoose5 = __toESM(require_mongoose2(), 1);
+var restaurantSchema = new import_mongoose5.default.Schema({
   name: {
     type: String,
     required: true
@@ -97144,7 +97187,7 @@ var restaurantSchema = new import_mongoose4.default.Schema({
     default: 0
   },
   ownerId: {
-    type: import_mongoose4.default.Schema.Types.ObjectId,
+    type: import_mongoose5.default.Schema.Types.ObjectId,
     ref: "User",
     required: true
   },
@@ -97207,7 +97250,7 @@ var restaurantSchema = new import_mongoose4.default.Schema({
     default: true
   }
 }, { timestamps: true });
-var Restaurant = import_mongoose4.default.model("Restaurant", restaurantSchema);
+var Restaurant = import_mongoose5.default.model("Restaurant", restaurantSchema);
 var Restaurant_default = Restaurant;
 
 // controllers/authController.js
@@ -98053,7 +98096,7 @@ init_Notification();
 var import_multer = __toESM(require("multer"), 1);
 var import_path2 = __toESM(require("path"), 1);
 var import_fs2 = __toESM(require("fs"), 1);
-var import_mongoose9 = __toESM(require_mongoose2(), 1);
+var import_mongoose10 = __toESM(require_mongoose2(), 1);
 var uploadDir = "uploads/verification";
 if (!import_fs2.default.existsSync(uploadDir)) {
   import_fs2.default.mkdirSync(uploadDir, { recursive: true });
@@ -98244,7 +98287,7 @@ var getMyVerification = async (req, res) => {
 };
 var getAllVerifications = async (req, res) => {
   try {
-    if (import_mongoose9.default.connection.readyState !== 1) {
+    if (import_mongoose10.default.connection.readyState !== 1) {
       return res.json([]);
     }
     let verifications = await RestaurantVerification_default.find().populate({
@@ -98276,7 +98319,7 @@ var getVerificationById = async (req, res) => {
   try {
     const { id } = req.params;
     let verification = null;
-    if (import_mongoose9.default.Types.ObjectId.isValid(id)) {
+    if (import_mongoose10.default.Types.ObjectId.isValid(id)) {
       verification = await RestaurantVerification_default.findById(id).populate({
         path: "restaurantId",
         populate: { path: "ownerId", select: "name email" }
@@ -98289,7 +98332,7 @@ var getVerificationById = async (req, res) => {
       }).populate("history.actionBy", "name email");
     }
     if (!verification) {
-      const restaurant = import_mongoose9.default.Types.ObjectId.isValid(id) ? await Restaurant_default.findById(id).populate("ownerId", "name email") : null;
+      const restaurant = import_mongoose10.default.Types.ObjectId.isValid(id) ? await Restaurant_default.findById(id).populate("ownerId", "name email") : null;
       if (restaurant) {
         return res.json({
           _id: restaurant._id,
@@ -98316,7 +98359,7 @@ var reviewVerification = async (req, res) => {
       return res.status(400).json({ message: "Rejection reason is mandatory when status is Rejected" });
     }
     let verification = null;
-    if (import_mongoose9.default.Types.ObjectId.isValid(id)) {
+    if (import_mongoose10.default.Types.ObjectId.isValid(id)) {
       verification = await RestaurantVerification_default.findById(id);
     }
     if (!verification) {
@@ -98325,7 +98368,7 @@ var reviewVerification = async (req, res) => {
     let restaurant = null;
     if (verification) {
       restaurant = await Restaurant_default.findById(verification.restaurantId);
-    } else if (import_mongoose9.default.Types.ObjectId.isValid(id)) {
+    } else if (import_mongoose10.default.Types.ObjectId.isValid(id)) {
       restaurant = await Restaurant_default.findById(id);
     }
     if (!restaurant) {
@@ -98438,7 +98481,7 @@ var deleteVerification = async (req, res) => {
       return res.status(200).json({ success: true, message: "Verification record removed" });
     }
     let verification = null;
-    if (import_mongoose9.default.Types.ObjectId.isValid(id)) {
+    if (import_mongoose10.default.Types.ObjectId.isValid(id)) {
       verification = await RestaurantVerification_default.findById(id);
     }
     if (!verification) {
@@ -98455,7 +98498,7 @@ var deleteVerification = async (req, res) => {
       return res.status(200).json({ success: true, message: "Verification record deleted successfully" });
     }
     let restaurant = null;
-    if (import_mongoose9.default.Types.ObjectId.isValid(id)) {
+    if (import_mongoose10.default.Types.ObjectId.isValid(id)) {
       restaurant = await Restaurant_default.findById(id);
     }
     if (restaurant) {
@@ -98497,7 +98540,7 @@ var authRoutes_default = router;
 var import_express2 = __toESM(require_express2(), 1);
 
 // controllers/restaurantController.js
-var import_mongoose12 = __toESM(require_mongoose2(), 1);
+var import_mongoose13 = __toESM(require_mongoose2(), 1);
 init_Branch();
 init_Notification();
 init_DeliveryPartner();
@@ -98532,7 +98575,7 @@ var logoUpload = (0, import_multer2.default)({
 }).single("logo");
 var getRestaurants = async (req, res) => {
   try {
-    if (import_mongoose12.default.connection.readyState !== 1) {
+    if (import_mongoose13.default.connection.readyState !== 1) {
       return res.json([]);
     }
     const restaurants = await Restaurant_default.find({}).populate("ownerId", "name email").lean();
@@ -98629,7 +98672,7 @@ var createRestaurant = async (req, res) => {
 };
 var getMyRestaurant = async (req, res) => {
   try {
-    if (import_mongoose12.default.connection.readyState !== 1) {
+    if (import_mongoose13.default.connection.readyState !== 1) {
       return res.json(null);
     }
     let restaurantId = req.user?.restaurantId;
@@ -99385,8 +99428,8 @@ var addOrderItems = async (req, res) => {
     res.status(400).json({ message: "No order items" });
     return;
   } else {
-    let finalBranchId = branchId && import_mongoose15.default.Types.ObjectId.isValid(branchId) ? branchId : req.user ? req.user.branchId : null;
-    let finalRestaurantId = restaurantId && import_mongoose15.default.Types.ObjectId.isValid(restaurantId) ? restaurantId : req.user ? req.user.restaurantId : null;
+    let finalBranchId = branchId2 && import_mongoose15.default.Types.ObjectId.isValid(branchId2) ? branchId2 : req.user ? req.user.branchId : null;
+    let finalRestaurantId = restaurantId2 && import_mongoose15.default.Types.ObjectId.isValid(restaurantId2) ? restaurantId2 : req.user ? req.user.restaurantId : null;
     if (!finalBranchId && finalRestaurantId) {
       const Branch2 = import_mongoose15.default.model("Branch");
       const firstBranch = await Branch2.findOne({ restaurantId: finalRestaurantId });
@@ -99427,21 +99470,39 @@ var addOrderItems = async (req, res) => {
       }
       if (guestUser) finalUserId = guestUser._id;
     }
-    const deliveryOtp = orderType === "Delivery" ? Math.floor(1e3 + Math.random() * 9e3).toString() : null;
+    const { orderItems: orderItems2, orderType: orderType2, source: source2, restaurantId: restaurantId2, branchId: branchId2, paymentMethod: paymentMethod2, subscriptionPlan: subscriptionPlan2, taxPrice: taxPrice2, totalPrice: totalPrice2, tableNumber: tableNumber2, notes: notes2, customerLocation, restaurantLocation, shippingAddress } = req.body;
+    const finalCustomerLoc = customerLocation && customerLocation.latitude && customerLocation.longitude ? {
+      latitude: Number(customerLocation.latitude),
+      longitude: Number(customerLocation.longitude)
+    } : {
+      latitude: 13.0827,
+      longitude: 80.2707
+    };
+    const finalRestaurantLoc = restaurantLocation && restaurantLocation.latitude && restaurantLocation.longitude ? {
+      latitude: Number(restaurantLocation.latitude),
+      longitude: Number(restaurantLocation.longitude)
+    } : {
+      latitude: 13.0475,
+      longitude: 80.209
+    };
+    const deliveryOtp = orderType2 === "Delivery" ? Math.floor(1e3 + Math.random() * 9e3).toString() : null;
     const order = new Order_default({
-      orderItems: sanitizeOrderItems(orderItems),
+      orderItems: sanitizeOrderItems(orderItems2),
       user: finalUserId,
       restaurantId: finalRestaurantId,
       branchId: finalBranchId,
-      orderType,
-      tableNumber,
-      notes,
-      source,
-      paymentMethod,
-      subscriptionPlan: subscriptionPlan || "One-time Order",
-      taxPrice,
-      totalPrice,
+      orderType: orderType2,
+      tableNumber: tableNumber2,
+      notes: notes2,
+      source: source2,
+      paymentMethod: paymentMethod2,
+      subscriptionPlan: subscriptionPlan2 || "One-time Order",
+      taxPrice: taxPrice2,
+      totalPrice: totalPrice2,
       deliveryOtp,
+      shippingAddress,
+      customerLocation: finalCustomerLoc,
+      restaurantLocation: finalRestaurantLoc,
       status: "Pending",
       // Strictly force new order to Pending status
       deliveryStatus: "None",
@@ -99454,10 +99515,10 @@ var addOrderItems = async (req, res) => {
       }]
     });
     const createdOrder = await order.save();
-    if (orderType === "Dine In" && tableNumber) {
+    if (orderType2 === "Dine In" && tableNumber2) {
       try {
         const Table2 = (await Promise.resolve().then(() => (init_Table(), Table_exports))).default;
-        const numericTable = parseInt(String(tableNumber).replace(/\D/g, ""), 10);
+        const numericTable = parseInt(String(tableNumber2).replace(/\D/g, ""), 10);
         const tableQuery = {
           restaurantId: finalRestaurantId,
           branchId: finalBranchId
@@ -99480,7 +99541,7 @@ var addOrderItems = async (req, res) => {
       const Notification2 = (await Promise.resolve().then(() => (init_Notification(), Notification_exports))).default;
       await Notification2.create({
         title: `\u{1F514} New Order #${createdOrder._id.toString().substring(createdOrder._id.toString().length - 5).toUpperCase()}`,
-        desc: `${orderType} ${tableNumber ? `(Table ${tableNumber})` : ""} - ${orderItems.map((i) => `${i.qty}x ${i.name}`).join(", ")} (\u20B9${totalPrice})`,
+        desc: `${orderType2} ${tableNumber2 ? `(Table ${tableNumber2})` : ""} - ${orderItems2.map((i) => `${i.qty}x ${i.name}`).join(", ")} (\u20B9${totalPrice2})`,
         type: "Order",
         restaurantId: finalRestaurantId,
         targetRole: ["Chef", "Kitchen", "Waiter", "Cashier", "RestaurantAdmin", "Admin"],
@@ -99958,6 +100019,39 @@ var verifyRazorpayCustomerPayment = async (req, res) => {
     res.status(400).json({ message: error.message || "Payment verification failed" });
   }
 };
+var updateDeliveryLocation = async (req, res) => {
+  try {
+    const { latitude, longitude } = req.body;
+    if (latitude == null || longitude == null) {
+      return res.status(400).json({ message: "Latitude and Longitude are required." });
+    }
+    const order = await Order_default.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found." });
+    }
+    const updatedAt = /* @__PURE__ */ new Date();
+    order.deliveryPartnerLocation = {
+      latitude: Number(latitude),
+      longitude: Number(longitude),
+      updatedAt
+    };
+    const updatedOrder = await order.save();
+    const payload = {
+      orderId: String(updatedOrder._id),
+      latitude: Number(latitude),
+      longitude: Number(longitude),
+      updatedAt,
+      deliveryStatus: updatedOrder.deliveryStatus,
+      status: updatedOrder.status
+    };
+    broadcastToCustomerOrder(updatedOrder._id, "delivery_location_updated", payload);
+    broadcastToRestaurant(updatedOrder.restaurantId, "delivery_location_updated", payload);
+    res.json({ success: true, location: updatedOrder.deliveryPartnerLocation });
+  } catch (error) {
+    console.error("Error updating order delivery location:", error);
+    res.status(500).json({ message: "Failed to update location" });
+  }
+};
 
 // routes/orderRoutes.js
 var router4 = import_express4.default.Router();
@@ -99969,6 +100063,7 @@ router4.route("/:id").get(optionalProtect, getOrderById);
 router4.route("/:id/items").put(optionalProtect, appendOrderItems);
 router4.route("/:id/pay").put(protect, updateOrderToPaid);
 router4.route("/:id/status").put(protect, updateOrderStatus);
+router4.route("/:id/location").put(protect, updateDeliveryLocation);
 router4.route("/merge").post(protect, mergeOrders);
 router4.route("/:id/refund").put(protect, refundOrder);
 var orderRoutes_default = router4;

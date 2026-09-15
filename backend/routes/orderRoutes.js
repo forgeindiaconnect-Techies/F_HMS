@@ -10,7 +10,8 @@ import {
     mergeOrders,
     refundOrder,
     createRazorpayCustomerOrder,
-    verifyRazorpayCustomerPayment
+    verifyRazorpayCustomerPayment,
+    updateDeliveryLocation
 } from '../controllers/orderController.js';
 import { protect, optionalProtect } from '../middleware/authMiddleware.js';
 
@@ -32,6 +33,8 @@ router.route('/:id/items').put(optionalProtect, appendOrderItems);
 router.route('/:id/pay').put(protect, updateOrderToPaid);
 
 router.route('/:id/status').put(protect, updateOrderStatus);
+
+router.route('/:id/location').put(protect, updateDeliveryLocation);
 
 router.route('/merge').post(protect, mergeOrders);
 router.route('/:id/refund').put(protect, refundOrder);

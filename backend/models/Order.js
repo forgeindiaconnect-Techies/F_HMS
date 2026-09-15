@@ -99,6 +99,20 @@ const orderSchema = new mongoose.Schema({
     pickupTime: {
         type: Date
     },
+    // Location Coordinates for Live OSRM Road Tracking
+    customerLocation: {
+        latitude: { type: Number, default: null },
+        longitude: { type: Number, default: null }
+    },
+    restaurantLocation: {
+        latitude: { type: Number, default: null },
+        longitude: { type: Number, default: null }
+    },
+    deliveryPartnerLocation: {
+        latitude: { type: Number, default: null },
+        longitude: { type: Number, default: null },
+        updatedAt: { type: Date, default: null }
+    },
     // Delivery partner details
     deliveryPartner: {
         type: mongoose.Schema.Types.ObjectId,

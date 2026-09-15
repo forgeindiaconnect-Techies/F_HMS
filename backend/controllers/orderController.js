@@ -79,6 +79,24 @@ export const addOrderItems = async (req, res) => {
             if (guestUser) finalUserId = guestUser._id;
         }
 
+        const { orderItems, orderType, source, restaurantId, branchId, paymentMethod, subscriptionPlan, taxPrice, totalPrice, tableNumber, notes, customerLocation, restaurantLocation, shippingAddress } = req.body;
+
+        const finalCustomerLoc = (customerLocation && customerLocation.latitude && customerLocation.longitude) ? {
+            latitude: Number(customerLocation.latitude),
+            longitude: Number(customerLocation.longitude)
+        } : {
+            latitude: 13.0827,
+            longitude: 80.2707
+        };
+
+        const finalRestaurantLoc = (restaurantLocation && restaurantLocation.latitude && restaurantLocation.longitude) ? {
+            latitude: Number(restaurantLocation.latitude),
+            longitude: Number(restaurantLocation.longitude)
+        } : {
+            latitude: 13.0475,
+            longitude: 80.2090
+        };
+
         const deliveryOtp = (orderType === 'Delivery') 
             ? Math.floor(1000 + Math.random() * 9000).toString() 
             : null;
@@ -97,6 +115,9 @@ export const addOrderItems = async (req, res) => {
             taxPrice,
             totalPrice,
             deliveryOtp,
+            shippingAddress,
+            customerLocation: finalCustomerLoc,
+            restaurantLocation: finalRestaurantLoc,
             status: 'Pending', // Strictly force new order to Pending status
             deliveryStatus: 'None', // Strictly force None on creation until kitchen marks Ready for Pickup
             isPaid: false, // Will be paid later or by cashier
@@ -761,6 +782,49 @@ export const verifyRazorpayCustomerPayment = async (req, res) => {
     } catch (error) {
         console.error('Razorpay Customer Payment Verification Error:', error);
         res.status(400).json({ message: error.message || 'Payment verification failed' });
+    }
+};
+
+// @desc    Update delivery partner location for live map tracking
+// @route   PUT /api/orders/:id/location
+// @access  Private (DeliveryPartner / Admin)
+export const updateDeliveryLocation = async (req, res) => {
+    try {
+        const { latitude, longitude } = req.body;
+        if (latitude == null || longitude == null) {
+            return res.status(400).json({ message: 'Latitude and Longitude are required.' });
+        }
+
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found.' });
+        }
+
+        const updatedAt = new Date();
+        order.deliveryPartnerLocation = {
+            latitude: Number(latitude),
+            longitude: Number(longitude),
+            updatedAt
+        };
+
+        const updatedOrder = await order.save();
+
+        const payload = {
+            orderId: String(updatedOrder._id),
+            latitude: Number(latitude),
+            longitude: Number(longitude),
+            updatedAt,
+            deliveryStatus: updatedOrder.deliveryStatus,
+            status: updatedOrder.status
+        };
+
+        broadcastToCustomerOrder(updatedOrder._id, 'delivery_location_updated', payload);
+        broadcastToRestaurant(updatedOrder.restaurantId, 'delivery_location_updated', payload);
+
+        res.json({ success: true, location: updatedOrder.deliveryPartnerLocation });
+    } catch (error) {
+        console.error('Error updating order delivery location:', error);
+        res.status(500).json({ message: 'Failed to update location' });
     }
 };
 

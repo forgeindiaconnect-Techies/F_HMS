@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Search, Clock, CheckCircle2, ChevronRight, ShoppingBag, Truck, Utensils, AlertCircle, X } from 'lucide-react';
+import { Search, Clock, CheckCircle2, ChevronRight, ShoppingBag, Truck, Utensils, AlertCircle, X, MapPin } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import LiveOrderMap from '../../components/LiveOrderMap';
 
 const getTypeIcon = (type) => {
     switch (type) {
@@ -205,25 +206,44 @@ const ManagerOrderMonitoring = () => {
                             </button>
                         </div>
                         
-                        <div className="p-6">
-                            <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Update Status</h4>
-                            <div className="grid grid-cols-2 gap-3">
-                                {['Pending', 'Preparing', 'Ready', 'Dispatched', 'Completed', 'Cancelled'].map(status => (
-                                    <button
-                                        key={status}
-                                        onClick={() => handleStatusUpdate(selectedOrder._id, status)}
-                                        disabled={selectedOrder.status === status}
-                                        className={`py-3 rounded-xl font-bold text-sm transition-all border ${
-                                            selectedOrder.status === status 
-                                                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' 
-                                                : status === 'Cancelled'
-                                                    ? 'bg-white text-red-600 border-red-200 hover:bg-red-50'
-                                                    : 'bg-white text-gray-700 border-gray-200 hover:border-gray-900 shadow-sm hover:shadow'
-                                        }`}
-                                    >
-                                        Mark {status}
-                                    </button>
-                                ))}
+                        <div className="p-6 space-y-4">
+                            {selectedOrder.orderType === 'Delivery' && (
+                                <div className="space-y-2">
+                                    <h4 className="text-xs font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                                        <MapPin size={14} className="text-emerald-500" /> Live Delivery OSRM Tracking
+                                    </h4>
+                                    <LiveOrderMap
+                                        customerLocation={selectedOrder.customerLocation}
+                                        restaurantLocation={selectedOrder.restaurantLocation}
+                                        deliveryPartnerLocation={selectedOrder.deliveryPartnerLocation}
+                                        orderStatus={selectedOrder.status}
+                                        deliveryStatus={selectedOrder.deliveryStatus}
+                                        deliveryPartnerName={selectedOrder.deliveryPartner?.name || 'Rider'}
+                                        height="240px"
+                                    />
+                                </div>
+                            )}
+
+                            <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Update Status</h4>
+                                <div className="grid grid-cols-2 gap-2.5">
+                                    {['Pending', 'Preparing', 'Ready', 'Dispatched', 'Completed', 'Cancelled'].map(status => (
+                                        <button
+                                            key={status}
+                                            onClick={() => handleStatusUpdate(selectedOrder._id, status)}
+                                            disabled={selectedOrder.status === status}
+                                            className={`py-2.5 rounded-xl font-bold text-xs transition-all border ${
+                                                selectedOrder.status === status 
+                                                    ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' 
+                                                    : status === 'Cancelled'
+                                                        ? 'bg-white text-red-600 border-red-200 hover:bg-red-50'
+                                                        : 'bg-white text-gray-700 border-gray-200 hover:border-gray-900 shadow-sm hover:shadow'
+                                            }`}
+                                        >
+                                            Mark {status}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>

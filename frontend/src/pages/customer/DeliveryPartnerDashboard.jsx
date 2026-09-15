@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
@@ -9,6 +9,7 @@ import {
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
+import LiveOrderMap from '../../components/LiveOrderMap';
 
 const DeliveryPartnerDashboard = () => {
     const navigate = useNavigate();
@@ -99,12 +100,12 @@ const DeliveryPartnerDashboard = () => {
         setUser(authUser || JSON.parse(stored));
         loadData();
 
-        // WebSocket Connection for instant delivery updates
-        let ws;
+        const wsRef = { current: null };
         const connectWS = () => {
             let baseURL = API_URL;
             let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
-            ws = new WebSocket(wsURL);
+            const ws = new WebSocket(wsURL);
+            wsRef.current = ws;
 
             ws.onopen = () => {
                 ws.send(JSON.stringify({
@@ -137,10 +138,44 @@ const DeliveryPartnerDashboard = () => {
         }, 10000);
 
         return () => {
-            if (ws) ws.close();
+            if (wsRef.current) wsRef.current.close();
             clearInterval(pollInterval);
         };
     }, [authUser]);
+
+    // Live Geolocation watchPosition for active runs
+    useEffect(() => {
+        if (!assignedOrders || assignedOrders.length === 0) return;
+        const activeOrder = assignedOrders.find(o => ['Accepted', 'Picked Up', 'On the Way'].includes(o.deliveryStatus));
+        if (!activeOrder) return;
+
+        if ('geolocation' in navigator) {
+            let lastUpdate = 0;
+            const watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    const now = Date.now();
+                    // Throttle updates to every 4 seconds to prevent excessive requests
+                    if (now - lastUpdate < 4000) return;
+                    lastUpdate = now;
+
+                    const { latitude, longitude } = position.coords;
+                    
+                    // Call API to update location in database & broadcast
+                    if (client) {
+                        client.put(`/orders/${activeOrder._id}/location`, { latitude, longitude }).catch(() => {});
+                    }
+                },
+                (error) => {
+                    console.warn('Geolocation tracking warning:', error.message);
+                },
+                { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+            );
+
+            return () => {
+                navigator.geolocation.clearWatch(watchId);
+            };
+        }
+    }, [assignedOrders]);
 
     useEffect(() => {
         if (!showNavigationModal) {
@@ -830,25 +865,17 @@ const DeliveryPartnerDashboard = () => {
                             </button>
                         </div>
 
-                        {/* Interactive OpenStreetMap iframe View */}
-                        <div className="w-full h-64 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 relative bg-slate-950 shadow-inner">
-                            <iframe
-                                title="OpenStreetMap Live Tracking"
-                                width="100%"
-                                height="100%"
-                                frameBorder="0"
-                                scrolling="no"
-                                marginHeight="0"
-                                marginWidth="0"
-                                src={`https://www.openstreetmap.org/export/embed.html?bbox=${simLng - 0.02}%2C${simLat - 0.02}%2C${simLng + 0.02}%2C${simLat + 0.02}&layer=mapnik&marker=${simLat}%2C${simLng}`}
-                                className="w-full h-full filter contrast-[1.05]"
+                        {/* Leaflet + OpenStreetMap + Real OSRM Road Routing */}
+                        <div className="w-full rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-inner">
+                            <LiveOrderMap
+                                customerLocation={selectedTrackingOrder?.customerLocation}
+                                restaurantLocation={selectedTrackingOrder?.restaurantLocation}
+                                deliveryPartnerLocation={selectedTrackingOrder?.deliveryPartnerLocation}
+                                orderStatus={selectedTrackingOrder?.status}
+                                deliveryStatus={selectedTrackingOrder?.deliveryStatus}
+                                deliveryPartnerName={user?.name || 'Me'}
+                                height="280px"
                             />
-                            
-                            {/* Overlay Live Marker Badge */}
-                            <div className="absolute top-3 left-3 bg-slate-900/90 text-white px-3 py-1.5 rounded-xl border border-white/10 text-[10px] font-black backdrop-blur-md shadow-lg flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                <span>Rider GPS: {simLat.toFixed(4)}°, {simLng.toFixed(4)}°</span>
-                            </div>
                         </div>
 
                         {/* Google Maps Directions Action Buttons */}
