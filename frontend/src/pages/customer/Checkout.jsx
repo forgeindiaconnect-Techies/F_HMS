@@ -38,42 +38,24 @@ const Checkout = () => {
 
     useEffect(() => {
         const fetchRestaurants = async () => {
-            const dummyRestaurants = [
-                { _id: 'demo1', name: 'Pizza Palace', address: '123 Food Street' },
-                { _id: 'demo2', name: 'Burger Hub', address: '456 Fast Lane' },
-                { _id: 'demo3', name: 'South Indian Cafe', address: '789 Spice Road' }
-            ];
-            
             try {
                 const res = await api.get('/restaurants');
                 const activeList = (res.data || []).filter(r => r.isActive !== false);
-                
-                const finalRestaurants = activeList.length > 0 ? activeList : dummyRestaurants;
-                setRestaurantsList(finalRestaurants);
+                setRestaurantsList(activeList);
                 
                 const rawCartRestId = cartItems.length > 0 ? cartItems[0].restaurantId : null;
                 const cartRestId = typeof rawCartRestId === 'object' ? rawCartRestId?._id : (rawCartRestId || cartItems[0]?.restaurant);
-                const cartRestName = cartItems.length > 0 ? (typeof cartItems[0].restaurantId === 'object' ? cartItems[0].restaurantId?.name : (cartItems[0].restaurantName || cartItems[0].restaurantTitle)) : null;
 
                 if (location.state?.restaurantId) {
                     setSelectedRestaurantId(location.state.restaurantId);
                 } else if (cartRestId) {
                     setSelectedRestaurantId(cartRestId);
-                } else if (finalRestaurants.length > 0) {
-                    setSelectedRestaurantId(finalRestaurants[0]._id);
+                } else if (activeList.length > 0) {
+                    setSelectedRestaurantId(activeList[0]._id);
                 }
             } catch (error) {
                 console.error("Failed to load restaurants for checkout", error);
-                setRestaurantsList(dummyRestaurants);
-                const rawCartRestId = cartItems.length > 0 ? cartItems[0].restaurantId : null;
-                const cartRestId = typeof rawCartRestId === 'object' ? rawCartRestId?._id : (rawCartRestId || cartItems[0]?.restaurant);
-                if (location.state?.restaurantId) {
-                    setSelectedRestaurantId(location.state.restaurantId);
-                } else if (cartRestId) {
-                    setSelectedRestaurantId(cartRestId);
-                } else {
-                    setSelectedRestaurantId(dummyRestaurants[0]._id);
-                }
+                setRestaurantsList([]);
             }
         };
         fetchRestaurants();
@@ -84,10 +66,8 @@ const Checkout = () => {
     const cartRestName = cartItems.length > 0 ? (typeof cartItems[0].restaurantId === 'object' ? cartItems[0].restaurantId?.name : (cartItems[0].restaurantName || cartItems[0].restaurantTitle)) : null;
 
     const targetResId = String(selectedRestaurantId || location.state?.restaurantId || cartRestId || '');
-    const selectedRestaurantObj = restaurantsList.find(r => String(r._id) === targetResId) || 
-        (cartRestName ? { _id: cartRestId || 'cart_rest', name: cartRestName } : (restaurantsList.length > 0 ? restaurantsList[0] : null));
-
-    const selectedRestaurantName = selectedRestaurantObj ? selectedRestaurantObj.name : (cartRestName || 'Selected Restaurant');
+    const selectedRestaurantObj = restaurantsList.find(r => String(r._id) === targetResId) || (restaurantsList.length > 0 ? restaurantsList[0] : null);
+    const selectedRestaurantName = selectedRestaurantObj ? selectedRestaurantObj.name : (cartRestName || 'Restaurant');
 
     useEffect(() => {
         let timer;
