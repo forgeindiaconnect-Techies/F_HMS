@@ -33,16 +33,19 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const config = error.config;
-        if (config && (!config._retryCount || config._retryCount < 20)) {
-            const status = error.response ? error.response.status : 0;
-            // Catch Render cold-start indicators (502 Bad Gateway, 503 Service Unavailable, 504 Timeout, Network Error / Preflight failure)
-            if (status === 502 || status === 503 || status === 504 || !error.response || error.code === 'ERR_NETWORK') {
-                config._retryCount = (config._retryCount || 0) + 1;
-                console.log(`[Render Cold-Start] Retrying request (${status || 'Network Error'}). Attempt ${config._retryCount}/20...`);
-                await new Promise((resolve) => setTimeout(resolve, 3000));
-                return api.request(config);
-            }
+        const status = error.response ? error.response.status : 0;
+        
+        // Render cold-start or proxy errors (502, 503, 504, 429 rate limits, network errors)
+        const isColdStart = status === 502 || status === 503 || status === 504 || status === 429 || !error.response || error.code === 'ERR_NETWORK';
+        
+        if (config && isColdStart && (!config._retryCount || config._retryCount < 6)) {
+            config._retryCount = (config._retryCount || 0) + 1;
+            const backoffMs = Math.min(3000 + config._retryCount * 2000, 10000); // 5s, 7s, 9s, 10s max
+            console.log(`[Render Cold-Start] Retrying request (${status || 'Network Error'}). Attempt ${config._retryCount}/6 in ${backoffMs/1000}s...`);
+            await new Promise((resolve) => setTimeout(resolve, backoffMs));
+            return api.request(config);
         }
+
         if (error.response && error.response.status === 401) {
             localStorage.removeItem('restosys_customer_user');
             if (window.location.pathname !== '/login' && window.location.pathname !== '/register' && window.location.pathname !== '/customer/login') {

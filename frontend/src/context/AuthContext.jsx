@@ -70,7 +70,10 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     const fetchRestaurant = useCallback(async (currentUser = user) => {
-        if (!currentUser || currentUser.role === 'Customer' || currentUser.role === 'SuperAdmin' || currentUser.role === 'DeliveryPartner') {
+        const path = typeof window !== 'undefined' ? window.location.pathname : '';
+        const isStaffRoute = path.startsWith('/admin') || path.startsWith('/staff') || path.startsWith('/kitchen') || path.startsWith('/pos') || path.startsWith('/owner');
+        
+        if (!isStaffRoute || !currentUser || currentUser.role === 'Customer' || currentUser.role === 'SuperAdmin' || currentUser.role === 'DeliveryPartner') {
             setRestaurant(null);
             return null;
         }
@@ -115,9 +118,12 @@ export const AuthProvider = ({ children }) => {
         initializeAuth();
     }, []);
 
-    // Auto-refresh restaurant subscription data every 30s and on window focus (Staff/Admin only)
+    // Auto-refresh restaurant subscription data every 30s and on window focus (Staff/Admin only on staff pages)
     useEffect(() => {
-        if (!user || user.role === 'Customer' || user.role === 'SuperAdmin' || user.role === 'DeliveryPartner') return;
+        const path = typeof window !== 'undefined' ? window.location.pathname : '';
+        const isStaffRoute = path.startsWith('/admin') || path.startsWith('/staff') || path.startsWith('/kitchen') || path.startsWith('/pos') || path.startsWith('/owner');
+
+        if (!isStaffRoute || !user || user.role === 'Customer' || user.role === 'SuperAdmin' || user.role === 'DeliveryPartner') return;
 
         const refresh = () => fetchRestaurant(user);
         window.addEventListener('focus', refresh);
