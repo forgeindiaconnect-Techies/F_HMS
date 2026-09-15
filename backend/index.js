@@ -144,14 +144,14 @@ initWebSocket(server);
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
     
-    // Self-Ping Keep-Alive service for Render free tier (pings every 4 minutes)
+    // Self-Ping Keep-Alive service for Render container internal loop
     setInterval(() => {
-        https.get('https://f-hms.onrender.com/api/health', (res) => {
-            console.log(`[Keep-Alive] Render server ping status: ${res.statusCode}`);
+        http.get(`http://127.0.0.1:${PORT}/api/health`, (res) => {
+            // Keep local process loop active
         }).on('error', () => {
             // Silently swallow network glitches
         });
-    }, 4 * 60 * 1000);
+    }, 3 * 60 * 1000);
     
     // Connect to MongoDB Atlas asynchronously in background
     connectDB().then(async () => {

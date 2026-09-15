@@ -40,10 +40,10 @@ api.interceptors.response.use(
         const status = error.response ? error.response.status : 0;
         const isColdStart = status === 502 || status === 503 || status === 504 || (!error.response && error.code === 'ERR_NETWORK');
 
-        if (config && isColdStart && (!config._retryCount || config._retryCount < 6)) {
+        if (config && isColdStart && (!config._retryCount || config._retryCount < 4)) {
             config._retryCount = (config._retryCount || 0) + 1;
-            const backoffMs = 8000;
-            console.log(`Render server check (${status || 'Network Error'}). Retrying in 8s... (attempt ${config._retryCount}/6)`);
+            const backoffMs = config._retryCount * 3000 + 3000;
+            console.log(`Render server check (${status || 'Network Error'}). Retrying in ${(backoffMs/1000).toFixed(1)}s... (attempt ${config._retryCount}/4)`);
             await new Promise((resolve) => setTimeout(resolve, backoffMs));
             return api.request(config);
         }
