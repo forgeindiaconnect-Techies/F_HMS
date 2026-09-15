@@ -44,7 +44,7 @@ dotenv.config();
 
 const app = express();
 
-// Bulletproof Universal CORS setup for Vercel, localhost, and all custom domains
+// Universal CORS setup for Vercel, localhost, and all custom domains
 app.use((req, res, next) => {
     const origin = req.headers.origin || '*';
     res.setHeader('Access-Control-Allow-Origin', origin);
@@ -120,7 +120,6 @@ const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-
 app.get('/', (req, res) => {
     res.status(200).json({ status: 'ok', message: 'Restaurant SaaS API is running live' });
 });
@@ -145,7 +144,7 @@ initWebSocket(server);
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
     
-    // Automated Self-Ping Keep-Alive service for Render free tier (pings every 4 minutes to prevent sleep)
+    // Self-Ping Keep-Alive service for Render free tier (pings every 4 minutes)
     setInterval(() => {
         https.get('https://f-hms.onrender.com/api/health', (res) => {
             console.log(`[Keep-Alive] Render server ping status: ${res.statusCode}`);
