@@ -239,29 +239,28 @@ const Checkout = () => {
         }
 
         try {
-            const orderData = {
+            const orderPayload = {
                 restaurantId: targetResId,
                 items: cartItems.map(item => ({
-                    menuItem: item.menuItem || item._id,
+                    menuItem: item.menuItem || item._id || item.id,
                     name: item.name,
                     price: item.price,
                     quantity: item.quantity,
-                    selectedSize: item.selectedSize || null,
-                    selectedAddons: item.selectedAddons || []
+                    customizations: item.customizations || item.options || []
                 })),
                 orderType,
-                deliveryAddress: orderType === 'Delivery' ? address : undefined,
+                deliveryAddress: orderType === 'Delivery' ? address : '',
                 paymentMethod,
-                upiDetails: paymentMethod === 'UPI' ? { method: upiMethod, upiId: upiId || 'QR' } : undefined,
-                subscriptionPlan: subscriptionPlan !== 'None' ? subscriptionPlan : undefined,
+                subscriptionPlan,
                 subtotal: cartTotal,
                 discount: totalDiscount,
                 tax,
                 deliveryFee,
-                totalAmount: grandTotal
+                totalAmount: grandTotal,
+                couponCode: coupon || ''
             };
 
-            const { data } = await api.post('/orders', orderData);
+            const { data } = await api.post('/orders', orderPayload);
             const orderId = data._id || data.id || data.orderId || 'ORD' + Date.now();
             setOrderPlaced(orderId);
             toast.success('Order placed successfully! 🎉');
