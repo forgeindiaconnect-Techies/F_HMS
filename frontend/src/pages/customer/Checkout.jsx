@@ -291,15 +291,15 @@ const Checkout = () => {
             const orderData = {
                 orderItems: cartItems.map(item => ({
                     name: item.name,
-                    qty: item.quantity,
-                    image: item.image || 'https://via.placeholder.com/150',
+                    qty: item.quantity || item.qty || 1,
+                    image: item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800',
                     price: item.price,
-                    product: item._id || item.id
+                    product: (item._id || item.id) && String(item._id || item.id).length === 24 ? String(item._id || item.id) : undefined
                 })),
                 orderType: orderType === 'Delivery' ? 'Delivery' : 'Self-Pickup',
                 source: orderType === 'Delivery' ? 'Walk-in' : 'Self-Pickup',
-                restaurantId: selectedRestaurantId || restaurantId,
-                branchId,
+                restaurantId: targetResId && targetResId !== 'cart_rest' ? targetResId : undefined,
+                branchId: branchId || undefined,
                 paymentMethod: paymentMethod === 'UPI' 
                     ? (upiMethod === 'QR' ? `UPI - ${upiPlatform || 'QR'}` : `UPI ID - ${upiId}`) 
                     : paymentMethod,
@@ -315,15 +315,19 @@ const Checkout = () => {
             // 1. Create order initial entry
             const { data: createdOrder } = await api.post('/orders', orderData);
 
-            // Complete payment and place order instantly
-            try {
-                await api.put(`/orders/${createdOrder._id}/pay`, {
-                    id: `PAY_MOCK_${Date.now()}`,
-                    paymentStatus: 'COMPLETED',
-                    update_time: new Date().toISOString(),
-                    email_address: 'customer@gmail.com'
-                });
-            } catch (_) {}
+            // Complete payment and mark order as paid
+            if (createdOrder && createdOrder._id) {
+                try {
+                    await api.put(`/orders/${createdOrder._id}/pay`, {
+                        paymentMethod: orderData.paymentMethod,
+                        paymentStatus: 'COMPLETED',
+                        totalPrice: grandTotal,
+                        taxPrice: tax
+                    });
+                } catch (payErr) {
+                    console.log('Payment status update background notification:', payErr.message);
+                }
+            }
 
             toast.success("Payment verified! Order placed successfully 🎉");
             setOrderPlaced(createdOrder._id);

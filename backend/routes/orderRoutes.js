@@ -30,7 +30,7 @@ router.route('/:id').get(optionalProtect, getOrderById);
 
 router.route('/:id/items').put(optionalProtect, appendOrderItems);
 
-router.route('/:id/pay').put(protect, updateOrderToPaid);
+router.route('/:id/pay').put(optionalProtect, updateOrderToPaid);
 
 router.route('/:id/status').put(protect, updateOrderStatus);
 
