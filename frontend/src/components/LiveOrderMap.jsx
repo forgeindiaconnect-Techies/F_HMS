@@ -90,11 +90,10 @@ const LiveOrderMap = ({
             attributionControl: true
         }).setView([restLoc.latitude, restLoc.longitude], 13);
 
-        // Crisp Light Theme OpenStreetMap / CartoDB Voyager Tile Layer with clear place names & road labels
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        // 100% Free OpenStreetMap Light Tile Layer (No API key required, full place & street names)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
-            subdomains: 'abcd',
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
         L.control.zoom({ position: 'bottomright' }).addTo(map);
