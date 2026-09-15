@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import axios from 'axios';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import CustomerProtectedRoute from './components/CustomerProtectedRoute';
@@ -121,17 +123,6 @@ import api from './utils/axiosInstance';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
-  // Background server warmup ping for Render cold-starts
-  useEffect(() => {
-    const pingServer = async () => {
-      try {
-        await api.get('/health');
-      } catch (err) {
-        // Silent warmup ping catch
-      }
-    };
-    pingServer();
-  }, []);
 
   return (
     <>
