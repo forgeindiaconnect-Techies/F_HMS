@@ -40,7 +40,7 @@ api.interceptors.response.use(
                 config._retryCount = (config._retryCount || 0) + 1;
                 console.log(`[Render Cold-Start] Retrying request (${status || 'Network Error'}). Attempt ${config._retryCount}/15...`);
                 await new Promise((resolve) => setTimeout(resolve, 2500));
-                return api(config);
+                return api.request(config);
             }
         }
         if (error.response && error.response.status === 401) {

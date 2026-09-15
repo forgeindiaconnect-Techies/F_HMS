@@ -47,7 +47,7 @@ const Checkout = () => {
             try {
                 let API_URL = getApiUrl();
                 const res = await axios.get(`${API_URL}/restaurants`);
-                const activeList = res.data.filter(r => r.isActive !== false);
+                const activeList = (res.data || []).filter(r => r.isActive !== false);
                 
                 const finalRestaurants = activeList.length > 0 ? activeList : dummyRestaurants;
                 setRestaurantsList(finalRestaurants);
@@ -57,21 +57,32 @@ const Checkout = () => {
                     setSelectedRestaurantId(location.state.restaurantId);
                 } else if (cartRestId && finalRestaurants.some(r => r._id === cartRestId)) {
                     setSelectedRestaurantId(cartRestId);
-                } else if (finalRestaurants.length > 0 && !selectedRestaurantId) {
+                } else if (finalRestaurants.length > 0) {
                     setSelectedRestaurantId(finalRestaurants[0]._id);
                 }
             } catch (error) {
                 console.error("Failed to load restaurants for checkout", error);
                 setRestaurantsList(dummyRestaurants);
+                const cartRestId = cartItems.length > 0 ? (cartItems[0].restaurantId || cartItems[0].restaurant) : null;
                 if (location.state?.restaurantId) {
                     setSelectedRestaurantId(location.state.restaurantId);
-                } else if (!selectedRestaurantId) {
+                } else if (cartRestId) {
+                    setSelectedRestaurantId(cartRestId);
+                } else {
                     setSelectedRestaurantId(dummyRestaurants[0]._id);
                 }
             }
         };
         fetchRestaurants();
-    }, []);
+    }, [cartItems]);
+
+    const cartRestId = cartItems.length > 0 ? (cartItems[0].restaurantId || cartItems[0].restaurant) : null;
+    const cartRestName = cartItems.length > 0 ? (cartItems[0].restaurantName || cartItems[0].restaurantTitle) : null;
+
+    const selectedRestaurantObj = restaurantsList.find(r => r._id === (selectedRestaurantId || restaurantId || cartRestId)) || 
+        (cartRestName ? { _id: cartRestId || 'cart_rest', name: cartRestName } : (restaurantsList.length > 0 ? restaurantsList[0] : null));
+
+    const selectedRestaurantName = selectedRestaurantObj ? selectedRestaurantObj.name : (cartRestName || 'Selected Restaurant');
 
     useEffect(() => {
         let timer;
@@ -101,9 +112,6 @@ const Checkout = () => {
     } else if (subscriptionPlan === 'Monthly Subscription') {
         subscriptionDiscount = cartTotal * 0.20;
     }
-
-    const selectedRestaurantObj = restaurantsList.find(r => r._id === (selectedRestaurantId || restaurantId));
-    const selectedRestaurantName = selectedRestaurantObj ? selectedRestaurantObj.name : 'Selected Restaurant';
 
     useEffect(() => {
         if (orderType !== 'Delivery' || !selectedRestaurantObj) {
@@ -495,22 +503,31 @@ const Checkout = () => {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Restaurant Selector */}
+                                {/* Auto-Selected Restaurant Card */}
                                 <div className="space-y-2 text-left">
-                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest">Select Restaurant</label>
-                                    <select
-                                        value={selectedRestaurantId || restaurantId || ''}
-                                        onChange={(e) => setSelectedRestaurantId(e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors bg-white font-semibold text-gray-800 text-sm"
-                                        required
-                                    >
-                                        <option value="">-- Choose Restaurant Name --</option>
-                                        {restaurantsList.map((r) => (
-                                            <option key={r._id} value={r._id}>
-                                                {r.name} {r.address ? `(${typeof r.address === 'object' ? (r.address.city || r.address.street || '') : r.address})` : ''}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest">Ordering From</label>
+                                    <div className="w-full px-4 py-3 rounded-xl border border-orange-200 bg-orange-50/70 flex items-center justify-between shadow-sm">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-9 h-9 rounded-lg bg-orange-500 text-white flex items-center justify-center font-bold shrink-0">
+                                                <Store size={18} />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-extrabold text-gray-900 text-sm">
+                                                    {selectedRestaurantName}
+                                                </h4>
+                                                <p className="text-xs text-orange-700/80 font-medium">
+                                                    {selectedRestaurantObj?.address 
+                                                        ? (typeof selectedRestaurantObj.address === 'object' 
+                                                            ? `${selectedRestaurantObj.address.city || ''} ${selectedRestaurantObj.address.street || ''}`.trim() || 'Main Outlet'
+                                                            : selectedRestaurantObj.address)
+                                                        : 'Auto-linked from cart items'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span className="text-[10px] font-black text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 border border-emerald-200">
+                                            ✓ Auto Selected
+                                        </span>
+                                    </div>
                                 </div>
 
                                 {/* Subscription Plan Selector */}
