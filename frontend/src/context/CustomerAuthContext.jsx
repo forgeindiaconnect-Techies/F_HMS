@@ -38,10 +38,10 @@ api.interceptors.response.use(
         // Render cold-start or proxy errors (502, 503, 504, 429 rate limits, network errors)
         const isColdStart = status === 502 || status === 503 || status === 504 || status === 429 || !error.response || error.code === 'ERR_NETWORK';
         
-        if (config && isColdStart && (!config._retryCount || config._retryCount < 6)) {
+        if (config && isColdStart && (!config._retryCount || config._retryCount < 15)) {
             config._retryCount = (config._retryCount || 0) + 1;
-            const backoffMs = Math.min(3000 + config._retryCount * 2000, 10000); // 5s, 7s, 9s, 10s max
-            console.log(`[Render Cold-Start] Retrying request (${status || 'Network Error'}). Attempt ${config._retryCount}/6 in ${backoffMs/1000}s...`);
+            const backoffMs = 4500; // 4.5s steady delay (15 attempts = 67.5s window)
+            console.log(`[Render Cold-Start] Server warming up (${status || 'Network Error'}). Retrying attempt ${config._retryCount}/15 in 4.5s...`);
             await new Promise((resolve) => setTimeout(resolve, backoffMs));
             return api.request(config);
         }
