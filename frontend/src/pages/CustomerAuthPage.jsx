@@ -116,6 +116,27 @@ const CustomerAuthPage = () => {
                         </button>
                     </div>
 
+                    {/* Quick Demo Test Credentials Banner */}
+                    <div className="mb-6 p-3 bg-orange-50/80 border border-orange-200/80 rounded-2xl text-left">
+                        <div className="flex justify-between items-center mb-1.5">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-orange-700">⚡ Test Local Credentials</span>
+                            <span className="text-[10px] text-orange-600 font-semibold">Click to Auto-fill</span>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                reset({ email: 'customer@example.com', password: 'password123' });
+                            }}
+                            className="w-full text-left px-3 py-2 bg-white hover:bg-orange-100/50 border border-orange-200 rounded-xl transition-all text-xs flex justify-between items-center group cursor-pointer"
+                        >
+                            <div>
+                                <span className="font-bold text-gray-900 block">Customer Account</span>
+                                <span className="text-[10px] text-gray-500">customer@example.com • password123</span>
+                            </div>
+                            <span className="text-[10px] font-bold text-orange-600 group-hover:translate-x-0.5 transition-transform">Fill ➔</span>
+                        </button>
+                    </div>
+
                     {authError && (
                         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
                             <AlertCircle size={20} className="text-red-500 shrink-0 mt-0.5" />
