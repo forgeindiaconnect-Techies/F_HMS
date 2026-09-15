@@ -7,7 +7,10 @@ const connectDB = async () => {
     let retries = 5;
     while (retries > 0) {
         try {
-            const conn = await mongoose.connect(uri);
+            const conn = await mongoose.connect(uri, {
+                serverSelectionTimeoutMS: 5000,
+                connectTimeoutMS: 10000,
+            });
             console.log(`MongoDB Connected: ${conn.connection.host}`);
             return;
         } catch (error) {
