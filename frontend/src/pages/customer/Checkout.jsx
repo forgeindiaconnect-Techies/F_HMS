@@ -285,7 +285,11 @@ const Checkout = () => {
             if (typeof clearCart === 'function') clearCart();
         } catch (error) {
             console.error('Order failed:', error);
-            toast.error('Failed to place order: ' + (error.response?.data?.message || error.message));
+            const isNetworkError = error.code === 'ERR_NETWORK' || !error.response || error.message.includes('Network Error');
+            const errorMsg = isNetworkError 
+                ? 'Server is starting up or connection dropped. Please check your internet connection and try clicking Place Order again.'
+                : (error.response?.data?.message || error.message);
+            toast.error(errorMsg);
         } finally {
             setIsPlacingOrder(false);
         }
