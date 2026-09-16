@@ -55,8 +55,7 @@ const Checkout = () => {
                     setSelectedRestaurantId(activeList[0]._id);
                 }
             } catch (error) {
-                console.error("Failed to load restaurants for checkout", error);
-                setRestaurantsList([]);
+                // Silently swallow background fetch error so checkout is never blocked
             }
         };
         fetchRestaurants();
