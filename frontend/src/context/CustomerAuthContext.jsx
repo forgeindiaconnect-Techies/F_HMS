@@ -39,11 +39,11 @@ api.interceptors.response.use(
         // Exclude 429 rate-limiting from auto-retry loops so we do not spam Cloudflare / Render edge proxies.
         const isColdStart = status === 502 || status === 503 || status === 504 || (!error.response && error.code === 'ERR_NETWORK');
         
-        if (config && isColdStart && (!config._retryCount || config._retryCount < 7)) {
+        if (config && isColdStart && (!config._retryCount || config._retryCount < 10)) {
             config._retryCount = (config._retryCount || 0) + 1;
-            // Progressive delay: 5.0s, 7.5s, 10.0s, 12.5s, 15.0s, 15.0s, 15.0s (7 retries = 80s total window)
-            const backoffMs = Math.min(config._retryCount * 2500 + 2500, 15000);
-            console.log(`[Render Cold-Start] Server warming up (${status || 'Network Error'}). Retrying attempt ${config._retryCount}/7 in ${(backoffMs/1000).toFixed(1)}s...`);
+            // Progressive delay capped at 14s (10 retries = 120s max window) to reliably wait through slow Render boots
+            const backoffMs = Math.min(config._retryCount * 2500 + 2500, 14000);
+            console.log(`[Render Cold-Start] Server warming up (${status || 'Network Error'}). Retrying attempt ${config._retryCount}/10 in ${(backoffMs/1000).toFixed(1)}s...`);
 
             await new Promise((resolve) => setTimeout(resolve, backoffMs));
             return api.request(config);
