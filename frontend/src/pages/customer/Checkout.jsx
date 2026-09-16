@@ -37,20 +37,21 @@ const Checkout = () => {
     const [selectedRestaurantId, setSelectedRestaurantId] = useState('');
 
     useEffect(() => {
+        const rawCartRestId = cartItems.length > 0 ? cartItems[0].restaurantId : null;
+        const cartRestId = typeof rawCartRestId === 'object' ? rawCartRestId?._id : (rawCartRestId || cartItems[0]?.restaurant);
+        const initialId = location.state?.restaurantId || cartRestId;
+
+        if (initialId) {
+            setSelectedRestaurantId(initialId);
+        }
+
         const fetchRestaurants = async () => {
             try {
                 const res = await api.get('/restaurants');
                 const activeList = (res.data || []).filter(r => r.isActive !== false);
                 setRestaurantsList(activeList);
                 
-                const rawCartRestId = cartItems.length > 0 ? cartItems[0].restaurantId : null;
-                const cartRestId = typeof rawCartRestId === 'object' ? rawCartRestId?._id : (rawCartRestId || cartItems[0]?.restaurant);
-
-                if (location.state?.restaurantId) {
-                    setSelectedRestaurantId(location.state.restaurantId);
-                } else if (cartRestId) {
-                    setSelectedRestaurantId(cartRestId);
-                } else if (activeList.length > 0) {
+                if (!initialId && activeList.length > 0) {
                     setSelectedRestaurantId(activeList[0]._id);
                 }
             } catch (error) {
