@@ -72,7 +72,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 
 app.get('/health', (req, res) => {
-    res.redirect(301, '/api/health');
+    res.status(200).json({ status: 'ok', time: new Date().toISOString() });
 });
 
 app.get('/plans', (req, res) => {
