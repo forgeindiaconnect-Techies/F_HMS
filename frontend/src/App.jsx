@@ -1,5 +1,3 @@
-import { useEffect } from 'react';
-import axios from 'axios';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import CustomerProtectedRoute from './components/CustomerProtectedRoute';
@@ -118,8 +116,6 @@ import ModuleDetails from './pages/ModuleDetails';
 import ThemeToggle from './components/ThemeToggle';
 import FloatingVideoWidget from './components/FloatingVideoWidget';
 
-import { useEffect } from 'react';
-import api from './utils/axiosInstance';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
