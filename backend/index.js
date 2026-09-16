@@ -140,29 +140,28 @@ app.use(errorHandler);
 const server = http.createServer(app);
 initWebSocket(server);
 
-// Connect to MongoDB Atlas first
-connectDB().then(async () => {
-    try {
-        const count = await Plan.countDocuments();
-        if (count === 0) {
-            await Plan.insertMany([
-                { name: 'Basic', monthlyPrice: 2999, yearlyPrice: 2399, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'], isActive: true },
-                { name: 'Pro', monthlyPrice: 5999, yearlyPrice: 4799, features: ['Up to 3 Branches', 'Kitchen Display System', 'Online Ordering', 'Advanced Analytics', 'Priority Support'], isActive: true },
-                { name: 'Enterprise', monthlyPrice: 12999, yearlyPrice: 10399, features: ['Unlimited Branches', 'Custom APIs & Webhooks', 'Dedicated Account Manager', 'SLA Guarantee', 'White-label Branding'], isActive: true }
-            ]);
-            console.log('Default subscription plans seeded.');
-        }
-    } catch (e) {
-        console.error('Error seeding plans:', e.message);
-    }
-}).catch(err => {
-    console.error('MongoDB Atlas connection error on startup:', err.message);
-});
-
-// Bind port immediately on process start so Render detects open port instantly
+// Bind port immediately on process start so Render health check passes instantly (1s)
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
     
+    // Connect to MongoDB Atlas asynchronously
+    connectDB().then(async () => {
+        try {
+            const count = await Plan.countDocuments();
+            if (count === 0) {
+                await Plan.insertMany([
+                    { name: 'Basic', monthlyPrice: 2999, yearlyPrice: 2399, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'], isActive: true },
+                    { name: 'Pro', monthlyPrice: 5999, yearlyPrice: 4799, features: ['Up to 3 Branches', 'Kitchen Display System', 'Online Ordering', 'Advanced Analytics', 'Priority Support'], isActive: true },
+                    { name: 'Enterprise', monthlyPrice: 12999, yearlyPrice: 10399, features: ['Unlimited Branches', 'Custom APIs & Webhooks', 'Dedicated Account Manager', 'SLA Guarantee', 'White-label Branding'], isActive: true }
+                ]);
+            }
+        } catch (e) {
+            // Silently swallow seed error
+        }
+    }).catch(err => {
+        console.error('MongoDB Atlas connection error on startup:', err.message);
+    });
+
     // Self-Ping Keep-Alive service for Render container internal loop
     setInterval(() => {
         http.get(`http://127.0.0.1:${PORT}/api/health`, (res) => {
@@ -170,5 +169,5 @@ server.listen(PORT, '0.0.0.0', () => {
         }).on('error', () => {
             // Silently swallow network glitches
         });
-    }, 3 * 60 * 1000);
+    }, 2 * 60 * 1000);
 });
