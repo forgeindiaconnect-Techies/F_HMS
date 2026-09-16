@@ -44,21 +44,6 @@ const Checkout = () => {
         if (initialId) {
             setSelectedRestaurantId(initialId);
         }
-
-        const fetchRestaurants = async () => {
-            try {
-                const res = await api.get('/restaurants');
-                const activeList = (res.data || []).filter(r => r.isActive !== false);
-                setRestaurantsList(activeList);
-                
-                if (!initialId && activeList.length > 0) {
-                    setSelectedRestaurantId(activeList[0]._id);
-                }
-            } catch (error) {
-                // Silently swallow background fetch error so checkout is never blocked
-            }
-        };
-        fetchRestaurants();
     }, []);
 
     const rawCartRestId = cartItems.length > 0 ? cartItems[0].restaurantId : null;
