@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import LiveOrderMap from '../../components/LiveOrderMap';
 
 const DeliveryManagement = () => {
     const { api, restaurant } = useAuth();
@@ -701,115 +702,19 @@ const DeliveryManagement = () => {
                                 </div>
                             ) : null}
 
-                            <div className="relative flex-1 bg-slate-950 rounded-2xl border border-slate-900 overflow-hidden flex flex-col">
-                                {/* Map Grid lines (Dark Zomato/Swiggy styled theme) */}
-                                <div className="absolute inset-0 opacity-5 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:30px_30px]"></div>
-                                
+                            <div className="relative flex-1 bg-slate-950 rounded-2xl border border-slate-900 overflow-hidden flex flex-col min-h-[380px]">
                                 {selectedTrackingOrder ? (
-                                    <>
-                                        {/* SVG Route Lines */}
-                                        <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                                            {/* Dotted grey route */}
-                                            <line x1="20%" y1="40%" x2="80%" y2="70%" stroke="#334155" strokeWidth="3" strokeDasharray="6,6" strokeLinecap="round" />
-                                            {/* Traversed green path */}
-                                            <line x1="20%" y1="40%" x2={`${20 + (['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) ? riderProgress : 0) * 0.6}%`} y2={`${40 + (['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) ? riderProgress : 0) * 0.3}%`} stroke="#10b981" strokeWidth="3" strokeLinecap="round" />
-                                        </svg>
-
-                                        {/* Restaurant Store Marker */}
-                                        <div className="absolute top-[40%] left-[20%] -translate-x-1/2 -translate-y-1/2 text-center group z-10">
-                                            <div className="relative flex h-9 w-9 items-center justify-center bg-gradient-to-tr from-amber-500 to-orange-400 text-white rounded-2xl shadow-xl border-2 border-white cursor-pointer transition-all group-hover:scale-110">
-                                                <div className="absolute inset-0 rounded-2xl bg-orange-500 animate-ping opacity-20"></div>
-                                                <Store size={18} />
-                                            </div>
-                                            <span className="block text-[8px] font-black text-white bg-slate-900/90 border border-slate-800 px-1.5 py-0.5 rounded shadow mt-1.5 uppercase tracking-widest leading-none">Hub Shop</span>
-                                        </div>
-
-                                        {/* Customer Destination Marker */}
-                                        <div className="absolute top-[70%] left-[80%] -translate-x-1/2 -translate-y-1/2 text-center group z-10">
-                                            <div className="relative flex h-8 w-8 items-center justify-center bg-purple-500 text-white rounded-full shadow-lg border-2 border-white cursor-pointer transition-transform group-hover:scale-110">
-                                                <div className="absolute inset-0 rounded-full bg-purple-500 animate-ping opacity-25"></div>
-                                                <MapPin size={16} />
-                                            </div>
-                                            <span className="block text-[8px] font-black text-white bg-slate-900/90 border border-slate-800 px-1.5 py-0.5 rounded shadow mt-1 uppercase tracking-widest leading-none">Home</span>
-                                        </div>
-
-                                        {/* Dynamic Rider Bike & Driver Avatar Marker */}
-                                        {selectedTrackingOrder.deliveryPartner && (() => {
-                                            const isDel = selectedTrackingOrder.status === 'Delivered' || selectedTrackingOrder.status === 'Completed' || selectedTrackingOrder.deliveryStatus === 'Delivered';
-                                            const isMov = ['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) || ['Picked Up', 'On the Way'].includes(selectedTrackingOrder.deliveryStatus);
-                                            const progVal = isDel ? 100 : (isMov ? riderProgress : 25);
-                                            const pT = progVal / 100;
-                                            const invT = 1 - pT;
-                                            const rLeft = invT * invT * 15 + 2 * invT * pT * 50 + pT * pT * 85;
-                                            const rTop = invT * invT * 35 + 2 * invT * pT * 80 + pT * pT * 65;
-
-                                            return (
-                                                <div 
-                                                    className="absolute -translate-x-1/2 -translate-y-1/2 text-center group z-20 transition-all duration-300 ease-out"
-                                                    style={{
-                                                        left: `${rLeft}%`,
-                                                        top: `${rTop}%`
-                                                    }}
-                                                >
-                                                    <div className="relative flex h-11 w-11 items-center justify-center bg-emerald-500 text-white rounded-full shadow-2xl border-2 border-white cursor-pointer transition-all group-hover:scale-110">
-                                                        {/* Outer pulsing ping wave */}
-                                                        <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-35"></div>
-                                                        
-                                                        {/* Bike animation */}
-                                                        <Bike size={20} className="animate-bounce" />
-                                                        
-                                                        {/* Small driver user overlay badge */}
-                                                        <div className="absolute -bottom-1 -right-1 bg-slate-900 border border-slate-800 rounded-full p-0.5 text-emerald-400 shadow-md">
-                                                            <User size={10} className="fill-emerald-400/20" />
-                                                        </div>
-                                                    </div>
-                                                    <span className="block text-[8px] font-black text-emerald-400 bg-slate-950 border border-slate-800 px-2 py-1 rounded shadow-lg mt-1 whitespace-nowrap leading-none">
-                                                        🚴 {(selectedTrackingOrder.deliveryPartner && typeof selectedTrackingOrder.deliveryPartner === 'object') ? (selectedTrackingOrder.deliveryPartner.name || 'Rider') : 'Rider'} ({selectedTrackingOrder.deliveryStatus || 'Assigned'})
-                                                    </span>
-                                                </div>
-                                            );
-                                        })()}
-
-                                        {/* Route Details overlay card */}
-                                        <div className="absolute bottom-4 right-4 bg-slate-900/95 backdrop-blur-md p-4 rounded-2xl border border-slate-800 shadow-2xl text-[10px] space-y-1.5 max-w-[240px] text-slate-300 z-10">
-                                            <p className="font-extrabold text-white uppercase tracking-widest text-[9px] border-b border-slate-800 pb-1 flex justify-between">
-                                                <span>Route Stats</span>
-                                                <span className="text-emerald-400">Order #{selectedTrackingOrder._id.substring(selectedTrackingOrder._id.length - 4).toUpperCase()}</span>
-                                            </p>
-                                            <p className="flex justify-between">
-                                                <span className="text-slate-500">Assigned Partner:</span>
-                                                <strong className="text-emerald-400">{(selectedTrackingOrder.deliveryPartner && typeof selectedTrackingOrder.deliveryPartner === 'object') ? (selectedTrackingOrder.deliveryPartner.name || 'Assigned Partner') : 'Assigned Partner'}</strong>
-                                            </p>
-                                            <p className="flex justify-between">
-                                                <span className="text-slate-500">Vehicle:</span>
-                                                <strong className="text-slate-200">{trackingPartner ? `${trackingPartner.vehicleDetails?.type} (${trackingPartner.vehicleDetails?.model || 'Generic'})` : '—'}</strong>
-                                            </p>
-                                            <p className="flex justify-between">
-                                                <span className="text-slate-500">Simulated Speed:</span>
-                                                <strong className="text-slate-200">
-                                                    {['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) ? '32 km/h' : '0 km/h (Idle)'}
-                                                </strong>
-                                            </p>
-                                            <p className="flex justify-between">
-                                                <span className="text-slate-500">Distance Remaining:</span>
-                                                <strong className="text-slate-200">
-                                                    {['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status) 
-                                                        ? `${Number((selectedTrackingOrder.deliveryDistance * (1 - riderProgress / 100)).toFixed(1))} km` 
-                                                        : `${selectedTrackingOrder.deliveryDistance || 0} km`
-                                                    }
-                                                </strong>
-                                            </p>
-                                            <p className="flex justify-between border-t border-slate-800/60 pt-1">
-                                                <span className="text-slate-500">Estimated ETA:</span>
-                                                <strong className="text-emerald-400 font-extrabold">
-                                                    {['Picked Up', 'On the Way', 'Out for Delivery'].includes(selectedTrackingOrder.status)
-                                                        ? `${Math.max(1, Math.ceil((selectedTrackingOrder.deliveryDistance * 3) * (1 - riderProgress / 100)))} mins`
-                                                        : `${selectedTrackingOrder.deliveryDistance ? selectedTrackingOrder.deliveryDistance * 3 : 15} mins`
-                                                    }
-                                                </strong>
-                                            </p>
-                                        </div>
-                                    </>
+                                    <div className="w-full h-full min-h-[380px]">
+                                        <LiveOrderMap
+                                            customerLocation={selectedTrackingOrder.customerLocation || selectedTrackingOrder.shippingAddress}
+                                            restaurantLocation={selectedTrackingOrder.restaurantLocation}
+                                            deliveryPartnerLocation={selectedTrackingOrder.deliveryPartnerLocation}
+                                            orderStatus={selectedTrackingOrder.status}
+                                            deliveryStatus={selectedTrackingOrder.deliveryStatus}
+                                            deliveryPartnerName={(selectedTrackingOrder.deliveryPartner && typeof selectedTrackingOrder.deliveryPartner === 'object') ? (selectedTrackingOrder.deliveryPartner.name || 'Rider') : 'Rider'}
+                                            height="420px"
+                                        />
+                                    </div>
                                 ) : (
                                     <div className="absolute inset-0 flex items-center justify-center bg-slate-900/90 backdrop-blur-sm p-4 text-center text-xs text-slate-500 font-bold">
                                         Select an active delivery order on the left to track its live route.
