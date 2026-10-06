@@ -296,11 +296,24 @@ export const getOrders = async (req, res) => {
 
         // Scope orders strictly to the logged-in user's restaurant (unless SuperAdmin)
         if (req.user && req.user.role !== 'SuperAdmin') {
-            const userRestaurantId = req.user.restaurantId || req.user.restaurant;
+            let userRestaurantId = req.user.restaurantId || req.user.restaurant;
+            
+            // Auto-heal: If user is RestaurantAdmin/Manager but has no restaurantId set on req.user object, resolve by ownerId
+            if (!userRestaurantId && req.user._id) {
+                const ownedRestaurant = await Restaurant.findOne({ ownerId: req.user._id });
+                if (ownedRestaurant) {
+                    userRestaurantId = ownedRestaurant._id;
+                    req.user.restaurantId = ownedRestaurant._id;
+                }
+            }
+
             if (userRestaurantId) {
                 filter.restaurantId = userRestaurantId;
             } else if (req.query.restaurantId && mongoose.Types.ObjectId.isValid(req.query.restaurantId)) {
                 filter.restaurantId = req.query.restaurantId;
+            } else {
+                // If the user has no restaurant associated at all, return empty array
+                return res.json([]);
             }
         } else if (req.query.restaurantId && mongoose.Types.ObjectId.isValid(req.query.restaurantId)) {
             filter.restaurantId = req.query.restaurantId;
