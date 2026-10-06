@@ -39,6 +39,19 @@ export const generateReport = async (req, res) => {
 
         let matchStage = { status: 'Completed' };
         
+        if (req.user && req.user.restaurantId) {
+            matchStage.restaurantId = new (await import('mongoose')).default.Types.ObjectId(req.user.restaurantId);
+        } else if (req.user && req.user.role !== 'SuperAdmin') {
+            return res.json({
+                reportType,
+                startDate,
+                endDate,
+                branch,
+                data: [],
+                generatedAt: new Date()
+            });
+        }
+        
         if (startDate && endDate) {
             matchStage.createdAt = {
                 $gte: new Date(startDate),

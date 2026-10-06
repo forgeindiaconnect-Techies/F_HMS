@@ -5,28 +5,32 @@ import Reservation from '../models/Reservation.js';
 // @access  Private
 export const getReservations = async (req, res) => {
     try {
-        // Find all reservations for branches belonging to the restaurant
-        // Since Reservation doesn't have restaurantId directly, we populate branch and filter on frontend or modify the query
-        // Wait, the easiest way is to pass branchId from frontend, or query all branches for this restaurant first.
-        // For simplicity, if we add a restaurantId to the Reservation model it's better, but the model doesn't have it.
-        // It has branchId. Let's assume the frontend passes branchId or we just fetch all if it's admin.
-        
-        // Actually, we can fetch them via a lookup or just return all for now.
-        // To be secure, let's just return all reservations and rely on the frontend filtering by branch, 
-        // or we can populate branch and filter.
-        
-        const reservations = await Reservation.find({})
-            .populate({
-                path: 'branch',
-                match: { restaurant: req.user.restaurantId }
-            })
-            .populate('table', 'number capacity')
+        if (!req.user || (!req.user.restaurantId && req.user.role !== 'SuperAdmin')) {
+            return res.json([]);
+        }
+
+        let branchIds = [];
+        if (req.user.role !== 'SuperAdmin') {
+            const Branch = (await import('../models/Branch.js')).default;
+            const branches = await Branch.find({ restaurantId: req.user.restaurantId }).select('_id');
+            branchIds = branches.map(b => b._id);
+        }
+
+        const filter = {};
+        if (req.user.role !== 'SuperAdmin') {
+            if (req.user.branchId) {
+                filter.branch = req.user.branchId;
+            } else {
+                filter.branch = { $in: branchIds };
+            }
+        }
+
+        const reservations = await Reservation.find(filter)
+            .populate('branch', 'name location')
+            .populate('table', 'tableNumber capacity')
             .sort({ date: 1, timeSlot: 1 });
 
-        // Filter out reservations where branch is null (meaning it doesn't belong to this restaurant)
-        const filteredReservations = reservations.filter(r => r.branch != null);
-
-        res.json(filteredReservations);
+        res.json(reservations);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
