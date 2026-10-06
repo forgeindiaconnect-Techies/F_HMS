@@ -36,7 +36,7 @@ const ManagerOrderMonitoring = () => {
         try {
             // Fetch all active orders (we can filter out Completed here or on backend, we'll do it here for now)
             const { data } = await api.get('/orders');
-            setOrders(data);
+            setOrders(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('Failed to fetch live orders', error);
         } finally {
