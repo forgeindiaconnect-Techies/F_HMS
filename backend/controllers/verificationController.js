@@ -423,12 +423,12 @@ export const reviewVerification = async (req, res) => {
             try {
                 const ownerUser = await User.findById(restaurant.ownerId);
                 if (ownerUser && ownerUser.email) {
-                    await sendApprovalEmail({
+                    sendApprovalEmail({
                         email: ownerUser.email,
                         name: ownerUser.name,
                         restaurantName: restaurant.name,
                         plan: restaurant.subscription?.plan || 'Basic'
-                    });
+                    }).catch(err => console.error("Approval email background error:", err.message));
                 }
             } catch (aErr) {
                 console.error("Approval email error:", aErr.message);
