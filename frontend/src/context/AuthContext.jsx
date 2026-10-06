@@ -135,8 +135,22 @@ export const AuthProvider = ({ children }) => {
         };
     }, [user, fetchRestaurant]);
 
+    const clearAllStaleState = () => {
+        setUser(null);
+        setRestaurant(null);
+        localStorage.removeItem('restosys_staff_user');
+        // Clear all cached local data keys to prevent cross-restaurant data leakage
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('restosys_') || key.startsWith('cart_') || key.startsWith('table_')) {
+                localStorage.removeItem(key);
+            }
+        });
+        sessionStorage.clear();
+    };
+
     const login = async (email, password) => {
         try {
+            clearAllStaleState();
             const { data } = await api.post('/auth/login', { email, password, loginType: 'staff' });
             setUser(data);
             localStorage.setItem('restosys_staff_user', JSON.stringify(data));
@@ -153,6 +167,7 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (name, email, password, phoneNumber, roleName, loginType = 'staff', restaurantName, plan, billingCycle) => {
         try {
+            clearAllStaleState();
             const { data } = await api.post('/auth/register', { 
                 name, email, password, phoneNumber, roleName, loginType, restaurantName, plan, billingCycle 
             });
@@ -167,15 +182,13 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = async () => {
+        const isDelivery = user?.role === 'DeliveryPartner' || window.location.pathname.startsWith('/delivery');
         try {
             await api.post('/auth/logout');
         } catch (error) {
             console.error('Logout error:', error);
         }
-        const isDelivery = user?.role === 'DeliveryPartner' || window.location.pathname.startsWith('/delivery');
-        setUser(null);
-        setRestaurant(null);
-        localStorage.removeItem('restosys_staff_user');
+        clearAllStaleState();
         window.location.href = isDelivery ? '/delivery/login' : '/staff/login';
     };
 

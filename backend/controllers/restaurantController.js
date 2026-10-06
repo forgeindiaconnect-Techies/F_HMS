@@ -387,9 +387,6 @@ export const upgradeSubscription = async (req, res) => {
             restaurant = await Restaurant.findOne({ ownerId: req.user._id });
         }
         if (!restaurant) {
-            restaurant = await Restaurant.findOne();
-        }
-        if (!restaurant) {
             return res.status(404).json({ message: 'Restaurant profile not found.' });
         }
 
@@ -484,9 +481,6 @@ export const downgradeSubscription = async (req, res) => {
             restaurant = await Restaurant.findOne({ ownerId: req.user._id });
         }
         if (!restaurant) {
-            restaurant = await Restaurant.findOne();
-        }
-        if (!restaurant) {
             return res.status(404).json({ message: 'Restaurant profile not found.' });
         }
 
@@ -524,9 +518,6 @@ export const renewSubscription = async (req, res) => {
         }
         if (!restaurant) {
             restaurant = await Restaurant.findOne({ ownerId: req.user._id });
-        }
-        if (!restaurant) {
-            restaurant = await Restaurant.findOne();
         }
         if (!restaurant) {
             return res.status(404).json({ message: 'Restaurant profile not found.' });
@@ -603,9 +594,6 @@ export const createRazorpaySubscriptionOrder = async (req, res) => {
             restaurant = await Restaurant.findOne({ ownerId: req.user._id });
         }
         if (!restaurant) {
-            restaurant = await Restaurant.findOne();
-        }
-        if (!restaurant) {
             return res.status(404).json({ message: 'Restaurant profile not found.' });
         }
 
@@ -677,9 +665,6 @@ export const verifyRazorpaySubscriptionPayment = async (req, res) => {
         }
         if (!restaurant) {
             restaurant = await Restaurant.findOne({ ownerId: req.user._id });
-        }
-        if (!restaurant) {
-            restaurant = await Restaurant.findOne();
         }
         if (!restaurant) {
             return res.status(404).json({ message: 'Restaurant profile not found.' });
