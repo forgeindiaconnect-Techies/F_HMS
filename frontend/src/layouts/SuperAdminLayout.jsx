@@ -44,7 +44,7 @@ const SuperAdminLayout = () => {
     useEffect(() => {
         if (api) {
             fetchNotifications();
-            const interval = setInterval(fetchNotifications, 10000);
+            const interval = setInterval(fetchNotifications, 45000);
             return () => clearInterval(interval);
         }
     }, [api]);

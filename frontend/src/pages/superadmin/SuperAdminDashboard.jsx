@@ -34,14 +34,14 @@ const SuperAdminDashboard = () => {
     const fetchDashboardData = async () => {
         try {
             const [statsRes, restsRes, verifsRes, inquiriesRes, ticketsRes, notifsRes] = await Promise.all([
-                api.get('/super-admin/stats'),
-                api.get('/super-admin/restaurants'),
-                api.get('/restaurants/verification/all'),
-                api.get('/inquiries/admin'),
-                api.get('/super-admin/tickets'),
-                api.get('/super-admin/notifications')
+                api.get('/super-admin/stats').catch(() => ({ data: null })),
+                api.get('/super-admin/restaurants').catch(() => ({ data: [] })),
+                api.get('/restaurants/verification/all').catch(() => ({ data: [] })),
+                api.get('/inquiries/admin').catch(() => ({ data: [] })),
+                api.get('/super-admin/tickets').catch(() => ({ data: [] })),
+                api.get('/super-admin/notifications').catch(() => ({ data: [] }))
             ]);
-            setStats(statsRes.data);
+            if (statsRes.data) setStats(statsRes.data);
             setRestaurants(restsRes.data || []);
             setVerifications(verifsRes.data || []);
             setInquiries(inquiriesRes.data || []);
