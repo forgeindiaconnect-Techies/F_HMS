@@ -318,10 +318,8 @@ export const getOrders = async (req, res) => {
 
             if (userRestaurantId) {
                 filter.restaurantId = userRestaurantId;
-            } else if (req.query.restaurantId && mongoose.Types.ObjectId.isValid(req.query.restaurantId)) {
-                filter.restaurantId = req.query.restaurantId;
             } else {
-                // If the user has no restaurant associated at all, return empty array
+                // If staff/user has no restaurant associated at all, return empty array (prevent showing legacy/unscoped orders)
                 return res.json([]);
             }
         } else if (req.query.restaurantId && mongoose.Types.ObjectId.isValid(req.query.restaurantId)) {
