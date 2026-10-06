@@ -307,12 +307,21 @@ export const loginUser = async (req, res) => {
                 return res.status(403).json({ message: 'Staff cannot log into the customer portal' });
             }
 
-            // Auto-heal: If RestaurantAdmin user has no restaurantId set, find by ownerId
-            if (!user.restaurantId && user.role === 'RestaurantAdmin') {
-                const ownedRestaurant = await Restaurant.findOne({ ownerId: user._id });
-                if (ownedRestaurant) {
-                    user.restaurantId = ownedRestaurant._id;
-                    await user.save();
+            // Auto-heal: If user has no restaurantId set, find by ownerId or branch lookup
+            if (!user.restaurantId) {
+                if (user.role === 'RestaurantAdmin') {
+                    const ownedRestaurant = await Restaurant.findOne({ ownerId: user._id });
+                    if (ownedRestaurant) {
+                        user.restaurantId = ownedRestaurant._id;
+                        await user.save();
+                    }
+                } else if (user.branchId) {
+                    const Branch = (await import('../models/Branch.js')).default;
+                    const branchDoc = await Branch.findById(user.branchId);
+                    if (branchDoc && branchDoc.restaurantId) {
+                        user.restaurantId = branchDoc.restaurantId;
+                        await user.save();
+                    }
                 }
             }
 
