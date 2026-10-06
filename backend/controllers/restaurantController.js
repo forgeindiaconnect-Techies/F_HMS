@@ -217,7 +217,7 @@ export const getMyRestaurant = async (req, res) => {
                 });
             }
 
-            // If subscription or 1-day free trial has expired, freeze the dashboard
+            // If subscription or 7-day free trial has expired, freeze the dashboard
             if (expiry < now) {
                 if (restaurant.subscription.status !== 'Frozen' && restaurant.subscription.status !== 'Cancelled') {
                     restaurant.subscription.status = 'Frozen';
@@ -226,14 +226,14 @@ export const getMyRestaurant = async (req, res) => {
 
                     const existingNotif = await Notification.findOne({
                         restaurantId: restaurant._id,
-                        title: '1-Day Free Trial Expired',
+                        title: '7-Day Free Trial Expired',
                         read: false
                     });
                     
                     if (!existingNotif) {
                         await Notification.create({
-                            title: '1-Day Free Trial Expired',
-                            desc: 'Your 1-day free trial has ended. Your dashboard has been frozen. Please subscribe to unlock full access.',
+                            title: '7-Day Free Trial Expired',
+                            desc: 'Your 7-day free trial has ended. Your dashboard has been frozen. Please subscribe to unlock full access.',
                             type: 'System',
                             restaurantId: restaurant._id
                         });

@@ -58,14 +58,21 @@ const DeliveryPartnerDashboard = () => {
             if (!baseURL.endsWith('/api')) baseURL += '/api';
             return baseURL;
         }
-        const hostname = window.location.hostname;
+        const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+        const protocol = typeof window !== 'undefined' ? window.location.protocol : '';
+        if (protocol === 'file:' || protocol === 'capacitor:' || protocol === 'ionic:' || protocol === 'content:' || !hostname) {
+            return 'https://f-hms.onrender.com/api';
+        }
         const isLocalIp = hostname.startsWith('192.168.') || 
                           hostname.startsWith('10.') || 
                           hostname.startsWith('172.');
         if (isLocalIp) {
             return `http://${hostname}:5000/api`;
         }
-        return 'http://localhost:5000/api';
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            return 'http://localhost:5000/api';
+        }
+        return 'https://f-hms.onrender.com/api';
     };
     const API_URL = getApiUrl();
 

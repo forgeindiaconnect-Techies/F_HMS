@@ -167,7 +167,7 @@ const SaaSShowcaseHero = () => {
                         to="/staff/register"
                         className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] text-white font-black text-sm rounded-2xl shadow-xl shadow-rose-500/25 hover:scale-[1.03] active:scale-95 transition-all flex items-center justify-center gap-2.5 cursor-pointer group"
                     >
-                        <span>Start 1-Day Free Trial</span>
+                        <span>Start 7-Day Free Trial</span>
                         <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                     </Link>
                     

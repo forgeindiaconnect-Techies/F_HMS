@@ -670,7 +670,7 @@ const ModuleDetails = () => {
                     <div className="bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] rounded-2xl sm:rounded-3xl p-6 sm:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-[#FF2D55]/20">
                         <div className="space-y-2 text-center md:text-left">
                             <h2 className="text-2xl sm:text-3xl font-black">Ready to deploy {selectedFeature.name}?</h2>
-                            <p className="text-red-100 font-medium text-xs sm:text-sm">Get started with our 1-Day Free Trial and transform your restaurant operations.</p>
+                            <p className="text-red-100 font-medium text-xs sm:text-sm">Get started with our 7-Day Free Trial and transform your restaurant operations.</p>
                         </div>
                         <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
                             <button

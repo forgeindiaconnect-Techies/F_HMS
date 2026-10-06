@@ -294,10 +294,20 @@ export const getOrders = async (req, res) => {
             filter.isPaid = req.query.isPaid === 'true';
         }
 
+        // Scope orders strictly to the logged-in user's restaurant (unless SuperAdmin)
+        if (req.user && req.user.role !== 'SuperAdmin') {
+            const userRestaurantId = req.user.restaurantId || req.user.restaurant;
+            if (userRestaurantId) {
+                filter.restaurantId = userRestaurantId;
+            } else if (req.query.restaurantId && mongoose.Types.ObjectId.isValid(req.query.restaurantId)) {
+                filter.restaurantId = req.query.restaurantId;
+            }
+        } else if (req.query.restaurantId && mongoose.Types.ObjectId.isValid(req.query.restaurantId)) {
+            filter.restaurantId = req.query.restaurantId;
+        }
+
         // Role-based filtering:
         // Dedicated customer orders endpoint is GET /api/orders/myorders.
-        // For GET /api/orders, return ALL orders across the restaurant system so Kitchen, Waiter, Cashier,
-        // and staff dashboards always show all new and incoming customer tickets.
         if (req.query.myOrders === 'true' && req.user) {
             filter.user = req.user._id;
         } else if (req.query.branchId && mongoose.Types.ObjectId.isValid(req.query.branchId)) {

@@ -103,13 +103,13 @@ const SubscriptionFreezeOverlay = ({ onUnfrozen }) => {
                     <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                         <div className="space-y-2">
                             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-white font-extrabold text-xs uppercase tracking-wider border border-white/30">
-                                <Lock size={14} className="animate-bounce" /> 1-Day Free Trial Expired
+                                <Lock size={14} className="animate-bounce" /> 7-Day Free Trial Expired
                             </div>
                             <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
                                 Your Dashboard is Currently Frozen ❄️
                             </h2>
                             <p className="text-rose-100 font-medium text-sm sm:text-base max-w-2xl">
-                                Your 1-day free trial has completed. Subscribe to any plan below to immediately unfreeze your dashboard and resume POS billing, kitchen KDS, and order management.
+                                Your 7-day free trial has completed. Subscribe to any plan below to immediately unfreeze your dashboard and resume POS billing, kitchen KDS, and order management.
                             </p>
                         </div>
 

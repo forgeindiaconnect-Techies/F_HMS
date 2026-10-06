@@ -1,15 +1,31 @@
 import axios from 'axios';
 
 export const getApiUrl = () => {
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) {
+        let envUrl = import.meta.env.VITE_API_URL.trim();
+        if (envUrl.endsWith('/')) envUrl = envUrl.slice(0, -1);
+        if (!envUrl.endsWith('/api')) envUrl += '/api';
+        return envUrl;
+    }
+
     const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+    const protocol = typeof window !== 'undefined' ? window.location.protocol : '';
+
+    // Mobile apps (WebView / Capacitor / Cordova / file / native wrapper)
+    if (protocol === 'file:' || protocol === 'capacitor:' || protocol === 'ionic:' || protocol === 'content:' || !hostname) {
+        return 'https://f-hms.onrender.com/api';
+    }
+
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
         return 'http://localhost:5000/api';
     }
+
     if (hostname.startsWith('192.168.') || hostname.startsWith('10.') || hostname.startsWith('172.')) {
         return `http://${hostname}:5000/api`;
     }
-    // Return relative path on Vercel production to utilize Vercel reverse proxy (vercel.json) and avoid browser CORS preflight failures
-    return '/api';
+
+    // Default to deployed Render backend URL
+    return 'https://f-hms.onrender.com/api';
 };
 
 const api = axios.create({

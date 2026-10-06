@@ -96,8 +96,8 @@ const VerificationManagement = () => {
     const submitReview = async (e) => {
         e.preventDefault();
 
-        if (overallStatus === 'Rejected' && !overallReason.trim()) {
-            toast.error("Please enter a rejection reason");
+        if (overallStatus !== 'Verified' && !overallReason.trim()) {
+            toast.error("Please enter a rejection/review reason");
             return;
         }
 
