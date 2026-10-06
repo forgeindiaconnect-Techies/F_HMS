@@ -307,12 +307,20 @@ export const getOrders = async (req, res) => {
         if (req.user && req.user.role !== 'SuperAdmin') {
             let userRestaurantId = req.user.restaurantId || req.user.restaurant;
             
-            // Auto-heal: If user is RestaurantAdmin/Manager but has no restaurantId set on req.user object, resolve by ownerId
+            // Auto-heal: If user has no restaurantId set on req.user object, resolve by ownerId or branchId
             if (!userRestaurantId && req.user._id) {
-                const ownedRestaurant = await Restaurant.findOne({ ownerId: req.user._id });
-                if (ownedRestaurant) {
-                    userRestaurantId = ownedRestaurant._id;
-                    req.user.restaurantId = ownedRestaurant._id;
+                if (req.user.role === 'RestaurantAdmin') {
+                    const ownedRestaurant = await Restaurant.findOne({ ownerId: req.user._id });
+                    if (ownedRestaurant) {
+                        userRestaurantId = ownedRestaurant._id;
+                        req.user.restaurantId = ownedRestaurant._id;
+                    }
+                } else if (req.user.branchId) {
+                    const branchDoc = await Branch.findById(req.user.branchId);
+                    if (branchDoc && branchDoc.restaurantId) {
+                        userRestaurantId = branchDoc.restaurantId;
+                        req.user.restaurantId = branchDoc.restaurantId;
+                    }
                 }
             }
 
