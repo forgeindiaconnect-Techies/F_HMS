@@ -36,8 +36,17 @@ export const addOrderItems = async (req, res) => {
         let finalBranchId = (branchId && mongoose.Types.ObjectId.isValid(branchId)) ? branchId : (req.user ? req.user.branchId : null);
         let finalRestaurantId = (restaurantId && mongoose.Types.ObjectId.isValid(restaurantId)) ? restaurantId : (req.user ? req.user.restaurantId : null);
 
+        // If restaurantId is missing from request and user, extract it from the ordered menuItem product
+        if (!finalRestaurantId && orderItems && orderItems.length > 0 && orderItems[0].product) {
+            const MenuItem = mongoose.model('MenuItem');
+            const itemObj = await MenuItem.findById(orderItems[0].product);
+            if (itemObj && itemObj.restaurantId) {
+                finalRestaurantId = itemObj.restaurantId;
+            }
+        }
+
         // If the user is an owner/admin testing the system and doesn't have a branchId, 
-        // fallback to the first branch of the restaurant so schema validation doesn't fail
+        // fallback to the branch belonging to that specific restaurant
         if (!finalBranchId && finalRestaurantId) {
             const Branch = mongoose.model('Branch');
             const firstBranch = await Branch.findOne({ restaurantId: finalRestaurantId });
