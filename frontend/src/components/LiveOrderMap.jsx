@@ -329,7 +329,7 @@ const LiveOrderMap = ({
         return () => {
             isMounted = false;
         };
-    }, [leafletReady, restLoc.latitude, restLoc.longitude, custLoc.latitude, custLoc.longitude, riderLoc?.latitude, riderLoc?.longitude, isRiderActive, deliveryPartnerName]);
+    }, [leafletReady, restLoc?.latitude, restLoc?.longitude, custLoc?.latitude, custLoc?.longitude, riderLoc?.latitude, riderLoc?.longitude, isRiderActive, deliveryPartnerName]);
 
     return (
         <div className={`relative rounded-3xl overflow-hidden border border-slate-200 shadow-xl bg-white w-full ${className}`} style={{ height }}>
