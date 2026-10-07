@@ -710,22 +710,21 @@ const DeliveryManagement = () => {
                                 </div>
                             ) : null}
 
-                            <div className="relative flex-1 bg-slate-950 rounded-2xl border border-slate-900 overflow-hidden flex flex-col min-h-[380px]">
-                                {selectedTrackingOrder ? (
-                                    <div className="w-full h-full min-h-[380px]">
-                                        <LiveOrderMap
-                                            customerLocation={selectedTrackingOrder.customerLocation || selectedTrackingOrder.shippingAddress}
-                                            restaurantLocation={selectedTrackingOrder.restaurantLocation}
-                                            deliveryPartnerLocation={selectedTrackingOrder.deliveryPartnerLocation}
-                                            orderStatus={selectedTrackingOrder.status}
-                                            deliveryStatus={selectedTrackingOrder.deliveryStatus}
-                                            deliveryPartnerName={(selectedTrackingOrder.deliveryPartner && typeof selectedTrackingOrder.deliveryPartner === 'object') ? (selectedTrackingOrder.deliveryPartner.name || 'Rider') : 'Rider'}
-                                            height="420px"
-                                        />
-                                    </div>
-                                ) : (
-                                    <div className="absolute inset-0 flex items-center justify-center bg-slate-900/90 backdrop-blur-sm p-4 text-center text-xs text-slate-500 font-bold">
-                                        Select an active delivery order on the left to track its live route.
+                            <div className="relative flex-1 rounded-2xl overflow-hidden border border-slate-200 shadow-inner flex flex-col min-h-[380px] bg-slate-50">
+                                <LiveOrderMap
+                                    customerLocation={selectedTrackingOrder ? (selectedTrackingOrder.customerLocation || selectedTrackingOrder.shippingAddress) : null}
+                                    restaurantLocation={selectedTrackingOrder ? selectedTrackingOrder.restaurantLocation : (settings.location || { latitude: 13.0475, longitude: 80.2090 })}
+                                    deliveryPartnerLocation={selectedTrackingOrder ? selectedTrackingOrder.deliveryPartnerLocation : null}
+                                    orderStatus={selectedTrackingOrder ? selectedTrackingOrder.status : 'Pending'}
+                                    deliveryStatus={selectedTrackingOrder ? selectedTrackingOrder.deliveryStatus : 'None'}
+                                    deliveryPartnerName={(selectedTrackingOrder && selectedTrackingOrder.deliveryPartner && typeof selectedTrackingOrder.deliveryPartner === 'object') ? (selectedTrackingOrder.deliveryPartner.name || 'Rider') : 'Rider'}
+                                    height="440px"
+                                />
+
+                                {!selectedTrackingOrder && (
+                                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 bg-white/95 backdrop-blur px-5 py-2.5 rounded-2xl border border-slate-200 shadow-xl text-center">
+                                        <p className="text-xs font-extrabold text-slate-800">Showing Branch Map Overview</p>
+                                        <p className="text-[10px] font-medium text-slate-400">Select an active delivery order on the left to inspect its live OSRM route & rider location.</p>
                                     </div>
                                 )}
                             </div>
