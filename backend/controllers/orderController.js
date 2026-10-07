@@ -307,7 +307,7 @@ export const getOrders = async (req, res) => {
         if (req.user && req.user.role !== 'SuperAdmin') {
             let userRestaurantId = req.user.restaurantId || req.user.restaurant;
             
-            // Auto-heal: If user has no restaurantId set on req.user object, resolve by ownerId or branchId
+            // Auto-heal: If user has no restaurantId set on req.user object, resolve by ownerId, branchId, or managed branch
             if (!userRestaurantId && req.user._id) {
                 if (req.user.role === 'RestaurantAdmin') {
                     const ownedRestaurant = await Restaurant.findOne({ ownerId: req.user._id });
@@ -321,6 +321,13 @@ export const getOrders = async (req, res) => {
                         userRestaurantId = branchDoc.restaurantId;
                         req.user.restaurantId = branchDoc.restaurantId;
                     }
+                } else if (req.user.role === 'BranchManager') {
+                    const managedBranch = await Branch.findOne({ manager: req.user._id });
+                    if (managedBranch) {
+                        userRestaurantId = managedBranch.restaurantId;
+                        req.user.branchId = managedBranch._id;
+                        req.user.restaurantId = managedBranch.restaurantId;
+                    }
                 }
             }
 
@@ -330,16 +337,36 @@ export const getOrders = async (req, res) => {
                 // If staff/user has no restaurant associated at all, return empty array (prevent showing legacy/unscoped orders)
                 return res.json([]);
             }
+
+            // Strict branch scoping for BranchManager & Staff roles
+            if (req.user.role === 'BranchManager' || ['Chef', 'Waiter', 'Cashier'].includes(req.user.role) || req.user.branchId) {
+                let effectiveBranchId = req.query.branchId || req.user.branchId;
+                if (!effectiveBranchId && req.user.role === 'BranchManager') {
+                    const managedBranch = await Branch.findOne({ manager: req.user._id });
+                    if (managedBranch) {
+                        effectiveBranchId = managedBranch._id;
+                        req.user.branchId = managedBranch._id;
+                    }
+                }
+                if (effectiveBranchId) {
+                    filter.branchId = effectiveBranchId;
+                } else {
+                    // Branch manager or staff with no assigned branch should see no branch orders
+                    return res.json([]);
+                }
+            } else if (req.query.branchId && mongoose.Types.ObjectId.isValid(req.query.branchId)) {
+                filter.branchId = req.query.branchId;
+            }
         } else if (req.query.restaurantId && mongoose.Types.ObjectId.isValid(req.query.restaurantId)) {
             filter.restaurantId = req.query.restaurantId;
+            if (req.query.branchId && mongoose.Types.ObjectId.isValid(req.query.branchId)) {
+                filter.branchId = req.query.branchId;
+            }
         }
 
-        // Role-based filtering:
         // Dedicated customer orders endpoint is GET /api/orders/myorders.
         if (req.query.myOrders === 'true' && req.user) {
             filter.user = req.user._id;
-        } else if (req.query.branchId && mongoose.Types.ObjectId.isValid(req.query.branchId)) {
-            filter.branchId = req.query.branchId;
         }
 
         let query = Order.find(filter)

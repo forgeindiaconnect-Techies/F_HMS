@@ -26,10 +26,25 @@ export const getDashboardAnalytics = async (req, res) => {
             createdAt: { $gte: previousStartDate, $lt: startDate }
         };
 
-        // Filter by logged-in user's restaurant
-        if (req.user.restaurantId) {
-            currentPeriodMatch.restaurantId = new mongoose.Types.ObjectId(req.user.restaurantId);
-            previousPeriodMatch.restaurantId = new mongoose.Types.ObjectId(req.user.restaurantId);
+        // Scope analytics strictly to logged-in user's restaurant and branch
+        let userRestaurantId = req.user.restaurantId || req.user.restaurant;
+        if (!userRestaurantId && req.user.branchId) {
+            const Branch = (await import('../models/Branch.js')).default;
+            const branchDoc = await Branch.findById(req.user.branchId);
+            if (branchDoc) userRestaurantId = branchDoc.restaurantId;
+        }
+
+        if (userRestaurantId) {
+            currentPeriodMatch.restaurantId = new mongoose.Types.ObjectId(userRestaurantId);
+            previousPeriodMatch.restaurantId = new mongoose.Types.ObjectId(userRestaurantId);
+            
+            if (req.user.role === 'BranchManager' || req.user.branchId) {
+                const effectiveBranchId = req.user.branchId || (await (await import('../models/Branch.js')).default.findOne({ manager: req.user._id }))?._id;
+                if (effectiveBranchId) {
+                    currentPeriodMatch.branchId = new mongoose.Types.ObjectId(effectiveBranchId);
+                    previousPeriodMatch.branchId = new mongoose.Types.ObjectId(effectiveBranchId);
+                }
+            }
         } else if (req.user.role !== 'SuperAdmin') {
             return res.json({
                 overview: { totalRevenue: 0, revenueChange: 0, totalOrders: 0, ordersChange: 0, avgOrderValue: 0, avgChange: 0, activeCustomers: 0, customersChange: 0 },
