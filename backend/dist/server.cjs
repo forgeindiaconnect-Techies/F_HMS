@@ -128279,6 +128279,11 @@ var getOrders = async (req, res) => {
       } else if (req.query.branchId && import_mongoose15.default.Types.ObjectId.isValid(req.query.branchId)) {
         filter.branchId = req.query.branchId;
       }
+      const isDemoUser = req.user.email && (req.user.email.toLowerCase().includes("pizzapalace") || req.user.email.toLowerCase().includes("demo"));
+      if (!isDemoUser && req.user.createdAt) {
+        const cutoff = new Date(new Date(req.user.createdAt).getTime() - 5 * 60 * 1e3);
+        filter.createdAt = { $gte: cutoff };
+      }
     } else if (req.query.restaurantId && import_mongoose15.default.Types.ObjectId.isValid(req.query.restaurantId)) {
       filter.restaurantId = req.query.restaurantId;
       if (req.query.branchId && import_mongoose15.default.Types.ObjectId.isValid(req.query.branchId)) {
