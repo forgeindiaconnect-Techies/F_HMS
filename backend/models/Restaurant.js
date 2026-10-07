@@ -90,6 +90,10 @@ const restaurantSchema = new mongoose.Schema({
         deliveryOperatingHours: {
             start: { type: String, default: '09:00' },
             end: { type: String, default: '22:00' }
+        },
+        location: {
+            latitude: { type: Number, default: 13.0475 },
+            longitude: { type: Number, default: 80.2090 }
         }
     },
     isActive: {

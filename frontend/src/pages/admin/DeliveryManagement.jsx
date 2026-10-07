@@ -7,6 +7,7 @@ import {
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import LiveOrderMap from '../../components/LiveOrderMap';
+import RadiusPickerMap from '../../components/RadiusPickerMap';
 
 const DeliveryManagement = () => {
     const { api, restaurant } = useAuth();
@@ -46,7 +47,8 @@ const DeliveryManagement = () => {
         rainSurcharge: 20,
         minOrderAmountForFreeDelivery: 300,
         minOrderAmountForDelivery: 0,
-        deliveryOperatingHours: { start: '09:00', end: '22:00' }
+        deliveryOperatingHours: { start: '09:00', end: '22:00' },
+        location: { latitude: 13.0475, longitude: 80.2090 }
     });
 
     const fetchPartners = async () => {
@@ -111,7 +113,8 @@ const DeliveryManagement = () => {
             setSettings(prev => ({
                 ...prev,
                 ...restaurant.deliverySettings,
-                deliveryOperatingHours: restaurant.deliverySettings.deliveryOperatingHours || prev.deliveryOperatingHours
+                deliveryOperatingHours: restaurant.deliverySettings.deliveryOperatingHours || prev.deliveryOperatingHours,
+                location: restaurant.deliverySettings.location || prev.location
             }));
         }
         await Promise.all([
@@ -430,25 +433,32 @@ const DeliveryManagement = () => {
                             </div>
                         </div>
 
-                        {/* Interactive Radius Visual Mock Map */}
+                        {/* Real Interactive Google / Leaflet Radius Map */}
                         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col h-full space-y-4">
                             <div>
                                 <h3 className="text-lg font-black text-gray-900">Map Bounding Area</h3>
-                                <p className="text-xs text-gray-400">Visualization of the {settings.radius} km order constraint.</p>
+                                <p className="text-xs text-gray-400">Interactive Google Maps style view enforcing the {settings.radius} km order constraint.</p>
                             </div>
 
-                            <div className="relative flex-1 min-h-[250px] bg-slate-100 rounded-2xl border border-slate-200 overflow-hidden flex items-center justify-center">
-                                {/* Simulated grid lines */}
-                                <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-                                
-                                {/* Target circles */}
-                                <div className="relative w-44 h-44 rounded-full bg-green-500/10 border-2 border-dashed border-green-500 flex items-center justify-center animate-pulse">
-                                    <div className="w-24 h-24 rounded-full bg-green-500/20 border border-green-500 flex items-center justify-center">
-                                        <MapPin className="text-green-600 animate-bounce" size={24} />
-                                    </div>
-                                    <span className="absolute -top-6 text-[10px] font-black text-green-700 bg-white px-2 py-0.5 rounded-full shadow border border-green-200">
-                                        Max: {settings.radius} km
-                                    </span>
+                            <RadiusPickerMap
+                                latitude={settings.location?.latitude || 13.0475}
+                                longitude={settings.location?.longitude || 80.2090}
+                                radiusKm={settings.radius || 5}
+                                onLocationChange={(newCoords) => setSettings(prev => ({
+                                    ...prev,
+                                    location: newCoords
+                                }))}
+                                height="280px"
+                            />
+
+                            <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                                <div>
+                                    <span className="text-slate-400 block font-bold text-[10px] uppercase">Latitude</span>
+                                    <span className="font-mono text-slate-800 font-semibold">{settings.location?.latitude || 13.0475}</span>
+                                </div>
+                                <div>
+                                    <span className="text-slate-400 block font-bold text-[10px] uppercase">Longitude</span>
+                                    <span className="font-mono text-slate-800 font-semibold">{settings.location?.longitude || 80.2090}</span>
                                 </div>
                             </div>
                             

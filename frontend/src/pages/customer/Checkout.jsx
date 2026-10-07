@@ -73,6 +73,9 @@ const Checkout = () => {
         subscriptionDiscount = cartTotal * 0.20;
     }
 
+    const [customerCoords, setCustomerCoords] = useState({ latitude: 13.0827, longitude: 80.2707 }); // Customer location
+    const [actualDistance, setActualDistance] = useState(3.2);
+
     useEffect(() => {
         if (orderType !== 'Delivery' || !selectedRestaurantObj) {
             setCalculatedDeliveryFee(0);
@@ -88,10 +91,27 @@ const Checkout = () => {
             return;
         }
 
+        const restCoords = settings.location || { latitude: 13.0475, longitude: 80.2090 };
+        
+        // Calculate Haversine distance in KM between customer location and restaurant location
+        const R = 6371; // Earth's radius in km
+        const dLat = (customerCoords.latitude - restCoords.latitude) * Math.PI / 180;
+        const dLon = (customerCoords.longitude - restCoords.longitude) * Math.PI / 180;
+        const a = 
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(restCoords.latitude * Math.PI / 180) * Math.cos(customerCoords.latitude * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distKm = Number((R * c).toFixed(1));
+        setActualDistance(distKm);
+
         const maxRadius = settings.radius || 5;
-        if (mockDistance > maxRadius) {
+        if (distKm > maxRadius) {
             setCalculatedDeliveryFee(0);
-            setDeliveryValidation({ isValid: false, error: `Your location (${mockDistance} km) is outside the restaurant's delivery radius of ${maxRadius} km.` });
+            setDeliveryValidation({ 
+                isValid: false, 
+                error: `Your location is ${distKm} km away from the restaurant, which exceeds the maximum delivery radius of ${maxRadius} km.` 
+            });
             return;
         }
 
@@ -120,8 +140,8 @@ const Checkout = () => {
 
         let fee = settings.baseFee || 30;
         const freeRadius = settings.freeRadius || 2;
-        if (mockDistance > freeRadius) {
-            fee += (mockDistance - freeRadius) * (settings.perKmCharge || 10);
+        if (distKm > freeRadius) {
+            fee += (distKm - freeRadius) * (settings.perKmCharge || 10);
         }
 
         if (settings.minOrderAmountForFreeDelivery && cartTotal >= settings.minOrderAmountForFreeDelivery) {
@@ -131,7 +151,7 @@ const Checkout = () => {
         setCalculatedDeliveryFee(fee);
         setDeliveryValidation({ isValid: true, error: '' });
 
-    }, [selectedRestaurantObj, orderType, cartTotal]);
+    }, [selectedRestaurantObj, orderType, cartTotal, customerCoords]);
 
     useEffect(() => {
         if (restaurantId && !selectedRestaurantId) {
