@@ -13,7 +13,7 @@ export const getApiUrl = () => {
 
     // Mobile apps (WebView / Capacitor / Cordova / file / native wrapper)
     if (protocol === 'file:' || protocol === 'capacitor:' || protocol === 'ionic:' || protocol === 'content:' || !hostname) {
-        return 'https://f-hms-2.onrender.com/api';
+        return 'https://f-hms.onrender.com/api';
     }
 
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
@@ -25,7 +25,7 @@ export const getApiUrl = () => {
     }
 
     // Default to deployed Render backend URL
-    return 'https://f-hms-2.onrender.com/api';
+    return 'https://f-hms.onrender.com/api';
 };
 
 const api = axios.create({
