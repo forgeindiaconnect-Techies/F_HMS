@@ -125802,6 +125802,10 @@ var restaurantSchema = new import_mongoose5.default.Schema({
     deliveryOperatingHours: {
       start: { type: String, default: "09:00" },
       end: { type: String, default: "22:00" }
+    },
+    location: {
+      latitude: { type: Number, default: 13.0475 },
+      longitude: { type: Number, default: 80.209 }
     }
   },
   isActive: {
@@ -128083,13 +128087,33 @@ var addOrderItems = async (req, res) => {
       latitude: 13.0827,
       longitude: 80.2707
     };
+    const targetRestaurant = await Restaurant_default.findById(finalRestaurantId);
+    const restDeliverySettings = targetRestaurant?.deliverySettings || {};
+    const restCoords = restDeliverySettings.location || {};
     const finalRestaurantLoc = restaurantLocation && restaurantLocation.latitude && restaurantLocation.longitude ? {
       latitude: Number(restaurantLocation.latitude),
       longitude: Number(restaurantLocation.longitude)
     } : {
-      latitude: 13.0475,
-      longitude: 80.209
+      latitude: Number(restCoords.latitude) || 13.0475,
+      longitude: Number(restCoords.longitude) || 80.209
     };
+    if (orderType === "Delivery") {
+      if (restDeliverySettings.enabled === false) {
+        return res.status(400).json({ message: "Delivery is currently disabled by this restaurant." });
+      }
+      const maxRadiusKm = restDeliverySettings.radius || 5;
+      const R = 6371;
+      const dLat = (finalCustomerLoc.latitude - finalRestaurantLoc.latitude) * Math.PI / 180;
+      const dLon = (finalCustomerLoc.longitude - finalRestaurantLoc.longitude) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(finalRestaurantLoc.latitude * Math.PI / 180) * Math.cos(finalCustomerLoc.latitude * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const calculatedDistanceKm = Number((R * c).toFixed(1));
+      if (calculatedDistanceKm > maxRadiusKm) {
+        return res.status(400).json({
+          message: `Order cannot be placed: Delivery location (${calculatedDistanceKm} km) exceeds the maximum allowed delivery radius of ${maxRadiusKm} km set by the restaurant.`
+        });
+      }
+    }
     const deliveryOtp = orderType === "Delivery" ? Math.floor(1e3 + Math.random() * 9e3).toString() : null;
     const order = new Order_default({
       orderItems: sanitizeOrderItems(orderItems),
