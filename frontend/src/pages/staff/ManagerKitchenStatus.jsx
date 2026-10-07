@@ -23,14 +23,14 @@ const getStationForItem = (itemName) => {
 };
 
 const ManagerKitchenStatus = () => {
-    const { api } = useAuth();
+    const { api, user } = useAuth();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const fetchOrders = async () => {
         try {
             const { data } = await api.get('/orders');
-            setOrders(data);
+            setOrders(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('Failed to fetch orders', error);
         } finally {
@@ -52,7 +52,23 @@ const ManagerKitchenStatus = () => {
         'Dessert': { name: 'Dessert', load: 'Low', tickets: 0, sold: 0, avgTime: '6m', chef: 'Tom H.', delay: false },
     };
 
-    orders.forEach(order => {
+    const userRestId = user?.restaurantId?._id || user?.restaurantId;
+    const userBranchId = user?.branchId?._id || user?.branchId;
+
+    const tenantOrders = orders.filter(order => {
+        const orderRestId = order.restaurantId?._id || order.restaurantId;
+        const orderBranchId = order.branchId?._id || order.branchId;
+
+        if (userRestId && orderRestId && String(orderRestId) !== String(userRestId)) {
+            return false;
+        }
+        if (userBranchId && orderBranchId && String(orderBranchId) !== String(userBranchId)) {
+            return false;
+        }
+        return true;
+    });
+
+    tenantOrders.forEach(order => {
         const isActive = ['Pending', 'Preparing', 'Ready'].includes(order.status);
         const isCompleted = ['Served', 'Out for Delivery', 'Delivered'].includes(order.status);
         

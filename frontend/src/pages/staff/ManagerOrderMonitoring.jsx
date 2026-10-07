@@ -25,7 +25,7 @@ const getStatusColor = (status, isDelayed) => {
 };
 
 const ManagerOrderMonitoring = () => {
-    const { api } = useAuth();
+    const { api, user } = useAuth();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState('All');
@@ -34,7 +34,7 @@ const ManagerOrderMonitoring = () => {
 
     const fetchOrders = async () => {
         try {
-            // Fetch all active orders (we can filter out Completed here or on backend, we'll do it here for now)
+            // Fetch active orders for current user
             const { data } = await api.get('/orders');
             setOrders(Array.isArray(data) ? data : []);
         } catch (error) {
@@ -62,9 +62,26 @@ const ManagerOrderMonitoring = () => {
         }
     };
 
+    // Filter orders strictly for current logged in user's restaurant & branch
+    const userRestId = user?.restaurantId?._id || user?.restaurantId;
+    const userBranchId = user?.branchId?._id || user?.branchId;
+
+    const tenantOrders = orders.filter(order => {
+        const orderRestId = order.restaurantId?._id || order.restaurantId;
+        const orderBranchId = order.branchId?._id || order.branchId;
+
+        if (userRestId && orderRestId && String(orderRestId) !== String(userRestId)) {
+            return false;
+        }
+        if (userBranchId && orderBranchId && String(orderBranchId) !== String(userBranchId)) {
+            return false;
+        }
+        return true;
+    });
+
     // Calculate derived data
-    const activeOrders = orders.filter(o => o.status !== 'Completed' && o.status !== 'Cancelled');
-    const completedTodayCount = orders.filter(o => o.status === 'Completed').length; // Ideally filter by today's date
+    const activeOrders = tenantOrders.filter(o => o.status !== 'Completed' && o.status !== 'Cancelled');
+    const completedTodayCount = tenantOrders.filter(o => o.status === 'Completed').length;
 
     // Enhance active orders with "delayed" calculation and formatted time
     const enhancedOrders = activeOrders.map(order => {
