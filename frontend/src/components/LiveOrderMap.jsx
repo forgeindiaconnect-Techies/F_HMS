@@ -57,7 +57,6 @@ const LiveOrderMap = ({
 
     // Default Fallback Coordinates (Chennai, TN)
     const DEFAULT_RESTAURANT = { latitude: 13.0475, longitude: 80.2090 };
-    const DEFAULT_CUSTOMER = { latitude: 13.0827, longitude: 80.2707 };
 
     const restLoc = (restaurantLocation && restaurantLocation.latitude && restaurantLocation.longitude) 
         ? restaurantLocation 
@@ -65,7 +64,7 @@ const LiveOrderMap = ({
 
     const custLoc = (customerLocation && customerLocation.latitude && customerLocation.longitude) 
         ? customerLocation 
-        : DEFAULT_CUSTOMER;
+        : null;
 
     const riderLoc = (deliveryPartnerLocation && deliveryPartnerLocation.latitude && deliveryPartnerLocation.longitude) 
         ? deliveryPartnerLocation 
@@ -195,10 +194,15 @@ const LiveOrderMap = ({
         }
 
         // 2. Customer Marker
-        if (!markersRef.current.customer) {
-            markersRef.current.customer = L.marker([custLoc.latitude, custLoc.longitude], { icon: createCustomerIcon() }).addTo(map);
-        } else {
-            markersRef.current.customer.setLatLng([custLoc.latitude, custLoc.longitude]);
+        if (custLoc) {
+            if (!markersRef.current.customer) {
+                markersRef.current.customer = L.marker([custLoc.latitude, custLoc.longitude], { icon: createCustomerIcon() }).addTo(map);
+            } else {
+                markersRef.current.customer.setLatLng([custLoc.latitude, custLoc.longitude]);
+            }
+        } else if (markersRef.current.customer) {
+            map.removeLayer(markersRef.current.customer);
+            delete markersRef.current.customer;
         }
 
         // 3. Rider Marker
@@ -215,6 +219,20 @@ const LiveOrderMap = ({
         } else if (markersRef.current.rider) {
             map.removeLayer(markersRef.current.rider);
             delete markersRef.current.rider;
+        }
+
+        // Clean up polyline lines if no customer order is active
+        if (!custLoc) {
+            if (polylineRef.current) {
+                map.removeLayer(polylineRef.current);
+                polylineRef.current = null;
+            }
+            if (backgroundPolylineRef.current) {
+                map.removeLayer(backgroundPolylineRef.current);
+                backgroundPolylineRef.current = null;
+            }
+            map.setView([restLoc.latitude, restLoc.longitude], 14);
+            return;
         }
 
         // 4. Fetch OSRM Road Route
@@ -319,23 +337,25 @@ const LiveOrderMap = ({
             <div ref={mapRef} className="w-full h-full z-0" />
 
             {/* Light Theme OSRM Route HUD Card */}
-            <div className="absolute top-4 left-4 z-10 bg-white/95 border border-slate-200 p-3.5 rounded-2xl backdrop-blur text-left shadow-xl flex flex-col gap-1 min-w-[160px]">
-                <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-ping"></span>
-                    <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest leading-none">OSRM Road Route</span>
+            {custLoc && (
+                <div className="absolute top-4 left-4 z-10 bg-white/95 border border-slate-200 p-3.5 rounded-2xl backdrop-blur text-left shadow-xl flex flex-col gap-1 min-w-[160px]">
+                    <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-ping"></span>
+                        <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest leading-none">OSRM Road Route</span>
+                    </div>
+                    <h4 className="text-base font-extrabold text-slate-900 leading-none mt-1">
+                        {isDelivered ? 'Arrived 🎉' : `${routeInfo.durationMins || '--'} mins`}
+                    </h4>
+                    <p className="text-[11px] font-bold text-slate-500 mt-0.5">
+                        {isDelivered ? '0.0 km' : `${routeInfo.distanceKm || '--'} km remaining`}
+                    </p>
+                    {deliveryPartnerLocation?.updatedAt && (
+                        <span className="text-[9px] text-slate-400 font-mono mt-0.5">
+                            Updated: {new Date(deliveryPartnerLocation.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </span>
+                    )}
                 </div>
-                <h4 className="text-base font-extrabold text-slate-900 leading-none mt-1">
-                    {isDelivered ? 'Arrived 🎉' : `${routeInfo.durationMins || '--'} mins`}
-                </h4>
-                <p className="text-[11px] font-bold text-slate-500 mt-0.5">
-                    {isDelivered ? '0.0 km' : `${routeInfo.distanceKm || '--'} km remaining`}
-                </p>
-                {deliveryPartnerLocation?.updatedAt && (
-                    <span className="text-[9px] text-slate-400 font-mono mt-0.5">
-                        Updated: {new Date(deliveryPartnerLocation.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                    </span>
-                )}
-            </div>
+            )}
 
             {/* Status Warning / Info Banner */}
             {!riderLoc && isRiderActive && (
