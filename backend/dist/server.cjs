@@ -128759,6 +128759,11 @@ var getDashboardAnalytics = async (req, res) => {
       const branchDoc = await Branch_default.findById(req.user.branchId);
       if (branchDoc) userRestaurantId = branchDoc.restaurantId;
     }
+    const isDemoUser = req.user.email && (req.user.email.toLowerCase().includes("pizzapalace") || req.user.email.toLowerCase().includes("demo"));
+    if (!isDemoUser && req.user.createdAt) {
+      const cutoff = new Date(new Date(req.user.createdAt).getTime() - 5 * 60 * 1e3);
+      currentPeriodMatch.createdAt = { $gte: cutoff, $lte: now };
+    }
     if (userRestaurantId) {
       currentPeriodMatch.restaurantId = new import_mongoose16.default.Types.ObjectId(userRestaurantId);
       previousPeriodMatch.restaurantId = new import_mongoose16.default.Types.ObjectId(userRestaurantId);

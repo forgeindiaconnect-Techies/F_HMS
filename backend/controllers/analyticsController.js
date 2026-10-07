@@ -34,6 +34,12 @@ export const getDashboardAnalytics = async (req, res) => {
             if (branchDoc) userRestaurantId = branchDoc.restaurantId;
         }
 
+        const isDemoUser = (req.user.email && (req.user.email.toLowerCase().includes('pizzapalace') || req.user.email.toLowerCase().includes('demo')));
+        if (!isDemoUser && req.user.createdAt) {
+            const cutoff = new Date(new Date(req.user.createdAt).getTime() - 5 * 60 * 1000);
+            currentPeriodMatch.createdAt = { $gte: cutoff, $lte: now };
+        }
+
         if (userRestaurantId) {
             currentPeriodMatch.restaurantId = new mongoose.Types.ObjectId(userRestaurantId);
             previousPeriodMatch.restaurantId = new mongoose.Types.ObjectId(userRestaurantId);
