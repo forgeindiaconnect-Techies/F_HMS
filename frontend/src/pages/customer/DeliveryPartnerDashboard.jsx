@@ -61,7 +61,7 @@ const DeliveryPartnerDashboard = () => {
         const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
         const protocol = typeof window !== 'undefined' ? window.location.protocol : '';
         if (protocol === 'file:' || protocol === 'capacitor:' || protocol === 'ionic:' || protocol === 'content:' || !hostname) {
-            return 'https://f-hms.onrender.com/api';
+            return 'https://f-hms-2.onrender.com/api';
         }
         const isLocalIp = hostname.startsWith('192.168.') || 
                           hostname.startsWith('10.') || 
@@ -72,7 +72,7 @@ const DeliveryPartnerDashboard = () => {
         if (hostname === 'localhost' || hostname === '127.0.0.1') {
             return 'http://localhost:5000/api';
         }
-        return 'https://f-hms.onrender.com/api';
+        return 'https://f-hms-2.onrender.com/api';
     };
     const API_URL = getApiUrl();
 
