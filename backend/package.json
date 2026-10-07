@@ -14,20 +14,27 @@
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "body-parser": "^2.3.0",
+    "cookie": "^2.0.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.21.0",
+    "express": "^5.2.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.3.2",
     "multer": "^1.4.5-lts.1",
-    "nodemailer": "^9.0.5",
+    "nodemailer": "^10.0.15",
     "razorpay": "^2.9.8",
+    "restaurant-app-root": "file:..",
     "ws": "^8.16.0"
   },
   "devDependencies": {
+    "chokidar": "^5.0.0",
     "esbuild": "^0.28.2",
-    "nodemon": "^3.1.0"
+    "nodemon": "^3.1.14"
+  },
+  "overrides": {
+    "braces": "^3.0.3"
   },
   "engines": {
     "node": ">=18.0.0 <23.0.0"
