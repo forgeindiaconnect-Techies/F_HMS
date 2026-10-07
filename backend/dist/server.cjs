@@ -90413,7 +90413,7 @@ var Order_exports = {};
 __export(Order_exports, {
   default: () => Order_default
 });
-var import_mongoose2, orderSchema, Order, Order_default;
+var import_mongoose2, orderSchema, Order2, Order_default;
 var init_Order = __esm({
   "models/Order.js"() {
     import_mongoose2 = __toESM(require_mongoose2(), 1);
@@ -90574,8 +90574,8 @@ var init_Order = __esm({
         }
       ]
     }, { timestamps: true });
-    Order = import_mongoose2.default.model("Order", orderSchema);
-    Order_default = Order;
+    Order2 = import_mongoose2.default.model("Order", orderSchema);
+    Order_default = Order2;
   }
 });
 
@@ -96198,7 +96198,7 @@ var Branch_exports = {};
 __export(Branch_exports, {
   default: () => Branch_default
 });
-var import_mongoose6, branchSchema, Branch, Branch_default;
+var import_mongoose6, branchSchema, Branch2, Branch_default;
 var init_Branch = __esm({
   "models/Branch.js"() {
     import_mongoose6 = __toESM(require_mongoose2(), 1);
@@ -96232,8 +96232,8 @@ var init_Branch = __esm({
         default: true
       }
     }, { timestamps: true });
-    Branch = import_mongoose6.default.model("Branch", branchSchema);
-    Branch_default = Branch;
+    Branch2 = import_mongoose6.default.model("Branch", branchSchema);
+    Branch_default = Branch2;
   }
 });
 
@@ -96989,8 +96989,8 @@ var initWebSocket = (server2) => {
           const { orderId, latitude, longitude } = data;
           if (orderId && latitude != null && longitude != null) {
             try {
-              const Order2 = (await Promise.resolve().then(() => (init_Order(), Order_exports))).default;
-              const order = await Order2.findById(orderId);
+              const Order3 = (await Promise.resolve().then(() => (init_Order(), Order_exports))).default;
+              const order = await Order3.findById(orderId);
               if (order) {
                 const updatedAt = /* @__PURE__ */ new Date();
                 order.deliveryPartnerLocation = {
@@ -97252,8 +97252,8 @@ var restaurantSchema = new import_mongoose5.default.Schema({
     default: true
   }
 }, { timestamps: true });
-var Restaurant = import_mongoose5.default.model("Restaurant", restaurantSchema);
-var Restaurant_default = Restaurant;
+var Restaurant2 = import_mongoose5.default.model("Restaurant", restaurantSchema);
+var Restaurant_default = Restaurant2;
 
 // controllers/authController.js
 init_Branch();
@@ -97542,8 +97542,8 @@ var registerUser = async (req, res) => {
           billingCycle: req.body.billingCycle || "monthly",
           trialActive: true,
           startDate: /* @__PURE__ */ new Date(),
-          expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1e3)
-          // 30-Day Free Trial
+          expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1e3)
+          // 7-Day Free Trial
         },
         approvalStatus: "Pending",
         verificationStatus: hasVerificationFiles ? "Under Review" : "Pending"
@@ -97710,10 +97710,11 @@ var loginUser = async (req, res) => {
       const demoMatch = demoAccounts[normalizedEmail];
       if (demoMatch && (cleanPassword === "password123" || cleanPassword === "123456")) {
         console.log(`[Auto-Seed Demo User] Auto-creating missing demo account: ${normalizedEmail}`);
-        let demoRest = await Restaurant_default.findOne();
+        let demoRest = await Restaurant_default.findOne({ name: "Pizza Palace" }) || await Restaurant_default.findOne({ isDemo: true });
         if (!demoRest && demoMatch.role !== "SuperAdmin" && demoMatch.role !== "Customer") {
           demoRest = await Restaurant_default.create({
             name: "Pizza Palace",
+            isDemo: true,
             approvalStatus: "Approved",
             verificationStatus: "Verified",
             subscription: { plan: "Pro", status: "Active" }
@@ -97745,11 +97746,20 @@ var loginUser = async (req, res) => {
       if (loginType === "customer" && user.role !== "Customer") {
         return res.status(403).json({ message: "Staff cannot log into the customer portal" });
       }
-      if (!user.restaurantId && user.role === "RestaurantAdmin") {
-        const ownedRestaurant = await Restaurant_default.findOne({ ownerId: user._id });
-        if (ownedRestaurant) {
-          user.restaurantId = ownedRestaurant._id;
-          await user.save();
+      if (!user.restaurantId) {
+        if (user.role === "RestaurantAdmin") {
+          const ownedRestaurant = await Restaurant_default.findOne({ ownerId: user._id });
+          if (ownedRestaurant) {
+            user.restaurantId = ownedRestaurant._id;
+            await user.save();
+          }
+        } else if (user.branchId) {
+          const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+          const branchDoc = await Branch3.findById(user.branchId);
+          if (branchDoc && branchDoc.restaurantId) {
+            user.restaurantId = branchDoc.restaurantId;
+            await user.save();
+          }
         }
       }
       if (user.restaurantId && user.role !== "SuperAdmin") {
@@ -98469,12 +98479,12 @@ var reviewVerification = async (req, res) => {
       try {
         const ownerUser = await User_default.findById(restaurant.ownerId);
         if (ownerUser && ownerUser.email) {
-          await sendApprovalEmail({
+          sendApprovalEmail({
             email: ownerUser.email,
             name: ownerUser.name,
             restaurantName: restaurant.name,
             plan: restaurant.subscription?.plan || "Basic"
-          });
+          }).catch((err) => console.error("Approval email background error:", err.message));
         }
       } catch (aErr) {
         console.error("Approval email error:", aErr.message);
@@ -98755,13 +98765,13 @@ var getMyRestaurant = async (req, res) => {
           await restaurant.save();
           const existingNotif = await Notification_default.findOne({
             restaurantId: restaurant._id,
-            title: "1-Day Free Trial Expired",
+            title: "7-Day Free Trial Expired",
             read: false
           });
           if (!existingNotif) {
             await Notification_default.create({
-              title: "1-Day Free Trial Expired",
-              desc: "Your 1-day free trial has ended. Your dashboard has been frozen. Please subscribe to unlock full access.",
+              title: "7-Day Free Trial Expired",
+              desc: "Your 7-day free trial has ended. Your dashboard has been frozen. Please subscribe to unlock full access.",
               type: "System",
               restaurantId: restaurant._id
             });
@@ -98884,9 +98894,6 @@ var upgradeSubscription = async (req, res) => {
       restaurant = await Restaurant_default.findOne({ ownerId: req.user._id });
     }
     if (!restaurant) {
-      restaurant = await Restaurant_default.findOne();
-    }
-    if (!restaurant) {
       return res.status(404).json({ message: "Restaurant profile not found." });
     }
     const targetPlan = await Plan_default.findOne({ name: planName });
@@ -98958,9 +98965,6 @@ var downgradeSubscription = async (req, res) => {
       restaurant = await Restaurant_default.findOne({ ownerId: req.user._id });
     }
     if (!restaurant) {
-      restaurant = await Restaurant_default.findOne();
-    }
-    if (!restaurant) {
       return res.status(404).json({ message: "Restaurant profile not found." });
     }
     const expiryDate = restaurant.subscription?.expiryDate || /* @__PURE__ */ new Date();
@@ -98990,9 +98994,6 @@ var renewSubscription = async (req, res) => {
     }
     if (!restaurant) {
       restaurant = await Restaurant_default.findOne({ ownerId: req.user._id });
-    }
-    if (!restaurant) {
-      restaurant = await Restaurant_default.findOne();
     }
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant profile not found." });
@@ -99054,9 +99055,6 @@ var createRazorpaySubscriptionOrder = async (req, res) => {
       restaurant = await Restaurant_default.findOne({ ownerId: req.user._id });
     }
     if (!restaurant) {
-      restaurant = await Restaurant_default.findOne();
-    }
-    if (!restaurant) {
       return res.status(404).json({ message: "Restaurant profile not found." });
     }
     const targetPlan = await Plan_default.findOne({ name: planName });
@@ -99112,9 +99110,6 @@ var verifyRazorpaySubscriptionPayment = async (req, res) => {
     }
     if (!restaurant) {
       restaurant = await Restaurant_default.findOne({ ownerId: req.user._id });
-    }
-    if (!restaurant) {
-      restaurant = await Restaurant_default.findOne();
     }
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant profile not found." });
@@ -99472,36 +99467,44 @@ var addOrderItems = async (req, res) => {
     const finalSource = validSources.includes(source) ? source : orderType === "Delivery" ? "Walk-in" : "Self-Pickup";
     let finalBranchId = branchId && import_mongoose15.default.Types.ObjectId.isValid(branchId) ? branchId : req.user ? req.user.branchId : null;
     let finalRestaurantId = restaurantId && import_mongoose15.default.Types.ObjectId.isValid(restaurantId) ? restaurantId : req.user ? req.user.restaurantId : null;
+    if (!finalRestaurantId && orderItems && orderItems.length > 0 && orderItems[0].product) {
+      const MenuItem2 = import_mongoose15.default.model("MenuItem");
+      const itemObj = await MenuItem2.findById(orderItems[0].product);
+      if (itemObj && itemObj.restaurantId) {
+        finalRestaurantId = itemObj.restaurantId;
+      }
+    }
     if (!finalBranchId && finalRestaurantId) {
-      const Branch2 = import_mongoose15.default.model("Branch");
-      const firstBranch = await Branch2.findOne({ restaurantId: finalRestaurantId });
+      const Branch3 = import_mongoose15.default.model("Branch");
+      const firstBranch = await Branch3.findOne({ restaurantId: finalRestaurantId });
       if (firstBranch) {
         finalBranchId = firstBranch._id;
       }
     }
     if (!finalRestaurantId || !finalBranchId) {
-      const Restaurant2 = import_mongoose15.default.model("Restaurant");
-      const Branch2 = import_mongoose15.default.model("Branch");
-      let firstRestaurant = await Restaurant2.findOne();
-      if (!firstRestaurant) {
+      const Restaurant3 = import_mongoose15.default.model("Restaurant");
+      const Branch3 = import_mongoose15.default.model("Branch");
+      let demoRestaurant = await Restaurant3.findOne({ name: "Pizza Palace" }) || await Restaurant3.findOne({ isDemo: true });
+      if (!demoRestaurant) {
         const User3 = import_mongoose15.default.model("User");
         const adminUser = await User3.findOne({ role: "SuperAdmin" }) || await User3.findOne();
-        firstRestaurant = await Restaurant2.create({
-          name: "Demo Main Kitchen",
+        demoRestaurant = await Restaurant3.create({
+          name: "Pizza Palace",
+          isDemo: true,
           ownerId: adminUser ? adminUser._id : new import_mongoose15.default.Types.ObjectId(),
           approvalStatus: "Approved",
           subscription: { status: "Active", plan: "Pro" }
         });
       }
-      finalRestaurantId = firstRestaurant._id;
-      let firstBranch = await Branch2.findOne({ restaurantId: finalRestaurantId });
-      if (!firstBranch) {
-        firstBranch = await Branch2.create({
-          name: "Main Branch",
-          restaurantId: finalRestaurantId
+      finalRestaurantId = demoRestaurant._id;
+      let demoBranch = await Branch3.findOne({ restaurantId: demoRestaurant._id });
+      if (!demoBranch) {
+        demoBranch = await Branch3.create({
+          name: "Downtown Branch",
+          restaurantId: demoRestaurant._id
         });
       }
-      finalBranchId = firstBranch._id;
+      finalBranchId = demoBranch._id;
     }
     let finalUserId = req.user ? req.user._id : null;
     if (!finalUserId) {
@@ -99674,10 +99677,60 @@ var getOrders = async (req, res) => {
     if (req.query.isPaid !== void 0) {
       filter.isPaid = req.query.isPaid === "true";
     }
+    if (req.user && req.user.role !== "SuperAdmin") {
+      let userRestaurantId = req.user.restaurantId || req.user.restaurant;
+      if (!userRestaurantId && req.user._id) {
+        if (req.user.role === "RestaurantAdmin") {
+          const ownedRestaurant = await Restaurant_default.findOne({ ownerId: req.user._id });
+          if (ownedRestaurant) {
+            userRestaurantId = ownedRestaurant._id;
+            req.user.restaurantId = ownedRestaurant._id;
+          }
+        } else if (req.user.branchId) {
+          const branchDoc = await Branch_default.findById(req.user.branchId);
+          if (branchDoc && branchDoc.restaurantId) {
+            userRestaurantId = branchDoc.restaurantId;
+            req.user.restaurantId = branchDoc.restaurantId;
+          }
+        } else if (req.user.role === "BranchManager") {
+          const managedBranch = await Branch_default.findOne({ manager: req.user._id });
+          if (managedBranch) {
+            userRestaurantId = managedBranch.restaurantId;
+            req.user.branchId = managedBranch._id;
+            req.user.restaurantId = managedBranch.restaurantId;
+          }
+        }
+      }
+      if (userRestaurantId) {
+        filter.restaurantId = userRestaurantId;
+      } else {
+        return res.json([]);
+      }
+      if (req.user.role === "BranchManager" || ["Chef", "Waiter", "Cashier"].includes(req.user.role) || req.user.branchId) {
+        let effectiveBranchId = req.query.branchId || req.user.branchId;
+        if (!effectiveBranchId && req.user.role === "BranchManager") {
+          const managedBranch = await Branch_default.findOne({ manager: req.user._id });
+          if (managedBranch) {
+            effectiveBranchId = managedBranch._id;
+            req.user.branchId = managedBranch._id;
+          }
+        }
+        if (effectiveBranchId) {
+          filter.branchId = effectiveBranchId;
+        } else {
+          return res.json([]);
+        }
+      } else if (req.query.branchId && import_mongoose15.default.Types.ObjectId.isValid(req.query.branchId)) {
+        filter.branchId = req.query.branchId;
+      }
+    } else if (req.query.restaurantId && import_mongoose15.default.Types.ObjectId.isValid(req.query.restaurantId)) {
+      filter.restaurantId = req.query.restaurantId;
+      if (req.query.branchId && import_mongoose15.default.Types.ObjectId.isValid(req.query.branchId)) {
+        filter.branchId = req.query.branchId;
+      }
+    }
     if (req.query.myOrders === "true" && req.user) {
       filter.user = req.user._id;
-    } else if (req.query.branchId && import_mongoose15.default.Types.ObjectId.isValid(req.query.branchId)) {
-      filter.branchId = req.query.branchId;
     }
     let query = Order_default.find(filter).populate("user", "id name email").populate("deliveryPartner", "id name phoneNumber").sort({ createdAt: -1 });
     if (req.query.limit) {
@@ -100139,9 +100192,22 @@ var getDashboardAnalytics = async (req, res) => {
       isPaid: true,
       createdAt: { $gte: previousStartDate, $lt: startDate }
     };
-    if (req.user.restaurantId) {
-      currentPeriodMatch.restaurantId = new import_mongoose16.default.Types.ObjectId(req.user.restaurantId);
-      previousPeriodMatch.restaurantId = new import_mongoose16.default.Types.ObjectId(req.user.restaurantId);
+    let userRestaurantId = req.user.restaurantId || req.user.restaurant;
+    if (!userRestaurantId && req.user.branchId) {
+      const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+      const branchDoc = await Branch3.findById(req.user.branchId);
+      if (branchDoc) userRestaurantId = branchDoc.restaurantId;
+    }
+    if (userRestaurantId) {
+      currentPeriodMatch.restaurantId = new import_mongoose16.default.Types.ObjectId(userRestaurantId);
+      previousPeriodMatch.restaurantId = new import_mongoose16.default.Types.ObjectId(userRestaurantId);
+      if (req.user.role === "BranchManager" || req.user.branchId) {
+        const effectiveBranchId = req.user.branchId || (await (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default.findOne({ manager: req.user._id }))?._id;
+        if (effectiveBranchId) {
+          currentPeriodMatch.branchId = new import_mongoose16.default.Types.ObjectId(effectiveBranchId);
+          previousPeriodMatch.branchId = new import_mongoose16.default.Types.ObjectId(effectiveBranchId);
+        }
+      }
     } else if (req.user.role !== "SuperAdmin") {
       return res.json({
         overview: { totalRevenue: 0, revenueChange: 0, totalOrders: 0, ordersChange: 0, avgOrderValue: 0, avgChange: 0, activeCustomers: 0, customersChange: 0 },
@@ -100527,11 +100593,11 @@ var updateSubscription2 = async (req, res) => {
 var deleteRestaurant = async (req, res) => {
   try {
     const { id } = req.params;
-    const Branch2 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+    const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
     const RestaurantVerification2 = (await Promise.resolve().then(() => (init_RestaurantVerification(), RestaurantVerification_exports))).default;
     const Menu = (await import("../models/Menu.js")).default;
     const MenuItem2 = (await Promise.resolve().then(() => (init_MenuItem(), MenuItem_exports))).default;
-    const Order2 = (await Promise.resolve().then(() => (init_Order(), Order_exports))).default;
+    const Order3 = (await Promise.resolve().then(() => (init_Order(), Order_exports))).default;
     const Table2 = (await Promise.resolve().then(() => (init_Table(), Table_exports))).default;
     const Category2 = (await Promise.resolve().then(() => (init_Category(), Category_exports))).default;
     const Inventory2 = (await Promise.resolve().then(() => (init_Inventory(), Inventory_exports))).default;
@@ -100549,11 +100615,11 @@ var deleteRestaurant = async (req, res) => {
         await User_default.findByIdAndDelete(restaurant.ownerId);
       }
       await User_default.deleteMany({ restaurantId: id });
-      await Branch2.deleteMany({ restaurantId: id });
+      await Branch3.deleteMany({ restaurantId: id });
       await RestaurantVerification2.deleteMany({ restaurantId: id });
       await Menu.deleteMany({ restaurantId: id });
       await MenuItem2.deleteMany({ restaurantId: id });
-      await Order2.deleteMany({ restaurantId: id });
+      await Order3.deleteMany({ restaurantId: id });
       await Table2.deleteMany({ restaurantId: id });
       await Category2.deleteMany({ restaurantId: id });
       await Inventory2.deleteMany({ restaurantId: id });
@@ -100568,7 +100634,7 @@ var deleteRestaurant = async (req, res) => {
       await Restaurant_default.findByIdAndDelete(id);
     } else {
       await User_default.deleteMany({ restaurantId: id });
-      await Branch2.deleteMany({ restaurantId: id });
+      await Branch3.deleteMany({ restaurantId: id });
       await RestaurantVerification2.deleteMany({ restaurantId: id });
       await Restaurant_default.findByIdAndDelete(id);
     }
@@ -100898,8 +100964,8 @@ var createTable = async (req, res) => {
   try {
     let finalBranchId = branchId || req.user.branchId;
     if (!finalBranchId) {
-      const Branch2 = import_mongoose24.default.model("Branch");
-      const firstBranch = await Branch2.findOne({ restaurantId: req.user.restaurantId });
+      const Branch3 = import_mongoose24.default.model("Branch");
+      const firstBranch = await Branch3.findOne({ restaurantId: req.user.restaurantId });
       if (firstBranch) {
         finalBranchId = firstBranch._id;
       }
@@ -101525,12 +101591,25 @@ var Reservation_default = Reservation;
 // controllers/reservationController.js
 var getReservations = async (req, res) => {
   try {
-    const reservations = await Reservation_default.find({}).populate({
-      path: "branch",
-      match: { restaurant: req.user.restaurantId }
-    }).populate("table", "number capacity").sort({ date: 1, timeSlot: 1 });
-    const filteredReservations = reservations.filter((r) => r.branch != null);
-    res.json(filteredReservations);
+    if (!req.user || !req.user.restaurantId && req.user.role !== "SuperAdmin") {
+      return res.json([]);
+    }
+    let branchIds = [];
+    if (req.user.role !== "SuperAdmin") {
+      const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+      const branches = await Branch3.find({ restaurantId: req.user.restaurantId }).select("_id");
+      branchIds = branches.map((b) => b._id);
+    }
+    const filter = {};
+    if (req.user.role !== "SuperAdmin") {
+      if (req.user.branchId) {
+        filter.branch = req.user.branchId;
+      } else {
+        filter.branch = { $in: branchIds };
+      }
+    }
+    const reservations = await Reservation_default.find(filter).populate("branch", "name location").populate("table", "tableNumber capacity").sort({ date: 1, timeSlot: 1 });
+    res.json(reservations);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -101591,8 +101670,8 @@ var getCategories = async (req, res) => {
       if (req.user.branchId) {
         filter.branch = req.user.branchId;
       } else if (req.user.restaurantId) {
-        const Branch2 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
-        const branches = await Branch2.find({ restaurantId: req.user.restaurantId }).select("_id");
+        const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+        const branches = await Branch3.find({ restaurantId: req.user.restaurantId }).select("_id");
         filter.branch = { $in: branches.map((b) => b._id) };
       } else {
         return res.json([]);
@@ -101694,8 +101773,8 @@ var getInventory = async (req, res) => {
       if (req.user.branchId) {
         filter.branch = req.user.branchId;
       } else if (req.user.restaurantId) {
-        const Branch2 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
-        const branches = await Branch2.find({ restaurantId: req.user.restaurantId }).select("_id");
+        const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+        const branches = await Branch3.find({ restaurantId: req.user.restaurantId }).select("_id");
         filter.branch = { $in: branches.map((b) => b._id) };
       } else {
         return res.json([]);
@@ -102115,6 +102194,18 @@ var generateReport = async (req, res) => {
       });
     }
     let matchStage = { status: "Completed" };
+    if (req.user && req.user.restaurantId) {
+      matchStage.restaurantId = new (await Promise.resolve().then(() => __toESM(require_mongoose2(), 1))).default.Types.ObjectId(req.user.restaurantId);
+    } else if (req.user && req.user.role !== "SuperAdmin") {
+      return res.json({
+        reportType,
+        startDate,
+        endDate,
+        branch,
+        data: [],
+        generatedAt: /* @__PURE__ */ new Date()
+      });
+    }
     if (startDate && endDate) {
       matchStage.createdAt = {
         $gte: new Date(startDate),
@@ -102487,8 +102578,8 @@ var createServiceRequest = async (req, res) => {
   try {
     let finalBranchId = branchId;
     if (!finalBranchId) {
-      const Branch2 = import_mongoose31.default.model("Branch");
-      const branch = await Branch2.findOne({ restaurantId });
+      const Branch3 = import_mongoose31.default.model("Branch");
+      const branch = await Branch3.findOne({ restaurantId });
       if (branch) finalBranchId = branch._id;
     }
     const request = await ServiceRequest_default.create({
@@ -103505,7 +103596,7 @@ var sendOtp = async (req, res) => {
     if (!user) {
       if (last10Digits === "9876543210" || last10Digits === "8888888888" || last10Digits === "1234567890") {
         console.log(`[Auto-Seed Demo Delivery Partner] Auto-creating account for ${phoneNumber}`);
-        let demoRest = await Restaurant_default.findOne();
+        let demoRest = await Restaurant_default.findOne({ name: "Pizza Palace" }) || await Restaurant_default.findOne({ isDemo: true });
         user = await User_default.create({
           name: "Speedy Express Driver",
           email: `delivery_${last10Digits}@pizzapalace.com`,
@@ -103547,7 +103638,7 @@ var verifyOtp = async (req, res) => {
     });
     if (!user) {
       if (last10Digits === "9876543210" || last10Digits === "8888888888" || last10Digits === "1234567890") {
-        let demoRest = await Restaurant_default.findOne();
+        let demoRest = await Restaurant_default.findOne({ name: "Pizza Palace" }) || await Restaurant_default.findOne({ isDemo: true });
         user = await User_default.create({
           name: "Speedy Express Driver",
           email: `delivery_${last10Digits}@pizzapalace.com`,
@@ -104282,6 +104373,30 @@ server.listen(PORT, "0.0.0.0", () => {
           { name: "Pro", monthlyPrice: 5999, yearlyPrice: 4799, features: ["Up to 3 Branches", "Kitchen Display System", "Online Ordering", "Advanced Analytics", "Priority Support"], isActive: true },
           { name: "Enterprise", monthlyPrice: 12999, yearlyPrice: 10399, features: ["Unlimited Branches", "Custom APIs & Webhooks", "Dedicated Account Manager", "SLA Guarantee", "White-label Branding"], isActive: true }
         ]);
+      }
+      let demoRestaurant = await Restaurant.findOne({ name: "Pizza Palace" }) || await Restaurant.findOne({ isDemo: true });
+      if (!demoRestaurant) {
+        demoRestaurant = await Restaurant.create({
+          name: "Pizza Palace",
+          isDemo: true,
+          approvalStatus: "Approved",
+          subscription: { status: "Active", plan: "Pro" }
+        });
+      }
+      let demoBranch = await Branch.findOne({ restaurantId: demoRestaurant._id });
+      if (!demoBranch) {
+        demoBranch = await Branch.create({
+          name: "Downtown Branch",
+          restaurantId: demoRestaurant._id
+        });
+      }
+      const userRestaurants = await Restaurant.find({ _id: { $ne: demoRestaurant._id }, isDemo: { $ne: true }, name: { $ne: "Pizza Palace" } }).select("_id ownerId");
+      if (userRestaurants.length > 0) {
+        const userRestIds = userRestaurants.map((r) => r._id);
+        await Order.updateMany(
+          { restaurantId: { $in: userRestIds }, source: { $in: ["Walk-in", "Self-Pickup", "QR"] } },
+          { $set: { restaurantId: demoRestaurant._id, branchId: demoBranch._id } }
+        );
       }
     } catch (e) {
     }

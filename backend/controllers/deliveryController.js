@@ -38,7 +38,7 @@ export const sendOtp = async (req, res) => {
         if (!user) {
             if (last10Digits === '9876543210' || last10Digits === '8888888888' || last10Digits === '1234567890') {
                 console.log(`[Auto-Seed Demo Delivery Partner] Auto-creating account for ${phoneNumber}`);
-                let demoRest = await Restaurant.findOne();
+                let demoRest = await Restaurant.findOne({ name: 'Pizza Palace' }) || await Restaurant.findOne({ isDemo: true });
                 user = await User.create({
                     name: 'Speedy Express Driver',
                     email: `delivery_${last10Digits}@pizzapalace.com`,
@@ -91,7 +91,7 @@ export const verifyOtp = async (req, res) => {
         
         if (!user) {
             if (last10Digits === '9876543210' || last10Digits === '8888888888' || last10Digits === '1234567890') {
-                let demoRest = await Restaurant.findOne();
+                let demoRest = await Restaurant.findOne({ name: 'Pizza Palace' }) || await Restaurant.findOne({ isDemo: true });
                 user = await User.create({
                     name: 'Speedy Express Driver',
                     email: `delivery_${last10Digits}@pizzapalace.com`,

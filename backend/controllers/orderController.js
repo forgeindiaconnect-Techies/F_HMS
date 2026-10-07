@@ -55,31 +55,32 @@ export const addOrderItems = async (req, res) => {
             }
         }
 
-        // Ultimate fallback for manually created local test users who have NO restaurantId or branchId
+        // Safe fallback for demo orders: attach to dedicated demo restaurant, NOT arbitrary new user restaurants
         if (!finalRestaurantId || !finalBranchId) {
             const Restaurant = mongoose.model('Restaurant');
             const Branch = mongoose.model('Branch');
-            let firstRestaurant = await Restaurant.findOne();
-            if (!firstRestaurant) {
+            let demoRestaurant = await Restaurant.findOne({ name: 'Pizza Palace' }) || await Restaurant.findOne({ isDemo: true });
+            if (!demoRestaurant) {
                 const User = mongoose.model('User');
                 const adminUser = await User.findOne({ role: 'SuperAdmin' }) || await User.findOne();
-                firstRestaurant = await Restaurant.create({
-                    name: 'Demo Main Kitchen',
+                demoRestaurant = await Restaurant.create({
+                    name: 'Pizza Palace',
+                    isDemo: true,
                     ownerId: adminUser ? adminUser._id : new mongoose.Types.ObjectId(),
                     approvalStatus: 'Approved',
                     subscription: { status: 'Active', plan: 'Pro' }
                 });
             }
-            finalRestaurantId = firstRestaurant._id;
+            finalRestaurantId = demoRestaurant._id;
 
-            let firstBranch = await Branch.findOne({ restaurantId: finalRestaurantId });
-            if (!firstBranch) {
-                firstBranch = await Branch.create({
-                    name: 'Main Branch',
-                    restaurantId: finalRestaurantId
+            let demoBranch = await Branch.findOne({ restaurantId: demoRestaurant._id });
+            if (!demoBranch) {
+                demoBranch = await Branch.create({
+                    name: 'Downtown Branch',
+                    restaurantId: demoRestaurant._id
                 });
             }
-            finalBranchId = firstBranch._id;
+            finalBranchId = demoBranch._id;
         }
 
         let finalUserId = req.user ? req.user._id : null;

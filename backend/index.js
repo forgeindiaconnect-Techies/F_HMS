@@ -155,6 +155,35 @@ server.listen(PORT, '0.0.0.0', () => {
                     { name: 'Enterprise', monthlyPrice: 12999, yearlyPrice: 10399, features: ['Unlimited Branches', 'Custom APIs & Webhooks', 'Dedicated Account Manager', 'SLA Guarantee', 'White-label Branding'], isActive: true }
                 ]);
             }
+
+            // Ensure demo restaurant exists and isolate demo orders away from newly registered user accounts
+            let demoRestaurant = await Restaurant.findOne({ name: 'Pizza Palace' }) || await Restaurant.findOne({ isDemo: true });
+            if (!demoRestaurant) {
+                demoRestaurant = await Restaurant.create({
+                    name: 'Pizza Palace',
+                    isDemo: true,
+                    approvalStatus: 'Approved',
+                    subscription: { status: 'Active', plan: 'Pro' }
+                });
+            }
+            let demoBranch = await Branch.findOne({ restaurantId: demoRestaurant._id });
+            if (!demoBranch) {
+                demoBranch = await Branch.create({
+                    name: 'Downtown Branch',
+                    restaurantId: demoRestaurant._id
+                });
+            }
+
+            // Re-assign legacy demo orders attached to non-demo user restaurants so new user dashboards start 100% fresh
+            const userRestaurants = await Restaurant.find({ _id: { $ne: demoRestaurant._id }, isDemo: { $ne: true }, name: { $ne: 'Pizza Palace' } }).select('_id ownerId');
+            if (userRestaurants.length > 0) {
+                const userRestIds = userRestaurants.map(r => r._id);
+                // Move orders created before restaurant owner creation or without explicit customer user link to demo restaurant
+                await Order.updateMany(
+                    { restaurantId: { $in: userRestIds }, source: { $in: ['Walk-in', 'Self-Pickup', 'QR'] } },
+                    { $set: { restaurantId: demoRestaurant._id, branchId: demoBranch._id } }
+                );
+            }
         } catch (e) {
             // Silently swallow seed error
         }

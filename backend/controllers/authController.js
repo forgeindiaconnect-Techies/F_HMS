@@ -267,11 +267,12 @@ export const loginUser = async (req, res) => {
             if (demoMatch && (cleanPassword === 'password123' || cleanPassword === '123456')) {
                 console.log(`[Auto-Seed Demo User] Auto-creating missing demo account: ${normalizedEmail}`);
                 
-                // Get or create fallback restaurant & branch for demo staff
-                let demoRest = await Restaurant.findOne();
+                // Get or create fallback restaurant & branch specifically for demo staff
+                let demoRest = await Restaurant.findOne({ name: 'Pizza Palace' }) || await Restaurant.findOne({ isDemo: true });
                 if (!demoRest && demoMatch.role !== 'SuperAdmin' && demoMatch.role !== 'Customer') {
                     demoRest = await Restaurant.create({
                         name: 'Pizza Palace',
+                        isDemo: true,
                         approvalStatus: 'Approved',
                         verificationStatus: 'Verified',
                         subscription: { plan: 'Pro', status: 'Active' }
