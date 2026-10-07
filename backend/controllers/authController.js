@@ -317,7 +317,6 @@ export const loginUser = async (req, res) => {
                         await user.save();
                     }
                 } else if (user.branchId) {
-                    const Branch = (await import('../models/Branch.js')).default;
                     const branchDoc = await Branch.findById(user.branchId);
                     if (branchDoc && branchDoc.restaurantId) {
                         user.restaurantId = branchDoc.restaurantId;

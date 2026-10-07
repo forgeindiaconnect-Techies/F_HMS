@@ -126311,8 +126311,7 @@ var loginUser = async (req, res) => {
             await user.save();
           }
         } else if (user.branchId) {
-          const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
-          const branchDoc = await Branch3.findById(user.branchId);
+          const branchDoc = await Branch_default.findById(user.branchId);
           if (branchDoc && branchDoc.restaurantId) {
             user.restaurantId = branchDoc.restaurantId;
             await user.save();
@@ -128733,6 +128732,7 @@ var import_express5 = __toESM(require_express2(), 1);
 // controllers/analyticsController.js
 var import_mongoose16 = __toESM(require_mongoose2(), 1);
 init_Order();
+init_Branch();
 var getDashboardAnalytics = async (req, res) => {
   try {
     const timeframe = parseInt(req.query.timeframe) || 7;
@@ -128751,15 +128751,14 @@ var getDashboardAnalytics = async (req, res) => {
     };
     let userRestaurantId = req.user.restaurantId || req.user.restaurant;
     if (!userRestaurantId && req.user.branchId) {
-      const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
-      const branchDoc = await Branch3.findById(req.user.branchId);
+      const branchDoc = await Branch_default.findById(req.user.branchId);
       if (branchDoc) userRestaurantId = branchDoc.restaurantId;
     }
     if (userRestaurantId) {
       currentPeriodMatch.restaurantId = new import_mongoose16.default.Types.ObjectId(userRestaurantId);
       previousPeriodMatch.restaurantId = new import_mongoose16.default.Types.ObjectId(userRestaurantId);
       if (req.user.role === "BranchManager" || req.user.branchId) {
-        const effectiveBranchId = req.user.branchId || (await (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default.findOne({ manager: req.user._id }))?._id;
+        const effectiveBranchId = req.user.branchId || (await Branch_default.findOne({ manager: req.user._id }))?._id;
         if (effectiveBranchId) {
           currentPeriodMatch.branchId = new import_mongoose16.default.Types.ObjectId(effectiveBranchId);
           previousPeriodMatch.branchId = new import_mongoose16.default.Types.ObjectId(effectiveBranchId);
@@ -130300,6 +130299,7 @@ var import_express15 = __toESM(require_express2(), 1);
 init_Inventory();
 init_WastageLog();
 init_Notification();
+init_Branch();
 var logWastage = async (req, res) => {
   const { ingredientName, quantity, unit, reason } = req.body;
   try {
@@ -130330,8 +130330,7 @@ var getInventory = async (req, res) => {
       if (req.user.branchId) {
         filter.branch = req.user.branchId;
       } else if (req.user.restaurantId) {
-        const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
-        const branches = await Branch3.find({ restaurantId: req.user.restaurantId }).select("_id");
+        const branches = await Branch_default.find({ restaurantId: req.user.restaurantId }).select("_id");
         filter.branch = { $in: branches.map((b) => b._id) };
       } else {
         return res.json([]);
@@ -132858,7 +132857,6 @@ app.use((0, import_cors.default)({
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", "cache-control", "pragma"],
   optionsSuccessStatus: 204
 }));
-app.options("*", (0, import_cors.default)());
 app.use(import_express27.default.json({ limit: "50mb" }));
 app.use(import_express27.default.urlencoded({ limit: "50mb", extended: true }));
 app.use((0, import_cookie_parser.default)());

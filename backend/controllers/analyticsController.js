@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import Order from '../models/Order.js';
+import Branch from '../models/Branch.js';
 
 // @desc    Get dashboard analytics (Revenue, Orders, etc.)
 // @route   GET /api/analytics/dashboard
@@ -29,7 +30,6 @@ export const getDashboardAnalytics = async (req, res) => {
         // Scope analytics strictly to logged-in user's restaurant and branch
         let userRestaurantId = req.user.restaurantId || req.user.restaurant;
         if (!userRestaurantId && req.user.branchId) {
-            const Branch = (await import('../models/Branch.js')).default;
             const branchDoc = await Branch.findById(req.user.branchId);
             if (branchDoc) userRestaurantId = branchDoc.restaurantId;
         }
@@ -39,7 +39,7 @@ export const getDashboardAnalytics = async (req, res) => {
             previousPeriodMatch.restaurantId = new mongoose.Types.ObjectId(userRestaurantId);
             
             if (req.user.role === 'BranchManager' || req.user.branchId) {
-                const effectiveBranchId = req.user.branchId || (await (await import('../models/Branch.js')).default.findOne({ manager: req.user._id }))?._id;
+                const effectiveBranchId = req.user.branchId || (await Branch.findOne({ manager: req.user._id }))?._id;
                 if (effectiveBranchId) {
                     currentPeriodMatch.branchId = new mongoose.Types.ObjectId(effectiveBranchId);
                     previousPeriodMatch.branchId = new mongoose.Types.ObjectId(effectiveBranchId);

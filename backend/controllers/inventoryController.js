@@ -1,6 +1,7 @@
 import Inventory from '../models/Inventory.js';
 import WastageLog from '../models/WastageLog.js';
 import Notification from '../models/Notification.js';
+import Branch from '../models/Branch.js';
 
 // @desc    Log wastage
 // @route   POST /api/inventory/wastage
@@ -43,7 +44,6 @@ export const getInventory = async (req, res) => {
             if (req.user.branchId) {
                 filter.branch = req.user.branchId;
             } else if (req.user.restaurantId) {
-                const Branch = (await import('../models/Branch.js')).default;
                 const branches = await Branch.find({ restaurantId: req.user.restaurantId }).select('_id');
                 filter.branch = { $in: branches.map(b => b._id) };
             } else {
