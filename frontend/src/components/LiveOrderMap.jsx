@@ -58,17 +58,23 @@ const LiveOrderMap = ({
     // Default Fallback Coordinates (Chennai, TN)
     const DEFAULT_RESTAURANT = { latitude: 13.0475, longitude: 80.2090 };
 
-    const restLoc = (restaurantLocation && Number(restaurantLocation.latitude) && Number(restaurantLocation.longitude)) 
-        ? { latitude: Number(restaurantLocation.latitude), longitude: Number(restaurantLocation.longitude) }
-        : DEFAULT_RESTAURANT;
+    const parseLoc = (loc) => {
+        if (!loc) return null;
+        if (loc.latitude !== undefined && loc.longitude !== undefined && !isNaN(Number(loc.latitude)) && !isNaN(Number(loc.longitude)) && Number(loc.latitude) !== 0) {
+            return { latitude: Number(loc.latitude), longitude: Number(loc.longitude) };
+        }
+        if (loc.lat !== undefined && loc.lng !== undefined && !isNaN(Number(loc.lat)) && !isNaN(Number(loc.lng)) && Number(loc.lat) !== 0) {
+            return { latitude: Number(loc.lat), longitude: Number(loc.lng) };
+        }
+        if (Array.isArray(loc.coordinates) && loc.coordinates.length === 2 && !isNaN(Number(loc.coordinates[0])) && !isNaN(Number(loc.coordinates[1]))) {
+            return { latitude: Number(loc.coordinates[1]), longitude: Number(loc.coordinates[0]) };
+        }
+        return null;
+    };
 
-    const custLoc = (customerLocation && Number(customerLocation.latitude) && Number(customerLocation.longitude)) 
-        ? { latitude: Number(customerLocation.latitude), longitude: Number(customerLocation.longitude) }
-        : restLoc;
-
-    const riderLoc = (deliveryPartnerLocation && Number(deliveryPartnerLocation.latitude) && Number(deliveryPartnerLocation.longitude)) 
-        ? { latitude: Number(deliveryPartnerLocation.latitude), longitude: Number(deliveryPartnerLocation.longitude) }
-        : null;
+    const restLoc = parseLoc(restaurantLocation) || DEFAULT_RESTAURANT;
+    const custLoc = parseLoc(customerLocation) || restLoc;
+    const riderLoc = parseLoc(deliveryPartnerLocation);
 
     const isDelivered = orderStatus === 'Delivered' || orderStatus === 'Completed' || deliveryStatus === 'Delivered';
     const isRiderActive = ['Accepted', 'Picked Up', 'On the Way'].includes(deliveryStatus) || ['Out for Delivery'].includes(orderStatus);
@@ -221,8 +227,8 @@ const LiveOrderMap = ({
             delete markersRef.current.rider;
         }
 
-        // Clean up polyline lines if delivery is completed or customer location is store location
-        if (isDelivered || (custLoc.latitude === restLoc.latitude && custLoc.longitude === restLoc.longitude)) {
+        // Clean up polyline lines ONLY if customer location is store location
+        if (custLoc.latitude === restLoc.latitude && custLoc.longitude === restLoc.longitude) {
             if (polylineRef.current) {
                 map.removeLayer(polylineRef.current);
                 polylineRef.current = null;
@@ -237,9 +243,10 @@ const LiveOrderMap = ({
         }
 
         // 4. Fetch OSRM Road Route
-        const originLngLat = riderLoc 
-            ? `${riderLoc.longitude},${riderLoc.latitude}` 
-            : `${restLoc.longitude},${restLoc.latitude}`;
+        // When delivery is completed OR rider position is absent, route origin is Kitchen Hub (restLoc)
+        const originLngLat = (isDelivered || !riderLoc) 
+            ? `${restLoc.longitude},${restLoc.latitude}` 
+            : `${riderLoc.longitude},${riderLoc.latitude}`;
         
         const destLngLat = `${custLoc.longitude},${custLoc.latitude}`;
 
@@ -271,18 +278,18 @@ const LiveOrderMap = ({
                         map.removeLayer(backgroundPolylineRef.current);
                     }
                     backgroundPolylineRef.current = L.polyline(latLngs, {
-                        color: '#94a3b8',
+                        color: isDelivered ? '#10b981' : '#94a3b8',
                         weight: 7,
                         opacity: 0.6,
-                        dashArray: '10, 10'
+                        dashArray: isDelivered ? undefined : '10, 10'
                     }).addTo(map);
 
-                    // Render Active Blue/Emerald Polyline
+                    // Render Active Polyline (Emerald green for delivered, Blue for active)
                     if (polylineRef.current) {
                         map.removeLayer(polylineRef.current);
                     }
                     polylineRef.current = L.polyline(latLngs, {
-                        color: '#2563eb',
+                        color: isDelivered ? '#059669' : '#2563eb',
                         weight: 6,
                         opacity: 0.9,
                         lineCap: 'round',
@@ -294,7 +301,7 @@ const LiveOrderMap = ({
                         [restLoc.latitude, restLoc.longitude],
                         [custLoc.latitude, custLoc.longitude]
                     ];
-                    if (riderLoc) {
+                    if (riderLoc && !isDelivered) {
                         boundsPoints.push([riderLoc.latitude, riderLoc.longitude]);
                     }
 
@@ -312,25 +319,26 @@ const LiveOrderMap = ({
                 setOsrmError('OSRM service unavailable. Showing direct locations.');
                 
                 // Fallback straight polyline
+                const originPos = (isDelivered || !riderLoc) ? restLoc : riderLoc;
                 const fallbackLatLngs = [
-                    [currentRiderPos.latitude, currentRiderPos.longitude],
+                    [originPos.latitude, originPos.longitude],
                     [custLoc.latitude, custLoc.longitude]
                 ];
                 if (polylineRef.current) map.removeLayer(polylineRef.current);
-                polylineRef.current = L.polyline(fallbackLatLngs, { color: '#2563eb', weight: 5, dashArray: '6,6' }).addTo(map);
+                polylineRef.current = L.polyline(fallbackLatLngs, { color: isDelivered ? '#059669' : '#2563eb', weight: 5, dashArray: '6,6' }).addTo(map);
 
                 const boundsPoints = [
                     [restLoc.latitude, restLoc.longitude],
                     [custLoc.latitude, custLoc.longitude]
                 ];
-                if (riderLoc) boundsPoints.push([riderLoc.latitude, riderLoc.longitude]);
+                if (riderLoc && !isDelivered) boundsPoints.push([riderLoc.latitude, riderLoc.longitude]);
                 map.fitBounds(L.latLngBounds(boundsPoints), { padding: [40, 40] });
             });
 
         return () => {
             isMounted = false;
         };
-    }, [leafletReady, restLoc?.latitude, restLoc?.longitude, custLoc?.latitude, custLoc?.longitude, riderLoc?.latitude, riderLoc?.longitude, isRiderActive, deliveryPartnerName]);
+    }, [leafletReady, restLoc?.latitude, restLoc?.longitude, custLoc?.latitude, custLoc?.longitude, riderLoc?.latitude, riderLoc?.longitude, isRiderActive, isDelivered, deliveryPartnerName]);
 
     return (
         <div className={`relative rounded-3xl overflow-hidden border border-slate-200 shadow-xl bg-white w-full ${className}`} style={{ height }}>
@@ -338,19 +346,21 @@ const LiveOrderMap = ({
             <div ref={mapRef} className="w-full h-full z-0" />
 
             {/* Light Theme OSRM Route HUD Card */}
-            {custLoc && !isDelivered && (
+            {custLoc && (custLoc.latitude !== restLoc.latitude || custLoc.longitude !== restLoc.longitude) && (
                 <div className="absolute top-4 left-4 z-10 bg-white/95 border border-slate-200 p-3.5 rounded-2xl backdrop-blur text-left shadow-xl flex flex-col gap-1 min-w-[160px]">
                     <div className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-ping"></span>
-                        <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest leading-none">OSRM Road Route</span>
+                        <span className={`w-2.5 h-2.5 rounded-full ${isDelivered ? 'bg-emerald-500' : 'bg-blue-600 animate-ping'}`}></span>
+                        <span className={`text-[9px] font-black uppercase tracking-widest leading-none ${isDelivered ? 'text-emerald-600' : 'text-blue-600'}`}>
+                            {isDelivered ? 'Delivery Completed' : 'OSRM Road Route'}
+                        </span>
                     </div>
                     <h4 className="text-base font-extrabold text-slate-900 leading-none mt-1">
-                        {`${routeInfo.durationMins || '--'} mins`}
+                        {isDelivered ? 'Arrived 🎉' : `${routeInfo.durationMins || '--'} mins`}
                     </h4>
                     <p className="text-[11px] font-bold text-slate-500 mt-0.5">
-                        {`${routeInfo.distanceKm || '--'} km remaining`}
+                        {isDelivered ? `${routeInfo.distanceKm || '--'} km completed route` : `${routeInfo.distanceKm || '--'} km remaining`}
                     </p>
-                    {deliveryPartnerLocation?.updatedAt && (
+                    {deliveryPartnerLocation?.updatedAt && !isDelivered && (
                         <span className="text-[9px] text-slate-400 font-mono mt-0.5">
                             Updated: {new Date(deliveryPartnerLocation.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                         </span>
@@ -359,7 +369,7 @@ const LiveOrderMap = ({
             )}
 
             {/* Status Warning / Info Banner */}
-            {!riderLoc && isRiderActive && (
+            {!riderLoc && isRiderActive && !isDelivered && (
                 <div className="absolute bottom-4 left-4 right-4 z-10 bg-amber-50 border border-amber-200 p-2.5 rounded-xl text-center shadow-lg">
                     <span className="text-[10px] font-extrabold text-amber-800 uppercase tracking-wider">
                         ⏳ Waiting for delivery partner GPS update...
