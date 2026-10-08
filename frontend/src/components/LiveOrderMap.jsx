@@ -58,16 +58,16 @@ const LiveOrderMap = ({
     // Default Fallback Coordinates (Chennai, TN)
     const DEFAULT_RESTAURANT = { latitude: 13.0475, longitude: 80.2090 };
 
-    const restLoc = (restaurantLocation && restaurantLocation.latitude && restaurantLocation.longitude) 
-        ? restaurantLocation 
+    const restLoc = (restaurantLocation && Number(restaurantLocation.latitude) && Number(restaurantLocation.longitude)) 
+        ? { latitude: Number(restaurantLocation.latitude), longitude: Number(restaurantLocation.longitude) }
         : DEFAULT_RESTAURANT;
 
-    const custLoc = (customerLocation && customerLocation.latitude && customerLocation.longitude) 
-        ? customerLocation 
-        : null;
+    const custLoc = (customerLocation && Number(customerLocation.latitude) && Number(customerLocation.longitude)) 
+        ? { latitude: Number(customerLocation.latitude), longitude: Number(customerLocation.longitude) }
+        : restLoc;
 
-    const riderLoc = (deliveryPartnerLocation && deliveryPartnerLocation.latitude && deliveryPartnerLocation.longitude) 
-        ? deliveryPartnerLocation 
+    const riderLoc = (deliveryPartnerLocation && Number(deliveryPartnerLocation.latitude) && Number(deliveryPartnerLocation.longitude)) 
+        ? { latitude: Number(deliveryPartnerLocation.latitude), longitude: Number(deliveryPartnerLocation.longitude) }
         : null;
 
     const isDelivered = orderStatus === 'Delivered' || orderStatus === 'Completed' || deliveryStatus === 'Delivered';
@@ -205,9 +205,9 @@ const LiveOrderMap = ({
             delete markersRef.current.customer;
         }
 
-        // 3. Rider Marker
-        const currentRiderPos = isDelivered ? (custLoc || restLoc) : (riderLoc || restLoc);
-        if (isRiderActive || riderLoc || isDelivered) {
+        // 3. Rider Marker (Hide when order is delivered/completed)
+        const currentRiderPos = riderLoc || restLoc;
+        if ((isRiderActive || riderLoc) && !isDelivered) {
             if (!markersRef.current.rider) {
                 markersRef.current.rider = L.marker([currentRiderPos.latitude, currentRiderPos.longitude], { 
                     icon: createRiderIcon(deliveryPartnerName, isRiderActive) 
@@ -221,8 +221,8 @@ const LiveOrderMap = ({
             delete markersRef.current.rider;
         }
 
-        // Clean up polyline lines if no customer order is active OR if delivery is completed
-        if (!custLoc || isDelivered) {
+        // Clean up polyline lines if delivery is completed or customer location is store location
+        if (isDelivered || (custLoc.latitude === restLoc.latitude && custLoc.longitude === restLoc.longitude)) {
             if (polylineRef.current) {
                 map.removeLayer(polylineRef.current);
                 polylineRef.current = null;
@@ -231,7 +231,7 @@ const LiveOrderMap = ({
                 map.removeLayer(backgroundPolylineRef.current);
                 backgroundPolylineRef.current = null;
             }
-            const centerPos = isDelivered && custLoc ? [custLoc.latitude, custLoc.longitude] : [restLoc.latitude, restLoc.longitude];
+            const centerPos = [custLoc.latitude, custLoc.longitude];
             map.setView(centerPos, 14);
             return;
         }
