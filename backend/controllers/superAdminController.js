@@ -72,6 +72,42 @@ export const getStats = async (req, res) => {
 // @access  Private/SuperAdmin
 export const getRestaurants = async (req, res) => {
     try {
+        // Auto-heal: Ensure any registered RestaurantAdmin/Admin user has a Restaurant record
+        const Branch = (await import('../models/Branch.js')).default;
+        const User = (await import('../models/User.js')).default;
+        const adminUsers = await User.find({ role: { $in: ['RestaurantAdmin', 'Admin'] } });
+        for (const admin of adminUsers) {
+            const exists = await Restaurant.exists({ $or: [{ ownerId: admin._id }, { _id: admin.restaurantId }] });
+            if (!exists) {
+                const restName = admin.name ? `${admin.name}'s Restaurant` : 'New Restaurant';
+                const newRest = await Restaurant.create({
+                    name: restName,
+                    ownerId: admin._id,
+                    subscription: {
+                        status: 'Active',
+                        plan: 'Basic',
+                        billingCycle: 'monthly',
+                        trialActive: true,
+                        startDate: new Date(),
+                        expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+                    },
+                    approvalStatus: 'Pending',
+                    verificationStatus: 'Pending',
+                    isActive: true
+                });
+                admin.restaurantId = newRest._id;
+                await admin.save();
+
+                await Branch.create({
+                    restaurantId: newRest._id,
+                    name: `${newRest.name} Branch`,
+                    location: { address: 'Primary Location' },
+                    contact: { phone: admin.phoneNumber || '' },
+                    isActive: true
+                });
+            }
+        }
+
         const restaurants = await Restaurant.find().populate('ownerId', 'name email').sort({ createdAt: -1 }).lean();
 
         // Auto-repair any restaurants with blank, null, or 'Unnamed' names

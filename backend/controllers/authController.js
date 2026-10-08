@@ -35,7 +35,21 @@ export const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'An account with this email address already exists. Please log in instead.' });
         }
 
-        const role = roleName || (req.body.restaurantName ? 'RestaurantAdmin' : 'Customer');
+        const rawRole = roleName || req.body.role;
+        const normalizedRole = (r) => {
+            if (!r) return req.body.restaurantName ? 'RestaurantAdmin' : 'Customer';
+            const lower = String(r).trim().toLowerCase();
+            if (['restaurantadmin', 'admin', 'restaurant', 'vendor', 'owner', 'restaurant_admin'].includes(lower)) return 'RestaurantAdmin';
+            if (['customer', 'user', 'client'].includes(lower)) return 'Customer';
+            if (['superadmin', 'super_admin'].includes(lower)) return 'SuperAdmin';
+            if (['branchmanager', 'manager', 'branch_manager'].includes(lower)) return 'BranchManager';
+            if (lower === 'chef') return 'Chef';
+            if (lower === 'waiter') return 'Waiter';
+            if (lower === 'cashier') return 'Cashier';
+            if (['deliverypartner', 'delivery', 'driver'].includes(lower)) return 'DeliveryPartner';
+            return r;
+        };
+        const role = normalizedRole(rawRole);
 
         const user = await User.create({
             name: String(name).trim(),
@@ -47,7 +61,7 @@ export const registerUser = async (req, res) => {
 
         let createdRestaurant = null;
 
-        if (role === 'RestaurantAdmin' || req.body.restaurantName) {
+        if (role === 'RestaurantAdmin' || role === 'Admin' || req.body.restaurantName) {
             const files = req.files || {};
             const hasVerificationFiles = Object.keys(files).length > 0;
             const restaurantName = req.body.restaurantName || `${name}'s Restaurant`;
