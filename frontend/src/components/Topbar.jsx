@@ -401,8 +401,7 @@ const Topbar = () => {
         return () => clearInterval(intervalId);
     }, []);
 
-    const [branches, setBranches] = useState([]);
-    const [selectedBranch, setSelectedBranch] = useState(null);
+    const [subStatus, setSubStatus] = useState('Active');
 
     // Fetch restaurant subscription plan + all available plans + branches
     useEffect(() => {
@@ -418,7 +417,9 @@ const Topbar = () => {
                 ]);
                 if (restaurantRes.status === 'fulfilled') {
                     const plan = restaurantRes.value.data?.subscription?.plan;
+                    const st = restaurantRes.value.data?.subscription?.status || 'Active';
                     if (plan) setSubscriptionPlan(plan);
+                    setSubStatus(st);
                 }
                 if (plansRes.status === 'fulfilled' && plansRes.value.data?.length > 0) {
                     setPlans(plansRes.value.data);
@@ -503,15 +504,26 @@ const Topbar = () => {
                                 {meta && isAdmin && (
                                     <>
                                         <span className="text-gray-300 dark:text-slate-600">·</span>
-                                        <button
-                                            onClick={() => setShowUpgradeModal(true)}
-                                            title="Click to upgrade your plan"
-                                            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${meta.bg} ${meta.text} hover:opacity-80 transition-opacity cursor-pointer`}
-                                        >
-                                            {Icon && <Icon size={9} />}
-                                            {subscriptionPlan}
-                                            <ArrowUpRight size={8} className="opacity-60" />
-                                        </button>
+                                        {['Frozen', 'Expired', 'Cancelled', 'Inactive'].includes(subStatus) ? (
+                                            <button
+                                                onClick={() => setShowUpgradeModal(true)}
+                                                title="Subscription Over! Click to renew plan"
+                                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 text-red-700 border border-red-300 hover:bg-red-200 transition-colors animate-pulse cursor-pointer shadow-xs"
+                                            >
+                                                <AlertCircle size={10} className="text-red-600" />
+                                                Subscription Over ({subStatus})
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => setShowUpgradeModal(true)}
+                                                title="Click to upgrade your plan"
+                                                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${meta.bg} ${meta.text} hover:opacity-80 transition-opacity cursor-pointer`}
+                                            >
+                                                {Icon && <Icon size={9} />}
+                                                {subscriptionPlan}
+                                                <ArrowUpRight size={8} className="opacity-60" />
+                                            </button>
+                                        )}
                                     </>
                                 )}
                             </div>

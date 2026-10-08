@@ -57,9 +57,7 @@ api.interceptors.response.use(
             }
         }
         if (error.response && error.response.status === 402) {
-            if (window.location.pathname !== '/admin/billing') {
-                window.location.href = '/admin/billing';
-            }
+            console.warn('[Subscription Over] Action blocked by server: Subscription expired or frozen.');
         }
         return Promise.reject(error);
     }
