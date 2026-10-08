@@ -45,10 +45,86 @@ export const getRestaurants = async (req, res) => {
         if (mongoose.connection.readyState !== 1) {
             return res.json([]);
         }
-        const restaurants = await Restaurant.find({}).populate('ownerId', 'name email').lean();
+
+        // Auto-heal: Ensure any registered RestaurantAdmin/Admin user has an active Restaurant record
+        const Branch = (await import('../models/Branch.js')).default;
+        const User = (await import('../models/User.js')).default;
+        const adminUsers = await User.find({ role: { $in: ['RestaurantAdmin', 'Admin'] } });
+
+        for (const admin of adminUsers) {
+            const exists = await Restaurant.exists({ $or: [{ ownerId: admin._id }, { _id: admin.restaurantId }] });
+            if (!exists) {
+                const restName = admin.name ? `${admin.name}'s Restaurant` : 'New Restaurant';
+                const newRest = await Restaurant.create({
+                    name: restName,
+                    ownerId: admin._id,
+                    subscription: {
+                        status: 'Active',
+                        plan: 'Basic',
+                        billingCycle: 'monthly',
+                        trialActive: true,
+                        startDate: new Date(),
+                        expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+                    },
+                    approvalStatus: 'Approved',
+                    verificationStatus: 'Verified',
+                    isActive: true
+                });
+                admin.restaurantId = newRest._id;
+                await admin.save();
+
+                await Branch.create({
+                    restaurantId: newRest._id,
+                    name: `${newRest.name} Branch`,
+                    location: { address: 'Primary Location' },
+                    contact: { phone: admin.phoneNumber || '' },
+                    isActive: true
+                });
+            }
+        }
+
+        let restaurants = await Restaurant.find({}).populate('ownerId', 'name email').sort({ createdAt: -1 }).lean();
         
-        // Dynamically enable delivery if there are registered delivery partners
+        // Auto-repair missing names & ensure active default status
         const populatedRestaurants = await Promise.all(restaurants.map(async (rest) => {
+            let updatedNeeded = false;
+            let updatePayload = {};
+
+            if (!rest.name || rest.name.trim() === '' || rest.name === 'Unnamed') {
+                const ownerName = rest.ownerId?.name || 'Partner';
+                rest.name = `${ownerName}'s Restaurant`;
+                updatePayload.name = rest.name;
+                updatedNeeded = true;
+            }
+
+            if (!rest.subscription || !rest.subscription.status || rest.subscription.status === 'Inactive') {
+                if (!rest.subscription) rest.subscription = {};
+                rest.subscription.status = 'Active';
+                updatePayload['subscription.status'] = 'Active';
+                updatedNeeded = true;
+            }
+
+            if (!rest.approvalStatus) {
+                rest.approvalStatus = 'Approved';
+                updatePayload.approvalStatus = 'Approved';
+                updatedNeeded = true;
+            }
+
+            if (rest.isActive === undefined || rest.isActive === false) {
+                rest.isActive = true;
+                updatePayload.isActive = true;
+                updatedNeeded = true;
+            }
+
+            if (updatedNeeded) {
+                try {
+                    await Restaurant.findByIdAndUpdate(rest._id, { $set: updatePayload });
+                } catch (err) {
+                    console.error('Failed auto-repairing restaurant record:', err);
+                }
+            }
+
+            // Dynamically enable delivery if there are registered delivery partners
             const hasPartners = await DeliveryPartner.exists({ restaurantId: rest._id });
             if (hasPartners) {
                 if (!rest.deliverySettings) {

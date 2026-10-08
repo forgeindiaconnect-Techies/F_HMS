@@ -106,7 +106,7 @@ const Explore = () => {
             try {
                 let API_URL = getApiUrl();
                 const res = await axios.get(`${API_URL}/restaurants`);
-                let realRest = Array.isArray(res.data) ? res.data.filter(r => (!r.subscription?.status || ['Active', 'Expiring Soon'].includes(r.subscription.status)) && r.isActive !== false && r.approvalStatus !== 'Rejected') : [];
+                let realRest = Array.isArray(res.data) ? res.data.filter(r => r.isActive !== false && r.approvalStatus !== 'Rejected') : [];
                 setRestaurants(realRest);
             } catch (error) {
                 console.error("Failed to load restaurants", error);
