@@ -129194,15 +129194,47 @@ init_Notification();
 init_SubscriptionPayment();
 var getStats = async (req, res) => {
   try {
+    const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+    const adminUsers = await User_default.find({ role: { $in: ["RestaurantAdmin", "Admin"] } });
+    for (const admin of adminUsers) {
+      const exists = await Restaurant_default.exists({ $or: [{ ownerId: admin._id }, { _id: admin.restaurantId }] });
+      if (!exists) {
+        const restName = admin.name ? `${admin.name}'s Restaurant` : "New Restaurant";
+        const newRest = await Restaurant_default.create({
+          name: restName,
+          ownerId: admin._id,
+          subscription: {
+            status: "Active",
+            plan: "Basic",
+            billingCycle: "monthly",
+            trialActive: true,
+            startDate: /* @__PURE__ */ new Date(),
+            expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1e3)
+          },
+          approvalStatus: "Approved",
+          verificationStatus: "Verified",
+          isActive: true
+        });
+        admin.restaurantId = newRest._id;
+        await admin.save();
+        await Branch3.create({
+          restaurantId: newRest._id,
+          name: `${newRest.name} Branch`,
+          location: { address: "Primary Location" },
+          contact: { phone: admin.phoneNumber || "" },
+          isActive: true
+        });
+      }
+    }
     const totalRestaurants = await Restaurant_default.countDocuments();
-    const activeRestaurants = await Restaurant_default.countDocuments({ approvalStatus: "Approved", "subscription.status": "Active" });
+    const activeRestaurants = await Restaurant_default.countDocuments({ approvalStatus: { $ne: "Rejected" }, "subscription.status": { $ne: "Cancelled" } });
     const pendingRestaurants = await Restaurant_default.countDocuments({ approvalStatus: "Pending" });
     const frozenRestaurants = await Restaurant_default.countDocuments({ "subscription.status": "Frozen" });
     const totalUsers = await User_default.countDocuments();
     const totalOrders = await Order_default.countDocuments();
     const activeSubscribedRestaurants = await Restaurant_default.find({
-      approvalStatus: "Approved",
-      "subscription.status": "Active"
+      approvalStatus: { $ne: "Rejected" },
+      "subscription.status": { $ne: "Cancelled" }
     });
     let totalRevenue = 0;
     activeSubscribedRestaurants.forEach((r) => {

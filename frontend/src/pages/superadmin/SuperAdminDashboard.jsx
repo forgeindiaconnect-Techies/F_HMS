@@ -133,7 +133,7 @@ const SuperAdminDashboard = () => {
         if (!r.subscription?.expiryDate) return false;
         const diffTime = new Date(r.subscription.expiryDate) - new Date();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return diffDays <= 7 && r.subscription.status === 'Active';
+        return diffDays <= 30 && r.subscription?.status !== 'Cancelled';
     });
 
     return (

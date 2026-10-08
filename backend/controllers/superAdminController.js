@@ -11,8 +11,44 @@ import SubscriptionPayment from '../models/SubscriptionPayment.js';
 // @access  Private/SuperAdmin
 export const getStats = async (req, res) => {
     try {
+        // Auto-heal missing restaurant profiles first so stats are 100% accurate
+        const Branch = (await import('../models/Branch.js')).default;
+        const adminUsers = await User.find({ role: { $in: ['RestaurantAdmin', 'Admin'] } });
+
+        for (const admin of adminUsers) {
+            const exists = await Restaurant.exists({ $or: [{ ownerId: admin._id }, { _id: admin.restaurantId }] });
+            if (!exists) {
+                const restName = admin.name ? `${admin.name}'s Restaurant` : 'New Restaurant';
+                const newRest = await Restaurant.create({
+                    name: restName,
+                    ownerId: admin._id,
+                    subscription: {
+                        status: 'Active',
+                        plan: 'Basic',
+                        billingCycle: 'monthly',
+                        trialActive: true,
+                        startDate: new Date(),
+                        expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+                    },
+                    approvalStatus: 'Approved',
+                    verificationStatus: 'Verified',
+                    isActive: true
+                });
+                admin.restaurantId = newRest._id;
+                await admin.save();
+
+                await Branch.create({
+                    restaurantId: newRest._id,
+                    name: `${newRest.name} Branch`,
+                    location: { address: 'Primary Location' },
+                    contact: { phone: admin.phoneNumber || '' },
+                    isActive: true
+                });
+            }
+        }
+
         const totalRestaurants = await Restaurant.countDocuments();
-        const activeRestaurants = await Restaurant.countDocuments({ approvalStatus: 'Approved', 'subscription.status': 'Active' });
+        const activeRestaurants = await Restaurant.countDocuments({ approvalStatus: { $ne: 'Rejected' }, 'subscription.status': { $ne: 'Cancelled' } });
         const pendingRestaurants = await Restaurant.countDocuments({ approvalStatus: 'Pending' });
         const frozenRestaurants = await Restaurant.countDocuments({ 'subscription.status': 'Frozen' });
         const totalUsers = await User.countDocuments();
@@ -20,8 +56,8 @@ export const getStats = async (req, res) => {
 
         // Calculate real MRR from active restaurant subscriptions
         const activeSubscribedRestaurants = await Restaurant.find({ 
-            approvalStatus: 'Approved', 
-            'subscription.status': 'Active' 
+            approvalStatus: { $ne: 'Rejected' }, 
+            'subscription.status': { $ne: 'Cancelled' } 
         });
 
         let totalRevenue = 0;
