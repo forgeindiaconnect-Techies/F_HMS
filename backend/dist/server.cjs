@@ -124709,6 +124709,68 @@ var require_bcryptjs = __commonJS({
   }
 });
 
+// models/User.js
+var User_exports = {};
+__export(User_exports, {
+  default: () => User_default
+});
+var import_mongoose3, import_bcryptjs, userSchema, User2, User_default;
+var init_User = __esm({
+  "models/User.js"() {
+    import_mongoose3 = __toESM(require_mongoose2(), 1);
+    import_bcryptjs = __toESM(require_bcryptjs(), 1);
+    userSchema = new import_mongoose3.default.Schema({
+      name: {
+        type: String,
+        required: true
+      },
+      email: {
+        type: String,
+        required: true,
+        unique: true
+      },
+      password: {
+        type: String,
+        required: true
+      },
+      phoneNumber: {
+        type: String
+      },
+      role: {
+        type: String,
+        required: true
+      },
+      restaurantId: {
+        type: import_mongoose3.default.Schema.Types.ObjectId,
+        ref: "Restaurant"
+      },
+      branchId: {
+        type: import_mongoose3.default.Schema.Types.ObjectId,
+        ref: "Branch"
+      },
+      isActive: {
+        type: Boolean,
+        default: true
+      },
+      refreshToken: {
+        type: String
+      }
+    }, { timestamps: true });
+    userSchema.pre("save", async function() {
+      if (!this.isModified("password")) {
+        return;
+      }
+      const salt = await import_bcryptjs.default.genSalt(10);
+      this.password = await import_bcryptjs.default.hash(this.password, salt);
+    });
+    userSchema.methods.matchPassword = async function(enteredPassword) {
+      return await import_bcryptjs.default.compare(enteredPassword, this.password);
+    };
+    User2 = import_mongoose3.default.model("User", userSchema);
+    User_default = User2;
+  }
+});
+
 // models/Role.js
 var Role_exports = {};
 __export(Role_exports, {
@@ -125653,61 +125715,7 @@ var import_express = __toESM(require_express2(), 1);
 var import_jsonwebtoken = __toESM(require_jsonwebtoken(), 1);
 var import_fs = __toESM(require("fs"), 1);
 var import_path = __toESM(require("path"), 1);
-
-// models/User.js
-var import_mongoose3 = __toESM(require_mongoose2(), 1);
-var import_bcryptjs = __toESM(require_bcryptjs(), 1);
-var userSchema = new import_mongoose3.default.Schema({
-  name: {
-    type: String,
-    required: true
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  password: {
-    type: String,
-    required: true
-  },
-  phoneNumber: {
-    type: String
-  },
-  role: {
-    type: String,
-    required: true
-  },
-  restaurantId: {
-    type: import_mongoose3.default.Schema.Types.ObjectId,
-    ref: "Restaurant"
-  },
-  branchId: {
-    type: import_mongoose3.default.Schema.Types.ObjectId,
-    ref: "Branch"
-  },
-  isActive: {
-    type: Boolean,
-    default: true
-  },
-  refreshToken: {
-    type: String
-  }
-}, { timestamps: true });
-userSchema.pre("save", async function() {
-  if (!this.isModified("password")) {
-    return;
-  }
-  const salt = await import_bcryptjs.default.genSalt(10);
-  this.password = await import_bcryptjs.default.hash(this.password, salt);
-});
-userSchema.methods.matchPassword = async function(enteredPassword) {
-  return await import_bcryptjs.default.compare(enteredPassword, this.password);
-};
-var User2 = import_mongoose3.default.model("User", userSchema);
-var User_default = User2;
-
-// controllers/authController.js
+init_User();
 init_Role();
 
 // models/Restaurant.js
@@ -126072,7 +126080,21 @@ var registerUser = async (req, res) => {
     if (userExists) {
       return res.status(400).json({ message: "An account with this email address already exists. Please log in instead." });
     }
-    const role = roleName || (req.body.restaurantName ? "RestaurantAdmin" : "Customer");
+    const rawRole = roleName || req.body.role;
+    const normalizedRole = (r) => {
+      if (!r) return req.body.restaurantName ? "RestaurantAdmin" : "Customer";
+      const lower = String(r).trim().toLowerCase();
+      if (["restaurantadmin", "admin", "restaurant", "vendor", "owner", "restaurant_admin"].includes(lower)) return "RestaurantAdmin";
+      if (["customer", "user", "client"].includes(lower)) return "Customer";
+      if (["superadmin", "super_admin"].includes(lower)) return "SuperAdmin";
+      if (["branchmanager", "manager", "branch_manager"].includes(lower)) return "BranchManager";
+      if (lower === "chef") return "Chef";
+      if (lower === "waiter") return "Waiter";
+      if (lower === "cashier") return "Cashier";
+      if (["deliverypartner", "delivery", "driver"].includes(lower)) return "DeliveryPartner";
+      return r;
+    };
+    const role = normalizedRole(rawRole);
     const user = await User_default.create({
       name: String(name).trim(),
       email: normalizedEmail,
@@ -126081,7 +126103,7 @@ var registerUser = async (req, res) => {
       role
     });
     let createdRestaurant = null;
-    if (role === "RestaurantAdmin" || req.body.restaurantName) {
+    if (role === "RestaurantAdmin" || role === "Admin" || req.body.restaurantName) {
       const files = req.files || {};
       const hasVerificationFiles = Object.keys(files).length > 0;
       const restaurantName = req.body.restaurantName || `${name}'s Restaurant`;
@@ -126106,8 +126128,9 @@ var registerUser = async (req, res) => {
           expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1e3)
           // 7-Day Free Trial
         },
-        approvalStatus: "Pending",
-        verificationStatus: hasVerificationFiles ? "Under Review" : "Pending"
+        approvalStatus: "Approved",
+        verificationStatus: "Verified",
+        isActive: true
       });
       user.restaurantId = createdRestaurant._id;
       const initialBranch = await Branch_default.create({
@@ -126554,6 +126577,7 @@ var changePassword = async (req, res) => {
 
 // middleware/authMiddleware.js
 var import_jsonwebtoken2 = __toESM(require_jsonwebtoken(), 1);
+init_User();
 init_Role();
 init_Plan();
 var protect = async (req, res, next) => {
@@ -126703,6 +126727,7 @@ var checkFeature = (featureName) => {
 // controllers/verificationController.js
 init_RestaurantVerification();
 init_Notification();
+init_User();
 var import_multer = __toESM(require("multer"), 1);
 var import_path2 = __toESM(require("path"), 1);
 var import_fs2 = __toESM(require("fs"), 1);
@@ -127188,8 +127213,72 @@ var getRestaurants = async (req, res) => {
     if (import_mongoose13.default.connection.readyState !== 1) {
       return res.json([]);
     }
-    const restaurants = await Restaurant_default.find({}).populate("ownerId", "name email").lean();
+    const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+    const User3 = (await Promise.resolve().then(() => (init_User(), User_exports))).default;
+    const adminUsers = await User3.find({ role: { $in: ["RestaurantAdmin", "Admin"] } });
+    for (const admin of adminUsers) {
+      const exists = await Restaurant_default.exists({ $or: [{ ownerId: admin._id }, { _id: admin.restaurantId }] });
+      if (!exists) {
+        const restName = admin.name ? `${admin.name}'s Restaurant` : "New Restaurant";
+        const newRest = await Restaurant_default.create({
+          name: restName,
+          ownerId: admin._id,
+          subscription: {
+            status: "Active",
+            plan: "Basic",
+            billingCycle: "monthly",
+            trialActive: true,
+            startDate: /* @__PURE__ */ new Date(),
+            expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1e3)
+          },
+          approvalStatus: "Approved",
+          verificationStatus: "Verified",
+          isActive: true
+        });
+        admin.restaurantId = newRest._id;
+        await admin.save();
+        await Branch3.create({
+          restaurantId: newRest._id,
+          name: `${newRest.name} Branch`,
+          location: { address: "Primary Location" },
+          contact: { phone: admin.phoneNumber || "" },
+          isActive: true
+        });
+      }
+    }
+    let restaurants = await Restaurant_default.find({}).populate("ownerId", "name email").sort({ createdAt: -1 }).lean();
     const populatedRestaurants = await Promise.all(restaurants.map(async (rest) => {
+      let updatedNeeded = false;
+      let updatePayload = {};
+      if (!rest.name || rest.name.trim() === "" || rest.name === "Unnamed") {
+        const ownerName = rest.ownerId?.name || "Partner";
+        rest.name = `${ownerName}'s Restaurant`;
+        updatePayload.name = rest.name;
+        updatedNeeded = true;
+      }
+      if (!rest.subscription || !rest.subscription.status || rest.subscription.status === "Inactive") {
+        if (!rest.subscription) rest.subscription = {};
+        rest.subscription.status = "Active";
+        updatePayload["subscription.status"] = "Active";
+        updatedNeeded = true;
+      }
+      if (!rest.approvalStatus) {
+        rest.approvalStatus = "Approved";
+        updatePayload.approvalStatus = "Approved";
+        updatedNeeded = true;
+      }
+      if (rest.isActive === void 0 || rest.isActive === false) {
+        rest.isActive = true;
+        updatePayload.isActive = true;
+        updatedNeeded = true;
+      }
+      if (updatedNeeded) {
+        try {
+          await Restaurant_default.findByIdAndUpdate(rest._id, { $set: updatePayload });
+        } catch (err) {
+          console.error("Failed auto-repairing restaurant record:", err);
+        }
+      }
       const hasPartners = await DeliveryPartner_default.exists({ restaurantId: rest._id });
       if (hasPartners) {
         if (!rest.deliverySettings) {
@@ -127263,8 +127352,13 @@ var selfSubscribe = async (req, res) => {
       plan: plan || "Basic",
       billingCycle: billingCycle || "monthly",
       trialActive: false,
+      startDate: /* @__PURE__ */ new Date(),
       expiryDate
     };
+    restaurant.isActive = true;
+    if (restaurant.approvalStatus === "Pending") {
+      restaurant.approvalStatus = "Approved";
+    }
     const updatedRestaurant = await restaurant.save();
     res.json(updatedRestaurant);
   } catch (error) {
@@ -127484,6 +127578,10 @@ var upgradeSubscription = async (req, res) => {
       downgradeScheduledPlan: "",
       downgradeScheduledDate: null
     };
+    restaurant.isActive = true;
+    if (restaurant.approvalStatus === "Pending") {
+      restaurant.approvalStatus = "Approved";
+    }
     await restaurant.save();
     const transactionId = "TXN-UPG-" + Date.now().toString().slice(-8).toUpperCase();
     await SubscriptionPayment_default.create({
@@ -128003,6 +128101,7 @@ var import_express4 = __toESM(require_express2(), 1);
 // controllers/orderController.js
 init_Order();
 init_Branch();
+init_User();
 var import_mongoose15 = __toESM(require_mongoose2(), 1);
 var sanitizeOrderItems = (items) => {
   if (!items) return items;
@@ -129018,10 +129117,17 @@ var getMenuItems = async (req, res) => {
         ];
       }
     }
-    const items = await MenuItem_default.find(filter).populate("restaurantId", "name approvalStatus logo");
+    const items = await MenuItem_default.find(filter).populate("restaurantId", "name approvalStatus logo subscription isActive");
     const validItems = items.filter((item) => {
       if (!item.restaurantId) return false;
-      if (typeof item.restaurantId === "object" && item.restaurantId.approvalStatus === "Rejected") return false;
+      if (typeof item.restaurantId === "object") {
+        if (item.restaurantId.approvalStatus === "Rejected") return false;
+        if (item.restaurantId.isActive === false) return false;
+        const subStatus = item.restaurantId.subscription?.status;
+        if (subStatus && ["Frozen", "Cancelled", "Inactive", "Expired", "Suspended"].includes(subStatus)) {
+          return false;
+        }
+      }
       return true;
     });
     res.json(validItems);
@@ -129080,6 +129186,7 @@ var menuRoutes_default = router6;
 var import_express7 = __toESM(require_express2(), 1);
 
 // controllers/superAdminController.js
+init_User();
 init_Order();
 init_Plan();
 init_Ticket();
@@ -129134,6 +129241,39 @@ var getStats = async (req, res) => {
 };
 var getRestaurants2 = async (req, res) => {
   try {
+    const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+    const User3 = (await Promise.resolve().then(() => (init_User(), User_exports))).default;
+    const adminUsers = await User3.find({ role: { $in: ["RestaurantAdmin", "Admin"] } });
+    for (const admin of adminUsers) {
+      const exists = await Restaurant_default.exists({ $or: [{ ownerId: admin._id }, { _id: admin.restaurantId }] });
+      if (!exists) {
+        const restName = admin.name ? `${admin.name}'s Restaurant` : "New Restaurant";
+        const newRest = await Restaurant_default.create({
+          name: restName,
+          ownerId: admin._id,
+          subscription: {
+            status: "Active",
+            plan: "Basic",
+            billingCycle: "monthly",
+            trialActive: true,
+            startDate: /* @__PURE__ */ new Date(),
+            expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1e3)
+          },
+          approvalStatus: "Pending",
+          verificationStatus: "Pending",
+          isActive: true
+        });
+        admin.restaurantId = newRest._id;
+        await admin.save();
+        await Branch3.create({
+          restaurantId: newRest._id,
+          name: `${newRest.name} Branch`,
+          location: { address: "Primary Location" },
+          contact: { phone: admin.phoneNumber || "" },
+          isActive: true
+        });
+      }
+    }
     const restaurants = await Restaurant_default.find().populate("ownerId", "name email").sort({ createdAt: -1 }).lean();
     const repairedRestaurants = await Promise.all(restaurants.map(async (r) => {
       if (!r.name || r.name.trim() === "" || r.name === "Unnamed") {
@@ -129622,6 +129762,7 @@ var import_express9 = __toESM(require_express2(), 1);
 
 // controllers/customerController.js
 var import_mongoose25 = __toESM(require_mongoose2(), 1);
+init_User();
 init_Order();
 var getCustomers = async (req, res) => {
   try {
@@ -129721,6 +129862,7 @@ var customerRoutes_default = router9;
 var import_express10 = __toESM(require_express2(), 1);
 
 // controllers/staffController.js
+init_User();
 init_Branch();
 init_DeliveryPartner();
 init_Plan();
@@ -129924,6 +130066,7 @@ var staffRoutes_default = router10;
 var import_express11 = __toESM(require_express2(), 1);
 
 // controllers/userController.js
+init_User();
 var getUsers = async (req, res) => {
   try {
     let query = {};
@@ -129994,6 +130137,7 @@ var userRoutes_default = router11;
 var import_express12 = __toESM(require_express2(), 1);
 
 // controllers/roleController.js
+init_User();
 init_Role();
 var DEFAULT_CORE_ROLES = [
   { name: "SuperAdmin", description: "Full platform access. Normally reserved for SaaS owners, not restaurant staff.", isCoreRole: true, permissions: { "Dashboard & Analytics": [true, true, true, true], "Order Management": [true, true, true, true], "Menu & Catalog": [true, true, true, true], "Staff Management": [true, true, true, true] } },
@@ -131085,6 +131229,10 @@ var scanActivateSubscription = async (req, res) => {
       expiryDate,
       startDate: /* @__PURE__ */ new Date()
     };
+    restaurant.isActive = true;
+    if (restaurant.approvalStatus === "Pending") {
+      restaurant.approvalStatus = "Approved";
+    }
     await restaurant.save();
     res.send(`
             <!DOCTYPE html>
@@ -131497,6 +131645,7 @@ var TicketActivityLog = import_mongoose36.default.model("TicketActivityLog", tic
 var TicketActivityLog_default = TicketActivityLog;
 
 // controllers/supportController.js
+init_User();
 init_Notification();
 var import_multer3 = __toESM(require("multer"), 1);
 var import_path4 = __toESM(require("path"), 1);
@@ -132135,6 +132284,7 @@ var supportRoutes_default = router24;
 var import_express25 = __toESM(require_express2(), 1);
 
 // controllers/deliveryController.js
+init_User();
 init_DeliveryPartner();
 
 // models/DeliveryWithdrawal.js
