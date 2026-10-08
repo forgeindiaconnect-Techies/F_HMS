@@ -1,10 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'Manrope', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --color-primary: #16A34A;
   --color-primary-dark: #15803D;
   --color-secondary: #F97316;
@@ -19,7 +19,7 @@
 }
 
 html {
-  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   background-color: #ffffff;
   color: #0f172a;
   transition: background-color 0.2s ease, color 0.2s ease;
@@ -32,7 +32,7 @@ html.dark {
 
 body {
   margin: 0;
-  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   background-color: inherit;
   color: inherit;
   -webkit-font-smoothing: antialiased;
@@ -40,7 +40,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6, button, input, select, textarea, table, th, td {
-  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }
 
 /* Custom Scrollbar */
