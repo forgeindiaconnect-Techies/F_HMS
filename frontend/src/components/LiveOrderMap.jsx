@@ -206,8 +206,8 @@ const LiveOrderMap = ({
         }
 
         // 3. Rider Marker
-        const currentRiderPos = riderLoc || restLoc;
-        if (isRiderActive || riderLoc) {
+        const currentRiderPos = isDelivered ? (custLoc || restLoc) : (riderLoc || restLoc);
+        if (isRiderActive || riderLoc || isDelivered) {
             if (!markersRef.current.rider) {
                 markersRef.current.rider = L.marker([currentRiderPos.latitude, currentRiderPos.longitude], { 
                     icon: createRiderIcon(deliveryPartnerName, isRiderActive) 
@@ -221,8 +221,8 @@ const LiveOrderMap = ({
             delete markersRef.current.rider;
         }
 
-        // Clean up polyline lines if no customer order is active
-        if (!custLoc) {
+        // Clean up polyline lines if no customer order is active OR if delivery is completed
+        if (!custLoc || isDelivered) {
             if (polylineRef.current) {
                 map.removeLayer(polylineRef.current);
                 polylineRef.current = null;
@@ -231,7 +231,8 @@ const LiveOrderMap = ({
                 map.removeLayer(backgroundPolylineRef.current);
                 backgroundPolylineRef.current = null;
             }
-            map.setView([restLoc.latitude, restLoc.longitude], 14);
+            const centerPos = isDelivered && custLoc ? [custLoc.latitude, custLoc.longitude] : [restLoc.latitude, restLoc.longitude];
+            map.setView(centerPos, 14);
             return;
         }
 

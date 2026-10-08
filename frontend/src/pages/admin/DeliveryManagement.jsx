@@ -73,10 +73,13 @@ const DeliveryManagement = () => {
         try {
             const res = await api.get('/orders');
             setTotalOrdersCount(res.data.length);
-            // Filter only delivery orders that are active
+            // Filter only delivery orders that are actively in progress (not delivered/completed/cancelled)
             const active = res.data.filter(o => 
                 o.orderType === 'Delivery' && 
-                o.status !== 'Cancelled'
+                o.status !== 'Cancelled' &&
+                o.status !== 'Delivered' &&
+                o.status !== 'Completed' &&
+                o.deliveryStatus !== 'Delivered'
             );
             setActiveOrders(active);
             
