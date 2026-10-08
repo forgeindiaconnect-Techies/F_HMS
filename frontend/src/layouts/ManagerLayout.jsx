@@ -5,8 +5,21 @@ import SubscriptionBanner from '../components/SubscriptionBanner';
 import { useAuth } from '../context/AuthContext';
 import VerificationBlockedOverlay from '../components/VerificationBlockedOverlay';
 
+import SubscriptionFreezeOverlay from '../components/SubscriptionFreezeOverlay';
+
 const ManagerLayout = () => {
-    const { restaurant } = useAuth();
+    const { user, restaurant, fetchRestaurant } = useAuth();
+    const status = restaurant?.subscription?.status || 'Active';
+    const isTrialExpired = restaurant?.subscription?.trialActive && 
+        restaurant?.subscription?.expiryDate && 
+        (new Date() > new Date(restaurant.subscription.expiryDate));
+        
+    const isFrozen = user?.role !== 'SuperAdmin' && (
+        status === 'Frozen' || 
+        status === 'Expired' || 
+        isTrialExpired
+    );
+
     const isUnverified = restaurant && (restaurant.approvalStatus === 'Rejected' || restaurant.approvalStatus === 'Suspended');
 
     return (
@@ -19,7 +32,9 @@ const ManagerLayout = () => {
                 <Topbar />
                 
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 md:p-8">
-                    {isUnverified ? (
+                    {isFrozen ? (
+                        <SubscriptionFreezeOverlay onUnfrozen={() => fetchRestaurant()} />
+                    ) : isUnverified ? (
                         <VerificationBlockedOverlay />
                     ) : (
                         <Outlet />
