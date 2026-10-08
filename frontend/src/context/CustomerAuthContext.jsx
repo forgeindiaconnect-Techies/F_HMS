@@ -50,8 +50,12 @@ api.interceptors.response.use(
         }
 
         if (error.response && error.response.status === 401) {
-            localStorage.removeItem('restosys_customer_user');
-            if (window.location.pathname !== '/login' && window.location.pathname !== '/register' && window.location.pathname !== '/customer/login') {
+            const path = window.location.pathname;
+            const isLoginRoute = path === '/login' || path === '/register' || path === '/customer/login' || path === '/customer/register';
+            const isAuthEndpoint = config && config.url && (config.url.includes('/auth/login') || config.url.includes('/auth/register'));
+
+            if (!isLoginRoute && !isAuthEndpoint) {
+                localStorage.removeItem('restosys_customer_user');
                 window.location.href = '/customer/login';
             }
         }

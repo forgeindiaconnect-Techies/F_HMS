@@ -45,13 +45,14 @@ api.interceptors.response.use(
         if (error.response && error.response.status === 401) {
             const path = window.location.pathname;
             const isLoginRoute = path === '/login' || path === '/register' || path === '/delivery/login' || path === '/customer/login' || path === '/staff/login';
+            const isAuthEndpoint = config && config.url && (config.url.includes('/auth/login') || config.url.includes('/auth/verify-otp') || config.url.includes('/auth/send-otp'));
             
-            if (!isLoginRoute) {
+            if (!isLoginRoute && !isAuthEndpoint) {
                 localStorage.removeItem('restosys_staff_user');
                 if (path.startsWith('/delivery')) {
                     window.location.href = '/delivery/login';
                 } else {
-                    window.location.href = '/staff/login';
+                    window.location.href = '/login';
                 }
             }
         }
