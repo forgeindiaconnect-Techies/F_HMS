@@ -32,11 +32,18 @@ export const getMenuItems = async (req, res) => {
             }
         }
 
-        const items = await MenuItem.find(filter).populate('restaurantId', 'name approvalStatus logo');
-        // Exclude menu items whose parent restaurant has been deleted by Super Admin or rejected!
+        const items = await MenuItem.find(filter).populate('restaurantId', 'name approvalStatus logo subscription isActive');
+        // Exclude menu items whose parent restaurant has been deleted by Super Admin, rejected, or inactive/frozen!
         const validItems = items.filter(item => {
             if (!item.restaurantId) return false; // Restaurant was deleted from DB
-            if (typeof item.restaurantId === 'object' && item.restaurantId.approvalStatus === 'Rejected') return false;
+            if (typeof item.restaurantId === 'object') {
+                if (item.restaurantId.approvalStatus === 'Rejected') return false;
+                if (item.restaurantId.isActive === false) return false;
+                const subStatus = item.restaurantId.subscription?.status;
+                if (subStatus && ['Frozen', 'Cancelled', 'Inactive', 'Expired', 'Suspended'].includes(subStatus)) {
+                    return false;
+                }
+            }
             return true;
         });
 

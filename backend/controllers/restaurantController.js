@@ -143,8 +143,13 @@ export const selfSubscribe = async (req, res) => {
             plan: plan || 'Basic',
             billingCycle: billingCycle || 'monthly',
             trialActive: false,
+            startDate: new Date(),
             expiryDate: expiryDate
         };
+        restaurant.isActive = true;
+        if (restaurant.approvalStatus === 'Pending') {
+            restaurant.approvalStatus = 'Approved';
+        }
 
         const updatedRestaurant = await restaurant.save();
         res.json(updatedRestaurant);
@@ -430,6 +435,10 @@ export const upgradeSubscription = async (req, res) => {
             downgradeScheduledPlan: '',
             downgradeScheduledDate: null
         };
+        restaurant.isActive = true;
+        if (restaurant.approvalStatus === 'Pending') {
+            restaurant.approvalStatus = 'Approved';
+        }
         await restaurant.save();
 
         // Record Completed Subscription Payment

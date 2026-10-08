@@ -52,6 +52,10 @@ export const scanActivateSubscription = async (req, res) => {
             expiryDate: expiryDate,
             startDate: new Date()
         };
+        restaurant.isActive = true;
+        if (restaurant.approvalStatus === 'Pending') {
+            restaurant.approvalStatus = 'Approved';
+        }
 
         await restaurant.save();
 
