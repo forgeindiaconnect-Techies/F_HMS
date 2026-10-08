@@ -338,17 +338,17 @@ const LiveOrderMap = ({
             <div ref={mapRef} className="w-full h-full z-0" />
 
             {/* Light Theme OSRM Route HUD Card */}
-            {custLoc && (
+            {custLoc && !isDelivered && (
                 <div className="absolute top-4 left-4 z-10 bg-white/95 border border-slate-200 p-3.5 rounded-2xl backdrop-blur text-left shadow-xl flex flex-col gap-1 min-w-[160px]">
                     <div className="flex items-center gap-1.5">
                         <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-ping"></span>
                         <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest leading-none">OSRM Road Route</span>
                     </div>
                     <h4 className="text-base font-extrabold text-slate-900 leading-none mt-1">
-                        {isDelivered ? 'Arrived 🎉' : `${routeInfo.durationMins || '--'} mins`}
+                        {`${routeInfo.durationMins || '--'} mins`}
                     </h4>
                     <p className="text-[11px] font-bold text-slate-500 mt-0.5">
-                        {isDelivered ? '0.0 km' : `${routeInfo.distanceKm || '--'} km remaining`}
+                        {`${routeInfo.distanceKm || '--'} km remaining`}
                     </p>
                     {deliveryPartnerLocation?.updatedAt && (
                         <span className="text-[9px] text-slate-400 font-mono mt-0.5">
