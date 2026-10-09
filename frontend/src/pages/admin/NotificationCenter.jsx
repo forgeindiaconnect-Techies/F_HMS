@@ -170,7 +170,7 @@ const NotificationCenter = () => {
 
     return (
         <div className="p-8 max-w-5xl mx-auto space-y-6 font-sans">
-            <div className="flex justify-between items-end">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>Notification Center</h2>
                     <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">View system alerts, messages, and broadcast announcements.</p>
@@ -228,7 +228,7 @@ const NotificationCenter = () => {
                         <div className="flex-1">
                             <div className="flex justify-between items-start mb-1">
                                 <h3 className={`text-base font-bold ${note.read ? 'text-gray-700 dark:text-slate-200' : 'text-gray-900 dark:text-white'}`}>{note.title}</h3>
-                                <div className="flex items-center gap-3">
+                                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                                     <span className="text-xs font-medium text-gray-400 dark:text-slate-500 flex items-center gap-1">
                                         <Clock size={12} /> {formatTime(note.createdAt)}
                                     </span>

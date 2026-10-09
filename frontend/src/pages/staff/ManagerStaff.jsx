@@ -235,12 +235,12 @@ const ManagerStaff = () => {
 
     return (
         <div className="p-8 max-w-[1600px] mx-auto space-y-6 font-sans">
-            <div className="flex justify-between items-end mb-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>Staff & Shifts</h2>
                     <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Manage today's attendance, breaks, and shift coverage.</p>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                     <button onClick={() => setShowScheduleModal(true)} className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-700 dark:text-slate-200 px-4 py-2.5 rounded-xl font-medium transition-colors text-sm shadow-sm flex items-center gap-2 cursor-pointer">
                         <Calendar size={16} /> Weekly Schedule
                     </button>
@@ -318,7 +318,7 @@ const ManagerStaff = () => {
                             ) : displayStaff.map((staff, i) => (
                                 <tr key={i} className={`hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors ${staff.alert ? 'bg-red-50/10 dark:bg-red-950/10' : ''}`}>
                                     <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                                             <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center font-bold text-gray-600 dark:text-slate-200 border border-gray-200 dark:border-slate-700">
                                                 {staff.name.charAt(0)}
                                             </div>

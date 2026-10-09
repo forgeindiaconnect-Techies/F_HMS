@@ -133,7 +133,7 @@ const CustomerManagement = () => {
                                 {filteredCustomers.map((customer) => (
                                     <tr key={customer.id} className="hover:bg-gray-50/50 transition-colors cursor-pointer group">
                                         <td className="px-4 sm:px-6 py-3.5 sm:py-4">
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                                                 <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold text-base sm:text-lg shrink-0">
                                                     {customer.name.charAt(0).toUpperCase()}
                                                 </div>

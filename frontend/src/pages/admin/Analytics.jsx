@@ -63,13 +63,13 @@ const Analytics = () => {
     };
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-6">
-            <div className="flex justify-between items-end mb-6">
+        <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>Analytics Dashboard</h2>
                     <p className="text-gray-500 text-sm mt-1">Deep dive into sales trends, customer behavior, and menu performance.</p>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                     <div className="flex items-center gap-2 bg-white border border-gray-200 shadow-sm rounded-xl px-4 py-2.5">
                         <Calendar size={16} className="text-gray-400" />
                         <select 
@@ -124,7 +124,7 @@ const Analytics = () => {
                         
                         {/* Revenue Chart */}
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-2">
-                            <div className="flex justify-between items-center mb-6">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                                 <h3 className="font-bold text-gray-900 text-lg" style={{ fontFamily: 'Poppins, sans-serif' }}>Revenue Overview</h3>
                                 <button className="text-gray-400 hover:text-gray-600"><TrendingUp size={20}/></button>
                             </div>

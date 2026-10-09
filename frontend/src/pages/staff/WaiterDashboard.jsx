@@ -966,7 +966,7 @@ const WaiterDashboard = () => {
                                                             #{order._id.substring(order._id.length - 5).toUpperCase()}
                                                         </span>
                                                     </div>
-                                                    <div className="flex items-center gap-3">
+                                                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                                                         <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
                                                             <Clock size={12} /> ETA: 8-12m
                                                         </span>

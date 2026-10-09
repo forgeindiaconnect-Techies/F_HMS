@@ -5,5 +5,14 @@
       "source": "/((?!assets/|.*\\..*).*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "experimentalServices": {
+    "f-hms": {
+      "type": "web",
+      "root": "backend",
+      "entrypoint": "index.js",
+      "routePrefix": "/",
+      "buildCommand": "npm install && npm run build"
+    }
+  }
 }

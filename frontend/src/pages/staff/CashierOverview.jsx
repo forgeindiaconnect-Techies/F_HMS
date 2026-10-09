@@ -125,7 +125,7 @@ const CashierOverview = () => {
 
                 {/* Recent Transactions */}
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                    <div className="flex justify-between items-center mb-4">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
                         <h3 className="font-bold text-gray-900 flex items-center gap-2">
                             <ReceiptText size={18} className="text-green-600"/> Recently Settled (Today)
                         </h3>
@@ -140,7 +140,7 @@ const CashierOverview = () => {
                         <div className="space-y-3">
                             {stats.recentSettled.map(order => (
                                 <div key={order._id} className="flex justify-between items-center p-3 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100">
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                                         <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center border border-green-100">
                                             <CheckCircle size={16} className="text-green-600" />
                                         </div>

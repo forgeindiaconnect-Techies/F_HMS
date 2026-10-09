@@ -66,7 +66,7 @@ const SystemSettings = () => {
                     <h2 className="text-2xl font-black text-gray-900 font-sans tracking-tight">System Settings</h2>
                     <p className="text-gray-500 mt-1">Configure global platform-level settings and defaults.</p>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                     <button
                         onClick={handleReset}
                         className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors text-sm"

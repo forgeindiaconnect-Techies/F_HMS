@@ -121,7 +121,7 @@ const TaxManagement = () => {
                 onClose={() => setConfirmModal({...confirmModal, isOpen: false})} 
             />
             {/* Header */}
-            <div className="flex justify-between items-end mb-8">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-8">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>Tax Configuration</h2>
                     <p className="text-gray-500 text-sm mt-1">Manage tax brackets, GST, VAT, and dynamic surcharges.</p>

@@ -111,8 +111,8 @@ const RoleManagement = () => {
     };
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-6 relative">
-            <div className="flex justify-between items-end mb-6">
+        <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-6 relative">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>Role Management</h2>
                     <p className="text-gray-500 text-sm mt-1">Create custom roles and manage system permissions.</p>
@@ -170,7 +170,7 @@ const RoleManagement = () => {
                                     </div>
                                     <h3 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>{selectedRole.name}</h3>
                                 </div>
-                                <div className="flex items-center gap-3">
+                                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                                     {selectedRole.isCoreRole ? (
                                         <>
                                             <span className="text-xs text-orange-600 bg-orange-50 px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-orange-100 font-medium">
@@ -310,7 +310,7 @@ const RoleManagement = () => {
                             <p className="text-gray-500 text-sm mb-6">
                                 Are you sure you want to delete <strong>{roleToDelete.name}</strong>? Users assigned to this role will lose their permissions.
                             </p>
-                            <div className="flex gap-3">
+                            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                                 <button 
                                     onClick={() => setRoleToDelete(null)}
                                     className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors text-sm"

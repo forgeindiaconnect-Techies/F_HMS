@@ -546,7 +546,7 @@ const Checkout = () => {
                             {paymentMethod === 'Card' && (
                                 <div className="bg-gray-900 rounded-2xl p-6 text-white relative overflow-hidden shadow-xl shadow-gray-900/20 animate-in fade-in slide-in-from-top-4 duration-300">
                                     <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
-                                    <div className="flex justify-between items-center mb-8 relative z-10">
+                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8 relative z-10">
                                         <CreditCard size={28} className="text-gray-400" />
                                         <span className="font-bold tracking-widest text-lg">VISA</span>
                                     </div>
@@ -691,7 +691,7 @@ const Checkout = () => {
                                 </div>
                             )}
                             
-                            <div className="flex justify-between items-end pt-4">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 pt-4">
                                 <span>Total</span>
                                 <span className="text-3xl font-bold text-orange-600 tracking-tight">₹{grandTotal.toFixed(2)}</span>
                             </div>

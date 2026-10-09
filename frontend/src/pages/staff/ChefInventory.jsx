@@ -53,7 +53,7 @@ const ChefInventory = () => {
 
     return (
         <div className="w-full max-w-[1600px] mx-auto font-sans space-y-6">
-            <div className="flex justify-between items-end mb-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6">
                 <div>
                     <h2 className="text-2xl font-bold text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>Wastage & Restock</h2>
                     <p className="text-gray-400 text-sm mt-1">Log dropped food or request immediate restocks from management.</p>

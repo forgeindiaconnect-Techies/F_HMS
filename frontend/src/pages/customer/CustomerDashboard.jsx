@@ -594,7 +594,7 @@ const CustomerDashboard = () => {
                         <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
                             <div className="flex justify-between items-center border-b border-gray-100 pb-4">
                                 <h3 className="text-lg font-bold text-gray-900">Your Order History & Tracking</h3>
-                                <div className="flex gap-2">
+                                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
                                     <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-150">Delivery</span>
                                     <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-orange-50 text-orange-700 border border-orange-150">Self Pickup</span>
                                 </div>
@@ -640,7 +640,7 @@ const CustomerDashboard = () => {
                                                     <p className="font-bold text-gray-900">{order.orderItems?.map(i => `${i.qty}x ${i.name}`).join(', ') || ''}</p>
                                                     <p className="text-[10px] text-gray-400 mt-1">{order.createdAt ? new Date(order.createdAt).toLocaleString() : ''}</p>
                                                 </div>
-                                                <div className="flex items-center gap-3">
+                                                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                                                     <span className="font-extrabold text-gray-950 text-sm">₹{order.totalPrice ? order.totalPrice.toFixed(2) : '0.00'}</span>
                                                     
                                                     {/* Tracking button */}

@@ -1079,14 +1079,14 @@ const CashierDashboard = () => {
                     <div className="flex h-full gap-8">
                         {/* Order & Items list */}
                         <div className="flex-1 flex flex-col min-h-0 border-r border-gray-100 pr-8">
-                            <div className="flex justify-between items-center mb-4 shrink-0">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 shrink-0">
                                 <div>
                                     <h3 className="text-xl font-bold text-gray-900">
                                         {activeBill.orderType === 'Dine In' ? `Table ${activeBill.tableNumber || 'Any'}` : activeBill.orderType}
                                     </h3>
                                     <p className="text-xs text-gray-450 font-mono">Invoice Ref: #{activeBill._id.toUpperCase()}</p>
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
                                     <button 
                                         onClick={() => setIsMerging(!isMerging)}
                                         className="text-xs bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold px-3 py-1.5 rounded-xl border border-gray-200 flex items-center gap-1"
@@ -1173,7 +1173,7 @@ const CashierDashboard = () => {
                                     <span>Goods Tax (5%)</span>
                                     <span>₹{taxAmount.toFixed(2)}</span>
                                 </div>
-                                <div className="flex justify-between items-end border-t border-gray-150 pt-3">
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 border-t border-gray-150 pt-3">
                                     <span className="font-extrabold text-gray-900 text-sm">Invoice Grand Total</span>
                                     <span className="text-3xl font-black text-green-700 tracking-tight">₹{total.toFixed(2)}</span>
                                 </div>

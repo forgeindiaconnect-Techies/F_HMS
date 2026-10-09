@@ -141,7 +141,7 @@ const ManagerKitchenStatus = () => {
 
     return (
         <div className="p-8 max-w-[1600px] mx-auto space-y-6 font-sans">
-            <div className="flex justify-between items-end mb-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>Kitchen Status Monitor</h2>
                     <p className="text-gray-500 text-sm mt-1">Live view of kitchen load, station performance, and ticket times.</p>
@@ -151,7 +151,7 @@ const ManagerKitchenStatus = () => {
                         <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Avg Prep Time (Overall)</p>
                         <p className="text-2xl font-bold text-gray-900">{overallAvgTime}</p>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                         <button onClick={() => { fetchOrders(); toast.success('Display refreshed!'); }} className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-xl font-medium transition-colors text-sm shadow-sm flex items-center gap-2">
                             <RefreshCw size={16} /> Refresh Display
                         </button>
@@ -222,7 +222,7 @@ const ManagerKitchenStatus = () => {
                             </div>
                             <div className="flex items-center gap-4">
                                 <span className="text-sm font-bold text-orange-600">{ticket.status}</span>
-                                <div className="flex gap-2">
+                                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
                                     <button onClick={() => toast.success('Expediting order...')} className="bg-red-50 hover:bg-red-100 text-red-700 text-sm font-bold px-4 py-2 rounded-lg transition-colors border border-red-200">
                                         Expedite
                                     </button>

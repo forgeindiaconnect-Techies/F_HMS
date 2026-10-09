@@ -82,7 +82,7 @@ const ManagerReservations = () => {
 
     return (
         <div className="p-8 max-w-[1600px] mx-auto space-y-6 font-sans">
-            <div className="flex justify-between items-end mb-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>Reservation Approval</h2>
                     <p className="text-gray-500 text-sm mt-1">Review and manage incoming table booking requests.</p>
@@ -130,7 +130,7 @@ const ManagerReservations = () => {
                                             <span className="flex items-center gap-1.5"><Phone size={16} /> {res.guestPhone}</span>
                                         </div>
                                     </div>
-                                    <div className="flex gap-2">
+                                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
                                         <button onClick={() => setActionModal({ show: true, type: 'message', reservation: res })} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors" title="Message Customer">
                                             <MessageSquare size={20} />
                                         </button>

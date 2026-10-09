@@ -46,7 +46,7 @@ const ManagerAnalytics = () => {
 
     return (
         <div className="p-8 max-w-[1600px] mx-auto space-y-6 font-sans">
-            <div className="flex justify-between items-end mb-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>Branch Analytics</h2>
                     <p className="text-gray-500 text-sm mt-1">Key performance metrics and trends for your branch.</p>
@@ -133,7 +133,7 @@ const ManagerAnalytics = () => {
                                     <div className="space-y-4">
                                         {popularItems.map((item, i) => (
                                             <div key={i} className="flex justify-between items-center">
-                                                <div className="flex items-center gap-3">
+                                                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                                                     <span className="font-extrabold text-gray-300 w-4">{i + 1}</span>
                                                     <div>
                                                         <p className="font-bold text-gray-900 text-sm">{item.name}</p>

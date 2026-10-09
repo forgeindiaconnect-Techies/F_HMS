@@ -112,12 +112,12 @@ const ManagerSales = () => {
 
     return (
         <div className="p-8 max-w-[1600px] mx-auto space-y-6 font-sans">
-            <div className="flex justify-between items-end mb-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>Today's Sales Breakdown</h2>
                     <p className="text-gray-500 text-sm mt-1">Detailed view of transactions, tender types, and hourly revenue.</p>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                     <button onClick={() => setShowExportModal(true)} className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-xl font-medium transition-colors text-sm shadow-sm flex items-center gap-2">
                         <Download size={16} /> Export
                     </button>

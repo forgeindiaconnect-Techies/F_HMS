@@ -121,12 +121,12 @@ const ManagerOrderMonitoring = () => {
 
     return (
         <div className="p-8 max-w-[1600px] mx-auto space-y-6 font-sans relative">
-            <div className="flex justify-between items-end mb-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>Live Order Monitoring</h2>
                     <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Real-time view of all branch orders and fulfillment bottlenecks.</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
                     <span className={`flex items-center gap-2 text-sm font-bold px-3 py-1.5 rounded-lg border ${delayedCount > 0 ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800' : 'text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-900 border-gray-200 dark:border-slate-800'}`}>
                         <AlertCircle size={16} /> {delayedCount} Delayed Order{delayedCount !== 1 ? 's' : ''}
                     </span>
@@ -169,7 +169,7 @@ const ManagerOrderMonitoring = () => {
                             )}
                             
                             <div className="flex justify-between items-start mb-4">
-                                <div className="flex items-center gap-3">
+                                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                                     <div className="p-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm text-gray-700 dark:text-slate-200 border border-gray-100 dark:border-slate-700">
                                         {getTypeIcon(order.orderType)}
                                     </div>

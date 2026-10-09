@@ -75,8 +75,8 @@ const ActivityLogs = () => {
     });
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-6">
-            <div className="flex justify-between items-end mb-4">
+        <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-4">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>Activity Audit Logs</h2>
                     <p className="text-gray-500 text-sm mt-1">Audit trail of all actions performed by users in the system.</p>
@@ -97,7 +97,7 @@ const ActivityLogs = () => {
                         className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" 
                     />
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
                     <select 
                         value={moduleFilter}
                         onChange={(e) => setModuleFilter(e.target.value)}
@@ -136,7 +136,7 @@ const ActivityLogs = () => {
                                 {filteredLogs.map((log) => (
                                     <tr key={log._id} className="hover:bg-gray-50/50 transition-colors group">
                                         <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                                                 <div className={`p-2 rounded-lg ${getLogColor(log.type)}`}>
                                                     {getLogIcon(log.module)}
                                                 </div>
