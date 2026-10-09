@@ -4,12 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig(({ command, mode }) => {
-  let apiUrl = process.env.VITE_API_URL || '';
-  if (!apiUrl || apiUrl.includes('ERR_NAME_NOT_RESOLVED')) {
-    apiUrl = mode === 'production' 
-      ? 'https://f-hms-2.onrender.com/api' 
-      : 'http://localhost:5000/api';
-  }
+  let apiUrl = process.env.VITE_API_URL || 'https://f-hms.onrender.com/api';
 
   return {
     plugins: [
