@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import { getApiUrl } from '../../utils/axiosInstance';
 import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 import LiveOrderMap from '../../components/LiveOrderMap';
 
@@ -51,29 +52,6 @@ const DeliveryPartnerDashboard = () => {
     const [simEta, setSimEta] = useState(15);
     const [simDistance, setSimDistance] = useState(3.5);
 
-    const getApiUrl = () => {
-        let baseURL = import.meta.env.VITE_API_URL;
-        if (baseURL) {
-            if (baseURL.endsWith('/')) baseURL = baseURL.slice(0, -1);
-            if (!baseURL.endsWith('/api')) baseURL += '/api';
-            return baseURL;
-        }
-        const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-        const protocol = typeof window !== 'undefined' ? window.location.protocol : '';
-        if (protocol === 'file:' || protocol === 'capacitor:' || protocol === 'ionic:' || protocol === 'content:' || !hostname) {
-            return 'https://f-hms-2.onrender.com/api';
-        }
-        const isLocalIp = hostname.startsWith('192.168.') || 
-                          hostname.startsWith('10.') || 
-                          hostname.startsWith('172.');
-        if (isLocalIp) {
-            return `http://${hostname}:5000/api`;
-        }
-        if (hostname === 'localhost' || hostname === '127.0.0.1') {
-            return 'http://localhost:5000/api';
-        }
-        return 'https://f-hms-2.onrender.com/api';
-    };
     const API_URL = getApiUrl();
 
     const { user: authUser, api } = useAuth();

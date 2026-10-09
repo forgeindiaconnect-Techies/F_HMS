@@ -34,7 +34,6 @@ api.interceptors.response.use(
     async (error) => {
         const config = error.config;
         if (config && config.baseURL && config.baseURL.includes('localhost:5000')) {
-            console.warn('[Network Notice] Local backend on port 5000 unreachable. Switching to live Render server (https://f-hms.onrender.com/api)...');
             config.baseURL = 'https://f-hms.onrender.com/api';
             return api.request(config);
         }
@@ -42,7 +41,6 @@ api.interceptors.response.use(
             const status = error.response ? error.response.status : 0;
             if (status === 502 || status === 503 || status === 504 || !error.response || error.code === 'ERR_NETWORK') {
                 config._retryCount = (config._retryCount || 0) + 1;
-                console.log(`[Render Server Cold-Start] Retrying request (${status || 'Network Error'}). Attempt ${config._retryCount}/10...`);
                 await new Promise((resolve) => setTimeout(resolve, 2000));
                 return api.request(config);
             }
