@@ -1,4 +1,4 @@
-package com.restaurant.management;
+package com.restosys.hms;
 
 import com.getcapacitor.BridgeActivity;
 

@@ -376,6 +376,8 @@ const Topbar = () => {
     const [subscriptionPlan, setSubscriptionPlan] = useState(null);
     const [plans, setPlans] = useState([]);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+    const [branches, setBranches] = useState([]);
+    const [selectedBranch, setSelectedBranch] = useState(null);
     const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
 
     useEffect(() => {
