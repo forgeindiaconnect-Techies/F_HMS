@@ -618,7 +618,7 @@ const WaiterDashboard = () => {
                 {/* -------------------------------------------------- */}
                 {/* SHIFT SUMMARY CARDS */}
                 {/* -------------------------------------------------- */}
-                <section id="shift-status" className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3.5">
+                <section id="shift-status" className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2.5 sm:gap-3.5">
                     
                     {/* Card 1: Shift Status */}
                     <div className="bg-white/80 backdrop-blur-md p-4 rounded-2xl border border-slate-200/70 shadow-xs hover:shadow-md transition-all duration-300 group hover:-translate-y-0.5">
@@ -851,7 +851,7 @@ const WaiterDashboard = () => {
                                 </div>
 
                                 {/* Status Filters & Assigned Toggle */}
-                                <div className="flex flex-wrap items-center gap-2">
+                                <div className="flex flex-nowrap sm:flex-wrap items-center gap-2 overflow-x-auto no-scrollbar max-w-full pb-1">
                                     <button
                                         onClick={() => setAssignedOnly(!assignedOnly)}
                                         className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all border flex items-center gap-1.5 cursor-pointer ${

@@ -425,7 +425,7 @@ const ChefDashboard = () => {
                     </div>
 
                     {/* Station Filter Pills */}
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-nowrap sm:flex-wrap items-center gap-2 overflow-x-auto no-scrollbar max-w-full pb-1">
                         <span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-1 hidden sm:inline">Station:</span>
                         {stations.map(st => (
                             <button
@@ -444,8 +444,8 @@ const ChefDashboard = () => {
                 </div>
 
                 {/* KPI Metrics Strip */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div className="bg-slate-50 dark:bg-slate-950/70 p-4 rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-3.5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
+                    <div className="bg-slate-50 dark:bg-slate-950/70 p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-2.5 sm:gap-3.5 min-w-0">
                         <div className="p-3 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl border border-blue-500/20">
                             <Utensils size={20} />
                         </div>
@@ -455,7 +455,7 @@ const ChefDashboard = () => {
                         </div>
                     </div>
 
-                    <div className="bg-slate-50 dark:bg-slate-950/70 p-4 rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-3.5">
+                    <div className="bg-slate-50 dark:bg-slate-950/70 p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-2.5 sm:gap-3.5 min-w-0">
                         <div className="p-3 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl border border-amber-500/20">
                             <Clock size={20} />
                         </div>
@@ -465,7 +465,7 @@ const ChefDashboard = () => {
                         </div>
                     </div>
 
-                    <div className="bg-slate-50 dark:bg-slate-950/70 p-4 rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-3.5">
+                    <div className="bg-slate-50 dark:bg-slate-950/70 p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-2.5 sm:gap-3.5 min-w-0">
                         <div className="p-3 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-500/20">
                             <CheckCircle size={20} />
                         </div>
