@@ -251,12 +251,12 @@ const DeliveryManagement = () => {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex gap-2 border-b border-gray-200 pb-px">
+            <div className="flex gap-1 sm:gap-2 border-b border-gray-200 pb-px overflow-x-auto no-scrollbar max-w-full min-w-0 flex-nowrap">
                 {['settings', 'partners', 'tracking', 'analytics'].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`px-6 py-3 font-bold text-sm capitalize transition-all border-b-2 -mb-px ${
+                        className={`px-3.5 sm:px-6 py-2.5 sm:py-3 font-bold text-xs sm:text-sm capitalize transition-all border-b-2 -mb-px whitespace-nowrap shrink-0 ${
                             activeTab === tab 
                             ? 'border-green-600 text-green-600' 
                             : 'border-transparent text-gray-400 hover:text-gray-600'

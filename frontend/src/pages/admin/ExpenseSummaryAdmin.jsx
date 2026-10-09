@@ -210,7 +210,7 @@ const ExpenseSummaryAdmin = () => {
                 <div className="flex gap-3">
                     <button
                         onClick={handleExportCSV}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold transition-colors flex items-center gap-2 text-sm shadow-md"
+                        className="w-full sm:w-auto justify-center bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold transition-colors flex items-center gap-2 text-sm shadow-md"
                     >
                         <Download size={16} /> Export CSV Report
                     </button>
@@ -218,7 +218,7 @@ const ExpenseSummaryAdmin = () => {
             </div>
 
             {/* Filter Bar (Branch & Date Controls) */}
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-wrap gap-4 items-center justify-between">
+            <div className="bg-white p-3.5 sm:p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center justify-between">
                 <div className="flex items-center gap-2">
                     <Filter size={18} className="text-emerald-600" />
                     <span className="text-xs font-black uppercase text-gray-700 tracking-wider">Filters &amp; Scopes</span>
@@ -241,7 +241,7 @@ const ExpenseSummaryAdmin = () => {
                     </div>
 
                     {/* Date-wise Period Selector */}
-                    <div className="flex items-center gap-1.5 bg-gray-100 p-1 rounded-xl">
+                    <div className="flex items-center justify-between sm:justify-start gap-1 bg-gray-100 p-1 rounded-xl w-full sm:w-auto overflow-x-auto no-scrollbar">
                         <button
                             onClick={() => setSelectedPeriod('today')}
                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${

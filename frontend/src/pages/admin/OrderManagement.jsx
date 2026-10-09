@@ -225,8 +225,8 @@ const OrderManagement = () => {
             </div>
 
             {/* Search bar */}
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 flex gap-4 items-center">
-                <div className="relative flex-1 max-w-md">
+            <div className="bg-white dark:bg-slate-800 p-3.5 sm:p-4 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col sm:flex-row gap-2.5 sm:gap-4 items-stretch sm:items-center">
+                <div className="relative flex-1 w-full max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     <input
                         type="text"

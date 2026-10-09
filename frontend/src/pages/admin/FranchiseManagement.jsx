@@ -418,7 +418,7 @@ const FranchiseManagement = () => {
             </div>
 
             {/* Filter Controls Bar */}
-            <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3.5 md:gap-4">
                 {/* Search */}
                 <div className="relative w-full md:w-80">
                     <input
@@ -432,8 +432,8 @@ const FranchiseManagement = () => {
                 </div>
 
                 {/* Filters */}
-                <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
-                    <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full md:w-auto">
+                    <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
                         <span className="text-xs font-bold text-gray-400 dark:text-slate-500">Region:</span>
                         <select
                             value={selectedRegion}
