@@ -33,6 +33,11 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const config = error.config;
+        if (config && config.baseURL && config.baseURL.includes('localhost:5000')) {
+            console.warn('[Network Notice] Local backend on port 5000 unreachable. Switching to live Render server (https://f-hms.onrender.com/api)...');
+            config.baseURL = 'https://f-hms.onrender.com/api';
+            return api.request(config);
+        }
         if (config && (!config._retryCount || config._retryCount < 10)) {
             const status = error.response ? error.response.status : 0;
             if (status === 502 || status === 503 || status === 504 || !error.response || error.code === 'ERR_NETWORK') {

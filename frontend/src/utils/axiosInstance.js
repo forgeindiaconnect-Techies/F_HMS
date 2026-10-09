@@ -8,23 +8,7 @@ export const getApiUrl = () => {
         return envUrl;
     }
 
-    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-    const protocol = typeof window !== 'undefined' ? window.location.protocol : '';
-
-    // Mobile apps (WebView / Capacitor / Cordova / file / native wrapper)
-    if (protocol === 'file:' || protocol === 'capacitor:' || protocol === 'ionic:' || protocol === 'content:' || !hostname) {
-        return 'https://f-hms.onrender.com/api';
-    }
-
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        return 'http://localhost:5000/api';
-    }
-
-    if (hostname.startsWith('192.168.') || hostname.startsWith('10.') || hostname.startsWith('172.')) {
-        return `http://${hostname}:5000/api`;
-    }
-
-    // Default to deployed Render backend URL
+    // Default to deployed Render backend URL for seamless connectivity across web & mobile apps
     return 'https://f-hms.onrender.com/api';
 };
 
@@ -55,6 +39,13 @@ api.interceptors.response.use(
         const config = error.config;
         const status = error.response ? error.response.status : 0;
         const isColdStart = status === 502 || status === 503 || status === 504 || (!error.response && error.code === 'ERR_NETWORK');
+
+        // Fallback to live Render backend if local port 5000 is unreachable
+        if (config && config.baseURL && config.baseURL.includes('localhost:5000')) {
+            console.warn('[Network Notice] Local backend on port 5000 unreachable. Switching to live Render server (https://f-hms.onrender.com/api)...');
+            config.baseURL = 'https://f-hms.onrender.com/api';
+            return api.request(config);
+        }
 
         if (config && isColdStart && (!config._retryCount || config._retryCount < 10)) {
             config._retryCount = (config._retryCount || 0) + 1;
