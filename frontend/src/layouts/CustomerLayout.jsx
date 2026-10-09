@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, Link } from 'react-router-dom';
-import { ShoppingCart, User, UtensilsCrossed, Heart, CalendarDays, ShoppingBag, Truck } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, User, UtensilsCrossed, Heart, CalendarDays, ShoppingBag, Truck } from 'lucide-react';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { useCart } from '../context/CartContext';
 import CartDrawer from '../components/CartDrawer';
@@ -18,14 +18,25 @@ const CustomerLayout = () => {
             
             <header className="bg-white dark:bg-slate-900 shadow-sm border-b border-slate-100 dark:border-slate-800 sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-                    <Link to="/explore" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2 sm:gap-3 group mr-3 sm:mr-0 shrink-0">
-                        <div className="bg-orange-500 text-white p-2 rounded-lg group-hover:scale-105 transition-transform">
-                            <UtensilsCrossed size={24} />
-                        </div>
-                        <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-orange-400 group-hover:from-orange-500 group-hover:to-orange-300 transition-colors">
-                            RestoSys
-                        </h1>
-                    </Link>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button
+                            onClick={() => window.history.back()}
+                            className="md:hidden p-1.5 px-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors shrink-0 flex items-center gap-1 text-xs font-bold border border-slate-200 dark:border-slate-800 shadow-xs"
+                            aria-label="Go Back"
+                            title="Back"
+                        >
+                            <ArrowLeft size={16} />
+                            <span className="text-[11px] font-bold">Back</span>
+                        </button>
+                        <Link to="/explore" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2 sm:gap-3 group mr-3 sm:mr-0 shrink-0">
+                            <div className="bg-orange-500 text-white p-2 rounded-lg group-hover:scale-105 transition-transform">
+                                <UtensilsCrossed size={24} />
+                            </div>
+                            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-orange-400 group-hover:from-orange-500 group-hover:to-orange-300 transition-colors">
+                                RestoSys
+                            </h1>
+                        </Link>
+                    </div>
 
                     <nav className="hidden md:flex gap-8">
                         <Link to="/explore" className="text-slate-600 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 font-medium transition-colors">Home</Link>

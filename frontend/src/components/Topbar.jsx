@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bell, User, Menu, Crown, Zap, Star, X, CheckCircle2, Loader2, AlertCircle, ArrowUpRight, Check, QrCode, MapPin, ChevronDown, Store, Sun, Moon } from 'lucide-react';
+import { Bell, User, Menu, ArrowLeft, Crown, Zap, Star, X, CheckCircle2, Loader2, AlertCircle, ArrowUpRight, Check, QrCode, MapPin, ChevronDown, Store, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -448,8 +448,19 @@ const Topbar = () => {
                     <button
                         onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))}
                         className="md:hidden p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg"
+                        aria-label="Toggle Menu"
                     >
                         <Menu size={24} />
+                    </button>
+
+                    <button
+                        onClick={() => window.history.back()}
+                        className="md:hidden p-1.5 px-2.5 text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors flex items-center gap-1 text-xs font-bold border border-gray-200 dark:border-slate-800 shrink-0 shadow-xs"
+                        aria-label="Go Back"
+                        title="Back"
+                    >
+                        <ArrowLeft size={16} />
+                        <span className="text-[11px] font-bold">Back</span>
                     </button>
 
                     {/* Branch Badge / Name display */}
