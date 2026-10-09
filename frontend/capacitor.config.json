@@ -1,6 +1,6 @@
 {
-  "appId": "com.restaurant.management",
-  "appName": "Restaurant Management",
+  "appId": "com.restosys.hms",
+  "appName": "RestoSys HMS",
   "webDir": "dist"
 }
 
