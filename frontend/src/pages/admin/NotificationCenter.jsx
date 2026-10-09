@@ -317,7 +317,7 @@ const NotificationCenter = () => {
                         </div>
                         
                         <div className="p-6">
-                            <form onSubmit={handleBroadcastSubmit} className="space-y-5">
+                            <form onSubmit={handleBroadcastSubmit} className="space-y-5 min-w-0 pr-1.5 flex-1">
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1.5">Broadcast Title *</label>
                                     <input 

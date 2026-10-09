@@ -412,7 +412,7 @@ const CashierDashboard = () => {
                         <div className="lg:col-span-1 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-6">
                             <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">Configure Split</h3>
                             
-                            <div className="space-y-2">
+                            <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                                 <label className="text-xs text-gray-400 font-bold block">Number of Split Parts</label>
                                 <div className="flex items-center gap-3">
                                     <button type="button" onClick={() => setSplitParts(Math.max(1, splitParts - 1))} className="w-10 h-10 border dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-805 text-gray-850 dark:text-white font-bold flex items-center justify-center">-</button>
@@ -455,7 +455,7 @@ const CashierDashboard = () => {
                         <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">Select Tables to Merge</h3>
                         
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
+                            <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                                 <label className="text-xs text-gray-400 font-bold block">Source Table (Bill to merge from)</label>
                                 <select 
                                     value={activeBill?._id || ''} 
@@ -469,7 +469,7 @@ const CashierDashboard = () => {
                                 </select>
                             </div>
 
-                            <div className="space-y-2">
+                            <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                                 <label className="text-xs text-gray-400 font-bold block">Target Table (Bill to merge into)</label>
                                 <select 
                                     value={mergeTargetId} 
@@ -488,11 +488,11 @@ const CashierDashboard = () => {
                             <div className="p-4 bg-orange-50/50 dark:bg-orange-950/10 border border-orange-200 dark:border-orange-900/50 rounded-xl space-y-4 text-xs">
                                 <h4 className="font-bold text-orange-850 dark:text-orange-300">Merge Preview Summary</h4>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1">
+                                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                         <p className="font-bold text-gray-400">Source Table {sourceBill.tableNumber}</p>
                                         <p className="font-black text-gray-900 dark:text-white">₹{sourceBill.totalPrice.toFixed(2)}</p>
                                     </div>
-                                    <div className="space-y-1">
+                                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                         <p className="font-bold text-gray-400">Target Table {targetBill.tableNumber}</p>
                                         <p className="font-black text-gray-900 dark:text-white">₹{targetBill.totalPrice.toFixed(2)}</p>
                                     </div>
@@ -506,7 +506,7 @@ const CashierDashboard = () => {
                     </div>
 
                     <div className="lg:col-span-1 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
-                        <div className="space-y-3">
+                        <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                             <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">Confirm Merge</h3>
                             <p className="text-xs text-gray-450 leading-relaxed">Merging combines all items from the Source table into the Target table. The Source table will then be freed up.</p>
                         </div>
@@ -558,7 +558,7 @@ const CashierDashboard = () => {
                                 <button onClick={() => setActiveBill(null)} className="text-xs text-purple-600 font-bold hover:underline">← Back to Tables</button>
                             </div>
                             
-                            <div className="space-y-4">
+                            <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                                 <label className="text-xs text-gray-400 font-bold block">Select Discount Percentage</label>
                                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                                     {[5, 10, 15, 20, 25, 30].map(p => (
@@ -590,7 +590,7 @@ const CashierDashboard = () => {
                         </div>
 
                         <div className="lg:col-span-1 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
-                            <div className="space-y-3">
+                            <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                                 <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">Apply and Settle</h3>
                                 <p className="text-xs text-gray-450 leading-relaxed">Applying a discount updates the invoice grand total before settling the payment.</p>
                             </div>
@@ -649,7 +649,7 @@ const CashierDashboard = () => {
                                 <button onClick={() => setActiveBill(null)} className="text-xs text-purple-600 font-bold hover:underline">← Back to Console</button>
                             </div>
                             
-                            <div className="space-y-4">
+                            <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                                 <label className="text-xs text-gray-400 font-bold block">Payment Channel</label>
                                 <div className="grid grid-cols-3 gap-3">
                                     {[
@@ -685,7 +685,7 @@ const CashierDashboard = () => {
                         </div>
 
                         <div className="lg:col-span-1 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
-                            <div className="space-y-3">
+                            <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                                 <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">Finalize Transaction</h3>
                                 <p className="text-xs text-gray-455 leading-relaxed">Ensure payment has been successfully authorized at the card reader or that physical cash is correctly counted before recording register settlement.</p>
                             </div>
@@ -718,7 +718,7 @@ const CashierDashboard = () => {
                         { label: 'UPI & Digital', value: `₹${(cashSummary.upi + cashSummary.online).toFixed(2)}`, desc: 'Direct online transfers', color: 'text-orange-600 dark:text-orange-400' },
                     ].map((stat, idx) => (
                         <div key={idx} className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-2">
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{stat.label}</p>
+                            <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider block leading-tight break-words">{stat.label}</p>
                             <p className={`text-2xl font-black ${stat.color}`}>{stat.value}</p>
                             <p className="text-[10px] text-gray-400 font-semibold">{stat.desc}</p>
                         </div>
@@ -1212,8 +1212,8 @@ const CashierDashboard = () => {
                                 </div>
                             ) : (
                                 <div className="flex-1 flex flex-col justify-between">
-                                    <div className="space-y-4">
-                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Payment Method</h3>
+                                    <div className="space-y-4 min-w-0 pr-1.5 flex-1">
+                                        <h3 className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider block leading-tight break-words">Payment Method</h3>
                                         <div className="grid grid-cols-3 gap-2">
                                             {[
                                                 { id: 'Card', icon: <CreditCard size={16} /> },

@@ -398,7 +398,7 @@ const CustomerDashboard = () => {
                     
                     {/* Tab: Overview */}
                     {activeTab === 'overview' && (
-                        <div className="space-y-8">
+                        <div className="space-y-8 min-w-0 pr-1.5 flex-1">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 {/* Loyalty Points Balance */}
                                 <div className="bg-gradient-to-br from-[#111] via-[#1a1a1a] to-[#0a0a0a] rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-[#d4af37]/30 group transition-all duration-300 hover:shadow-2xl hover:shadow-[#d4af37]/5 hover:border-[#d4af37]/50">
@@ -423,7 +423,7 @@ const CustomerDashboard = () => {
                                             <Sparkles size={14} className="text-[#ffe07d] animate-pulse" />
                                         </div>
                                         
-                                        <div className="space-y-1">
+                                        <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                             <span className="text-[10px] text-gray-400 font-black tracking-widest uppercase block">Points Balance</span>
                                             <h2 className="text-5xl font-black font-sans tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-[#fff2d1] to-[#f3c056]">
                                                 {userPoints.toLocaleString()}
@@ -454,7 +454,7 @@ const CustomerDashboard = () => {
                                             <span className="text-xs font-extrabold text-green-600 bg-green-50 px-2 py-0.5 rounded border border-green-150">Active</span>
                                         </div>
 
-                                        <div className="space-y-1">
+                                        <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                             <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider block">Wallet Balance</span>
                                             <h2 className="text-4xl font-black font-sans text-gray-900">
                                                 ₹{walletBalance.toFixed(2)}
@@ -600,7 +600,7 @@ const CustomerDashboard = () => {
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
+                            <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                                 {loadingOrders ? (
                                     <p className="text-center text-gray-400 py-6 text-xs">Loading orders...</p>
                                 ) : safeOrders.length === 0 ? (
@@ -814,7 +814,7 @@ const CustomerDashboard = () => {
 
                     {/* Tab: Reservations */}
                     {activeTab === 'reservations' && (
-                        <div className="space-y-8">
+                        <div className="space-y-8 min-w-0 pr-1.5 flex-1">
                             {/* Book Table Form */}
                             <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
                                 <div>
@@ -823,7 +823,7 @@ const CustomerDashboard = () => {
                                 </div>
 
                                 <form onSubmit={handleBookReservation} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-1">
+                                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Reservation Date</label>
                                         <input 
                                             type="date"
@@ -832,7 +832,7 @@ const CustomerDashboard = () => {
                                             className="w-full bg-gray-50 border border-gray-150 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
                                         />
                                     </div>
-                                    <div className="space-y-1">
+                                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Time Slot</label>
                                         <input 
                                             type="time"
@@ -841,7 +841,7 @@ const CustomerDashboard = () => {
                                             className="w-full bg-gray-50 border border-gray-150 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
                                         />
                                     </div>
-                                    <div className="space-y-1">
+                                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Guests Count</label>
                                         <select 
                                             value={resGuests}
@@ -853,7 +853,7 @@ const CustomerDashboard = () => {
                                             ))}
                                         </select>
                                     </div>
-                                    <div className="space-y-1">
+                                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Seating Preference</label>
                                         <select 
                                             value={resType}
@@ -878,7 +878,7 @@ const CustomerDashboard = () => {
                             {/* Reservation History List */}
                             <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-4">
                                 <h3 className="font-bold text-gray-900">Your Booking History</h3>
-                                <div className="space-y-3">
+                                <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                                     {reservations.length === 0 ? (
                                         <p className="text-center py-6 text-xs text-gray-400 bg-gray-50 rounded-2xl border border-dashed border-gray-200">No table bookings scheduled.</p>
                                     ) : (
@@ -988,7 +988,7 @@ const CustomerDashboard = () => {
                                 </div>
 
                                 {/* Rewards redemption catalog */}
-                                <div className="space-y-4">
+                                <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                                     <h4 className="font-extrabold text-sm text-gray-900">Available Redemptions</h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="border border-gray-150 p-4 rounded-2xl flex justify-between items-center bg-gray-50/50">
@@ -1073,7 +1073,7 @@ const CustomerDashboard = () => {
                                 </div>
 
                                 {/* Mock ledger records */}
-                                <div className="space-y-3">
+                                <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                                     <h4 className="font-extrabold text-sm text-gray-900">Recent Transactions</h4>
                                     <div className="border border-gray-100 rounded-2xl p-4 bg-gray-50/50 flex justify-between items-center text-xs">
                                         <div>
@@ -1153,9 +1153,9 @@ const CustomerDashboard = () => {
                                 <p className="text-gray-500 text-xs mt-0.5">Submit inquiries, complaints, or restaurant feedback directly to administration</p>
                             </div>
 
-                            <form onSubmit={handleSubmitFeedback} className="space-y-4">
+                            <form onSubmit={handleSubmitFeedback} className="space-y-4 min-w-0 pr-1.5 flex-1">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-1">
+                                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Submission Type</label>
                                         <select 
                                             value={feedbackType}
@@ -1168,7 +1168,7 @@ const CustomerDashboard = () => {
                                             <option value="Franchise">Franchise request</option>
                                         </select>
                                     </div>
-                                    <div className="space-y-1">
+                                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Subject Summary</label>
                                         <input 
                                             type="text"
@@ -1179,7 +1179,7 @@ const CustomerDashboard = () => {
                                         />
                                     </div>
                                 </div>
-                                <div className="space-y-1">
+                                <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Message Details</label>
                                     <textarea 
                                         rows={4}
@@ -1201,7 +1201,7 @@ const CustomerDashboard = () => {
 
                     {/* Tab: Profile & Settings */}
                     {activeTab === 'profile' && (
-                        <div className="space-y-6">
+                        <div className="space-y-6 min-w-0 pr-1.5 flex-1">
                             <ThemeSettingCard />
                             <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
                                 <div>
@@ -1209,9 +1209,9 @@ const CustomerDashboard = () => {
                                     <p className="text-gray-500 text-xs mt-0.5">Manage your contact name, phone, address, and password settings</p>
                                 </div>
 
-                            <form onSubmit={handleUpdateProfile} className="space-y-4">
+                            <form onSubmit={handleUpdateProfile} className="space-y-4 min-w-0 pr-1.5 flex-1">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-1">
+                                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Full Name</label>
                                         <div className="relative">
                                             <span className="absolute left-3.5 top-3 text-gray-400"><User size={14} /></span>
@@ -1223,7 +1223,7 @@ const CustomerDashboard = () => {
                                             />
                                         </div>
                                     </div>
-                                    <div className="space-y-1">
+                                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Phone Number</label>
                                         <div className="relative">
                                             <span className="absolute left-3.5 top-3 text-gray-400"><Phone size={14} /></span>
@@ -1253,7 +1253,7 @@ const CustomerDashboard = () => {
                                 <div className="border-t border-gray-100 pt-5 space-y-4">
                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Security Update (Optional)</p>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="space-y-1">
+                                        <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Current Password</label>
                                             <div className="relative">
                                                 <span className="absolute left-3.5 top-3 text-gray-400"><Lock size={14} /></span>
@@ -1266,7 +1266,7 @@ const CustomerDashboard = () => {
                                                 />
                                             </div>
                                         </div>
-                                        <div className="space-y-1">
+                                        <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">New Password</label>
                                             <div className="relative">
                                                 <span className="absolute left-3.5 top-3 text-gray-400"><Lock size={14} /></span>
@@ -1315,8 +1315,8 @@ const CustomerDashboard = () => {
                             </div>
                         </div>
 
-                        <div className="space-y-4">
-                            <div className="space-y-1">
+                        <div className="space-y-4 min-w-0 pr-1.5 flex-1">
+                            <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Deposit Amount (₹)</label>
                                 <div className="relative">
                                     <span className="absolute left-4 top-3 text-gray-450 font-bold text-sm">₹</span>

@@ -310,7 +310,7 @@ const CentralKitchen = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Active Kitchen Orders</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block leading-tight break-words">Active Kitchen Orders</span>
                         <div className="p-2.5 bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-xl">
                             <ChefHat size={20} />
                         </div>
@@ -321,7 +321,7 @@ const CentralKitchen = () => {
 
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">In Batch Cooking</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block leading-tight break-words">In Batch Cooking</span>
                         <div className="p-2.5 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-xl">
                             <Flame size={20} />
                         </div>
@@ -332,7 +332,7 @@ const CentralKitchen = () => {
 
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Ready / Dispatched</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block leading-tight break-words">Ready / Dispatched</span>
                         <div className="p-2.5 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-xl">
                             <Truck size={20} />
                         </div>
@@ -343,7 +343,7 @@ const CentralKitchen = () => {
 
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Central Raw Materials</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block leading-tight break-words">Central Raw Materials</span>
                         <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-xl">
                             <Boxes size={20} />
                         </div>
@@ -379,7 +379,7 @@ const CentralKitchen = () => {
 
             {/* TAB 1: KITCHEN ORDERS & DISPATCH BOARD */}
             {activeTab === 'orders' && (
-                <div className="space-y-4">
+                <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                     {/* Search & Status Filters */}
                     <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
                         <div className="relative w-full md:w-80">
@@ -509,7 +509,7 @@ const CentralKitchen = () => {
 
             {/* TAB 2: CENTRAL INVENTORY STOCK & DEDUCTIONS */}
             {activeTab === 'inventory' && (
-                <div className="space-y-4">
+                <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                     <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm p-6">
                         <h3 className="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
                             <Boxes size={18} className="text-emerald-500" /> Warehouse Central Stock (Auto-Deducted On Kitchen Orders)
@@ -758,7 +758,7 @@ const CentralKitchen = () => {
                             </button>
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                             <p className="text-xs text-gray-500 dark:text-slate-400 font-semibold">Raw materials automatically deducted from warehouse inventory:</p>
                             <div className="divide-y divide-gray-100 dark:divide-slate-800 border border-gray-100 dark:border-slate-800 rounded-2xl overflow-hidden">
                                 {deductionTarget.deductions?.map((d, i) => (

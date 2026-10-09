@@ -181,7 +181,7 @@ const ManagerSales = () => {
 
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <h3 className="font-bold text-gray-900 mb-6 flex items-center gap-2"><PieChart size={18} className="text-purple-500" /> Sales by Category</h3>
-                    <div className="space-y-4">
+                    <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                         {[
                             { name: 'Main Course', value: '45%', amount: '₹1,912.50', color: 'bg-green-500' },
                             { name: 'Beverages', value: '25%', amount: '₹1,062.50', color: 'bg-blue-500' },

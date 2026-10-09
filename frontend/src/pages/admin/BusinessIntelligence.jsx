@@ -241,7 +241,7 @@ const BusinessIntelligence = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Total Sales Turnover</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block leading-tight break-words">Total Sales Turnover</span>
                         <div className="p-2 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-xl">
                             <DollarSign size={18} />
                         </div>
@@ -254,7 +254,7 @@ const BusinessIntelligence = () => {
 
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Net Operating Profit</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block leading-tight break-words">Net Operating Profit</span>
                         <div className="p-2 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-xl">
                             <TrendingUp size={18} />
                         </div>
@@ -265,7 +265,7 @@ const BusinessIntelligence = () => {
 
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Average Profit Margin</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block leading-tight break-words">Average Profit Margin</span>
                         <div className="p-2 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-xl">
                             <Percent size={18} />
                         </div>
@@ -276,7 +276,7 @@ const BusinessIntelligence = () => {
 
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Order Footfall Volume</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block leading-tight break-words">Order Footfall Volume</span>
                         <div className="p-2 bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 rounded-xl">
                             <BarChart3 size={18} />
                         </div>

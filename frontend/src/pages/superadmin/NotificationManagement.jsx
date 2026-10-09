@@ -119,7 +119,7 @@ const NotificationManagement = () => {
                     { label: 'Broadcasts', value: notifications.filter(n => n.type === 'Broadcast').length, color: 'text-purple-600' },
                 ].map((s, i) => (
                     <div key={i} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 text-center">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{s.label}</p>
+                        <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider block leading-tight break-words">{s.label}</p>
                         <p className={`text-2xl font-black mt-1 ${s.color}`}>{s.value}</p>
                     </div>
                 ))}

@@ -53,7 +53,7 @@ const ManagementFeatures = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {/* Category 1: Business Intelligence */}
                     <div className="bg-white dark:bg-white/[0.03] rounded-3xl p-8 border border-gray-100 dark:border-white/[0.08] shadow-sm dark:shadow-none space-y-6 flex flex-col justify-between hover:-translate-y-1 hover:shadow-xl dark:hover:border-[#FF2D55]/30 transition-all group">
-                        <div className="space-y-6">
+                        <div className="space-y-6 min-w-0 pr-1.5 flex-1">
                             <div className="w-14 h-14 bg-red-50 dark:bg-[#FF2D55]/10 text-red-500 dark:text-[#FF2D55] rounded-2xl flex items-center justify-center text-3xl font-bold border border-red-100 dark:border-[#FF2D55]/20">
                                 📊
                             </div>
@@ -81,7 +81,7 @@ const ManagementFeatures = () => {
 
                     {/* Category 2: Menu & Orders */}
                     <div className="bg-white dark:bg-white/[0.03] rounded-3xl p-8 border border-gray-100 dark:border-white/[0.08] shadow-sm dark:shadow-none space-y-6 flex flex-col justify-between hover:-translate-y-1 hover:shadow-xl dark:hover:border-[#FF6A00]/30 transition-all group">
-                        <div className="space-y-6">
+                        <div className="space-y-6 min-w-0 pr-1.5 flex-1">
                             <div className="w-14 h-14 bg-orange-50 dark:bg-[#FF6A00]/10 text-orange-500 dark:text-[#FF6A00] rounded-2xl flex items-center justify-center text-3xl font-bold border border-orange-100 dark:border-[#FF6A00]/20">
                                 🍔
                             </div>
@@ -106,7 +106,7 @@ const ManagementFeatures = () => {
 
                     {/* Category 3: Staff & Customers */}
                     <div className="bg-white dark:bg-white/[0.03] rounded-3xl p-8 border border-gray-100 dark:border-white/[0.08] shadow-sm dark:shadow-none space-y-6 flex flex-col justify-between hover:-translate-y-1 hover:shadow-xl dark:hover:border-blue-500/30 transition-all group">
-                        <div className="space-y-6">
+                        <div className="space-y-6 min-w-0 pr-1.5 flex-1">
                             <div className="w-14 h-14 bg-blue-50 dark:bg-blue-500/10 text-blue-500 rounded-2xl flex items-center justify-center text-3xl font-bold border border-blue-100 dark:border-blue-500/20">
                                 👥
                             </div>
@@ -131,7 +131,7 @@ const ManagementFeatures = () => {
 
                     {/* Category 4: Branch Manager Dashboard */}
                     <div className="bg-white dark:bg-white/[0.03] rounded-3xl p-8 border border-gray-100 dark:border-white/[0.08] shadow-sm dark:shadow-none space-y-6 flex flex-col justify-between hover:-translate-y-1 hover:shadow-xl dark:hover:border-emerald-500/30 transition-all group">
-                        <div className="space-y-6">
+                        <div className="space-y-6 min-w-0 pr-1.5 flex-1">
                             <div className="w-14 h-14 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 rounded-2xl flex items-center justify-center text-3xl font-bold border border-emerald-100 dark:border-emerald-500/20">
                                 🏬
                             </div>

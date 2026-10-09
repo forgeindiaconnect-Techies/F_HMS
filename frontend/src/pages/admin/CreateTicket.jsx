@@ -116,9 +116,9 @@ const CreateTicket = () => {
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6 min-w-0 pr-1.5 flex-1">
                     {/* Subject */}
-                    <div className="space-y-2">
+                    <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                         <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Subject</label>
                         <input 
                             type="text" 
@@ -132,7 +132,7 @@ const CreateTicket = () => {
 
                     {/* Category and Priority */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
+                        <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                             <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Category</label>
                             <select 
                                 value={category}
@@ -147,7 +147,7 @@ const CreateTicket = () => {
                             </select>
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                             <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Priority Level</label>
                             <select 
                                 value={priority}
@@ -165,7 +165,7 @@ const CreateTicket = () => {
                     {priority === 'Critical' && (
                         <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/50 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
                             <AlertCircle className="text-red-600 dark:text-red-400 shrink-0 mt-0.5" size={20} />
-                            <div className="space-y-1">
+                            <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                 <h4 className="text-sm font-bold text-red-900 dark:text-red-300">🚨 SLA Emergency Support Trigger</h4>
                                 <p className="text-xs text-red-700 dark:text-red-400 leading-relaxed font-semibold">
                                     Selecting **Critical** priority will immediately flag this ticket in the platform queue and notify on-duty technicians. Use only if operations are completely halted.
@@ -175,7 +175,7 @@ const CreateTicket = () => {
                     )}
 
                     {/* Description */}
-                    <div className="space-y-2">
+                    <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                         <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Describe the Issue</label>
                         <textarea 
                             value={description}
@@ -188,7 +188,7 @@ const CreateTicket = () => {
                     </div>
 
                     {/* File Upload / Attachments */}
-                    <div className="space-y-3">
+                    <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                         <label className="text-sm font-bold text-gray-700 dark:text-slate-300 block">Screenshots or Log Files <span className="text-gray-400 dark:text-slate-500 font-medium">(Optional)</span></label>
                         
                         <div className="border-2 border-dashed border-gray-200 dark:border-slate-800 hover:border-green-500/50 rounded-2xl p-6 transition-all text-center relative flex flex-col items-center justify-center cursor-pointer bg-gray-50/20 dark:bg-slate-950/40 hover:bg-gray-50/50 dark:hover:bg-slate-800/50">

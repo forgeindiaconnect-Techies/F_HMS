@@ -96,7 +96,7 @@ const CashierOverview = () => {
                     <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                         <TrendingUp size={18} className="text-purple-600"/> Quick Actions
                     </h3>
-                    <div className="space-y-4">
+                    <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                         <Link to="/cashier/billing" className="block w-full p-4 rounded-xl border border-purple-100 bg-purple-50 hover:bg-purple-100 transition-colors group">
                             <div className="flex items-center justify-between">
                                 <div>
@@ -137,7 +137,7 @@ const CashierOverview = () => {
                             No bills settled yet today.
                         </div>
                     ) : (
-                        <div className="space-y-3">
+                        <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                             {stats.recentSettled.map(order => (
                                 <div key={order._id} className="flex justify-between items-center p-3 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100">
                                     <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">

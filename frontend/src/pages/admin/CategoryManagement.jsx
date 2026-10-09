@@ -232,7 +232,7 @@ const CategoryManagement = () => {
                         </div>
                         
                         <div className="p-6">
-                            <form id="category-form" onSubmit={handleSubmit} className="space-y-4">
+                            <form id="category-form" onSubmit={handleSubmit} className="space-y-4 min-w-0 pr-1.5 flex-1">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
                                     <input 

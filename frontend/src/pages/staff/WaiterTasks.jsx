@@ -199,7 +199,7 @@ const WaiterTasks = () => {
             </div>
 
             {/* Tasks List */}
-            <div className="space-y-3">
+            <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                 {filteredTasks.length === 0 ? (
                     <div className="p-12 text-center text-slate-400 font-semibold text-xs border border-dashed border-slate-200 dark:border-slate-800 rounded-3xl">
                         No active shift tasks. Add a custom task or wait for incoming floor alerts!

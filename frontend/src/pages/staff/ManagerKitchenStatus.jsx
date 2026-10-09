@@ -175,7 +175,7 @@ const ManagerKitchenStatus = () => {
                             </div>
                         </div>
 
-                        <div className="space-y-3">
+                        <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                             <div>
                                 <div className="flex justify-between text-sm mb-1">
                                     <span className="text-gray-500">Active Tickets</span>

@@ -118,7 +118,7 @@ const OrderHistory = () => {
                     </div>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-6 min-w-0 pr-1.5 flex-1">
                     {loading ? (
                         <div className="text-center py-20 text-gray-500">Loading orders...</div>
                     ) : pastOrders.length === 0 ? (
@@ -263,8 +263,8 @@ const OrderHistory = () => {
                             </div>
 
                             <div>
-                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Order Items</h4>
-                                <div className="space-y-2">
+                                <h4 className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 block leading-tight break-words">Order Items</h4>
+                                <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                                     {activeReceipt.orderItems.map((item, idx) => (
                                         <div key={idx} className="flex justify-between items-center text-sm font-bold text-gray-900">
                                             <span>{item.qty}x {item.name}</span>

@@ -454,7 +454,7 @@ const DeveloperConfig = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {apiKeys.map(key => (
                         <div key={key.id} className="p-4 bg-gray-50 dark:bg-slate-950 rounded-2xl border border-gray-100 dark:border-slate-800 flex items-center justify-between">
-                            <div className="space-y-1">
+                            <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                 <div className="flex items-center gap-2">
                                     <h4 className="font-bold text-gray-900 dark:text-slate-100 text-xs">{key.name}</h4>
                                     <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${

@@ -166,7 +166,7 @@ const ManagerDashboard = () => {
         </div>
 
         {/* Right Column (Staff & Daily Goal) */}
-        <div className="space-y-6">
+        <div className="space-y-6 min-w-0 pr-1.5 flex-1">
           <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white shadow-md">
             <h3 className="font-bold text-green-50 mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>Daily Revenue Goal</h3>
             <p className="text-3xl font-extrabold mb-6 mt-2" style={{ fontFamily: 'Manrope, sans-serif' }}>

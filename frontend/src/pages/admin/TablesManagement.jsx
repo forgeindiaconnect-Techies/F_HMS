@@ -257,7 +257,7 @@ const TablesManagement = () => {
 
             {/* QR Digital Menu Tab */}
             {activeTab === 'qr' && (
-            <div className="space-y-6">
+            <div className="space-y-6 min-w-0 pr-1.5 flex-1">
                 {loading ? (
                     <div className="flex justify-center p-20">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>

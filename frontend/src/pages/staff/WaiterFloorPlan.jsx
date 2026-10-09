@@ -186,7 +186,7 @@ const WaiterFloorPlan = () => {
                         </div>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                         <button onClick={() => { toast.success(`Order initiated for ${activeTable?.id}`); setPanelOpen(false); }} className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs flex items-center justify-center gap-2">
                             <Plus size={16} /> Take New Order
                         </button>

@@ -130,7 +130,7 @@ const ManagerAnalytics = () => {
                                         <p className="text-xs mt-1">Top selling items will appear once orders are placed.</p>
                                     </div>
                                 ) : (
-                                    <div className="space-y-4">
+                                    <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                                         {popularItems.map((item, i) => (
                                             <div key={i} className="flex justify-between items-center">
                                                 <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">

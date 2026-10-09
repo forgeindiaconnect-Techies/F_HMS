@@ -326,7 +326,7 @@ const VerificationManagement = () => {
                                     return (
                                         <div key={key} className="p-4 bg-gray-50/50 border border-gray-100 rounded-2xl space-y-3">
                                             <div className="flex items-start justify-between gap-2">
-                                                <div className="space-y-0.5">
+                                                <div className="space-y-0.5 min-w-0 pr-1.5 flex-1">
                                                     <span className="text-xs font-black text-gray-800 block">{docLabels[key]}</span>
                                                     {key === 'fssai' && doc.expiryDate && (
                                                         <span className="text-[10px] text-gray-400 font-bold block">

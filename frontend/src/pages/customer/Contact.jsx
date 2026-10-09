@@ -127,9 +127,9 @@ const Contact = () => {
                         <div className="bg-white dark:bg-slate-900 p-8 sm:p-10 rounded-[2rem] border border-gray-150 dark:border-slate-800 shadow-sm relative">
                             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Send Us a Message</h3>
                             
-                            <form onSubmit={handleSubmit} className="space-y-5">
+                            <form onSubmit={handleSubmit} className="space-y-5 min-w-0 pr-1.5 flex-1">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                    <div className="space-y-1.5">
+                                    <div className="space-y-1.5 min-w-0 pr-1.5 flex-1">
                                         <label className="text-xs font-bold text-gray-600 dark:text-slate-300">Full Name</label>
                                         <input
                                             type="text"
@@ -140,7 +140,7 @@ const Contact = () => {
                                             className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl text-sm outline-none focus:border-red-500 focus:bg-white dark:focus:bg-slate-900 text-gray-900 dark:text-white transition-all font-medium"
                                         />
                                     </div>
-                                    <div className="space-y-1.5">
+                                    <div className="space-y-1.5 min-w-0 pr-1.5 flex-1">
                                         <label className="text-xs font-bold text-gray-600 dark:text-slate-300">Business Email</label>
                                         <input
                                             type="email"
@@ -154,7 +154,7 @@ const Contact = () => {
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                    <div className="space-y-1.5">
+                                    <div className="space-y-1.5 min-w-0 pr-1.5 flex-1">
                                         <label className="text-xs font-bold text-gray-600 dark:text-slate-300">Phone Number</label>
                                         <input
                                             type="tel"
@@ -165,7 +165,7 @@ const Contact = () => {
                                             className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl text-sm outline-none focus:border-red-500 focus:bg-white dark:focus:bg-slate-900 text-gray-900 dark:text-white transition-all font-medium"
                                         />
                                     </div>
-                                    <div className="space-y-1.5">
+                                    <div className="space-y-1.5 min-w-0 pr-1.5 flex-1">
                                         <label className="text-xs font-bold text-gray-600 dark:text-slate-300">Restaurant Name</label>
                                         <input
                                             type="text"
@@ -178,7 +178,7 @@ const Contact = () => {
                                     </div>
                                 </div>
 
-                                <div className="space-y-1.5">
+                                <div className="space-y-1.5 min-w-0 pr-1.5 flex-1">
                                     <label className="text-xs font-bold text-gray-600 dark:text-slate-300">Subject</label>
                                     <select
                                         value={formData.subject}
@@ -192,7 +192,7 @@ const Contact = () => {
                                     </select>
                                 </div>
 
-                                <div className="space-y-1.5">
+                                <div className="space-y-1.5 min-w-0 pr-1.5 flex-1">
                                     <label className="text-xs font-bold text-gray-600 dark:text-slate-300">How can we help?</label>
                                     <textarea
                                         required

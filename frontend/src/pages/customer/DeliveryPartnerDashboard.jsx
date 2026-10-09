@@ -399,7 +399,7 @@ const DeliveryPartnerDashboard = () => {
                                     <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-950 flex items-center justify-center text-slate-400 dark:text-slate-700 shadow-inner">
                                         <ListTodo size={32} />
                                     </div>
-                                    <div className="space-y-1">
+                                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                         <p className="font-black text-slate-900 dark:text-white text-sm">All caught up!</p>
                                         <p className="text-[10px] text-slate-500 dark:text-slate-500 max-w-[220px] mx-auto leading-relaxed">Toggle your status to Online to accept new incoming delivery runs.</p>
                                     </div>
@@ -465,7 +465,7 @@ const DeliveryPartnerDashboard = () => {
 
                                             {/* Distance & Info */}
                                             <div className="grid grid-cols-2 gap-4 text-xs font-semibold text-slate-700 dark:text-slate-350 pt-1 text-left">
-                                                <div className="space-y-1">
+                                                <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                                     <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-wider block font-bold">Restaurant Pickup</span>
                                                     <p className="truncate text-slate-900 dark:text-white font-extrabold">Hub Kitchen Counter</p>
                                                 </div>
@@ -542,7 +542,7 @@ const DeliveryPartnerDashboard = () => {
                                                 )}
 
                                                 {(order.deliveryStatus === 'Picked Up' || order.deliveryStatus === 'On the Way') && (
-                                                    <div className="space-y-2.5">
+                                                    <div className="space-y-2.5 min-w-0 pr-1.5 flex-1">
                                                         {order.deliveryStatus === 'Picked Up' && (
                                                             <button
                                                                 onClick={() => handleUpdateOrderStatus(order._id, 'On the Way')}
@@ -686,7 +686,7 @@ const DeliveryPartnerDashboard = () => {
                                 <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-500/10 to-teal-400/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-black text-2xl shadow-xl">
                                     {profile.userId?.name?.slice(0, 2).toUpperCase()}
                                 </div>
-                                <div className="space-y-1">
+                                <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                     <h3 className="text-lg font-black text-slate-900 dark:text-white leading-none">{profile.userId?.name}</h3>
                                     <p className="text-[10px] text-slate-500 dark:text-slate-500 font-bold uppercase tracking-wider mt-1.5">Verification Status</p>
                                     <span className="inline-block px-2.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">
@@ -932,7 +932,7 @@ const DeliveryPartnerDashboard = () => {
                             <p className="text-[11px] opacity-90">Please ask the customer for the OTP displayed on their order tracking dashboard before handing over the food package.</p>
                         </div>
 
-                        <form onSubmit={handleVerifyAndDeliver} className="space-y-4">
+                        <form onSubmit={handleVerifyAndDeliver} className="space-y-4 min-w-0 pr-1.5 flex-1">
                             <div>
                                 <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">Customer Delivery OTP Code</label>
                                 <input
@@ -1057,7 +1057,7 @@ const DeliveryPartnerDashboard = () => {
                         </div>
 
                         {/* Quick Presets */}
-                        <div className="space-y-2">
+                        <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                             <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400">Quick Preset Updates</label>
                             <div className="grid grid-cols-1 gap-2">
                                 {[

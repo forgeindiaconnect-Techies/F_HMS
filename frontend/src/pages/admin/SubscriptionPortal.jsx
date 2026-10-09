@@ -260,7 +260,7 @@ const SubscriptionPortal = () => {
             {isExpired && (
                 <div className="bg-red-50 border-2 border-red-100 rounded-3xl p-6 flex items-start gap-4">
                     <AlertTriangle className="text-red-500 shrink-0 mt-0.5" size={24} />
-                    <div className="space-y-1">
+                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                         <h3 className="text-red-800 font-black text-base">Subscription Expired</h3>
                         <p className="text-red-600 text-sm leading-relaxed font-semibold">Your plan expired on {new Date(sub.expiryDate).toLocaleDateString()}. Advanced features are currently locked. Please renew or upgrade below to restore operations.</p>
                     </div>
@@ -270,7 +270,7 @@ const SubscriptionPortal = () => {
             {sub.downgradeScheduledPlan && (
                 <div className="bg-amber-50 border-2 border-amber-100 rounded-3xl p-6 flex items-start gap-4">
                     <AlertTriangle className="text-amber-500 shrink-0 mt-0.5" size={24} />
-                    <div className="space-y-1">
+                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                         <h3 className="text-amber-800 font-black text-base">Downgrade Scheduled</h3>
                         <p className="text-amber-600 text-sm leading-relaxed font-semibold">
                             You have scheduled a downgrade to the <strong>{sub.downgradeScheduledPlan}</strong> plan. 
@@ -325,7 +325,7 @@ const SubscriptionPortal = () => {
                             <Sparkles className="text-indigo-600" size={18} />
                             Plan Quotas & Limits
                         </h4>
-                        <div className="space-y-4">
+                        <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                             <div className="flex items-center justify-between border-b border-slate-50 pb-2">
                                 <span className="text-xs font-semibold text-slate-500">Branch Limit</span>
                                 <span className="text-sm font-black text-slate-900">
@@ -359,7 +359,7 @@ const SubscriptionPortal = () => {
             </div>
 
             {/* Plans List */}
-            <div className="space-y-6">
+            <div className="space-y-6 min-w-0 pr-1.5 flex-1">
                 <div className="flex items-center justify-between bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
                     <h3 className="font-black text-slate-900 text-base">Select Subscription Plan</h3>
                     
@@ -403,7 +403,7 @@ const SubscriptionPortal = () => {
                                     </div>
                                 )}
                                 
-                                <div className="space-y-4">
+                                <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                                     <div>
                                         <h4 className="font-black text-slate-900 text-lg">{plan.name}</h4>
                                         <div className="flex items-baseline gap-1 mt-2">
@@ -453,7 +453,7 @@ const SubscriptionPortal = () => {
 
                         return (
                             <div key={feat.key} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100 hover:bg-slate-50 transition-colors">
-                                <div className="space-y-0.5">
+                                <div className="space-y-0.5 min-w-0 pr-1.5 flex-1">
                                     <span className="text-xs font-black text-slate-900">{feat.key}</span>
                                     <p className="text-[10px] text-slate-400 font-semibold leading-relaxed max-w-sm">{feat.desc}</p>
                                 </div>

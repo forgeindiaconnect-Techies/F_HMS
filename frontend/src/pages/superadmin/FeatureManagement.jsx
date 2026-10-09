@@ -231,7 +231,7 @@ const FeatureManagement = () => {
             {/* Matrix Help Box */}
             <div className="bg-slate-50 border border-slate-100 p-5 rounded-3xl flex items-start gap-4">
                 <AlertCircle className="text-slate-400 shrink-0 mt-0.5" size={20} />
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                     <h4 className="font-extrabold text-slate-900 text-sm">Dynamic Subscription Gating</h4>
                     <p className="text-xs text-slate-500 leading-relaxed font-semibold">
                         Checkboxes indicate which plans currently grant access to specified feature IDs. When updated, subscription logic automatically enables or disables modules for SaaS tenants in real-time.

@@ -175,7 +175,7 @@ const ManagerOrderMonitoring = () => {
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-gray-900 dark:text-white text-lg">#{order._id.substring(order._id.length - 6).toUpperCase()}</h3>
-                                        <p className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide">
+                                        <p className="text-[10px] sm:text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide block leading-tight break-words">
                                             {order.orderType || 'Dine-in'} 
                                             {order.table && ` • Table ${order.table.number || order.table}`}
                                         </p>
@@ -225,8 +225,8 @@ const ManagerOrderMonitoring = () => {
                         
                         <div className="p-6 space-y-4">
                             {selectedOrder.orderType === 'Delivery' && (
-                                <div className="space-y-2">
-                                    <h4 className="text-xs font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <div className="space-y-2 min-w-0 pr-1.5 flex-1">
+                                    <h4 className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5 block leading-tight break-words">
                                         <MapPin size={14} className="text-emerald-500" /> Live Delivery OSRM Tracking
                                     </h4>
                                     <LiveOrderMap
@@ -242,7 +242,7 @@ const ManagerOrderMonitoring = () => {
                             )}
 
                             <div>
-                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Update Status</h4>
+                                <h4 className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block leading-tight break-words">Update Status</h4>
                                 <div className="grid grid-cols-2 gap-2.5">
                                     {['Pending', 'Preparing', 'Ready', 'Dispatched', 'Completed', 'Cancelled'].map(status => (
                                         <button

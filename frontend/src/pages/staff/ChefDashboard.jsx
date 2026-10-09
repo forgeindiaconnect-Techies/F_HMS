@@ -602,7 +602,7 @@ const ChefDashboard = () => {
                                     <div className={`px-5 py-4 flex justify-between items-center ${
                                         isPriority ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white' : 'bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-800'
                                     }`}>
-                                        <div className="space-y-1">
+                                        <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                             <div className="flex items-center gap-2">
                                                 <span className="font-mono font-black text-lg text-slate-900 dark:text-white">#{order._id.substring(order._id.length - 5).toUpperCase()}</span>
                                                 <button 
@@ -806,7 +806,7 @@ const ChefDashboard = () => {
                                                         </span>
                                                     </div>
                                                     
-                                                    <div className="space-y-1">
+                                                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                                         {order.orderItems?.slice(0, 4).map((it, idx) => (
                                                             <p key={idx} className="text-xs text-slate-800 dark:text-slate-300 font-bold truncate">
                                                                 {it.qty}× {it.name}

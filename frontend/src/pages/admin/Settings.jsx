@@ -228,11 +228,11 @@ const Settings = () => {
                 {/* Settings Form Area */}
                 <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
                     {activeTab === 'appearance' ? (
-                        <div className="space-y-6">
+                        <div className="space-y-6 min-w-0 pr-1.5 flex-1">
                             <ThemeSettingCard />
                         </div>
                     ) : activeTab === 'security' ? (
-                        <form onSubmit={handlePasswordChangeSubmit} className="space-y-6">
+                        <form onSubmit={handlePasswordChangeSubmit} className="space-y-6 min-w-0 pr-1.5 flex-1">
                             <div>
                                 <h3 className="text-lg font-bold text-gray-900 mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>Change Account Password</h3>
                                 <p className="text-gray-500 text-xs">Update your login password securely for your admin account.</p>

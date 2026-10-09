@@ -357,7 +357,7 @@ const BranchesManagement = () => {
                             <Sparkles size={28} />
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                             <h3 className="text-xl font-black text-slate-900">Branch Limit Reached</h3>
                             <p className="text-xs text-slate-500 font-semibold leading-relaxed">
                                 Your current <strong>{planName}</strong> plan allows up to <strong>{maxBranches} branch{maxBranches === 1 ? '' : 'es'}</strong>. Upgrade your subscription to create more locations.

@@ -287,7 +287,7 @@ const ExpenseSummaryAdmin = () => {
                     {/* Expense KPI Cards Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition-shadow">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Today's Expenses</span>
+                            <span className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider block leading-tight break-words">Today's Expenses</span>
                             <div className="flex items-end justify-between mt-3">
                                 <h3 className="text-3xl font-extrabold text-gray-900">₹{todayExpensesTotal.toLocaleString('en-IN')}</h3>
                                 <div className="p-2.5 bg-rose-50 text-rose-500 rounded-xl">
@@ -297,7 +297,7 @@ const ExpenseSummaryAdmin = () => {
                         </div>
 
                         <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition-shadow">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Weekly Expenses (7 Days)</span>
+                            <span className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider block leading-tight break-words">Weekly Expenses (7 Days)</span>
                             <div className="flex items-end justify-between mt-3">
                                 <h3 className="text-3xl font-extrabold text-gray-900">₹{weeklyExpensesTotal.toLocaleString('en-IN')}</h3>
                                 <div className="p-2.5 bg-orange-50 text-orange-500 rounded-xl">
@@ -307,7 +307,7 @@ const ExpenseSummaryAdmin = () => {
                         </div>
 
                         <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition-shadow">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Monthly Expenses (This Month)</span>
+                            <span className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider block leading-tight break-words">Monthly Expenses (This Month)</span>
                             <div className="flex items-end justify-between mt-3">
                                 <h3 className="text-3xl font-extrabold text-gray-900">₹{monthlyExpensesTotal.toLocaleString('en-IN')}</h3>
                                 <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl">

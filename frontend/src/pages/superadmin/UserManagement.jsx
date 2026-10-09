@@ -104,7 +104,7 @@ const UserManagement = () => {
                                 <Icon size={26} />
                             </div>
                             <div>
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{kpi.label}</p>
+                                <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1 block leading-tight break-words">{kpi.label}</p>
                                 <h3 className="text-2xl font-black text-gray-900">{kpi.value}</h3>
                             </div>
                         </div>

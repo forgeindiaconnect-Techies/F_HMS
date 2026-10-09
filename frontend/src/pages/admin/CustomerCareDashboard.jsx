@@ -152,17 +152,17 @@ const CustomerCareDashboard = () => {
             </div>
 
             {/* Stat Cards Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                 {statCards.map((card, i) => {
                     const Icon = card.icon;
                     return (
-                        <div key={i} className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm flex items-start justify-between">
-                            <div className="space-y-1.5">
-                                <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">{card.title}</span>
-                                <h2 className="text-2xl font-black text-gray-900 dark:text-white">{card.value}</h2>
+                        <div key={i} className="bg-white dark:bg-slate-900 p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm flex items-start justify-between min-w-0">
+                            <div className="space-y-1 min-w-0 pr-1.5 flex-1">
+                                <span className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block leading-tight break-words">{card.title}</span>
+                                <h2 className="text-lg sm:text-2xl font-black text-gray-900 dark:text-white truncate">{card.value}</h2>
                             </div>
-                            <div className={`p-3 rounded-2xl border ${card.color}`}>
-                                <Icon size={20} />
+                            <div className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl border shrink-0 ${card.color}`}>
+                                <Icon size={16} className="sm:w-5 sm:h-5" />
                             </div>
                         </div>
                     );
@@ -186,7 +186,7 @@ const CustomerCareDashboard = () => {
                         </Link>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                         {announcements.length === 0 ? (
                             <div className="text-center py-8 text-gray-400 dark:text-slate-500 text-sm font-medium">
                                 No active support updates or announcements.
@@ -229,7 +229,7 @@ const CustomerCareDashboard = () => {
                             </div>
                         ) : (
                             categories.slice(0, 5).map((item, idx) => (
-                                <div key={idx} className="space-y-1.5">
+                                <div key={idx} className="space-y-1.5 min-w-0 pr-1.5 flex-1">
                                     <div className="flex justify-between items-center text-xs font-bold">
                                         <span className="text-gray-700 dark:text-slate-300">{item.category}</span>
                                         <span className="text-gray-400 dark:text-slate-500">{item.count} tickets</span>

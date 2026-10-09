@@ -257,7 +257,7 @@ const OrderManagement = () => {
                                     {col.label}
                                     <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${col.countBg}`}>{colOrders.length}</span>
                                 </h3>
-                                <div className="space-y-4">
+                                <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                                     {colOrders.length === 0 && (
                                         <p className="text-xs text-gray-400 dark:text-slate-500 text-center py-8">No orders here</p>
                                     )}

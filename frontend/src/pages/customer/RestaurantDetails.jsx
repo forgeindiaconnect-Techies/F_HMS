@@ -223,7 +223,7 @@ const RestaurantDetails = () => {
                     <div className="md:w-64 shrink-0 hidden md:block">
                         <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-slate-800 sticky top-24">
                             <h3 className="font-bold text-gray-900 dark:text-white mb-4 px-2">Menu</h3>
-                            <div className="space-y-1">
+                            <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                 {categories.map(cat => (
                                     <a href={`#category-${cat}`} key={cat} className="block px-4 py-2.5 rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-red-600 dark:hover:text-red-400 transition-colors font-medium">
                                         {cat}
@@ -303,7 +303,7 @@ const RestaurantDetails = () => {
                                     </div>
                                 </div>
                             ) : (
-                                <form onSubmit={handleBookTable} className="space-y-4">
+                                <form onSubmit={handleBookTable} className="space-y-4 min-w-0 pr-1.5 flex-1">
                                     <div>
                                         <label className="block text-xs font-bold text-gray-400 dark:text-slate-500 uppercase mb-1">Date</label>
                                         <input 

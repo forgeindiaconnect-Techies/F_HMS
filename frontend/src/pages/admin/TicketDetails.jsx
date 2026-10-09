@@ -344,7 +344,7 @@ const TicketDetails = () => {
                                 <div className="p-2.5 bg-yellow-100 dark:bg-amber-950/60 text-yellow-700 dark:text-amber-400 rounded-2xl">
                                     <Star size={20} className="fill-current" />
                                 </div>
-                                <div className="space-y-1">
+                                <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                     <h3 className="text-sm font-black text-gray-900 dark:text-slate-100">How was your support experience?</h3>
                                     <p className="text-xs text-gray-500 dark:text-slate-400 font-semibold">Your feedback helps us maintain standard support operations SLA.</p>
                                 </div>
@@ -375,7 +375,7 @@ const TicketDetails = () => {
                                             </button>
                                         ))}
                                     </div>
-                                    <div className="space-y-2">
+                                    <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                                         <textarea
                                             value={feedback}
                                             onChange={(e) => setFeedback(e.target.value)}
@@ -521,7 +521,7 @@ const TicketDetails = () => {
                                     ticket.restaurantId?.name?.slice(0, 2)
                                 )}
                             </div>
-                            <div className="space-y-0.5">
+                            <div className="space-y-0.5 min-w-0 pr-1.5 flex-1">
                                 <h4 className="text-xs font-bold text-gray-900 dark:text-slate-100">{ticket.restaurantId?.name}</h4>
                                 <span className="text-[9px] font-black uppercase bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-900/50">
                                     {ticket.restaurantId?.subscription?.plan || 'Enterprise'}

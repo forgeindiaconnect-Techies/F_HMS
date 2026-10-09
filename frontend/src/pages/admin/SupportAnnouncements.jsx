@@ -114,9 +114,9 @@ const SupportAnnouncements = () => {
             </div>
 
             {/* List */}
-            <div className="space-y-4">
+            <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                 {loading ? (
-                    <div className="space-y-4">
+                    <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                         {[1, 2].map((n) => (
                             <div key={n} className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-gray-50 dark:border-slate-800 animate-pulse space-y-3">
                                 <div className="h-4 bg-gray-100 dark:bg-slate-800 rounded w-1/4"></div>

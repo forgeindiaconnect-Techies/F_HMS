@@ -273,7 +273,7 @@ const SuperAdminSupportConsole = () => {
 
             {/* Content view based on active tab */}
             {activeTab === 'tickets' && (
-                <div className="space-y-4">
+                <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                     {/* Filters */}
                     <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
                         <div className="relative w-full md:w-72">
@@ -336,7 +336,7 @@ const SuperAdminSupportConsole = () => {
                                         {tickets.map((t) => (
                                             <tr key={t._id} className="hover:bg-gray-50/20 transition-all text-xs">
                                                 <td className="p-4">
-                                                    <div className="space-y-0.5">
+                                                    <div className="space-y-0.5 min-w-0 pr-1.5 flex-1">
                                                         <h4 className="font-bold text-gray-900">{t.restaurantId?.name || 'Unknown'}</h4>
                                                         <span className="text-[10px] font-mono text-gray-400 font-bold uppercase">{t.ticketId}</span>
                                                     </div>
@@ -402,7 +402,7 @@ const SuperAdminSupportConsole = () => {
                             <p className="text-[10px] text-gray-400 font-semibold">Convert platform staff/users into support team members</p>
                         </div>
                         <form onSubmit={handlePromoteAgent} className="space-y-4 pt-2">
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5 min-w-0 pr-1.5 flex-1">
                                 <label className="text-xs font-bold text-gray-600">Registered Staff Email</label>
                                 <input 
                                     type="email"
@@ -438,7 +438,7 @@ const SuperAdminSupportConsole = () => {
                             <div className="divide-y divide-gray-50">
                                 {agents.map((agent) => (
                                     <div key={agent._id} className="py-4 flex items-center justify-between gap-4 text-xs">
-                                        <div className="space-y-0.5">
+                                        <div className="space-y-0.5 min-w-0 pr-1.5 flex-1">
                                             <h4 className="font-bold text-gray-950">{agent.userId?.name}</h4>
                                             <span className="text-[10px] text-gray-400">{agent.userId?.email}</span>
                                         </div>
@@ -481,7 +481,7 @@ const SuperAdminSupportConsole = () => {
                             <p className="text-[10px] text-gray-400 font-semibold">Add new documentation or FAQs entry</p>
                         </div>
                         <form onSubmit={handleCreateKbArticle} className="space-y-4 pt-2">
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5 min-w-0 pr-1.5 flex-1">
                                 <label className="text-xs font-bold text-gray-600">Category</label>
                                 <select 
                                     value={kbCategory}
@@ -491,7 +491,7 @@ const SuperAdminSupportConsole = () => {
                                     {categories.map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                             </div>
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5 min-w-0 pr-1.5 flex-1">
                                 <label className="text-xs font-bold text-gray-600">Title</label>
                                 <input 
                                     type="text"
@@ -502,7 +502,7 @@ const SuperAdminSupportConsole = () => {
                                     required
                                 />
                             </div>
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5 min-w-0 pr-1.5 flex-1">
                                 <label className="text-xs font-bold text-gray-600">Article Content</label>
                                 <textarea 
                                     value={kbContent}
@@ -574,7 +574,7 @@ const SuperAdminSupportConsole = () => {
                             <p className="text-[10px] text-gray-400 font-semibold">Publish maintenance notices, updates, known issues</p>
                         </div>
                         <form onSubmit={handleCreateAnnouncement} className="space-y-4 pt-2">
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5 min-w-0 pr-1.5 flex-1">
                                 <label className="text-xs font-bold text-gray-600">Announcement Type</label>
                                 <select 
                                     value={annType}
@@ -587,7 +587,7 @@ const SuperAdminSupportConsole = () => {
                                     <option value="Known Issues">Known Issues</option>
                                 </select>
                             </div>
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5 min-w-0 pr-1.5 flex-1">
                                 <label className="text-xs font-bold text-gray-600">Title</label>
                                 <input 
                                     type="text"
@@ -598,7 +598,7 @@ const SuperAdminSupportConsole = () => {
                                     required
                                 />
                             </div>
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5 min-w-0 pr-1.5 flex-1">
                                 <label className="text-xs font-bold text-gray-600">Announcement Content</label>
                                 <textarea 
                                     value={annContent}

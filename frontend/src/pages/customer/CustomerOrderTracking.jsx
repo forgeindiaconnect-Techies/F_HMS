@@ -362,7 +362,7 @@ const CustomerOrderTracking = () => {
 
                 {/* Table Quick Requests */}
                 {!isDelivery && !isSelfPickup && (
-                    <div className="space-y-3">
+                    <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                         <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest pl-2">Need Assistance?</h3>
                         <div className="grid grid-cols-2 gap-3">
                             <button 
@@ -447,7 +447,7 @@ const CustomerOrderTracking = () => {
                             <MessageSquare size={18} className="text-purple-600 animate-pulse" />
                             <span>Rider Live Updates</span>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                             {order.supportMessages.map((msg, mIdx) => (
                                 <div key={mIdx} className="bg-white/80 backdrop-blur p-3 rounded-2xl border border-purple-100 flex items-start justify-between gap-3 shadow-xs">
                                     <div>
@@ -471,7 +471,7 @@ const CustomerOrderTracking = () => {
                             <p className="text-[10px] text-gray-400">Share your feedback to help us improve service quality.</p>
                         </div>
                         
-                        <div className="space-y-3">
+                        <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                             {[
                                 { label: 'Overall Quality', val: overallRating, set: setOverallRating },
                                 { label: 'Delivery Speed', val: speedRating, set: setSpeedRating },
@@ -527,7 +527,7 @@ const CustomerOrderTracking = () => {
                             Total: ₹{order.totalPrice}
                         </span>
                     </h3>
-                    <div className="space-y-3">
+                    <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                         {order.orderItems.map((item, idx) => (
                             <div key={idx} className="flex justify-between items-start text-sm">
                                 <div>

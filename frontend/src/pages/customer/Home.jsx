@@ -503,7 +503,7 @@ const Home = () => {
                 {/* Mobile Navigation Menu */}
                 {mobileMenuOpen && (
                     <div className="md:hidden mt-3 pt-3 border-t border-slate-200/80 space-y-2 bg-white/95 backdrop-blur-xl rounded-2xl p-4 shadow-xl">
-                        <div className="space-y-1">
+                        <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                             <button
                                 onClick={() => setMobileFeaturesOpen(!mobileFeaturesOpen)}
                                 className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-800 font-extrabold text-sm hover:bg-slate-100 transition-colors cursor-pointer"
@@ -775,7 +775,7 @@ const Home = () => {
                     </section>
 
                     {/* Full Platform Capabilities Grid */}
-                    <section className="space-y-12">
+                    <section className="space-y-12 min-w-0 pr-1.5 flex-1">
                         <div className="text-center space-y-4 max-w-2xl mx-auto">
                             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#FF2D55]/10 border border-[#FF2D55]/20 text-[#FF2D55] font-bold text-xs uppercase tracking-wider">
                                 <Flame size={14} /> Full Platform Capability
@@ -859,7 +859,7 @@ const Home = () => {
                                             : 'bg-slate-50/80 border-slate-200 hover:bg-white hover:border-slate-300 shadow-sm'
                                     }`}
                                 >
-                                    <div className="space-y-3">
+                                    <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                                         <div className="flex items-center justify-between">
                                             <div className="p-3 bg-slate-100 rounded-xl">
                                                 {step.icon}
@@ -945,7 +945,7 @@ const Home = () => {
 
                                         {/* Card Body Content */}
                                         <div className="p-6 sm:p-8 space-y-4 flex-1 flex flex-col justify-between">
-                                            <div className="space-y-2.5">
+                                            <div className="space-y-2.5 min-w-0 pr-1.5 flex-1">
                                                 <div className="flex justify-between items-start gap-3">
                                                     <h3 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight group-hover:text-[#FF2D55] transition-colors">
                                                         {food.title}
@@ -1040,7 +1040,7 @@ const Home = () => {
                                             </div>
                                         )}
 
-                                        <div className="space-y-4">
+                                        <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                                             <div className="flex justify-between items-center">
                                                 <h3 className="text-2xl font-black text-slate-900">{plan.name}</h3>
                                                 <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
@@ -1099,7 +1099,7 @@ const Home = () => {
                             </p>
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                             {faqs.map((faq, idx) => {
                                 const isOpen = openFaq === idx;
                                 return (
@@ -1161,7 +1161,7 @@ const Home = () => {
                     </div>
 
                     <div>
-                        <div className="space-y-4">
+                        <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                             <h4 className="text-xs font-black uppercase text-slate-300 tracking-wider mb-4">Resources</h4>
                             <ul className="space-y-2.5 text-xs text-slate-400 font-bold">
                                 <li><a href="#food-showcase" className="hover:text-white transition-colors">Food Showcase</a></li>

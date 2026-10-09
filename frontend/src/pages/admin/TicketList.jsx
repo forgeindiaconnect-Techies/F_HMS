@@ -202,7 +202,7 @@ const TicketList = () => {
                                     >
                                         {/* Ticket Subject/ID */}
                                         <td className="p-5 max-w-sm">
-                                            <div className="space-y-1">
+                                            <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-xs font-black text-gray-900 bg-gray-100 px-2 py-0.5 rounded-md font-mono">{ticket.ticketId}</span>
                                                     {ticket.priority === 'Critical' && (

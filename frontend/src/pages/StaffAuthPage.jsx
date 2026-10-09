@@ -259,7 +259,7 @@ const StaffAuthPage = () => {
     const isYearly = watch('billingCycle') === 'yearly';
 
     const renderLoginForm = () => (
-        <form onSubmit={handleSubmit(onSubmitLogin)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmitLogin)} className="space-y-4 min-w-0 pr-1.5 flex-1">
 
 
             <div>

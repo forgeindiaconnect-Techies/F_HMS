@@ -386,7 +386,7 @@ const RestaurantVerification = () => {
             {verificationStatus === 'Rejected' && verification?.rejectionReason && (
                 <div className="bg-red-50 border-2 border-red-100 p-6 rounded-3xl flex items-start gap-4">
                     <AlertCircle className="text-red-500 shrink-0 mt-0.5 animate-bounce" size={24} />
-                    <div className="space-y-1">
+                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                         <h4 className="font-black text-red-700">Verification Rejected</h4>
                         <p className="text-sm font-semibold text-red-600 leading-relaxed">{verification.rejectionReason}</p>
                         <p className="text-xs text-red-500 pt-2 font-bold">Please update and submit correct files for review.</p>
@@ -419,10 +419,10 @@ const RestaurantVerification = () => {
             )}
 
             {/* Verification Form */}
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-8 min-w-0 pr-1.5 flex-1">
                 
                 {/* Mandatory section */}
-                <div className="space-y-4">
+                <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                     <div className="border-b border-gray-100 pb-2">
                         <h3 className="text-base font-black text-gray-900 uppercase tracking-wide">1. Mandatory Legal Documents</h3>
                         <p className="text-xs text-gray-400 font-semibold mt-0.5">All documents are required by regulation and cannot be skipped.</p>
@@ -447,7 +447,7 @@ const RestaurantVerification = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                         {/* Logo upload */}
-                        <div className="space-y-2">
+                        <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                             <label className="text-xs font-black text-gray-500 uppercase tracking-wider block">Restaurant Logo (Image / PDF)</label>
                             {verification?.documents?.logo?.filePath && (() => {
                                 const rawPath = verification.documents.logo.filePath;
@@ -485,7 +485,7 @@ const RestaurantVerification = () => {
                         </div>
 
                         {/* Menu PDF upload */}
-                        <div className="space-y-2">
+                        <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                             <label className="text-xs font-black text-gray-500 uppercase tracking-wider block">Menu PDF</label>
                             {verification?.documents?.menuPdf?.filePath && (
                                 <div className="mb-3 flex items-center gap-1.5 text-xs font-bold text-blue-600">

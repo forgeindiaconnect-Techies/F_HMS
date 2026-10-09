@@ -239,7 +239,7 @@ const TaxManagement = () => {
                         </div>
                         
                         <div className="p-6 overflow-y-auto">
-                            <form id="tax-form" onSubmit={handleSubmit} className="space-y-5">
+                            <form id="tax-form" onSubmit={handleSubmit} className="space-y-5 min-w-0 pr-1.5 flex-1">
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1.5">Tax/Charge Name *</label>
                                     <input 

@@ -254,7 +254,7 @@ const SuperAdminDashboard = () => {
                                 <Icon size={28} />
                             </div>
                             <div>
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{stat.label}</p>
+                                <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1 block leading-tight break-words">{stat.label}</p>
                                 <h3 className="text-xl font-black text-gray-900">{stat.value}</h3>
                             </div>
                         </div>
@@ -591,7 +591,7 @@ const SuperAdminDashboard = () => {
                                 </div>
                             </div>
                             
-                            <div className="space-y-3">
+                            <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                                 <div className="flex justify-between items-center text-sm">
                                     <span className="text-gray-500 font-medium">Subscription Plan:</span>
                                     <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full">

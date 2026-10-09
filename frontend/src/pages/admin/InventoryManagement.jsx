@@ -337,7 +337,7 @@ const InventoryManagement = () => {
                         </div>
                         
                         <div className="p-6 overflow-y-auto">
-                            <form id="inventory-form" onSubmit={handleSubmit} className="space-y-5">
+                            <form id="inventory-form" onSubmit={handleSubmit} className="space-y-5 min-w-0 pr-1.5 flex-1">
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1.5">Item Name</label>
                                     <input 

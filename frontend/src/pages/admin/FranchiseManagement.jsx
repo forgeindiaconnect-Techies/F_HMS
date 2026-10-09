@@ -374,7 +374,7 @@ const FranchiseManagement = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Total Franchises</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block leading-tight break-words">Total Franchises</span>
                         <div className="p-2 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-xl">
                             <Building2 size={18} />
                         </div>
@@ -385,7 +385,7 @@ const FranchiseManagement = () => {
 
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Active Store Outlets</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block leading-tight break-words">Active Store Outlets</span>
                         <div className="p-2 bg-green-50 dark:bg-green-950/50 text-green-600 dark:text-green-400 rounded-xl">
                             <CheckCircle size={18} />
                         </div>
@@ -396,7 +396,7 @@ const FranchiseManagement = () => {
 
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Monthly Revenue</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block leading-tight break-words">Monthly Revenue</span>
                         <div className="p-2 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-xl">
                             <Sparkles size={18} />
                         </div>
@@ -407,7 +407,7 @@ const FranchiseManagement = () => {
 
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Royalty Share (MTD)</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block leading-tight break-words">Royalty Share (MTD)</span>
                         <div className="p-2 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-xl">
                             <Shield size={18} />
                         </div>
@@ -820,7 +820,7 @@ const FranchiseManagement = () => {
                             </form>
 
                             {/* Assigned users list */}
-                            <div className="space-y-3">
+                            <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                                 <h4 className="text-xs font-black uppercase text-gray-500 dark:text-slate-400">Currently Assigned Users ({userAssignTarget.assignedUsers?.length || 0})</h4>
                                 {(userAssignTarget.assignedUsers || []).length === 0 ? (
                                     <p className="text-xs text-gray-400 font-medium">No users assigned yet.</p>
@@ -828,7 +828,7 @@ const FranchiseManagement = () => {
                                     <div className="divide-y divide-gray-100 dark:divide-slate-800 border border-gray-100 dark:border-slate-800 rounded-2xl overflow-hidden">
                                         {userAssignTarget.assignedUsers.map((u) => (
                                             <div key={u.id} className="p-3 bg-white dark:bg-slate-900 flex items-center justify-between gap-3">
-                                                <div className="space-y-0.5">
+                                                <div className="space-y-0.5 min-w-0 pr-1.5 flex-1">
                                                     <div className="font-bold text-xs text-gray-900 dark:text-slate-100">{u.name}</div>
                                                     <p className="text-[10px] text-gray-400 dark:text-slate-500">{u.email} • <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">{u.role}</span></p>
                                                 </div>

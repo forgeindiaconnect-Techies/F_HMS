@@ -125,7 +125,7 @@ const CustomerAuthPage = () => {
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 min-w-0 pr-1.5 flex-1">
                         {/* Name - Register only */}
                         {mode === 'register' && (
                             <div>

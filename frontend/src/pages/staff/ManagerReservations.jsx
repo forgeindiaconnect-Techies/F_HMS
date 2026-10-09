@@ -147,7 +147,7 @@ const ManagerReservations = () => {
                     </div>
 
                     {/* Approved Upcoming */}
-                    <div className="space-y-4">
+                    <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                         <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2 mb-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
                             <CheckCircle size={20} className="text-green-500" /> Upcoming Confirmed
                         </h3>

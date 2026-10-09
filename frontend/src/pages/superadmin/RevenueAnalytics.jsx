@@ -111,7 +111,7 @@ const RevenueAnalytics = () => {
                         <h3 className="font-black text-slate-900 text-base mb-1">Subscriber Tier Distribution</h3>
                         <p className="text-xs text-slate-400 font-semibold mb-6">Distribution of active restaurants across plans.</p>
                         
-                        <div className="space-y-4">
+                        <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                             {[
                                 { name: 'Basic', count: stats.basicSubscribers || 0, color: 'bg-emerald-500' },
                                 { name: 'Pro', count: stats.proSubscribers || 0, color: 'bg-indigo-500' },
@@ -120,7 +120,7 @@ const RevenueAnalytics = () => {
                                 const total = (stats.basicSubscribers || 0) + (stats.proSubscribers || 0) + (stats.enterpriseSubscribers || 0) || 1;
                                 const pct = Math.round((tier.count / total) * 100);
                                 return (
-                                    <div key={tier.name} className="space-y-1">
+                                    <div key={tier.name} className="space-y-1 min-w-0 pr-1.5 flex-1">
                                         <div className="flex items-center justify-between text-xs font-semibold">
                                             <span className="text-slate-800 font-bold">{tier.name}</span>
                                             <span className="text-slate-500">{tier.count} ({pct}%)</span>

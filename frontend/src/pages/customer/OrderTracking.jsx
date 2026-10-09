@@ -168,7 +168,7 @@ const OrderTracking = () => {
                             style={{ height: `${Math.max(0, Math.min(100, (progress - 1) * 33.33))}%` }}
                         ></div>
 
-                        <div className="space-y-12">
+                        <div className="space-y-12 min-w-0 pr-1.5 flex-1">
                             {steps.map((step, idx) => {
                                 const isCompleted = progress > step.num;
                                 const isCurrent = progress === step.num;
@@ -230,7 +230,7 @@ const OrderTracking = () => {
                             <MessageSquare size={18} className="text-purple-600 dark:text-purple-400 animate-pulse" />
                             <span>Rider Live Updates</span>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                             {order.supportMessages.map((msg, mIdx) => (
                                 <div key={mIdx} className="bg-white/80 dark:bg-slate-900/80 backdrop-blur p-3 rounded-2xl border border-purple-100 dark:border-purple-900/40 flex items-start justify-between gap-3 shadow-xs">
                                     <div>

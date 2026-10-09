@@ -1098,7 +1098,7 @@ const WaiterDashboard = () => {
                                 </span>
                             </div>
 
-                            <div className="space-y-2.5">
+                            <div className="space-y-2.5 min-w-0 pr-1.5 flex-1">
                                 {tasks.map((task) => (
                                     <div 
                                         key={task.id}
@@ -1275,7 +1275,7 @@ const WaiterDashboard = () => {
                         {cart.length === 0 ? (
                             <p className="text-xs text-slate-400 italic text-center py-4">No items added yet. Click menu items above.</p>
                         ) : (
-                            <div className="space-y-2">
+                            <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                                 {cart.map((c) => (
                                     <div key={c._id} className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-200/60">
                                         <div>
@@ -1462,7 +1462,7 @@ const WaiterDashboard = () => {
                             <h3 className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-2">
                                 <Bell size={16} className="text-emerald-600" /> Waiter Alert & Audio Preferences
                             </h3>
-                            <div className="space-y-3">
+                            <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                                 <label className="flex items-center justify-between cursor-pointer">
                                     <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Play Audio Chime on Food Ready</span>
                                     <input type="checkbox" defaultChecked className="w-4 h-4 accent-emerald-600 cursor-pointer" />
@@ -1515,7 +1515,7 @@ const WaiterDashboard = () => {
                             Move an active order from one occupied table to another available floor table.
                         </p>
 
-                        <div className="space-y-3">
+                        <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                             <div>
                                 <label className="text-xs font-bold text-slate-700 block mb-1">Source Table (Current Order):</label>
                                 <select 

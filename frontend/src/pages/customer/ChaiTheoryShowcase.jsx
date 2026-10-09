@@ -256,7 +256,7 @@ const ChaiTheoryShowcase = () => {
             {/* ========================================================================= */}
             {!preloaderDone && (
                 <div className="fixed inset-0 z-[10000] bg-[#FAFAF8] flex flex-col items-center justify-center p-6 text-center transition-opacity duration-300">
-                    <div className="space-y-4">
+                    <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                         <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#6B3F1D] to-[#E38A2C] text-white flex items-center justify-center mx-auto shadow-xl shadow-[#6B3F1D]/20 animate-bounce">
                             <Utensils size={24} />
                         </div>
@@ -424,7 +424,7 @@ const ChaiTheoryShowcase = () => {
 
                     {/* Right: Roasted Tan Typography & Stat Callouts */}
                     <div className="space-y-8 text-left">
-                        <div className="space-y-3">
+                        <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                             <span className="text-xs font-black uppercase tracking-widest text-[#8A5A2B] bg-[#8A5A2B]/10 px-3.5 py-1.5 rounded-full border border-[#8A5A2B]/20">
                                 OUR COFFEE
                             </span>
@@ -552,7 +552,7 @@ const ChaiTheoryShowcase = () => {
             {/* ========================================================================= */}
             <section className="py-24 px-6 sm:px-12 bg-[#FAFAF8]">
                 <div className="max-w-7xl mx-auto space-y-12 text-center">
-                    <div className="space-y-3">
+                    <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                         <span className="text-xs font-black uppercase tracking-widest text-[#D9A441] bg-[#D9A441]/10 px-4 py-2 rounded-full border border-[#D9A441]/30">
                             DESI DESSERTS
                         </span>
@@ -634,7 +634,7 @@ const ChaiTheoryShowcase = () => {
             {/* ========================================================================= */}
             <section className="py-24 px-6 sm:px-12 bg-white border-y border-slate-200">
                 <div className="max-w-7xl mx-auto space-y-12 text-center">
-                    <div className="space-y-3">
+                    <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                         <span className="text-xs font-black uppercase tracking-widest text-[#6B3F1D] bg-[#6B3F1D]/10 px-4 py-2 rounded-full border border-[#6B3F1D]/30">
                             FOOD &amp; RESTAURANT OPERATING STACK
                         </span>

@@ -265,7 +265,7 @@ const AuditLogs = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Total Audit Entries</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block leading-tight break-words">Total Audit Entries</span>
                         <div className="p-2.5 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-xl">
                             <ShieldCheck size={20} />
                         </div>
@@ -276,7 +276,7 @@ const AuditLogs = () => {
 
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">User Auth (Login/Logout)</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block leading-tight break-words">User Auth (Login/Logout)</span>
                         <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-xl">
                             <LogIn size={20} />
                         </div>
@@ -287,7 +287,7 @@ const AuditLogs = () => {
 
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Data CRUD Mutations</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block leading-tight break-words">Data CRUD Mutations</span>
                         <div className="p-2.5 bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 rounded-xl">
                             <Edit3 size={20} />
                         </div>
@@ -298,7 +298,7 @@ const AuditLogs = () => {
 
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Security & Failures</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block leading-tight break-words">Security & Failures</span>
                         <div className="p-2.5 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 rounded-xl">
                             <ShieldAlert size={20} />
                         </div>

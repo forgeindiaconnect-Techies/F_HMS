@@ -477,7 +477,7 @@ const DeliveryManagement = () => {
 
                 {/* ─── TAB 2: PARTNERS ────────────────────────────────────── */}
                 {activeTab === 'partners' && (
-                    <div className="space-y-6">
+                    <div className="space-y-6 min-w-0 pr-1.5 flex-1">
                         {/* Title and Add Button */}
                         <div className="flex justify-between items-center">
                             <h3 className="text-lg font-black text-gray-900">Registered Delivery Staff</h3>
@@ -737,7 +737,7 @@ const DeliveryManagement = () => {
 
                 {/* ─── TAB 4: ANALYTICS ───────────────────────────────────── */}
                 {activeTab === 'analytics' && analytics && (
-                    <div className="space-y-6">
+                    <div className="space-y-6 min-w-0 pr-1.5 flex-1">
                         {/* KPI Cards */}
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                             {[
@@ -753,7 +753,7 @@ const DeliveryManagement = () => {
                                             <Icon size={24} />
                                         </div>
                                         <div>
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{kpi.title}</p>
+                                            <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider block leading-tight break-words">{kpi.title}</p>
                                             <h4 className="text-xl font-black text-gray-900 mt-1">{kpi.value}</h4>
                                         </div>
                                     </div>
@@ -770,12 +770,12 @@ const DeliveryManagement = () => {
                                     <p className="text-xs text-gray-400">Proportions of completed deliveries vs cancellations.</p>
                                 </div>
                                 
-                                <div className="space-y-4">
+                                <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                                     {[
                                         { name: 'Completed Payouts', val: parseInt(analytics.deliverySuccessRate), color: 'bg-green-500' },
                                         { name: 'Cancellations / Late', val: parseInt(analytics.cancellationRate), color: 'bg-red-500' }
                                     ].map((bar, i) => (
-                                        <div key={i} className="space-y-1">
+                                        <div key={i} className="space-y-1 min-w-0 pr-1.5 flex-1">
                                             <div className="flex justify-between text-xs font-semibold">
                                                 <span>{bar.name}</span>
                                                 <span>{bar.val}%</span>
@@ -795,7 +795,7 @@ const DeliveryManagement = () => {
                                     <p className="text-xs text-gray-400">Partners ranked by rating and speed.</p>
                                 </div>
 
-                                <div className="space-y-3">
+                                <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                                     {[
                                         { name: 'Ravi Kumar', rating: '4.9', count: '14 deliveries' },
                                         { name: 'Sandeep Sharma', rating: '4.8', count: '11 deliveries' }
