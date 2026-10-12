@@ -134,43 +134,43 @@ const ManagerInventory = () => {
     const healthyCount = mappedInventory.filter(item => item.status === 'In Stock').length;
 
     return (
-        <div className="p-8 max-w-[1600px] mx-auto space-y-6 font-sans">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6">
+        <div className="p-3 sm:p-6 md:p-8 max-w-[1600px] mx-auto space-y-4 sm:space-y-6 font-sans">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 sm:gap-4 mb-4 sm:mb-6">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>Branch Inventory Monitor</h2>
-                    <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Track local branch stock levels and manage reorder requests.</p>
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>Branch Inventory Monitor</h2>
+                    <p className="text-gray-500 dark:text-slate-400 text-xs sm:text-sm mt-1">Track local branch stock levels and manage reorder requests.</p>
                 </div>
-                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                    <button onClick={() => setShowCreateModal(true)} className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-700 dark:text-slate-200 px-4 py-2.5 rounded-xl font-medium transition-colors text-sm shadow-sm cursor-pointer">
+                <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                    <button onClick={() => setShowCreateModal(true)} className="flex-1 sm:flex-none justify-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-700 dark:text-slate-200 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl font-medium transition-colors text-xs sm:text-sm shadow-sm cursor-pointer flex items-center gap-1.5 active:scale-95">
                         + Create Item
                     </button>
-                    <button onClick={() => { setSelectedItemForAction(null); setActionType('reorder'); setShowReorderModal(true); }} className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold transition-colors flex items-center gap-2 text-sm shadow-md cursor-pointer">
-                        <ShoppingCart size={18} /> New Reorder
+                    <button onClick={() => { setSelectedItemForAction(null); setActionType('reorder'); setShowReorderModal(true); }} className="flex-1 sm:flex-none justify-center bg-green-600 hover:bg-green-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold transition-colors flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm shadow-md cursor-pointer active:scale-95">
+                        <ShoppingCart size={16} /> New Reorder
                     </button>
                 </div>
             </div>
 
             {/* Status Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-red-50/50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 p-5 rounded-2xl flex items-center gap-4 shadow-sm">
-                    <div className="p-3 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 rounded-xl"><AlertTriangle size={24} /></div>
-                    <div>
-                        <p className="text-xs text-red-600 dark:text-red-400 font-bold uppercase tracking-wider">Critical / Low Stock</p>
-                        <h3 className="text-2xl font-extrabold text-red-900 dark:text-red-300">{criticalCount} Items</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+                <div className="bg-red-50/50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 p-4 sm:p-5 rounded-2xl flex items-center gap-3 sm:gap-4 shadow-sm">
+                    <div className="p-2.5 sm:p-3 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 rounded-xl shrink-0"><AlertTriangle size={22} /></div>
+                    <div className="min-w-0">
+                        <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400 font-bold uppercase tracking-wider truncate">Critical / Low Stock</p>
+                        <h3 className="text-xl sm:text-2xl font-extrabold text-red-900 dark:text-red-300">{criticalCount} Items</h3>
                     </div>
                 </div>
-                <div className="bg-green-50/50 dark:bg-green-950/20 border border-green-200 dark:border-green-900/50 p-5 rounded-2xl flex items-center gap-4 shadow-sm">
-                    <div className="p-3 bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 rounded-xl"><CheckCircle2 size={24} /></div>
-                    <div>
-                        <p className="text-xs text-green-700 dark:text-green-400 font-bold uppercase tracking-wider">Healthy Stock</p>
-                        <h3 className="text-2xl font-extrabold text-green-900 dark:text-green-300">{healthyCount} Items</h3>
+                <div className="bg-green-50/50 dark:bg-green-950/20 border border-green-200 dark:border-green-900/50 p-4 sm:p-5 rounded-2xl flex items-center gap-3 sm:gap-4 shadow-sm">
+                    <div className="p-2.5 sm:p-3 bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 rounded-xl shrink-0"><CheckCircle2 size={22} /></div>
+                    <div className="min-w-0">
+                        <p className="text-[10px] sm:text-xs text-green-700 dark:text-green-400 font-bold uppercase tracking-wider truncate">Healthy Stock</p>
+                        <h3 className="text-xl sm:text-2xl font-extrabold text-green-900 dark:text-green-300">{healthyCount} Items</h3>
                     </div>
                 </div>
-                <div className="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/50 p-5 rounded-2xl flex items-center gap-4 shadow-sm">
-                    <div className="p-3 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-xl"><ArrowDown size={24} /></div>
-                    <div>
-                        <p className="text-xs text-blue-700 dark:text-blue-400 font-bold uppercase tracking-wider">Active Inventory Records</p>
-                        <h3 className="text-2xl font-extrabold text-blue-900 dark:text-blue-300">{inventory.length} total</h3>
+                <div className="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/50 p-4 sm:p-5 rounded-2xl flex items-center gap-3 sm:gap-4 shadow-sm sm:col-span-2 md:col-span-1">
+                    <div className="p-2.5 sm:p-3 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-xl shrink-0"><ArrowDown size={22} /></div>
+                    <div className="min-w-0">
+                        <p className="text-[10px] sm:text-xs text-blue-700 dark:text-blue-400 font-bold uppercase tracking-wider truncate">Active Inventory Records</p>
+                        <h3 className="text-xl sm:text-2xl font-extrabold text-blue-900 dark:text-blue-300">{inventory.length} total</h3>
                     </div>
                 </div>
             </div>

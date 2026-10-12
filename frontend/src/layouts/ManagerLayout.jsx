@@ -31,7 +31,7 @@ const ManagerLayout = () => {
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
                 <Topbar />
                 
-                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 md:p-8">
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-3 sm:p-5 md:p-8">
                     {isFrozen ? (
                         <SubscriptionFreezeOverlay onUnfrozen={() => fetchRestaurant()} />
                     ) : isUnverified ? (

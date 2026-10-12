@@ -83,36 +83,47 @@ const ManagerSidebar = () => {
         {/* Mobile Overlay */}
         {isOpen && (
             <div 
-                className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-30 md:hidden" 
+                className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 md:hidden" 
                 onClick={() => setIsOpen(false)}
             />
         )}
         <aside className={clsx(
-            "w-64 bg-white dark:bg-slate-900 shadow-xl h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-transform duration-300 z-40 border-r border-gray-100 dark:border-slate-800",
+            "w-72 sm:w-64 bg-white dark:bg-slate-900 shadow-2xl h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-transform duration-300 z-50 border-r border-gray-100 dark:border-slate-800",
             isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}>
             {/* Header */}
-            <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex items-center gap-3 shrink-0">
-                {logoSrc && !logoError ? (
-                    <div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 flex items-center justify-center shrink-0">
-                        <img 
-                            src={logoSrc} 
-                            alt="Logo" 
-                            onError={() => setLogoError(true)}
-                            className="w-full h-full object-cover" 
-                        />
+            <div className="p-5 sm:p-6 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between gap-3 shrink-0">
+                <div className="flex items-center gap-3 min-w-0">
+                    {logoSrc && !logoError ? (
+                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                            <img 
+                                src={logoSrc} 
+                                alt="Logo" 
+                                onError={() => setLogoError(true)}
+                                className="w-full h-full object-cover" 
+                            />
+                        </div>
+                    ) : (
+                        <div className="bg-green-500 text-white p-2 rounded-lg shrink-0">
+                            <UtensilsCrossed size={22} />
+                        </div>
+                    )}
+                    <div className="min-w-0">
+                        <h1 className="text-base sm:text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-400 leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            {restaurant && restaurant.name ? restaurant.name : 'RestoSys'}
+                        </h1>
+                        <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block mt-0.5">Manager</span>
                     </div>
-                ) : (
-                    <div className="bg-green-500 text-white p-2 rounded-lg shrink-0">
-                        <UtensilsCrossed size={24} />
-                    </div>
-                )}
-                <div>
-                    <h1 className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-400 leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                        {restaurant && restaurant.name ? restaurant.name : 'RestoSys'}
-                    </h1>
-                    <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block mt-0.5">Manager</span>
                 </div>
+
+                {/* Mobile Close Button */}
+                <button 
+                    onClick={() => setIsOpen(false)}
+                    className="md:hidden p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+                    aria-label="Close Sidebar"
+                >
+                    ✕
+                </button>
             </div>
             
             {/* Scrollable Navigation */}
@@ -130,6 +141,7 @@ const ManagerSidebar = () => {
                                         key={item.name}
                                         to={item.path}
                                         end={item.path === '/manager'}
+                                        onClick={() => setIsOpen(false)}
                                         className={({ isActive }) => clsx(
                                             "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm",
                                             isActive 
