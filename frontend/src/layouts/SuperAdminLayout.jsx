@@ -292,7 +292,7 @@ const SuperAdminLayout = () => {
                 </header>
                 
                 {/* ── Page Content ─────────────────────────────────── */}
-                <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8 bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+                <main className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-4 md:p-8 bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
                     <Outlet />
                 </main>
             </div>

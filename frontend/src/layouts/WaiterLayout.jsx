@@ -31,7 +31,7 @@ const WaiterLayout = () => {
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
                 <WaiterTopbar />
                 
-                <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+                <main className="flex-1 overflow-y-auto p-2 sm:p-4 md:p-8 custom-scrollbar">
                     {isFrozen ? (
                         <SubscriptionFreezeOverlay onUnfrozen={() => fetchRestaurant()} />
                     ) : isUnverified ? (
