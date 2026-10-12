@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
     LayoutDashboard, Store, CreditCard, Percent, TrendingUp, 
     Users, MessageSquare, SlidersHorizontal, Settings, BarChart3, 
-    Bell, ShieldCheck, LogOut, User, Menu, X, ChevronRight
+    Bell, ShieldCheck, LogOut, User, Menu, X, ChevronRight, ArrowLeft
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
