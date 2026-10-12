@@ -1,4 +1,4 @@
-import { Bell, User, Clock, LogOut, Menu } from 'lucide-react';
+import { Bell, User, Clock, LogOut, Menu, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useState, useEffect, useRef } from 'react';
 
@@ -61,17 +61,27 @@ const ChefTopbar = () => {
     const unreadCount = chefNotifications.filter(n => !n.read).length || 0;
 
     return (
-        <header className="h-16 bg-white dark:bg-[#1e2330] border-b border-gray-100 dark:border-[#2a3040] flex items-center justify-between px-4 md:px-8 sticky top-0 z-10">
-            <div className="flex items-center gap-2">
+        <header className="h-16 bg-white dark:bg-[#1e2330] border-b border-gray-100 dark:border-[#2a3040] flex items-center justify-between px-3 sm:px-4 md:px-8 sticky top-0 z-10">
+            <div className="flex items-center gap-1.5 sm:gap-2">
                 <button 
                     onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))} 
                     className="md:hidden p-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#252b3b] rounded-lg shrink-0"
+                    aria-label="Toggle Menu"
                 >
-                    <Menu size={24} />
+                    <Menu size={22} />
                 </button>
-                <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 font-bold text-sm bg-gray-50 dark:bg-[#151923] px-4 py-1.5 rounded-lg border border-gray-100 dark:border-[#2a3040]">
-                    <Clock size={16} className="text-orange-600 dark:text-orange-400" />
-                    {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                <button
+                    onClick={() => window.history.back()}
+                    className="md:hidden p-1.5 px-2 text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors flex items-center gap-1 text-xs font-bold border border-gray-200 dark:border-slate-800 shrink-0 shadow-xs"
+                    aria-label="Go Back"
+                    title="Back"
+                >
+                    <ArrowLeft size={15} />
+                    <span className="text-[11px] font-bold">Back</span>
+                </button>
+                <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 font-bold text-xs sm:text-sm bg-gray-50 dark:bg-[#151923] px-2.5 sm:px-4 py-1.5 rounded-lg border border-gray-100 dark:border-[#2a3040]">
+                    <Clock size={15} className="text-orange-600 dark:text-orange-400 shrink-0" />
+                    <span>{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
             </div>
             

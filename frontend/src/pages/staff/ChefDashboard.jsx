@@ -361,28 +361,28 @@ const ChefDashboard = () => {
     };
 
     return (
-        <div className="w-full max-w-[1700px] mx-auto font-sans space-y-6 pb-24 text-slate-900 dark:text-slate-100 transition-colors">
+        <div className="w-full max-w-[1700px] mx-auto font-sans space-y-4 sm:space-y-6 pb-24 text-slate-900 dark:text-slate-100 transition-colors">
             
             {/* Shift Attendance Clock In / Clock Out Status Bar */}
             <StaffShiftClockWidget userRole="Head Chef / Kitchen Lead" userName="Master Chef" />
 
             {/* 1. Live Ingredient 86-List Warning Banner */}
             {outOfStock.length > 0 && (
-                <div className="bg-gradient-to-r from-red-50 via-white to-red-50 dark:from-red-950 dark:via-slate-900 dark:to-red-950 border border-red-200 dark:border-red-500/40 rounded-3xl p-4 md:p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl dark:shadow-2xl relative overflow-hidden">
+                <div className="bg-gradient-to-r from-red-50 via-white to-red-50 dark:from-red-950 dark:via-slate-900 dark:to-red-950 border border-red-200 dark:border-red-500/40 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 flex flex-col md:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 shadow-xl dark:shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
                     
-                    <div className="flex items-center gap-3.5 z-10">
-                        <div className="p-3 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-2xl border border-red-200 dark:border-red-500/30 shrink-0">
-                            <AlertOctagon className="animate-bounce" size={26} />
+                    <div className="flex items-start sm:items-center gap-3 z-10 min-w-0">
+                        <div className="p-2 sm:p-3 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-xl sm:rounded-2xl border border-red-200 dark:border-red-500/30 shrink-0">
+                            <AlertOctagon className="animate-bounce" size={22} />
                         </div>
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-red-700 dark:text-red-400 font-black text-xs uppercase tracking-widest bg-red-100 dark:bg-red-500/20 px-2.5 py-0.5 rounded-full border border-red-200 dark:border-red-500/30">
+                        <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                                <span className="text-red-700 dark:text-red-400 font-black text-[10px] sm:text-xs uppercase tracking-widest bg-red-100 dark:bg-red-500/20 px-2 sm:px-2.5 py-0.5 rounded-full border border-red-200 dark:border-red-500/30">
                                     Active 86 List (Out of Stock)
                                 </span>
-                                <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold">({outOfStock.length} items flagged)</span>
+                                <span className="text-slate-500 dark:text-slate-400 text-[11px] sm:text-xs font-semibold">({outOfStock.length} items flagged)</span>
                             </div>
-                            <p className="text-slate-800 dark:text-slate-200 font-bold text-sm mt-1">
+                            <p className="text-slate-800 dark:text-slate-200 font-bold text-xs sm:text-sm mt-1 truncate">
                                 Flagged ingredients: <span className="text-red-600 dark:text-red-300 font-extrabold">{outOfStock.join(' · ')}</span>
                             </p>
                         </div>
@@ -391,108 +391,111 @@ const ChefDashboard = () => {
                     <div className="flex items-center gap-3 z-10 w-full md:w-auto">
                         <button 
                             onClick={() => setIsAlertModalOpen(true)}
-                            className="w-full md:w-auto bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs px-5 py-3 rounded-2xl shadow-lg shadow-red-600/30 transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
+                            className="w-full md:w-auto bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl shadow-lg shadow-red-600/30 transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
                         >
-                            <Sliders size={16} /> Manage 86 List
+                            <Sliders size={15} /> Manage 86 List
                         </button>
                     </div>
                 </div>
             )}
 
             {/* 2. Top KDS Kitchen Command Header */}
-            <div className="bg-white dark:bg-slate-900/90 backdrop-blur-md p-6 rounded-3xl shadow-xl dark:shadow-2xl border border-slate-200 dark:border-slate-800 space-y-6">
+            <div className="bg-white dark:bg-slate-900/90 backdrop-blur-md p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-xl dark:shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 sm:space-y-6">
                 
                 {/* Header Title & Station Selector */}
-                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 pb-6 border-b border-slate-200 dark:border-slate-800">
-                    <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-gradient-to-tr from-orange-600 to-amber-500 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-orange-500/20 shrink-0">
-                            <ChefHat size={32} />
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 sm:gap-6 pb-4 sm:pb-6 border-b border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-tr from-orange-600 to-amber-500 rounded-xl sm:rounded-2xl flex items-center justify-center text-white shadow-xl shadow-orange-500/20 shrink-0">
+                            <ChefHat size={26} className="sm:hidden" />
+                            <ChefHat size={32} className="hidden sm:block" />
                         </div>
-                        <div>
+                        <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                                <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                                <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
                                     Kitchen Display System (KDS)
                                 </h1>
-                                <span className="relative flex h-3 w-3">
+                                <span className="relative flex h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0">
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                                    <span className="relative inline-flex rounded-full h-full w-full bg-emerald-500"></span>
                                 </span>
                             </div>
-                            <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm font-semibold mt-0.5">
+                            <p className="text-slate-500 dark:text-slate-400 text-[11px] sm:text-xs md:text-sm font-semibold mt-0.5 line-clamp-2 sm:line-clamp-none">
                                 Real-time order routing, cooking timers, priority queueing, and station management.
                             </p>
                         </div>
                     </div>
 
                     {/* Station Filter Pills */}
-                    <div className="flex flex-nowrap sm:flex-wrap items-center gap-2 overflow-x-auto no-scrollbar max-w-full pb-1">
-                        <span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-1 hidden sm:inline">Station:</span>
-                        {stations.map(st => (
-                            <button
-                                key={st}
-                                onClick={() => setSelectedStation(st)}
-                                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all border cursor-pointer ${
-                                    selectedStation === st
-                                    ? 'bg-orange-500 text-white border-orange-400 shadow-lg shadow-orange-500/25 scale-105'
-                                    : 'bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
-                                }`}
-                            >
-                                {st}
-                            </button>
-                        ))}
+                    <div className="w-full xl:w-auto">
+                        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 -mx-1 px-1 touch-pan-x">
+                            <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-1 shrink-0 hidden sm:inline">Station:</span>
+                            {stations.map(st => (
+                                <button
+                                    key={st}
+                                    onClick={() => setSelectedStation(st)}
+                                    className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-extrabold transition-all border cursor-pointer shrink-0 whitespace-nowrap active:scale-95 ${
+                                        selectedStation === st
+                                        ? 'bg-orange-500 text-white border-orange-400 shadow-md shadow-orange-500/25 scale-[1.02]'
+                                        : 'bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
+                                >
+                                    {st}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
                 {/* KPI Metrics Strip */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
-                    <div className="bg-slate-50 dark:bg-slate-950/70 p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-2.5 sm:gap-3.5 min-w-0">
-                        <div className="p-3 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl border border-blue-500/20">
-                            <Utensils size={20} />
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+                    <div className="bg-slate-50 dark:bg-slate-950/70 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-2 sm:gap-3.5 min-w-0">
+                        <div className="p-2 sm:p-3 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg sm:rounded-xl border border-blue-500/20 shrink-0">
+                            <Utensils size={18} className="sm:w-5 sm:h-5" />
                         </div>
-                        <div>
-                            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Live Queue</p>
-                            <p className="text-2xl font-black text-slate-900 dark:text-white">{totalLive}</p>
-                        </div>
-                    </div>
-
-                    <div className="bg-slate-50 dark:bg-slate-950/70 p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-2.5 sm:gap-3.5 min-w-0">
-                        <div className="p-3 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl border border-amber-500/20">
-                            <Clock size={20} />
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">In Preparation</p>
-                            <p className="text-2xl font-black text-amber-600 dark:text-amber-400">{preparingCount}</p>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">Live Queue</p>
+                            <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">{totalLive}</p>
                         </div>
                     </div>
 
-                    <div className="bg-slate-50 dark:bg-slate-950/70 p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-2.5 sm:gap-3.5 min-w-0">
-                        <div className="p-3 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-500/20">
-                            <CheckCircle size={20} />
+                    <div className="bg-slate-50 dark:bg-slate-950/70 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-2 sm:gap-3.5 min-w-0">
+                        <div className="p-2 sm:p-3 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg sm:rounded-xl border border-amber-500/20 shrink-0">
+                            <Clock size={18} className="sm:w-5 sm:h-5" />
                         </div>
-                        <div>
-                            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">Ready to Serve</p>
-                            <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{readyCount}</p>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">Cooking</p>
+                            <p className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 leading-tight">{preparingCount}</p>
                         </div>
                     </div>
 
-                    <div className={`p-4 rounded-2xl border flex items-center gap-3.5 transition-all ${
+                    <div className="bg-slate-50 dark:bg-slate-950/70 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-2 sm:gap-3.5 min-w-0">
+                        <div className="p-2 sm:p-3 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg sm:rounded-xl border border-emerald-500/20 shrink-0">
+                            <CheckCircle size={18} className="sm:w-5 sm:h-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">Ready</p>
+                            <p className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 leading-tight">{readyCount}</p>
+                        </div>
+                    </div>
+
+                    <div className={`p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border flex items-center gap-2 sm:gap-3.5 min-w-0 transition-all ${
                         overdueCount > 0 ? 'bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-500/40 animate-pulse' : 'bg-slate-50 dark:bg-slate-950/70 border-slate-200 dark:border-slate-800/80'
                     }`}>
-                        <div className={`p-3 rounded-xl ${overdueCount > 0 ? 'bg-red-500 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}>
-                            <Flame size={20} />
+                        <div className={`p-2 sm:p-3 rounded-lg sm:rounded-xl shrink-0 ${overdueCount > 0 ? 'bg-red-500 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}>
+                            <Flame size={18} className="sm:w-5 sm:h-5" />
                         </div>
-                        <div>
-                            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">Rush / Overdue (&gt;15m)</p>
-                            <p className={`text-2xl font-black ${overdueCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-slate-300'}`}>{overdueCount}</p>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">Rush (&gt;15m)</p>
+                            <p className={`text-xl sm:text-2xl font-black leading-tight ${overdueCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-slate-300'}`}>{overdueCount}</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Queue Filter Tabs & View Controls */}
-                <div className="flex flex-col lg:flex-row items-center justify-between gap-4 pt-2">
+                <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 sm:gap-4 pt-1 sm:pt-2">
                     
-                    {/* Status Tabs */}
-                    <div className="flex flex-wrap bg-slate-100 dark:bg-slate-950/80 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800/90 gap-1 w-full lg:w-auto">
+                    {/* Status Tabs (horizontal scroll on mobile) */}
+                    <div className="flex items-center overflow-x-auto no-scrollbar bg-slate-100 dark:bg-slate-950/80 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800/90 gap-1 w-full lg:w-auto -mx-0.5 px-0.5 touch-pan-x">
                         {[
                             { id: 'All', label: 'All Orders', count: totalLive },
                             { id: 'Incoming', label: '📥 Incoming', count: orders.filter(o => isIncomingStatus(o.status)).length },
@@ -503,15 +506,15 @@ const ChefDashboard = () => {
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                                className={`shrink-0 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer whitespace-nowrap active:scale-95 ${
                                     activeTab === tab.id
-                                    ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-lg shadow-orange-600/20'
+                                    ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-md shadow-orange-600/20'
                                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-800/80'
                                 }`}
                             >
                                 <span>{tab.label}</span>
                                 {tab.count > 0 && (
-                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                                    <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
                                         activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-300'
                                     }`}>
                                         {tab.count}
@@ -522,17 +525,17 @@ const ChefDashboard = () => {
                     </div>
 
                     {/* Controls: Search, Sort & View Mode Switcher */}
-                    <div className="flex items-center gap-3 w-full lg:w-auto justify-end">
+                    <div className="flex items-center gap-2 sm:gap-3 w-full lg:w-auto justify-between lg:justify-end">
                         
                         {/* Search Input */}
-                        <div className="relative flex-1 sm:w-64">
-                            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <div className="relative flex-1 sm:w-64 min-w-0">
+                            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                             <input
                                 type="text"
-                                placeholder="Search ticket #, table, dish..."
+                                placeholder="Search ticket #, table..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-orange-500"
+                                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-8 sm:pl-9 pr-3 py-2 sm:py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-orange-500"
                             />
                         </div>
 
@@ -540,28 +543,28 @@ const ChefDashboard = () => {
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value)}
-                            className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-300 text-xs font-bold rounded-xl px-3 py-2.5 focus:outline-none focus:border-orange-500 cursor-pointer shrink-0"
+                            className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-300 text-xs font-bold rounded-xl px-2.5 sm:px-3 py-2 sm:py-2.5 focus:outline-none focus:border-orange-500 cursor-pointer shrink-0"
                         >
-                            <option value="priority">🔥 Priority Score</option>
-                            <option value="oldest">⏱️ Oldest First</option>
-                            <option value="newest">⚡ Newest First</option>
+                            <option value="priority">🔥 Priority</option>
+                            <option value="oldest">⏱️ Oldest</option>
+                            <option value="newest">⚡ Newest</option>
                         </select>
 
                         {/* View Switcher Buttons */}
                         <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-800 shrink-0">
                             <button
                                 onClick={() => setViewMode('grid')}
-                                className={`p-2 rounded-lg transition-colors cursor-pointer ${viewMode === 'grid' ? 'bg-orange-500 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                                className={`p-1.5 sm:p-2 rounded-lg transition-colors cursor-pointer ${viewMode === 'grid' ? 'bg-orange-500 text-white shadow-xs' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                                 title="Grid View"
                             >
-                                <LayoutGrid size={16} />
+                                <LayoutGrid size={15} />
                             </button>
                             <button
                                 onClick={() => setViewMode('kanban')}
-                                className={`p-2 rounded-lg transition-colors cursor-pointer ${viewMode === 'kanban' ? 'bg-orange-500 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                                className={`p-1.5 sm:p-2 rounded-lg transition-colors cursor-pointer ${viewMode === 'kanban' ? 'bg-orange-500 text-white shadow-xs' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                                 title="Kanban Queue Columns View"
                             >
-                                <Columns size={16} />
+                                <Columns size={15} />
                             </button>
                         </div>
                     </div>
@@ -571,11 +574,11 @@ const ChefDashboard = () => {
             {/* 3. KDS Orders Display Container */}
             {viewMode === 'grid' ? (
                 /* GRID VIEW */
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
                     {sortedOrders.length === 0 ? (
-                        <div className="col-span-full py-28 flex flex-col items-center justify-center text-slate-400 bg-white dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
-                            <CheckCircle size={52} className="text-slate-300 dark:text-slate-800 mb-4" />
-                            <p className="text-xl font-bold text-slate-700 dark:text-slate-300">No active kitchen tickets</p>
+                        <div className="col-span-full py-20 sm:py-28 flex flex-col items-center justify-center text-slate-400 bg-white dark:bg-slate-900/40 rounded-2xl sm:rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-4 text-center">
+                            <CheckCircle size={44} className="text-slate-300 dark:text-slate-800 mb-3 sm:mb-4" />
+                            <p className="text-lg sm:text-xl font-bold text-slate-700 dark:text-slate-300">No active kitchen tickets</p>
                             <p className="text-xs text-slate-500 mt-1">Waiting for incoming customer orders...</p>
                         </div>
                     ) : (
@@ -594,43 +597,43 @@ const ChefDashboard = () => {
                             return (
                                 <div 
                                     key={order._id} 
-                                    className={`bg-white dark:bg-slate-900/90 rounded-3xl shadow-xl dark:shadow-2xl flex flex-col overflow-hidden border-2 transition-all duration-300 ${
+                                    className={`bg-white dark:bg-slate-900/90 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl dark:shadow-2xl flex flex-col overflow-hidden border-2 transition-all duration-300 ${
                                         isPriority ? 'border-red-500 shadow-red-500/10' : 'border-slate-200 dark:border-slate-800/90'
                                     }`}
                                 >
                                     {/* Ticket Top Header */}
-                                    <div className={`px-5 py-4 flex justify-between items-center ${
+                                    <div className={`px-4 sm:px-5 py-3 sm:py-4 flex justify-between items-center ${
                                         isPriority ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white' : 'bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-800'
                                     }`}>
                                         <div className="space-y-1 min-w-0 pr-1.5 flex-1">
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-mono font-black text-lg text-slate-900 dark:text-white">#{order._id.substring(order._id.length - 5).toUpperCase()}</span>
+                                            <div className="flex items-center gap-1.5 sm:gap-2">
+                                                <span className="font-mono font-black text-base sm:text-lg text-slate-900 dark:text-white">#{order._id.substring(order._id.length - 5).toUpperCase()}</span>
                                                 <button 
                                                     onClick={() => togglePriority(order._id)}
-                                                    className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                                                    className={`p-1 sm:p-1.5 rounded-lg transition-colors cursor-pointer ${
                                                         isStarred ? 'text-amber-500 dark:text-amber-300 bg-amber-100 dark:bg-white/20' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
                                                     }`}
                                                     title="Pin as VIP Priority"
                                                 >
-                                                    <Star size={16} fill={isStarred ? "currentColor" : "none"} />
+                                                    <Star size={15} fill={isStarred ? "currentColor" : "none"} />
                                                 </button>
                                             </div>
 
-                                            <div className="flex flex-wrap gap-1.5">
-                                                <span className="text-[10px] font-black uppercase tracking-wider bg-slate-200 dark:bg-white/20 text-slate-800 dark:text-white px-2.5 py-0.5 rounded-full">
+                                            <div className="flex flex-wrap gap-1 sm:gap-1.5">
+                                                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider bg-slate-200 dark:bg-white/20 text-slate-800 dark:text-white px-2 sm:px-2.5 py-0.5 rounded-full">
                                                     {order.orderType === 'Dine In' ? `📍 Table ${order.tableNumber || 'Any'}` : `🛵 ${order.orderType}`}
                                                 </span>
                                                 {isOverdue && (
-                                                    <span className="text-[10px] font-black uppercase tracking-wider bg-yellow-400 text-black px-2 py-0.5 rounded-full flex items-center gap-1">
-                                                        <Flame size={12} /> OVERDUE
+                                                    <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider bg-yellow-400 text-black px-2 py-0.5 rounded-full flex items-center gap-1">
+                                                        <Flame size={11} /> OVERDUE
                                                     </span>
                                                 )}
                                             </div>
                                         </div>
 
                                         {/* Cooking Timer Stopwatch */}
-                                        <div className={`px-3 py-1.5 rounded-xl font-mono font-black text-xs border flex items-center gap-1.5 shadow-md ${getTimerColorClass(timeDiffMinutes)}`}>
-                                            <Timer size={14} className={isOverdue ? 'animate-spin' : ''} />
+                                        <div className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl font-mono font-black text-[11px] sm:text-xs border flex items-center gap-1 sm:gap-1.5 shadow-xs shrink-0 ${getTimerColorClass(timeDiffMinutes)}`}>
+                                            <Timer size={13} className={isOverdue ? 'animate-spin' : ''} />
                                             <span>{timeDiffMinutes.toString().padStart(2, '0')}:{timeDiffSeconds.toString().padStart(2, '0')}</span>
                                         </div>
                                     </div>
@@ -644,13 +647,13 @@ const ChefDashboard = () => {
                                     </div>
 
                                     {/* Ticket Items Checklist Body */}
-                                    <div className="flex-1 p-5 space-y-3.5">
-                                        <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pb-1 border-b border-slate-200 dark:border-slate-800">
+                                    <div className="flex-1 p-3.5 sm:p-5 space-y-3 sm:space-y-3.5">
+                                        <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pb-1 border-b border-slate-200 dark:border-slate-800">
                                             <span>Dish Checklist ({doneItemsCount}/{totalItemsCount})</span>
                                             <span className="text-orange-600 dark:text-orange-400 font-mono">{progressPercent}% Ready</span>
                                         </div>
 
-                                        <div className="space-y-2 max-h-72 overflow-y-auto custom-scrollbar pr-1">
+                                        <div className="space-y-1.5 sm:space-y-2 max-h-72 overflow-y-auto custom-scrollbar pr-1">
                                             {order.orderItems?.map((item, idx) => {
                                                 const isItemDone = completedItems[`${order._id}-${idx}`];
                                                 
@@ -663,7 +666,7 @@ const ChefDashboard = () => {
                                                     <div 
                                                         key={idx} 
                                                         onClick={() => toggleItemDone(order._id, idx)}
-                                                        className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                                                        className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 sm:gap-3 active:scale-[0.99] ${
                                                             isItemDone 
                                                             ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-300' 
                                                             : hasIngredientAlert
@@ -671,18 +674,18 @@ const ChefDashboard = () => {
                                                             : 'bg-slate-50 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 text-slate-800 dark:text-slate-200'
                                                         }`}
                                                     >
-                                                        <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                                                        <div className="flex items-start gap-2 sm:gap-2.5 flex-1 min-w-0">
                                                             <div className={`mt-0.5 w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
                                                                 isItemDone ? 'bg-emerald-500 border-emerald-400 text-white dark:text-slate-950' : 'border-slate-300 dark:border-slate-600'
                                                             }`}>
-                                                                {isItemDone && <Check size={12} strokeWidth={3} />}
+                                                                {isItemDone && <Check size={11} strokeWidth={3} />}
                                                             </div>
                                                             <div className="min-w-0">
                                                                 <p className={`font-extrabold text-xs truncate ${isItemDone ? 'line-through text-slate-400' : 'text-slate-900 dark:text-white'}`}>
                                                                     {item.qty}× {item.name}
                                                                 </p>
                                                                 {hasIngredientAlert && (
-                                                                    <p className="text-[10px] font-black text-red-600 dark:text-red-400 mt-0.5 flex items-center gap-1">
+                                                                    <p className="text-[9px] sm:text-[10px] font-black text-red-600 dark:text-red-400 mt-0.5 flex items-center gap-1">
                                                                         <AlertTriangle size={10} /> 86 Alert: Check Stock
                                                                     </p>
                                                                 )}
@@ -701,21 +704,21 @@ const ChefDashboard = () => {
 
                                         {/* Notes Section */}
                                         {order.notes && (
-                                            <div className="p-3 rounded-2xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 text-xs space-y-1">
-                                                <p className="font-black flex items-center gap-1 text-[10px] uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                                                    <MessageSquare size={12} /> Chef Notes / Customization:
+                                            <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 text-xs space-y-1">
+                                                <p className="font-black flex items-center gap-1 text-[9px] sm:text-[10px] uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                                                    <MessageSquare size={11} /> Chef Notes:
                                                 </p>
-                                                <p className="font-semibold">{order.notes}</p>
+                                                <p className="font-semibold text-[11px] sm:text-xs">{order.notes}</p>
                                             </div>
                                         )}
                                     </div>
 
                                     {/* Action Buttons Footer */}
-                                    <div className="p-4 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/60 shrink-0 space-y-2">
+                                    <div className="p-3 sm:p-4 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/60 shrink-0 space-y-2">
                                         {(!order.status || order.status === 'Pending' || order.status === 'Accepted') && (
                                             <button 
                                                 onClick={() => updateStatus(order._id, 'Preparing')} 
-                                                className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold py-2.5 rounded-2xl transition-all shadow-md shadow-orange-600/20 text-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                                                className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold py-2.5 rounded-xl sm:rounded-2xl transition-all shadow-md shadow-orange-600/20 text-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                                             >
                                                 <ChefHat size={15} />
                                                 <span>Accept &amp; Start Cooking</span>
@@ -724,15 +727,15 @@ const ChefDashboard = () => {
                                         {order.status === 'Preparing' && (
                                             <button 
                                                 onClick={() => updateStatus(order._id, isSelfOrder(order) ? 'Ready for Pickup' : 'Ready')} 
-                                                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold py-2.5 rounded-2xl transition-all shadow-md shadow-emerald-600/20 flex justify-center items-center gap-2 text-xs cursor-pointer active:scale-95"
+                                                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold py-2.5 rounded-xl sm:rounded-2xl transition-all shadow-md shadow-emerald-600/20 flex justify-center items-center gap-2 text-xs cursor-pointer active:scale-95"
                                             >
                                                 <Sparkles size={15} />
-                                                <span>{isSelfOrder(order) ? 'Transfer to Pickup Counter' : 'Mark Ticket Ready &amp; Transfer'}</span>
+                                                <span>{isSelfOrder(order) ? 'Transfer to Pickup Counter' : 'Mark Ticket Ready & Transfer'}</span>
                                             </button>
                                         )}
                                         {['Ready', 'Ready for Pickup'].includes(order.status) && (
-                                            <div className="text-center py-2.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1.5 bg-emerald-500/10 dark:bg-emerald-950/30 rounded-2xl border border-emerald-500/20">
-                                                <CheckCircle size={14} className="text-emerald-500" /> Transferred to Waiter Priority Section
+                                            <div className="text-center py-2 sm:py-2.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1.5 bg-emerald-500/10 dark:bg-emerald-950/30 rounded-xl sm:rounded-2xl border border-emerald-500/20">
+                                                <CheckCircle size={14} className="text-emerald-500" /> Transferred to Waiter Section
                                             </div>
                                         )}
                                         {['Completed', 'Served', 'Delivered', 'Picked Up'].includes(order.status) && (
@@ -748,12 +751,12 @@ const ChefDashboard = () => {
                 </div>
             ) : (
                 /* KANBAN QUEUE COLUMNS VIEW */
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
                     {[
                         { title: '📥 Incoming Queue', keys: ['Pending', 'Accepted'], accent: 'from-amber-600 to-orange-600', key: 'Incoming' },
-                        { title: '🍳 Cooking / Preparation', keys: ['Preparing'], accent: 'from-blue-600 to-indigo-600', key: 'Cooking' },
+                        { title: '🍳 Cooking / Prep', keys: ['Preparing'], accent: 'from-blue-600 to-indigo-600', key: 'Cooking' },
                         { title: '✨ Plated & Ready', keys: ['Ready', 'Ready for Pickup'], accent: 'from-emerald-600 to-teal-600', key: 'Ready' },
-                        { title: '✅ Served & Completed', keys: ['Completed', 'Served', 'Picked Up', 'Delivered'], accent: 'from-slate-700 to-slate-900', key: 'Completed' }
+                        { title: '✅ Served / Done', keys: ['Completed', 'Served', 'Picked Up', 'Delivered'], accent: 'from-slate-700 to-slate-900', key: 'Completed' }
                     ].map(column => {
                         // Filter orders for this column using station & search criteria
                         const colOrders = orders.filter(o => {
@@ -780,17 +783,17 @@ const ChefDashboard = () => {
                         }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
                         return (
-                            <div key={column.key} className="bg-white dark:bg-slate-900/70 rounded-3xl border border-slate-200 dark:border-slate-800/90 flex flex-col min-h-[600px] overflow-hidden shadow-lg">
+                            <div key={column.key} className="bg-white dark:bg-slate-900/70 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800/90 flex flex-col min-h-[400px] sm:min-h-[600px] overflow-hidden shadow-lg">
                                 {/* Column Header */}
-                                <div className={`p-4 bg-gradient-to-r ${column.accent} text-white font-extrabold flex justify-between items-center shadow-md`}>
-                                    <h3 className="text-sm tracking-wide">{column.title}</h3>
-                                    <span className="bg-white/20 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold">{colOrders.length}</span>
+                                <div className={`p-3.5 sm:p-4 bg-gradient-to-r ${column.accent} text-white font-extrabold flex justify-between items-center shadow-md`}>
+                                    <h3 className="text-xs sm:text-sm tracking-wide">{column.title}</h3>
+                                    <span className="bg-white/20 px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-mono font-bold">{colOrders.length}</span>
                                 </div>
 
                                 {/* Column Cards */}
-                                <div className="p-4 space-y-4 flex-1 overflow-y-auto custom-scrollbar">
+                                <div className="p-3 sm:p-4 space-y-3 sm:space-y-4 flex-1 overflow-y-auto custom-scrollbar">
                                     {colOrders.length === 0 ? (
-                                        <div className="py-16 text-center text-slate-400 text-xs font-bold border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+                                        <div className="py-12 sm:py-16 text-center text-slate-400 text-xs font-bold border border-dashed border-slate-200 dark:border-slate-800 rounded-xl sm:rounded-2xl">
                                             No {column.key.toLowerCase()} orders
                                         </div>
                                     ) : (
@@ -798,15 +801,15 @@ const ChefDashboard = () => {
                                             const timeDiffMinutes = Math.floor((currentTime - new Date(order.createdAt)) / 60000);
                                             const isSelf = order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup';
                                             return (
-                                                <div key={order._id} className="bg-slate-50 dark:bg-slate-950/80 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 space-y-3 shadow-md">
+                                                <div key={order._id} className="bg-slate-50 dark:bg-slate-950/80 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200 dark:border-slate-800 space-y-2.5 sm:space-y-3 shadow-sm">
                                                     <div className="flex justify-between items-center">
-                                                        <span className="font-mono font-black text-sm text-slate-900 dark:text-white">#{order._id.substring(order._id.length - 5).toUpperCase()}</span>
+                                                        <span className="font-mono font-black text-xs sm:text-sm text-slate-900 dark:text-white">#{order._id.substring(order._id.length - 5).toUpperCase()}</span>
                                                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${getTimerColorClass(timeDiffMinutes)}`}>
                                                             {timeDiffMinutes}m
                                                         </span>
                                                     </div>
                                                     
-                                                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
+                                                    <div className="space-y-1 min-w-0 pr-1 flex-1">
                                                         {order.orderItems?.slice(0, 4).map((it, idx) => (
                                                             <p key={idx} className="text-xs text-slate-800 dark:text-slate-300 font-bold truncate">
                                                                 {it.qty}× {it.name}
@@ -825,16 +828,16 @@ const ChefDashboard = () => {
                                                         )}
                                                         {order.status === 'Preparing' && (
                                                             <button onClick={() => updateStatus(order._id, isSelf ? 'Ready for Pickup' : 'Ready')} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs cursor-pointer active:scale-95 transition-all">
-                                                                {isSelf ? 'Transfer to Pickup Counter' : 'Mark Ticket Ready'}
+                                                                {isSelf ? 'Transfer to Pickup' : 'Mark Ticket Ready'}
                                                             </button>
                                                         )}
                                                         {['Ready', 'Ready for Pickup'].includes(order.status) && (
-                                                            <div className="text-center text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 py-1.5 rounded-xl flex items-center justify-center gap-1 border border-emerald-500/20">
-                                                                <CheckCircle size={13} className="text-emerald-500" /> Transferred to Waiter Pickup Queue
+                                                            <div className="text-center text-[10px] sm:text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 py-1.5 rounded-xl flex items-center justify-center gap-1 border border-emerald-500/20">
+                                                                <CheckCircle size={13} className="text-emerald-500" /> Transferred to Waiter
                                                             </div>
                                                         )}
                                                         {['Completed', 'Served', 'Picked Up', 'Delivered'].includes(order.status) && (
-                                                            <div className="text-center text-[11px] font-bold text-slate-500 flex items-center justify-center gap-1 py-1">
+                                                            <div className="text-center text-[10px] sm:text-[11px] font-bold text-slate-500 flex items-center justify-center gap-1 py-1">
                                                                 <CheckCircle size={13} className="text-emerald-500" /> Done
                                                             </div>
                                                         )}
@@ -852,8 +855,8 @@ const ChefDashboard = () => {
 
             {/* 4. New Ticket Popup Modal */}
             {newTicketModalOrder && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-slate-900 border-2 border-orange-500 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5 text-white animate-in zoom-in-95 duration-200">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-slate-900 border-2 border-orange-500 rounded-2xl sm:rounded-3xl p-4 sm:p-6 max-w-md w-full shadow-2xl space-y-4 sm:space-y-5 text-white animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-start">
                             <div className="flex items-center gap-3">
                                 <div className="p-3 bg-orange-500/20 text-orange-400 rounded-2xl border border-orange-500/30">
@@ -901,59 +904,59 @@ const ChefDashboard = () => {
 
             {/* 5. Manage 86 List (Out-of-Stock Ingredients) Modal */}
             {isAlertModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
                     <div className="absolute inset-0 bg-black/60 dark:bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setIsAlertModalOpen(false)}></div>
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-lg relative z-10 overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
-                        <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950/80">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2.5 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-xl border border-red-200 dark:border-red-500/30">
-                                    <Sliders size={20} />
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-lg relative z-10 overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 max-h-[90vh]">
+                        <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950/80">
+                            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 pr-2">
+                                <div className="p-2 sm:p-2.5 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-xl border border-red-200 dark:border-red-500/30 shrink-0">
+                                    <Sliders size={18} />
                                 </div>
-                                <div>
-                                    <h3 className="font-extrabold text-slate-900 dark:text-white text-base">Kitchen 86-List Management</h3>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Flag items out-of-stock to warn kitchen staff on incoming tickets.</p>
+                                <div className="min-w-0">
+                                    <h3 className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base truncate">86-List Management</h3>
+                                    <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium truncate">Flag out-of-stock kitchen ingredients</p>
                                 </div>
                             </div>
-                            <button onClick={() => setIsAlertModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                            <button onClick={() => setIsAlertModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white p-1.5 sm:p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0">
                                 ✕
                             </button>
                         </div>
                         
-                        <div className="p-6 space-y-6">
+                        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto">
                             {/* Add Item form */}
                             <form onSubmit={handleAddIngredient} className="flex gap-2">
                                 <input 
                                     type="text" 
-                                    placeholder="Enter ingredient name (e.g. Cheese, Truffle Oil)..." 
+                                    placeholder="Enter ingredient name..." 
                                     value={newIngredient}
                                     onChange={(e) => setNewIngredient(e.target.value)}
-                                    className="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-red-500"
+                                    className="flex-1 min-w-0 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl sm:rounded-2xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-red-500"
                                 />
-                                <button type="submit" className="bg-red-600 hover:bg-red-500 text-white font-extrabold rounded-2xl px-5 flex items-center justify-center transition-colors shadow-lg shadow-red-600/30 cursor-pointer">
-                                    <Plus size={18} /> Add
+                                <button type="submit" className="bg-red-600 hover:bg-red-500 text-white font-extrabold rounded-xl sm:rounded-2xl px-4 sm:px-5 flex items-center justify-center transition-colors shadow-md shadow-red-600/30 cursor-pointer text-xs shrink-0">
+                                    <Plus size={16} /> Add
                                 </button>
                             </form>
 
                             {/* List of currently stockout ingredients */}
-                            <div className="space-y-2.5 max-h-64 overflow-y-auto custom-scrollbar pr-1">
+                            <div className="space-y-2 sm:space-y-2.5 max-h-56 sm:max-h-64 overflow-y-auto custom-scrollbar pr-1">
                                 <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Active Flagged Ingredients</p>
                                 {outOfStock.length === 0 ? (
-                                    <div className="py-8 text-center text-slate-500 text-xs font-semibold bg-slate-50 dark:bg-slate-950/50 rounded-2xl border border-slate-200 dark:border-slate-800/80">
+                                    <div className="py-6 sm:py-8 text-center text-slate-500 text-xs font-semibold bg-slate-50 dark:bg-slate-950/50 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800/80">
                                         All ingredients are currently in stock!
                                     </div>
                                 ) : (
                                     outOfStock.map((ing) => (
-                                        <div key={ing} className="flex justify-between items-center p-3.5 bg-slate-50 dark:bg-slate-950/60 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs">
-                                            <div className="flex items-center gap-2.5">
-                                                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                                                <span className="font-extrabold text-slate-800 dark:text-slate-200">{ing}</span>
+                                        <div key={ing} className="flex justify-between items-center p-2.5 sm:p-3.5 bg-slate-50 dark:bg-slate-950/60 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 text-xs">
+                                            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 pr-2">
+                                                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
+                                                <span className="font-extrabold text-slate-800 dark:text-slate-200 truncate">{ing}</span>
                                             </div>
                                             <button 
                                                 onClick={() => handleRemoveIngredient(ing)}
-                                                className="px-3 py-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-red-500/20 text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 rounded-xl transition-all font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                                                className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-red-500/20 text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 rounded-lg sm:rounded-xl transition-all font-bold text-[10px] sm:text-[11px] flex items-center gap-1 cursor-pointer shrink-0"
                                                 title="Mark Restored In-Stock"
                                             >
-                                                <Trash2 size={13} /> Restored
+                                                <Trash2 size={12} /> Restored
                                             </button>
                                         </div>
                                     ))
@@ -961,10 +964,10 @@ const ChefDashboard = () => {
                             </div>
                         </div>
 
-                        <div className="p-6 bg-slate-50 dark:bg-slate-950/80 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+                        <div className="p-3.5 sm:p-6 bg-slate-50 dark:bg-slate-950/80 border-t border-slate-200 dark:border-slate-800 flex justify-end">
                             <button 
                                 onClick={() => setIsAlertModalOpen(false)}
-                                className="bg-slate-800 hover:bg-slate-700 text-white font-extrabold text-xs px-6 py-3 rounded-2xl transition-all cursor-pointer"
+                                className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white font-extrabold text-xs px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl transition-all cursor-pointer text-center"
                             >
                                 Done &amp; Close
                             </button>
