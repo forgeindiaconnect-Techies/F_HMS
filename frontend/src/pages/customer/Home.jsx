@@ -414,8 +414,8 @@ const Home = () => {
                 }}
             />
 
-            {/* Sticky Glassmorphism Navbar */}
-            <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 py-3 sm:py-4 px-4 sm:px-8 shadow-sm transition-all">
+            {/* Frozen Fixed Glassmorphism Navbar (stuck to top on scroll) */}
+            <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 py-3 sm:py-4 px-4 sm:px-8 shadow-sm transition-all">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <Link to="/" onClick={() => { setMobileMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center gap-2.5 sm:gap-3 group cursor-pointer">
                         <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-tr from-[#FF2D55] to-[#FF6A00] rounded-xl flex items-center justify-center shadow-lg shadow-[#FF2D55]/25 text-white group-hover:scale-105 transition-transform shrink-0">
@@ -566,7 +566,7 @@ const Home = () => {
             {/* ========================================================================= */}
             {/* HERO SECTION: 100% CRYSTAL CLEAR BACKGROUND VIDEO WITH PULSING SCROLL ICON */}
             {/* ========================================================================= */}
-            <section id="demo" className="min-h-[92vh] sm:min-h-screen flex flex-col justify-center items-center text-center px-4 py-20 sm:py-28 relative z-10 overflow-hidden bg-slate-950">
+            <section id="demo" className="min-h-screen flex flex-col justify-center items-center text-center px-4 pt-24 sm:pt-32 pb-16 sm:pb-24 relative z-10 overflow-hidden bg-slate-950">
                 
                 {/* 100% Crystal Clear Background Video Container with Poster Fallback */}
                 <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
@@ -621,11 +621,15 @@ const Home = () => {
                         <span className="text-white">Rated #1 Restaurant POS Platform 2026</span>
                     </div>
 
-                    {/* Character Stagger Heading Directly On Video */}
-                    <h1 ref={heroTitleRef} className="text-4xl sm:text-7xl lg:text-8xl font-black tracking-tight text-white leading-[1.1] drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)] flex justify-center flex-wrap">
-                        {mainTitleText.split('').map((char, index) => (
-                            <span key={index} className="char-span inline-block">
-                                {char === ' ' ? '\u00A0' : char}
+                    {/* Character Stagger Heading Directly On Video with proper word boundaries */}
+                    <h1 ref={heroTitleRef} className="text-3xl xs:text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight text-white leading-[1.1] drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)] flex flex-wrap justify-center gap-x-3 sm:gap-x-5 max-w-4xl mx-auto px-2">
+                        {mainTitleText.split(' ').map((word, wordIdx) => (
+                            <span key={wordIdx} className="inline-flex whitespace-nowrap">
+                                {word.split('').map((char, charIdx) => (
+                                    <span key={charIdx} className="char-span inline-block">
+                                        {char}
+                                    </span>
+                                ))}
                             </span>
                         ))}
                     </h1>
