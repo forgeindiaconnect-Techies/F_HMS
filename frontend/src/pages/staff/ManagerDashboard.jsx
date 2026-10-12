@@ -53,10 +53,10 @@ const ManagerDashboard = () => {
   const goalRemaining = Math.max(0, revenueGoal - totalRevenue);
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto space-y-6">
+    <div className="w-full max-w-[1600px] mx-auto space-y-4 sm:space-y-6">
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 rounded-full group-hover:scale-110 transition-transform" />
           <div className="relative">

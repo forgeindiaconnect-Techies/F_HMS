@@ -169,7 +169,7 @@ const NotificationCenter = () => {
     const unreadCount = notifications.filter(n => !n.read).length;
 
     return (
-        <div className="p-8 max-w-5xl mx-auto space-y-6 font-sans">
+        <div className="p-1 sm:p-4 md:p-8 max-w-5xl mx-auto space-y-4 sm:space-y-6 font-sans">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>Notification Center</h2>
