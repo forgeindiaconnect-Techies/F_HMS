@@ -169,7 +169,7 @@ const NotificationCenter = () => {
     const unreadCount = notifications.filter(n => !n.read).length;
 
     return (
-        <div className="p-1 sm:p-4 md:p-8 max-w-5xl mx-auto space-y-4 sm:space-y-6 font-sans">
+        <div className="px-0 py-2 sm:p-4 md:p-8 max-w-5xl mx-auto space-y-4 sm:space-y-6 font-sans">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>Notification Center</h2>
@@ -220,8 +220,8 @@ const NotificationCenter = () => {
                         <p>No notifications found in this view.</p>
                     </div>
                 ) : filteredNotifications.map(note => (
-                    <div key={note._id} className={`p-6 flex gap-4 transition-colors group ${note.read ? 'bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800/50' : 'bg-green-50/20 dark:bg-green-950/20 hover:bg-green-50/40 dark:hover:bg-green-950/40'}`}>
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${getBg(note.type)}`}>
+                    <div key={note._id} className={`p-3.5 sm:p-6 flex gap-3 sm:gap-4 transition-colors group ${note.read ? 'bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800/50' : 'bg-green-50/20 dark:bg-green-950/20 hover:bg-green-50/40 dark:hover:bg-green-950/40'}`}>
+                        <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 ${getBg(note.type)}`}>
                             {getIcon(note.type)}
                         </div>
                         
