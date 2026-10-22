@@ -24,7 +24,12 @@ const sanitizeOrderItems = (items) => {
 // @access  Private (Customer/Waiter)
 export const addOrderItems = async (req, res) => {
     try {
-        const { orderItems, orderType, source, restaurantId, branchId, paymentMethod, subscriptionPlan, taxPrice, totalPrice, tableNumber, notes, customerLocation, restaurantLocation, shippingAddress } = req.body;
+        const { 
+            orderItems, orderType, source, restaurantId, branchId, 
+            paymentMethod, subscriptionPlan, taxPrice, totalPrice, 
+            tableNumber, notes, customerLocation, restaurantLocation, 
+            shippingAddress, customerName, customerPhone, serviceType, isPaid 
+        } = req.body;
 
         if (!orderItems || orderItems.length === 0) {
             return res.status(400).json({ message: 'No order items' });
@@ -148,12 +153,22 @@ export const addOrderItems = async (req, res) => {
             ? Math.floor(1000 + Math.random() * 9000).toString() 
             : null;
 
+        const determinedServiceType = serviceType || (orderType === 'Self-Pickup' ? 'Self Dine-In (KFC Style)' : 'Waiter Table Service');
+        const defaultPrepMins = (orderType === 'Delivery') ? 30 : 20;
+        const finalPrepMinutes = Number(req.body.estimatedPrepMinutes) || defaultPrepMins;
+        const finalEstimatedReadyTime = req.body.estimatedReadyTime 
+            ? new Date(req.body.estimatedReadyTime) 
+            : new Date(Date.now() + finalPrepMinutes * 60 * 1000);
+
         const order = new Order({
             orderItems: sanitizeOrderItems(orderItems),
             user: finalUserId,
             restaurantId: finalRestaurantId,
             branchId: finalBranchId,
             orderType,
+            serviceType: determinedServiceType,
+            customerName: customerName || '',
+            customerPhone: customerPhone || '',
             tableNumber,
             notes,
             source: finalSource,
@@ -167,7 +182,10 @@ export const addOrderItems = async (req, res) => {
             restaurantLocation: finalRestaurantLoc,
             status: 'Pending', // Strictly force new order to Pending status
             deliveryStatus: 'None', // Strictly force None on creation until kitchen marks Ready for Pickup
-            isPaid: false, // Will be paid later or by cashier
+            isPaid: Boolean(isPaid),
+            paidAt: isPaid ? new Date() : null,
+            estimatedPrepMinutes: finalPrepMinutes,
+            estimatedReadyTime: finalEstimatedReadyTime,
             statusHistory: [{
                 status: 'Pending',
                 timestamp: Date.now()
@@ -205,7 +223,7 @@ export const addOrderItems = async (req, res) => {
             const Notification = (await import('../models/Notification.js')).default;
             await Notification.create({
                 title: `🔔 New Order #${createdOrder._id.toString().substring(createdOrder._id.toString().length - 5).toUpperCase()}`,
-                desc: `${orderType} ${tableNumber ? `(Table ${tableNumber})` : ''} - ${orderItems.map(i => `${i.qty}x ${i.name}`).join(', ')} (₹${totalPrice})`,
+                desc: `${determinedServiceType} ${tableNumber ? `(Table ${tableNumber})` : ''}${customerName ? ` • Guest: ${customerName}` : ''} - ${orderItems.map(i => `${i.qty}x ${i.name}`).join(', ')} (₹${totalPrice})`,
                 type: 'Order',
                 restaurantId: finalRestaurantId,
                 targetRole: ['Chef', 'Kitchen', 'Waiter', 'Cashier', 'RestaurantAdmin', 'Admin'],

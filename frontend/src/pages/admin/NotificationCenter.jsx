@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Bell, Megaphone, AlertCircle, Info, MailOpen, MoreHorizontal, X, Clock, Eye, CheckCircle2 } from 'lucide-react';
+import { Search, Plus, Bell, Megaphone, AlertCircle, Info, MailOpen, MoreHorizontal, X, Clock, Eye, CheckCircle2, Phone, MessageCircle, ExternalLink, Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import { useWhatsAppNotifications } from '../../context/WhatsAppNotificationContext';
 
 const getIcon = (type) => {
     switch(type) {
@@ -9,6 +10,7 @@ const getIcon = (type) => {
         case 'Info': return <Info size={20} className="text-blue-500" />;
         case 'Broadcast': return <Megaphone size={20} className="text-purple-500" />;
         case 'System': return <Info size={20} className="text-gray-500" />;
+        case 'WhatsApp': return <Phone size={20} className="text-emerald-500" />;
         default: return <Bell size={20} className="text-gray-500" />;
     }
 };
@@ -18,6 +20,7 @@ const getBg = (type) => {
         case 'Alert': return 'bg-red-100';
         case 'Info': return 'bg-blue-100';
         case 'Broadcast': return 'bg-purple-100';
+        case 'WhatsApp': return 'bg-emerald-100 dark:bg-emerald-950/50';
         default: return 'bg-gray-100';
     }
 };
@@ -40,6 +43,7 @@ const formatTime = (dateString) => {
 
 const NotificationCenter = () => {
     const { api } = useAuth();
+    const { alerts: waAlerts, setIsDrawerOpen, ownerPhone, markAsRead: markWaAsRead } = useWhatsAppNotifications();
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('All'); // All, Unread, Alerts
@@ -105,6 +109,10 @@ const NotificationCenter = () => {
     }, []);
 
     const handleMarkAsRead = async (id) => {
+        if (id.startsWith('wa-alert-')) {
+            markWaAsRead(id);
+            return;
+        }
         try {
             if (!id.startsWith('dummy-')) {
                 await api.put(`/notifications/${id}/read`);
@@ -160,13 +168,28 @@ const NotificationCenter = () => {
         }
     };
 
-    const filteredNotifications = notifications.filter(n => {
-        if (filter === 'Unread') return !n.read;
-        if (filter === 'Alerts') return n.type === 'Alert';
-        return true;
-    });
+    const formattedWaAlerts = (waAlerts || []).map(a => ({
+        _id: a.id,
+        title: a.title,
+        desc: a.message,
+        type: 'WhatsApp',
+        read: a.read,
+        createdAt: a.timestamp ? new Date(a.timestamp).toISOString() : new Date().toISOString(),
+        isWhatsApp: true,
+        original: a
+    }));
 
-    const unreadCount = notifications.filter(n => !n.read).length;
+    const allCombined = [...notifications, ...formattedWaAlerts];
+
+    const filteredNotifications = filter === 'WhatsApp' 
+        ? formattedWaAlerts 
+        : filter === 'Unread' 
+            ? allCombined.filter(n => !n.read) 
+            : filter === 'Alerts' 
+                ? allCombined.filter(n => n.type === 'Alert' || n.type === 'WhatsApp') 
+                : allCombined;
+
+    const unreadCount = allCombined.filter(n => !n.read).length;
 
     return (
         <div className="px-0 py-2 sm:p-4 md:p-8 max-w-5xl mx-auto space-y-4 sm:space-y-6 font-sans">
@@ -178,7 +201,7 @@ const NotificationCenter = () => {
             </div>
             
             <div className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-wrap gap-4 justify-between items-center">
-                <div className="flex gap-2 p-1 bg-gray-50 dark:bg-slate-950 rounded-lg border border-gray-200 dark:border-slate-800">
+                <div className="flex flex-wrap gap-2 p-1 bg-gray-50 dark:bg-slate-950 rounded-lg border border-gray-200 dark:border-slate-800">
                     <button 
                         onClick={() => setFilter('All')}
                         className={`px-4 py-1.5 font-bold rounded-md text-sm transition-colors cursor-pointer ${filter === 'All' ? 'bg-white dark:bg-slate-800 text-green-700 dark:text-green-400 shadow-sm' : 'hover:bg-white dark:hover:bg-slate-800 text-gray-600 dark:text-slate-400'}`}
@@ -198,15 +221,34 @@ const NotificationCenter = () => {
                     >
                         Alerts
                     </button>
-                </div>
-                {unreadCount > 0 && (
                     <button 
-                        onClick={handleMarkAllAsRead}
-                        className="text-sm text-gray-500 dark:text-slate-400 flex items-center gap-2 font-medium hover:text-green-600 dark:hover:text-green-400 transition-colors cursor-pointer"
+                        onClick={() => setFilter('WhatsApp')}
+                        className={`px-4 py-1.5 font-bold rounded-md text-sm transition-colors flex items-center gap-1.5 cursor-pointer ${filter === 'WhatsApp' ? 'bg-[#075E54] text-white shadow-sm' : 'hover:bg-white dark:hover:bg-slate-800 text-emerald-700 dark:text-emerald-400'}`}
                     >
-                        <MailOpen size={16} /> Mark all as read
+                        <Phone size={13} className={filter === 'WhatsApp' ? 'text-emerald-300' : 'text-emerald-600'} />
+                        <span>WhatsApp Alerts ({waAlerts.length})</span>
                     </button>
-                )}
+                </div>
+
+                <div className="flex items-center gap-3">
+                    <button
+                        type="button"
+                        onClick={() => setIsDrawerOpen(true)}
+                        className="px-3.5 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95 cursor-pointer"
+                    >
+                        <Phone size={13} />
+                        <span>Open WhatsApp Hub</span>
+                    </button>
+
+                    {unreadCount > 0 && (
+                        <button 
+                            onClick={handleMarkAllAsRead}
+                            className="text-sm text-gray-500 dark:text-slate-400 flex items-center gap-2 font-medium hover:text-green-600 dark:hover:text-green-400 transition-colors cursor-pointer"
+                        >
+                            <MailOpen size={16} /> Mark all as read
+                        </button>
+                    )}
+                </div>
             </div>
 
             <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden divide-y divide-gray-50 dark:divide-slate-800">
@@ -236,13 +278,40 @@ const NotificationCenter = () => {
                             </div>
                             <p className="text-sm text-gray-600 dark:text-slate-300 line-clamp-2">{note.desc}</p>
                             
-                            <div className="mt-3 flex items-center gap-4">
+                            <div className="mt-3 flex items-center gap-2 flex-wrap">
                                 <button 
                                     onClick={() => handleOpenViewModal(note)}
                                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-200 text-xs font-bold rounded-lg transition-colors cursor-pointer"
                                 >
                                     <Eye size={14} /> View Details
                                 </button>
+
+                                {note.isWhatsApp && (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const encoded = encodeURIComponent(note.desc);
+                                                window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
+                                            }}
+                                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-black rounded-lg transition-transform active:scale-95 shadow-2xs cursor-pointer"
+                                        >
+                                            <ExternalLink size={12} /> Open WhatsApp
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (navigator.clipboard) {
+                                                    navigator.clipboard.writeText(note.desc);
+                                                    toast.success('WhatsApp text copied to clipboard!');
+                                                }
+                                            }}
+                                            className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                                        >
+                                            <Copy size={12} /> Copy
+                                        </button>
+                                    </>
+                                )}
 
                                 {!note.read && (
                                     <button 

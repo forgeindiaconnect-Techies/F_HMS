@@ -37,6 +37,7 @@ import expenseRoutes from './routes/expenseRoutes.js';
 import supportRoutes from './routes/supportRoutes.js';
 import deliveryRoutes from './routes/deliveryRoutes.js';
 import inquiryRoutes from './routes/inquiryRoutes.js';
+import billingDemoRoutes from './routes/billingDemoRoutes.js';
 import Plan from './models/Plan.js';
 
 // Load env vars
@@ -113,6 +114,7 @@ app.use('/api/support', supportRoutes);
 app.use('/api/delivery', deliveryRoutes);
 app.use('/api/auth/delivery', deliveryRoutes);
 app.use('/api/inquiries', inquiryRoutes);
+app.use('/api/billing-demos', billingDemoRoutes);
 app.use('/api/expenses', expenseRoutes);
 
 const PORT = process.env.PORT || 5000;

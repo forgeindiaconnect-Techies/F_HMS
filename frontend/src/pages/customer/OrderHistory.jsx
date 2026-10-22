@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Star, ShoppingBag, MessageSquare, ExternalLink, Receipt, X, Printer } from 'lucide-react';
+import { ChevronLeft, Star, ShoppingBag, MessageSquare, ExternalLink, Receipt, X, Printer, Clock } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import { getOrderReadyTimeInfo } from '../../utils/orderReadyHelper';
 import toast from 'react-hot-toast';
 
 const OrderHistory = () => {
@@ -154,6 +155,24 @@ const OrderHistory = () => {
                                             )}
                                         </h3>
                                         <p className="text-sm text-gray-500 font-medium">{new Date(order.createdAt).toLocaleDateString()} • {order.status} • Paid via {order.paymentMethod || 'Card'}</p>
+                                        {(() => {
+                                            const readyInfo = getOrderReadyTimeInfo(order);
+                                            if (!readyInfo) return null;
+                                            return (
+                                                <div className="mt-2">
+                                                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
+                                                        readyInfo.isReady 
+                                                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300 animate-pulse' 
+                                                            : readyInfo.isPreparing 
+                                                            ? 'bg-amber-50 text-amber-900 border-amber-300' 
+                                                            : 'bg-gray-50 text-gray-600 border-gray-200'
+                                                    }`}>
+                                                        <Clock size={12} className={readyInfo.isPreparing ? "animate-spin text-amber-600" : ""} />
+                                                        {readyInfo.isReady ? 'Food Ready Now for Pickup' : readyInfo.isPreparing ? `Est. Ready: ${readyInfo.label} (${readyInfo.exactReadyTime})` : readyInfo.label}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })()}
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between md:flex-col md:items-end gap-2">

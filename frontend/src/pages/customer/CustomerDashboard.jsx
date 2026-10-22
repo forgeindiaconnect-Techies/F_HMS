@@ -5,7 +5,7 @@ import {
     Crown, Sparkles, Plus, Trash2, CheckCircle, 
     ChevronRight, LogOut, Wallet, Star, ShieldAlert,
     MapPin, Phone, Mail, Lock, Clock, Gift, User,
-    Bike, Store, Truck, Navigation
+    Bike, Store, Truck, Navigation, ChefHat, BellRing
 } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { Link } from 'react-router-dom';
@@ -13,6 +13,7 @@ import { useCart } from '../../context/CartContext';
 import { getItemImage } from '../../utils/imageHelper';
 import toast from 'react-hot-toast';
 import { ThemeSettingCard } from '../../components/ThemeToggle';
+import { getOrderReadyTimeInfo } from '../../utils/orderReadyHelper';
 
 const CustomerDashboard = () => {
     const { user, logout, api } = useCustomerAuth();
@@ -300,6 +301,11 @@ const CustomerDashboard = () => {
         (['Ready for Pickup', 'Ready'].includes(o.status))
     );
 
+    const activeOrders = safeOrders.filter(o => 
+        !['Delivered', 'Completed', 'Served', 'Cancelled'].includes(o.status) &&
+        o.deliveryStatus !== 'Delivered'
+    );
+
     // Sidebar navigation tabs definitions
     const tabsList = [
         { id: 'overview', name: 'Overview', icon: <LayoutGrid size={18} /> },
@@ -370,6 +376,151 @@ const CustomerDashboard = () => {
                     </Link>
                 </div>
             </div>
+
+            {/* Live Active Orders & Ready Time Overview Section */}
+            {activeOrders.length > 0 && (
+                <div className="bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-white p-6 sm:p-7 rounded-3xl border border-amber-200/90 shadow-sm space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-200/50 pb-3">
+                        <div className="flex items-center gap-2.5">
+                            <span className="relative flex h-3.5 w-3.5">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-amber-600"></span>
+                            </span>
+                            <h2 className="text-base sm:text-lg font-black text-gray-900 font-sans">
+                                Active Order in Progress ({activeOrders.length})
+                            </h2>
+                        </div>
+                        <button 
+                            onClick={() => setActiveTab('orders')}
+                            className="text-xs font-black text-amber-900 hover:text-orange-700 flex items-center gap-1 self-start sm:self-auto bg-amber-100/70 hover:bg-amber-100 px-3 py-1.5 rounded-xl transition-all"
+                        >
+                            View Order Details <ChevronRight size={14} />
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {activeOrders.map(order => {
+                            const readyInfo = getOrderReadyTimeInfo(order);
+                            const isReady = readyInfo?.isReady;
+                            const trackingUrl = order.orderType === 'Delivery'
+                                ? `/track/${order._id}?restaurantId=${order.restaurantId?._id || order.restaurantId}&branchId=${order.branchId?._id || order.branchId || ''}`
+                                : `/customer/track/${order._id}?restaurantId=${order.restaurantId?._id || order.restaurantId}&branchId=${order.branchId?._id || order.branchId || ''}`;
+
+                            return (
+                                <div 
+                                    key={order._id}
+                                    className={`rounded-2xl p-5 border transition-all duration-300 shadow-sm relative overflow-hidden bg-white ${
+                                        isReady 
+                                            ? 'border-emerald-400 ring-2 ring-emerald-500/20 bg-gradient-to-br from-white to-emerald-50/50' 
+                                            : 'border-amber-200/80 bg-white'
+                                    }`}
+                                >
+                                    {/* Order Meta */}
+                                    <div className="flex items-center justify-between gap-2 border-b border-gray-100 pb-2.5 mb-3">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-mono font-black text-xs text-gray-900 bg-gray-100 px-2.5 py-0.5 rounded-md">
+                                                #{getShortId(order._id)}
+                                            </span>
+                                            <span className="text-xs font-bold text-gray-800 truncate max-w-[150px]">
+                                                {order.restaurantId?.name || 'Restaurant Outlet'}
+                                            </span>
+                                        </div>
+                                        <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${
+                                            order.orderType === 'Delivery' 
+                                                ? 'bg-blue-50 text-blue-700 border-blue-200' 
+                                                : (order.serviceType === 'Self Dine-In (KFC Style)' || order.orderType?.includes('Pickup'))
+                                                ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                                : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                        }`}>
+                                            {order.serviceType || order.orderType || 'Dine In'} {order.tableNumber ? `(T-${order.tableNumber})` : ''}
+                                        </span>
+                                    </div>
+
+                                    {/* Items List */}
+                                    <p className="text-xs font-semibold text-gray-600 line-clamp-1 mb-3">
+                                        {order.orderItems?.map(i => `${i.qty}x ${i.name}`).join(', ') || 'Ordered Items'}
+                                    </p>
+
+                                    {/* Estimated Order Ready Time Highlight Box */}
+                                    <div className={`p-3.5 rounded-xl border transition-all ${
+                                        isReady 
+                                            ? 'bg-emerald-500 text-white border-emerald-600 shadow-md shadow-emerald-500/20' 
+                                            : 'bg-amber-50/90 border-amber-200/90'
+                                    }`}>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <div className="flex items-center gap-2.5">
+                                                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                                                    isReady ? 'bg-white/20 text-white' : 'bg-amber-200 text-amber-900'
+                                                }`}>
+                                                    {isReady ? <BellRing size={18} className="animate-bounce" /> : <Clock size={18} className="animate-pulse" />}
+                                                </div>
+                                                <div>
+                                                    <span className={`text-[10px] font-black uppercase tracking-wider block ${
+                                                        isReady ? 'text-emerald-100' : 'text-amber-800'
+                                                    }`}>
+                                                        {isReady ? 'Order Ready' : 'Estimated Ready Time'}
+                                                    </span>
+                                                    <h4 className={`text-sm sm:text-base font-black ${
+                                                        isReady ? 'text-white' : 'text-amber-950'
+                                                    }`}>
+                                                        {readyInfo ? readyInfo.label : 'Preparing...'}
+                                                    </h4>
+                                                </div>
+                                            </div>
+                                            {!isReady && readyInfo?.exactReadyTime && (
+                                                <div className="text-right">
+                                                    <span className="text-[9px] text-amber-800/80 font-bold uppercase tracking-wider block">Ready By</span>
+                                                    <span className="text-xs sm:text-sm font-black text-amber-950 font-mono">
+                                                        {readyInfo.exactReadyTime}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Progress Bar */}
+                                        {!isReady && (
+                                            <div className="mt-2.5 space-y-1">
+                                                <div className="h-1.5 w-full bg-amber-200/70 rounded-full overflow-hidden">
+                                                    <div 
+                                                        className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all duration-500"
+                                                        style={{ width: `${readyInfo?.progressPercent || 30}%` }}
+                                                    ></div>
+                                                </div>
+                                                <div className="flex justify-between items-center text-[10px] text-amber-900 font-medium px-0.5">
+                                                    <span>Chef Preparing</span>
+                                                    <span>ETA: ~{readyInfo?.prepMinutes || 20}m total</span>
+                                                    <span className="font-bold text-amber-950">{readyInfo?.exactReadyTime}</span>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <p className={`text-[11px] mt-2 font-medium leading-tight ${isReady ? 'text-white/90' : 'text-amber-800/90'}`}>
+                                            {readyInfo?.pickupPrompt}
+                                        </p>
+                                    </div>
+
+                                    {/* Action row */}
+                                    <div className="flex items-center justify-between gap-3 pt-3 mt-1">
+                                        <span className="text-xs font-black text-gray-900">
+                                            ₹{order.totalPrice ? order.totalPrice.toFixed(2) : '0.00'}
+                                        </span>
+                                        <Link
+                                            to={trackingUrl}
+                                            className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1 shadow-sm ${
+                                                isReady
+                                                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                                                    : 'bg-orange-600 hover:bg-orange-700 text-white shadow-orange-600/15'
+                                            }`}
+                                        >
+                                            Track Live Order <ChevronRight size={14} />
+                                        </Link>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
             {/* Portal Layout Container */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
@@ -634,6 +785,46 @@ const CustomerDashboard = () => {
                                                      ) : order.status}
                                                  </span>
                                             </div>
+
+                                            {/* Order Ready Time & ETA Display */}
+                                            {(() => {
+                                                const readyInfo = getOrderReadyTimeInfo(order);
+                                                if (!readyInfo) return null;
+                                                return (
+                                                    <div className={`p-3 rounded-xl border flex items-center justify-between gap-3 text-xs ${
+                                                        readyInfo.isReady
+                                                            ? 'bg-emerald-50 border-emerald-300 text-emerald-950 font-bold'
+                                                            : readyInfo.isPreparing
+                                                            ? 'bg-amber-50/90 border-amber-300/90 text-amber-950 font-medium'
+                                                            : readyInfo.isCompleted
+                                                            ? 'bg-gray-50 border-gray-200 text-gray-600'
+                                                            : 'bg-red-50 border-red-200 text-red-700'
+                                                    }`}>
+                                                        <div className="flex items-center gap-2.5">
+                                                            <Clock size={16} className={readyInfo.isPreparing ? 'text-amber-600 animate-spin shrink-0' : readyInfo.isReady ? 'text-emerald-600 shrink-0' : 'text-gray-400 shrink-0'} />
+                                                            <div>
+                                                                <span className="text-[10px] uppercase font-black tracking-wider block opacity-70">
+                                                                    {readyInfo.isReady ? 'Order Ready for Pickup' : readyInfo.isPreparing ? 'Estimated Order Ready Time' : 'Order Status'}
+                                                                </span>
+                                                                <span className="font-extrabold text-xs">
+                                                                    {readyInfo.isReady ? (
+                                                                        <span className="text-emerald-700 font-black">Food is Ready Now! Please collect / receive tray.</span>
+                                                                    ) : readyInfo.isPreparing ? (
+                                                                        <span>{readyInfo.label} <span className="opacity-75 font-normal">(Ready by {readyInfo.exactReadyTime})</span></span>
+                                                                    ) : (
+                                                                        readyInfo.label
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        {readyInfo.isPreparing && (
+                                                            <span className="font-mono font-black text-xs bg-white text-amber-950 px-2.5 py-1 rounded-lg border border-amber-200 shrink-0 shadow-xs">
+                                                                Ready by {readyInfo.exactReadyTime}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })()}
 
                                             <div className="flex justify-between items-center flex-wrap gap-4 text-xs">
                                                 <div>

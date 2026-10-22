@@ -15,6 +15,7 @@ import CustomerManagement from './pages/admin/CustomerManagement';
 import ReservationManagement from './pages/admin/ReservationManagement';
 import OrderManagement from './pages/admin/OrderManagement';
 import PaymentManagement from './pages/admin/PaymentManagement';
+import BillingManagement from './pages/admin/BillingManagement';
 import OfferManagement from './pages/admin/OfferManagement';
 import TaxManagement from './pages/admin/TaxManagement';
 import Reports from './pages/admin/Reports';
@@ -102,6 +103,8 @@ import UserManagement from './pages/superadmin/UserManagement';
 import FeatureManagement from './pages/superadmin/FeatureManagement';
 import SystemSettings from './pages/superadmin/SystemSettings';
 import NotificationManagement from './pages/superadmin/NotificationManagement';
+import InquiriesManagement from './pages/superadmin/InquiriesManagement';
+import BillingDemoRequestsManagement from './pages/superadmin/BillingDemoRequestsManagement';
 
 import PublicLayout from './layouts/PublicLayout';
 import TablesManagement from './pages/admin/TablesManagement';
@@ -113,6 +116,8 @@ import DeliveryPartnerDashboard from './pages/customer/DeliveryPartnerDashboard'
 import Contact from './pages/customer/Contact';
 import ManagementFeatures from './pages/ManagementFeatures';
 import ModuleDetails from './pages/ModuleDetails';
+import PosModuleLandingPage from './pages/customer/PosModuleLandingPage';
+import OutletTypeLandingPage from './pages/customer/OutletTypeLandingPage';
 import ThemeToggle from './components/ThemeToggle';
 import FloatingVideoWidget from './components/FloatingVideoWidget';
 
@@ -133,6 +138,23 @@ function App() {
           <Route path="contact" element={<Contact />} />
           <Route path="features/management" element={<ManagementFeatures />} />
           <Route path="features/details" element={<ModuleDetails />} />
+          <Route path="pos/:moduleSlug" element={<PosModuleLandingPage />} />
+          <Route path="pos/billing" element={<PosModuleLandingPage module="billing" />} />
+          <Route path="pos/inventory" element={<PosModuleLandingPage module="inventory" />} />
+          <Route path="pos/online-ordering" element={<PosModuleLandingPage module="online-ordering" />} />
+          <Route path="pos/reporting" element={<PosModuleLandingPage module="reporting" />} />
+          <Route path="pos/menu" element={<PosModuleLandingPage module="menu" />} />
+          <Route path="pos/crm" element={<PosModuleLandingPage module="crm" />} />
+          <Route path="pos/purchase-manager" element={<PosModuleLandingPage module="purchase-manager" />} />
+          <Route path="pos/offline-pos" element={<PosModuleLandingPage module="offline-pos" />} />
+
+          {/* Dedicated Restaurant Formats (Outlet Types) Landing Pages */}
+          <Route path="outlet-types/:formatSlug" element={<OutletTypeLandingPage />} />
+          <Route path="outlet-types/fine-dining" element={<OutletTypeLandingPage type="fine-dining" />} />
+          <Route path="outlet-types/quick-service" element={<OutletTypeLandingPage type="quick-service" />} />
+          <Route path="outlet-types/cafes-bakeries" element={<OutletTypeLandingPage type="cafes-bakeries" />} />
+          <Route path="outlet-types/cloud-kitchens" element={<OutletTypeLandingPage type="cloud-kitchens" />} />
+          <Route path="outlet-types/multi-outlet-chains" element={<OutletTypeLandingPage type="multi-outlet-chains" />} />
         </Route>
         <Route path="/" element={<CustomerAuthProvider><CartProvider><CustomerLayout /></CartProvider></CustomerAuthProvider>}>
           <Route path="menu" element={<Menu />} />
@@ -167,6 +189,8 @@ function App() {
         {/* Super Admin Routes */}
         <Route path="/super-admin" element={<ProtectedRoute allowedRoles={['SuperAdmin', 'SupportAgent']}><SuperAdminLayout /></ProtectedRoute>}>
           <Route index element={<SuperAdminDashboard />} />
+          <Route path="inquiries" element={<InquiriesManagement />} />
+          <Route path="billing-demos" element={<BillingDemoRequestsManagement />} />
           <Route path="restaurants" element={<PlatformRestaurants />} />
           <Route path="plans" element={<PlanManagement />} />
           <Route path="commissions" element={<CommissionManagement />} />
@@ -182,7 +206,7 @@ function App() {
         </Route>
 
         {/* Admin Dashboard Routes */}
-        <Route path="/admin" element={<ProtectedRoute allowedRoles={['RestaurantAdmin', 'Admin']}><DashboardLayout /></ProtectedRoute>}>
+        <Route path="/admin" element={<ProtectedRoute allowedRoles={['SuperAdmin', 'RestaurantAdmin', 'Admin']}><DashboardLayout /></ProtectedRoute>}>
           <Route index element={<DashboardHome />} />
           <Route path="activity" element={<ActivityLogs />} />
           <Route path="verification" element={<RestaurantVerification />} />
@@ -209,7 +233,8 @@ function App() {
           <Route path="suppliers" element={<SupplierManagement />} />
           
           {/* Finance & Marketing */}
-          <Route path="payments" element={<PaymentManagement />} />
+          <Route path="billing-management" element={<BillingManagement />} />
+          <Route path="payments" element={<BillingManagement />} />
           <Route path="offers" element={<OfferManagement />} />
           <Route path="taxes" element={<TaxManagement />} />
           
@@ -239,7 +264,7 @@ function App() {
           <Route path="support/announcements" element={<SupportAnnouncements />} />
         </Route>
         
-        <Route path="/manager" element={<ProtectedRoute allowedRoles={['BranchManager', 'RestaurantAdmin']}><ManagerLayout /></ProtectedRoute>}>
+        <Route path="/manager" element={<ProtectedRoute allowedRoles={['SuperAdmin', 'BranchManager', 'RestaurantAdmin']}><ManagerLayout /></ProtectedRoute>}>
           <Route index element={<ManagerDashboard />} />
           <Route path="orders" element={<ManagerOrderMonitoring />} />
           <Route path="staff" element={<ManagerStaff />} />
@@ -255,10 +280,11 @@ function App() {
           <Route path="settings" element={<ManagerSettings />} />
           <Route path="notifications" element={<NotificationCenter />} />
           <Route path="delivery" element={<DeliveryManagement />} />
+          <Route path="billing-management" element={<BillingManagement />} />
         </Route>
         
         {/* Staff Dashboards */}
-        <Route path="/waiter" element={<ProtectedRoute allowedRoles={['Waiter', 'RestaurantAdmin', 'BranchManager']}><WaiterLayout /></ProtectedRoute>}>
+        <Route path="/waiter" element={<ProtectedRoute allowedRoles={['SuperAdmin', 'Waiter', 'RestaurantAdmin', 'BranchManager']}><WaiterLayout /></ProtectedRoute>}>
           <Route index element={<WaiterDashboard />} />
           <Route path="priority-actions" element={<WaiterPriorityActions />} />
           <Route path="floor-plan" element={<WaiterFloorPlan />} />
@@ -272,14 +298,14 @@ function App() {
           <Route path="settings" element={<WaiterSettings />} />
         </Route>
         
-        <Route path="/chef" element={<ProtectedRoute allowedRoles={['Chef', 'RestaurantAdmin', 'BranchManager']}><ChefLayout /></ProtectedRoute>}>
+        <Route path="/chef" element={<ProtectedRoute allowedRoles={['SuperAdmin', 'Chef', 'RestaurantAdmin', 'BranchManager']}><ChefLayout /></ProtectedRoute>}>
           <Route index element={<ChefDashboard />} />
           <Route path="prep" element={<ChefPrepList />} />
           <Route path="recipes" element={<ChefRecipes />} />
           <Route path="inventory" element={<ChefInventory />} />
         </Route>
         
-        <Route path="/cashier" element={<ProtectedRoute allowedRoles={['Cashier', 'RestaurantAdmin', 'BranchManager']}><CashierLayout /></ProtectedRoute>}>
+        <Route path="/cashier" element={<ProtectedRoute allowedRoles={['SuperAdmin', 'Cashier', 'RestaurantAdmin', 'BranchManager']}><CashierLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="/cashier/billing" replace />} />
           <Route path="billing" element={<CashierDashboard />} />
           <Route path="invoices" element={<CashierDashboard />} />

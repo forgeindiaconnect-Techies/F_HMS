@@ -1,11 +1,12 @@
 import express from 'express';
 import { getStaff, createStaff, deleteStaff, updateStaff } from '../controllers/staffController.js';
-import { protect, authorize, checkSubscription } from '../middleware/authMiddleware.js';
+import { protect, authorize, checkSubscription, checkBillingModule } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 router.use(protect);
 router.use(checkSubscription);
+router.use(checkBillingModule('staffManagement'));
 
 router.route('/')
     .get(authorize('RestaurantAdmin', 'BranchManager'), getStaff)

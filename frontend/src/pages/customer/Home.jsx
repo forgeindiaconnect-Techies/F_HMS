@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../utils/axiosInstance';
+import WebsiteNavbar from '../../components/WebsiteNavbar';
+import WebsiteFooter from '../../components/WebsiteFooter';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
@@ -55,8 +57,6 @@ const Home = () => {
     const [plansLoading, setPlansLoading] = useState(false);
     const [isYearly, setIsYearly] = useState(false);
     const [openFaq, setOpenFaq] = useState(null);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [mobileFeaturesOpen, setMobileFeaturesOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
 
     // Active Card Video State
@@ -414,153 +414,8 @@ const Home = () => {
                 }}
             />
 
-            {/* Frozen Fixed Glassmorphism Navbar (stuck to top on scroll) */}
-            <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 py-3 sm:py-4 px-4 sm:px-8 shadow-sm transition-all">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <Link to="/" onClick={() => { setMobileMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center gap-2.5 sm:gap-3 group cursor-pointer">
-                        <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-tr from-[#FF2D55] to-[#FF6A00] rounded-xl flex items-center justify-center shadow-lg shadow-[#FF2D55]/25 text-white group-hover:scale-105 transition-transform shrink-0">
-                            <Utensils size={18} className="sm:w-5 sm:h-5" />
-                        </div>
-                        <h1 className="text-lg sm:text-2xl font-black tracking-tight text-slate-900 group-hover:text-[#FF2D55] transition-colors">
-                            Restaurant<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF2D55] to-[#FF6A00]">Hub</span>
-                        </h1>
-                    </Link>
-                    
-                    {/* Desktop Navigation */}
-                    <nav className="hidden md:flex gap-8 font-bold text-sm text-slate-700 items-center">
-                        <div className="relative group py-2">
-                            <a href="#features" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition-all cursor-pointer">
-                                Features <ChevronDown size={14} className="group-hover:rotate-180 transition-transform text-[#FF2D55]" />
-                            </a>
-
-                            <div className="absolute top-full left-0 w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                                <Link to="/features/management" className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-[#FF2D55]/10 text-slate-900 font-bold transition-all group/item">
-                                    <div className="flex items-center gap-2.5">
-                                        <span className="text-base">📊</span>
-                                        <span>Management</span>
-                                    </div>
-                                    <ArrowRight size={16} className="text-[#FF2D55] group-hover/item:translate-x-1 transition-transform" />
-                                </Link>
-                                <Link to="/features/details?module=orders" className="flex items-center justify-between p-3 mt-1 rounded-xl bg-slate-50 hover:bg-[#FF6A00]/10 text-slate-900 font-bold transition-all group/item-kds">
-                                    <div className="flex items-center gap-2.5">
-                                        <span className="text-base">🍳</span>
-                                        <span>Kitchen Workflow</span>
-                                    </div>
-                                    <ArrowRight size={16} className="text-[#FF6A00] group-hover/item-kds:translate-x-1 transition-transform" />
-                                </Link>
-                                <Link to="/features/details?module=intelligence" className="flex items-center justify-between p-3 mt-1 rounded-xl bg-slate-50 hover:bg-emerald-500/10 text-slate-900 font-bold transition-all group/item-pos">
-                                    <div className="flex items-center gap-2.5">
-                                        <span className="text-base">💳</span>
-                                        <span>POS Billing</span>
-                                    </div>
-                                    <ArrowRight size={16} className="text-emerald-600 group-hover/item-pos:translate-x-1 transition-transform" />
-                                </Link>
-                            </div>
-                        </div>
-
-                        <a href="#workflow" className="text-slate-700 hover:text-slate-950 transition-colors">Workflow</a>
-                        <a href="#pricing" className="text-slate-700 hover:text-slate-950 transition-colors">Pricing</a>
-                        <a href="#faq" className="text-slate-700 hover:text-slate-950 transition-colors">FAQ</a>
-                        <Link to="/contact" className="text-slate-700 hover:text-slate-950 transition-colors">Contact</Link>
-                    </nav>
-
-                    {/* Right CTA Actions & Mobile Toggle */}
-                    <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-bold shrink-0">
-                        <Link 
-                            to="/menu" 
-                            onMouseMove={handleMagneticMove}
-                            onMouseLeave={handleMagneticLeave}
-                            className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
-                        >
-                            <ShoppingBag size={16} className="sm:w-4 sm:h-4" />
-                            <span>Order Now</span>
-                        </Link>
-
-                        <Link to="/staff/login" className="hidden xs:inline-block text-slate-700 hover:text-slate-950 transition-colors px-2.5 py-1.5 sm:px-3 rounded-xl hover:bg-slate-100">
-                            Log In
-                        </Link>
-
-                        <Link 
-                            to="/staff/register" 
-                            onMouseMove={handleMagneticMove}
-                            onMouseLeave={handleMagneticLeave}
-                            className="hidden lg:flex bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] text-white font-extrabold px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl shadow-lg shadow-[#FF2D55]/25 transition-all focus:outline-none"
-                        >
-                            Get Started Free
-                        </Link>
-
-                        {/* Mobile Hamburger Menu Toggle Button */}
-                        <button
-                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            aria-label="Toggle Navigation Menu"
-                            className="md:hidden p-2 rounded-xl text-slate-700 hover:text-slate-950 bg-slate-100 transition-colors flex items-center justify-center cursor-pointer"
-                        >
-                            {mobileMenuOpen ? <X size={20} /> : <MenuIcon size={20} />}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Mobile Navigation Menu */}
-                {mobileMenuOpen && (
-                    <div className="md:hidden mt-3 pt-3 border-t border-slate-200/80 space-y-2 bg-white/95 backdrop-blur-xl rounded-2xl p-4 shadow-xl">
-                        <div className="space-y-1 min-w-0 pr-1.5 flex-1">
-                            <button
-                                onClick={() => setMobileFeaturesOpen(!mobileFeaturesOpen)}
-                                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-800 font-extrabold text-sm hover:bg-slate-100 transition-colors cursor-pointer"
-                            >
-                                <span className="flex items-center gap-2">
-                                    <span>✨</span> Features &amp; Modules
-                                </span>
-                                <ChevronDown size={16} className={`text-[#FF2D55] transition-transform duration-200 ${mobileFeaturesOpen ? 'rotate-180' : ''}`} />
-                            </button>
-
-                            {mobileFeaturesOpen && (
-                                <div className="pl-4 pr-2 py-2 space-y-1.5 border-l-2 border-[#FF2D55]/30 ml-3 bg-slate-50/80 rounded-r-xl">
-                                    <Link 
-                                        to="/features/management" 
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="flex items-center justify-between p-2.5 rounded-xl text-slate-800 font-bold text-xs hover:bg-[#FF2D55]/10 transition-colors"
-                                    >
-                                        <span>📊 Management Suite</span>
-                                        <ChevronRight size={14} className="text-[#FF2D55]" />
-                                    </Link>
-                                    <Link 
-                                        to="/features/details?module=orders" 
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="flex items-center justify-between p-2.5 rounded-xl text-slate-800 font-bold text-xs hover:bg-[#FF6A00]/10 transition-colors"
-                                    >
-                                        <span>🍳 Kitchen Workflow (KDS)</span>
-                                        <ChevronRight size={14} className="text-[#FF6A00]" />
-                                    </Link>
-                                </div>
-                            )}
-                        </div>
-
-
-                        <a 
-                            href="#workflow" 
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="block px-3 py-2 rounded-xl text-slate-700 font-bold text-sm hover:bg-slate-100 transition-colors"
-                        >
-                            Workflow
-                        </a>
-                        <a 
-                            href="#pricing" 
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="block px-3 py-2 rounded-xl text-slate-700 font-bold text-sm hover:bg-slate-100 transition-colors"
-                        >
-                            Pricing
-                        </a>
-                        <a 
-                            href="#faq" 
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="block px-3 py-2 rounded-xl text-slate-700 font-bold text-sm hover:bg-slate-100 transition-colors"
-                        >
-                            FAQ
-                        </a>
-                    </div>
-                )}
-            </header>
+            {/* Website Top Navigation Bar with POS, Add-ons, Outlet Types & Pricing */}
+            <WebsiteNavbar />
 
 
             {/* ========================================================================= */}
@@ -1135,69 +990,7 @@ const Home = () => {
             {/* ========================================================================= */}
             {/* COMPLETE RESTAURANTHUB FOOTER */}
             {/* ========================================================================= */}
-            <footer className="bg-slate-950 text-white border-t border-slate-800 py-16 px-6 sm:px-12 relative z-10 font-sans">
-                <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-slate-800">
-                    
-                    {/* Brand Column */}
-                    <div className="space-y-4 md:col-span-1">
-                        <Link to="/" className="flex items-center gap-2.5 group">
-                            <div className="w-9 h-9 bg-gradient-to-tr from-[#FF2D55] to-[#FF6A00] rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg">
-                                <Utensils size={18} />
-                            </div>
-                            <span className="text-xl font-black text-white">
-                                Restaurant<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF2D55] to-[#FF6A00]">Hub</span>
-                            </span>
-                        </Link>
-                        <p className="text-xs text-slate-400 font-medium leading-relaxed">
-                            The enterprise-grade cloud operating system for modern restaurants, cafes, food courts, and multi-branch chains.
-                        </p>
-                    </div>
-
-                    {/* Navigation Columns */}
-                    <div>
-                        <h4 className="text-xs font-black uppercase text-slate-300 tracking-wider mb-4">Platform Modules</h4>
-                        <ul className="space-y-2.5 text-xs text-slate-400 font-bold">
-                            <li><Link to="/features/management" className="hover:text-white transition-colors">Management Suite</Link></li>
-                            <li><Link to="/features/details?module=orders" className="hover:text-white transition-colors">Kitchen Display (KDS)</Link></li>
-                            <li><Link to="/features/details?module=intelligence" className="hover:text-white transition-colors">POS Billing System</Link></li>
-                            <li><Link to="/menu" className="hover:text-white transition-colors">Dine-In Digital Menu</Link></li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <div className="space-y-4 min-w-0 pr-1.5 flex-1">
-                            <h4 className="text-xs font-black uppercase text-slate-300 tracking-wider mb-4">Resources</h4>
-                            <ul className="space-y-2.5 text-xs text-slate-400 font-bold">
-                                <li><a href="#food-showcase" className="hover:text-white transition-colors">Food Showcase</a></li>
-                                <li><a href="#pricing" className="hover:text-white transition-colors">Subscription Plans</a></li>
-                                <li><a href="#workflow" className="hover:text-white transition-colors">Interactive Workflows</a></li>
-                                <li><Link to="/contact" className="hover:text-white transition-colors">24/7 Support Center</Link></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h4 className="text-xs font-black uppercase text-slate-300 tracking-wider mb-4">Account &amp; Access</h4>
-                        <ul className="space-y-2.5 text-xs text-slate-400 font-bold">
-                            <li><Link to="/staff/register" className="hover:text-white transition-colors">Register Partner Account</Link></li>
-                            <li><Link to="/customer/login" className="hover:text-white transition-colors">Customer Login</Link></li>
-                            <li><Link to="/staff/login" className="hover:text-white transition-colors">Staff &amp; POS Portal</Link></li>
-                            <li><Link to="/super-admin/login" className="hover:text-white transition-colors">Super Admin Portal</Link></li>
-                        </ul>
-                    </div>
-
-                </div>
-
-                {/* Bottom Bar */}
-                <div className="max-w-7xl mx-auto pt-8 flex flex-col sm:flex-row justify-between items-center text-xs font-bold text-slate-500 gap-4">
-                    <p>© 2026 RestaurantHub — Built By Ruturaj. All Rights Reserved.</p>
-                    <div className="flex items-center gap-6">
-                        <span className="hover:text-slate-[#FF2D55] cursor-pointer">Privacy Policy</span>
-                        <span className="hover:text-slate-300 cursor-pointer">Terms of Service</span>
-                        <span className="hover:text-slate-300 cursor-pointer">SLA Guarantee</span>
-                    </div>
-                </div>
-            </footer>
+            <WebsiteFooter />
 
         </div>
     );

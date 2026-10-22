@@ -7,17 +7,17 @@ export const createInquiry = async (req, res) => {
     try {
         const { name, email, phone, restaurantName, subject, message } = req.body;
 
-        if (!name || !email || !phone || !restaurantName || !subject || !message) {
-            return res.status(400).json({ message: 'All fields are required' });
+        if (!name || !phone || !restaurantName) {
+            return res.status(400).json({ message: 'Name, phone number, and restaurant name are required' });
         }
 
         const inquiry = new Inquiry({
             name,
-            email,
+            email: email || `${phone.replace(/\D/g, '') || 'lead'}@lead.restauranthub.com`,
             phone,
             restaurantName,
-            subject,
-            message
+            subject: subject || 'Demo',
+            message: message || 'Free Walkthrough Demo requested'
         });
 
         await inquiry.save();

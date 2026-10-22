@@ -354,6 +354,12 @@ export const updateMyRestaurant = async (req, res) => {
                     tableReservations: features.tableReservations !== undefined ? features.tableReservations : restaurant.features?.tableReservations
                 };
             }
+            if (req.body.posConfig) {
+                restaurant.posConfig = {
+                    ...(restaurant.posConfig ? (restaurant.posConfig.toObject ? restaurant.posConfig.toObject() : restaurant.posConfig) : {}),
+                    ...req.body.posConfig
+                };
+            }
 
             // Handle logo upload or removal (Base64 data URL, uploaded file, or removal)
             if (req.body.removeLogo === true || req.body.removeLogo === 'true' || req.body.logo === '') {

@@ -229,3 +229,44 @@ export const checkFeature = (featureName) => {
         }
     };
 };
+
+// Enforce module permissions for custom billing configurations on the backend
+export const checkBillingModule = (moduleName) => {
+    return async (req, res, next) => {
+        // SuperAdmin can bypass module restrictions
+        if (req.user?.role === 'SuperAdmin') {
+            return next();
+        }
+
+        if (!req.user || !req.user.restaurantId) {
+            return next();
+        }
+
+        try {
+            const restaurant = req.restaurant || await Restaurant.findById(req.user.restaurantId);
+            if (!restaurant) {
+                return next();
+            }
+
+            // Only enforce if custom billing is specifically active for this restaurant
+            if (restaurant.billingConfig?.isCustomBillingActive) {
+                const modules = restaurant.billingConfig?.modules || {};
+                const isEnabled = modules[moduleName] !== false;
+
+                if (!isEnabled) {
+                    return res.status(403).json({
+                        message: `Access denied: The "${moduleName}" module is disabled for your restaurant's billing configuration. Please contact Super Admin to activate this module.`,
+                        moduleDisabled: true,
+                        module: moduleName
+                    });
+                }
+            }
+
+            next();
+        } catch (error) {
+            console.error(`Error in checkBillingModule (${moduleName}):`, error);
+            next();
+        }
+    };
+};
+

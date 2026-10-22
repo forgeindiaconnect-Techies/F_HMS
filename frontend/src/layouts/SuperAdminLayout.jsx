@@ -3,7 +3,8 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
     LayoutDashboard, Store, CreditCard, Percent, TrendingUp, 
     Users, MessageSquare, SlidersHorizontal, Settings, BarChart3, 
-    Bell, ShieldCheck, LogOut, User, Menu, X, ChevronRight, ArrowLeft
+    Bell, ShieldCheck, LogOut, User, Menu, X, ChevronRight, ArrowLeft,
+    CalendarCheck, Receipt
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -63,6 +64,8 @@ const SuperAdminLayout = () => {
     const getNavigation = () => {
         const fullNavigation = [
             { name: 'Overview',            href: '/super-admin',               icon: LayoutDashboard, roles: ['SuperAdmin'] },
+            { name: 'Leads & Walkthroughs', href: '/super-admin/inquiries',     icon: CalendarCheck,   roles: ['SuperAdmin'] },
+            { name: 'Billing Demo Requests', href: '/super-admin/billing-demos', icon: Receipt,        roles: ['SuperAdmin'] },
             { name: 'Restaurants',         href: '/super-admin/restaurants',   icon: Store,           roles: ['SuperAdmin'] },
             { name: 'Plans',               href: '/super-admin/plans',         icon: CreditCard,      roles: ['SuperAdmin'] },
             { name: 'Commissions',         href: '/super-admin/commissions',   icon: Percent,         roles: ['SuperAdmin'] },
@@ -126,8 +129,10 @@ const SuperAdminLayout = () => {
                     <div className="space-y-0.5">
                         {navigation.map((item) => {
                             const Icon = item.icon;
-                            const isActive = location.pathname === item.href || 
-                                (item.href !== '/super-admin' && location.pathname.startsWith(item.href));
+                            const isActive = item.href.includes('#')
+                                ? (location.pathname + location.hash === item.href)
+                                : (location.pathname === item.href && !location.hash) || 
+                                  (item.href !== '/super-admin' && location.pathname.startsWith(item.href));
                             return (
                                 <Link
                                     key={item.name}

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import { AuthProvider } from './context/AuthContext';
+import { WhatsAppNotificationProvider } from './context/WhatsAppNotificationContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import App from './App.jsx';
 
@@ -11,7 +12,9 @@ createRoot(document.getElementById('root')).render(
     <ErrorBoundary>
       <BrowserRouter>
         <AuthProvider>
-          <App />
+          <WhatsAppNotificationProvider>
+            <App />
+          </WhatsAppNotificationProvider>
         </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>

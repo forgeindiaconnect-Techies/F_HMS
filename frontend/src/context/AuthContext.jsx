@@ -33,17 +33,19 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const config = error.config;
-        if (config && config.baseURL && config.baseURL.includes('localhost:5000')) {
+        const status = error.response ? error.response.status : 0;
+        const isNetworkDown = !error.response || error.code === 'ERR_NETWORK';
+        const isColdStart = status === 502 || status === 503 || status === 504 || isNetworkDown;
+
+        // Fallback to live Render backend ONLY if local port 5000 is completely down/unreachable, NEVER on 401/400/404
+        if (config && isNetworkDown && config.baseURL && config.baseURL.includes('localhost:5000')) {
             config.baseURL = 'https://f-hms.onrender.com/api';
             return api.request(config);
         }
-        if (config && (!config._retryCount || config._retryCount < 10)) {
-            const status = error.response ? error.response.status : 0;
-            if (status === 502 || status === 503 || status === 504 || !error.response || error.code === 'ERR_NETWORK') {
-                config._retryCount = (config._retryCount || 0) + 1;
-                await new Promise((resolve) => setTimeout(resolve, 2000));
-                return api.request(config);
-            }
+        if (config && isColdStart && (!config._retryCount || config._retryCount < 5)) {
+            config._retryCount = (config._retryCount || 0) + 1;
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            return api.request(config);
         }
         if (error.response && error.response.status === 401) {
             const path = window.location.pathname;
@@ -141,6 +143,7 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setRestaurant(null);
         localStorage.removeItem('restosys_staff_user');
+        localStorage.removeItem('token');
         // Clear all cached local data keys to prevent cross-restaurant data leakage
         Object.keys(localStorage).forEach(key => {
             if (key.startsWith('restosys_') || key.startsWith('cart_') || key.startsWith('table_')) {
@@ -156,6 +159,9 @@ export const AuthProvider = ({ children }) => {
             const { data } = await api.post('/auth/login', { email, password, loginType: 'staff' });
             setUser(data);
             localStorage.setItem('restosys_staff_user', JSON.stringify(data));
+            if (data?.token) {
+                localStorage.setItem('token', data.token);
+            }
             await fetchRestaurant(data);
             return { success: true, data };
         } catch (error) {

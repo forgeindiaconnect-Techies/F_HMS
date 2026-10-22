@@ -146,8 +146,19 @@ export const getRestaurants = async (req, res) => {
 
         const restaurants = await Restaurant.find().populate('ownerId', 'name email').sort({ createdAt: -1 }).lean();
 
-        // Auto-repair any restaurants with blank, null, or 'Unnamed' names
+        // Auto-repair any restaurants with blank, null, or missing owner/names
         const repairedRestaurants = await Promise.all(restaurants.map(async (r) => {
+            if (!r.ownerId) {
+                const owner = await User.findOne({ restaurantId: r._id, role: { $in: ['RestaurantAdmin', 'Admin'] } }).select('name email');
+                if (owner) {
+                    r.ownerId = { _id: owner._id, name: owner.name, email: owner.email };
+                    try {
+                        await Restaurant.findByIdAndUpdate(r._id, { ownerId: owner._id });
+                    } catch (e) {
+                        console.error("Failed to persist ownerId", e);
+                    }
+                }
+            }
             if (!r.name || r.name.trim() === '' || r.name === 'Unnamed') {
                 const ownerName = r.ownerId?.name || 'Partner';
                 r.name = `${ownerName}'s Restaurant`;

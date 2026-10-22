@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { CheckCircle, ChefHat, Bike, PackageOpen, ChevronLeft, Phone, MapPin, Store, User, ShieldCheck, KeyRound, MessageSquare } from 'lucide-react';
+import { CheckCircle, ChefHat, Bike, PackageOpen, ChevronLeft, Phone, MapPin, Store, User, ShieldCheck, KeyRound, MessageSquare, Clock, BellRing } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import LiveOrderMap from '../../components/LiveOrderMap';
+import { getOrderReadyTimeInfo } from '../../utils/orderReadyHelper';
 
 const OrderTracking = () => {
     const { id } = useParams();
@@ -93,12 +94,30 @@ const OrderTracking = () => {
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white font-sans tracking-tight">
                             Track Order #{order ? order._id.substring(order._id.length - 6).toUpperCase() : (id ? id.substring(id.length - 6).toUpperCase() : '')}
                         </h1>
-                        <p className="text-gray-500 dark:text-slate-400">
-                            {isSelfPickup ? 'Order Method: ' : 'Estimated Delivery: '}
-                            <span className="font-bold text-gray-900 dark:text-white">
-                                {isSelfPickup ? 'Self-Pickup at Counter' : `${order?.deliveryDistance ? Math.max(5, Math.ceil(order.deliveryDistance * 3)) : 15} mins`}
-                            </span>
-                        </p>
+                        <div className="flex items-center gap-3 flex-wrap mt-1">
+                            <p className="text-gray-500 dark:text-slate-400 text-sm">
+                                {isSelfPickup ? 'Order Method: ' : 'Estimated Delivery: '}
+                                <span className="font-bold text-gray-900 dark:text-white">
+                                    {isSelfPickup ? 'Self-Pickup at Counter' : `${order?.deliveryDistance ? Math.max(5, Math.ceil(order.deliveryDistance * 3)) : 15} mins`}
+                                </span>
+                            </p>
+                            {order && (() => {
+                                const readyInfo = getOrderReadyTimeInfo(order);
+                                if (!readyInfo) return null;
+                                return (
+                                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+                                        readyInfo.isReady 
+                                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300 animate-pulse'
+                                            : readyInfo.isPreparing
+                                            ? 'bg-amber-50 text-amber-900 border-amber-300'
+                                            : 'bg-gray-100 text-gray-700 border-gray-200'
+                                    }`}>
+                                        <Clock size={12} className={readyInfo.isPreparing ? 'text-amber-600 animate-spin' : ''} />
+                                        {readyInfo.isReady ? 'Food Ready Now' : `Ready: ${readyInfo.label} (by ${readyInfo.exactReadyTime})`}
+                                    </span>
+                                );
+                            })()}
+                        </div>
                     </div>
                 </div>
 
@@ -106,6 +125,83 @@ const OrderTracking = () => {
                     <div className="text-center py-20 text-gray-500 dark:text-slate-400">Loading tracking data...</div>
                 ) : (
                 <>
+
+                {/* Kitchen Order Ready Time Live Widget */}
+                {(() => {
+                    const readyInfo = getOrderReadyTimeInfo(order);
+                    if (!readyInfo || readyInfo.isCompleted || readyInfo.isCancelled) return null;
+
+                    if (readyInfo.isReady) {
+                        return (
+                            <div className="bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-3xl p-5 mb-8 shadow-lg border border-emerald-400/40 animate-pulse flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-3.5">
+                                    <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shrink-0">
+                                        <BellRing size={24} className="text-white animate-bounce" />
+                                    </div>
+                                    <div>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-emerald-100 block">
+                                            Order is Ready
+                                        </span>
+                                        <h3 className="text-base sm:text-lg font-black text-white mt-0.5">
+                                            {readyInfo.label}
+                                        </h3>
+                                        <p className="text-xs text-emerald-100/90 mt-0.5 font-medium">
+                                            {readyInfo.pickupPrompt}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="bg-white text-emerald-900 px-3.5 py-1.5 rounded-xl font-black text-xs shrink-0 shadow-sm">
+                                    Ready Now
+                                </div>
+                            </div>
+                        );
+                    }
+
+                    return (
+                        <div className="bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-white dark:from-slate-900 dark:to-slate-800 rounded-3xl p-5 mb-8 border border-amber-300/80 dark:border-amber-500/30 shadow-sm space-y-3">
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-11 h-11 bg-amber-500 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20">
+                                        <Clock size={22} className="animate-spin" />
+                                    </div>
+                                    <div>
+                                        <span className="text-[10px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-400 block">
+                                            Estimated Order Ready Time
+                                        </span>
+                                        <h3 className="text-base sm:text-lg font-black text-amber-950 dark:text-amber-100">
+                                            {readyInfo.label}
+                                        </h3>
+                                    </div>
+                                </div>
+                                <div className="text-right bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-amber-200 dark:border-slate-700 shadow-xs">
+                                    <span className="text-[9px] text-amber-800/80 dark:text-amber-400 font-bold uppercase tracking-wider block">Ready By</span>
+                                    <span className="text-xs sm:text-sm font-black text-amber-950 dark:text-amber-200 font-mono">
+                                        {readyInfo.exactReadyTime}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Preparation Progress Bar */}
+                            <div className="space-y-1.5 pt-1">
+                                <div className="h-2 w-full bg-amber-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                    <div 
+                                        className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all duration-700"
+                                        style={{ width: `${readyInfo.progressPercent}%` }}
+                                    ></div>
+                                </div>
+                                <div className="flex justify-between items-center text-[10px] text-amber-800 dark:text-amber-400 font-semibold px-0.5">
+                                    <span>Chef Preparing in Kitchen</span>
+                                    <span>Total Prep: ~{readyInfo.prepMinutes} mins</span>
+                                    <span className="font-bold text-amber-950 dark:text-amber-200">{readyInfo.exactReadyTime}</span>
+                                </div>
+                            </div>
+
+                            <p className="text-[11px] text-amber-800/90 dark:text-amber-300 font-medium leading-relaxed bg-amber-50/60 dark:bg-slate-800/60 p-2.5 rounded-xl border border-amber-100/80 dark:border-slate-700">
+                                {readyInfo.pickupPrompt}
+                            </p>
+                        </div>
+                    );
+                })()}
 
                 {/* Delivery Verification OTP Banner */}
                 {!isSelfPickup && order.deliveryOtp && !isDelivered && (

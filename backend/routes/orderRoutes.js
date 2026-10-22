@@ -13,7 +13,7 @@ import {
     verifyRazorpayCustomerPayment,
     updateDeliveryLocation
 } from '../controllers/orderController.js';
-import { protect, optionalProtect } from '../middleware/authMiddleware.js';
+import { protect, optionalProtect, checkBillingModule } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -22,7 +22,7 @@ router.route('/razorpay-verify').post(verifyRazorpayCustomerPayment);
 
 router.route('/')
     .post(optionalProtect, addOrderItems)
-    .get(protect, getOrders);
+    .get(protect, checkBillingModule('dineInTakeawayOrders'), getOrders);
 
 router.route('/myorders').get(protect, getMyOrders);
 

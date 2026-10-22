@@ -7,7 +7,7 @@ const inquirySchema = new mongoose.Schema({
     },
     email: {
         type: String,
-        required: true
+        default: 'N/A'
     },
     phone: {
         type: String,

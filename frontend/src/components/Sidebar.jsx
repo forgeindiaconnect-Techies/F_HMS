@@ -5,7 +5,7 @@ import {
     Activity, UserCheck, Key, ListTree, PackageSearch, Truck, Heart, 
     CalendarCheck, ShoppingBag, CreditCard, Tag, FileText, PieChart, 
     Bell, ReceiptText, Lock, QrCode, MessageSquare, HelpCircle, Volume2, LifeBuoy,
-    Network, ChefHat
+    Network, ChefHat, Receipt
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../context/AuthContext';
@@ -78,34 +78,38 @@ const Sidebar = () => {
     };
     const logoSrc = getLogoUrl();
     
-    const navGroups = [
+    const isCustomBilling = restaurant?.billingConfig?.isCustomBillingActive === true;
+    const customModules = restaurant?.billingConfig?.modules || {};
+
+    const rawNavGroups = [
         {
             title: 'Overview',
             items: [
                 { name: 'Business Overview', path: '/admin', icon: LayoutDashboard },
-                { name: 'Sales Analytics', path: '/admin/analytics', icon: PieChart },
-                { name: 'Expense Summary', path: '/admin/expenses', icon: ReceiptText },
+                { name: 'Sales Analytics', path: '/admin/analytics', icon: PieChart, moduleKey: 'salesReports' },
+                { name: 'Expense Summary', path: '/admin/expenses', icon: ReceiptText, moduleKey: 'salesReports' },
             ]
         },
         {
             title: 'Management',
             items: [
-                { name: 'Branch Management', path: '/admin/branches', icon: Store },
-                { name: 'Menu Management', path: '/admin/menu', icon: UtensilsCrossed },
-                { name: 'Inventory Management', path: '/admin/inventory', icon: PackageSearch },
-                { name: 'Staff Management', path: '/admin/staff', icon: UserCheck },
-                { name: 'Customer Management', path: '/admin/customers', icon: Users },
+                { name: 'Billing Management', path: '/admin/billing-management', icon: Receipt, moduleKey: 'posBilling' },
+                { name: 'Branch Management', path: '/admin/branches', icon: Store, moduleKey: 'staffManagement' },
+                { name: 'Menu Management', path: '/admin/menu', icon: UtensilsCrossed, moduleKey: 'menuManagement' },
+                { name: 'Inventory Management', path: '/admin/inventory', icon: PackageSearch, moduleKey: 'inventoryManagement' },
+                { name: 'Staff Management', path: '/admin/staff', icon: UserCheck, moduleKey: 'staffManagement' },
+                { name: 'Customer Management', path: '/admin/customers', icon: Users, moduleKey: 'customerManagement' },
             ]
         },
         {
             title: 'Operations',
             items: [
-                { name: 'Order Management', path: '/admin/orders', icon: ShoppingBag },
-                { name: 'Table Management', path: '/admin/tables', icon: QrCode },
-                { name: 'QR Digital Menu', path: '/admin/tables?tab=qr', icon: QrCode },
-                { name: 'Reservation Management', path: '/admin/reservations', icon: CalendarCheck },
-                { name: 'Offers & Promotions', path: '/admin/offers', icon: Tag },
-                { name: 'Delivery Management', path: '/admin/delivery', icon: Truck },
+                { name: 'Order Management', path: '/admin/orders', icon: ShoppingBag, moduleKey: 'dineInTakeawayOrders' },
+                { name: 'Table Management', path: '/admin/tables', icon: QrCode, moduleKey: 'tableManagement' },
+                { name: 'QR Digital Menu', path: '/admin/tables?tab=qr', icon: QrCode, moduleKey: 'tableManagement' },
+                { name: 'Reservation Management', path: '/admin/reservations', icon: CalendarCheck, moduleKey: 'tableManagement' },
+                { name: 'Offers & Promotions', path: '/admin/offers', icon: Tag, moduleKey: 'discounts' },
+                { name: 'Delivery Management', path: '/admin/delivery', icon: Truck, moduleKey: 'dineInTakeawayOrders' },
             ]
         },
         {
@@ -135,13 +139,22 @@ const Sidebar = () => {
         {
             title: 'Reports & Config',
             items: [
-                { name: 'Reports', path: '/admin/reports', icon: FileText },
+                { name: 'Reports', path: '/admin/reports', icon: FileText, moduleKey: 'salesReports' },
                 { name: 'Settings', path: '/admin/settings', icon: Settings },
                 { name: 'Notifications', path: '/admin/notifications', icon: Bell },
                 { name: 'Verification', path: '/admin/verification', icon: FileText },
             ]
         }
     ];
+
+    const navGroups = rawNavGroups.map(group => {
+        if (!isCustomBilling) return group;
+        const filteredItems = group.items.filter(item => {
+            if (!item.moduleKey) return true;
+            return customModules[item.moduleKey] !== false;
+        });
+        return { ...group, items: filteredItems };
+    }).filter(group => group.items.length > 0);
 
     return (
         <>
@@ -172,9 +185,16 @@ const Sidebar = () => {
                         <UtensilsCrossed size={24} />
                     </div>
                 )}
-                <h1 className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-400 truncate max-w-[150px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                    {restaurant && restaurant.name ? restaurant.name : 'RestoSys'}
-                </h1>
+                <div className="flex flex-col truncate">
+                    <h1 className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-400 truncate max-w-[150px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        {restaurant && restaurant.name ? restaurant.name : 'RestoSys'}
+                    </h1>
+                    {isCustomBilling && (
+                        <span className="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/60 w-fit mt-0.5 truncate max-w-[140px]">
+                            Custom • {restaurant?.billingConfig?.outletFormat || 'Setup'}
+                        </span>
+                    )}
+                </div>
             </div>
             
             {/* Scrollable Navigation */}

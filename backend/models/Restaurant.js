@@ -100,6 +100,47 @@ const restaurantSchema = new mongoose.Schema({
         type: Boolean,
         default: true,
     },
+    posConfig: {
+        outletFormat: { type: String, default: 'Fine Dine & Resto-Bar' },
+        tablesEnabled: { type: Boolean, default: true },
+        qsrCounterMode: { type: Boolean, default: false },
+        kdsEnabled: { type: Boolean, default: true },
+        inventoryAutoDeduct: { type: Boolean, default: true },
+        deliveryFleetEnabled: { type: Boolean, default: true },
+        loyaltyPointsEnabled: { type: Boolean, default: true },
+        whatsappPnlAlerts: { type: Boolean, default: true },
+        happyHoursEnabled: { type: Boolean, default: true },
+        serviceChargePercent: { type: Number, default: 5 },
+        barcodeScannerEnabled: { type: Boolean, default: false },
+        guestQrOrdering: { type: Boolean, default: true }
+    },
+    billingConfig: {
+        isCustomBillingActive: { type: Boolean, default: false },
+        activatedAt: { type: Date, default: null },
+        demoRequestId: { type: mongoose.Schema.Types.ObjectId, ref: 'BillingDemoRequest', default: null },
+        outletFormat: { type: String, default: 'Fine Dine & Resto-Bar' },
+        modules: {
+            posBilling: { type: Boolean, default: true },
+            menuManagement: { type: Boolean, default: true },
+            tableManagement: { type: Boolean, default: true },
+            dineInTakeawayOrders: { type: Boolean, default: true },
+            kitchenOrderManagement: { type: Boolean, default: true },
+            gstInvoice: { type: Boolean, default: true },
+            discounts: { type: Boolean, default: true },
+            customerManagement: { type: Boolean, default: true },
+            inventoryManagement: { type: Boolean, default: true },
+            salesReports: { type: Boolean, default: true },
+            staffManagement: { type: Boolean, default: true }
+        },
+        paymentMethods: {
+            cash: { type: Boolean, default: true },
+            upi: { type: Boolean, default: true },
+            card: { type: Boolean, default: true },
+            split: { type: Boolean, default: true }
+        },
+        serviceChargePercent: { type: Number, default: 5 },
+        gstRatePercent: { type: Number, default: 5 }
+    },
 }, { timestamps: true });
 
 const Restaurant = mongoose.model('Restaurant', restaurantSchema);

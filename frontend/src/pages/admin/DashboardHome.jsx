@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
-import { TrendingUp, Users, ShoppingBag, DollarSign } from 'lucide-react';
+import { TrendingUp, Users, ShoppingBag, DollarSign, Phone, MessageCircle, Bell, BarChart3, ExternalLink } from 'lucide-react';
 import StatCard from '../../components/StatCard';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { useAuth } from '../../context/AuthContext';
+import { useWhatsAppNotifications } from '../../context/WhatsAppNotificationContext';
 
 const DashboardHome = () => {
-    const { api } = useAuth();
+    const { api, restaurant } = useAuth();
+    const isCustomActive = restaurant?.billingConfig?.isCustomBillingActive === true;
+    const customModules = restaurant?.billingConfig?.modules || {};
+    const { ownerPhone, isSyncActive, alerts, unreadCount, setIsDrawerOpen, triggerTestNotification, dispatchDailyClosingSummary } = useWhatsAppNotifications();
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState(null);
 
@@ -74,6 +78,33 @@ const DashboardHome = () => {
                 <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Welcome back! Manage your overall business operations, sales, staff, and customer orders.</p>
             </div>
 
+            {/* Custom Billing Configuration Banner */}
+            {isCustomActive && (
+                <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-transparent border border-emerald-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                    <div className="flex items-center gap-3">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0 animate-ping"></span>
+                        <div>
+                            <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                Custom Billing Setup Active
+                                <span className="px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider">
+                                    {restaurant?.billingConfig?.outletFormat || 'Configured'}
+                                </span>
+                            </h4>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                Your POS and back-office workspace is tailored for {restaurant?.billingConfig?.outletFormat || 'your outlet format'}. Only chosen modules are active.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        {Object.entries(customModules).filter(([_, enabled]) => enabled).slice(0, 4).map(([modKey]) => (
+                            <span key={modKey} className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white dark:bg-slate-800 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+                                {modKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* KPI Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
@@ -110,8 +141,96 @@ const DashboardHome = () => {
                 />
             </div>
 
+            {/* WhatsApp Real-Time Business Pulse & Instant Alerts Widget */}
+            <div className="bg-gradient-to-r from-[#075E54] via-[#0A433B] to-[#0A192F] rounded-3xl p-6 text-white shadow-xl border border-emerald-500/30 relative overflow-hidden">
+                <div 
+                    className="absolute inset-0 opacity-10 pointer-events-none"
+                    style={{
+                        backgroundImage: 'radial-gradient(#25D366 1px, transparent 1px)',
+                        backgroundSize: '16px 16px'
+                    }}
+                />
+
+                <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                    {/* Left: Info & Status */}
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                            <span className="px-3 py-1 rounded-full bg-[#25D366] text-white font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+                                <Phone size={13} className="fill-white" />
+                                <span>WhatsApp Live Gateway</span>
+                            </span>
+                            <span className="flex items-center gap-1 text-emerald-300 text-xs font-bold">
+                                <span className={`w-2 h-2 rounded-full ${isSyncActive ? 'bg-emerald-400 animate-ping' : 'bg-slate-400'}`} />
+                                {isSyncActive ? 'Bot Connected & Syncing' : 'Sync Paused'}
+                            </span>
+                        </div>
+
+                        <div>
+                            <h3 className="text-xl sm:text-2xl font-black tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                Owner Real-Time Alerts & Automated Dispatch
+                            </h3>
+                            <p className="text-emerald-100/90 text-xs sm:text-sm font-medium mt-1">
+                                Registered Mobile: <span className="font-bold underline text-white font-mono">{ownerPhone}</span> • Auto-dispatching live orders, KDS delays, low stock warnings, and daily P&L statements.
+                            </p>
+                        </div>
+
+                        {/* Recent Alerts Pill Ticker */}
+                        <div className="flex items-center gap-2 pt-1 flex-wrap">
+                            <span className="text-[11px] text-emerald-300 font-bold uppercase tracking-wider">Latest Bot Pings:</span>
+                            {alerts.slice(0, 2).map((alt) => (
+                                <span
+                                    key={alt.id}
+                                    onClick={() => setIsDrawerOpen(true)}
+                                    className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-[11px] font-semibold text-emerald-100 flex items-center gap-1.5 cursor-pointer transition-colors"
+                                    title="Click to view full message"
+                                >
+                                    <span className="text-emerald-400 font-bold">✓✓</span>
+                                    <span className="line-clamp-1">{alt.title}</span>
+                                    <span className="text-[10px] text-emerald-300/70">({alt.time})</span>
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Right: Action Buttons */}
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 shrink-0">
+                        <button
+                            type="button"
+                            onClick={() => triggerTestNotification()}
+                            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 text-white font-black text-xs flex items-center justify-center gap-2 transition-transform active:scale-95 cursor-pointer shadow-xs"
+                        >
+                            <Bell size={14} className="text-emerald-300" />
+                            <span>Test Live Ping</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => dispatchDailyClosingSummary({ revenue: overview.totalRevenue || 124917, orders: overview.totalOrders || 342 })}
+                            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-700/80 hover:bg-emerald-700 border border-emerald-400/40 text-white font-black text-xs flex items-center justify-center gap-2 transition-transform active:scale-95 cursor-pointer shadow-xs"
+                        >
+                            <BarChart3 size={14} />
+                            <span>Dispatch P&L to WhatsApp</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => setIsDrawerOpen(true)}
+                            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40 transition-transform active:scale-95 cursor-pointer"
+                        >
+                            <MessageCircle size={15} />
+                            <span>Open WhatsApp Hub</span>
+                            {unreadCount > 0 && (
+                                <span className="bg-white text-emerald-800 text-[10px] font-black px-1.5 py-0.2 rounded-full">
+                                    {unreadCount}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             {/* QR Ordering Analytics Section */}
-            {data?.qrAnalytics && (
+            {data?.qrAnalytics && (!isCustomActive || customModules.tableManagement !== false) && (
                 <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-6 space-y-4">
                     <h3 className="text-lg font-bold text-gray-950 dark:text-slate-100 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
                         <span className="flex h-2 w-2 rounded-full bg-emerald-500"></span>
@@ -156,7 +275,7 @@ const DashboardHome = () => {
             )}
 
             {/* Delivery Ops Section */}
-            {data?.deliveryAnalytics && (
+            {data?.deliveryAnalytics && (!isCustomActive || customModules.dineInTakeawayOrders !== false) && (
                 <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-6 space-y-4">
                     <h3 className="text-lg font-bold text-gray-950 dark:text-slate-100 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
                         <span className="flex h-2 w-2 rounded-full bg-blue-500"></span>
@@ -189,66 +308,68 @@ const DashboardHome = () => {
             )}
 
             {/* Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Revenue Area Chart */}
-                <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800">
-                    <h3 className="text-lg font-bold text-gray-800 dark:text-slate-100 mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>Weekly Revenue</h3>
-                    <div className="h-72">
-                        {overview.totalOrders === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-slate-500">
-                                <DollarSign size={40} className="mb-2 text-gray-300 dark:text-slate-600" />
-                                <p className="text-sm font-semibold">No order data available yet</p>
-                                <p className="text-xs text-gray-400 dark:text-slate-500">Total revenue will show here once orders are placed.</p>
-                            </div>
-                        ) : (
-                            <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={100}>
-                                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                                    <defs>
-                                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#16A34A" stopOpacity={0.25} />
-                                            <stop offset="95%" stopColor="#16A34A" stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
-                                    <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
-                                    <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v}`} />
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
-                                    <Tooltip
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.2)', backgroundColor: '#0f172a', color: '#f8fafc', fontFamily: 'Inter, sans-serif' }}
-                                        formatter={(val) => [`₹${val}`, 'Revenue']}
-                                    />
-                                    <Area type="monotone" dataKey="revenue" stroke="#16A34A" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" dot={false} activeDot={{ r: 5, fill: '#16A34A' }} />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        )}
+            {(!isCustomActive || customModules.salesReports !== false) && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Revenue Area Chart */}
+                    <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800">
+                        <h3 className="text-lg font-bold text-gray-800 dark:text-slate-100 mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>Weekly Revenue</h3>
+                        <div className="h-72">
+                            {overview.totalOrders === 0 ? (
+                                <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-slate-500">
+                                    <DollarSign size={40} className="mb-2 text-gray-300 dark:text-slate-600" />
+                                    <p className="text-sm font-semibold">No order data available yet</p>
+                                    <p className="text-xs text-gray-400 dark:text-slate-500">Total revenue will show here once orders are placed.</p>
+                                </div>
+                            ) : (
+                                <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={100}>
+                                    <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                        <defs>
+                                            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#16A34A" stopOpacity={0.25} />
+                                                <stop offset="95%" stopColor="#16A34A" stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v}`} />
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
+                                        <Tooltip
+                                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.2)', backgroundColor: '#0f172a', color: '#f8fafc', fontFamily: 'Inter, sans-serif' }}
+                                            formatter={(val) => [`₹${val}`, 'Revenue']}
+                                        />
+                                        <Area type="monotone" dataKey="revenue" stroke="#16A34A" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" dot={false} activeDot={{ r: 5, fill: '#16A34A' }} />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            )}
+                        </div>
                     </div>
-                </div>
 
-                {/* Top Dishes Bar Chart */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800">
-                    <h3 className="text-lg font-bold text-gray-800 dark:text-slate-100 mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>Top Dishes</h3>
-                    <div className="h-72">
-                        {popularItems.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-slate-500">
-                                <ShoppingBag size={40} className="mb-2 text-gray-300 dark:text-slate-600" />
-                                <p className="text-sm font-semibold">No sales data available</p>
-                                <p className="text-xs text-gray-400 dark:text-slate-500">Popular dishes will be ranked here by sales.</p>
-                            </div>
-                        ) : (
-                            <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={100}>
-                                <BarChart data={popularItems} layout="vertical" margin={{ top: 0, right: 10, left: 10, bottom: 0 }}>
-                                    <XAxis type="number" hide />
-                                    <YAxis type="category" dataKey="name" width={80} stroke="#9ca3af" fontSize={11} tickLine={false} axisLine={false} />
-                                    <Tooltip
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.2)', backgroundColor: '#0f172a', color: '#f8fafc', fontFamily: 'Inter, sans-serif' }}
-                                        formatter={(val) => [val, 'Sold']}
-                                    />
-                                    <Bar dataKey="sales" fill="#F97316" radius={[0, 8, 8, 0]} barSize={18} />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        )}
+                    {/* Top Dishes Bar Chart */}
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800">
+                        <h3 className="text-lg font-bold text-gray-800 dark:text-slate-100 mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>Top Dishes</h3>
+                        <div className="h-72">
+                            {popularItems.length === 0 ? (
+                                <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-slate-500">
+                                    <ShoppingBag size={40} className="mb-2 text-gray-300 dark:text-slate-600" />
+                                    <p className="text-sm font-semibold">No sales data available</p>
+                                    <p className="text-xs text-gray-400 dark:text-slate-500">Popular dishes will be ranked here by sales.</p>
+                                </div>
+                            ) : (
+                                <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={100}>
+                                    <BarChart data={popularItems} layout="vertical" margin={{ top: 0, right: 10, left: 10, bottom: 0 }}>
+                                        <XAxis type="number" hide />
+                                        <YAxis type="category" dataKey="name" width={80} stroke="#9ca3af" fontSize={11} tickLine={false} axisLine={false} />
+                                        <Tooltip
+                                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.2)', backgroundColor: '#0f172a', color: '#f8fafc', fontFamily: 'Inter, sans-serif' }}
+                                            formatter={(val) => [val, 'Sold']}
+                                        />
+                                        <Bar dataKey="sales" fill="#F97316" radius={[0, 8, 8, 0]} barSize={18} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            )}
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 };

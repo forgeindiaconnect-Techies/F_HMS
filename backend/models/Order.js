@@ -36,8 +36,21 @@ const orderSchema = new mongoose.Schema({
     orderType: {
         type: String,
         required: true,
-        enum: ['Dine In', 'Self-Pickup', 'Delivery'],
+        enum: ['Dine In', 'Self-Pickup', 'Delivery', 'Takeaway'],
         default: 'Dine In'
+    },
+    serviceType: {
+        type: String,
+        enum: ['Self Dine-In (KFC Style)', 'Waiter Table Service', 'Delivery', 'Takeaway', ''],
+        default: 'Waiter Table Service'
+    },
+    customerName: {
+        type: String,
+        default: ''
+    },
+    customerPhone: {
+        type: String,
+        default: ''
     },
     tableNumber: {
         type: String,
@@ -97,6 +110,13 @@ const orderSchema = new mongoose.Schema({
         }
     ],
     pickupTime: {
+        type: Date
+    },
+    estimatedPrepMinutes: {
+        type: Number,
+        default: 20
+    },
+    estimatedReadyTime: {
         type: Date
     },
     // Location Coordinates for Live OSRM Road Tracking

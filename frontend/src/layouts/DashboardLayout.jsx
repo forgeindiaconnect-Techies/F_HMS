@@ -7,7 +7,27 @@ import { toast } from 'react-hot-toast';
 
 import VerificationBlockedOverlay from '../components/VerificationBlockedOverlay';
 import SubscriptionFreezeOverlay from '../components/SubscriptionFreezeOverlay';
-import { Sparkles, ArrowRight, X, CheckCircle, ShieldCheck, Zap } from 'lucide-react';
+import { OwnerWhatsAppNotificationDrawer, OwnerWhatsAppFloatingToast } from '../components/OwnerWhatsAppNotificationDrawer';
+import { Sparkles, ArrowRight, X, CheckCircle, ShieldCheck, Zap, Lock } from 'lucide-react';
+
+// ─── Custom Billing Walkthrough Module Map ────────────────────────────────────
+const ROUTE_BILLING_MODULE_MAP = [
+    { path: '/admin/billing-management', moduleKey: 'posBilling', name: 'POS Billing' },
+    { path: '/admin/menu', moduleKey: 'menuManagement', name: 'Menu Management' },
+    { path: '/admin/categories', moduleKey: 'menuManagement', name: 'Menu Management' },
+    { path: '/admin/tables', moduleKey: 'tableManagement', name: 'Table Management' },
+    { path: '/admin/orders', moduleKey: 'dineInTakeawayOrders', name: 'Dine-In & Takeaway Orders' },
+    { path: '/admin/offers', moduleKey: 'discounts', name: 'Discounts & Promotions' },
+    { path: '/admin/customers', moduleKey: 'customerManagement', name: 'Customer Management' },
+    { path: '/admin/inventory', moduleKey: 'inventoryManagement', name: 'Inventory Management' },
+    { path: '/admin/suppliers', moduleKey: 'inventoryManagement', name: 'Inventory Management' },
+    { path: '/admin/reports', moduleKey: 'salesReports', name: 'Sales Reports' },
+    { path: '/admin/analytics', moduleKey: 'salesReports', name: 'Sales Analytics' },
+    { path: '/admin/expenses', moduleKey: 'salesReports', name: 'Expense Summary' },
+    { path: '/admin/staff', moduleKey: 'staffManagement', name: 'Staff Management' },
+    { path: '/admin/users', moduleKey: 'staffManagement', name: 'User Management' },
+    { path: '/admin/roles', moduleKey: 'staffManagement', name: 'Role Management' },
+];
 
 // ─── Route → Feature Key Mapping ──────────────────────────────────────────────
 // Maps each gated route path to the exact feature key string stored in
@@ -126,15 +146,21 @@ const DashboardLayout = () => {
         isTrialExpired
     );
 
+    // Custom Billing Configuration check
+    const isCustomBilling = restaurant?.billingConfig?.isCustomBillingActive === true;
+    const customModules = restaurant?.billingConfig?.modules || {};
+    const matchedBillingModule = ROUTE_BILLING_MODULE_MAP.find(r => location.pathname.startsWith(r.path));
+    const isCustomModuleBlocked = user?.role !== 'SuperAdmin' && isCustomBilling && matchedBillingModule && customModules[matchedBillingModule.moduleKey] === false;
+
     // Find the first matching route in our feature map for the current path
     const routeBlock = ROUTE_FEATURE_MAP.find(r => location.pathname.startsWith(r.path));
 
     // isPathBlocked is true when:
     // 1. Subscription is not Active, OR
     // 2. The restaurant's plan does NOT have the required feature (checked against live DB)
-    const isPathBlocked = routeBlock
+    const isPathBlocked = user?.role !== 'SuperAdmin' && (routeBlock
         ? (status !== 'Active' || !planHasFeature(plan, routeBlock.featureKey, routeBlock.fallbackMinPlan))
-        : false;
+        : false);
 
     // Human-readable display: show the featureKey as the locked feature name
     const blockedFeature = routeBlock?.featureKey || '';
@@ -221,7 +247,33 @@ const DashboardLayout = () => {
                        <VerificationBlockedOverlay />
                     ) : (
                        <div className="relative w-full h-full min-h-[60vh]">
-                           {isPathBlocked && (
+                           {isCustomModuleBlocked && (
+                               <div className="absolute inset-0 z-40 flex items-center justify-center bg-slate-900/10 dark:bg-slate-950/40 backdrop-blur-[5px] rounded-3xl p-6">
+                                   <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-[2.5rem] p-8 shadow-2xl border border-white/50 dark:border-slate-800 max-w-md w-full text-center flex flex-col items-center gap-5 transform animate-in zoom-in-95 duration-300">
+                                       <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-100 dark:border-amber-900/50 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                                           <Lock size={28} />
+                                       </div>
+                                       <div className="space-y-1">
+                                           <h3 className="text-xl font-black text-slate-900 dark:text-slate-100">
+                                               {matchedBillingModule?.name || 'Module'} Deactivated
+                                           </h3>
+                                           <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+                                               This module is not included in your restaurant's custom billing walkthrough setup ({restaurant?.billingConfig?.outletFormat || 'Custom Outlet'}).
+                                           </p>
+                                       </div>
+                                       <div className="px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                                           Contact Super Admin to modify enabled modules
+                                       </div>
+                                       <button
+                                           onClick={() => navigate('/admin')}
+                                           className="w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-sm rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                                       >
+                                           Back to Business Overview
+                                       </button>
+                                   </div>
+                               </div>
+                           )}
+                           {isPathBlocked && !isCustomModuleBlocked && (
                                <div className="absolute inset-0 z-40 flex items-center justify-center bg-slate-900/10 dark:bg-slate-950/40 backdrop-blur-[5px] rounded-3xl p-6">
                                    <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-[2.5rem] p-8 shadow-2xl border border-white/50 dark:border-slate-800 max-w-md w-full text-center flex flex-col items-center gap-5 transform animate-in zoom-in-95 duration-300">
                                        <div className="w-16 h-16 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 animate-pulse">
@@ -250,13 +302,17 @@ const DashboardLayout = () => {
                                    </div>
                                </div>
                            )}
-                           <div className={isPathBlocked ? 'blur-[8px] pointer-events-none select-none transition-all duration-300' : 'transition-all duration-300'}>
+                           <div className={(isPathBlocked || isCustomModuleBlocked) ? 'blur-[8px] pointer-events-none select-none transition-all duration-300' : 'transition-all duration-300'}>
                                <Outlet />
                            </div>
                        </div>
                     )}
                 </main>
             </div>
+
+            {/* Owner WhatsApp Notification Hub Drawer & Floating Alert Toast */}
+            <OwnerWhatsAppFloatingToast />
+            <OwnerWhatsAppNotificationDrawer />
 
             {/* Plans Selection Overlay Modal */}
             {showPlansModal && (

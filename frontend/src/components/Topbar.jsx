@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bell, User, Menu, ArrowLeft, Crown, Zap, Star, X, CheckCircle2, Loader2, AlertCircle, ArrowUpRight, Check, QrCode, MapPin, ChevronDown, Store, Sun, Moon } from 'lucide-react';
+import { Bell, User, Menu, ArrowLeft, Crown, Zap, Star, X, CheckCircle2, Loader2, AlertCircle, ArrowUpRight, Check, QrCode, MapPin, ChevronDown, Store, Sun, Moon, MessageCircle, MessageSquare, Phone } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useWhatsAppNotifications } from '../context/WhatsAppNotificationContext';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import dummyQrPayment from '../assets/dummy_qr_payment.png';
@@ -372,6 +373,7 @@ const PlanUpgradeModal = ({ currentPlan, plans, api, restaurant, onClose, onUpgr
 /* ─── Topbar ────────────────────────────────────────────────────── */
 const Topbar = () => {
     const { user, api, restaurant, fetchRestaurant } = useAuth();
+    const { setIsDrawerOpen, unreadCount: waUnreadCount, isSyncActive: waSyncActive } = useWhatsAppNotifications();
     const [hasUnread, setHasUnread] = useState(false);
     const [subscriptionPlan, setSubscriptionPlan] = useState(null);
     const [plans, setPlans] = useState([]);
@@ -489,7 +491,25 @@ const Topbar = () => {
                     )}
                 </div>
 
-                <div className="flex items-center gap-2 md:gap-6 ml-2 md:ml-0 shrink-0">
+                <div className="flex items-center gap-2 md:gap-4 ml-2 md:ml-0 shrink-0">
+                    {/* WhatsApp Business Alerts & Owner Chat Hub */}
+                    <button
+                        type="button"
+                        onClick={() => setIsDrawerOpen(true)}
+                        title="WhatsApp Business Alerts & Owner Chat Hub"
+                        className="relative p-2 text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-xl transition-all cursor-pointer flex items-center justify-center"
+                    >
+                        <MessageCircle size={22} className="fill-emerald-500/15" />
+                        {waSyncActive && (
+                            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-500 rounded-full border border-white dark:border-slate-900 animate-pulse" />
+                        )}
+                        {waUnreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 bg-[#25D366] text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                                {waUnreadCount}
+                            </span>
+                        )}
+                    </button>
+
                     {/* Notifications */}
                     <Link
                         to={

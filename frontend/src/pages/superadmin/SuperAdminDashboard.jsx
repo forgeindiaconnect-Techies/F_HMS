@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Store, Users, CreditCard, ShoppingBag, TrendingUp, AlertCircle, ArrowRight, X, MessageSquare, Trash2, ShieldCheck, CheckCircle, Bell } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Store, Users, CreditCard, ShoppingBag, TrendingUp, AlertCircle, ArrowRight, X, MessageSquare, Trash2, ShieldCheck, CheckCircle, Bell, Receipt, Search, Eye, Sparkles, Filter, Check, Calendar, ChevronRight } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 const SuperAdminDashboard = () => {
     const { api } = useAuth();
+    const location = useLocation();
     const [stats, setStats] = useState({
         totalRestaurants: 0,
         activeRestaurants: 0,
@@ -18,8 +19,11 @@ const SuperAdminDashboard = () => {
     const [inquiries, setInquiries] = useState([]);
     const [tickets, setTickets] = useState([]);
     const [notifications, setNotifications] = useState([]);
+    const [billingDemos, setBillingDemos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [viewingRestaurant, setViewingRestaurant] = useState(null);
+    const [restSearchQuery, setRestSearchQuery] = useState('');
+    const [planFilter, setPlanFilter] = useState('All');
 
     const calculateRemainingDays = (expiryDate) => {
         if (!expiryDate) return 'No expiry date set';
@@ -33,13 +37,14 @@ const SuperAdminDashboard = () => {
 
     const fetchDashboardData = async () => {
         try {
-            const [statsRes, restsRes, verifsRes, inquiriesRes, ticketsRes, notifsRes] = await Promise.all([
+            const [statsRes, restsRes, verifsRes, inquiriesRes, ticketsRes, notifsRes, demosRes] = await Promise.all([
                 api.get('/super-admin/stats').catch(() => ({ data: null })),
                 api.get('/super-admin/restaurants').catch(() => ({ data: [] })),
                 api.get('/restaurants/verification/all').catch(() => ({ data: [] })),
                 api.get('/inquiries/admin').catch(() => ({ data: [] })),
                 api.get('/super-admin/tickets').catch(() => ({ data: [] })),
-                api.get('/super-admin/notifications').catch(() => ({ data: [] }))
+                api.get('/super-admin/notifications').catch(() => ({ data: [] })),
+                api.get('/billing-demos/admin').catch(() => ({ data: { data: [] } }))
             ]);
             if (statsRes.data) setStats(statsRes.data);
             setRestaurants(restsRes.data || []);
@@ -47,6 +52,7 @@ const SuperAdminDashboard = () => {
             setInquiries(inquiriesRes.data || []);
             setTickets(ticketsRes.data || []);
             setNotifications(notifsRes.data || []);
+            setBillingDemos(demosRes.data?.data || []);
         } catch (error) {
             console.error("Failed to fetch super admin data", error);
         } finally {
@@ -57,6 +63,15 @@ const SuperAdminDashboard = () => {
     useEffect(() => {
         fetchDashboardData();
     }, [api]);
+
+    useEffect(() => {
+        if (location.hash === '#inquiries' && !loading) {
+            const el = document.getElementById('inquiries');
+            if (el) {
+                setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 150);
+            }
+        }
+    }, [location.hash, loading]);
 
     const handleApproveVerification = async (verifId, restaurantName) => {
         try {
@@ -138,6 +153,38 @@ const SuperAdminDashboard = () => {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
+            {/* Billing Demo Requests Alert Banner */}
+            {billingDemos.filter(d => d.status === 'Pending' || d.status === 'Demo Scheduled').length > 0 && (
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-3xl p-6 shadow-sm">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-3.5 text-blue-950">
+                            <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
+                                <Receipt size={24} className="animate-pulse" />
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <h3 className="text-lg font-black font-sans text-slate-900">
+                                        Billing Demo & Custom POS Setup Requests
+                                    </h3>
+                                    <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-600 text-white shadow-xs">
+                                        {billingDemos.filter(d => d.status === 'Pending' || d.status === 'Demo Scheduled').length} Action Required
+                                    </span>
+                                </div>
+                                <p className="text-xs text-blue-700 font-semibold mt-0.5">
+                                    Restaurants waiting for walkthroughs, custom 12-module feature toggling, live preview, and 1-click dashboard activation.
+                                </p>
+                            </div>
+                        </div>
+                        <Link 
+                            to="/super-admin/billing-demos" 
+                            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-xl transition-all shadow-md shadow-blue-600/20 flex items-center gap-2 shrink-0 hover:-translate-y-0.5"
+                        >
+                            Review & Configure <ArrowRight size={14} />
+                        </Link>
+                    </div>
+                </div>
+            )}
+
             {/* Pending Restaurant Verifications Banner */}
             {pendingVerifications.length > 0 && (
                 <div className="bg-amber-50 border-2 border-amber-200 rounded-3xl p-6 space-y-4 shadow-sm">
@@ -262,81 +309,258 @@ const SuperAdminDashboard = () => {
                 })}
             </div>
 
-            {/* Recent Onboarded Restaurants Table */}
+            {/* Subscribed Platform Restaurants Management */}
             <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                    <div>
-                        <h2 className="text-xl font-bold text-gray-900 font-sans tracking-tight">Recent Onboarded Restaurants</h2>
-                        <p className="text-sm text-gray-500 mt-1">Restaurants that have recently joined the platform.</p>
+                <div className="p-6 border-b border-gray-100 bg-gray-50/50 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <div className="flex items-center gap-3">
+                                <h2 className="text-xl font-bold text-gray-900 font-sans tracking-tight">Active Subscribed Restaurants</h2>
+                                <span className="px-3 py-1 rounded-full text-xs font-black bg-blue-100 text-blue-700 border border-blue-200">
+                                    {restaurants.length} Subscribed Outlets
+                                </span>
+                            </div>
+                            <p className="text-sm text-gray-500 mt-1">All verified platform restaurants with active subscriptions, plan tiers, and billing status.</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Link to="/super-admin/restaurants" className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl">
+                                Full Registry <ArrowRight size={16} />
+                            </Link>
+                        </div>
                     </div>
-                    <Link to="/super-admin/restaurants" className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl">
-                        View All <ArrowRight size={16} />
-                    </Link>
+
+                    {/* Search & Filter Toolbar */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-2">
+                        {/* Search Input */}
+                        <div className="relative flex-1 max-w-md">
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                            <input
+                                type="text"
+                                placeholder="Search by restaurant name, owner, city or phone..."
+                                value={restSearchQuery}
+                                onChange={(e) => setRestSearchQuery(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                            />
+                            {restSearchQuery && (
+                                <button onClick={() => setRestSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                    <X size={14} />
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Plan Filter Badges */}
+                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+                            {[
+                                { key: 'All', label: 'All Plans', count: restaurants.length },
+                                { key: 'Enterprise', label: 'Enterprise', count: restaurants.filter(r => (r.subscription?.plan || '').toLowerCase() === 'enterprise').length },
+                                { key: 'Pro', label: 'Pro', count: restaurants.filter(r => ['pro', 'professional'].includes((r.subscription?.plan || '').toLowerCase())).length },
+                                { key: 'Basic', label: 'Basic', count: restaurants.filter(r => ['basic', 'starter'].includes((r.subscription?.plan || '').toLowerCase())).length },
+                                { key: 'Custom POS', label: 'Custom Setup', count: restaurants.filter(r => r.billingConfig?.isCustomBillingActive).length },
+                            ].map((tab) => {
+                                const isActive = planFilter === tab.key;
+                                return (
+                                    <button
+                                        key={tab.key}
+                                        onClick={() => setPlanFilter(tab.key)}
+                                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                                            isActive
+                                                ? 'bg-gray-900 text-white shadow-sm'
+                                                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                                        }`}
+                                    >
+                                        <span>{tab.label}</span>
+                                        <span className={`px-1.5 py-0.2 rounded-md text-[10px] ${
+                                            isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600'
+                                        }`}>
+                                            {tab.count}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
+
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-white border-b border-gray-100 text-xs text-gray-400 uppercase tracking-wider">
-                                <th className="p-5 font-bold">Restaurant</th>
-                                <th className="p-5 font-bold">Plan</th>
-                                <th className="p-5 font-bold">Status</th>
-                                <th className="p-5 font-bold text-right">Actions</th>
+                                <th className="p-4 font-bold">Restaurant & Location</th>
+                                <th className="p-4 font-bold">Owner & Contact</th>
+                                <th className="p-4 font-bold">Plan & MRR</th>
+                                <th className="p-4 font-bold">POS Setup</th>
+                                <th className="p-4 font-bold">Renewal Status</th>
+                                <th className="p-4 font-bold">Status</th>
+                                <th className="p-4 font-bold text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
-                            {restaurants.slice(0, 5).map(restaurant => (
-                                <tr key={restaurant._id} className="hover:bg-gray-50/80 transition-colors">
-                                    <td className="p-5">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
-                                                {restaurant.logo ? (
-                                                    <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-lg">
-                                                        {restaurant.name.charAt(0)}
+                            {restaurants
+                                .filter(r => {
+                                    const plan = (r.subscription?.plan || 'Basic').toLowerCase();
+                                    let matchesPlan = true;
+                                    if (planFilter === 'Enterprise') matchesPlan = plan === 'enterprise';
+                                    else if (planFilter === 'Pro') matchesPlan = plan === 'pro' || plan === 'professional';
+                                    else if (planFilter === 'Basic') matchesPlan = plan === 'basic' || plan === 'starter';
+                                    else if (planFilter === 'Custom POS') matchesPlan = Boolean(r.billingConfig?.isCustomBillingActive);
+
+                                    if (!matchesPlan) return false;
+
+                                    if (!restSearchQuery.trim()) return true;
+                                    const q = restSearchQuery.toLowerCase();
+                                    const name = (r.name || '').toLowerCase();
+                                    const ownerName = (r.ownerId?.name || '').toLowerCase();
+                                    const ownerEmail = (r.ownerId?.email || '').toLowerCase();
+                                    const address = (r.address || '').toLowerCase();
+                                    const phone = (r.phone || '').toLowerCase();
+                                    return name.includes(q) || ownerName.includes(q) || ownerEmail.includes(q) || address.includes(q) || phone.includes(q);
+                                })
+                                .map(restaurant => {
+                                    const planLower = (restaurant.subscription?.plan || 'basic').toLowerCase();
+                                    const isEnterprise = planLower === 'enterprise';
+                                    const isPro = planLower === 'pro' || planLower === 'professional';
+                                    const planPrice = restaurant.subscription?.price 
+                                        ? `₹${restaurant.subscription.price.toLocaleString('en-IN')}` 
+                                        : isEnterprise ? '₹12,999' : isPro ? '₹5,999' : '₹2,999';
+                                    const cycle = restaurant.subscription?.billingCycle || 'monthly';
+                                    const expiry = restaurant.subscription?.expiryDate;
+                                    let diffDays = null;
+                                    if (expiry) {
+                                        diffDays = Math.ceil((new Date(expiry) - new Date()) / (1000 * 60 * 60 * 24));
+                                    }
+                                    const hasCustomPOS = Boolean(restaurant.billingConfig?.isCustomBillingActive);
+                                    const outletFormat = restaurant.billingConfig?.outletFormat || restaurant.posConfig?.outletFormat || 'Restaurant';
+
+                                    return (
+                                        <tr key={restaurant._id} className="hover:bg-gray-50/80 transition-colors">
+                                            <td className="p-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-11 h-11 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
+                                                        {restaurant.logo ? (
+                                                            <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-base">
+                                                                {restaurant.name.charAt(0)}
+                                                            </div>
+                                                        )}
                                                     </div>
+                                                    <div>
+                                                        <span className="font-bold text-gray-900 block text-sm">{restaurant.name}</span>
+                                                        <span className="text-[11px] font-semibold text-gray-500 block">{outletFormat}</span>
+                                                        {restaurant.address && (
+                                                            <span className="text-[10px] text-gray-400 block truncate max-w-[180px]">{restaurant.address}</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="text-xs font-bold text-gray-900">{restaurant.ownerId?.name || 'Authorized Admin'}</div>
+                                                <div className="text-[11px] text-gray-500">{restaurant.ownerId?.email || 'N/A'}</div>
+                                                {restaurant.phone && (
+                                                    <div className="text-[10px] text-gray-400 font-medium">📞 {restaurant.phone}</div>
                                                 )}
-                                            </div>
-                                            <div>
-                                                <span className="font-bold text-gray-900 block text-base">{restaurant.name}</span>
-                                                <span className="text-xs text-gray-600 block font-semibold">Owner: {restaurant.ownerId?.name || 'N/A'}</span>
-                                                <span className="text-[11px] text-gray-400 block">{restaurant.ownerId?.email || 'No Owner'}</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="p-5">
-                                        <span className="px-3 py-1.5 bg-purple-50 text-purple-700 text-xs font-bold rounded-lg border border-purple-100">
-                                            {restaurant.subscription?.plan || 'N/A'}
-                                        </span>
-                                    </td>
-                                    <td className="p-5">
-                                        <span className={`px-3 py-1.5 text-xs font-bold rounded-lg border ${
-                                            restaurant.subscription?.status === 'Active' 
-                                            ? 'bg-green-50 text-green-700 border-green-100' 
-                                            : 'bg-red-50 text-red-700 border-red-100'
-                                        }`}>
-                                            {restaurant.subscription?.status || 'Unknown'}
-                                        </span>
-                                    </td>
-                                    <td className="p-5 text-right">
-                                        <button 
-                                            onClick={() => handleFreezeAccount(restaurant._id, restaurant.subscription?.status)}
-                                            className={`px-4 py-2 rounded-xl text-sm font-bold transition-colors ${
-                                                restaurant.subscription?.status === 'Active' 
-                                                ? 'text-red-600 bg-red-50 hover:bg-red-100'
-                                                : 'text-green-600 bg-green-50 hover:bg-green-100'
-                                            }`}
-                                        >
-                                            {restaurant.subscription?.status === 'Active' ? 'Freeze' : 'Unfreeze'}
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="flex flex-col gap-1 items-start">
+                                                    <span className={`px-2.5 py-1 text-xs font-black rounded-lg border ${
+                                                        isEnterprise 
+                                                            ? 'bg-purple-50 text-purple-700 border-purple-200' 
+                                                            : isPro 
+                                                                ? 'bg-blue-50 text-blue-700 border-blue-200' 
+                                                                : 'bg-gray-50 text-gray-700 border-gray-200'
+                                                    }`}>
+                                                        {restaurant.subscription?.plan || 'Basic'}
+                                                    </span>
+                                                    <span className="text-[11px] font-bold text-gray-700">
+                                                        {planPrice}<span className="text-[10px] text-gray-400 font-normal">/{cycle === 'yearly' ? 'yr' : 'mo'}</span>
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="p-4">
+                                                {hasCustomPOS ? (
+                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-bold">
+                                                        <Sparkles size={12} className="text-emerald-600" /> Custom POS
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg text-xs font-medium">
+                                                        Standard POS
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="p-4">
+                                                {diffDays !== null ? (
+                                                    <div>
+                                                        <span className={`text-[11px] px-2.5 py-1 rounded-md font-bold inline-block border ${
+                                                            diffDays < 0
+                                                                ? 'bg-red-50 text-red-700 border-red-200'
+                                                                : diffDays <= 7
+                                                                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                                                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                                        }`}>
+                                                            {diffDays < 0 ? `Expired ${Math.abs(diffDays)}d ago` : diffDays === 0 ? 'Expires today' : `${diffDays} days left`}
+                                                        </span>
+                                                        <span className="text-[10px] text-gray-400 block mt-0.5">
+                                                            {new Date(expiry).toLocaleDateString()}
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-xs text-gray-400 font-medium">Ongoing</span>
+                                                )}
+                                            </td>
+                                            <td className="p-4">
+                                                <span className={`px-2.5 py-1 text-xs font-bold rounded-lg border ${
+                                                    restaurant.subscription?.status === 'Active' 
+                                                    ? 'bg-green-50 text-green-700 border-green-200' 
+                                                    : 'bg-red-50 text-red-700 border-red-200'
+                                                }`}>
+                                                    {restaurant.subscription?.status || 'Active'}
+                                                </span>
+                                            </td>
+                                            <td className="p-4 text-right">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button
+                                                        onClick={() => setViewingRestaurant(restaurant)}
+                                                        className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors"
+                                                        title="View Full Profile & Subscription"
+                                                    >
+                                                        <Eye size={16} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleFreezeAccount(restaurant._id, restaurant.subscription?.status)}
+                                                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
+                                                            restaurant.subscription?.status === 'Active' 
+                                                            ? 'text-red-600 bg-red-50 hover:bg-red-100'
+                                                            : 'text-green-600 bg-green-50 hover:bg-green-100'
+                                                        }`}
+                                                    >
+                                                        {restaurant.subscription?.status === 'Active' ? 'Freeze' : 'Unfreeze'}
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             {restaurants.length === 0 && (
                                 <tr>
-                                    <td colSpan="4" className="p-10 text-center">
+                                    <td colSpan="7" className="p-10 text-center">
                                         <Store className="mx-auto text-gray-300 mb-3" size={40} />
                                         <p className="text-gray-500 font-medium text-lg">No restaurants registered yet.</p>
+                                    </td>
+                                </tr>
+                            )}
+                            {restaurants.length > 0 && restaurants.filter(r => {
+                                const plan = (r.subscription?.plan || 'Basic').toLowerCase();
+                                if (planFilter === 'Enterprise' && plan !== 'enterprise') return false;
+                                if (planFilter === 'Pro' && !['pro', 'professional'].includes(plan)) return false;
+                                if (planFilter === 'Basic' && !['basic', 'starter'].includes(plan)) return false;
+                                if (planFilter === 'Custom POS' && !r.billingConfig?.isCustomBillingActive) return false;
+                                if (!restSearchQuery.trim()) return true;
+                                const q = restSearchQuery.toLowerCase();
+                                return (r.name || '').toLowerCase().includes(q) || (r.ownerId?.name || '').toLowerCase().includes(q);
+                            }).length === 0 && (
+                                <tr>
+                                    <td colSpan="7" className="p-8 text-center text-gray-500">
+                                        No subscribed restaurants match your filter or search query.
                                     </td>
                                 </tr>
                             )}
@@ -346,10 +570,17 @@ const SuperAdminDashboard = () => {
             </div>
 
         {/* Public Inquiries Section */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 bg-gray-50/50">
-                <h2 className="text-xl font-bold text-gray-900 font-sans tracking-tight">Public Inquiries & Leads</h2>
-                <p className="text-sm text-gray-500 mt-1">Inquiries submitted from the landing page contact form.</p>
+        <div id="inquiries" className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden scroll-mt-6">
+            <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <div className="flex items-center gap-2">
+                        <h2 className="text-xl font-bold text-gray-900 font-sans tracking-tight">Public Inquiries & Demo Leads</h2>
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-100 text-blue-700">
+                            {inquiries.length} {inquiries.length === 1 ? 'Lead' : 'Leads'}
+                        </span>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">Walkthrough demo bookings and sales inquiries submitted from landing pages.</p>
+                </div>
             </div>
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
@@ -566,73 +797,121 @@ const SuperAdminDashboard = () => {
             {viewingRestaurant && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onClick={() => setViewingRestaurant(null)}></div>
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md relative z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                            <h3 className="font-bold text-gray-900 text-lg">Restaurant Subscription Details</h3>
-                            <button onClick={() => setViewingRestaurant(null)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg relative z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/70">
+                            <div>
+                                <h3 className="font-bold text-gray-900 text-lg">Restaurant Subscription & Profile</h3>
+                                <p className="text-xs text-gray-500">Comprehensive membership and POS configuration details</p>
+                            </div>
+                            <button onClick={() => setViewingRestaurant(null)} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
                                 <X size={20} />
                             </button>
                         </div>
-                        <div className="p-6 space-y-4">
-                            <div className="flex items-center gap-4 border-b border-gray-50 pb-4">
-                                <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
+                        <div className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                            <div className="flex items-center gap-4 border-b border-gray-100 pb-4">
+                                <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
                                     {viewingRestaurant.logo ? (
                                         <img src={viewingRestaurant.logo} alt={viewingRestaurant.name} className="w-full h-full object-cover" />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-2xl">
+                                        <div className="w-full h-full flex items-center justify-center bg-blue-100 text-blue-600 font-black text-2xl">
                                             {viewingRestaurant.name.charAt(0)}
                                         </div>
                                     )}
                                 </div>
-                                <div>
-                                    <h4 className="text-lg font-bold text-gray-900">{viewingRestaurant.name}</h4>
-                                    <p className="text-sm text-gray-700 font-medium">Owner: {viewingRestaurant.ownerId?.name || 'N/A'}</p>
-                                    <p className="text-xs text-gray-500">{viewingRestaurant.ownerId?.email || 'N/A'}</p>
+                                <div className="min-w-0 flex-1">
+                                    <h4 className="text-lg font-black text-gray-900 truncate">{viewingRestaurant.name}</h4>
+                                    <p className="text-xs text-gray-600 font-semibold mt-0.5">Owner: {viewingRestaurant.ownerId?.name || 'Partner Admin'}</p>
+                                    <p className="text-[11px] text-gray-500 truncate">{viewingRestaurant.ownerId?.email || 'N/A'}</p>
+                                    {viewingRestaurant.phone && (
+                                        <p className="text-[11px] text-gray-500">📞 {viewingRestaurant.phone}</p>
+                                    )}
                                 </div>
                             </div>
                             
-                            <div className="space-y-3 min-w-0 pr-1.5 flex-1">
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-500 font-medium">Subscription Plan:</span>
-                                    <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full">
-                                        {viewingRestaurant.subscription?.plan || 'N/A'}
+                            <div className="space-y-2.5 text-sm">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 font-medium">Subscription Tier:</span>
+                                    <span className="px-3 py-1 bg-purple-50 text-purple-700 text-xs font-black rounded-lg border border-purple-200">
+                                        {viewingRestaurant.subscription?.plan || 'Basic'} Tier
                                     </span>
                                 </div>
-                                <div className="flex justify-between items-center text-sm">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 font-medium">Billing Cycle:</span>
+                                    <span className="text-gray-900 font-bold capitalize">
+                                        {viewingRestaurant.subscription?.billingCycle || 'monthly'}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 font-medium">Recurring Price:</span>
+                                    <span className="text-gray-900 font-black">
+                                        ₹{(viewingRestaurant.subscription?.price || (
+                                            (viewingRestaurant.subscription?.plan || '').toLowerCase() === 'enterprise' ? 12999 :
+                                            (viewingRestaurant.subscription?.plan || '').toLowerCase() === 'pro' ? 5999 : 2999
+                                        )).toLocaleString('en-IN')} / {viewingRestaurant.subscription?.billingCycle === 'yearly' ? 'year' : 'month'}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
                                     <span className="text-gray-500 font-medium">Subscription Status:</span>
-                                    <span className={`px-3 py-1 text-xs font-bold rounded-full ${
-                                        viewingRestaurant.subscription?.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                    <span className={`px-2.5 py-0.5 text-xs font-bold rounded-lg border ${
+                                        viewingRestaurant.subscription?.status === 'Active' 
+                                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                                            : 'bg-red-50 text-red-700 border-red-200'
                                     }`}>
-                                        {viewingRestaurant.subscription?.status || 'Unknown'}
+                                        {viewingRestaurant.subscription?.status || 'Active'}
                                     </span>
                                 </div>
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-500 font-medium">Start Date:</span>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 font-medium">Member Since:</span>
                                     <span className="text-gray-900 font-semibold">
                                         {viewingRestaurant.createdAt ? new Date(viewingRestaurant.createdAt).toLocaleDateString() : 'N/A'}
                                     </span>
                                 </div>
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-500 font-medium">Expiry / End Date:</span>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 font-medium">Next Renewal:</span>
                                     <span className="text-gray-900 font-semibold">
-                                        {viewingRestaurant.subscription?.expiryDate ? new Date(viewingRestaurant.subscription?.expiryDate).toLocaleDateString() : 'N/A'}
+                                        {viewingRestaurant.subscription?.expiryDate ? new Date(viewingRestaurant.subscription?.expiryDate).toLocaleDateString() : 'Perpetual'}
                                     </span>
                                 </div>
-                                <div className="flex justify-between items-center text-sm border-t border-gray-50 pt-3">
-                                    <span className="text-gray-500 font-medium">Subscription Period:</span>
-                                    <span className={`font-bold ${
-                                        viewingRestaurant.subscription?.expiryDate && (new Date(viewingRestaurant.subscription?.expiryDate) - new Date()) / (1000 * 60 * 60 * 24) <= 7
-                                        ? 'text-red-600'
-                                        : 'text-gray-900'
-                                    }`}>
+                                <div className="flex justify-between items-center border-t border-gray-100 pt-2.5">
+                                    <span className="text-gray-500 font-medium">Renewal Countdown:</span>
+                                    <span className="font-black text-blue-600">
                                         {calculateRemainingDays(viewingRestaurant.subscription?.expiryDate)}
                                     </span>
                                 </div>
                             </div>
+
+                            {/* Custom Billing POS Details */}
+                            {viewingRestaurant.billingConfig?.isCustomBillingActive && (
+                                <div className="bg-emerald-50/60 rounded-2xl p-4 border border-emerald-100 space-y-2 mt-3">
+                                    <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs uppercase tracking-wider">
+                                        <Sparkles size={14} className="text-emerald-600" />
+                                        Custom POS Architecture Active
+                                    </div>
+                                    <p className="text-xs text-gray-700">
+                                        <span className="font-semibold">Format:</span> {viewingRestaurant.billingConfig?.outletFormat || 'Custom Outlet'}
+                                    </p>
+                                    <div className="flex flex-wrap gap-1.5 pt-1">
+                                        {Object.entries(viewingRestaurant.billingConfig?.modules || {})
+                                            .filter(([_, active]) => active)
+                                            .map(([mod]) => (
+                                                <span key={mod} className="px-2 py-0.5 bg-white text-emerald-800 text-[10px] font-bold rounded-md border border-emerald-200">
+                                                    ✓ {mod.replace(/([A-Z])/g, ' $1').trim()}
+                                                </span>
+                                            ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {viewingRestaurant.address && (
+                                <div className="bg-gray-50 rounded-2xl p-3 border border-gray-100 text-xs text-gray-600">
+                                    <span className="font-bold text-gray-700 block mb-0.5">Location / Address:</span>
+                                    {viewingRestaurant.address}
+                                </div>
+                            )}
                             
                             <button 
                                 onClick={() => setViewingRestaurant(null)}
-                                className="w-full mt-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-xl transition-colors text-sm"
+                                className="w-full mt-2 py-2.5 bg-gray-900 hover:bg-black text-white font-bold rounded-xl transition-colors text-sm shadow-sm"
                             >
                                 Close Details
                             </button>
