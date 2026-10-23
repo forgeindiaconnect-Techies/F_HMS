@@ -663,35 +663,6 @@ const CustomerMenu = () => {
                                     </div>
                                 )}
                             </div>
-
-                            {/* 5. In-Flow Order Summary & Primary Place Order Button (Always 100% visible on mobile scroll) */}
-                            <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-emerald-100/70 p-4 sm:p-5 rounded-2xl border-2 border-emerald-500/40 shadow-sm space-y-3 mt-4">
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <span className="text-[10px] font-extrabold text-emerald-800 uppercase tracking-wider block">Order Summary</span>
-                                        <span className="text-xs font-bold text-slate-700">{totalItemsCount} {totalItemsCount === 1 ? 'item' : 'items'} • {serviceType}</span>
-                                    </div>
-                                    <div className="text-right">
-                                        <span className="text-[10px] text-slate-500 block font-semibold">Total to Pay</span>
-                                        <span className="text-xl sm:text-2xl font-black text-emerald-700">₹{getCartTotal().toLocaleString('en-IN')}</span>
-                                    </div>
-                                </div>
-
-                                <button 
-                                    id="inflow-place-order-btn"
-                                    onClick={handleProceedToPlaceOrder}
-                                    disabled={isSubmitting}
-                                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:bg-slate-300 text-white font-black py-3.5 sm:py-4 rounded-xl shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 active:scale-95 transition-all text-sm sm:text-base cursor-pointer"
-                                >
-                                    <Send size={18} />
-                                    <span>
-                                        {isSubmitting ? 'Submitting Order...' : 
-                                         paymentOption === 'UPI' || paymentOption === 'Card' ? `Proceed to Pay ₹${getCartTotal()} & Order` :
-                                         `Confirm & Place Order • ₹${getCartTotal()}`}
-                                    </span>
-                                </button>
-                                <p className="text-[10px] text-center text-slate-500 font-medium">Direct routing to Kitchen KDS for Table {tableNumber || '1'}</p>
-                            </div>
                         </div>
 
                         {/* Modal Sticky Bottom Action Bar */}
