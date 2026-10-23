@@ -334,7 +334,7 @@ const CustomerMenu = () => {
 
             {/* STICKY BOTTOM ORDER COUNT BAR */}
             {cart.length > 0 && !showCartModal && (
-                <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-[0_-8px_30px_rgba(0,0,0,0.12)] px-4 py-3 sm:px-6 transition-all duration-300 animate-in slide-in-from-bottom-4">
+                <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/98 backdrop-blur-md border-t border-slate-200/90 shadow-[0_-10px_35px_rgba(0,0,0,0.16)] px-4 pt-3 pb-8 sm:pb-3 sm:px-6 transition-all duration-300 animate-in slide-in-from-bottom-4">
                     <div className="max-w-2xl mx-auto flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
                             <div className="relative">
@@ -364,8 +364,9 @@ const CustomerMenu = () => {
                         </div>
 
                         <button
+                            id="sticky-place-order-btn"
                             onClick={() => setShowCartModal(true)}
-                            className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-95 text-white font-black px-5 py-3 rounded-2xl shadow-lg shadow-emerald-600/30 flex items-center gap-2 text-sm transition-all cursor-pointer whitespace-nowrap"
+                            className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-95 text-white font-black px-6 py-3.5 rounded-2xl shadow-xl shadow-emerald-600/35 flex items-center gap-2 text-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
                         >
                             <span>Place Order</span>
                             <ChevronRight size={18} />
@@ -376,12 +377,12 @@ const CustomerMenu = () => {
 
             {/* CART & CHECKOUT SLIDE-UP MODAL */}
             {showCartModal && (
-                <div className="fixed inset-0 z-50 flex items-end justify-center h-[100dvh] max-h-[100dvh] overflow-hidden">
-                    <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowCartModal(false)}></div>
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center h-[100dvh] max-h-[100dvh] overflow-hidden">
+                    <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowCartModal(false)}></div>
                     
-                    <div className="bg-white border-t border-slate-200 rounded-t-3xl shadow-2xl w-full max-w-lg relative z-10 flex flex-col max-h-[85dvh] sm:max-h-[90vh] h-auto overflow-hidden animate-in slide-in-from-bottom duration-250">
+                    <div className="bg-white border-t sm:border border-slate-200 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-lg relative z-10 flex flex-col h-[85vh] max-h-[85vh] overflow-hidden animate-in slide-in-from-bottom duration-250">
                         {/* Modal Header */}
-                        <div className="px-5 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50/70">
+                        <div className="px-5 sm:px-6 py-3.5 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50/80">
                             <div>
                                 <div className="flex items-center gap-2">
                                     <h3 className="font-black text-slate-900 text-lg">Table Order Summary</h3>
@@ -402,7 +403,7 @@ const CustomerMenu = () => {
                         </div>
 
                         {/* Modal Content Scrollable Area */}
-                        <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 sm:py-5 space-y-4 sm:space-y-5 bg-slate-50/50 overscroll-contain pb-6">
+                        <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-4 space-y-4 bg-slate-50/50 overscroll-contain pb-8">
                             {/* 1. Cart Items List */}
                             <div className="space-y-3">
                                 <div className="flex justify-between items-center text-xs font-black text-slate-700 uppercase tracking-wider">
@@ -662,28 +663,59 @@ const CustomerMenu = () => {
                                     </div>
                                 )}
                             </div>
+
+                            {/* 5. In-Flow Order Summary & Primary Place Order Button (Always 100% visible on mobile scroll) */}
+                            <div className="bg-gradient-to-br from-emerald-50 via-teal-50 to-emerald-100/70 p-4 sm:p-5 rounded-2xl border-2 border-emerald-500/40 shadow-sm space-y-3 mt-4">
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <span className="text-[10px] font-extrabold text-emerald-800 uppercase tracking-wider block">Order Summary</span>
+                                        <span className="text-xs font-bold text-slate-700">{totalItemsCount} {totalItemsCount === 1 ? 'item' : 'items'} • {serviceType}</span>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-[10px] text-slate-500 block font-semibold">Total to Pay</span>
+                                        <span className="text-xl sm:text-2xl font-black text-emerald-700">₹{getCartTotal().toLocaleString('en-IN')}</span>
+                                    </div>
+                                </div>
+
+                                <button 
+                                    id="inflow-place-order-btn"
+                                    onClick={handleProceedToPlaceOrder}
+                                    disabled={isSubmitting}
+                                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:bg-slate-300 text-white font-black py-3.5 sm:py-4 rounded-xl shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 active:scale-95 transition-all text-sm sm:text-base cursor-pointer"
+                                >
+                                    <Send size={18} />
+                                    <span>
+                                        {isSubmitting ? 'Submitting Order...' : 
+                                         paymentOption === 'UPI' || paymentOption === 'Card' ? `Proceed to Pay ₹${getCartTotal()} & Order` :
+                                         `Confirm & Place Order • ₹${getCartTotal()}`}
+                                    </span>
+                                </button>
+                                <p className="text-[10px] text-center text-slate-500 font-medium">Direct routing to Kitchen KDS for Table {tableNumber || '1'}</p>
+                            </div>
                         </div>
 
-                        {/* Modal Footer CTA */}
-                        <div className="p-4 sm:p-5 pt-3 sm:pt-4 pb-8 sm:pb-5 border-t border-slate-200 shrink-0 bg-white shadow-[0_-6px_25px_rgba(0,0,0,0.08)] space-y-2.5 z-20">
+                        {/* Modal Sticky Bottom Action Bar */}
+                        <div className="p-3 sm:p-4 pt-2.5 pb-8 sm:pb-4 border-t border-slate-200 shrink-0 bg-white/98 backdrop-blur-md shadow-[0_-8px_25px_rgba(0,0,0,0.12)] space-y-2 z-30">
                             <div className="flex justify-between items-center font-black text-slate-900">
                                 <div>
-                                    <span className="text-xs sm:text-sm block">Total Payable</span>
-                                    <span className="text-[10px] sm:text-[11px] text-slate-400 font-semibold">{totalItemsCount} {totalItemsCount === 1 ? 'item' : 'items'} • {serviceType}</span>
+                                    <span className="text-xs block text-slate-700 font-bold">Total Payable</span>
+                                    <span className="text-[10px] text-slate-400 font-semibold">{totalItemsCount} {totalItemsCount === 1 ? 'item' : 'items'} • {serviceType}</span>
                                 </div>
-                                <span className="text-emerald-600 text-lg sm:text-xl font-black">₹{getCartTotal().toLocaleString('en-IN')}</span>
+                                <span className="text-emerald-600 text-lg font-black">₹{getCartTotal().toLocaleString('en-IN')}</span>
                             </div>
                             
                             <button 
                                 id="modal-confirm-order-btn"
                                 onClick={handleProceedToPlaceOrder}
                                 disabled={isSubmitting}
-                                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:bg-slate-300 text-white font-black py-3.5 sm:py-4 rounded-2xl shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 active:scale-95 transition-all text-sm cursor-pointer"
+                                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:bg-slate-300 text-white font-black py-3 sm:py-3.5 rounded-xl shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 active:scale-95 transition-all text-sm cursor-pointer"
                             >
-                                <Send size={18} />
-                                {isSubmitting ? 'Submitting Order...' : 
-                                 paymentOption === 'UPI' || paymentOption === 'Card' ? `Proceed to Pay ₹${getCartTotal()} & Order` :
-                                 `Confirm Order (${serviceType === 'Self Dine-In (KFC Style)' ? 'Self Dine-In' : 'Waiter Service'})`}
+                                <Send size={16} />
+                                <span>
+                                    {isSubmitting ? 'Submitting Order...' : 
+                                     paymentOption === 'UPI' || paymentOption === 'Card' ? `Proceed to Pay ₹${getCartTotal()} & Order` :
+                                     `Confirm Order • ₹${getCartTotal()}`}
+                                </span>
                             </button>
                         </div>
                     </div>
@@ -720,11 +752,11 @@ const CustomerMenu = () => {
 
                         {paymentOption === 'UPI' ? (
                             <div className="space-y-3">
-                                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 inline-block shadow-inner">
+                                <div className="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200 inline-block shadow-inner">
                                     <img 
                                         src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`upi://pay?pa=resto@upi&pn=${encodeURIComponent(restaurantName)}&am=${getCartTotal()}&cu=INR`)}`} 
                                         alt="UPI QR Code" 
-                                        className="w-44 h-44 object-contain mx-auto"
+                                        className="w-36 h-36 sm:w-44 sm:h-44 object-contain mx-auto"
                                     />
                                 </div>
                                 <div className="flex justify-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
