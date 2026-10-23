@@ -110,13 +110,30 @@ const WaiterKitchenTracker = () => {
             <div className="space-y-4">
                 {filteredOrders.map((order) => {
                     const step = getStageStep(order.status);
+                    const hasTable = order.tableNumber && order.tableNumber !== 'Any' && order.tableNumber !== 'Takeout';
+                    const tableText = hasTable ? (order.tableNumber.startsWith('Table') ? order.tableNumber : `Table ${order.tableNumber}`) : null;
                     const isSelf = isSelfOrder(order);
+
                     return (
                         <div key={order._id} className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-xs space-y-4">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
                                 <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                                    <h3 className="text-xl font-black text-slate-900">{isSelf ? '📦 Self-Pickup Counter' : (order.tableNumber ? (order.tableNumber.startsWith('Table') ? order.tableNumber : `Table ${order.tableNumber}`) : 'Takeout')}</h3>
+                                    <h3 className="text-xl font-black text-slate-900">{tableText || '📦 Self-Pickup Counter'}</h3>
+                                    {hasTable && (
+                                        <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-extrabold border ${
+                                            order.serviceType === 'Self Dine-In (KFC Style)'
+                                                ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                                : 'bg-blue-50 text-blue-700 border-blue-200'
+                                        }`}>
+                                            {order.serviceType === 'Self Dine-In (KFC Style)' ? 'Self Dine-In' : 'Waiter Service'}
+                                        </span>
+                                    )}
                                     <span className="text-xs font-bold text-slate-400">#{order._id.substring(order._id.length - 6).toUpperCase()}</span>
+                                    {order.customerName && (
+                                        <span className="text-xs font-semibold text-slate-700">
+                                            👤 {order.customerName}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <span className={`px-3 py-1 rounded-xl text-xs font-extrabold uppercase ${
@@ -149,10 +166,23 @@ const WaiterKitchenTracker = () => {
 
                             {/* Serve / Transfer Button */}
                             {(order.status === 'Ready' || order.status === 'Ready for Pickup') && (
-                                <div className="flex justify-end pt-2">
-                                    <button onClick={() => handleUpdateStatus(order._id, isSelf ? 'Picked Up' : 'Served')} className={`px-5 py-2.5 text-white font-extrabold rounded-xl text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer ${isSelf ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
-                                        <CheckCircle2 size={16} /> {isSelf ? 'Collect & Transfer to Cashier Counter' : 'Mark as Served'}
-                                    </button>
+                                <div className="flex justify-end pt-2 gap-2 flex-wrap">
+                                    {hasTable ? (
+                                        <>
+                                            <button onClick={() => handleUpdateStatus(order._id, 'Served')} className="px-5 py-2.5 text-white font-extrabold rounded-xl text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer bg-emerald-600 hover:bg-emerald-700">
+                                                <CheckCircle2 size={16} /> Serve to {tableText}
+                                            </button>
+                                            {order.serviceType === 'Self Dine-In (KFC Style)' && (
+                                                <button onClick={() => handleUpdateStatus(order._id, 'Picked Up')} className="px-4 py-2.5 text-amber-800 font-extrabold rounded-xl text-xs border border-amber-300 transition-all flex items-center gap-1.5 cursor-pointer bg-amber-50 hover:bg-amber-100">
+                                                    Customer Picked Up
+                                                </button>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <button onClick={() => handleUpdateStatus(order._id, 'Picked Up')} className="px-5 py-2.5 text-white font-extrabold rounded-xl text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer bg-blue-600 hover:bg-blue-700">
+                                            <CheckCircle2 size={16} /> Collect &amp; Transfer to Cashier Counter
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>

@@ -31,9 +31,9 @@ const WaiterPendingServes = () => {
         return () => clearInterval(interval);
     }, [api]);
 
-    const handleServe = async (orderId, isSelf) => {
+    const handleServe = async (orderId, targetStatus) => {
         try {
-            const nextStatus = isSelf ? 'Picked Up' : 'Served';
+            const nextStatus = typeof targetStatus === 'string' ? targetStatus : (targetStatus ? 'Picked Up' : 'Served');
             await api.put(`/orders/${orderId}/status`, { status: nextStatus });
             fetchPendingOrders();
         } catch (error) {
@@ -58,20 +58,41 @@ const WaiterPendingServes = () => {
                     <div className="text-center py-20 text-gray-400 font-medium text-lg">No pending serves right now. Great job!</div>
                 ) : (
                     pending.map(order => {
-                        const isSelf = isSelfOrder(order);
+                        const hasTable = order.tableNumber && order.tableNumber !== 'Any' && order.tableNumber !== 'Takeout';
+                        const tableNum = hasTable ? order.tableNumber.replace(/^Table\s*/i, '') : null;
+                        const isSelfService = order.serviceType === 'Self Dine-In (KFC Style)' || (!hasTable && isSelfOrder(order));
+
                         return (
                             <div key={order._id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-md transition-shadow">
                                 
                                 <div className="flex items-center gap-6">
-                                    <div className={`w-24 h-20 rounded-2xl flex flex-col items-center justify-center border shrink-0 ${isSelf ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-green-50 border-green-100 text-green-700'}`}>
-                                        <span className="text-[10px] font-bold uppercase">{isSelf ? 'Pickup' : 'Table'}</span>
-                                        <span className="text-lg font-extrabold font-sans text-center px-1">
-                                            {isSelf ? 'Self' : (order.tableNumber || 'N/A')}
+                                    <div className={`w-28 h-22 rounded-2xl flex flex-col items-center justify-center border shrink-0 ${
+                                        order.serviceType === 'Self Dine-In (KFC Style)'
+                                            ? 'bg-amber-50 border-amber-200 text-amber-800'
+                                            : hasTable
+                                            ? 'bg-green-50 border-green-100 text-green-700'
+                                            : 'bg-blue-50 border-blue-200 text-blue-800'
+                                    }`}>
+                                        <span className="text-[10px] font-bold uppercase">{hasTable ? 'Table' : 'Pickup'}</span>
+                                        <span className="text-xl font-extrabold font-sans text-center px-1">
+                                            {hasTable ? tableNum : 'Self'}
                                         </span>
+                                        {hasTable && (
+                                            <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded mt-0.5 bg-white/70">
+                                                {order.serviceType === 'Self Dine-In (KFC Style)' ? 'Self Dine-In' : 'Table Serv.'}
+                                            </span>
+                                        )}
                                     </div>
                                     
                                     <div>
-                                        <p className="text-sm font-medium text-gray-400 mb-1">Order #{order._id.substring(order._id.length - 6).toUpperCase()}</p>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <p className="text-sm font-medium text-gray-400">Order #{order._id.substring(order._id.length - 6).toUpperCase()}</p>
+                                            {order.customerName && (
+                                                <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded-md">
+                                                    👤 {order.customerName}
+                                                </span>
+                                            )}
+                                        </div>
                                         <ul className="text-base text-gray-800 font-bold space-y-1">
                                             {order.orderItems?.map((item, idx) => <li key={idx}>{item.qty}x {item.name}</li>)}
                                         </ul>
@@ -81,17 +102,37 @@ const WaiterPendingServes = () => {
                                     </div>
                                 </div>
                                 
-                                <div className="flex items-center gap-6 justify-between md:justify-end border-t border-gray-100 md:border-0 pt-4 md:pt-0">
+                                <div className="flex flex-wrap items-center gap-3 justify-between md:justify-end border-t border-gray-100 md:border-0 pt-4 md:pt-0">
                                     <span className="text-sm font-bold text-orange-500 flex items-center gap-1.5 bg-orange-50 px-3 py-1.5 rounded-xl border border-orange-100">
                                         <Clock size={16} /> Ready {new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
                                     </span>
                                     
-                                    <button 
-                                        onClick={() => handleServe(order._id, isSelf)}
-                                        className={`px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-lg active:scale-95 flex items-center gap-2 cursor-pointer ${isSelf ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/20' : 'bg-green-600 hover:bg-green-700 text-white shadow-green-600/20'}`}
-                                    >
-                                        <CheckCircle size={18} /> {isSelf ? 'Collect & Transfer to Cashier' : 'Mark as Served'}
-                                    </button>
+                                    {hasTable ? (
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <button 
+                                                onClick={() => handleServe(order._id, 'Served')}
+                                                className="px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 flex items-center gap-2 cursor-pointer bg-green-600 hover:bg-green-700 text-white shadow-green-600/20"
+                                            >
+                                                <CheckCircle size={17} /> Serve to Table {tableNum}
+                                            </button>
+                                            {order.serviceType === 'Self Dine-In (KFC Style)' && (
+                                                <button 
+                                                    onClick={() => handleServe(order._id, 'Picked Up')}
+                                                    className="px-4 py-2.5 rounded-xl text-sm font-bold transition-all border border-amber-300 active:scale-95 flex items-center gap-1.5 cursor-pointer bg-amber-50 hover:bg-amber-100 text-amber-800"
+                                                    title="Customer collected their tray directly from counter"
+                                                >
+                                                    Customer Picked Up
+                                                </button>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <button 
+                                            onClick={() => handleServe(order._id, 'Picked Up')}
+                                            className="px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-lg active:scale-95 flex items-center gap-2 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/20"
+                                        >
+                                            <CheckCircle size={18} /> Collect &amp; Transfer to Cashier
+                                        </button>
+                                    )}
                                 </div>
                                 
                             </div>

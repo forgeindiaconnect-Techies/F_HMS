@@ -107,6 +107,8 @@ const WaiterPriorityActions = () => {
     // Synthesize all priority items
     const priorityItems = [
         ...activeOrders.map(o => {
+            const hasTable = o.tableNumber && o.tableNumber !== 'Any' && o.tableNumber !== 'Takeout';
+            const tableText = hasTable ? (o.tableNumber.startsWith('Table') ? o.tableNumber : `Table ${o.tableNumber}`) : null;
             const isSelf = isSelfOrder(o);
             const status = String(o.status || '').trim();
             const isReady = ['Ready', 'Ready for Pickup'].includes(status);
@@ -116,26 +118,31 @@ const WaiterPriorityActions = () => {
             let actionText = 'Serve Now';
             let color = 'rose';
 
-            if (isSelf && isReady) {
+            if (hasTable && isReady) {
+                cardType = o.serviceType === 'Self Dine-In (KFC Style)' ? 'SELF DINE-IN READY' : 'FOOD READY';
+                cardTitle = `Food Ready for ${tableText}${o.customerName ? ` (Guest: ${o.customerName})` : ''}`;
+                actionText = `Serve to ${tableText}`;
+                color = o.serviceType === 'Self Dine-In (KFC Style)' ? 'amber' : 'rose';
+            } else if (!hasTable && isReady) {
                 cardType = 'PICKUP READY';
                 cardTitle = 'Self-Pickup Ready in Kitchen';
                 actionText = 'Collect & Transfer to Cashier Counter';
                 color = 'amber';
-            } else if (!isSelf && isReady) {
-                cardType = 'URGENT';
-                cardTitle = 'Dine-In Order Ready to Serve';
-                actionText = 'Mark Food as Served';
-                color = 'rose';
+            } else if (hasTable) {
+                cardType = 'KITCHEN PREP';
+                cardTitle = `${tableText} Cooking in Kitchen${o.customerName ? ` (${o.customerName})` : ''}`;
+                actionText = 'Mark Ticket Ready';
+                color = 'blue';
             } else {
                 cardType = 'KITCHEN PREP';
-                cardTitle = isSelf ? 'Self-Pickup Preparing in Kitchen' : 'Dine-In Order Cooking in Kitchen';
+                cardTitle = 'Self-Pickup Preparing in Kitchen';
                 actionText = 'Transfer to Pickup Counter';
                 color = 'blue';
             }
 
             return {
                 id: `order-${o._id}`,
-                table: isSelf ? '📦 Self-Pickup Counter' : (o.tableNumber ? (o.tableNumber.startsWith('Table') ? o.tableNumber : `Table ${o.tableNumber}`) : 'Takeout'),
+                table: tableText || '📦 Self-Pickup Counter',
                 type: cardType,
                 title: cardTitle,
                 subtitle: o.orderItems?.map(i => `${i.qty}x ${i.name}`).join(', ') || 'Order Ticket',
@@ -145,12 +152,12 @@ const WaiterPriorityActions = () => {
                 color: color,
                 handler: async () => {
                     if (isReady) {
-                        await handleServeOrder(o._id, isSelf);
+                        await handleServeOrder(o._id, !hasTable);
                     } else {
                         try {
-                            const nextStatus = isSelf ? 'Ready for Pickup' : 'Ready';
+                            const nextStatus = !hasTable ? 'Ready for Pickup' : 'Ready';
                             await api.put(`/orders/${o._id}/status`, { status: nextStatus });
-                            toast.success('Transferred ticket to Pickup Counter!');
+                            toast.success(`Transferred ticket for ${tableText || 'Counter'}!`);
                             fetchData();
                         } catch (e) {
                             toast.error('Failed to update ticket status');

@@ -623,6 +623,16 @@ const ChefDashboard = () => {
                                                 <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider bg-slate-200 dark:bg-white/20 text-slate-800 dark:text-white px-2 sm:px-2.5 py-0.5 rounded-full">
                                                     {order.orderType === 'Dine In' ? `📍 Table ${order.tableNumber || 'Any'}` : `🛵 ${order.orderType}`}
                                                 </span>
+                                                {order.serviceType && (
+                                                    <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-700 dark:text-amber-300 px-2 sm:px-2.5 py-0.5 rounded-full border border-amber-500/30">
+                                                        {order.serviceType === 'Self Dine-In (KFC Style)' ? 'Self Dine-In' : 'Table Service'}
+                                                    </span>
+                                                )}
+                                                {order.customerName && (
+                                                    <span className="text-[9px] sm:text-[10px] font-semibold text-slate-700 dark:text-slate-300 bg-white/70 dark:bg-white/10 px-2 py-0.5 rounded-full">
+                                                        👤 {order.customerName}
+                                                    </span>
+                                                )}
                                                 {isOverdue && (
                                                     <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider bg-yellow-400 text-black px-2 py-0.5 rounded-full flex items-center gap-1">
                                                         <Flame size={11} /> OVERDUE

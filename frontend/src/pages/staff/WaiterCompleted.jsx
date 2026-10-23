@@ -67,7 +67,9 @@ const WaiterCompleted = () => {
                                     <td className="p-4 font-mono font-bold text-gray-900 dark:text-white">#{order._id.substring(order._id.length - 6).toUpperCase()}</td>
                                     <td className="p-4">
                                         <span className="bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-200 font-bold px-3 py-1 rounded-lg text-xs">
-                                            {isSelfOrder(order) ? '📦 Self-Pickup' : (order.orderType === 'Dine In' ? `Table ${order.tableNumber || 'N/A'}` : order.orderType)}
+                                            {order.tableNumber && order.tableNumber !== 'Any' && order.tableNumber !== 'Takeout'
+                                                ? `${order.tableNumber.startsWith('Table') ? order.tableNumber : `Table ${order.tableNumber}`}${order.serviceType === 'Self Dine-In (KFC Style)' ? ' (Self)' : ''}`
+                                                : (isSelfOrder(order) ? '📦 Self-Pickup' : order.orderType || 'Order')}
                                         </span>
                                     </td>
                                     <td className="p-4 font-medium text-gray-700 dark:text-slate-300">

@@ -104,25 +104,31 @@ const WaiterDashboard = () => {
             // Generate Priority Actions dynamically from Ready orders and service requests
             const dynamicActions = [];
             ordersRes.data.forEach(o => {
-                const isSelf = isSelfOrder(o);
-                if (['Ready', 'Ready for Pickup'].includes(o.status)) {
+                const hasTable = o.tableNumber && o.tableNumber !== 'Any' && o.tableNumber !== 'Takeout';
+                const tableText = hasTable ? (o.tableNumber.startsWith('Table') ? o.tableNumber : `Table ${o.tableNumber}`) : null;
+                const isReady = ['Ready', 'Ready for Pickup'].includes(o.status);
+
+                if (isReady) {
+                    const isSelfDineIn = o.serviceType === 'Self Dine-In (KFC Style)';
                     dynamicActions.push({
                         id: `pa-ready-${o._id}`,
                         orderId: o._id,
                         type: 'urgent',
-                        table: isSelf ? 'Self-Pickup Counter' : (o.tableNumber ? (o.tableNumber.startsWith('Table') ? o.tableNumber : `Table ${o.tableNumber}`) : 'Takeout'),
-                        label: isSelf ? 'PICKUP READY' : 'FOOD READY',
+                        table: tableText || 'Self-Pickup Counter',
+                        label: hasTable ? (isSelfDineIn ? 'SELF DINE-IN READY' : 'FOOD READY') : 'PICKUP READY',
                         time: 'Just now',
-                        title: isSelf ? 'Self-Pickup Counter Transfer' : 'Food Ready in Kitchen',
+                        title: hasTable 
+                            ? `Food Ready for ${tableText}${o.customerName ? ` (${o.customerName})` : ''}`
+                            : 'Self-Pickup Counter Transfer',
                         details: o.orderItems?.map(i => `${i.qty}x ${i.name}`).join(', ') || 'Order items',
-                        buttonLabel: isSelf ? 'Collect & Transfer to Cashier' : 'Mark Served',
+                        buttonLabel: hasTable ? `Serve to ${tableText}` : 'Collect & Transfer to Cashier',
                         icon: Utensils,
-                        color: isSelf ? 'amber' : 'rose',
+                        color: (isSelfDineIn || !hasTable) ? 'amber' : 'rose',
                         action: async (actionId) => {
                             try {
-                                const nextStatus = isSelf ? 'Picked Up' : 'Served';
+                                const nextStatus = hasTable ? 'Served' : 'Picked Up';
                                 await api.put(`/orders/${o._id}/status`, { status: nextStatus });
-                                toast.success(isSelf ? 'Transferred order to Cashier counter!' : 'Order marked as served!');
+                                toast.success(hasTable ? `Order marked served to ${tableText}!` : 'Transferred order to Cashier counter!');
                                 fetchData();
                             } catch (err) {
                                 toast.error('Failed to update status');
@@ -206,12 +212,14 @@ const WaiterDashboard = () => {
                                 osc.stop(audioCtx.currentTime + 0.35);
                             } catch (e) {}
 
-                            const isSelf = msg.data.orderType === 'Self-Pickup' || msg.data.orderType === 'Self Pickup';
+                            const hasTable = msg.data.tableNumber && msg.data.tableNumber !== 'Any' && msg.data.tableNumber !== 'Takeout';
                             const ticketNum = String(msg.data._id).substring(String(msg.data._id).length - 5).toUpperCase();
+                            const isSelfDineIn = msg.data.serviceType === 'Self Dine-In (KFC Style)';
+
                             toast.success(
-                                isSelf 
-                                ? `📦 Self-Pickup Ticket #${ticketNum} is READY in Kitchen! Collect & Transfer to Cashier Counter!` 
-                                : `🍽️ Food READY for Table ${msg.data.tableNumber || 'Takeout'} (Ticket #${ticketNum})!`, {
+                                hasTable
+                                ? `🍽️ Food READY for Table ${msg.data.tableNumber} (Ticket #${ticketNum})${isSelfDineIn ? ' [Self Dine-In]' : ''}!`
+                                : `📦 Self-Pickup Ticket #${ticketNum} is READY in Kitchen! Collect & Transfer to Cashier Counter!`, {
                                 id: `waiter-ready-${msg.data._id}`,
                                 duration: 5000,
                                 position: 'top-right'
@@ -306,13 +314,14 @@ const WaiterDashboard = () => {
     };
 
     // Calculate processed tables list
+    const norm = (val) => String(val || '').replace(/^Table\s*/i, '').trim().toLowerCase();
     const tables = dbTables.length > 0 ? dbTables.map(t => {
-        const order = activeOrders.find(o => String(o.tableNumber) === String(t.tableNumber));
+        const order = activeOrders.find(o => norm(o.tableNumber) === norm(t.tableNumber) || String(o.tableNumber) === String(t.tableNumber));
         let displayStatus = t.status || 'Available';
         if (order) {
             displayStatus = 'Occupied';
             if (order.status === 'Served') displayStatus = 'Billing';
-            else if (order.status === 'Ready') displayStatus = 'Needs Attention';
+            else if (order.status === 'Ready' || order.status === 'Ready for Pickup') displayStatus = 'Needs Attention';
             else if (order.status === 'In Kitchen' || order.status === 'Preparing') displayStatus = 'Waiting for Food';
         }
         return { 
@@ -326,12 +335,12 @@ const WaiterDashboard = () => {
         };
     }) : [1,2,3,4,5,6,7,8,9,10,11,12].map(num => {
         const id = `T-${num}`;
-        const order = activeOrders.find(o => o.tableNumber === id || o.tableNumber === String(num));
+        const order = activeOrders.find(o => norm(o.tableNumber) === String(num) || o.tableNumber === id || o.tableNumber === String(num));
         let status = 'Available';
         if (order) {
             if (order.status === 'Served') status = 'Billing';
-            else if (order.status === 'Ready') status = 'Needs Attention';
-            else if (order.status === 'Preparing') status = 'Waiting for Food';
+            else if (order.status === 'Ready' || order.status === 'Ready for Pickup') status = 'Needs Attention';
+            else if (order.status === 'Preparing' || order.status === 'In Kitchen') status = 'Waiting for Food';
             else status = 'Occupied';
         }
 
@@ -958,13 +967,29 @@ const WaiterDashboard = () => {
                                                 
                                                 {/* Header Row */}
                                                 <div className="flex flex-wrap items-center justify-between gap-2">
-                                                    <div className="flex items-center gap-2.5">
+                                                    <div className="flex items-center gap-2.5 flex-wrap">
                                                         <span className="font-black text-sm text-slate-900">
-                                                            {order.tableNumber ? (order.tableNumber.startsWith('Table') ? order.tableNumber : `Table ${order.tableNumber}`) : '📦 Self-Pickup Counter'}
+                                                            {order.tableNumber && order.tableNumber !== 'Any' && order.tableNumber !== 'Takeout'
+                                                                ? (order.tableNumber.startsWith('Table') ? order.tableNumber : `Table ${order.tableNumber}`) 
+                                                                : '📦 Self-Pickup Counter'}
                                                         </span>
+                                                        {order.tableNumber && order.tableNumber !== 'Any' && order.tableNumber !== 'Takeout' && (
+                                                            <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border ${
+                                                                order.serviceType === 'Self Dine-In (KFC Style)'
+                                                                    ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                                                    : 'bg-blue-50 text-blue-700 border-blue-200'
+                                                            }`}>
+                                                                {order.serviceType === 'Self Dine-In (KFC Style)' ? 'Self Dine-In' : 'Waiter Service'}
+                                                            </span>
+                                                        )}
                                                         <span className="text-[10px] font-bold text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded-md">
                                                             #{order._id.substring(order._id.length - 5).toUpperCase()}
                                                         </span>
+                                                        {order.customerName && (
+                                                            <span className="text-xs font-semibold text-slate-700">
+                                                                👤 {order.customerName}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                     <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                                                         <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
@@ -1006,20 +1031,31 @@ const WaiterDashboard = () => {
 
                                                 {/* Serve / Pickup Quick Action Buttons */}
                                                 {(order.status === 'Ready' || order.status === 'Ready for Pickup') && (
-                                                    <div className="flex justify-end pt-1 gap-2">
-                                                        {(String(order.orderType || '').toLowerCase().includes('pickup') || String(order.orderType || '').toLowerCase().includes('take') || String(order.orderType || '').toLowerCase().includes('self') || !order.tableNumber) ? (
+                                                    <div className="flex justify-end pt-1 gap-2 flex-wrap">
+                                                        {order.tableNumber && order.tableNumber !== 'Any' && order.tableNumber !== 'Takeout' ? (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => handleUpdateStatus(order._id, 'Served')}
+                                                                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-3.5 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                                                                >
+                                                                    <CheckCircle2 size={14} /> Serve to {order.tableNumber.startsWith('Table') ? order.tableNumber : `Table ${order.tableNumber}`}
+                                                                </button>
+                                                                {order.serviceType === 'Self Dine-In (KFC Style)' && (
+                                                                    <button
+                                                                        onClick={() => handleUpdateStatus(order._id, 'Picked Up')}
+                                                                        className="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-extrabold px-3 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
+                                                                        title="Customer collected tray directly from counter"
+                                                                    >
+                                                                        Customer Picked Up
+                                                                    </button>
+                                                                )}
+                                                            </>
+                                                        ) : (
                                                             <button
                                                                 onClick={() => handleUpdateStatus(order._id, 'Picked Up')}
                                                                 className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-4 py-2 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
                                                             >
                                                                 <CheckCircle2 size={14} /> Collect &amp; Transfer to Cashier Counter
-                                                            </button>
-                                                        ) : (
-                                                            <button
-                                                                onClick={() => handleUpdateStatus(order._id, 'Served')}
-                                                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-4 py-2 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
-                                                            >
-                                                                <CheckCircle2 size={14} /> Mark as Served
                                                             </button>
                                                         )}
                                                     </div>
