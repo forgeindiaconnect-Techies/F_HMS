@@ -1,18 +1,15 @@
 {
   "framework": "vite",
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/dist",
   "rewrites": [
     {
-      "source": "/((?!assets/|.*\\..*).*)",
+      "source": "/api/:path*",
+      "destination": "https://f-hms.onrender.com/api/:path*"
+    },
+    {
+      "source": "/(.*)",
       "destination": "/index.html"
     }
-  ],
-  "experimentalServices": {
-    "f-hms": {
-      "type": "web",
-      "root": "backend",
-      "entrypoint": "index.js",
-      "routePrefix": "/",
-      "buildCommand": "npm install && npm run build"
-    }
-  }
+  ]
 }

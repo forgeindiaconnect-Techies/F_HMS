@@ -20,3 +20,5 @@ backend/uploads/
 scratch/
 frontend/scratch/
 .vscode/
+
+.vercel

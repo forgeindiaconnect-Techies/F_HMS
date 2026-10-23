@@ -220,7 +220,6 @@ const CustomerMenu = () => {
                         <p className="text-xs text-slate-500 font-medium mt-0.5">Seated at: <strong className="text-emerald-600 font-black">Table {tableNumber}</strong></p>
                     )}
                 </div>
-                
                 <div className="flex items-center gap-2.5">
                     {activeOrderId && (
                         <button 
@@ -232,17 +231,6 @@ const CustomerMenu = () => {
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                             </span>
                             View Active Order
-                        </button>
-                    )}
-                    {cart.length > 0 && (
-                        <button 
-                            onClick={() => setShowCartModal(true)}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-2xl flex items-center gap-2 relative shadow-lg shadow-emerald-600/25 hover:scale-105 active:scale-95 transition-all"
-                        >
-                            <ShoppingBag size={20} />
-                            <span className="absolute -top-1.5 -right-1.5 bg-amber-500 text-white rounded-full w-5 h-5 text-[10px] font-black flex items-center justify-center border-2 border-white">
-                                {totalItemsCount}
-                            </span>
                         </button>
                     )}
                 </div>
@@ -388,12 +376,12 @@ const CustomerMenu = () => {
 
             {/* CART & CHECKOUT SLIDE-UP MODAL */}
             {showCartModal && (
-                <div className="fixed inset-0 z-50 flex items-end justify-center">
+                <div className="fixed inset-0 z-50 flex items-end justify-center h-[100dvh] max-h-[100dvh] overflow-hidden">
                     <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowCartModal(false)}></div>
                     
-                    <div className="bg-white border-t border-slate-200 rounded-t-3xl shadow-2xl w-full max-w-lg relative z-10 flex flex-col max-h-[90vh] animate-in slide-in-from-bottom duration-250">
+                    <div className="bg-white border-t border-slate-200 rounded-t-3xl shadow-2xl w-full max-w-lg relative z-10 flex flex-col max-h-[85dvh] sm:max-h-[90vh] h-auto overflow-hidden animate-in slide-in-from-bottom duration-250">
                         {/* Modal Header */}
-                        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50/70">
+                        <div className="px-5 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50/70">
                             <div>
                                 <div className="flex items-center gap-2">
                                     <h3 className="font-black text-slate-900 text-lg">Table Order Summary</h3>
@@ -414,7 +402,7 @@ const CustomerMenu = () => {
                         </div>
 
                         {/* Modal Content Scrollable Area */}
-                        <div className="flex-1 overflow-y-auto p-6 space-y-5 bg-slate-50/50">
+                        <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-4 sm:py-5 space-y-4 sm:space-y-5 bg-slate-50/50 overscroll-contain pb-6">
                             {/* 1. Cart Items List */}
                             <div className="space-y-3">
                                 <div className="flex justify-between items-center text-xs font-black text-slate-700 uppercase tracking-wider">
@@ -677,19 +665,20 @@ const CustomerMenu = () => {
                         </div>
 
                         {/* Modal Footer CTA */}
-                        <div className="p-6 border-t border-slate-200 shrink-0 bg-white space-y-3">
+                        <div className="p-4 sm:p-5 pt-3 sm:pt-4 pb-8 sm:pb-5 border-t border-slate-200 shrink-0 bg-white shadow-[0_-6px_25px_rgba(0,0,0,0.08)] space-y-2.5 z-20">
                             <div className="flex justify-between items-center font-black text-slate-900">
                                 <div>
-                                    <span className="text-sm block">Total Payable</span>
-                                    <span className="text-[11px] text-slate-400 font-semibold">{totalItemsCount} items • {serviceType}</span>
+                                    <span className="text-xs sm:text-sm block">Total Payable</span>
+                                    <span className="text-[10px] sm:text-[11px] text-slate-400 font-semibold">{totalItemsCount} {totalItemsCount === 1 ? 'item' : 'items'} • {serviceType}</span>
                                 </div>
-                                <span className="text-emerald-600 text-xl font-black">₹{getCartTotal().toLocaleString('en-IN')}</span>
+                                <span className="text-emerald-600 text-lg sm:text-xl font-black">₹{getCartTotal().toLocaleString('en-IN')}</span>
                             </div>
                             
                             <button 
+                                id="modal-confirm-order-btn"
                                 onClick={handleProceedToPlaceOrder}
                                 disabled={isSubmitting}
-                                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:bg-slate-300 text-white font-black py-4 rounded-2xl shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 active:scale-95 transition-all text-sm cursor-pointer"
+                                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:bg-slate-300 text-white font-black py-3.5 sm:py-4 rounded-2xl shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 active:scale-95 transition-all text-sm cursor-pointer"
                             >
                                 <Send size={18} />
                                 {isSubmitting ? 'Submitting Order...' : 
@@ -703,12 +692,12 @@ const CustomerMenu = () => {
 
             {/* SIMULATED UPI / CARD PAYMENT MODAL */}
             {showPaymentModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 h-[100dvh] max-h-[100dvh] overflow-y-auto">
                     <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowPaymentModal(false)}></div>
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm relative z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200 p-6 text-center space-y-4">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm relative z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200 p-5 sm:p-6 text-center space-y-3.5 max-h-[88dvh] overflow-y-auto my-auto border border-slate-100">
                         <button 
-                            onClick={() => setShowPaymentModal(false)}
-                            className="absolute right-4 top-4 text-slate-400 hover:text-slate-600"
+                            onClick={() => setShowPaymentModal(false)} 
+                            className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 p-1"
                         >
                             <X size={20} />
                         </button>
@@ -774,9 +763,10 @@ const CustomerMenu = () => {
                                 </div>
                             ) : (
                                 <button
+                                    id="confirm-simulated-payment-btn"
                                     onClick={handleConfirmSimulatedPayment}
                                     disabled={isSubmitting}
-                                    className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black rounded-2xl shadow-lg shadow-emerald-600/30 text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                                    className="w-full py-3.5 sm:py-4 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black rounded-2xl shadow-lg shadow-emerald-600/30 text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
                                 >
                                     <CheckCircle2 size={18} />
                                     <span>Simulate Payment & Send to Kitchen</span>
