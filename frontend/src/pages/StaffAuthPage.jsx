@@ -260,6 +260,76 @@ const StaffAuthPage = () => {
 
     const renderLoginForm = () => (
         <form onSubmit={handleSubmit(onSubmitLogin)} className="space-y-4 min-w-0 pr-1.5 flex-1">
+            {/* Quick Demo Fill Pills */}
+            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 mb-2">
+                <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+                        ⚡ Quick Staff Login
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-medium">Click to auto-fill</span>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setValue('email', 'ruthralekha@gmail.com', { shouldValidate: true });
+                            setValue('password', 'ruthra', { shouldValidate: true });
+                        }}
+                        className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-emerald-50 hover:border-emerald-300 border border-slate-200 text-left transition-all text-xs group cursor-pointer shadow-xs"
+                    >
+                        <div className="font-extrabold text-slate-800 group-hover:text-emerald-700 flex items-center justify-between">
+                            <span>👑 Admin</span>
+                            <span className="text-[10px] text-slate-400 font-normal">Auto-fill</span>
+                        </div>
+                        <div className="text-[10px] text-slate-500 truncate">ruthralekha@gmail.com</div>
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setValue('email', 'banu@gmail.com', { shouldValidate: true });
+                            setValue('password', 'banu123', { shouldValidate: true });
+                        }}
+                        className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-blue-50 hover:border-blue-300 border border-slate-200 text-left transition-all text-xs group cursor-pointer shadow-xs"
+                    >
+                        <div className="font-extrabold text-slate-800 group-hover:text-blue-700 flex items-center justify-between">
+                            <span>🧾 Cashier</span>
+                            <span className="text-[10px] text-slate-400 font-normal">Auto-fill</span>
+                        </div>
+                        <div className="text-[10px] text-slate-500 truncate">banu@gmail.com</div>
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setValue('email', 'ela@gmail.com', { shouldValidate: true });
+                            setValue('password', 'ela123', { shouldValidate: true });
+                        }}
+                        className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-amber-50 hover:border-amber-300 border border-slate-200 text-left transition-all text-xs group cursor-pointer shadow-xs"
+                    >
+                        <div className="font-extrabold text-slate-800 group-hover:text-amber-700 flex items-center justify-between">
+                            <span>👨‍🍳 Chef</span>
+                            <span className="text-[10px] text-slate-400 font-normal">Auto-fill</span>
+                        </div>
+                        <div className="text-[10px] text-slate-500 truncate">ela@gmail.com</div>
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setValue('email', 'vidhu@gmail.com', { shouldValidate: true });
+                            setValue('password', 'vidhu123', { shouldValidate: true });
+                        }}
+                        className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-purple-50 hover:border-purple-300 border border-slate-200 text-left transition-all text-xs group cursor-pointer shadow-xs"
+                    >
+                        <div className="font-extrabold text-slate-800 group-hover:text-purple-700 flex items-center justify-between">
+                            <span>🍽️ Waiter</span>
+                            <span className="text-[10px] text-slate-400 font-normal">Auto-fill</span>
+                        </div>
+                        <div className="text-[10px] text-slate-500 truncate">vidhu@gmail.com</div>
+                    </button>
+                </div>
+            </div>
 
 
             <div>

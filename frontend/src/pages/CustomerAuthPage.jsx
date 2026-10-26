@@ -125,6 +125,28 @@ const CustomerAuthPage = () => {
                         </div>
                     )}
 
+                    {mode === 'login' && (
+                        <div className="bg-orange-50/70 border border-orange-200/80 rounded-2xl p-3 mb-4">
+                            <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-[11px] font-bold text-orange-800 uppercase tracking-wider">
+                                    ⚡ Quick Customer Login
+                                </span>
+                                <span className="text-[10px] text-orange-600 font-medium">Click to fill</span>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setValue('email', 'doe@gmail.com', { shouldValidate: true });
+                                    setValue('password', 'password123', { shouldValidate: true });
+                                }}
+                                className="w-full px-3 py-1.5 rounded-xl bg-white hover:bg-orange-100/50 border border-orange-200 text-left transition-all text-xs cursor-pointer shadow-xs flex items-center justify-between"
+                            >
+                                <span className="font-extrabold text-slate-800">👤 Guest Customer: doe@gmail.com</span>
+                                <span className="text-[10px] text-orange-600 font-bold">Auto-fill</span>
+                            </button>
+                        </div>
+                    )}
+
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 min-w-0 pr-1.5 flex-1">
                         {/* Name - Register only */}
                         {mode === 'register' && (
