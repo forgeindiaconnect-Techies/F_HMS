@@ -56,7 +56,7 @@ const ManagerDashboard = () => {
     <div className="w-full max-w-[1600px] mx-auto space-y-4 sm:space-y-6">
 
       {/* Sleek Manager Shift & Station Control Strip */}
-      <div className="bg-slate-900 text-white px-4 py-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-md border border-slate-800 shrink-0">
+      <div className="bg-slate-900 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 shadow-md border border-slate-800 shrink-0">
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -82,7 +82,7 @@ const ManagerDashboard = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden group">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 rounded-full group-hover:scale-110 transition-transform" />
           <div className="relative">
             <div className="flex justify-between items-start mb-4">
@@ -97,7 +97,7 @@ const ManagerDashboard = () => {
             </h2>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden group">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-orange-50 rounded-full group-hover:scale-110 transition-transform" />
           <div className="relative">
             <div className="flex justify-between items-start mb-4">
@@ -160,20 +160,20 @@ const ManagerDashboard = () => {
                   {data.deliveryAnalytics.onlinePartners} Online
                 </span>
               </div>
-              <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-gray-50 border border-gray-100 p-4 rounded-xl text-center">
+              <div className="p-3.5 sm:p-5 grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
+                <div className="bg-gray-50 border border-gray-100 p-3 sm:p-4 rounded-xl text-center">
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Pending Assign</p>
                   <p className="text-xl font-black text-gray-900 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.deliveryAnalytics.pendingAssignments}</p>
                 </div>
-                <div className="bg-orange-50 border border-orange-100 p-4 rounded-xl text-center">
+                <div className="bg-orange-50 border border-orange-100 p-3 sm:p-4 rounded-xl text-center">
                   <p className="text-xs font-semibold text-orange-600 uppercase tracking-wider">Active Deliveries</p>
                   <p className="text-xl font-black text-orange-700 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.deliveryAnalytics.activeDeliveries}</p>
                 </div>
-                <div className="bg-green-50 border border-green-100 p-4 rounded-xl text-center">
+                <div className="bg-green-50 border border-green-100 p-3 sm:p-4 rounded-xl text-center">
                   <p className="text-xs font-semibold text-green-600 uppercase tracking-wider">Completed</p>
                   <p className="text-xl font-black text-green-700 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.deliveryAnalytics.completedDeliveries}</p>
                 </div>
-                <div className="bg-purple-50 border border-purple-100 p-4 rounded-xl text-center">
+                <div className="bg-purple-50 border border-purple-100 p-3 sm:p-4 rounded-xl text-center">
                   <p className="text-xs font-semibold text-purple-600 uppercase tracking-wider">Delivery Revenue</p>
                   <p className="text-xl font-black text-purple-700 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>₹{data.deliveryAnalytics.totalDeliveryEarnings}</p>
                 </div>
@@ -192,7 +192,7 @@ const ManagerDashboard = () => {
 
         {/* Right Column (Staff & Daily Goal) */}
         <div className="space-y-6 min-w-0 pr-1.5 flex-1">
-          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white shadow-md">
+          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-4 sm:p-6 text-white shadow-md">
             <h3 className="font-bold text-green-50 mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>Daily Revenue Goal</h3>
             <p className="text-3xl font-extrabold mb-6 mt-2" style={{ fontFamily: 'Manrope, sans-serif' }}>
               ₹{totalRevenue.toLocaleString('en-IN')} <span className="text-lg text-green-200 font-medium">/ ₹{revenueGoal.toLocaleString('en-IN')}</span>
@@ -244,7 +244,7 @@ const ManagerDashboard = () => {
 
 
       {/* Supplier Section */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>

@@ -54,22 +54,22 @@ const CashierTopbar = () => {
     };
 
     return (
-        <header className="h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-4 md:px-6 sticky top-0 z-10 shadow-xs">
-            <div className="flex-1 flex items-center gap-2 md:gap-4">
+        <header className="h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-3 sm:px-4 md:px-6 sticky top-0 z-10 shadow-xs">
+            <div className="flex-1 flex items-center gap-1.5 sm:gap-2 md:gap-4 min-w-0">
                 <button 
                     onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))} 
                     className="md:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg shrink-0"
                 >
                     <Menu size={22} />
                 </button>
-                <div className="relative w-full max-w-xs md:w-80 hidden md:block">
+                <div className="relative flex-1 max-w-[170px] sm:max-w-xs md:w-80">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                     <input 
                         type="text"
                         value={searchTerm}
                         onChange={(e) => handleSearchChange(e.target.value)}
-                        placeholder="Search bill number or table..."
-                        className="w-full pl-9 pr-8 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400 text-gray-900 dark:text-white"
+                        placeholder="Search bill or table..."
+                        className="w-full pl-8 sm:pl-9 pr-7 sm:pr-8 py-1.5 sm:py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400 text-gray-900 dark:text-white"
                     />
                     {searchTerm && (
                         <button
@@ -83,7 +83,7 @@ const CashierTopbar = () => {
                 </div>
             </div>
 
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2 sm:gap-4 md:gap-6 shrink-0">
                 <div className="relative" ref={notifRef}>
                     <button 
                         onClick={() => { setShowNotifs(!showNotifs); setShowProfile(false); }}
@@ -93,7 +93,7 @@ const CashierTopbar = () => {
                         {unreadCount > 0 && <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
                     </button>
                     {showNotifs && (
-                        <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50">
+                        <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50">
                             <div className="p-3 border-b border-gray-100 bg-gray-50">
                                 <h3 className="font-bold text-gray-900">Notifications</h3>
                             </div>
@@ -118,19 +118,19 @@ const CashierTopbar = () => {
                     )}
                 </div>
 
-                <div className="h-8 w-px bg-gray-200"></div>
+                <div className="h-6 sm:h-8 w-px bg-gray-200"></div>
 
                 <div className="relative" ref={profileRef}>
                     <div 
                         onClick={() => { setShowProfile(!showProfile); setShowNotifs(false); }}
-                        className="flex items-center gap-3 cursor-pointer group"
+                        className="flex items-center gap-2 sm:gap-3 cursor-pointer group"
                     >
-                        <div className="text-right group-hover:opacity-80 transition-opacity">
+                        <div className="text-right hidden sm:block group-hover:opacity-80 transition-opacity">
                             <p className="text-sm font-bold text-gray-900 capitalize">{user?.name || 'Cashier User'}</p>
                             <p className="text-xs font-medium text-purple-600 capitalize">{user?.role || 'Cashier'}</p>
                         </div>
-                        <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center border border-purple-200 text-purple-700 group-hover:bg-purple-200 transition-colors">
-                            <User size={20} />
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 bg-purple-100 rounded-full flex items-center justify-center border border-purple-200 text-purple-700 group-hover:bg-purple-200 transition-colors">
+                            <User size={18} />
                         </div>
                     </div>
                     {showProfile && (

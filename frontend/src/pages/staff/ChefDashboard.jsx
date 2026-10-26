@@ -526,27 +526,27 @@ const ChefDashboard = () => {
         <div className="w-full max-w-[1700px] mx-auto font-sans space-y-4 sm:space-y-6 pb-24 text-slate-900 dark:text-slate-100 transition-colors">
             
             {/* Sleek Kitchen Shift & Station Control Strip */}
-            <div className="bg-slate-900 text-white px-4 py-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-md border border-slate-800 shrink-0">
-                <div className="flex items-center gap-3 flex-wrap">
+            <div className="bg-slate-900 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 shadow-md border border-slate-800 shrink-0">
+                <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
                     <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                         <span className="text-xs font-black tracking-wide uppercase text-slate-200">Main Kitchen Display</span>
                         <span className="text-slate-600">|</span>
-                        <span className="text-xs text-slate-400 font-medium truncate max-w-[200px]">Lead: {user?.name || 'Master Chef'}</span>
+                        <span className="text-xs text-slate-400 font-medium truncate max-w-[140px] sm:max-w-[200px]">Lead: {user?.name || 'Master Chef'}</span>
                     </div>
                     {/* Compact Shift Attendance Widget */}
                     <StaffShiftClockWidget compact={true} userRole="Head Chef / Kitchen Lead" userName={user?.name || "Master Chef"} />
                 </div>
 
-                <div className="flex items-center gap-2.5 flex-wrap">
-                    <div className="flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-xl text-xs border border-slate-700/60 font-semibold shadow-xs">
+                <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+                    <div className="flex items-center gap-2 bg-slate-800/90 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs border border-slate-700/60 font-semibold shadow-xs">
                         <span className="text-slate-400">Active Kitchen Tickets:</span>
                         <span className="font-mono font-black text-amber-400">{orders.filter(o => o.status !== 'Served' && o.status !== 'Completed').length}</span>
                     </div>
                     <button
                         type="button"
                         onClick={toggleAutoPrintKOT}
-                        className={`text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer border ${
+                        className={`text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer border ${
                             autoPrintKOTEnabled 
                                 ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 hover:bg-amber-500/25' 
                                 : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-750'
@@ -561,7 +561,7 @@ const ChefDashboard = () => {
 
             {/* 1. Live Ingredient 86-List Warning Banner */}
             {outOfStock.length > 0 && (
-                <div className="bg-gradient-to-r from-red-50 via-white to-red-50 dark:from-red-950 dark:via-slate-900 dark:to-red-950 border border-red-200 dark:border-red-500/40 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 flex flex-col md:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 shadow-xl dark:shadow-2xl relative overflow-hidden">
+                <div className="bg-gradient-to-r from-red-50 via-white to-red-50 dark:from-red-950 dark:via-slate-900 dark:to-red-950 border border-red-200 dark:border-red-500/40 rounded-2xl sm:rounded-3xl p-3 sm:p-5 flex flex-col md:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 shadow-xl dark:shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
                     
                     <div className="flex items-start sm:items-center gap-3 z-10 min-w-0">
@@ -593,17 +593,17 @@ const ChefDashboard = () => {
             )}
 
             {/* 2. Top KDS Kitchen Command Header */}
-            <div className="bg-white dark:bg-slate-900/90 backdrop-blur-md p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-xl dark:shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 sm:space-y-6">
+            <div className="bg-white dark:bg-slate-900/90 backdrop-blur-md p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-xl dark:shadow-2xl border border-slate-200 dark:border-slate-800 space-y-3.5 sm:space-y-6">
                 
                 {/* Header Title & Station Selector */}
-                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 sm:gap-6 pb-4 sm:pb-6 border-b border-slate-200 dark:border-slate-800">
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 sm:gap-6 pb-3.5 sm:pb-6 border-b border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3 sm:gap-4">
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-tr from-orange-600 to-amber-500 rounded-xl sm:rounded-2xl flex items-center justify-center text-white shadow-xl shadow-orange-500/20 shrink-0">
-                            <ChefHat size={26} className="sm:hidden" />
+                        <div className="w-11 h-11 sm:w-14 sm:h-14 bg-gradient-to-tr from-orange-600 to-amber-500 rounded-xl sm:rounded-2xl flex items-center justify-center text-white shadow-xl shadow-orange-500/20 shrink-0">
+                            <ChefHat size={24} className="sm:hidden" />
                             <ChefHat size={32} className="hidden sm:block" />
                         </div>
                         <div className="min-w-0">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                                 <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
                                     Kitchen Display System (KDS)
                                 </h1>
@@ -643,7 +643,7 @@ const ChefDashboard = () => {
 
                     {/* Station Filter Pills */}
                     <div className="w-full xl:w-auto">
-                        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 -mx-1 px-1 touch-pan-x">
+                        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 -mx-2 px-2 touch-pan-x">
                             <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-1 shrink-0 hidden sm:inline">Station:</span>
                             {stations.map(st => (
                                 <button

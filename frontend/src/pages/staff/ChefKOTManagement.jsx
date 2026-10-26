@@ -224,19 +224,19 @@ const ChefKOTManagement = () => {
     }
 
     return (
-        <div className="max-w-[1700px] mx-auto p-4 sm:p-6 space-y-6 min-h-screen">
+        <div className="max-w-[1700px] mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6 min-h-screen">
             
             {/* -------------------------------------------------- */}
             {/* TOP BAR / STATS OVERVIEW */}
             {/* -------------------------------------------------- */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 shadow-xs flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 sm:gap-6">
                 <div>
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-lg shadow-orange-500/20">
-                            <Receipt size={24} />
+                        <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-lg shadow-orange-500/20 shrink-0">
+                            <Receipt size={22} />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
                                 Kitchen Order Tickets (KOT)
                             </h1>
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
@@ -247,32 +247,32 @@ const ChefKOTManagement = () => {
                 </div>
 
                 {/* Live Stats Pills */}
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="px-4 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-2xl">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                    <div className="px-3 sm:px-4 py-1.5 sm:py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl sm:rounded-2xl">
                         <span className="text-[10px] font-black uppercase text-amber-600 dark:text-amber-400 block tracking-wider">Preparing</span>
-                        <span className="text-xl font-black text-amber-900 dark:text-amber-200">{summary.preparingCount}</span>
+                        <span className="text-lg sm:text-xl font-black text-amber-900 dark:text-amber-200">{summary.preparingCount}</span>
                     </div>
-                    <div className="px-4 py-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-2xl">
+                    <div className="px-3 sm:px-4 py-1.5 sm:py-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl sm:rounded-2xl">
                         <span className="text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400 block tracking-wider">Prepared</span>
-                        <span className="text-xl font-black text-emerald-900 dark:text-emerald-200">{summary.readyCount}</span>
+                        <span className="text-lg sm:text-xl font-black text-emerald-900 dark:text-emerald-200">{summary.readyCount}</span>
                     </div>
-                    <div className="px-4 py-2 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 rounded-2xl">
+                    <div className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 rounded-xl sm:rounded-2xl">
                         <span className="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 block tracking-wider">Total Today</span>
-                        <span className="text-xl font-black text-blue-900 dark:text-blue-200">{summary.totalToday}</span>
+                        <span className="text-lg sm:text-xl font-black text-blue-900 dark:text-blue-200">{summary.totalToday}</span>
                     </div>
-                    <div className="px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center gap-2">
-                        <Clock size={16} className="text-slate-400" />
+                    <div className="px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl sm:rounded-2xl flex items-center gap-2">
+                        <Clock size={15} className="text-slate-400 shrink-0" />
                         <div>
                             <span className="text-[10px] font-bold uppercase text-slate-400 block">Avg Prep</span>
-                            <span className="text-sm font-black text-slate-800 dark:text-slate-200">{summary.avgPrepMinutes}m</span>
+                            <span className="text-xs sm:text-sm font-black text-slate-800 dark:text-slate-200">{summary.avgPrepMinutes}m</span>
                         </div>
                     </div>
                     <button
                         onClick={fetchKOTData}
-                        className="p-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+                        className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
                         title="Refresh Tickets"
                     >
-                        <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+                        <RefreshCw size={17} className={loading ? 'animate-spin' : ''} />
                     </button>
                 </div>
             </div>
@@ -280,7 +280,7 @@ const ChefKOTManagement = () => {
             {/* -------------------------------------------------- */}
             {/* STATION ROUTING TABS */}
             {/* -------------------------------------------------- */}
-            <div className="flex flex-wrap gap-2 pt-1">
+            <div className="flex overflow-x-auto no-scrollbar sm:flex-wrap gap-2 pt-1 -mx-2 px-2 sm:mx-0 sm:px-0">
                 {STATION_OPTIONS.map(station => {
                     const Icon = station.icon;
                     const isSelected = selectedStation === station.id;
@@ -288,7 +288,7 @@ const ChefKOTManagement = () => {
                         <button
                             key={station.id}
                             onClick={() => setSelectedStation(station.id)}
-                            className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer border ${
+                            className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer border whitespace-nowrap shrink-0 ${
                                 isSelected
                                     ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-md'
                                     : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'
@@ -304,14 +304,14 @@ const ChefKOTManagement = () => {
             {/* -------------------------------------------------- */}
             {/* SEARCH & STATUS FILTER BAR */}
             {/* -------------------------------------------------- */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
                 {/* Status Pills */}
-                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                <div className="flex overflow-x-auto no-scrollbar sm:flex-wrap gap-1.5 sm:gap-2 w-full sm:w-auto -mx-2 px-2 sm:mx-0 sm:px-0">
                     {STATUS_OPTIONS.map(opt => (
                         <button
                             key={opt.id}
                             onClick={() => setSelectedStatus(opt.id)}
-                            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                            className={`px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border whitespace-nowrap shrink-0 ${
                                 selectedStatus === opt.id
                                     ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
                                     : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-50'

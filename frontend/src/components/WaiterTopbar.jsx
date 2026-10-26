@@ -68,7 +68,7 @@ const WaiterTopbar = () => {
                 </div>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
                 <div className="relative" ref={notifRef}>
                     <button 
                         onClick={() => { setShowNotifs(!showNotifs); setShowProfile(false); }}
@@ -78,7 +78,7 @@ const WaiterTopbar = () => {
                         {unreadCount > 0 && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
                     </button>
                     {showNotifs && (
-                        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-gray-100 dark:border-slate-800 overflow-hidden z-50">
+                        <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-gray-100 dark:border-slate-800 overflow-hidden z-50">
                             <div className="p-3 border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-850">
                                 <h3 className="font-bold text-gray-900 dark:text-white">Notifications</h3>
                             </div>
@@ -106,13 +106,13 @@ const WaiterTopbar = () => {
                 <div className="relative" ref={profileRef}>
                     <div 
                         onClick={() => { setShowProfile(!showProfile); setShowNotifs(false); }}
-                        className="flex items-center gap-3 pl-4 border-l border-gray-200 dark:border-slate-800 cursor-pointer group"
+                        className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-gray-200 dark:border-slate-800 cursor-pointer group"
                     >
                         <div className="text-right hidden md:block group-hover:opacity-80 transition-opacity">
                             <p className="text-sm font-bold text-gray-900 dark:text-white capitalize">{user?.name || 'Waiter'}</p>
                             <p className="text-xs font-medium text-green-600 capitalize">{user?.role || 'Service Staff'}</p>
                         </div>
-                        <div className="w-10 h-10 bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300 rounded-full flex items-center justify-center font-bold border border-green-200 dark:border-green-800 group-hover:bg-green-200 transition-colors">
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300 rounded-full flex items-center justify-center font-bold border border-green-200 dark:border-green-800 group-hover:bg-green-200 transition-colors">
                             <User size={18} />
                         </div>
                     </div>

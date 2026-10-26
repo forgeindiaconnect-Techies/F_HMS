@@ -155,15 +155,15 @@ const SuperAdminDashboard = () => {
         <div className="space-y-8 animate-in fade-in duration-500">
             {/* Billing Demo Requests Alert Banner */}
             {billingDemos.filter(d => d.status === 'Pending' || d.status === 'Demo Scheduled').length > 0 && (
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-3xl p-6 shadow-sm">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
                         <div className="flex items-center gap-3.5 text-blue-950">
                             <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
                                 <Receipt size={24} className="animate-pulse" />
                             </div>
                             <div>
-                                <div className="flex items-center gap-2">
-                                    <h3 className="text-lg font-black font-sans text-slate-900">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <h3 className="text-base sm:text-lg font-black font-sans text-slate-900">
                                         Billing Demo & Custom POS Setup Requests
                                     </h3>
                                     <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-600 text-white shadow-xs">
@@ -187,16 +187,16 @@ const SuperAdminDashboard = () => {
 
             {/* Pending Restaurant Verifications Banner */}
             {pendingVerifications.length > 0 && (
-                <div className="bg-amber-50 border-2 border-amber-200 rounded-3xl p-6 space-y-4 shadow-sm">
-                    <div className="flex items-center justify-between">
+                <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 space-y-4 shadow-sm">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex items-center gap-3 text-amber-900">
                             <ShieldCheck size={26} className="text-amber-600 shrink-0 animate-pulse" />
                             <div>
-                                <h3 className="text-lg font-black font-sans">Pending Restaurant Verification Requests ({pendingVerifications.length})</h3>
+                                <h3 className="text-base sm:text-lg font-black font-sans">Pending Restaurant Verification Requests ({pendingVerifications.length})</h3>
                                 <p className="text-xs text-amber-700 font-semibold">New restaurants subscribed and awaiting Super Admin approval before unlocking their dashboard.</p>
                             </div>
                         </div>
-                        <Link to="/super-admin/verifications" className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-black text-xs rounded-xl transition-all shadow-sm flex items-center gap-1.5 shrink-0">
+                        <Link to="/super-admin/verifications" className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-black text-xs rounded-xl transition-all shadow-sm flex items-center gap-1.5 shrink-0 self-start sm:self-auto">
                             Manage Verifications <ArrowRight size={14} />
                         </Link>
                     </div>
@@ -231,12 +231,14 @@ const SuperAdminDashboard = () => {
             )}
             {/* Expiry Alerts */}
             {upcomingExpirations.length > 0 && (
-                <div className="bg-red-50 border border-red-200 rounded-3xl p-6 space-y-4">
-                    <div className="flex items-center gap-3 text-red-700">
-                        <AlertCircle size={24} className="shrink-0 animate-bounce" />
-                        <div>
-                            <h3 className="text-lg font-bold">Subscription Renewal Alerts</h3>
-                            <p className="text-sm text-red-600">The following restaurants have subscriptions expiring soon or expired.</p>
+                <div className="bg-red-50 border border-red-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 text-red-700">
+                            <AlertCircle size={24} className="shrink-0 animate-bounce" />
+                            <div>
+                                <h3 className="text-base sm:text-lg font-bold">Subscription Renewal Alerts</h3>
+                                <p className="text-xs sm:text-sm text-red-600">The following restaurants have subscriptions expiring soon or expired.</p>
+                            </div>
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -286,7 +288,7 @@ const SuperAdminDashboard = () => {
             )}
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-6">
                 {[
                     { label: 'Total SaaS Revenue (MRR)', value: `₹${(stats.totalRevenue || 0).toLocaleString('en-IN')}`, icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50' },
                     { label: 'Order Commission Earned', value: `₹${(stats.totalCommission || 0).toLocaleString('en-IN')}`, icon: CreditCard, color: 'text-amber-600', bg: 'bg-amber-50' },
@@ -296,13 +298,13 @@ const SuperAdminDashboard = () => {
                 ].map((stat, idx) => {
                     const Icon = stat.icon;
                     return (
-                        <div key={idx} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex items-center gap-5 transition-all hover:-translate-y-1 hover:shadow-md">
-                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${stat.bg} ${stat.color} shrink-0`}>
-                                <Icon size={28} />
+                        <div key={idx} className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-100 flex items-center gap-3.5 sm:gap-5 transition-all hover:-translate-y-1 hover:shadow-md">
+                            <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center ${stat.bg} ${stat.color} shrink-0`}>
+                                <Icon size={24} className="sm:w-7 sm:h-7" />
                             </div>
-                            <div>
+                            <div className="min-w-0">
                                 <p className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-1 block leading-tight break-words">{stat.label}</p>
-                                <h3 className="text-xl font-black text-gray-900">{stat.value}</h3>
+                                <h3 className="text-lg sm:text-xl font-black text-gray-900 truncate">{stat.value}</h3>
                             </div>
                         </div>
                     );
@@ -310,20 +312,20 @@ const SuperAdminDashboard = () => {
             </div>
 
             {/* Subscribed Platform Restaurants Management */}
-            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-6 border-b border-gray-100 bg-gray-50/50 space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-4 sm:p-6 border-b border-gray-100 bg-gray-50/50 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                         <div>
-                            <div className="flex items-center gap-3">
-                                <h2 className="text-xl font-bold text-gray-900 font-sans tracking-tight">Active Subscribed Restaurants</h2>
-                                <span className="px-3 py-1 rounded-full text-xs font-black bg-blue-100 text-blue-700 border border-blue-200">
+                            <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
+                                <h2 className="text-lg sm:text-xl font-bold text-gray-900 font-sans tracking-tight">Active Subscribed Restaurants</h2>
+                                <span className="px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-black bg-blue-100 text-blue-700 border border-blue-200">
                                     {restaurants.length} Subscribed Outlets
                                 </span>
                             </div>
-                            <p className="text-sm text-gray-500 mt-1">All verified platform restaurants with active subscriptions, plan tiers, and billing status.</p>
+                            <p className="text-xs sm:text-sm text-gray-500 mt-1">All verified platform restaurants with active subscriptions, plan tiers, and billing status.</p>
                         </div>
                         <div className="flex items-center gap-3">
-                            <Link to="/super-admin/restaurants" className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl">
+                            <Link to="/super-admin/restaurants" className="flex items-center gap-2 text-xs sm:text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors bg-blue-50 hover:bg-blue-100 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl">
                                 Full Registry <ArrowRight size={16} />
                             </Link>
                         </div>
@@ -349,7 +351,7 @@ const SuperAdminDashboard = () => {
                         </div>
 
                         {/* Plan Filter Badges */}
-                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none -mx-2 px-2 sm:mx-0 sm:px-0">
                             {[
                                 { key: 'All', label: 'All Plans', count: restaurants.length },
                                 { key: 'Enterprise', label: 'Enterprise', count: restaurants.filter(r => (r.subscription?.plan || '').toLowerCase() === 'enterprise').length },
@@ -570,16 +572,16 @@ const SuperAdminDashboard = () => {
             </div>
 
         {/* Public Inquiries Section */}
-        <div id="inquiries" className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden scroll-mt-6">
-            <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center justify-between gap-4">
+        <div id="inquiries" className="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 overflow-hidden scroll-mt-6">
+            <div className="p-4 sm:p-6 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                 <div>
                     <div className="flex items-center gap-2">
-                        <h2 className="text-xl font-bold text-gray-900 font-sans tracking-tight">Public Inquiries & Demo Leads</h2>
+                        <h2 className="text-lg sm:text-xl font-bold text-gray-900 font-sans tracking-tight">Public Inquiries & Demo Leads</h2>
                         <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-100 text-blue-700">
                             {inquiries.length} {inquiries.length === 1 ? 'Lead' : 'Leads'}
                         </span>
                     </div>
-                    <p className="text-sm text-gray-500 mt-1">Walkthrough demo bookings and sales inquiries submitted from landing pages.</p>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">Walkthrough demo bookings and sales inquiries submitted from landing pages.</p>
                 </div>
             </div>
             <div className="overflow-x-auto">
@@ -661,13 +663,13 @@ const SuperAdminDashboard = () => {
         </div>
 
         {/* Customer Support Enquiries (Tickets) */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-4 sm:p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-gray-50/50">
                 <div>
-                    <h2 className="text-xl font-bold text-gray-900 font-sans tracking-tight">Customer Support Enquiries (Tickets)</h2>
-                    <p className="text-sm text-gray-500 mt-1">Support tickets submitted by registered restaurant partners/customers.</p>
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900 font-sans tracking-tight">Customer Support Enquiries (Tickets)</h2>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">Support tickets submitted by registered restaurant partners/customers.</p>
                 </div>
-                <Link to="/super-admin/support" className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl">
+                <Link to="/super-admin/support" className="flex items-center gap-2 text-xs sm:text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors bg-blue-50 hover:bg-blue-100 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl self-start sm:self-auto">
                     Open Support Console <ArrowRight size={16} />
                 </Link>
             </div>

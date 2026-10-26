@@ -61,41 +61,42 @@ const WaiterKitchenTracker = () => {
         : displayOrders.filter(o => o.status === stageFilter);
 
     return (
-        <div className="max-w-[1400px] mx-auto space-y-6">
+        <div className="max-w-[1400px] mx-auto space-y-4 sm:space-y-6">
             
             {/* Banner */}
-            <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-3xl p-6 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white shrink-0">
-                        <ChefHat size={30} />
+            <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white shrink-0">
+                        <ChefHat size={26} className="sm:hidden" />
+                        <ChefHat size={30} className="hidden sm:block" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-black tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        <h1 className="text-xl sm:text-2xl font-black tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
                             Kitchen Live Tracker
                         </h1>
-                        <p className="text-sm font-medium text-emerald-100 mt-0.5">
+                        <p className="text-xs sm:text-sm font-medium text-emerald-100 mt-0.5">
                             Real-time order preparation status & stage progression
                         </p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <button onClick={fetchOrders} className="px-4 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-xl text-xs font-bold transition-all flex items-center gap-2 border border-white/20">
+                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                    <button onClick={fetchOrders} className="px-3.5 sm:px-4 py-2 sm:py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 sm:gap-2 border border-white/20 cursor-pointer">
                         <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh Sync
                     </button>
-                    <div className="px-4 py-2.5 bg-white text-emerald-700 font-extrabold rounded-xl text-xs shadow-md">
+                    <div className="px-3.5 sm:px-4 py-2 sm:py-2.5 bg-white text-emerald-700 font-extrabold rounded-xl text-xs shadow-md">
                         {displayOrders.length} Active Tickets
                     </div>
                 </div>
             </div>
 
             {/* Stage Filter */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar -mx-2 px-2 pb-1">
                 {['All', 'Pending', 'Preparing', 'Ready', 'Ready for Pickup'].map((st) => (
                     <button
                         key={st}
                         onClick={() => setStageFilter(st)}
-                        className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer border ${
+                        className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer border whitespace-nowrap shrink-0 ${
                             stageFilter === st
                             ? 'bg-slate-900 text-white border-slate-900 shadow-md'
                             : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
@@ -107,7 +108,7 @@ const WaiterKitchenTracker = () => {
             </div>
 
             {/* Kitchen Tickets List */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
                 {filteredOrders.map((order) => {
                     const step = getStageStep(order.status);
                     const hasTable = order.tableNumber && order.tableNumber !== 'Any' && order.tableNumber !== 'Takeout';
@@ -115,7 +116,7 @@ const WaiterKitchenTracker = () => {
                     const isSelf = isSelfOrder(order);
 
                     return (
-                        <div key={order._id} className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-xs space-y-4">
+                        <div key={order._id} className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 p-4 sm:p-6 shadow-xs space-y-3 sm:space-y-4">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
                                 <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
                                     <h3 className="text-xl font-black text-slate-900">{tableText || '📦 Self-Pickup Counter'}</h3>
@@ -157,7 +158,7 @@ const WaiterKitchenTracker = () => {
 
                             {/* 5-Stage Step Bar */}
                             <div>
-                                <div className="flex justify-between text-[11px] font-extrabold text-slate-400 mb-2">
+                                <div className="flex justify-between text-[9px] sm:text-[11px] font-extrabold text-slate-400 mb-2">
                                     <span className={step >= 1 ? 'text-emerald-700' : ''}>1. Received</span>
                                     <span className={step >= 2 ? 'text-emerald-700' : ''}>2. Preparing</span>
                                     <span className={step >= 3 ? 'text-emerald-700 font-black' : ''}>3. Ready</span>

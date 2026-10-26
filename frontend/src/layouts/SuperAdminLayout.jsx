@@ -172,7 +172,7 @@ const SuperAdminLayout = () => {
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 
                 {/* ── Header ─────────────────────────────────────── */}
-                <header className="h-16 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-4 md:px-6 shrink-0 gap-3">
+                <header className="h-16 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-3 sm:px-4 md:px-6 shrink-0 gap-2 sm:gap-3">
                     
                     {/* Left: Hamburger + Page Title */}
                     <div className="flex items-center gap-3 min-w-0">
@@ -297,7 +297,7 @@ const SuperAdminLayout = () => {
                 </header>
                 
                 {/* ── Page Content ─────────────────────────────────── */}
-                <main className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-4 md:p-8 bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+                <main className="flex-1 overflow-y-auto overflow-x-hidden p-2.5 sm:p-4 md:p-8 bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
                     <Outlet />
                 </main>
             </div>

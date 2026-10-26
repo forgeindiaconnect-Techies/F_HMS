@@ -445,31 +445,31 @@ const Topbar = () => {
 
     return (
         <>
-            <header className="h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-4 md:px-8 sticky top-0 z-10">
-                <div className="flex items-center gap-2 md:gap-4 w-full md:w-auto flex-1">
+            <header className="h-16 sm:h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-3 sm:px-4 md:px-8 sticky top-0 z-10">
+                <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 w-full md:w-auto flex-1 min-w-0">
                     <button
                         onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))}
-                        className="md:hidden p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg"
+                        className="md:hidden p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg shrink-0"
                         aria-label="Toggle Menu"
                     >
-                        <Menu size={24} />
+                        <Menu size={22} />
                     </button>
 
                     <button
                         onClick={() => window.history.back()}
-                        className="md:hidden p-1.5 px-2.5 text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors flex items-center gap-1 text-xs font-bold border border-gray-200 dark:border-slate-800 shrink-0 shadow-xs"
+                        className="md:hidden p-1.5 px-2 text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors flex items-center gap-1 text-xs font-bold border border-gray-200 dark:border-slate-800 shrink-0 shadow-xs"
                         aria-label="Go Back"
                         title="Back"
                     >
-                        <ArrowLeft size={16} />
+                        <ArrowLeft size={15} />
                         <span className="text-[11px] font-bold">Back</span>
                     </button>
 
                     {/* Branch Badge / Name display */}
                     {isAdmin && (
-                        <div className="flex items-center gap-2 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-300 px-3 py-1.5 rounded-xl text-xs font-bold shadow-xs">
+                        <div className="flex items-center gap-1.5 sm:gap-2 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-300 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold shadow-xs truncate">
                             <Store size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-                            <span className="truncate max-w-[140px] md:max-w-[200px]">
+                            <span className="truncate max-w-[100px] sm:max-w-[140px] md:max-w-[200px]">
                                 {selectedBranch?.name ? selectedBranch.name : 'Main Branch'}
                             </span>
                             {branches.length > 1 ? (
@@ -483,7 +483,7 @@ const Topbar = () => {
                                     ))}
                                 </select>
                             ) : (
-                                <Link to="/admin/branches" className="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-2 py-0.5 rounded-md transition-colors ml-1">
+                                <Link to="/admin/branches" className="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-1.5 sm:px-2 py-0.5 rounded-md transition-colors ml-1 shrink-0">
                                     Branches
                                 </Link>
                             )}
@@ -491,15 +491,15 @@ const Topbar = () => {
                     )}
                 </div>
 
-                <div className="flex items-center gap-2 md:gap-4 ml-2 md:ml-0 shrink-0">
+                <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 ml-2 md:ml-0 shrink-0">
                     {/* WhatsApp Business Alerts & Owner Chat Hub */}
                     <button
                         type="button"
                         onClick={() => setIsDrawerOpen(true)}
                         title="WhatsApp Business Alerts & Owner Chat Hub"
-                        className="relative p-2 text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-xl transition-all cursor-pointer flex items-center justify-center"
+                        className="relative p-1.5 sm:p-2 text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-xl transition-all cursor-pointer flex items-center justify-center"
                     >
-                        <MessageCircle size={22} className="fill-emerald-500/15" />
+                        <MessageCircle size={20} className="fill-emerald-500/15 sm:w-[22px] sm:h-[22px]" />
                         {waSyncActive && (
                             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-500 rounded-full border border-white dark:border-slate-900 animate-pulse" />
                         )}
@@ -518,16 +518,16 @@ const Topbar = () => {
                             user?.role === 'BranchManager'    ? '/manager/notifications' :
                             '/admin/notifications'
                         }
-                        className="relative p-2 text-gray-500 dark:text-slate-400 hover:text-green-500 transition-colors"
+                        className="relative p-1.5 sm:p-2 text-gray-500 dark:text-slate-400 hover:text-green-500 transition-colors"
                     >
-                        <Bell size={22} />
+                        <Bell size={20} className="sm:w-[22px] sm:h-[22px]" />
                         {hasUnread && (
                             <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-orange-500 rounded-full border-2 border-white dark:border-slate-900" />
                         )}
                     </Link>
 
                     {/* Profile corner */}
-                    <div className="flex items-center gap-3 pl-6 border-l border-gray-200 dark:border-slate-800">
+                    <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 md:pl-6 border-l border-gray-200 dark:border-slate-800">
                         <div className="text-right hidden md:block">
                             <p className="text-sm font-semibold text-gray-800 dark:text-slate-100 capitalize">{user?.name || 'User'}</p>
                             <div className="flex items-center justify-end gap-1.5 mt-0.5">

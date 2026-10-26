@@ -134,7 +134,7 @@ const DashboardHome = () => {
             )}
 
             {/* KPI Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-6">
                 <StatCard
                     title="Total Revenue"
                     value={<span style={{ fontFamily: 'Manrope, sans-serif' }}>₹{overview.totalRevenue.toLocaleString('en-IN')}</span>}
@@ -172,44 +172,44 @@ const DashboardHome = () => {
 
             {/* QR Ordering Analytics Section */}
             {data?.qrAnalytics && (!isCustomActive || customModules.tableManagement !== false) && (
-                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-6 space-y-4">
-                    <h3 className="text-lg font-bold text-gray-950 dark:text-slate-100 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-3.5 sm:p-6 space-y-3 sm:space-y-4">
+                    <h3 className="text-base sm:text-lg font-bold text-gray-950 dark:text-slate-100 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
                         <span className="flex h-2 w-2 rounded-full bg-emerald-500"></span>
                         QR Dine-In Ordering Ops
                     </h3>
                     
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-                        <div className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 p-4 rounded-2xl text-center">
-                            <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Active Tables</p>
-                            <p className="text-2xl font-black text-gray-900 dark:text-slate-100 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.activeTables}</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 sm:gap-4">
+                        <div className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center">
+                            <p className="text-[10px] sm:text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Active Tables</p>
+                            <p className="text-xl sm:text-2xl font-black text-gray-900 dark:text-slate-100 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.activeTables}</p>
                         </div>
-                        <div className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 p-4 rounded-2xl text-center">
-                            <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Current Orders</p>
-                            <p className="text-2xl font-black text-gray-900 dark:text-slate-100 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.currentOrders}</p>
+                        <div className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center">
+                            <p className="text-[10px] sm:text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Current Orders</p>
+                            <p className="text-xl sm:text-2xl font-black text-gray-900 dark:text-slate-100 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.currentOrders}</p>
                         </div>
-                        <div className="bg-orange-50/70 dark:bg-orange-950/40 border border-orange-100 dark:border-orange-900/50 p-4 rounded-2xl text-center">
-                            <p className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">Pending</p>
-                            <p className="text-2xl font-black text-orange-700 dark:text-orange-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.pendingOrders}</p>
+                        <div className="bg-orange-50/70 dark:bg-orange-950/40 border border-orange-100 dark:border-orange-900/50 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center">
+                            <p className="text-[10px] sm:text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">Pending</p>
+                            <p className="text-xl sm:text-2xl font-black text-orange-700 dark:text-orange-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.pendingOrders}</p>
                         </div>
-                        <div className="bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 p-4 rounded-2xl text-center">
-                            <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Preparing</p>
-                            <p className="text-2xl font-black text-blue-700 dark:text-blue-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.preparingOrders}</p>
+                        <div className="bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center">
+                            <p className="text-[10px] sm:text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Preparing</p>
+                            <p className="text-xl sm:text-2xl font-black text-blue-700 dark:text-blue-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.preparingOrders}</p>
                         </div>
-                        <div className="bg-green-50/70 dark:bg-green-950/40 border border-green-100 dark:border-green-900/50 p-4 rounded-2xl text-center">
-                            <p className="text-xs font-semibold text-green-600 dark:text-green-400 uppercase tracking-wider">Ready</p>
-                            <p className="text-2xl font-black text-green-700 dark:text-green-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.readyOrders}</p>
+                        <div className="bg-green-50/70 dark:bg-green-950/40 border border-green-100 dark:border-green-900/50 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center">
+                            <p className="text-[10px] sm:text-xs font-semibold text-green-600 dark:text-green-400 uppercase tracking-wider">Ready</p>
+                            <p className="text-xl sm:text-2xl font-black text-green-700 dark:text-green-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.readyOrders}</p>
                         </div>
-                        <div className="bg-purple-50/70 dark:bg-purple-950/40 border border-purple-100 dark:border-purple-900/50 p-4 rounded-2xl text-center">
-                            <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">Served</p>
-                            <p className="text-2xl font-black text-purple-700 dark:text-purple-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.servedOrders}</p>
+                        <div className="bg-purple-50/70 dark:bg-purple-950/40 border border-purple-100 dark:border-purple-900/50 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center">
+                            <p className="text-[10px] sm:text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">Served</p>
+                            <p className="text-xl sm:text-2xl font-black text-purple-700 dark:text-purple-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.servedOrders}</p>
                         </div>
-                        <div className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 p-4 rounded-2xl text-center">
-                            <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Completed</p>
-                            <p className="text-2xl font-black text-gray-900 dark:text-slate-100 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.completedOrders}</p>
+                        <div className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center">
+                            <p className="text-[10px] sm:text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Completed</p>
+                            <p className="text-xl sm:text-2xl font-black text-gray-900 dark:text-slate-100 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.completedOrders}</p>
                         </div>
-                        <div className="bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 p-4 rounded-2xl text-center">
-                            <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Avg Prep Time</p>
-                            <p className="text-lg font-black text-emerald-800 dark:text-emerald-300 mt-1.5" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.avgPrepTime} min</p>
+                        <div className="bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center">
+                            <p className="text-[10px] sm:text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Avg Prep Time</p>
+                            <p className="text-base sm:text-lg font-black text-emerald-800 dark:text-emerald-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.avgPrepTime} min</p>
                         </div>
                     </div>
                 </div>
@@ -217,32 +217,32 @@ const DashboardHome = () => {
 
             {/* Delivery Ops Section */}
             {data?.deliveryAnalytics && (!isCustomActive || customModules.dineInTakeawayOrders !== false) && (
-                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-6 space-y-4">
-                    <h3 className="text-lg font-bold text-gray-950 dark:text-slate-100 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-3.5 sm:p-6 space-y-3 sm:space-y-4">
+                    <h3 className="text-base sm:text-lg font-bold text-gray-950 dark:text-slate-100 flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
                         <span className="flex h-2 w-2 rounded-full bg-blue-500"></span>
                         Delivery Partner Ops
                     </h3>
                     
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                        <div className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 p-4 rounded-2xl text-center">
-                            <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Online Drivers</p>
-                            <p className="text-2xl font-black text-gray-900 dark:text-slate-100 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.deliveryAnalytics.onlinePartners}</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 sm:gap-4">
+                        <div className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center">
+                            <p className="text-[10px] sm:text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Online Drivers</p>
+                            <p className="text-xl sm:text-2xl font-black text-gray-900 dark:text-slate-100 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.deliveryAnalytics.onlinePartners}</p>
                         </div>
-                        <div className="bg-orange-50/70 dark:bg-orange-950/40 border border-orange-100 dark:border-orange-900/50 p-4 rounded-2xl text-center">
-                            <p className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">Pending Assign</p>
-                            <p className="text-2xl font-black text-orange-700 dark:text-orange-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.deliveryAnalytics.pendingAssignments}</p>
+                        <div className="bg-orange-50/70 dark:bg-orange-950/40 border border-orange-100 dark:border-orange-900/50 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center">
+                            <p className="text-[10px] sm:text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">Pending Assign</p>
+                            <p className="text-xl sm:text-2xl font-black text-orange-700 dark:text-orange-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.deliveryAnalytics.pendingAssignments}</p>
                         </div>
-                        <div className="bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 p-4 rounded-2xl text-center">
-                            <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Active Deliveries</p>
-                            <p className="text-2xl font-black text-blue-700 dark:text-blue-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.deliveryAnalytics.activeDeliveries}</p>
+                        <div className="bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center">
+                            <p className="text-[10px] sm:text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Active Deliveries</p>
+                            <p className="text-xl sm:text-2xl font-black text-blue-700 dark:text-blue-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.deliveryAnalytics.activeDeliveries}</p>
                         </div>
-                        <div className="bg-green-50/70 dark:bg-green-950/40 border border-green-100 dark:border-green-900/50 p-4 rounded-2xl text-center">
-                            <p className="text-xs font-semibold text-green-600 dark:text-green-400 uppercase tracking-wider">Completed Payouts</p>
-                            <p className="text-2xl font-black text-green-700 dark:text-green-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.deliveryAnalytics.completedDeliveries}</p>
+                        <div className="bg-green-50/70 dark:bg-green-950/40 border border-green-100 dark:border-green-900/50 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center">
+                            <p className="text-[10px] sm:text-xs font-semibold text-green-600 dark:text-green-400 uppercase tracking-wider">Completed Payouts</p>
+                            <p className="text-xl sm:text-2xl font-black text-green-700 dark:text-green-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.deliveryAnalytics.completedDeliveries}</p>
                         </div>
-                        <div className="bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 p-4 rounded-2xl text-center">
-                            <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Delivery Revenue</p>
-                            <p className="text-2xl font-black text-emerald-800 dark:text-emerald-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>₹{data.deliveryAnalytics.totalDeliveryEarnings}</p>
+                        <div className="bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center col-span-2 sm:col-span-1">
+                            <p className="text-[10px] sm:text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Delivery Revenue</p>
+                            <p className="text-xl sm:text-2xl font-black text-emerald-800 dark:text-emerald-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>₹{data.deliveryAnalytics.totalDeliveryEarnings}</p>
                         </div>
                     </div>
                 </div>
@@ -250,9 +250,9 @@ const DashboardHome = () => {
 
             {/* Charts Section */}
             {(!isCustomActive || customModules.salesReports !== false) && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                     {/* Revenue Area Chart */}
-                    <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800">
+                    <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800">
                         <h3 className="text-lg font-bold text-gray-800 dark:text-slate-100 mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>Weekly Revenue</h3>
                         <div className="h-72">
                             {overview.totalOrders === 0 ? (

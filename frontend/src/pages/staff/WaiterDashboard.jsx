@@ -622,16 +622,16 @@ const WaiterDashboard = () => {
     return (
         <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-16 selection:bg-emerald-100 selection:text-emerald-900">
             
-            <main className="max-w-[1700px] mx-auto px-4 sm:px-6 pt-6 space-y-6">
+            <main className="max-w-[1700px] mx-auto px-3 sm:px-6 pt-3 sm:pt-6 space-y-4 sm:space-y-6">
                 
                 {/* Sleek Waitstaff Shift & Station Control Strip */}
-                <div className="bg-slate-900 text-white px-4 py-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-md border border-slate-800 shrink-0">
-                    <div className="flex items-center gap-3 flex-wrap">
+                <div className="bg-slate-900 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 shadow-md border border-slate-800 shrink-0">
+                    <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
                         <div className="flex items-center gap-2">
                             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                             <span className="text-xs font-black tracking-wide uppercase text-slate-200">Waitstaff Station</span>
                             <span className="text-slate-600">|</span>
-                            <span className="text-xs text-slate-400 font-medium truncate max-w-[200px]">Staff: {user?.name || 'Floor Captain'}</span>
+                            <span className="text-xs text-slate-400 font-medium truncate max-w-[140px] sm:max-w-[200px]">Staff: {user?.name || 'Floor Captain'}</span>
                         </div>
                         {/* Compact Shift Attendance Widget */}
                         <StaffShiftClockWidget compact={true} userRole="Waitstaff / Floor Captain" userName={user?.name || "Floor Staff"} />
@@ -753,7 +753,7 @@ const WaiterDashboard = () => {
                 {/* -------------------------------------------------- */}
                 {/* PRIORITY ACTION CENTER */}
                 {/* -------------------------------------------------- */}
-                <section id="priority-actions" className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-xs">
+                <section id="priority-actions" className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 p-3.5 sm:p-5 shadow-xs">
                     <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
                         <div className="flex items-center gap-2.5">
                             <div className="w-8 h-8 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-xs">
@@ -867,13 +867,13 @@ const WaiterDashboard = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     
                     {/* LEFT COLUMN (70%) - Restaurant Floor & Order Tracker */}
-                    <div className="lg:col-span-8 space-y-6">
+                    <div className="lg:col-span-8 space-y-4 sm:space-y-6">
                         
                         {/* Interactive Restaurant Floor Layout */}
-                        <div id="floor-plan" className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-xs">
+                        <div id="floor-plan" className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 p-3.5 sm:p-6 shadow-xs">
                             
                             {/* Layout Header & Filters */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-slate-100">
                                 <div>
                                     <div className="flex items-center gap-2">
                                         <h3 className="font-extrabold text-lg text-slate-900 tracking-tight">Interactive Floor Plan</h3>
@@ -885,10 +885,10 @@ const WaiterDashboard = () => {
                                 </div>
 
                                 {/* Status Filters & Assigned Toggle */}
-                                <div className="flex flex-nowrap sm:flex-wrap items-center gap-2 overflow-x-auto no-scrollbar max-w-full pb-1">
+                                <div className="flex flex-nowrap sm:flex-wrap items-center gap-2 overflow-x-auto no-scrollbar max-w-full pb-1 -mx-1 px-1">
                                     <button
                                         onClick={() => setAssignedOnly(!assignedOnly)}
-                                        className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all border flex items-center gap-1.5 cursor-pointer ${
+                                        className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all border flex items-center gap-1.5 cursor-pointer shrink-0 ${
                                             assignedOnly 
                                             ? 'bg-amber-500 border-amber-500 text-white shadow-xs' 
                                             : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/70'
@@ -898,12 +898,12 @@ const WaiterDashboard = () => {
                                         My Tables ({assignedIds.length})
                                     </button>
 
-                                    <div className="flex items-center bg-slate-100 p-1 rounded-xl gap-1">
+                                    <div className="flex items-center bg-slate-100 p-1 rounded-xl gap-1 shrink-0">
                                         {['All', 'Available', 'Waiting for Food', 'Billing', 'Needs Attention'].map((st) => (
                                             <button
                                                 key={st}
                                                 onClick={() => setStatusFilter(st)}
-                                                className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
+                                                className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer whitespace-nowrap ${
                                                     statusFilter === st 
                                                     ? 'bg-white text-slate-900 shadow-xs' 
                                                     : 'text-slate-500 hover:text-slate-800'
@@ -917,7 +917,7 @@ const WaiterDashboard = () => {
                             </div>
 
                             {/* Tables Grid */}
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-4">
                                 {filteredTables.map((t) => {
                                     const isAssigned = assignedIds.includes(t.id) || assignedIds.includes(t.rawId);
                                     return (

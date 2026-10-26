@@ -28,7 +28,7 @@ const ChefLayout = () => {
             <div className="flex flex-1 overflow-hidden">
                 <ChefSidebar />
             
-            <div className="flex-1 flex flex-col h-screen overflow-hidden">
+            <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
                 <ChefTopbar />
                 
                 <main className="flex-1 overflow-x-hidden overflow-y-auto p-2 sm:p-4 md:p-6 bg-gray-50 dark:bg-[#151923]">

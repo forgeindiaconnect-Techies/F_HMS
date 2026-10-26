@@ -1261,24 +1261,24 @@ const CashierDashboard = () => {
     const filteredHistory = filterBills(history);
 
     return (
-        <div className="h-full flex flex-col gap-3 min-h-0 overflow-hidden font-sans">
+        <div className="h-full flex flex-col gap-2.5 sm:gap-3 min-h-0 overflow-hidden font-sans">
             
             {/* Sleek, Space-Efficient Cashier POS Status Bar */}
-            <div className="bg-slate-900 text-white px-4 py-2 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-md border border-slate-800 shrink-0">
-                <div className="flex items-center gap-3 flex-wrap">
+            <div className="bg-slate-900 text-white px-3 sm:px-4 py-2 rounded-2xl flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 shadow-md border border-slate-800 shrink-0">
+                <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
                     <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                         <span className="text-xs font-black tracking-wide uppercase text-slate-200">Billing Counter #1</span>
                         <span className="text-slate-600">|</span>
-                        <span className="text-xs text-slate-400 font-medium truncate max-w-[180px]">Cashier: {restaurant?.name || 'Active Session'}</span>
+                        <span className="text-xs text-slate-400 font-medium truncate max-w-[140px] sm:max-w-[180px]">Cashier: {restaurant?.name || 'Active Session'}</span>
                     </div>
                     {/* Compact Shift Attendance Widget */}
                     <StaffShiftClockWidget compact={true} userName="Cashier" userRole="POS Cashier / Billing Agent" />
                 </div>
 
-                <div className="flex items-center gap-2.5 flex-wrap">
+                <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
                     {/* Shift Sales Pill */}
-                    <div className="flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-xl text-xs border border-slate-700/60 font-semibold shadow-xs">
+                    <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-800/90 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs border border-slate-700/60 font-semibold shadow-xs">
                         <span className="text-slate-400">Shift Total:</span>
                         <span className="font-mono font-black text-emerald-400">₹{cashSummary.total.toFixed(2)}</span>
                     </div>
@@ -1287,7 +1287,7 @@ const CashierDashboard = () => {
                     <button
                         type="button"
                         onClick={toggleAutoPrintBill}
-                        className={`text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer border ${
+                        className={`text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer border ${
                             autoPrintBillEnabled 
                                 ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/25' 
                                 : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-750'
@@ -1301,10 +1301,10 @@ const CashierDashboard = () => {
             </div>
 
             {/* Main POS Interface (Left Queue + Right Billing Console) */}
-            <div className="flex-1 flex gap-4 min-h-0 overflow-hidden">
+            <div className="flex-1 flex flex-col lg:flex-row gap-3 sm:gap-4 min-h-0 overflow-y-auto lg:overflow-hidden">
             
-                {/* Left Queue View */}
-                <div className="w-full lg:w-[350px] xl:w-[380px] bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-3.5 sm:p-4 flex flex-col min-h-0 shrink-0">
+                {/* Left Queue View (shown full width on mobile unless bill is opened) */}
+                <div className={`w-full lg:w-[350px] xl:w-[380px] bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-3 sm:p-4 flex flex-col min-h-0 shrink-0 ${activeBill ? 'hidden lg:flex' : 'flex'}`}>
                     <div className="flex items-center justify-between mb-2.5 px-0.5">
                         <div className="flex items-center gap-2">
                             <span className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">
@@ -1447,8 +1447,8 @@ const CashierDashboard = () => {
                     </div>
                 </div>
 
-                {/* Right Side Billing Console */}
-                <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-4 sm:p-5 flex flex-col min-h-0 overflow-hidden">
+                {/* Right Side Billing Console (full screen on mobile when a bill is active) */}
+                <div className={`flex-1 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-3 sm:p-5 flex flex-col min-h-0 overflow-y-auto lg:overflow-hidden ${!activeBill ? 'hidden lg:flex' : 'flex'}`}>
                     {!activeBill ? (
                         <div className="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-4 my-auto">
                             <div className="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-inner">
@@ -1478,10 +1478,19 @@ const CashierDashboard = () => {
                             <p className="text-xs text-slate-500 font-semibold">Printing receipt and updating table status...</p>
                         </div>
                     ) : (
-                        <div className="flex flex-col lg:flex-row h-full gap-5 min-h-0 overflow-hidden">
+                        <div className="flex flex-col lg:flex-row h-full gap-4 sm:gap-5 min-h-0 overflow-y-auto lg:overflow-hidden">
                             
                             {/* Left Sub-Column: Order Details & Scrollable Items Table */}
-                            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                            <div className="flex-1 flex flex-col min-h-0">
+                                
+                                {/* Mobile Back to Queue Button */}
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveBill(null)}
+                                    className="lg:hidden text-xs font-black text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 pb-2 mb-2 border-b border-slate-100 dark:border-slate-800 cursor-pointer self-start active:scale-95 transition-all"
+                                >
+                                    ← Back to Orders Queue
+                                </button>
                                 
                                 {/* Order Header */}
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800 shrink-0">
@@ -1618,7 +1627,7 @@ const CashierDashboard = () => {
                             </div>
 
                             {/* Right Sub-Column: Dedicated Checkout & Settlement Console */}
-                            <div className="w-full lg:w-[350px] xl:w-[370px] flex flex-col justify-between shrink-0 bg-slate-50/80 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 min-h-0">
+                            <div className="w-full lg:w-[350px] xl:w-[370px] flex flex-col justify-between shrink-0 bg-slate-50/80 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 min-h-0 mt-3 lg:mt-0">
                                 {activeTab === 'Paid' ? (
                                     <div className="space-y-4 flex-1 flex flex-col justify-between">
                                         <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 p-4 rounded-2xl text-center space-y-2">

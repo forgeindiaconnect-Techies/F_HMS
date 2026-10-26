@@ -85,7 +85,7 @@ const ChefTopbar = () => {
                 </div>
             </div>
             
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
                 <div className="relative" ref={notifRef}>
                     <button 
                         onClick={() => { setShowNotifs(!showNotifs); setShowProfile(false); }}
@@ -96,7 +96,7 @@ const ChefTopbar = () => {
                     </button>
  
                     {showNotifs && (
-                        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#1e2330] rounded-xl shadow-xl border border-gray-100 dark:border-[#2a3040] overflow-hidden z-50">
+                        <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-[#1e2330] rounded-xl shadow-xl border border-gray-100 dark:border-[#2a3040] overflow-hidden z-50">
                             <div className="p-3 border-b border-gray-100 dark:border-[#2a3040] bg-gray-50 dark:bg-[#1a1e2a]">
                                 <h3 className="font-bold text-gray-700 dark:text-gray-200">New Orders</h3>
                             </div>
@@ -124,7 +124,7 @@ const ChefTopbar = () => {
                 <div className="relative" ref={profileRef}>
                     <div 
                         onClick={() => { setShowProfile(!showProfile); setShowNotifs(false); }}
-                        className="flex items-center gap-3 pl-6 border-l border-gray-100 dark:border-[#2a3040] cursor-pointer group"
+                        className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 md:pl-6 border-l border-gray-100 dark:border-[#2a3040] cursor-pointer group"
                     >
                         <div className="text-right hidden md:block group-hover:opacity-80 transition-opacity">
                             <p className="text-sm font-bold text-gray-800 dark:text-white capitalize">{user?.name || 'Chef'}</p>
