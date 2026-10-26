@@ -263,14 +263,18 @@ export const loginUser = async (req, res) => {
         }
 
         const normalizedEmail = String(email).trim().toLowerCase();
-        let user = await User.findOne({ email: { $regex: `^${normalizedEmail}$`, $options: 'i' } });
+        let user = await User.findOne({ email: normalizedEmail });
+        if (!user) {
+            const escaped = normalizedEmail.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+            user = await User.findOne({ email: { $regex: `^${escaped}$`, $options: 'i' } });
+        }
 
         const cleanPassword = String(password).trim();
         if (!user) {
             return res.status(401).json({ message: 'No account found with this email address. Please register first.' });
         }
 
-        if (await user.matchPassword(cleanPassword)) {
+        if (await user.matchPassword(cleanPassword) || (password && await user.matchPassword(password))) {
             if (loginType === 'staff' && user.role === 'Customer') {
                 return res.status(403).json({ message: 'Customers cannot log into the staff portal' });
             }

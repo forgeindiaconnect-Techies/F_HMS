@@ -86,18 +86,14 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
     if (this.password.startsWith('$2a$') || this.password.startsWith('$2b$')) {
         const isMatch = await bcrypt.compare(cleanEntered, this.password);
         if (isMatch) return true;
-        
-        // 2. Fallback testing credentials for smooth development/demo testing
-        if (['password123', '123456', 'admin123', 'ruthra', 'ruthralekha'].includes(cleanEntered.toLowerCase())) {
-            return true;
+        if (cleanEntered !== enteredPassword) {
+            return await bcrypt.compare(enteredPassword, this.password);
         }
         return false;
     }
 
-    // 3. Plaintext fallback (if imported or seeded unhashed)
-    return this.password === cleanEntered || 
-           this.password === enteredPassword ||
-           ['password123', '123456', 'admin123'].includes(cleanEntered.toLowerCase());
+    // 2. Plaintext fallback (if imported or seeded unhashed)
+    return this.password === cleanEntered || this.password === enteredPassword;
 };
 
 const User = mongoose.model('User', userSchema);

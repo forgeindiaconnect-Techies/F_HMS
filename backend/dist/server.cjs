@@ -124837,12 +124837,12 @@ var init_User = __esm({
       if (this.password.startsWith("$2a$") || this.password.startsWith("$2b$")) {
         const isMatch = await import_bcryptjs.default.compare(cleanEntered, this.password);
         if (isMatch) return true;
-        if (["password123", "123456", "admin123", "ruthra", "ruthralekha"].includes(cleanEntered.toLowerCase())) {
-          return true;
+        if (cleanEntered !== enteredPassword) {
+          return await import_bcryptjs.default.compare(enteredPassword, this.password);
         }
         return false;
       }
-      return this.password === cleanEntered || this.password === enteredPassword || ["password123", "123456", "admin123"].includes(cleanEntered.toLowerCase());
+      return this.password === cleanEntered || this.password === enteredPassword;
     };
     User2 = import_mongoose3.default.model("User", userSchema);
     User_default = User2;
@@ -126692,12 +126692,16 @@ var loginUser = async (req, res) => {
       return res.status(400).json({ message: "Email and password are required" });
     }
     const normalizedEmail = String(email).trim().toLowerCase();
-    let user = await User_default.findOne({ email: { $regex: `^${normalizedEmail}$`, $options: "i" } });
+    let user = await User_default.findOne({ email: normalizedEmail });
+    if (!user) {
+      const escaped = normalizedEmail.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+      user = await User_default.findOne({ email: { $regex: `^${escaped}$`, $options: "i" } });
+    }
     const cleanPassword = String(password).trim();
     if (!user) {
       return res.status(401).json({ message: "No account found with this email address. Please register first." });
     }
-    if (await user.matchPassword(cleanPassword)) {
+    if (await user.matchPassword(cleanPassword) || password && await user.matchPassword(password)) {
       if (loginType === "staff" && user.role === "Customer") {
         return res.status(403).json({ message: "Customers cannot log into the staff portal" });
       }
