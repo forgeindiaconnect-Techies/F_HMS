@@ -3,7 +3,8 @@ import {
     Receipt, CreditCard, Banknote, QrCode, 
     Calculator, Split, Printer, CheckCircle, 
     ArrowLeftRight, Tag, Undo2, Coins, Landmark,
-    ChevronDown, ChevronUp, Clock, Utensils, Plus, Sparkles
+    ChevronDown, ChevronUp, Clock, Utensils, Plus, Sparkles,
+    ShoppingBag, History
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -1321,36 +1322,43 @@ const CashierDashboard = () => {
                     </div>
 
                     {/* Queue Tabs */}
-                    <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-3 shrink-0 gap-1">
+                    <div className="flex bg-slate-100/95 dark:bg-slate-800/95 p-1.5 rounded-2xl mb-3 shrink-0 gap-1.5 border border-slate-200 dark:border-slate-700/80 shadow-xs">
                         {[
-                            { id: 'Pending', label: 'Billing', count: filteredQueue.length },
-                            { id: 'Self-Pickup', label: 'Pickup', count: filteredPickup.length },
-                            { id: 'Paid', label: 'History', count: filteredHistory.length }
-                        ].map(t => (
-                            <button 
-                                key={t.id}
-                                onClick={() => { 
-                                    setActiveTab(t.id); 
-                                    if (t.id === 'Pending') setActiveBill(filteredQueue[0] || null);
-                                    else if (t.id === 'Self-Pickup') setActiveBill(filteredPickup[0] || null);
-                                    else if (t.id === 'Paid') setActiveBill(filteredHistory[0] || null);
-                                }}
-                                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                                    activeTab === t.id 
-                                    ? 'bg-white dark:bg-slate-900 shadow-xs text-emerald-700 dark:text-emerald-400 font-black ring-1 ring-black/5 dark:ring-white/10' 
-                                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                                }`}
-                            >
-                                <span>{t.label}</span>
-                                {t.count > 0 && (
-                                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${
-                                        activeTab === t.id ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                                    }`}>
-                                        {t.count}
-                                    </span>
-                                )}
-                            </button>
-                        ))}
+                            { id: 'Pending', label: 'Billing', count: filteredQueue.length, icon: Receipt },
+                            { id: 'Self-Pickup', label: 'Pickup', count: filteredPickup.length, icon: ShoppingBag },
+                            { id: 'Paid', label: 'History', count: filteredHistory.length, icon: History }
+                        ].map(t => {
+                            const IconComponent = t.icon;
+                            const isActive = activeTab === t.id;
+                            return (
+                                <button 
+                                    key={t.id}
+                                    onClick={() => { 
+                                        setActiveTab(t.id); 
+                                        if (t.id === 'Pending') setActiveBill(filteredQueue[0] || null);
+                                        else if (t.id === 'Self-Pickup') setActiveBill(filteredPickup[0] || null);
+                                        else if (t.id === 'Paid') setActiveBill(filteredHistory[0] || null);
+                                    }}
+                                    className={`flex-1 py-2 px-2 text-xs font-black rounded-xl transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer select-none active:scale-95 ${
+                                        isActive 
+                                        ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/30 ring-2 ring-emerald-500/20 font-black' 
+                                        : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-850 font-extrabold border-2 border-slate-200 dark:border-slate-700/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-600'
+                                    }`}
+                                >
+                                    <IconComponent size={13} className={isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400'} />
+                                    <span>{t.label}</span>
+                                    {t.count > 0 && (
+                                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold leading-none ${
+                                            isActive 
+                                            ? 'bg-white text-emerald-700 shadow-xs' 
+                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600'
+                                        }`}>
+                                            {t.count}
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })}
                     </div>
 
                     {/* Queue Cards List */}

@@ -679,7 +679,7 @@ const ChefDashboard = () => {
                             <Clock size={18} className="sm:w-5 sm:h-5" />
                         </div>
                         <div className="min-w-0 flex-1">
-                            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">Cooking</p>
+                            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">Preparing</p>
                             <p className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 leading-tight">{preparingCount}</p>
                         </div>
                     </div>
@@ -689,7 +689,7 @@ const ChefDashboard = () => {
                             <CheckCircle size={18} className="sm:w-5 sm:h-5" />
                         </div>
                         <div className="min-w-0 flex-1">
-                            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">Ready</p>
+                            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">Prepared</p>
                             <p className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 leading-tight">{readyCount}</p>
                         </div>
                     </div>
@@ -715,8 +715,8 @@ const ChefDashboard = () => {
                         {[
                             { id: 'All', label: 'All Orders', count: totalLive },
                             { id: 'Incoming', label: '📥 Incoming', count: orders.filter(o => isIncomingStatus(o.status)).length },
-                            { id: 'Preparing', label: '🍳 Cooking', count: preparingCount },
-                            { id: 'Ready', label: '✨ Ready', count: readyCount },
+                            { id: 'Preparing', label: '🍳 Preparing', count: preparingCount },
+                            { id: 'Ready', label: '✨ Prepared', count: readyCount },
                             { id: 'Completed', label: '✅ Completed', count: completedCount },
                         ].map(tab => (
                             <button
@@ -959,7 +959,7 @@ const ChefDashboard = () => {
                                                 className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold py-2.5 rounded-xl sm:rounded-2xl transition-all shadow-md shadow-orange-600/20 text-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                                             >
                                                 <ChefHat size={15} />
-                                                <span>Accept &amp; Start Cooking</span>
+                                                <span>Accept &amp; Start Preparing</span>
                                             </button>
                                         )}
                                         {order.status === 'Preparing' && (
@@ -968,7 +968,7 @@ const ChefDashboard = () => {
                                                 className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold py-2.5 rounded-xl sm:rounded-2xl transition-all shadow-md shadow-emerald-600/20 flex justify-center items-center gap-2 text-xs cursor-pointer active:scale-95"
                                             >
                                                 <Sparkles size={15} />
-                                                <span>{isSelfOrder(order) ? 'Transfer to Pickup Counter' : 'Mark Ticket Ready & Transfer'}</span>
+                                                <span>{isSelfOrder(order) ? 'Transfer to Pickup Counter' : 'Mark Ticket Prepared & Transfer'}</span>
                                             </button>
                                         )}
                                         {['Ready', 'Ready for Pickup'].includes(order.status) && (
@@ -992,8 +992,8 @@ const ChefDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
                     {[
                         { title: '📥 Incoming Queue', keys: ['Pending', 'Accepted'], accent: 'from-amber-600 to-orange-600', key: 'Incoming' },
-                        { title: '🍳 Cooking / Prep', keys: ['Preparing'], accent: 'from-blue-600 to-indigo-600', key: 'Cooking' },
-                        { title: '✨ Plated & Ready', keys: ['Ready', 'Ready for Pickup'], accent: 'from-emerald-600 to-teal-600', key: 'Ready' },
+                        { title: '🍳 Preparing', keys: ['Preparing'], accent: 'from-blue-600 to-indigo-600', key: 'Preparing' },
+                        { title: '✨ Plated & Prepared', keys: ['Ready', 'Ready for Pickup'], accent: 'from-emerald-600 to-teal-600', key: 'Prepared' },
                         { title: '✅ Served / Done', keys: ['Completed', 'Served', 'Picked Up', 'Delivered'], accent: 'from-slate-700 to-slate-900', key: 'Completed' }
                     ].map(column => {
                         // Filter orders for this column using station & search criteria
@@ -1077,12 +1077,12 @@ const ChefDashboard = () => {
                                                     <div className="pt-2 border-t border-slate-200 dark:border-slate-800/80">
                                                         {(!order.status || order.status === 'Pending' || order.status === 'Accepted') && (
                                                             <button onClick={() => updateStatus(order._id, 'Preparing')} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded-xl text-xs cursor-pointer active:scale-95 transition-all">
-                                                                Accept &amp; Start Cooking
+                                                                Accept &amp; Start Preparing
                                                             </button>
                                                         )}
                                                         {order.status === 'Preparing' && (
                                                             <button onClick={() => updateStatus(order._id, isSelf ? 'Ready for Pickup' : 'Ready')} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs cursor-pointer active:scale-95 transition-all">
-                                                                {isSelf ? 'Transfer to Pickup' : 'Mark Ticket Ready'}
+                                                                {isSelf ? 'Transfer to Pickup' : 'Mark Ticket Prepared'}
                                                             </button>
                                                         )}
                                                         {['Ready', 'Ready for Pickup'].includes(order.status) && (
@@ -1143,7 +1143,7 @@ const ChefDashboard = () => {
                                 }}
                                 className="flex-1 bg-orange-600 hover:bg-orange-500 text-white font-black py-3 rounded-2xl text-xs transition-all shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                             >
-                                <ChefHat size={16} /> Accept &amp; Start Cooking
+                                <ChefHat size={16} /> Accept &amp; Start Preparing
                             </button>
                             <button 
                                 onClick={() => setNewTicketModalOrder(null)}

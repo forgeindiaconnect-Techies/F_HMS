@@ -22,8 +22,8 @@ const STATION_OPTIONS = [
 const STATUS_OPTIONS = [
     { id: 'Active', label: 'Active Queue' },
     { id: 'Pending', label: 'Pending' },
-    { id: 'Preparing', label: 'Cooking' },
-    { id: 'Ready', label: 'Ready' },
+    { id: 'Preparing', label: 'Preparing' },
+    { id: 'Ready', label: 'Prepared' },
     { id: 'Served', label: 'Served' },
     { id: 'All', label: 'All Tickets' }
 ];
@@ -249,11 +249,11 @@ const ChefKOTManagement = () => {
                 {/* Live Stats Pills */}
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="px-4 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-2xl">
-                        <span className="text-[10px] font-black uppercase text-amber-600 dark:text-amber-400 block tracking-wider">Cooking</span>
+                        <span className="text-[10px] font-black uppercase text-amber-600 dark:text-amber-400 block tracking-wider">Preparing</span>
                         <span className="text-xl font-black text-amber-900 dark:text-amber-200">{summary.preparingCount}</span>
                     </div>
                     <div className="px-4 py-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-2xl">
-                        <span className="text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400 block tracking-wider">Ready Plated</span>
+                        <span className="text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400 block tracking-wider">Prepared</span>
                         <span className="text-xl font-black text-emerald-900 dark:text-emerald-200">{summary.readyCount}</span>
                     </div>
                     <div className="px-4 py-2 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 rounded-2xl">
@@ -482,7 +482,7 @@ const ChefKOTManagement = () => {
                                                 onClick={() => handleUpdateStatus(kot._id, 'Preparing')}
                                                 className="flex-1 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer"
                                             >
-                                                <Flame size={14} /> Start Cooking
+                                                <Flame size={14} /> Start Preparing
                                             </button>
                                         )}
                                         {isCooking && (
@@ -490,7 +490,7 @@ const ChefKOTManagement = () => {
                                                 onClick={() => handleUpdateStatus(kot._id, 'Ready')}
                                                 className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer"
                                             >
-                                                <Sparkles size={14} /> Mark KOT Ready
+                                                <Sparkles size={14} /> Mark KOT Prepared
                                             </button>
                                         )}
                                         {isReady && (

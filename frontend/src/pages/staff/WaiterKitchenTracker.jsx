@@ -101,7 +101,7 @@ const WaiterKitchenTracker = () => {
                             : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                         }`}
                     >
-                        {st}
+                        {st === 'Ready' ? 'Prepared' : st}
                     </button>
                 ))}
             </div>
