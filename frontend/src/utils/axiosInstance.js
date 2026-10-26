@@ -14,7 +14,7 @@ export const getApiUrl = () => {
     }
 
     // Default to deployed Render backend URL for seamless connectivity across web & mobile apps
-    return 'https://f-hms.onrender.com/api';
+    return 'https://f-hms-1.onrender.com/api';
 };
 
 const api = axios.create({
@@ -62,7 +62,7 @@ api.interceptors.response.use(
 
         // Fallback to live Render backend ONLY if local port 5000 is completely down/unreachable, NEVER on 401/400/404
         if (config && isNetworkDown && config.baseURL && config.baseURL.includes('localhost:5000')) {
-            config.baseURL = 'https://f-hms.onrender.com/api';
+            config.baseURL = 'https://f-hms-1.onrender.com/api';
             return api.request(config);
         }
 
