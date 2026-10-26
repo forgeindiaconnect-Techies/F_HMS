@@ -1,9 +1,11 @@
 import Order from '../models/Order.js';
+import KOT from '../models/KOT.js';
 import Restaurant from '../models/Restaurant.js';
 import Branch from '../models/Branch.js';
 import User from '../models/User.js';
 import mongoose from 'mongoose';
 import { broadcastToRestaurant, broadcastToCustomerOrder } from '../config/websocket.js';
+import { generateKOTsForOrder } from '../utils/kotHelper.js';
 
 const sanitizeOrderItems = (items) => {
     if (!items) return items;
@@ -153,7 +155,47 @@ export const addOrderItems = async (req, res) => {
             ? Math.floor(1000 + Math.random() * 9000).toString() 
             : null;
 
+        const restConfig = targetRestaurant?.restaurantConfig || {};
+
         const determinedServiceType = serviceType || (orderType === 'Self-Pickup' ? 'Self Dine-In (KFC Style)' : 'Waiter Table Service');
+
+        // Validate QR Ordering and Service Modes
+        if (finalSource === 'QR') {
+            if (restConfig.qrOrdering?.enabled === false) {
+                return res.status(400).json({ message: 'QR Table Ordering is currently disabled for this restaurant.' });
+            }
+            if (determinedServiceType === 'Self Dine-In (KFC Style)' && restConfig.qrOrdering?.allowSelfDineIn === false) {
+                return res.status(400).json({ message: 'Self Dine-in ordering is currently disabled for this restaurant.' });
+            }
+            if (determinedServiceType === 'Waiter Table Service' && restConfig.qrOrdering?.allowWaiterOrdering === false) {
+                return res.status(400).json({ message: 'Waiter table service ordering is currently disabled for this restaurant.' });
+            }
+            if (restConfig.qrOrdering?.allowSelfDineIn === false && restConfig.qrOrdering?.allowWaiterOrdering === false) {
+                return res.status(400).json({ message: 'Table ordering service modes are currently disabled.' });
+            }
+        }
+
+        // Validate Payment Method against restaurant configuration
+        const pmConfig = restConfig.paymentMethods || { cash: true, upi: true, card: true, onlineGateway: true };
+        const lowerMethod = String(paymentMethod || '').toLowerCase();
+        
+        if ((lowerMethod.includes('cash') || lowerMethod.includes('counter')) && pmConfig.cash === false) {
+            return res.status(400).json({ message: 'Cash payment method is currently disabled by this restaurant.' });
+        }
+        if (lowerMethod.includes('upi') && pmConfig.upi === false) {
+            return res.status(400).json({ message: 'UPI payment method is currently disabled by this restaurant.' });
+        }
+        if (lowerMethod.includes('card') && pmConfig.card === false) {
+            return res.status(400).json({ message: 'Card payment method is currently disabled by this restaurant.' });
+        }
+        if (lowerMethod.includes('online') && pmConfig.onlineGateway === false) {
+            return res.status(400).json({ message: 'Online payment gateway is currently disabled by this restaurant.' });
+        }
+
+        // Tips validation and calculation
+        const rawTip = Number(req.body.tipAmount) || 0;
+        const finalTip = (restConfig.waiterTips?.enabled !== false && rawTip > 0) ? rawTip : 0;
+
         const defaultPrepMins = (orderType === 'Delivery') ? 30 : 20;
         const finalPrepMinutes = Number(req.body.estimatedPrepMinutes) || defaultPrepMins;
         const finalEstimatedReadyTime = req.body.estimatedReadyTime 
@@ -176,6 +218,8 @@ export const addOrderItems = async (req, res) => {
             subscriptionPlan: subscriptionPlan || 'One-time Order',
             taxPrice,
             totalPrice,
+            tipAmount: finalTip,
+            waiter: req.user?.role === 'Waiter' ? req.user._id : undefined,
             deliveryOtp,
             shippingAddress,
             customerLocation: finalCustomerLoc,
@@ -193,6 +237,28 @@ export const addOrderItems = async (req, res) => {
         });
 
         const createdOrder = await order.save();
+
+        // Create verified Tip record if tip provided and enabled
+        if (finalTip > 0) {
+            try {
+                const Tip = (await import('../models/Tip.js')).default;
+                await Tip.create({
+                    restaurantId: finalRestaurantId,
+                    branchId: finalBranchId,
+                    orderId: createdOrder._id,
+                    tableNumber: createdOrder.tableNumber || '',
+                    amount: finalTip,
+                    paymentMethod: createdOrder.paymentMethod,
+                    source: finalSource === 'QR' ? 'Customer QR' : 'Cashier Settlement',
+                    status: createdOrder.isPaid ? 'Settled' : 'Pending',
+                    waiterId: req.user?.role === 'Waiter' ? req.user._id : null,
+                    waiterName: req.user?.role === 'Waiter' ? req.user.name : 'Table Service Staff',
+                    date: new Date()
+                });
+            } catch (tipErr) {
+                console.error('Failed to log tip record:', tipErr);
+            }
+        }
 
         // Update table occupancy status if Dine In
         if (orderType === 'Dine In' && tableNumber) {
@@ -233,10 +299,29 @@ export const addOrderItems = async (req, res) => {
             console.error('Failed to create order notification', notifErr);
         }
 
-        // Broadcast real-time websocket alert to kitchen display
-        broadcastToRestaurant(finalRestaurantId, 'new_order', createdOrder);
+        // Automatically generate KOT(s) for kitchen prep stations
+        let generatedKOTs = [];
+        try {
+            generatedKOTs = await generateKOTsForOrder(createdOrder, {
+                user: req.user,
+                serverName: req.user?.name || (createdOrder.customerName ? `Guest (${createdOrder.customerName})` : 'QR / Customer'),
+                notes: notes || createdOrder.notes
+            });
+        } catch (kotErr) {
+            console.error('Failed to auto-generate KOT for order:', kotErr);
+        }
 
-        return res.status(201).json(createdOrder);
+        const responseOrder = createdOrder.toObject ? createdOrder.toObject() : createdOrder;
+        responseOrder.kots = generatedKOTs;
+        responseOrder.kotNumbers = generatedKOTs.map(k => k.kotNumber);
+        responseOrder.isKdsEnabled = restConfig.orderKitchen ? (restConfig.orderKitchen.kdsEnabled !== false) : true;
+        responseOrder.isKotEnabled = restConfig.orderKitchen ? (restConfig.orderKitchen.kotEnabled !== false) : true;
+        responseOrder.orderWorkflow = (!responseOrder.isKdsEnabled && responseOrder.isKotEnabled) ? 'KOT' : (responseOrder.isKdsEnabled && !responseOrder.isKotEnabled ? 'KDS' : 'HYBRID');
+
+        // Broadcast real-time websocket alert to kitchen display, cashier, and staff
+        broadcastToRestaurant(finalRestaurantId, 'new_order', responseOrder);
+
+        return res.status(201).json(responseOrder);
     } catch (error) {
         console.error('Error creating order:', error);
         return res.status(500).json({ message: error.message || 'Server error creating order' });
@@ -266,11 +351,24 @@ export const appendOrderItems = async (req, res) => {
                 order.notes = order.notes ? `${order.notes}\n${notes}` : notes;
             }
             
-            // If the order was already completed/ready, we might want to change it back to Preparing
-            // But usually this means printing a new kitchen ticket. For now, let's just save.
+            // If the order was already completed/ready, set back to Preparing for the new items
             order.status = 'Preparing';
             
             const updatedOrder = await order.save();
+
+            // Automatically generate a new Running / Add-on KOT for newly added items only
+            let addonKOTs = [];
+            try {
+                addonKOTs = await generateKOTsForOrder(updatedOrder, {
+                    items: orderItems,
+                    isAddon: true,
+                    user: req.user,
+                    serverName: req.user?.name || (updatedOrder.customerName ? `Guest (${updatedOrder.customerName})` : 'Waiter / QR'),
+                    notes: notes || 'Additional items added'
+                });
+            } catch (kotErr) {
+                console.error('Failed to generate add-on KOT for appended items:', kotErr);
+            }
 
             // Create a notification for the chef
             try {
@@ -290,7 +388,10 @@ export const appendOrderItems = async (req, res) => {
             broadcastToRestaurant(order.restaurantId, 'order_updated', updatedOrder);
             broadcastToCustomerOrder(order._id, 'order_status_updated', updatedOrder);
 
-            res.json(updatedOrder);
+            const responseData = updatedOrder.toObject ? updatedOrder.toObject() : updatedOrder;
+            responseData.newKots = addonKOTs;
+
+            res.json(responseData);
         } else {
             res.status(404).json({ message: 'Order not found' });
         }
@@ -305,14 +406,36 @@ export const appendOrderItems = async (req, res) => {
 export const getOrderById = async (req, res) => {
     const order = await Order.findById(req.params.id)
         .populate('user', 'name email')
-        .populate('deliveryPartner', 'name email phoneNumber');
+        .populate('deliveryPartner', 'name email phoneNumber')
+        .populate('restaurantId', 'name address phone restaurantConfig logo');
 
     if (order) {
         if (order.orderType === 'Delivery' && !order.deliveryOtp) {
             order.deliveryOtp = Math.floor(1000 + Math.random() * 9000).toString();
             await order.save();
         }
-        res.json(order);
+        
+        const orderObj = order.toObject();
+        // Fetch any KOTs created for this order
+        try {
+            const kots = await KOT.find({ orderId: order._id }).sort({ createdAt: 1 }).select('kotNumber kotSequence kitchenStation status isAddon createdAt');
+            orderObj.kots = kots;
+            orderObj.kotNumbers = kots.map(k => k.kotNumber);
+        } catch (kotFindErr) {
+            orderObj.kots = [];
+            orderObj.kotNumbers = [];
+        }
+
+        // Determine if this is a KDS order or KOT-only order based on restaurant configuration
+        const restConfig = order.restaurantId?.restaurantConfig || {};
+        const kdsEnabled = restConfig.orderKitchen ? (restConfig.orderKitchen.kdsEnabled !== false) : true;
+        const kotEnabled = restConfig.orderKitchen ? (restConfig.orderKitchen.kotEnabled !== false) : true;
+
+        orderObj.isKdsEnabled = kdsEnabled;
+        orderObj.isKotEnabled = kotEnabled;
+        orderObj.orderWorkflow = (!kdsEnabled && kotEnabled) ? 'KOT' : (kdsEnabled && !kotEnabled ? 'KDS' : 'HYBRID');
+
+        res.json(orderObj);
     } else {
         res.status(404).json({ message: 'Order not found' });
     }
@@ -545,6 +668,28 @@ export const updateOrderStatus = async (req, res) => {
                 timestamp: Date.now(),
                 updatedBy: req.user ? req.user._id : null
             });
+
+            // Synchronize KOT statuses with order status update
+            try {
+                if (newStatus === 'Cancelled') {
+                    await KOT.updateMany(
+                        { orderId: order._id, status: { $ne: 'Cancelled' } },
+                        { $set: { status: 'Cancelled' }, $push: { statusHistory: { status: 'Cancelled', timestamp: Date.now(), updatedBy: req.user?._id || null } } }
+                    );
+                } else if (newStatus === 'Served' || newStatus === 'Completed') {
+                    await KOT.updateMany(
+                        { orderId: order._id, status: { $nin: ['Served', 'Cancelled'] } },
+                        { $set: { status: 'Served', servedTime: new Date() }, $push: { statusHistory: { status: 'Served', timestamp: Date.now(), updatedBy: req.user?._id || null } } }
+                    );
+                } else if (['Ready', 'Ready for Pickup'].includes(newStatus)) {
+                    await KOT.updateMany(
+                        { orderId: order._id, status: { $in: ['Pending', 'Preparing'] } },
+                        { $set: { status: 'Ready', prepReadyTime: new Date() }, $push: { statusHistory: { status: 'Ready', timestamp: Date.now(), updatedBy: req.user?._id || null } } }
+                    );
+                }
+            } catch (kotSyncErr) {
+                console.error('Error synchronizing KOT status on order update', kotSyncErr);
+            }
 
             const ticketNum = order._id.toString().substring(order._id.toString().length - 5).toUpperCase();
 

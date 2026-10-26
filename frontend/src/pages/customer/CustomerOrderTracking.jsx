@@ -4,7 +4,7 @@ import axios from 'axios';
 import { 
     Clock, RefreshCw, ChevronLeft, PhoneCall, Coffee, Utensils, 
     FileText, CheckCircle2, AlertCircle, ShoppingBag, BellRing, Star,
-    Bike, MapPin, Store, User, MessageSquare
+    Bike, MapPin, Store, User, MessageSquare, Printer, Receipt
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getApiUrl } from '../../utils/axiosInstance';
@@ -168,6 +168,89 @@ const CustomerOrderTracking = () => {
     const isDelivery = order?.orderType === 'Delivery';
     const isSelfPickup = order?.orderType === 'Self-Pickup' || order?.orderType === 'Self Pickup' || order?.serviceType === 'Self Dine-In (KFC Style)';
 
+    // Distinguish KDS orders vs physical KOT ticket-based orders
+    const isKdsEnabled = order?.isKdsEnabled ?? (order?.restaurantId?.restaurantConfig?.orderKitchen?.kdsEnabled !== false);
+    const isKdsOrder = !isDelivery && isKdsEnabled;
+    const isKotOrder = !isDelivery && !isKdsEnabled;
+
+    const handlePrintCustomerBill = () => {
+        if (!order) return;
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            toast.error('Please allow popups to view/print your bill receipt.');
+            return;
+        }
+        const items = order.orderItems || [];
+        const itemsHtml = items.map(item => `
+            <tr style="border-bottom: 1px dashed #ddd;">
+                <td style="padding: 6px 0; font-weight: bold;">${item.qty}x ${item.name}</td>
+                <td style="text-align: right; padding: 6px 0; font-family: monospace;">₹${((item.price || 0) * (item.qty || 1)).toFixed(2)}</td>
+            </tr>
+        `).join('');
+
+        const subtotal = items.reduce((acc, it) => acc + (it.price || 0) * (it.qty || 1), 0);
+        const tax = order.taxPrice || 0;
+        const tip = order.tipAmount || 0;
+        const total = order.totalPrice || (subtotal + tax + tip);
+        const ticketNum = order._id ? String(order._id).slice(-5).toUpperCase() : 'ORDER';
+        const kotNum = order.kotNumbers?.[0] || order.kots?.[0]?.kotNumber || `KOT-${ticketNum}`;
+
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <title>Bill Receipt #${ticketNum}</title>
+                    <style>
+                        @page { size: 80mm auto; margin: 4mm; }
+                        body {
+                            font-family: 'Courier New', Courier, monospace;
+                            width: 78mm;
+                            max-width: 78mm;
+                            margin: 0 auto;
+                            padding: 8px 4px;
+                            font-size: 13px;
+                            line-height: 1.3;
+                        }
+                        .center { text-align: center; }
+                        .line { border-bottom: 1px dashed #000; margin: 8px 0; }
+                        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="center">
+                        <h2 style="margin: 0; font-size: 18px; font-weight: 900;">RESTOSYS DINING</h2>
+                        <p style="margin: 3px 0; font-weight: bold;">CUSTOMER BILL RECEIPT</p>
+                        <p style="margin: 2px 0;">Order #${ticketNum} • ${kotNum}</p>
+                        <p style="margin: 2px 0; font-weight: bold;">${order.orderType || 'Dine In'} ${order.tableNumber ? `• Table ${order.tableNumber}` : ''}</p>
+                        ${order.customerName ? `<p style="margin: 2px 0;">Guest: ${order.customerName}</p>` : ''}
+                    </div>
+                    <div class="line"></div>
+                    <table>
+                        ${itemsHtml}
+                    </table>
+                    <div class="line"></div>
+                    <table>
+                        <tr><td>Subtotal</td><td style="text-align: right;">₹${subtotal.toFixed(2)}</td></tr>
+                        ${tax > 0 ? `<tr><td>Tax</td><td style="text-align: right;">₹${tax.toFixed(2)}</td></tr>` : ''}
+                        ${tip > 0 ? `<tr><td>Staff Gratuity / Tip</td><td style="text-align: right;">₹${tip.toFixed(2)}</td></tr>` : ''}
+                        <tr style="font-weight: 900; font-size: 15px;"><td>Total Amount</td><td style="text-align: right;">₹${total.toFixed(2)}</td></tr>
+                    </table>
+                    <div class="line"></div>
+                    <div class="center" style="font-size: 11px;">
+                        Payment Method: ${order.paymentMethod || 'Pay at Counter / Waiter'}<br/>
+                        Settlement: ${order.isPaid ? 'PAID & SETTLED' : 'PAYMENT DUE'}<br/>
+                        Date: ${new Date(order.createdAt || Date.now()).toLocaleString()}<br/><br/>
+                        Thank you for dining with us!
+                    </div>
+                    <script>
+                        window.onload = function() { window.print(); }
+                    </script>
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+    };
+
     const getStatusStep = (status, deliveryStatus) => {
         if (isDelivery) {
             const st = String(status || '').trim();
@@ -322,8 +405,8 @@ const CustomerOrderTracking = () => {
                     />
                 )}
 
-                {/* Estimated Order Ready Time Live Widget */}
-                {(() => {
+                {/* Estimated Order Ready Time Live Widget (For KDS / Delivery) */}
+                {(isDelivery || isKdsOrder) && (() => {
                     const readyInfo = getOrderReadyTimeInfo(order);
                     if (!readyInfo) return null;
 
@@ -403,51 +486,113 @@ const CustomerOrderTracking = () => {
                     return null;
                 })()}
 
-                {/* Timeline Box */}
-                <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-6">
-                    <div className="flex justify-between items-center pb-4 border-b border-gray-100">
-                        <div>
-                            <p className="text-xs text-gray-400 font-black tracking-wider uppercase">Current Status</p>
-                            <h3 className="text-xl font-black text-green-650 mt-1">{order.status}</h3>
+                {/* Digital KDS Interactive Steps Timeline (Shown ONLY in KDS orders or Home Delivery) */}
+                {(!isKotOrder) && (
+                    <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-6">
+                        <div className="flex justify-between items-center pb-4 border-b border-gray-100">
+                            <div>
+                                <p className="text-xs text-gray-400 font-black tracking-wider uppercase">Current Status</p>
+                                <h3 className="text-xl font-black text-green-650 mt-1">{order.status}</h3>
+                            </div>
+                            <div className="bg-green-50 text-green-700 p-3 rounded-2xl animate-pulse">
+                                <Clock size={24} />
+                            </div>
                         </div>
-                        <div className="bg-green-50 text-green-700 p-3 rounded-2xl animate-pulse">
-                            <Clock size={24} />
+
+                        {/* Steps Timeline Visual */}
+                        <div className="relative pl-8 space-y-8">
+                            <div className="absolute left-3.5 top-2 bottom-2 w-0.5 bg-gray-200"></div>
+                            <div 
+                                className="absolute left-3.5 top-2 w-0.5 bg-orange-500 transition-all duration-700 ease-in-out"
+                                style={{ height: `${Math.min(100, (currentStep / (stepsList.length - 1)) * 100)}%` }}
+                            ></div>
+                            {stepsList.map((step, idx) => {
+                                const isDone = idx < currentStep;
+                                const isCurrent = idx === currentStep;
+                                const isActiveOrDone = idx <= currentStep;
+
+                                return (
+                                    <div key={idx} className="relative">
+                                        {/* Timeline dot */}
+                                        <div className={`absolute -left-8 top-1 w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all ${
+                                            isDone 
+                                            ? 'bg-green-600 border-green-600 text-white' 
+                                            : isCurrent
+                                            ? 'bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/20 animate-pulse'
+                                            : 'bg-white border-gray-200 text-gray-300'
+                                        }`}>
+                                            <CheckCircle2 size={14} className={isActiveOrDone ? 'opacity-100' : 'opacity-30'} />
+                                        </div>
+                                        <div>
+                                            <h4 className={`text-sm font-black transition-colors ${isCurrent ? 'text-orange-600' : isDone ? 'text-gray-900' : 'text-gray-400'}`}>{step.title}</h4>
+                                            <p className="text-xs text-gray-400 mt-0.5 font-medium">{step.desc}</p>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
+                )}
 
-                    {/* Steps Timeline Visual */}
-                    <div className="relative pl-8 space-y-8">
-                        <div className="absolute left-3.5 top-2 bottom-2 w-0.5 bg-gray-200"></div>
-                        <div 
-                            className="absolute left-3.5 top-2 w-0.5 bg-orange-500 transition-all duration-700 ease-in-out"
-                            style={{ height: `${Math.min(100, (currentStep / (stepsList.length - 1)) * 100)}%` }}
-                        ></div>
-                        {stepsList.map((step, idx) => {
-                            const isDone = idx < currentStep;
-                            const isCurrent = idx === currentStep;
-                            const isActiveOrDone = idx <= currentStep;
-
-                            return (
-                                <div key={idx} className="relative">
-                                    {/* Timeline dot */}
-                                    <div className={`absolute -left-8 top-1 w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all ${
-                                        isDone 
-                                        ? 'bg-green-600 border-green-600 text-white' 
-                                        : isCurrent
-                                        ? 'bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/20 animate-pulse'
-                                        : 'bg-white border-gray-200 text-gray-300'
-                                    }`}>
-                                        <CheckCircle2 size={14} className={isActiveOrDone ? 'opacity-100' : 'opacity-30'} />
-                                    </div>
-                                    <div>
-                                        <h4 className={`text-sm font-black transition-colors ${isCurrent ? 'text-orange-600' : isDone ? 'text-gray-900' : 'text-gray-400'}`}>{step.title}</h4>
-                                        <p className="text-xs text-gray-400 mt-0.5 font-medium">{step.desc}</p>
-                                    </div>
+                {/* KOT Order Confirmation & Physical Kitchen Ticket Card (Shown ONLY for KOT orders, KDS timeline hidden) */}
+                {isKotOrder && (
+                    <div className="bg-white rounded-3xl p-6 border border-emerald-100 shadow-sm space-y-5 animate-in fade-in duration-300">
+                        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shrink-0 border border-emerald-100">
+                                    <CheckCircle2 size={26} className="text-emerald-600" />
                                 </div>
-                            );
-                        })}
+                                <div>
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 inline-block mb-1">
+                                        Order Placed &amp; Dispatched
+                                    </span>
+                                    <h3 className="text-lg font-black text-slate-900 leading-tight">
+                                        Sent to Kitchen &amp; Cashier
+                                    </h3>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handlePrintCustomerBill}
+                                className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black text-xs flex items-center gap-1.5 shadow-sm transition-transform active:scale-95 cursor-pointer"
+                                title="Print or save bill receipt"
+                            >
+                                <Printer size={14} />
+                                <span>Print Bill</span>
+                            </button>
+                        </div>
+
+                        {/* KOT Ticket and Table Badges */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 text-xs">
+                            <div>
+                                <span className="text-[10px] text-slate-400 font-bold uppercase block">Kitchen Ticket</span>
+                                <span className="font-mono font-black text-slate-900 text-sm">
+                                    {order.kotNumbers?.[0] || (order.kots?.[0]?.kotNumber) || `#KOT-${order._id.slice(-4).toUpperCase()}`}
+                                </span>
+                            </div>
+                            <div>
+                                <span className="text-[10px] text-slate-400 font-bold uppercase block">Table / Station</span>
+                                <span className="font-black text-slate-900 text-sm">
+                                    {order.tableNumber ? `Table ${order.tableNumber}` : (order.orderType || 'Dine In')}
+                                </span>
+                            </div>
+                            <div className="col-span-2 sm:col-span-1">
+                                <span className="text-[10px] text-slate-400 font-bold uppercase block">Bill Status</span>
+                                <span className={`font-black text-xs ${order.isPaid ? 'text-emerald-700' : 'text-amber-700'}`}>
+                                    {order.isPaid ? '✓ Paid & Settled' : 'Pay at Counter / Waiter'}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/60 text-xs text-emerald-950 flex items-start gap-2.5">
+                            <span className="text-base shrink-0">👨‍🍳</span>
+                            <p className="leading-relaxed font-medium">
+                                Your Kitchen Order Ticket (KOT) has been printed automatically in the kitchen and cashier counter. 
+                                Our culinary team is preparing your freshly cooked dishes. Please relax at your table!
+                            </p>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Delivery Security Code (OTP) Card for Home Delivery */}
                 {isDelivery && order.deliveryOtp && (

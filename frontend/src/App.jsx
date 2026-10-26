@@ -23,6 +23,8 @@ import Analytics from './pages/admin/Analytics';
 import NotificationCenter from './pages/admin/NotificationCenter';
 import ActivityLogs from './pages/admin/ActivityLogs';
 import Settings from './pages/admin/Settings';
+import RestaurantSetupWizard from './pages/admin/RestaurantSetupWizard';
+import TipManagement from './pages/admin/TipManagement';
 import SubscriptionPortal from './pages/admin/SubscriptionPortal';
 import RestaurantVerification from './pages/admin/RestaurantVerification';
 import FranchiseManagement from './pages/admin/FranchiseManagement';
@@ -31,6 +33,8 @@ import DeveloperConfig from './pages/admin/DeveloperConfig';
 import AuditLogs from './pages/admin/AuditLogs';
 import BusinessIntelligence from './pages/admin/BusinessIntelligence';
 import ExpenseSummaryAdmin from './pages/admin/ExpenseSummaryAdmin';
+import ProfitAndLoss from './pages/admin/ProfitAndLoss';
+import DailyEarnings from './pages/admin/DailyEarnings';
 import VerificationManagement from './pages/superadmin/VerificationManagement';
 import CustomerCareDashboard from './pages/admin/CustomerCareDashboard';
 import CreateTicket from './pages/admin/CreateTicket';
@@ -44,6 +48,7 @@ import ChefDashboard from './pages/staff/ChefDashboard';
 import ChefPrepList from './pages/staff/ChefPrepList';
 import ChefRecipes from './pages/staff/ChefRecipes';
 import ChefInventory from './pages/staff/ChefInventory';
+import ChefKOTManagement from './pages/staff/ChefKOTManagement';
 
 import ManagerDashboard from './pages/staff/ManagerDashboard';
 import ManagerOrderMonitoring from './pages/staff/ManagerOrderMonitoring';
@@ -238,13 +243,20 @@ function App() {
           <Route path="offers" element={<OfferManagement />} />
           <Route path="taxes" element={<TaxManagement />} />
           
-          {/* Insights */}
+          {/* Insights & Financial Management */}
+          <Route path="daily-earnings" element={<DailyEarnings />} />
+          <Route path="profit-loss" element={<ProfitAndLoss />} />
           <Route path="reports" element={<Reports />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="expenses" element={<ExpenseSummaryAdmin />} />
+          <Route path="bills" element={<Navigate to="/admin/expenses?tab=bills" replace />} />
+          <Route path="attendance" element={<Navigate to="/admin/staff?tab=attendance" replace />} />
+          <Route path="payroll" element={<Navigate to="/admin/staff?tab=payroll" replace />} />
           
-          {/* System */}
+          {/* System & Configuration */}
           <Route path="settings" element={<Settings />} />
+          <Route path="setup-wizard" element={<RestaurantSetupWizard />} />
+          <Route path="tips" element={<TipManagement />} />
           <Route path="billing" element={<SubscriptionPortal />} />
           <Route path="notifications" element={<NotificationCenter />} />
 
@@ -300,6 +312,7 @@ function App() {
         
         <Route path="/chef" element={<ProtectedRoute allowedRoles={['SuperAdmin', 'Chef', 'RestaurantAdmin', 'BranchManager']}><ChefLayout /></ProtectedRoute>}>
           <Route index element={<ChefDashboard />} />
+          <Route path="kot" element={<ChefKOTManagement />} />
           <Route path="prep" element={<ChefPrepList />} />
           <Route path="recipes" element={<ChefRecipes />} />
           <Route path="inventory" element={<ChefInventory />} />

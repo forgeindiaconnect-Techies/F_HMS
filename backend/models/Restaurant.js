@@ -141,6 +141,32 @@ const restaurantSchema = new mongoose.Schema({
         serviceChargePercent: { type: Number, default: 5 },
         gstRatePercent: { type: Number, default: 5 }
     },
+    restaurantConfig: {
+        orderKitchen: {
+            kotEnabled: { type: Boolean, default: true },
+            kdsEnabled: { type: Boolean, default: true },
+            kotPrintEnabled: { type: Boolean, default: true }
+        },
+        waiterTips: {
+            enabled: { type: Boolean, default: true },
+            allowCustomerTips: { type: Boolean, default: true },
+            tipPercentages: { type: [Number], default: [5, 10, 15, 20] },
+            customTipAllowed: { type: Boolean, default: true }
+        },
+        qrOrdering: {
+            enabled: { type: Boolean, default: true },
+            allowSelfDineIn: { type: Boolean, default: true },
+            allowWaiterOrdering: { type: Boolean, default: true }
+        },
+        paymentMethods: {
+            cash: { type: Boolean, default: true },
+            upi: { type: Boolean, default: true },
+            card: { type: Boolean, default: true },
+            onlineGateway: { type: Boolean, default: true }
+        },
+        setupWizardCompleted: { type: Boolean, default: false },
+        setupStep: { type: Number, default: 1 }
+    }
 }, { timestamps: true });
 
 const Restaurant = mongoose.model('Restaurant', restaurantSchema);

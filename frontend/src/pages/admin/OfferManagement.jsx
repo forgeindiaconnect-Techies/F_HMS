@@ -9,6 +9,7 @@ const OfferManagement = () => {
     const [offers, setOffers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [typeFilter, setTypeFilter] = useState('All Types');
     
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
@@ -108,9 +109,11 @@ const OfferManagement = () => {
         return { label: 'Active', color: 'bg-green-100 text-green-700' };
     };
 
-    const filteredOffers = offers.filter(offer => 
-        offer.code.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredOffers = offers.filter(offer => {
+        const matchesSearch = offer.code.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesType = typeFilter === 'All Types' || offer.type === typeFilter;
+        return matchesSearch && matchesType;
+    });
 
     return (
         <div className="p-8 max-w-[1600px] mx-auto space-y-6 font-sans relative">
@@ -138,11 +141,15 @@ const OfferManagement = () => {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     <input type="text" placeholder="Search promo codes..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all font-medium" />
                 </div>
-                <select className="w-full sm:w-auto bg-white border border-gray-200 text-gray-700 text-sm rounded-xl px-4 py-2.5 font-bold focus:outline-none focus:border-green-500">
-                    <option>All Types</option>
-                    <option>Percentage</option>
-                    <option>Fixed Amount</option>
-                    <option>Free Shipping</option>
+                <select 
+                    value={typeFilter}
+                    onChange={(e) => setTypeFilter(e.target.value)}
+                    className="w-full sm:w-auto bg-white border border-gray-200 text-gray-700 text-sm rounded-xl px-4 py-2.5 font-bold focus:outline-none focus:border-green-500 cursor-pointer"
+                >
+                    <option value="All Types">All Types</option>
+                    <option value="Percentage">Percentage</option>
+                    <option value="Fixed Amount">Fixed Amount</option>
+                    <option value="Free Shipping">Free Shipping</option>
                 </select>
             </div>
 
@@ -153,7 +160,7 @@ const OfferManagement = () => {
                 </div>
             ) : filteredOffers.length === 0 ? (
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center text-gray-500">
-                    No active offers found. Click "+ Create Offer" to start a promotion.
+                    No offers found matching your filters. Click "+ Create Offer" to start a promotion or clear your filters.
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

@@ -84,7 +84,14 @@ const WaiterActiveOrders = () => {
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-xs font-medium text-gray-400 mt-0.5">Order #{order._id.substring(order._id.length - 6).toUpperCase()}</p>
+                                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                            <p className="text-xs font-medium text-gray-400">Order #{order._id.substring(order._id.length - 6).toUpperCase()}</p>
+                                            {order.kotNumbers && order.kotNumbers.length > 0 && (
+                                                <span className="text-[10px] font-black font-mono bg-slate-900 text-white px-1.5 py-0.5 rounded shadow-xs">
+                                                    {order.kotNumbers.join(', ')}
+                                                </span>
+                                            )}
+                                        </div>
                                         {order.customerName && (
                                             <p className="text-xs font-semibold text-slate-700 mt-1">
                                                 👤 Guest: <span className="text-slate-900">{order.customerName}</span>

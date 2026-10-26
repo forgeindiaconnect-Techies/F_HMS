@@ -3,11 +3,11 @@ import {
     Save, Upload, User, ArrowRight, Camera, X, Sun, Key, Lock, Eye, EyeOff, Trash2,
     Sliders, CheckCircle2, Check, Sparkles, Utensils, QrCode, Receipt, Package, Truck, 
     Phone, Wine, Coffee, Flame, ShieldCheck, Zap, Bell, Percent, Users, Award, Store,
-    Layers, RefreshCw
+    Layers, RefreshCw, CreditCard, Banknote, Heart, Printer, MonitorDot, AlertTriangle, HelpCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ThemeSettingCard } from '../../components/ThemeToggle';
 import { getApiUrl } from '../../utils/axiosInstance';
 
@@ -160,15 +160,61 @@ const OUTLET_PRESETS = [
 
 const Settings = () => {
     const { api, fetchRestaurant } = useAuth();
+    const [searchParams] = useSearchParams();
+    const initialTab = searchParams.get('tab') || 'operations';
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [activeTab, setActiveTab] = useState('profile');
+    const [activeTab, setActiveTab] = useState(initialTab);
     const [subscription, setSubscription] = useState(null);
+    const [planName, setPlanName] = useState('Basic');
+    const [planFeatures, setPlanFeatures] = useState([]);
     const [logoPreview, setLogoPreview] = useState(null);
     const [currentLogo, setCurrentLogo] = useState(null);
     const [logoFile, setLogoFile] = useState(null);
     const [removeLogo, setRemoveLogo] = useState(false);
     const logoInputRef = useRef(null);
+
+    // Restaurant-Specific Operational Configuration
+    const [restConfig, setRestConfig] = useState({
+        orderKitchen: { kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
+        waiterTips: { enabled: true, allowCustomerTips: true, tipPercentages: [5, 10, 15, 20], customTipAllowed: true },
+        qrOrdering: { enabled: true, allowSelfDineIn: true, allowWaiterOrdering: true },
+        paymentMethods: { cash: true, upi: true, card: true, onlineGateway: true },
+        setupWizardCompleted: false,
+        setupStep: 1
+    });
+    const [savingConfig, setSavingConfig] = useState(false);
+
+    useEffect(() => {
+        const tabParam = searchParams.get('tab');
+        if (tabParam) {
+            setActiveTab(tabParam);
+        }
+    }, [searchParams]);
+
+    const handleSaveRestaurantConfig = async () => {
+        const pm = restConfig.paymentMethods || {};
+        if (!pm.cash && !pm.upi && !pm.card && !pm.onlineGateway) {
+            toast.error('At least one payment method (Cash, UPI, Card, or Online Gateway) must remain enabled.');
+            return;
+        }
+
+        setSavingConfig(true);
+        try {
+            const res = await api.put('/restaurants/mine/config', restConfig);
+            toast.success('Restaurant operational configuration saved successfully!');
+            if (res.data?.config) {
+                setRestConfig(res.data.config);
+            }
+            if (fetchRestaurant) await fetchRestaurant();
+        } catch (error) {
+            console.error('Failed to save restaurant configuration', error);
+            const msg = error.response?.data?.message || 'Failed to save configuration';
+            toast.error(msg);
+        } finally {
+            setSavingConfig(false);
+        }
+    };
 
     const [passwordData, setPasswordData] = useState({
         currentPassword: '',
@@ -298,6 +344,24 @@ const Settings = () => {
                         setPosConfig(res.data.posConfig);
                         localStorage.setItem('restosys_pos_outlet_customization', JSON.stringify(res.data.posConfig));
                     }
+                    if (res.data.restaurantConfig) {
+                        setRestConfig(prev => ({ ...prev, ...res.data.restaurantConfig }));
+                    }
+                }
+
+                try {
+                    const cfgRes = await api.get('/restaurants/mine/config');
+                    if (cfgRes.data?.config) {
+                        setRestConfig(cfgRes.data.config);
+                    }
+                    if (cfgRes.data?.planName) {
+                        setPlanName(cfgRes.data.planName);
+                    }
+                    if (cfgRes.data?.planFeatures) {
+                        setPlanFeatures(cfgRes.data.planFeatures);
+                    }
+                } catch (cfgErr) {
+                    console.warn('Could not fetch operational config via dedicated endpoint', cfgErr);
                 }
             } catch (error) {
                 console.error('Failed to fetch settings', error);
@@ -414,6 +478,17 @@ const Settings = () => {
                     <nav className="flex flex-col gap-1">
                         <button 
                             type="button"
+                            onClick={() => setActiveTab('operations')}
+                            className={`flex items-center justify-between px-4 py-3 rounded-xl font-medium transition-all text-sm ${activeTab === 'operations' ? 'bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-800 font-bold border border-emerald-200 shadow-xs dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800' : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Sparkles size={18} className={activeTab === 'operations' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500'} />
+                                <span>Restaurant Settings</span>
+                            </div>
+                            <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-600 text-white tracking-wider">Operations</span>
+                        </button>
+                        <button 
+                            type="button"
                             onClick={() => setActiveTab('profile')}
                             className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-sm ${activeTab === 'profile' ? 'bg-green-50 text-green-700 font-bold' : 'text-gray-600 hover:bg-gray-50'}`}
                         >
@@ -449,7 +524,547 @@ const Settings = () => {
 
                 {/* Settings Form Area */}
                 <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-6 md:p-8">
-                    {activeTab === 'pos-customization' ? (
+                    {activeTab === 'operations' ? (
+                        <div className="space-y-8 min-w-0 pr-1.5 flex-1">
+                            {/* Top Banner with Setup Wizard Launch CTA */}
+                            <div className="bg-gradient-to-r from-emerald-950 via-teal-900 to-slate-900 text-white p-6 sm:p-7 rounded-2xl shadow-md border border-emerald-800/60 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
+                                <div className="relative z-10 space-y-3">
+                                    <div className="flex items-center justify-between flex-wrap gap-2">
+                                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-bold">
+                                            <Sparkles size={13} className="text-emerald-400" />
+                                            <span>Restaurant-Specific Operational Engine</span>
+                                        </div>
+                                        <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-white/10 text-emerald-200 border border-white/10">
+                                            Plan: {planName}
+                                        </span>
+                                    </div>
+
+                                    <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                                        Restaurant Operations &amp; Feature Controls
+                                    </h3>
+                                    <p className="text-slate-300 text-xs sm:text-sm max-w-2xl leading-relaxed">
+                                        Tailor your live kitchen workflows, waiter tip ledger, customer QR dining options, and checkout payment tenders. Disabled features are instantly hidden from staff and customer screens.
+                                    </p>
+
+                                    {/* Setup Wizard Bar */}
+                                    <div className="pt-3 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                        <div className="flex items-center gap-2 text-xs font-semibold text-emerald-300">
+                                            <CheckCircle2 size={16} className={restConfig.setupWizardCompleted ? 'text-emerald-400' : 'text-amber-400'} />
+                                            <span>
+                                                {restConfig.setupWizardCompleted 
+                                                    ? 'Initial 6-Step Setup Wizard Completed' 
+                                                    : 'Setup Wizard Pending: Complete guided configuration'}
+                                            </span>
+                                        </div>
+                                        <Link 
+                                            to="/admin/setup-wizard" 
+                                            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-slate-950 font-black text-xs shadow-md transition-all self-start sm:self-auto cursor-pointer"
+                                        >
+                                            <Sparkles size={14} /> Launch 6-Step Setup Wizard
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Section A: Order and Kitchen Settings */}
+                            <div className="p-6 rounded-2xl bg-slate-50/60 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-800 space-y-5">
+                                <div className="flex items-center justify-between flex-wrap gap-2">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-950/60 text-orange-600 flex items-center justify-center shrink-0">
+                                            <Utensils size={20} />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-base font-bold text-gray-900 dark:text-white">
+                                                A. Order &amp; Kitchen Settings
+                                            </h4>
+                                            <p className="text-xs text-gray-500 dark:text-slate-400">
+                                                Configure Kitchen Order Tickets (KOT), Digital Kitchen Display (KDS), and thermal ticket printing.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-orange-50 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 border border-orange-200/60 dark:border-orange-900">
+                                        Mode: {restConfig.orderKitchen?.kotEnabled && restConfig.orderKitchen?.kdsEnabled ? 'Hybrid (KOT + KDS)' : restConfig.orderKitchen?.kdsEnabled ? 'Digital KDS Only' : restConfig.orderKitchen?.kotEnabled ? 'Printed KOT Only' : 'Direct Billing'}
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    {/* KOT Toggle */}
+                                    <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <h5 className="font-bold text-sm text-gray-900 dark:text-white flex items-center gap-2">
+                                                    <Receipt size={16} className="text-orange-500" /> KOT System
+                                                </h5>
+                                                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                                                    Generates sequential kitchen order tickets (e.g. KOT-001) for food preparation.
+                                                </p>
+                                            </div>
+                                            <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={restConfig.orderKitchen?.kotEnabled !== false}
+                                                    onChange={(e) => setRestConfig(prev => ({
+                                                        ...prev,
+                                                        orderKitchen: { ...prev.orderKitchen, kotEnabled: e.target.checked }
+                                                    }))}
+                                                    className="sr-only peer"
+                                                />
+                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+                                            </label>
+                                        </div>
+                                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md inline-block ${restConfig.orderKitchen?.kotEnabled !== false ? 'bg-orange-50 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300' : 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400'}`}>
+                                            {restConfig.orderKitchen?.kotEnabled !== false ? 'Enabled' : 'Disabled (Hidden from Chef)'}
+                                        </span>
+                                    </div>
+
+                                    {/* KDS Toggle */}
+                                    <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <h5 className="font-bold text-sm text-gray-900 dark:text-white flex items-center gap-2">
+                                                    <MonitorDot size={16} className="text-blue-500" /> Digital KDS
+                                                </h5>
+                                                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                                                    Live interactive kitchen display screens with timers and cooking stations.
+                                                </p>
+                                            </div>
+                                            <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={restConfig.orderKitchen?.kdsEnabled !== false}
+                                                    onChange={(e) => {
+                                                        const newVal = e.target.checked;
+                                                        if (newVal && planName === 'Basic') {
+                                                            toast.error('Digital KDS requires a Pro or Enterprise subscription. Please upgrade your plan.');
+                                                            return;
+                                                        }
+                                                        setRestConfig(prev => ({
+                                                            ...prev,
+                                                            orderKitchen: { ...prev.orderKitchen, kdsEnabled: newVal }
+                                                        }));
+                                                    }}
+                                                    className="sr-only peer"
+                                                />
+                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                            </label>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md inline-block ${restConfig.orderKitchen?.kdsEnabled !== false ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300' : 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400'}`}>
+                                                {restConfig.orderKitchen?.kdsEnabled !== false ? 'Enabled' : 'Disabled (Hidden from Chef)'}
+                                            </span>
+                                            {planName === 'Basic' && (
+                                                <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400">Requires Pro</span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* KOT Printing Toggle */}
+                                    <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <h5 className="font-bold text-sm text-gray-900 dark:text-white flex items-center gap-2">
+                                                    <Printer size={16} className="text-emerald-500" /> KOT Thermal Print
+                                                </h5>
+                                                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                                                    Instant 80mm ESC/POS kitchen thermal printing on order submission.
+                                                </p>
+                                            </div>
+                                            <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={restConfig.orderKitchen?.kotPrintEnabled !== false}
+                                                    onChange={(e) => setRestConfig(prev => ({
+                                                        ...prev,
+                                                        orderKitchen: { ...prev.orderKitchen, kotPrintEnabled: e.target.checked }
+                                                    }))}
+                                                    className="sr-only peer"
+                                                />
+                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                                            </label>
+                                        </div>
+                                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md inline-block ${restConfig.orderKitchen?.kotPrintEnabled !== false ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400'}`}>
+                                            {restConfig.orderKitchen?.kotPrintEnabled !== false ? 'Printing Active' : 'Digital Only'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Section B: Waiter Tips Settings */}
+                            <div className="p-6 rounded-2xl bg-slate-50/60 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-800 space-y-5">
+                                <div className="flex items-center justify-between flex-wrap gap-2">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-xl bg-pink-100 dark:bg-pink-950/60 text-pink-600 flex items-center justify-center shrink-0">
+                                            <Heart size={20} />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-base font-bold text-gray-900 dark:text-white">
+                                                B. Waiter Tips &amp; Gratuity System
+                                            </h4>
+                                            <p className="text-xs text-gray-500 dark:text-slate-400">
+                                                Enable waiter gratuity tracking, customer tip selection, and date-wise settlement reports.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <Link
+                                        to="/admin/tips"
+                                        className="text-xs font-bold text-pink-700 dark:text-pink-400 hover:underline flex items-center gap-1.5"
+                                    >
+                                        <Receipt size={14} /> View Tip Ledger &amp; Reports &rarr;
+                                    </Link>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {/* Enable Waiter Tips Master Toggle */}
+                                    <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <h5 className="font-bold text-sm text-gray-900 dark:text-white">
+                                                    Enable Waiter Tips
+                                                </h5>
+                                                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                                                    When enabled, shows the Tips section in the Waiter Dashboard &amp; tracks shift gratuity.
+                                                </p>
+                                            </div>
+                                            <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={restConfig.waiterTips?.enabled !== false}
+                                                    onChange={(e) => setRestConfig(prev => ({
+                                                        ...prev,
+                                                        waiterTips: { ...prev.waiterTips, enabled: e.target.checked }
+                                                    }))}
+                                                    className="sr-only peer"
+                                                />
+                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
+                                            </label>
+                                        </div>
+                                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md inline-block ${restConfig.waiterTips?.enabled !== false ? 'bg-pink-50 text-pink-700 dark:bg-pink-950/60 dark:text-pink-300' : 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400'}`}>
+                                            {restConfig.waiterTips?.enabled !== false ? 'Tips Active' : 'Hidden from Waiter Desk'}
+                                        </span>
+                                    </div>
+
+                                    {/* Customer Tip Collection Toggle */}
+                                    <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <h5 className="font-bold text-sm text-gray-900 dark:text-white">
+                                                    Customer Tip Collection
+                                                </h5>
+                                                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                                                    Displays tip options during customer QR ordering &amp; mobile checkout.
+                                                </p>
+                                            </div>
+                                            <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                                                <input 
+                                                    type="checkbox" 
+                                                    disabled={restConfig.waiterTips?.enabled === false}
+                                                    checked={restConfig.waiterTips?.enabled !== false && restConfig.waiterTips?.allowCustomerTips !== false}
+                                                    onChange={(e) => setRestConfig(prev => ({
+                                                        ...prev,
+                                                        waiterTips: { ...prev.waiterTips, allowCustomerTips: e.target.checked }
+                                                    }))}
+                                                    className="sr-only peer"
+                                                />
+                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
+                                            </label>
+                                        </div>
+                                        <div className="flex items-center gap-2 pt-1">
+                                            <span className="text-[11px] text-gray-500 font-bold">Preset Chips:</span>
+                                            {[5, 10, 15, 20].map(pct => (
+                                                <span key={pct} className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[10px] font-black text-slate-700 dark:text-slate-300">
+                                                    {pct}%
+                                                </span>
+                                            ))}
+                                            <span className="text-[10px] text-pink-600 font-bold ml-auto">+ Custom ₹</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Section C: QR Ordering and Service Mode Settings */}
+                            <div className="p-6 rounded-2xl bg-slate-50/60 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-800 space-y-5">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 flex items-center justify-center shrink-0">
+                                        <QrCode size={20} />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-base font-bold text-gray-900 dark:text-white">
+                                            C. QR Ordering &amp; Service Modes
+                                        </h4>
+                                        <p className="text-xs text-gray-500 dark:text-slate-400">
+                                            Control customer smartphone QR menu access, Self Dine-in (KFC style), and Waiter Table ordering.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    {/* Master QR Toggle */}
+                                    <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <h5 className="font-bold text-sm text-gray-900 dark:text-white">
+                                                    QR Ordering
+                                                </h5>
+                                                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                                                    Master switch. If disabled, customers scanning table QR codes cannot place orders.
+                                                </p>
+                                            </div>
+                                            <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={restConfig.qrOrdering?.enabled !== false}
+                                                    onChange={(e) => setRestConfig(prev => ({
+                                                        ...prev,
+                                                        qrOrdering: { ...prev.qrOrdering, enabled: e.target.checked }
+                                                    }))}
+                                                    className="sr-only peer"
+                                                />
+                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                            </label>
+                                        </div>
+                                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md inline-block ${restConfig.qrOrdering?.enabled !== false ? 'bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300' : 'bg-red-50 text-red-600 dark:bg-red-950/60 dark:text-red-300'}`}>
+                                            {restConfig.qrOrdering?.enabled !== false ? 'Active' : 'Customer QR Inactive'}
+                                        </span>
+                                    </div>
+
+                                    {/* Self Dine-in Toggle */}
+                                    <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <h5 className="font-bold text-sm text-gray-900 dark:text-white">
+                                                    Self Dine-in Mode
+                                                </h5>
+                                                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                                                    KFC style: Customer orders at table, food prepared for pickup at counter.
+                                                </p>
+                                            </div>
+                                            <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                                                <input 
+                                                    type="checkbox" 
+                                                    disabled={restConfig.qrOrdering?.enabled === false}
+                                                    checked={restConfig.qrOrdering?.enabled !== false && restConfig.qrOrdering?.allowSelfDineIn !== false}
+                                                    onChange={(e) => setRestConfig(prev => ({
+                                                        ...prev,
+                                                        qrOrdering: { ...prev.qrOrdering, allowSelfDineIn: e.target.checked }
+                                                    }))}
+                                                    className="sr-only peer"
+                                                />
+                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                            </label>
+                                        </div>
+                                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md inline-block ${restConfig.qrOrdering?.allowSelfDineIn !== false ? 'bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300' : 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400'}`}>
+                                            {restConfig.qrOrdering?.allowSelfDineIn !== false ? 'Self Pickup Shown' : 'Hidden on QR'}
+                                        </span>
+                                    </div>
+
+                                    {/* Waiter Ordering Toggle */}
+                                    <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <h5 className="font-bold text-sm text-gray-900 dark:text-white">
+                                                    Waiter Table Service
+                                                </h5>
+                                                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                                                    Sit-down service: Orders are dispatched to assigned table captains &amp; floor waiters.
+                                                </p>
+                                            </div>
+                                            <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                                                <input 
+                                                    type="checkbox" 
+                                                    disabled={restConfig.qrOrdering?.enabled === false}
+                                                    checked={restConfig.qrOrdering?.enabled !== false && restConfig.qrOrdering?.allowWaiterOrdering !== false}
+                                                    onChange={(e) => setRestConfig(prev => ({
+                                                        ...prev,
+                                                        qrOrdering: { ...prev.qrOrdering, allowWaiterOrdering: e.target.checked }
+                                                    }))}
+                                                    className="sr-only peer"
+                                                />
+                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                            </label>
+                                        </div>
+                                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md inline-block ${restConfig.qrOrdering?.allowWaiterOrdering !== false ? 'bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300' : 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400'}`}>
+                                            {restConfig.qrOrdering?.allowWaiterOrdering !== false ? 'Waiter Service Shown' : 'Hidden on QR'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Simulated Customer QR Experience */}
+                                <div className="p-4 rounded-xl bg-purple-50/70 dark:bg-purple-950/30 border border-purple-200/60 dark:border-purple-900/60 flex items-center gap-3">
+                                    <HelpCircle size={18} className="text-purple-600 shrink-0" />
+                                    <p className="text-xs text-purple-900 dark:text-purple-200">
+                                        <strong>Customer Experience on Table QR Scan: </strong>
+                                        {restConfig.qrOrdering?.enabled === false ? (
+                                            <span className="text-rose-600 font-bold">QR orders are completely disabled. Customers see a &quot;QR Ordering Disabled&quot; notice.</span>
+                                        ) : (restConfig.qrOrdering?.allowSelfDineIn !== false && restConfig.qrOrdering?.allowWaiterOrdering !== false) ? (
+                                            <span>Customers are prompted with 2 cards to choose either <strong>Self Dine-In (KFC Style)</strong> or <strong>Waiter Table Service</strong>.</span>
+                                        ) : (restConfig.qrOrdering?.allowSelfDineIn !== false) ? (
+                                            <span>Customers are directly routed into <strong>Self Dine-in</strong> ordering.</span>
+                                        ) : (restConfig.qrOrdering?.allowWaiterOrdering !== false) ? (
+                                            <span>Customers are directly routed into <strong>Waiter Table Service</strong>.</span>
+                                        ) : (
+                                            <span className="text-amber-600 font-bold">Both service modes are disabled. Customers will be unable to submit orders.</span>
+                                        )}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Section D: Payment Methods Configuration */}
+                            <div className="p-6 rounded-2xl bg-slate-50/60 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-800 space-y-5">
+                                <div className="flex items-center justify-between flex-wrap gap-2">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center shrink-0">
+                                            <CreditCard size={20} />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-base font-bold text-gray-900 dark:text-white">
+                                                D. Payment Methods Configuration
+                                            </h4>
+                                            <p className="text-xs text-gray-500 dark:text-slate-400">
+                                                Enable or disable payment tenders accepted at cashier checkout and customer QR billing.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {(!restConfig.paymentMethods?.cash && !restConfig.paymentMethods?.upi && !restConfig.paymentMethods?.card && !restConfig.paymentMethods?.onlineGateway) && (
+                                        <span className="text-xs font-black text-rose-600 bg-rose-50 dark:bg-rose-950/60 px-3 py-1 rounded-lg border border-rose-300">
+                                            &times; At least one payment method required!
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    {/* Cash */}
+                                    <label className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between space-y-3 ${restConfig.paymentMethods?.cash !== false ? 'bg-white dark:bg-slate-900 border-emerald-500 shadow-xs' : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 opacity-60'}`}>
+                                        <div className="flex items-center justify-between">
+                                            <div className="w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center">
+                                                <Banknote size={18} />
+                                            </div>
+                                            <input 
+                                                type="checkbox"
+                                                checked={restConfig.paymentMethods?.cash !== false}
+                                                onChange={(e) => setRestConfig(prev => ({
+                                                    ...prev,
+                                                    paymentMethods: { ...prev.paymentMethods, cash: e.target.checked }
+                                                }))}
+                                                className="h-4 w-4 rounded text-emerald-600 focus:ring-emerald-500 accent-emerald-600"
+                                            />
+                                        </div>
+                                        <div>
+                                            <span className="font-bold text-sm text-gray-900 dark:text-white block">Cash Tender</span>
+                                            <span className="text-[11px] text-gray-500 dark:text-slate-400 block mt-0.5">Physical currency counter settlement.</span>
+                                        </div>
+                                    </label>
+
+                                    {/* UPI */}
+                                    <label className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between space-y-3 ${restConfig.paymentMethods?.upi !== false ? 'bg-white dark:bg-slate-900 border-emerald-500 shadow-xs' : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 opacity-60'}`}>
+                                        <div className="flex items-center justify-between">
+                                            <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-600 flex items-center justify-center">
+                                                <QrCode size={18} />
+                                            </div>
+                                            <input 
+                                                type="checkbox"
+                                                checked={restConfig.paymentMethods?.upi !== false}
+                                                onChange={(e) => setRestConfig(prev => ({
+                                                    ...prev,
+                                                    paymentMethods: { ...prev.paymentMethods, upi: e.target.checked }
+                                                }))}
+                                                className="h-4 w-4 rounded text-emerald-600 focus:ring-emerald-500 accent-emerald-600"
+                                            />
+                                        </div>
+                                        <div>
+                                            <span className="font-bold text-sm text-gray-900 dark:text-white block">UPI / QR Code</span>
+                                            <span className="text-[11px] text-gray-500 dark:text-slate-400 block mt-0.5">Instant GPay, PhonePe, Paytm QR scans.</span>
+                                        </div>
+                                    </label>
+
+                                    {/* Card */}
+                                    <label className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between space-y-3 ${restConfig.paymentMethods?.card !== false ? 'bg-white dark:bg-slate-900 border-emerald-500 shadow-xs' : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 opacity-60'}`}>
+                                        <div className="flex items-center justify-between">
+                                            <div className="w-9 h-9 rounded-lg bg-purple-100 dark:bg-purple-950/60 text-purple-600 flex items-center justify-center">
+                                                <CreditCard size={18} />
+                                            </div>
+                                            <input 
+                                                type="checkbox"
+                                                checked={restConfig.paymentMethods?.card !== false}
+                                                onChange={(e) => setRestConfig(prev => ({
+                                                    ...prev,
+                                                    paymentMethods: { ...prev.paymentMethods, card: e.target.checked }
+                                                }))}
+                                                className="h-4 w-4 rounded text-emerald-600 focus:ring-emerald-500 accent-emerald-600"
+                                            />
+                                        </div>
+                                        <div>
+                                            <span className="font-bold text-sm text-gray-900 dark:text-white block">Credit / Debit Card</span>
+                                            <span className="text-[11px] text-gray-500 dark:text-slate-400 block mt-0.5">POS EDC swipe / chip terminal.</span>
+                                        </div>
+                                    </label>
+
+                                    {/* Online Payment Gateway */}
+                                    <label className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between space-y-3 ${restConfig.paymentMethods?.onlineGateway !== false ? 'bg-white dark:bg-slate-900 border-emerald-500 shadow-xs' : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 opacity-60'}`}>
+                                        <div className="flex items-center justify-between">
+                                            <div className="w-9 h-9 rounded-lg bg-teal-100 dark:bg-teal-950/60 text-teal-600 flex items-center justify-center">
+                                                <Zap size={18} />
+                                            </div>
+                                            <input 
+                                                type="checkbox"
+                                                checked={restConfig.paymentMethods?.onlineGateway !== false}
+                                                onChange={(e) => setRestConfig(prev => ({
+                                                    ...prev,
+                                                    paymentMethods: { ...prev.paymentMethods, onlineGateway: e.target.checked }
+                                                }))}
+                                                className="h-4 w-4 rounded text-emerald-600 focus:ring-emerald-500 accent-emerald-600"
+                                            />
+                                        </div>
+                                        <div>
+                                            <span className="font-bold text-sm text-gray-900 dark:text-white block">Online Gateway</span>
+                                            <span className="text-[11px] text-gray-500 dark:text-slate-400 block mt-0.5">Razorpay / Stripe customer mobile checkout.</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* Save Action Footer */}
+                            <div className="pt-6 border-t border-gray-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="text-xs text-gray-500 flex items-center gap-2">
+                                    <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
+                                    <span>Saved settings persist to your restaurant record and apply immediately across all staff dashboards.</span>
+                                </div>
+
+                                <div className="flex items-center gap-3 w-full sm:w-auto">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setRestConfig({
+                                                orderKitchen: { kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
+                                                waiterTips: { enabled: true, allowCustomerTips: true, tipPercentages: [5, 10, 15, 20], customTipAllowed: true },
+                                                qrOrdering: { enabled: true, allowSelfDineIn: true, allowWaiterOrdering: true },
+                                                paymentMethods: { cash: true, upi: true, card: true, onlineGateway: true },
+                                                setupWizardCompleted: true,
+                                                setupStep: 6
+                                            });
+                                            toast.success('Reset form to recommended settings');
+                                        }}
+                                        className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 font-bold text-xs hover:bg-gray-50 dark:hover:bg-slate-800 transition cursor-pointer"
+                                    >
+                                        Recommended Defaults
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleSaveRestaurantConfig}
+                                        disabled={savingConfig}
+                                        className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-sm shadow-md shadow-emerald-900/10 cursor-pointer disabled:opacity-70 flex-1 sm:flex-none"
+                                    >
+                                        {savingConfig ? (
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                        ) : (
+                                            <Save size={16} />
+                                        )}
+                                        Save Restaurant Settings
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ) : activeTab === 'pos-customization' ? (
                         <div className="space-y-8 min-w-0 pr-1.5 flex-1">
                             {/* Header Banner */}
                             <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-rose-950 text-white p-6 sm:p-7 rounded-2xl shadow-md border border-slate-800 relative overflow-hidden">

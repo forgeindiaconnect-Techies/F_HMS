@@ -3,15 +3,17 @@ import {
     ChefHat, Timer, CheckCircle, AlertTriangle, 
     Flame, AlertOctagon, Check, MessageSquare, 
     Sliders, Star, Plus, Trash2, LayoutGrid, Columns,
-    Search, Clock, ArrowRight, Utensils, Sparkles
+    Search, Clock, ArrowRight, Utensils, Sparkles, Printer, Receipt
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getApiUrl } from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
 import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
+import KOTPrintModal from '../../components/KOTPrintModal';
 
 const ChefDashboard = () => {
-    const { api, user } = useAuth();
+    const { api, user, restaurant } = useAuth();
     
     // Core State
     const [orders, setOrders] = useState([]);
@@ -27,6 +29,8 @@ const ChefDashboard = () => {
     const [newIngredient, setNewIngredient] = useState('');
     const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
     const [newTicketModalOrder, setNewTicketModalOrder] = useState(null);
+    const [printModalKOT, setPrintModalKOT] = useState(null);
+    const [autoPrintKOTEnabled, setAutoPrintKOTEnabled] = useState(() => localStorage.getItem('resto_chef_kot_autoprint') !== 'false');
     const seenTicketIdsRef = useRef(new Set());
     
     // Priorities and item completion checklists (local ticket overrides)
@@ -121,6 +125,9 @@ const ChefDashboard = () => {
                                 if (isPendingStatus && !seenTicketIdsRef.current.has(orderData._id)) {
                                     seenTicketIdsRef.current.add(orderData._id);
                                     setNewTicketModalOrder(orderData);
+                                    if (autoPrintKOTEnabled) {
+                                        autoPrintKitchenKOT(orderData);
+                                    }
 
                                     const ticketNum = String(orderData._id).substring(String(orderData._id).length - 5).toUpperCase();
 
@@ -223,6 +230,142 @@ const ChefDashboard = () => {
     const handleRemoveIngredient = (ing) => {
         setOutOfStock(outOfStock.filter(i => i !== ing));
         toast.success('Ingredient restored to active inventory!');
+    };
+
+    const toggleAutoPrintKOT = () => {
+        setAutoPrintKOTEnabled(prev => {
+            const next = !prev;
+            localStorage.setItem('resto_chef_kot_autoprint', String(next));
+            toast.success(next ? 'Auto-print KOT on new orders enabled' : 'Auto-print KOT disabled');
+            return next;
+        });
+    };
+
+    // Auto-Print 80mm Thermal KOT Slip via hidden iframe
+    const autoPrintKitchenKOT = (orderData) => {
+        if (!orderData) return;
+        const ticketNum = orderData._id ? String(orderData._id).slice(-5).toUpperCase() : 'NEW';
+        const kotNum = orderData.kotNumbers?.[0] || orderData.kots?.[0]?.kotNumber || `KOT-${ticketNum}`;
+
+        toast.success(`🖨️ Auto-Printed Kitchen KOT ${kotNum}${orderData.tableNumber ? ` (Table ${orderData.tableNumber})` : ''}`, {
+            id: `chef-autoprint-${orderData._id}`,
+            duration: 6000,
+            icon: '👨‍🍳'
+        });
+
+        const items = orderData.orderItems || [];
+        const itemsHtml = items.map(item => `
+            <div style="padding: 5px 0; border-bottom: 1px dashed #bbb;">
+                <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 15px;">
+                    <span>[${item.qty || item.quantity || 1}x] ${item.name}</span>
+                </div>
+                ${item.notes ? `<div style="font-size: 12px; font-weight: bold; margin-top: 2px;">*** NOTE: ${item.notes} ***</div>` : ''}
+            </div>
+        `).join('');
+
+        const printContent = `
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <title>${kotNum} - Kitchen Ticket</title>
+                    <style>
+                        @page { size: 80mm auto; margin: 4mm; }
+                        body {
+                            font-family: 'Courier New', Courier, monospace;
+                            width: 78mm;
+                            max-width: 78mm;
+                            margin: 0 auto;
+                            padding: 8px 4px;
+                            font-size: 13px;
+                            line-height: 1.3;
+                            color: #000;
+                        }
+                        .center { text-align: center; }
+                        .line { border-bottom: 2px dashed #000; margin: 8px 0; }
+                    </style>
+                </head>
+                <body>
+                    <div class="center">
+                        <h2 style="margin: 0; font-size: 18px; font-weight: 900;">*** KITCHEN ORDER TICKET ***</h2>
+                        <h3 style="margin: 4px 0; font-size: 17px; font-weight: 900;">${kotNum}</h3>
+                        <p style="margin: 2px 0; font-weight: bold; font-size: 13px;">Order #${ticketNum}</p>
+                        <p style="margin: 2px 0; font-weight: 900; font-size: 15px;">
+                            ${orderData.tableNumber ? `TABLE ${orderData.tableNumber}` : (orderData.orderType || 'DINE IN')}
+                        </p>
+                        ${orderData.customerName ? `<p style="margin: 2px 0;">Guest: ${orderData.customerName}</p>` : ''}
+                        <p style="margin: 2px 0; font-size: 11px;">Time: ${new Date().toLocaleTimeString()} | Date: ${new Date().toLocaleDateString()}</p>
+                    </div>
+                    <div class="line"></div>
+                    <div>
+                        ${itemsHtml}
+                    </div>
+                    <div class="line"></div>
+                    <div class="center" style="font-size: 11px; font-weight: bold;">
+                        Total Items: ${items.reduce((s, i) => s + (i.qty || i.quantity || 1), 0)}<br/>
+                        ${orderData.notes ? `Instructions: ${orderData.notes}<br/>` : ''}
+                        *** RUSH PREPARATION • KITCHEN ORDER ***
+                    </div>
+                </body>
+            </html>
+        `;
+
+        let printFrame = document.getElementById('chef-auto-print-frame');
+        if (!printFrame) {
+            printFrame = document.createElement('iframe');
+            printFrame.id = 'chef-auto-print-frame';
+            printFrame.style.position = 'fixed';
+            printFrame.style.right = '0';
+            printFrame.style.bottom = '0';
+            printFrame.style.width = '0';
+            printFrame.style.height = '0';
+            printFrame.style.border = '0';
+            document.body.appendChild(printFrame);
+        }
+        const frameDoc = printFrame.contentWindow.document;
+        frameDoc.open();
+        frameDoc.write(printContent);
+        frameDoc.close();
+        setTimeout(() => {
+            try {
+                printFrame.contentWindow.focus();
+                printFrame.contentWindow.print();
+            } catch (e) {
+                console.error('Kitchen auto print trigger error:', e);
+            }
+        }, 400);
+    };
+
+    // Print KOT Ticket Modal Trigger
+    const handlePrintOrderKOT = async (order) => {
+        try {
+            const res = await api.get(`/kot?orderId=${order._id}`).catch(() => null);
+            if (res && res.data && res.data.length > 0) {
+                setPrintModalKOT(res.data[0]);
+                return;
+            }
+        } catch (e) {}
+
+        const kotNum = order.kotNumbers?.[0] || `KOT-${order._id.substring(order._id.length - 4).toUpperCase()}`;
+        setPrintModalKOT({
+            _id: order._id,
+            kotNumber: kotNum,
+            orderId: order._id,
+            orderNumber: `#${order._id.substring(order._id.length - 5).toUpperCase()}`,
+            tableNumber: order.tableNumber || (order.orderType === 'Delivery' ? 'Delivery' : 'Counter'),
+            orderType: order.orderType || 'Dine In',
+            serviceType: order.serviceType,
+            customerName: order.customerName,
+            kitchenStation: selectedStation !== 'All' ? selectedStation.replace(/^[^\w]+/, '').trim() : 'Main Kitchen',
+            items: (order.orderItems || []).map(i => ({
+                name: i.name,
+                quantity: i.qty || i.quantity || 1,
+                notes: i.notes || ''
+            })),
+            notes: order.notes,
+            createdAt: order.createdAt || new Date().toISOString(),
+            restaurantName: user?.restaurantName || 'Restaurant',
+            branchName: user?.branchName || ''
+        });
     };
 
     // Priority Score Calculation
@@ -360,11 +503,61 @@ const ChefDashboard = () => {
         return 'bg-emerald-600 text-white border-emerald-400';
     };
 
+    if (restaurant?.restaurantConfig?.orderKitchen?.kdsEnabled === false) {
+        return (
+            <div className="w-full max-w-2xl mx-auto my-12 p-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 text-center space-y-4 shadow-sm">
+                <div className="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 flex items-center justify-center mx-auto">
+                    <AlertTriangle size={32} />
+                </div>
+                <h2 className="text-xl font-black text-slate-900 dark:text-white">Kitchen Display System (KDS) Disabled</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+                    The digital Kitchen Display System is currently disabled in your Restaurant Settings. Orders are processed via physical printed KOT tickets or cashier floor tickets.
+                </p>
+                {restaurant?.restaurantConfig?.orderKitchen?.kotEnabled !== false && (
+                    <Link to="/chef/kot" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm shadow-md transition cursor-pointer">
+                        <Receipt size={16} /> Open Kitchen Order Tickets (KOT)
+                    </Link>
+                )}
+            </div>
+        );
+    }
+
     return (
         <div className="w-full max-w-[1700px] mx-auto font-sans space-y-4 sm:space-y-6 pb-24 text-slate-900 dark:text-slate-100 transition-colors">
             
-            {/* Shift Attendance Clock In / Clock Out Status Bar */}
-            <StaffShiftClockWidget userRole="Head Chef / Kitchen Lead" userName="Master Chef" />
+            {/* Sleek Kitchen Shift & Station Control Strip */}
+            <div className="bg-slate-900 text-white px-4 py-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-md border border-slate-800 shrink-0">
+                <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span className="text-xs font-black tracking-wide uppercase text-slate-200">Main Kitchen Display</span>
+                        <span className="text-slate-600">|</span>
+                        <span className="text-xs text-slate-400 font-medium truncate max-w-[200px]">Lead: {user?.name || 'Master Chef'}</span>
+                    </div>
+                    {/* Compact Shift Attendance Widget */}
+                    <StaffShiftClockWidget compact={true} userRole="Head Chef / Kitchen Lead" userName={user?.name || "Master Chef"} />
+                </div>
+
+                <div className="flex items-center gap-2.5 flex-wrap">
+                    <div className="flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-xl text-xs border border-slate-700/60 font-semibold shadow-xs">
+                        <span className="text-slate-400">Active Kitchen Tickets:</span>
+                        <span className="font-mono font-black text-amber-400">{orders.filter(o => o.status !== 'Served' && o.status !== 'Completed').length}</span>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={toggleAutoPrintKOT}
+                        className={`text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer border ${
+                            autoPrintKOTEnabled 
+                                ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 hover:bg-amber-500/25' 
+                                : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-750'
+                        }`}
+                        title="Click to toggle automatic thermal KOT printing on incoming orders"
+                    >
+                        <Printer size={13} className={autoPrintKOTEnabled ? 'text-amber-400' : 'text-slate-400'} />
+                        <span>KOT Auto-Print: {autoPrintKOTEnabled ? 'ON' : 'OFF'}</span>
+                    </button>
+                </div>
+            </div>
 
             {/* 1. Live Ingredient 86-List Warning Banner */}
             {outOfStock.length > 0 && (
@@ -422,6 +615,29 @@ const ChefDashboard = () => {
                             <p className="text-slate-500 dark:text-slate-400 text-[11px] sm:text-xs md:text-sm font-semibold mt-0.5 line-clamp-2 sm:line-clamp-none">
                                 Real-time order routing, cooking timers, priority queueing, and station management.
                             </p>
+                            <div className="mt-2.5 flex items-center gap-2 flex-wrap">
+                                <Link 
+                                    to="/chef/kot"
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-extrabold text-xs shadow-md shadow-orange-600/20 transition-all active:scale-95"
+                                >
+                                    <Receipt size={14} />
+                                    <span>Kitchen Order Tickets (KOT)</span>
+                                    <ArrowRight size={12} />
+                                </Link>
+                                <button
+                                    type="button"
+                                    onClick={toggleAutoPrintKOT}
+                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-extrabold text-xs transition-all border cursor-pointer active:scale-95 ${
+                                        autoPrintKOTEnabled
+                                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-700'
+                                            : 'bg-slate-100 text-slate-500 border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
+                                    }`}
+                                    title="Click to toggle automatic thermal printing of KOTs when new orders arrive"
+                                >
+                                    <Printer size={13} className={autoPrintKOTEnabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'} />
+                                    <span>Auto-Print KOT: {autoPrintKOTEnabled ? 'ON' : 'OFF'}</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -606,8 +822,13 @@ const ChefDashboard = () => {
                                         isPriority ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white' : 'bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-800'
                                     }`}>
                                         <div className="space-y-1 min-w-0 pr-1.5 flex-1">
-                                            <div className="flex items-center gap-1.5 sm:gap-2">
+                                            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                                                 <span className="font-mono font-black text-base sm:text-lg text-slate-900 dark:text-white">#{order._id.substring(order._id.length - 5).toUpperCase()}</span>
+                                                {order.kotNumbers && order.kotNumbers.length > 0 && (
+                                                    <span className="font-mono font-extrabold text-[11px] bg-slate-900 dark:bg-white text-white dark:text-slate-950 px-2 py-0.5 rounded-lg shadow-xs">
+                                                        {order.kotNumbers.join(', ')}
+                                                    </span>
+                                                )}
                                                 <button 
                                                     onClick={() => togglePriority(order._id)}
                                                     className={`p-1 sm:p-1.5 rounded-lg transition-colors cursor-pointer ${
@@ -616,6 +837,13 @@ const ChefDashboard = () => {
                                                     title="Pin as VIP Priority"
                                                 >
                                                     <Star size={15} fill={isStarred ? "currentColor" : "none"} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handlePrintOrderKOT(order)}
+                                                    className="p-1 sm:p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                                                    title="Print 80mm KOT Ticket"
+                                                >
+                                                    <Printer size={15} />
                                                 </button>
                                             </div>
 
@@ -812,11 +1040,27 @@ const ChefDashboard = () => {
                                             const isSelf = order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup';
                                             return (
                                                 <div key={order._id} className="bg-slate-50 dark:bg-slate-950/80 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200 dark:border-slate-800 space-y-2.5 sm:space-y-3 shadow-sm">
-                                                    <div className="flex justify-between items-center">
-                                                        <span className="font-mono font-black text-xs sm:text-sm text-slate-900 dark:text-white">#{order._id.substring(order._id.length - 5).toUpperCase()}</span>
-                                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${getTimerColorClass(timeDiffMinutes)}`}>
-                                                            {timeDiffMinutes}m
-                                                        </span>
+                                                    <div className="flex justify-between items-center gap-1.5">
+                                                        <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+                                                            <span className="font-mono font-black text-xs sm:text-sm text-slate-900 dark:text-white">#{order._id.substring(order._id.length - 5).toUpperCase()}</span>
+                                                            {order.kotNumbers && order.kotNumbers.length > 0 && (
+                                                                <span className="font-mono font-extrabold text-[10px] bg-slate-900 dark:bg-white text-white dark:text-slate-950 px-1.5 py-0.5 rounded shadow-xs">
+                                                                    {order.kotNumbers[0]}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex items-center gap-1 shrink-0">
+                                                            <button
+                                                                onClick={() => handlePrintOrderKOT(order)}
+                                                                className="p-1 rounded text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer"
+                                                                title="Print KOT Ticket"
+                                                            >
+                                                                <Printer size={13} />
+                                                            </button>
+                                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${getTimerColorClass(timeDiffMinutes)}`}>
+                                                                {timeDiffMinutes}m
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                     
                                                     <div className="space-y-1 min-w-0 pr-1 flex-1">
@@ -985,6 +1229,13 @@ const ChefDashboard = () => {
                     </div>
                 </div>
             )}
+
+            {/* 6. Thermal KOT Print Preview Modal */}
+            <KOTPrintModal
+                isOpen={!!printModalKOT}
+                onClose={() => setPrintModalKOT(null)}
+                kot={printModalKOT}
+            />
         </div>
     );
 };

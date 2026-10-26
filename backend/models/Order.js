@@ -88,6 +88,18 @@ const orderSchema = new mongoose.Schema({
         required: true,
         default: 0.0,
     },
+    discountAmount: {
+        type: Number,
+        default: 0.0,
+    },
+    tipAmount: {
+        type: Number,
+        default: 0.0,
+    },
+    waiter: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
     isPaid: {
         type: Boolean,
         required: true,
@@ -175,7 +187,14 @@ const orderSchema = new mongoose.Schema({
             message: { type: String, required: true },
             timestamp: { type: Date, default: Date.now }
         }
-    ]
+    ],
+    kotNumbers: [{
+        type: String
+    }],
+    kots: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'KOT'
+    }]
 }, { timestamps: true });
 
 const Order = mongoose.model('Order', orderSchema);

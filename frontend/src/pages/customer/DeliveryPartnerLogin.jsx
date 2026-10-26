@@ -125,7 +125,7 @@ const DeliveryPartnerLogin = () => {
                                 maxLength="4"
                                 value={otp}
                                 onChange={(e) => setOtp(e.target.value)}
-                                placeholder="1234"
+                                placeholder="••••"
                                 className="w-32 mx-auto text-center tracking-[1em] text-lg font-black py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100 transition-all text-emerald-600"
                             />
                         </div>

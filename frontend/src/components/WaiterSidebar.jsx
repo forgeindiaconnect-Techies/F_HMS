@@ -44,6 +44,8 @@ const WaiterSidebar = () => {
         navigate('/login');
     };
 
+    const tipsEnabled = restaurant?.restaurantConfig?.waiterTips?.enabled !== false;
+
     const navGroups = [
         {
             title: 'Floor Operations',
@@ -66,7 +68,7 @@ const WaiterSidebar = () => {
             title: 'Shift & Performance',
             items: [
                 { name: 'Today\'s Tasks', path: '/waiter/tasks', icon: CheckSquare },
-                { name: 'Performance & Tips', path: '/waiter/performance', icon: TrendingUp },
+                { name: tipsEnabled ? 'Performance & Tips' : 'Shift Performance', path: '/waiter/performance', icon: TrendingUp },
                 { name: 'Shift Status & Clock-In', path: '/waiter/shift-status', icon: UserCheck },
             ]
         },

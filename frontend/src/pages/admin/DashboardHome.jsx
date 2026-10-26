@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
-import { TrendingUp, Users, ShoppingBag, DollarSign, Phone, MessageCircle, Bell, BarChart3, ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { TrendingUp, Users, ShoppingBag, DollarSign, Sparkles, ArrowRight } from 'lucide-react';
 import StatCard from '../../components/StatCard';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { useAuth } from '../../context/AuthContext';
-import { useWhatsAppNotifications } from '../../context/WhatsAppNotificationContext';
 
 const DashboardHome = () => {
     const { api, restaurant } = useAuth();
     const isCustomActive = restaurant?.billingConfig?.isCustomBillingActive === true;
     const customModules = restaurant?.billingConfig?.modules || {};
-    const { ownerPhone, isSyncActive, alerts, unreadCount, setIsDrawerOpen, triggerTestNotification, dispatchDailyClosingSummary } = useWhatsAppNotifications();
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState(null);
 
@@ -78,6 +77,35 @@ const DashboardHome = () => {
                 <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Welcome back! Manage your overall business operations, sales, staff, and customer orders.</p>
             </div>
 
+            {/* Initial Restaurant Setup Wizard Prompt */}
+            {restaurant?.restaurantConfig?.setupWizardCompleted !== true && (
+                <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-slate-900 text-white rounded-2xl p-5 shadow-lg border border-emerald-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center shrink-0 text-white border border-white/20">
+                            <Sparkles size={24} className="text-emerald-300 animate-pulse" />
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h4 className="font-black text-white text-base">Complete Your Restaurant Setup</h4>
+                                <span className="px-2 py-0.5 rounded-full bg-emerald-400/20 text-emerald-200 border border-emerald-400/30 text-[10px] font-black uppercase tracking-wider">
+                                    6-Step Guided Flow
+                                </span>
+                            </div>
+                            <p className="text-xs text-emerald-100 mt-1 max-w-xl leading-relaxed">
+                                Configure Kitchen KOT &amp; KDS, staff assignments, customer QR table modes, waiter tips, and accepted checkout tenders in a simple guided wizard.
+                            </p>
+                        </div>
+                    </div>
+                    <Link
+                        to="/admin/setup-wizard"
+                        className="px-5 py-2.5 rounded-xl bg-white hover:bg-emerald-50 text-slate-950 font-black text-xs transition-all flex items-center gap-2 shadow-md shrink-0 cursor-pointer"
+                    >
+                        <span>Launch Setup Wizard</span>
+                        <ArrowRight size={14} />
+                    </Link>
+                </div>
+            )}
+
             {/* Custom Billing Configuration Banner */}
             {isCustomActive && (
                 <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-transparent border border-emerald-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
@@ -141,93 +169,6 @@ const DashboardHome = () => {
                 />
             </div>
 
-            {/* WhatsApp Real-Time Business Pulse & Instant Alerts Widget */}
-            <div className="bg-gradient-to-r from-[#075E54] via-[#0A433B] to-[#0A192F] rounded-3xl p-6 text-white shadow-xl border border-emerald-500/30 relative overflow-hidden">
-                <div 
-                    className="absolute inset-0 opacity-10 pointer-events-none"
-                    style={{
-                        backgroundImage: 'radial-gradient(#25D366 1px, transparent 1px)',
-                        backgroundSize: '16px 16px'
-                    }}
-                />
-
-                <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                    {/* Left: Info & Status */}
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                            <span className="px-3 py-1 rounded-full bg-[#25D366] text-white font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
-                                <Phone size={13} className="fill-white" />
-                                <span>WhatsApp Live Gateway</span>
-                            </span>
-                            <span className="flex items-center gap-1 text-emerald-300 text-xs font-bold">
-                                <span className={`w-2 h-2 rounded-full ${isSyncActive ? 'bg-emerald-400 animate-ping' : 'bg-slate-400'}`} />
-                                {isSyncActive ? 'Bot Connected & Syncing' : 'Sync Paused'}
-                            </span>
-                        </div>
-
-                        <div>
-                            <h3 className="text-xl sm:text-2xl font-black tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                                Owner Real-Time Alerts & Automated Dispatch
-                            </h3>
-                            <p className="text-emerald-100/90 text-xs sm:text-sm font-medium mt-1">
-                                Registered Mobile: <span className="font-bold underline text-white font-mono">{ownerPhone}</span> • Auto-dispatching live orders, KDS delays, low stock warnings, and daily P&L statements.
-                            </p>
-                        </div>
-
-                        {/* Recent Alerts Pill Ticker */}
-                        <div className="flex items-center gap-2 pt-1 flex-wrap">
-                            <span className="text-[11px] text-emerald-300 font-bold uppercase tracking-wider">Latest Bot Pings:</span>
-                            {alerts.slice(0, 2).map((alt) => (
-                                <span
-                                    key={alt.id}
-                                    onClick={() => setIsDrawerOpen(true)}
-                                    className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-[11px] font-semibold text-emerald-100 flex items-center gap-1.5 cursor-pointer transition-colors"
-                                    title="Click to view full message"
-                                >
-                                    <span className="text-emerald-400 font-bold">✓✓</span>
-                                    <span className="line-clamp-1">{alt.title}</span>
-                                    <span className="text-[10px] text-emerald-300/70">({alt.time})</span>
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Right: Action Buttons */}
-                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 shrink-0">
-                        <button
-                            type="button"
-                            onClick={() => triggerTestNotification()}
-                            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 text-white font-black text-xs flex items-center justify-center gap-2 transition-transform active:scale-95 cursor-pointer shadow-xs"
-                        >
-                            <Bell size={14} className="text-emerald-300" />
-                            <span>Test Live Ping</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => dispatchDailyClosingSummary({ revenue: overview.totalRevenue || 124917, orders: overview.totalOrders || 342 })}
-                            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-700/80 hover:bg-emerald-700 border border-emerald-400/40 text-white font-black text-xs flex items-center justify-center gap-2 transition-transform active:scale-95 cursor-pointer shadow-xs"
-                        >
-                            <BarChart3 size={14} />
-                            <span>Dispatch P&L to WhatsApp</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => setIsDrawerOpen(true)}
-                            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40 transition-transform active:scale-95 cursor-pointer"
-                        >
-                            <MessageCircle size={15} />
-                            <span>Open WhatsApp Hub</span>
-                            {unreadCount > 0 && (
-                                <span className="bg-white text-emerald-800 text-[10px] font-black px-1.5 py-0.2 rounded-full">
-                                    {unreadCount}
-                                </span>
-                            )}
-                        </button>
-                    </div>
-                </div>
-            </div>
 
             {/* QR Ordering Analytics Section */}
             {data?.qrAnalytics && (!isCustomActive || customModules.tableManagement !== false) && (

@@ -36,32 +36,12 @@ export const sendOtp = async (req, res) => {
         });
         
         if (!user) {
-            if (last10Digits === '9876543210' || last10Digits === '8888888888' || last10Digits === '1234567890') {
-                console.log(`[Auto-Seed Demo Delivery Partner] Auto-creating account for ${phoneNumber}`);
-                let demoRest = await Restaurant.findOne({ name: 'Pizza Palace' }) || await Restaurant.findOne({ isDemo: true });
-                user = await User.create({
-                    name: 'Speedy Express Driver',
-                    email: `delivery_${last10Digits}@pizzapalace.com`,
-                    phoneNumber: phoneNumber,
-                    password: 'password123',
-                    role: 'DeliveryPartner',
-                    restaurantId: demoRest ? demoRest._id : undefined
-                });
-
-                await DeliveryPartner.create({
-                    userId: user._id,
-                    restaurantId: demoRest ? demoRest._id : undefined,
-                    vehicleType: 'Bike',
-                    status: 'Available'
-                });
-            } else {
-                return res.status(404).json({ message: 'Delivery partner not registered. Please contact restaurant admin.' });
-            }
+            return res.status(404).json({ message: 'Delivery partner not registered. Please contact restaurant admin.' });
         }
 
-        // Simulate sending OTP (always 1234 for testing convenience)
+        // Simulate sending OTP
         console.log(`[OTP Sent] To: ${phoneNumber} | OTP: 1234`);
-        res.json({ message: 'OTP sent successfully (Simulated: Use code 1234)', phoneNumber });
+        res.json({ message: 'OTP sent successfully', phoneNumber });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -90,25 +70,7 @@ export const verifyOtp = async (req, res) => {
         });
         
         if (!user) {
-            if (last10Digits === '9876543210' || last10Digits === '8888888888' || last10Digits === '1234567890') {
-                let demoRest = await Restaurant.findOne({ name: 'Pizza Palace' }) || await Restaurant.findOne({ isDemo: true });
-                user = await User.create({
-                    name: 'Speedy Express Driver',
-                    email: `delivery_${last10Digits}@pizzapalace.com`,
-                    phoneNumber: phoneNumber,
-                    password: 'password123',
-                    role: 'DeliveryPartner',
-                    restaurantId: demoRest ? demoRest._id : undefined
-                });
-                await DeliveryPartner.create({
-                    userId: user._id,
-                    restaurantId: demoRest ? demoRest._id : undefined,
-                    vehicleType: 'Bike',
-                    status: 'Available'
-                });
-            } else {
-                return res.status(404).json({ message: 'Delivery partner not found' });
-            }
+            return res.status(404).json({ message: 'Delivery partner not found' });
         }
 
         const partnerProfile = await DeliveryPartner.findOne({ userId: user._id });

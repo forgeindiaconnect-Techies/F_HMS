@@ -30355,16 +30355,16 @@ var require_router = __commonJS({
         return new Router(options);
       }
       const opts = options || {};
-      function router27(req, res, next) {
-        router27.handle(req, res, next);
+      function router30(req, res, next) {
+        router30.handle(req, res, next);
       }
-      Object.setPrototypeOf(router27, this);
-      router27.caseSensitive = opts.caseSensitive;
-      router27.mergeParams = opts.mergeParams;
-      router27.params = {};
-      router27.strict = opts.strict;
-      router27.stack = [];
-      return router27;
+      Object.setPrototypeOf(router30, this);
+      router30.caseSensitive = opts.caseSensitive;
+      router30.mergeParams = opts.mergeParams;
+      router30.params = {};
+      router30.strict = opts.strict;
+      router30.stack = [];
+      return router30;
     }
     Router.prototype = function() {
     };
@@ -30752,7 +30752,7 @@ var require_application = __commonJS({
     var app2 = exports2 = module2.exports = {};
     var trustProxyDefaultSymbol = "@@symbol:trust_proxy_default";
     app2.init = function init() {
-      var router27 = null;
+      var router30 = null;
       this.cache = /* @__PURE__ */ Object.create(null);
       this.engines = /* @__PURE__ */ Object.create(null);
       this.settings = /* @__PURE__ */ Object.create(null);
@@ -30761,13 +30761,13 @@ var require_application = __commonJS({
         configurable: true,
         enumerable: true,
         get: function getrouter() {
-          if (router27 === null) {
-            router27 = new Router({
+          if (router30 === null) {
+            router30 = new Router({
               caseSensitive: this.enabled("case sensitive routing"),
               strict: this.enabled("strict routing")
             });
           }
-          return router27;
+          return router30;
         }
       });
     };
@@ -30838,15 +30838,15 @@ var require_application = __commonJS({
       if (fns.length === 0) {
         throw new TypeError("app.use() requires a middleware function");
       }
-      var router27 = this.router;
+      var router30 = this.router;
       fns.forEach(function(fn2) {
         if (!fn2 || !fn2.handle || !fn2.set) {
-          return router27.use(path6, fn2);
+          return router30.use(path6, fn2);
         }
         debug(".use app under %s", path6);
         fn2.mountpath = path6;
         fn2.parent = this;
-        router27.use(path6, function mounted_app(req, res, next) {
+        router30.use(path6, function mounted_app(req, res, next) {
           var orig = req.app;
           fn2.handle(req, res, function(err) {
             Object.setPrototypeOf(req, orig.request);
@@ -106010,10 +106010,10 @@ var require_connection2 = __commonJS({
         });
       });
     };
-    async function _wrapUserTransaction(fn, session, mongoose39) {
+    async function _wrapUserTransaction(fn, session, mongoose53) {
       try {
-        const res = mongoose39.transactionAsyncLocalStorage == null ? await fn(session) : await new Promise((resolve) => {
-          mongoose39.transactionAsyncLocalStorage.run(
+        const res = mongoose53.transactionAsyncLocalStorage == null ? await fn(session) : await new Promise((resolve) => {
+          mongoose53.transactionAsyncLocalStorage.run(
             { session },
             () => resolve(fn(session))
           );
@@ -118500,7 +118500,7 @@ var require_mongoose = __commonJS({
     Mongoose.prototype.ConnectionStates = STATES;
     Mongoose.prototype.driver = driver;
     Mongoose.prototype.setDriver = function setDriver(driver2) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose39;
+      const _mongoose = this instanceof Mongoose ? this : mongoose53;
       if (_mongoose.__driver === driver2) {
         return _mongoose;
       }
@@ -118518,7 +118518,7 @@ var require_mongoose = __commonJS({
         }
       }
       if (driver2.SchemaTypes != null) {
-        Object.assign(mongoose39.Schema.Types, driver2.SchemaTypes);
+        Object.assign(mongoose53.Schema.Types, driver2.SchemaTypes);
       }
       const Connection = driver2.Connection;
       const oldDefaultConnection = _mongoose.connections[0];
@@ -118536,7 +118536,7 @@ var require_mongoose = __commonJS({
       return _mongoose;
     };
     Mongoose.prototype.set = function getsetOptions(key, value) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose39;
+      const _mongoose = this instanceof Mongoose ? this : mongoose53;
       if (arguments.length === 1 && typeof key !== "object") {
         if (VALID_OPTIONS.indexOf(key) === -1) {
           const error2 = new SetOptionError();
@@ -118597,7 +118597,7 @@ var require_mongoose = __commonJS({
     };
     Mongoose.prototype.get = Mongoose.prototype.set;
     Mongoose.prototype.createConnection = function createConnection(uri, options) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose39;
+      const _mongoose = this instanceof Mongoose ? this : mongoose53;
       const Connection = _mongoose.__driver.Connection;
       const conn = new Connection(_mongoose);
       _mongoose.connections.push(conn);
@@ -118612,7 +118612,7 @@ var require_mongoose = __commonJS({
       if (typeof options === "function" || arguments.length >= 3 && typeof arguments[2] === "function") {
         throw new MongooseError("Mongoose.prototype.connect() no longer accepts a callback");
       }
-      const _mongoose = this instanceof Mongoose ? this : mongoose39;
+      const _mongoose = this instanceof Mongoose ? this : mongoose53;
       if (_mongoose.connection == null) {
         _createDefaultConnection(_mongoose);
       }
@@ -118623,7 +118623,7 @@ var require_mongoose = __commonJS({
       if (arguments.length >= 1 && typeof arguments[0] === "function") {
         throw new MongooseError("Mongoose.prototype.disconnect() no longer accepts a callback");
       }
-      const _mongoose = this instanceof Mongoose ? this : mongoose39;
+      const _mongoose = this instanceof Mongoose ? this : mongoose53;
       const remaining = _mongoose.connections.length;
       if (remaining <= 0) {
         return;
@@ -118631,18 +118631,18 @@ var require_mongoose = __commonJS({
       await Promise.all(_mongoose.connections.map((conn) => conn.close()));
     };
     Mongoose.prototype.startSession = function startSession() {
-      const _mongoose = this instanceof Mongoose ? this : mongoose39;
+      const _mongoose = this instanceof Mongoose ? this : mongoose53;
       return _mongoose.connection.startSession.apply(_mongoose.connection, arguments);
     };
     Mongoose.prototype.pluralize = function pluralize(fn) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose39;
+      const _mongoose = this instanceof Mongoose ? this : mongoose53;
       if (arguments.length > 0) {
         _mongoose._pluralize = fn;
       }
       return _mongoose._pluralize;
     };
     Mongoose.prototype.model = function model(name, schema, collection, options) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose39;
+      const _mongoose = this instanceof Mongoose ? this : mongoose53;
       if (typeof schema === "string") {
         collection = schema;
         schema = false;
@@ -118690,7 +118690,7 @@ var require_mongoose = __commonJS({
       return model2;
     };
     Mongoose.prototype._model = function _model(name, schema, collection, options) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose39;
+      const _mongoose = this instanceof Mongoose ? this : mongoose53;
       let model;
       if (typeof name === "function") {
         model = name;
@@ -118729,25 +118729,25 @@ var require_mongoose = __commonJS({
       return model;
     };
     Mongoose.prototype.deleteModel = function deleteModel(name) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose39;
+      const _mongoose = this instanceof Mongoose ? this : mongoose53;
       _mongoose.connection.deleteModel(name);
       delete _mongoose.models[name];
       return _mongoose;
     };
     Mongoose.prototype.modelNames = function modelNames() {
-      const _mongoose = this instanceof Mongoose ? this : mongoose39;
+      const _mongoose = this instanceof Mongoose ? this : mongoose53;
       const names = Object.keys(_mongoose.models);
       return names;
     };
     Mongoose.prototype._applyPlugins = function _applyPlugins(schema, options) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose39;
+      const _mongoose = this instanceof Mongoose ? this : mongoose53;
       options = options || {};
       options.applyPluginsToDiscriminators = _mongoose.options && _mongoose.options.applyPluginsToDiscriminators || false;
       options.applyPluginsToChildSchemas = typeof (_mongoose.options && _mongoose.options.applyPluginsToChildSchemas) === "boolean" ? _mongoose.options.applyPluginsToChildSchemas : true;
       applyPlugins(schema, _mongoose.plugins, options, "$globalPluginsApplied");
     };
     Mongoose.prototype.plugin = function plugin(fn, opts) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose39;
+      const _mongoose = this instanceof Mongoose ? this : mongoose53;
       _mongoose.plugins.push([fn, opts]);
       return _mongoose;
     };
@@ -118797,14 +118797,14 @@ var require_mongoose = __commonJS({
     Mongoose.prototype.DocumentProvider = require_documentProvider();
     Mongoose.prototype.ObjectId = SchemaTypes.ObjectId;
     Mongoose.prototype.isValidObjectId = function isValidObjectId(v) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose39;
+      const _mongoose = this instanceof Mongoose ? this : mongoose53;
       return _mongoose.Types.ObjectId.isValid(v);
     };
     Mongoose.prototype.isObjectIdOrHexString = function isObjectIdOrHexString(v) {
       return isBsonType(v, "ObjectId") || typeof v === "string" && objectIdHexRegexp.test(v);
     };
     Mongoose.prototype.syncIndexes = function syncIndexes(options) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose39;
+      const _mongoose = this instanceof Mongoose ? this : mongoose53;
       return _mongoose.connection.syncIndexes(options);
     };
     Mongoose.prototype.Decimal128 = SchemaTypes.Decimal128;
@@ -118824,15 +118824,15 @@ var require_mongoose = __commonJS({
     Mongoose.prototype.skipMiddlewareFunction = Kareem.skipWrappedFunction;
     Mongoose.prototype.overwriteMiddlewareResult = Kareem.overwriteResult;
     Mongoose.prototype.omitUndefined = require_omitUndefined();
-    function _createDefaultConnection(mongoose40) {
-      if (mongoose40.connection) {
+    function _createDefaultConnection(mongoose54) {
+      if (mongoose54.connection) {
         return;
       }
-      const conn = mongoose40.createConnection();
+      const conn = mongoose54.createConnection();
       conn[defaultConnectionSymbol] = true;
-      conn.models = mongoose40.models;
+      conn.models = mongoose54.models;
     }
-    var mongoose39 = module2.exports = exports2 = new Mongoose({
+    var mongoose53 = module2.exports = exports2 = new Mongoose({
       [defaultMongooseSymbol]: true
     });
   }
@@ -118844,10 +118844,10 @@ var require_lib9 = __commonJS({
     "use strict";
     var mongodbDriver = require_node_mongodb_native();
     require_driver().set(mongodbDriver);
-    var mongoose39 = require_mongoose();
-    mongoose39.setDriver(mongodbDriver);
-    mongoose39.Mongoose.prototype.mongo = require_lib6();
-    module2.exports = mongoose39;
+    var mongoose53 = require_mongoose();
+    mongoose53.setDriver(mongodbDriver);
+    mongoose53.Mongoose.prototype.mongo = require_lib6();
+    module2.exports = mongoose53;
   }
 });
 
@@ -118855,55 +118855,55 @@ var require_lib9 = __commonJS({
 var require_mongoose2 = __commonJS({
   "node_modules/mongoose/index.js"(exports2, module2) {
     "use strict";
-    var mongoose39 = require_lib9();
-    module2.exports = mongoose39;
-    module2.exports.default = mongoose39;
-    module2.exports.mongoose = mongoose39;
-    module2.exports.cast = mongoose39.cast;
-    module2.exports.STATES = mongoose39.STATES;
-    module2.exports.setDriver = mongoose39.setDriver;
-    module2.exports.set = mongoose39.set;
-    module2.exports.get = mongoose39.get;
-    module2.exports.createConnection = mongoose39.createConnection;
-    module2.exports.connect = mongoose39.connect;
-    module2.exports.disconnect = mongoose39.disconnect;
-    module2.exports.startSession = mongoose39.startSession;
-    module2.exports.pluralize = mongoose39.pluralize;
-    module2.exports.model = mongoose39.model;
-    module2.exports.deleteModel = mongoose39.deleteModel;
-    module2.exports.modelNames = mongoose39.modelNames;
-    module2.exports.plugin = mongoose39.plugin;
-    module2.exports.connections = mongoose39.connections;
-    module2.exports.version = mongoose39.version;
-    module2.exports.Aggregate = mongoose39.Aggregate;
-    module2.exports.Mongoose = mongoose39.Mongoose;
-    module2.exports.Schema = mongoose39.Schema;
-    module2.exports.SchemaType = mongoose39.SchemaType;
-    module2.exports.SchemaTypes = mongoose39.SchemaTypes;
-    module2.exports.VirtualType = mongoose39.VirtualType;
-    module2.exports.Types = mongoose39.Types;
-    module2.exports.Query = mongoose39.Query;
-    module2.exports.Model = mongoose39.Model;
-    module2.exports.Document = mongoose39.Document;
-    module2.exports.ObjectId = mongoose39.ObjectId;
-    module2.exports.isValidObjectId = mongoose39.isValidObjectId;
-    module2.exports.isObjectIdOrHexString = mongoose39.isObjectIdOrHexString;
-    module2.exports.syncIndexes = mongoose39.syncIndexes;
-    module2.exports.Decimal128 = mongoose39.Decimal128;
-    module2.exports.Mixed = mongoose39.Mixed;
-    module2.exports.Date = mongoose39.Date;
-    module2.exports.Number = mongoose39.Number;
-    module2.exports.Error = mongoose39.Error;
-    module2.exports.MongooseError = mongoose39.MongooseError;
-    module2.exports.now = mongoose39.now;
-    module2.exports.CastError = mongoose39.CastError;
-    module2.exports.SchemaTypeOptions = mongoose39.SchemaTypeOptions;
-    module2.exports.mongo = mongoose39.mongo;
-    module2.exports.mquery = mongoose39.mquery;
-    module2.exports.sanitizeFilter = mongoose39.sanitizeFilter;
-    module2.exports.trusted = mongoose39.trusted;
-    module2.exports.skipMiddlewareFunction = mongoose39.skipMiddlewareFunction;
-    module2.exports.overwriteMiddlewareResult = mongoose39.overwriteMiddlewareResult;
+    var mongoose53 = require_lib9();
+    module2.exports = mongoose53;
+    module2.exports.default = mongoose53;
+    module2.exports.mongoose = mongoose53;
+    module2.exports.cast = mongoose53.cast;
+    module2.exports.STATES = mongoose53.STATES;
+    module2.exports.setDriver = mongoose53.setDriver;
+    module2.exports.set = mongoose53.set;
+    module2.exports.get = mongoose53.get;
+    module2.exports.createConnection = mongoose53.createConnection;
+    module2.exports.connect = mongoose53.connect;
+    module2.exports.disconnect = mongoose53.disconnect;
+    module2.exports.startSession = mongoose53.startSession;
+    module2.exports.pluralize = mongoose53.pluralize;
+    module2.exports.model = mongoose53.model;
+    module2.exports.deleteModel = mongoose53.deleteModel;
+    module2.exports.modelNames = mongoose53.modelNames;
+    module2.exports.plugin = mongoose53.plugin;
+    module2.exports.connections = mongoose53.connections;
+    module2.exports.version = mongoose53.version;
+    module2.exports.Aggregate = mongoose53.Aggregate;
+    module2.exports.Mongoose = mongoose53.Mongoose;
+    module2.exports.Schema = mongoose53.Schema;
+    module2.exports.SchemaType = mongoose53.SchemaType;
+    module2.exports.SchemaTypes = mongoose53.SchemaTypes;
+    module2.exports.VirtualType = mongoose53.VirtualType;
+    module2.exports.Types = mongoose53.Types;
+    module2.exports.Query = mongoose53.Query;
+    module2.exports.Model = mongoose53.Model;
+    module2.exports.Document = mongoose53.Document;
+    module2.exports.ObjectId = mongoose53.ObjectId;
+    module2.exports.isValidObjectId = mongoose53.isValidObjectId;
+    module2.exports.isObjectIdOrHexString = mongoose53.isObjectIdOrHexString;
+    module2.exports.syncIndexes = mongoose53.syncIndexes;
+    module2.exports.Decimal128 = mongoose53.Decimal128;
+    module2.exports.Mixed = mongoose53.Mixed;
+    module2.exports.Date = mongoose53.Date;
+    module2.exports.Number = mongoose53.Number;
+    module2.exports.Error = mongoose53.Error;
+    module2.exports.MongooseError = mongoose53.MongooseError;
+    module2.exports.now = mongoose53.now;
+    module2.exports.CastError = mongoose53.CastError;
+    module2.exports.SchemaTypeOptions = mongoose53.SchemaTypeOptions;
+    module2.exports.mongo = mongoose53.mongo;
+    module2.exports.mquery = mongoose53.mquery;
+    module2.exports.sanitizeFilter = mongoose53.sanitizeFilter;
+    module2.exports.trusted = mongoose53.trusted;
+    module2.exports.skipMiddlewareFunction = mongoose53.skipMiddlewareFunction;
+    module2.exports.overwriteMiddlewareResult = mongoose53.overwriteMiddlewareResult;
   }
 });
 
@@ -118952,8 +118952,21 @@ var init_Order = __esm({
       orderType: {
         type: String,
         required: true,
-        enum: ["Dine In", "Self-Pickup", "Delivery"],
+        enum: ["Dine In", "Self-Pickup", "Delivery", "Takeaway"],
         default: "Dine In"
+      },
+      serviceType: {
+        type: String,
+        enum: ["Self Dine-In (KFC Style)", "Waiter Table Service", "Delivery", "Takeaway", ""],
+        default: "Waiter Table Service"
+      },
+      customerName: {
+        type: String,
+        default: ""
+      },
+      customerPhone: {
+        type: String,
+        default: ""
       },
       tableNumber: {
         type: String
@@ -118991,6 +119004,18 @@ var init_Order = __esm({
         required: true,
         default: 0
       },
+      discountAmount: {
+        type: Number,
+        default: 0
+      },
+      tipAmount: {
+        type: Number,
+        default: 0
+      },
+      waiter: {
+        type: import_mongoose2.default.Schema.Types.ObjectId,
+        ref: "User"
+      },
       isPaid: {
         type: Boolean,
         required: true,
@@ -119013,6 +119038,13 @@ var init_Order = __esm({
         }
       ],
       pickupTime: {
+        type: Date
+      },
+      estimatedPrepMinutes: {
+        type: Number,
+        default: 20
+      },
+      estimatedReadyTime: {
         type: Date
       },
       // Location Coordinates for Live OSRM Road Tracking
@@ -119071,7 +119103,14 @@ var init_Order = __esm({
           message: { type: String, required: true },
           timestamp: { type: Date, default: Date.now }
         }
-      ]
+      ],
+      kotNumbers: [{
+        type: String
+      }],
+      kots: [{
+        type: import_mongoose2.default.Schema.Types.ObjectId,
+        ref: "KOT"
+      }]
     }, { timestamps: true });
     Order2 = import_mongoose2.default.model("Order", orderSchema);
     Order_default = Order2;
@@ -124752,6 +124791,35 @@ var init_User = __esm({
         type: Boolean,
         default: true
       },
+      employeeId: {
+        type: String,
+        trim: true
+      },
+      joiningDate: {
+        type: Date,
+        default: Date.now
+      },
+      employmentStatus: {
+        type: String,
+        enum: ["Active", "On Leave", "Terminated", "Probation"],
+        default: "Active"
+      },
+      salaryConfig: {
+        basicSalary: { type: Number, default: 0 },
+        salaryFrequency: { type: String, enum: ["Monthly", "Daily", "Hourly"], default: "Monthly" },
+        overtimeRatePerHour: { type: Number, default: 0 },
+        dailyWorkHours: { type: Number, default: 8 },
+        monthlyWorkingDays: { type: Number, default: 26 },
+        allowances: { type: import_mongoose3.default.Schema.Types.Mixed, default: [] },
+        deductions: { type: import_mongoose3.default.Schema.Types.Mixed, default: [] }
+      },
+      bankDetails: {
+        accountName: { type: String, default: "" },
+        accountNumber: { type: String, default: "" },
+        bankName: { type: String, default: "" },
+        ifscCode: { type: String, default: "" },
+        upiId: { type: String, default: "" }
+      },
       refreshToken: {
         type: String
       }
@@ -124809,6 +124877,188 @@ var init_Role = __esm({
     }, { timestamps: true });
     Role = import_mongoose4.default.model("Role", roleSchema);
     Role_default = Role;
+  }
+});
+
+// models/Restaurant.js
+var Restaurant_exports = {};
+__export(Restaurant_exports, {
+  default: () => Restaurant_default
+});
+var import_mongoose5, restaurantSchema, Restaurant2, Restaurant_default;
+var init_Restaurant = __esm({
+  "models/Restaurant.js"() {
+    import_mongoose5 = __toESM(require_mongoose2(), 1);
+    restaurantSchema = new import_mongoose5.default.Schema({
+      name: {
+        type: String,
+        required: true
+      },
+      phone: {
+        type: String
+      },
+      address: {
+        type: String
+      },
+      logo: {
+        type: String
+      },
+      currency: {
+        type: String,
+        default: "USD"
+      },
+      contactEmail: {
+        type: String
+      },
+      timezone: {
+        type: String,
+        default: "America/New_York (EST)"
+      },
+      features: {
+        onlineOrdering: { type: Boolean, default: true },
+        tableReservations: { type: Boolean, default: true }
+      },
+      taxRate: {
+        type: Number,
+        default: 0
+      },
+      ownerId: {
+        type: import_mongoose5.default.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+      },
+      subscription: {
+        status: { type: String, enum: ["Active", "Frozen", "Cancelled", "Inactive", "Expiring Soon", "Expired", "Suspended"], default: "Inactive" },
+        plan: {
+          type: String,
+          enum: ["Basic", "Pro", "Enterprise", "Starter", "Professional", "basic", "pro", "enterprise", "starter", "professional"],
+          set: (v) => {
+            if (!v) return "Basic";
+            const lower = String(v).trim().toLowerCase();
+            if (lower === "basic") return "Basic";
+            if (lower === "pro" || lower === "professional") return "Pro";
+            if (lower === "enterprise") return "Enterprise";
+            if (lower === "starter") return "Starter";
+            return v.charAt(0).toUpperCase() + v.slice(1);
+          },
+          default: "Basic"
+        },
+        billingCycle: { type: String, enum: ["monthly", "yearly"], default: "monthly" },
+        trialActive: { type: Boolean, default: true },
+        expiryDate: { type: Date },
+        startDate: { type: Date, default: Date.now },
+        price: { type: Number, default: 0 },
+        downgradeScheduledPlan: { type: String, default: "" },
+        downgradeScheduledDate: { type: Date }
+      },
+      approvalStatus: {
+        type: String,
+        enum: ["Pending", "Approved", "Rejected"],
+        default: "Pending"
+      },
+      verificationStatus: {
+        type: String,
+        enum: ["Pending", "Under Review", "Verified", "Rejected", "Re-upload Required", "Expired"],
+        default: "Pending"
+      },
+      commissionRate: {
+        type: Number,
+        default: 0
+      },
+      deliverySettings: {
+        deliveryType: { type: String, enum: ["Self", "Third-Party", "Both"], default: "Both" },
+        enabled: { type: Boolean, default: false },
+        radius: { type: Number, default: 5 },
+        freeRadius: { type: Number, default: 2 },
+        baseFee: { type: Number, default: 30 },
+        perKmCharge: { type: Number, default: 10 },
+        peakHourFee: { type: Number, default: 15 },
+        rainSurcharge: { type: Number, default: 20 },
+        minOrderAmountForFreeDelivery: { type: Number, default: 300 },
+        minOrderAmountForDelivery: { type: Number, default: 0 },
+        deliveryOperatingHours: {
+          start: { type: String, default: "09:00" },
+          end: { type: String, default: "22:00" }
+        },
+        location: {
+          latitude: { type: Number, default: 13.0475 },
+          longitude: { type: Number, default: 80.209 }
+        }
+      },
+      isActive: {
+        type: Boolean,
+        default: true
+      },
+      posConfig: {
+        outletFormat: { type: String, default: "Fine Dine & Resto-Bar" },
+        tablesEnabled: { type: Boolean, default: true },
+        qsrCounterMode: { type: Boolean, default: false },
+        kdsEnabled: { type: Boolean, default: true },
+        inventoryAutoDeduct: { type: Boolean, default: true },
+        deliveryFleetEnabled: { type: Boolean, default: true },
+        loyaltyPointsEnabled: { type: Boolean, default: true },
+        whatsappPnlAlerts: { type: Boolean, default: true },
+        happyHoursEnabled: { type: Boolean, default: true },
+        serviceChargePercent: { type: Number, default: 5 },
+        barcodeScannerEnabled: { type: Boolean, default: false },
+        guestQrOrdering: { type: Boolean, default: true }
+      },
+      billingConfig: {
+        isCustomBillingActive: { type: Boolean, default: false },
+        activatedAt: { type: Date, default: null },
+        demoRequestId: { type: import_mongoose5.default.Schema.Types.ObjectId, ref: "BillingDemoRequest", default: null },
+        outletFormat: { type: String, default: "Fine Dine & Resto-Bar" },
+        modules: {
+          posBilling: { type: Boolean, default: true },
+          menuManagement: { type: Boolean, default: true },
+          tableManagement: { type: Boolean, default: true },
+          dineInTakeawayOrders: { type: Boolean, default: true },
+          kitchenOrderManagement: { type: Boolean, default: true },
+          gstInvoice: { type: Boolean, default: true },
+          discounts: { type: Boolean, default: true },
+          customerManagement: { type: Boolean, default: true },
+          inventoryManagement: { type: Boolean, default: true },
+          salesReports: { type: Boolean, default: true },
+          staffManagement: { type: Boolean, default: true }
+        },
+        paymentMethods: {
+          cash: { type: Boolean, default: true },
+          upi: { type: Boolean, default: true },
+          card: { type: Boolean, default: true },
+          split: { type: Boolean, default: true }
+        },
+        serviceChargePercent: { type: Number, default: 5 },
+        gstRatePercent: { type: Number, default: 5 }
+      },
+      restaurantConfig: {
+        orderKitchen: {
+          kotEnabled: { type: Boolean, default: true },
+          kdsEnabled: { type: Boolean, default: true },
+          kotPrintEnabled: { type: Boolean, default: true }
+        },
+        waiterTips: {
+          enabled: { type: Boolean, default: true },
+          allowCustomerTips: { type: Boolean, default: true },
+          tipPercentages: { type: [Number], default: [5, 10, 15, 20] },
+          customTipAllowed: { type: Boolean, default: true }
+        },
+        qrOrdering: {
+          enabled: { type: Boolean, default: true },
+          allowSelfDineIn: { type: Boolean, default: true },
+          allowWaiterOrdering: { type: Boolean, default: true }
+        },
+        paymentMethods: {
+          cash: { type: Boolean, default: true },
+          upi: { type: Boolean, default: true },
+          card: { type: Boolean, default: true },
+          onlineGateway: { type: Boolean, default: true }
+        },
+        setupWizardCompleted: { type: Boolean, default: false },
+        setupStep: { type: Number, default: 1 }
+      }
+    }, { timestamps: true });
+    Restaurant2 = import_mongoose5.default.model("Restaurant", restaurantSchema);
+    Restaurant_default = Restaurant2;
   }
 });
 
@@ -125133,65 +125383,16 @@ var init_SubscriptionPayment = __esm({
   }
 });
 
-// models/Table.js
-var Table_exports = {};
-__export(Table_exports, {
-  default: () => Table_default
-});
-var import_mongoose14, tableSchema, Table, Table_default;
-var init_Table = __esm({
-  "models/Table.js"() {
-    import_mongoose14 = __toESM(require_mongoose2(), 1);
-    tableSchema = new import_mongoose14.default.Schema({
-      restaurantId: {
-        type: import_mongoose14.default.Schema.Types.ObjectId,
-        ref: "Restaurant",
-        required: true
-      },
-      branchId: {
-        type: import_mongoose14.default.Schema.Types.ObjectId,
-        ref: "Branch",
-        required: true
-      },
-      tableNumber: {
-        type: Number,
-        required: true
-      },
-      capacity: {
-        type: Number,
-        required: true,
-        default: 4
-      },
-      status: {
-        type: String,
-        enum: ["Available", "Occupied", "Reserved", "Cleaning", "Billing"],
-        default: "Available"
-      },
-      activeOrder: {
-        type: import_mongoose14.default.Schema.Types.ObjectId,
-        ref: "Order",
-        default: null
-      },
-      customers: {
-        type: Number,
-        default: 0
-      }
-    }, { timestamps: true });
-    Table = import_mongoose14.default.model("Table", tableSchema);
-    Table_default = Table;
-  }
-});
-
 // models/MenuItem.js
 var MenuItem_exports = {};
 __export(MenuItem_exports, {
   default: () => MenuItem_default
 });
-var import_mongoose17, menuItemSchema, MenuItem, MenuItem_default;
+var import_mongoose15, menuItemSchema, MenuItem, MenuItem_default;
 var init_MenuItem = __esm({
   "models/MenuItem.js"() {
-    import_mongoose17 = __toESM(require_mongoose2(), 1);
-    menuItemSchema = new import_mongoose17.default.Schema({
+    import_mongoose15 = __toESM(require_mongoose2(), 1);
+    menuItemSchema = new import_mongoose15.default.Schema({
       name: {
         type: String,
         required: true
@@ -125226,6 +125427,120 @@ var init_MenuItem = __esm({
         type: Boolean,
         default: true
       },
+      kitchenStation: {
+        type: String,
+        default: "Main Kitchen"
+      },
+      restaurantId: {
+        type: import_mongoose15.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true
+      },
+      branchId: {
+        type: import_mongoose15.default.Schema.Types.ObjectId,
+        ref: "Branch"
+      }
+    }, { timestamps: true });
+    MenuItem = import_mongoose15.default.model("MenuItem", menuItemSchema);
+    MenuItem_default = MenuItem;
+  }
+});
+
+// models/Tip.js
+var Tip_exports = {};
+__export(Tip_exports, {
+  default: () => Tip_default
+});
+var import_mongoose16, tipSchema, Tip, Tip_default;
+var init_Tip = __esm({
+  "models/Tip.js"() {
+    import_mongoose16 = __toESM(require_mongoose2(), 1);
+    tipSchema = new import_mongoose16.default.Schema({
+      restaurantId: {
+        type: import_mongoose16.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true,
+        index: true
+      },
+      branchId: {
+        type: import_mongoose16.default.Schema.Types.ObjectId,
+        ref: "Branch",
+        index: true
+      },
+      orderId: {
+        type: import_mongoose16.default.Schema.Types.ObjectId,
+        ref: "Order",
+        index: true
+      },
+      waiterId: {
+        type: import_mongoose16.default.Schema.Types.ObjectId,
+        ref: "User",
+        index: true
+      },
+      waiterName: {
+        type: String,
+        default: "Unassigned Waiter"
+      },
+      tableNumber: {
+        type: String,
+        default: ""
+      },
+      amount: {
+        type: Number,
+        required: true,
+        min: 0
+      },
+      paymentMethod: {
+        type: String,
+        default: "UPI"
+      },
+      source: {
+        type: String,
+        enum: ["Customer QR", "Cashier Settlement", "Card Machine", "Manual Recorded Settlement"],
+        default: "Customer QR"
+      },
+      status: {
+        type: String,
+        enum: ["Pending", "Settled"],
+        default: "Pending",
+        index: true
+      },
+      settledAt: {
+        type: Date
+      },
+      settledBy: {
+        type: import_mongoose16.default.Schema.Types.ObjectId,
+        ref: "User"
+      },
+      transactionReference: {
+        type: String,
+        default: ""
+      },
+      notes: {
+        type: String,
+        default: ""
+      },
+      date: {
+        type: Date,
+        default: Date.now,
+        index: true
+      }
+    }, { timestamps: true });
+    Tip = import_mongoose16.default.model("Tip", tipSchema);
+    Tip_default = Tip;
+  }
+});
+
+// models/Table.js
+var Table_exports = {};
+__export(Table_exports, {
+  default: () => Table_default
+});
+var import_mongoose17, tableSchema, Table, Table_default;
+var init_Table = __esm({
+  "models/Table.js"() {
+    import_mongoose17 = __toESM(require_mongoose2(), 1);
+    tableSchema = new import_mongoose17.default.Schema({
       restaurantId: {
         type: import_mongoose17.default.Schema.Types.ObjectId,
         ref: "Restaurant",
@@ -125233,11 +125548,218 @@ var init_MenuItem = __esm({
       },
       branchId: {
         type: import_mongoose17.default.Schema.Types.ObjectId,
-        ref: "Branch"
+        ref: "Branch",
+        required: true
+      },
+      tableNumber: {
+        type: Number,
+        required: true
+      },
+      capacity: {
+        type: Number,
+        required: true,
+        default: 4
+      },
+      status: {
+        type: String,
+        enum: ["Available", "Occupied", "Reserved", "Cleaning", "Billing"],
+        default: "Available"
+      },
+      activeOrder: {
+        type: import_mongoose17.default.Schema.Types.ObjectId,
+        ref: "Order",
+        default: null
+      },
+      customers: {
+        type: Number,
+        default: 0
       }
     }, { timestamps: true });
-    MenuItem = import_mongoose17.default.model("MenuItem", menuItemSchema);
-    MenuItem_default = MenuItem;
+    Table = import_mongoose17.default.model("Table", tableSchema);
+    Table_default = Table;
+  }
+});
+
+// models/Expense.js
+var Expense_exports = {};
+__export(Expense_exports, {
+  default: () => Expense_default
+});
+var import_mongoose19, expensePaymentSchema, expenseSchema, Expense, Expense_default;
+var init_Expense = __esm({
+  "models/Expense.js"() {
+    import_mongoose19 = __toESM(require_mongoose2(), 1);
+    expensePaymentSchema = new import_mongoose19.default.Schema({
+      amount: {
+        type: Number,
+        required: true,
+        min: 0
+      },
+      paidDate: {
+        type: Date,
+        default: Date.now,
+        required: true
+      },
+      paymentMethod: {
+        type: String,
+        enum: ["Cash", "Bank Transfer", "UPI", "Card", "Cheque", "Other"],
+        default: "Cash",
+        required: true
+      },
+      reference: {
+        type: String,
+        default: ""
+      },
+      notes: {
+        type: String,
+        default: ""
+      },
+      recordedBy: {
+        type: import_mongoose19.default.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    }, { _id: true, timestamps: true });
+    expenseSchema = new import_mongoose19.default.Schema({
+      category: {
+        type: String,
+        required: true,
+        enum: [
+          "Rent",
+          "Electricity",
+          "Water",
+          "Internet",
+          "Material purchases",
+          "Staff salary",
+          "Equipment maintenance",
+          "Delivery and transport",
+          "Kitchen Supplies",
+          "Utility Bill",
+          "Maintenance",
+          "Staff Welfare",
+          "Marketing",
+          "Other operating expenses",
+          "Others"
+        ],
+        index: true
+      },
+      title: {
+        type: String,
+        default: "",
+        trim: true
+      },
+      amount: {
+        type: Number,
+        required: true,
+        min: 0
+      },
+      description: {
+        type: String,
+        default: "",
+        trim: true
+      },
+      date: {
+        type: Date,
+        required: true,
+        default: Date.now,
+        index: true
+      },
+      dueDate: {
+        type: Date
+      },
+      billingPeriod: {
+        type: String
+        // e.g., "October 2026"
+      },
+      paymentStatus: {
+        type: String,
+        enum: ["Pending", "Partially Paid", "Paid", "Overdue"],
+        default: "Paid",
+        // Default Paid for backward compatibility with existing recorded expenses
+        index: true
+      },
+      paidAmount: {
+        type: Number,
+        default: function() {
+          return this.paymentStatus === "Paid" ? this.amount : 0;
+        }
+      },
+      balanceDue: {
+        type: Number,
+        default: 0
+      },
+      paymentMethod: {
+        type: String,
+        enum: ["Cash", "Bank Transfer", "UPI", "Card", "Cheque", "Other"],
+        default: "Cash"
+      },
+      paymentDate: {
+        type: Date
+      },
+      payments: [expensePaymentSchema],
+      isRecurring: {
+        type: Boolean,
+        default: false
+      },
+      recurringFrequency: {
+        type: String,
+        enum: ["Monthly", "Quarterly", "Yearly"]
+      },
+      recurringKey: {
+        type: String,
+        // format: "category_branchId_YYYY-MM" to prevent duplicate recurring bills
+        sparse: true
+      },
+      receiptUrl: {
+        type: String,
+        default: ""
+      },
+      notes: {
+        type: String,
+        default: ""
+      },
+      source: {
+        type: String,
+        enum: ["Manual", "Material Purchase", "Payroll", "Recurring"],
+        default: "Manual"
+      },
+      sourceId: {
+        type: import_mongoose19.default.Schema.Types.ObjectId
+        // Link to MaterialPurchase or Payroll to prevent double-counting
+      },
+      staff: {
+        type: String,
+        required: true,
+        default: "Staff"
+      },
+      restaurantId: {
+        type: import_mongoose19.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true,
+        index: true
+      },
+      branchId: {
+        type: import_mongoose19.default.Schema.Types.ObjectId,
+        ref: "Branch",
+        index: true
+      },
+      createdBy: {
+        type: import_mongoose19.default.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    }, { timestamps: true });
+    expenseSchema.pre("save", function(next) {
+      if (!this.title && this.description) {
+        this.title = this.description;
+      }
+      if (!this.description && this.title) {
+        this.description = this.title;
+      }
+      next();
+    });
+    expenseSchema.index({ restaurantId: 1, date: -1 });
+    expenseSchema.index({ restaurantId: 1, category: 1, date: -1 });
+    Expense = import_mongoose19.default.model("Expense", expenseSchema);
+    Expense_default = Expense;
   }
 });
 
@@ -125246,23 +125768,23 @@ var Ticket_exports = {};
 __export(Ticket_exports, {
   default: () => Ticket_default
 });
-var import_mongoose18, ticketSchema, Ticket, Ticket_default;
+var import_mongoose25, ticketSchema, Ticket, Ticket_default;
 var init_Ticket = __esm({
   "models/Ticket.js"() {
-    import_mongoose18 = __toESM(require_mongoose2(), 1);
-    ticketSchema = new import_mongoose18.default.Schema({
+    import_mongoose25 = __toESM(require_mongoose2(), 1);
+    ticketSchema = new import_mongoose25.default.Schema({
       ticketId: {
         type: String,
         required: true,
         unique: true
       },
       restaurantId: {
-        type: import_mongoose18.default.Schema.Types.ObjectId,
+        type: import_mongoose25.default.Schema.Types.ObjectId,
         ref: "Restaurant",
         required: true
       },
       branchId: {
-        type: import_mongoose18.default.Schema.Types.ObjectId,
+        type: import_mongoose25.default.Schema.Types.ObjectId,
         ref: "Branch"
       },
       subject: {
@@ -125302,7 +125824,7 @@ var init_Ticket = __esm({
         required: true
       },
       assignedAgentId: {
-        type: import_mongoose18.default.Schema.Types.ObjectId,
+        type: import_mongoose25.default.Schema.Types.ObjectId,
         ref: "User"
       },
       attachments: [{
@@ -125335,7 +125857,7 @@ var init_Ticket = __esm({
       this.lastUpdated = /* @__PURE__ */ new Date();
       next();
     });
-    Ticket = import_mongoose18.default.model("Ticket", ticketSchema);
+    Ticket = import_mongoose25.default.model("Ticket", ticketSchema);
     Ticket_default = Ticket;
   }
 });
@@ -125345,13 +125867,13 @@ var Category_exports = {};
 __export(Category_exports, {
   default: () => Category_default
 });
-var import_mongoose19, categorySchema, Category, Category_default;
+var import_mongoose26, categorySchema, Category, Category_default;
 var init_Category = __esm({
   "models/Category.js"() {
-    import_mongoose19 = __toESM(require_mongoose2(), 1);
-    categorySchema = new import_mongoose19.default.Schema({
+    import_mongoose26 = __toESM(require_mongoose2(), 1);
+    categorySchema = new import_mongoose26.default.Schema({
       branch: {
-        type: import_mongoose19.default.Schema.Types.ObjectId,
+        type: import_mongoose26.default.Schema.Types.ObjectId,
         ref: "Branch",
         required: true
       },
@@ -125370,7 +125892,7 @@ var init_Category = __esm({
         default: true
       }
     }, { timestamps: true });
-    Category = import_mongoose19.default.model("Category", categorySchema);
+    Category = import_mongoose26.default.model("Category", categorySchema);
     Category_default = Category;
   }
 });
@@ -125380,95 +125902,83 @@ var Inventory_exports = {};
 __export(Inventory_exports, {
   default: () => Inventory_default
 });
-var import_mongoose20, inventorySchema, Inventory, Inventory_default;
+var import_mongoose27, inventorySchema, Inventory, Inventory_default;
 var init_Inventory = __esm({
   "models/Inventory.js"() {
-    import_mongoose20 = __toESM(require_mongoose2(), 1);
-    inventorySchema = new import_mongoose20.default.Schema({
+    import_mongoose27 = __toESM(require_mongoose2(), 1);
+    inventorySchema = new import_mongoose27.default.Schema({
+      restaurantId: {
+        type: import_mongoose27.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        index: true
+      },
       branch: {
-        type: import_mongoose20.default.Schema.Types.ObjectId,
+        type: import_mongoose27.default.Schema.Types.ObjectId,
         ref: "Branch",
-        required: true
+        required: true,
+        index: true
       },
       supplier: {
-        type: import_mongoose20.default.Schema.Types.ObjectId,
+        type: import_mongoose27.default.Schema.Types.ObjectId,
         ref: "Supplier"
       },
       itemName: {
         type: String,
-        required: true
+        required: true,
+        trim: true
       },
       category: {
-        type: String
-        // e.g., 'Vegetables', 'Meat', 'Dairy', 'Packaging'
+        type: String,
+        // e.g., 'Vegetables', 'Meat', 'Dairy', 'Packaging', 'Spices', 'Beverages'
+        default: "General"
       },
       quantity: {
         type: Number,
         required: true,
-        default: 0
+        default: 0,
+        min: 0
       },
       unit: {
         type: String,
-        // e.g., 'kg', 'ltr', 'pcs'
+        // e.g., 'kg', 'g', 'ltr', 'ml', 'pcs', 'box', 'packet'
         required: true
       },
       minStockLevel: {
         type: Number,
         default: 10
       },
-      pricePerUnit: {
-        type: Number
-      }
-    }, { timestamps: true });
-    Inventory = import_mongoose20.default.model("Inventory", inventorySchema);
-    Inventory_default = Inventory;
-  }
-});
-
-// models/Expense.js
-var Expense_exports = {};
-__export(Expense_exports, {
-  default: () => Expense_default
-});
-var import_mongoose21, expenseSchema, Expense, Expense_default;
-var init_Expense = __esm({
-  "models/Expense.js"() {
-    import_mongoose21 = __toESM(require_mongoose2(), 1);
-    expenseSchema = new import_mongoose21.default.Schema({
-      category: {
-        type: String,
-        required: true,
-        enum: ["Kitchen Supplies", "Utility Bill", "Maintenance", "Staff Welfare", "Marketing", "Others"]
-      },
-      amount: {
+      reorderQuantity: {
         type: Number,
-        required: true
+        default: 20
+      },
+      pricePerUnit: {
+        type: Number,
+        default: 0
+      },
+      lastPurchasePrice: {
+        type: Number,
+        default: 0
+      },
+      lastPurchaseDate: {
+        type: Date
+      },
+      costingMethod: {
+        type: String,
+        enum: ["Weighted Average", "Latest Price"],
+        default: "Weighted Average"
       },
       description: {
         type: String,
-        required: true
-      },
-      date: {
-        type: Date,
-        required: true,
-        default: Date.now
-      },
-      staff: {
-        type: String,
-        required: true
-      },
-      restaurantId: {
-        type: import_mongoose21.default.Schema.Types.ObjectId,
-        ref: "Restaurant",
-        required: true
-      },
-      branchId: {
-        type: import_mongoose21.default.Schema.Types.ObjectId,
-        ref: "Branch"
+        default: ""
       }
     }, { timestamps: true });
-    Expense = import_mongoose21.default.model("Expense", expenseSchema);
-    Expense_default = Expense;
+    inventorySchema.virtual("valuation").get(function() {
+      return (this.quantity || 0) * (this.pricePerUnit || 0);
+    });
+    inventorySchema.set("toJSON", { virtuals: true });
+    inventorySchema.set("toObject", { virtuals: true });
+    Inventory = import_mongoose27.default.model("Inventory", inventorySchema);
+    Inventory_default = Inventory;
   }
 });
 
@@ -125477,18 +125987,18 @@ var ServiceRequest_exports = {};
 __export(ServiceRequest_exports, {
   default: () => ServiceRequest_default
 });
-var import_mongoose22, serviceRequestSchema, ServiceRequest, ServiceRequest_default;
+var import_mongoose28, serviceRequestSchema, ServiceRequest, ServiceRequest_default;
 var init_ServiceRequest = __esm({
   "models/ServiceRequest.js"() {
-    import_mongoose22 = __toESM(require_mongoose2(), 1);
-    serviceRequestSchema = new import_mongoose22.default.Schema({
+    import_mongoose28 = __toESM(require_mongoose2(), 1);
+    serviceRequestSchema = new import_mongoose28.default.Schema({
       restaurantId: {
-        type: import_mongoose22.default.Schema.Types.ObjectId,
+        type: import_mongoose28.default.Schema.Types.ObjectId,
         ref: "Restaurant",
         required: true
       },
       branchId: {
-        type: import_mongoose22.default.Schema.Types.ObjectId,
+        type: import_mongoose28.default.Schema.Types.ObjectId,
         ref: "Branch",
         required: true
       },
@@ -125507,7 +126017,7 @@ var init_ServiceRequest = __esm({
         default: "Pending"
       }
     }, { timestamps: true });
-    ServiceRequest = import_mongoose22.default.model("ServiceRequest", serviceRequestSchema);
+    ServiceRequest = import_mongoose28.default.model("ServiceRequest", serviceRequestSchema);
     ServiceRequest_default = ServiceRequest;
   }
 });
@@ -125517,11 +126027,11 @@ var WastageLog_exports = {};
 __export(WastageLog_exports, {
   default: () => WastageLog_default
 });
-var import_mongoose23, wastageLogSchema, WastageLog, WastageLog_default;
+var import_mongoose29, wastageLogSchema, WastageLog, WastageLog_default;
 var init_WastageLog = __esm({
   "models/WastageLog.js"() {
-    import_mongoose23 = __toESM(require_mongoose2(), 1);
-    wastageLogSchema = new import_mongoose23.default.Schema({
+    import_mongoose29 = __toESM(require_mongoose2(), 1);
+    wastageLogSchema = new import_mongoose29.default.Schema({
       ingredientName: {
         type: String,
         required: true
@@ -125539,22 +126049,22 @@ var init_WastageLog = __esm({
         required: true
       },
       restaurantId: {
-        type: import_mongoose23.default.Schema.Types.ObjectId,
+        type: import_mongoose29.default.Schema.Types.ObjectId,
         ref: "Restaurant",
         required: true
       },
       branchId: {
-        type: import_mongoose23.default.Schema.Types.ObjectId,
+        type: import_mongoose29.default.Schema.Types.ObjectId,
         ref: "Branch"
       }
     }, { timestamps: true });
-    WastageLog = import_mongoose23.default.model("WastageLog", wastageLogSchema);
+    WastageLog = import_mongoose29.default.model("WastageLog", wastageLogSchema);
     WastageLog_default = WastageLog;
   }
 });
 
 // index.js
-var import_express27 = __toESM(require_express2(), 1);
+var import_express30 = __toESM(require_express2(), 1);
 var import_dotenv = __toESM(require_main(), 1);
 var import_cors = __toESM(require_lib3(), 1);
 var import_cookie_parser = __toESM(require_cookie_parser(), 1);
@@ -125717,114 +126227,7 @@ var import_fs = __toESM(require("fs"), 1);
 var import_path = __toESM(require("path"), 1);
 init_User();
 init_Role();
-
-// models/Restaurant.js
-var import_mongoose5 = __toESM(require_mongoose2(), 1);
-var restaurantSchema = new import_mongoose5.default.Schema({
-  name: {
-    type: String,
-    required: true
-  },
-  phone: {
-    type: String
-  },
-  address: {
-    type: String
-  },
-  logo: {
-    type: String
-  },
-  currency: {
-    type: String,
-    default: "USD"
-  },
-  contactEmail: {
-    type: String
-  },
-  timezone: {
-    type: String,
-    default: "America/New_York (EST)"
-  },
-  features: {
-    onlineOrdering: { type: Boolean, default: true },
-    tableReservations: { type: Boolean, default: true }
-  },
-  taxRate: {
-    type: Number,
-    default: 0
-  },
-  ownerId: {
-    type: import_mongoose5.default.Schema.Types.ObjectId,
-    ref: "User",
-    required: true
-  },
-  subscription: {
-    status: { type: String, enum: ["Active", "Frozen", "Cancelled", "Inactive", "Expiring Soon", "Expired", "Suspended"], default: "Inactive" },
-    plan: {
-      type: String,
-      enum: ["Basic", "Pro", "Enterprise", "Starter", "Professional", "basic", "pro", "enterprise", "starter", "professional"],
-      set: (v) => {
-        if (!v) return "Basic";
-        const lower = String(v).trim().toLowerCase();
-        if (lower === "basic") return "Basic";
-        if (lower === "pro" || lower === "professional") return "Pro";
-        if (lower === "enterprise") return "Enterprise";
-        if (lower === "starter") return "Starter";
-        return v.charAt(0).toUpperCase() + v.slice(1);
-      },
-      default: "Basic"
-    },
-    billingCycle: { type: String, enum: ["monthly", "yearly"], default: "monthly" },
-    trialActive: { type: Boolean, default: true },
-    expiryDate: { type: Date },
-    startDate: { type: Date, default: Date.now },
-    price: { type: Number, default: 0 },
-    downgradeScheduledPlan: { type: String, default: "" },
-    downgradeScheduledDate: { type: Date }
-  },
-  approvalStatus: {
-    type: String,
-    enum: ["Pending", "Approved", "Rejected"],
-    default: "Pending"
-  },
-  verificationStatus: {
-    type: String,
-    enum: ["Pending", "Under Review", "Verified", "Rejected", "Re-upload Required", "Expired"],
-    default: "Pending"
-  },
-  commissionRate: {
-    type: Number,
-    default: 0
-  },
-  deliverySettings: {
-    deliveryType: { type: String, enum: ["Self", "Third-Party", "Both"], default: "Both" },
-    enabled: { type: Boolean, default: false },
-    radius: { type: Number, default: 5 },
-    freeRadius: { type: Number, default: 2 },
-    baseFee: { type: Number, default: 30 },
-    perKmCharge: { type: Number, default: 10 },
-    peakHourFee: { type: Number, default: 15 },
-    rainSurcharge: { type: Number, default: 20 },
-    minOrderAmountForFreeDelivery: { type: Number, default: 300 },
-    minOrderAmountForDelivery: { type: Number, default: 0 },
-    deliveryOperatingHours: {
-      start: { type: String, default: "09:00" },
-      end: { type: String, default: "22:00" }
-    },
-    location: {
-      latitude: { type: Number, default: 13.0475 },
-      longitude: { type: Number, default: 80.209 }
-    }
-  },
-  isActive: {
-    type: Boolean,
-    default: true
-  }
-}, { timestamps: true });
-var Restaurant2 = import_mongoose5.default.model("Restaurant", restaurantSchema);
-var Restaurant_default = Restaurant2;
-
-// controllers/authController.js
+init_Restaurant();
 init_Branch();
 init_Notification();
 init_RestaurantVerification();
@@ -126282,46 +126685,7 @@ var loginUser = async (req, res) => {
     let user = await User_default.findOne({ email: { $regex: `^${normalizedEmail}$`, $options: "i" } });
     const cleanPassword = String(password).trim();
     if (!user) {
-      const demoAccounts = {
-        "customer@example.com": { name: "Demo Customer", role: "Customer" },
-        "chef1@pizzapalace.com": { name: "Demo Chef", role: "Chef" },
-        "cashier1@pizzapalace.com": { name: "Demo Cashier", role: "Cashier" },
-        "branchmanager1@pizzapalace.com": { name: "Demo Manager", role: "BranchManager" },
-        "manager1@pizzapalace.com": { name: "Demo Manager", role: "BranchManager" },
-        "owner@pizzapalace.com": { name: "Demo Owner", role: "RestaurantAdmin" },
-        "admin@restauranthub.com": { name: "Super Admin", role: "SuperAdmin" }
-      };
-      const demoMatch = demoAccounts[normalizedEmail];
-      if (demoMatch && (cleanPassword === "password123" || cleanPassword === "123456")) {
-        console.log(`[Auto-Seed Demo User] Auto-creating missing demo account: ${normalizedEmail}`);
-        let demoRest = await Restaurant_default.findOne({ name: "Pizza Palace" }) || await Restaurant_default.findOne({ isDemo: true });
-        if (!demoRest && demoMatch.role !== "SuperAdmin" && demoMatch.role !== "Customer") {
-          demoRest = await Restaurant_default.create({
-            name: "Pizza Palace",
-            isDemo: true,
-            approvalStatus: "Approved",
-            verificationStatus: "Verified",
-            subscription: { plan: "Pro", status: "Active" }
-          });
-        }
-        let demoBranch = null;
-        if (demoRest) {
-          demoBranch = await Branch_default.findOne({ restaurantId: demoRest._id });
-          if (!demoBranch) {
-            demoBranch = await Branch_default.create({ name: "Downtown Branch", restaurantId: demoRest._id });
-          }
-        }
-        user = await User_default.create({
-          name: demoMatch.name,
-          email: normalizedEmail,
-          password: cleanPassword,
-          role: demoMatch.role,
-          restaurantId: demoRest ? demoRest._id : void 0,
-          branchId: demoBranch ? demoBranch._id : void 0
-        });
-      } else {
-        return res.status(401).json({ message: "No account found with this email address. Please register first." });
-      }
+      return res.status(401).json({ message: "No account found with this email address. Please register first." });
     }
     if (await user.matchPassword(cleanPassword)) {
       if (loginType === "staff" && user.role === "Customer") {
@@ -126579,6 +126943,7 @@ var changePassword = async (req, res) => {
 var import_jsonwebtoken2 = __toESM(require_jsonwebtoken(), 1);
 init_User();
 init_Role();
+init_Restaurant();
 init_Plan();
 var protect = async (req, res, next) => {
   let token;
@@ -126723,9 +127088,41 @@ var checkFeature = (featureName) => {
     }
   };
 };
+var checkBillingModule = (moduleName) => {
+  return async (req, res, next) => {
+    if (req.user?.role === "SuperAdmin") {
+      return next();
+    }
+    if (!req.user || !req.user.restaurantId) {
+      return next();
+    }
+    try {
+      const restaurant = req.restaurant || await Restaurant_default.findById(req.user.restaurantId);
+      if (!restaurant) {
+        return next();
+      }
+      if (restaurant.billingConfig?.isCustomBillingActive) {
+        const modules = restaurant.billingConfig?.modules || {};
+        const isEnabled = modules[moduleName] !== false;
+        if (!isEnabled) {
+          return res.status(403).json({
+            message: `Access denied: The "${moduleName}" module is disabled for your restaurant's billing configuration. Please contact Super Admin to activate this module.`,
+            moduleDisabled: true,
+            module: moduleName
+          });
+        }
+      }
+      next();
+    } catch (error) {
+      console.error(`Error in checkBillingModule (${moduleName}):`, error);
+      next();
+    }
+  };
+};
 
 // controllers/verificationController.js
 init_RestaurantVerification();
+init_Restaurant();
 init_Notification();
 init_User();
 var import_multer = __toESM(require("multer"), 1);
@@ -127176,6 +127573,7 @@ var import_express2 = __toESM(require_express2(), 1);
 
 // controllers/restaurantController.js
 var import_mongoose13 = __toESM(require_mongoose2(), 1);
+init_Restaurant();
 init_Branch();
 init_Notification();
 init_DeliveryPartner();
@@ -127433,6 +127831,29 @@ var getMyRestaurant = async (req, res) => {
         }
       }
     }
+    if (!restaurant.restaurantConfig) {
+      restaurant.restaurantConfig = {
+        orderKitchen: { kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
+        waiterTips: { enabled: true, allowCustomerTips: true, tipPercentages: [5, 10, 15, 20], customTipAllowed: true },
+        qrOrdering: { enabled: true, allowSelfDineIn: true, allowWaiterOrdering: true },
+        paymentMethods: { cash: true, upi: true, card: true, onlineGateway: true },
+        setupWizardCompleted: false,
+        setupStep: 1
+      };
+    } else {
+      if (!restaurant.restaurantConfig.orderKitchen) {
+        restaurant.restaurantConfig.orderKitchen = { kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true };
+      }
+      if (!restaurant.restaurantConfig.waiterTips) {
+        restaurant.restaurantConfig.waiterTips = { enabled: true, allowCustomerTips: true, tipPercentages: [5, 10, 15, 20], customTipAllowed: true };
+      }
+      if (!restaurant.restaurantConfig.qrOrdering) {
+        restaurant.restaurantConfig.qrOrdering = { enabled: true, allowSelfDineIn: true, allowWaiterOrdering: true };
+      }
+      if (!restaurant.restaurantConfig.paymentMethods) {
+        restaurant.restaurantConfig.paymentMethods = { cash: true, upi: true, card: true, onlineGateway: true };
+      }
+    }
     res.json(restaurant);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -127443,7 +127864,7 @@ var updateMyRestaurant = async (req, res) => {
     if (!req.user.restaurantId) {
       return res.status(404).json({ message: "No restaurant associated with this user" });
     }
-    const { name, contactEmail, phone, address, currency, timezone, features } = req.body;
+    const { name, contactEmail, phone, address, currency, timezone, features, restaurantConfig } = req.body;
     const restaurant = await Restaurant_default.findById(req.user.restaurantId);
     if (restaurant) {
       restaurant.name = name || restaurant.name;
@@ -127457,6 +127878,54 @@ var updateMyRestaurant = async (req, res) => {
           onlineOrdering: features.onlineOrdering !== void 0 ? features.onlineOrdering : restaurant.features?.onlineOrdering,
           tableReservations: features.tableReservations !== void 0 ? features.tableReservations : restaurant.features?.tableReservations
         };
+      }
+      if (req.body.posConfig) {
+        restaurant.posConfig = {
+          ...restaurant.posConfig ? restaurant.posConfig.toObject ? restaurant.posConfig.toObject() : restaurant.posConfig : {},
+          ...req.body.posConfig
+        };
+      }
+      if (restaurantConfig) {
+        if (!restaurant.restaurantConfig) restaurant.restaurantConfig = {};
+        if (restaurantConfig.orderKitchen) {
+          restaurant.restaurantConfig.orderKitchen = {
+            ...restaurant.restaurantConfig.orderKitchen || {},
+            ...restaurantConfig.orderKitchen
+          };
+          if (restaurantConfig.orderKitchen.kdsEnabled !== void 0) {
+            if (!restaurant.posConfig) restaurant.posConfig = {};
+            restaurant.posConfig.kdsEnabled = restaurantConfig.orderKitchen.kdsEnabled;
+          }
+        }
+        if (restaurantConfig.waiterTips) {
+          restaurant.restaurantConfig.waiterTips = {
+            ...restaurant.restaurantConfig.waiterTips || {},
+            ...restaurantConfig.waiterTips
+          };
+        }
+        if (restaurantConfig.qrOrdering) {
+          restaurant.restaurantConfig.qrOrdering = {
+            ...restaurant.restaurantConfig.qrOrdering || {},
+            ...restaurantConfig.qrOrdering
+          };
+          if (restaurantConfig.qrOrdering.enabled !== void 0) {
+            if (!restaurant.posConfig) restaurant.posConfig = {};
+            restaurant.posConfig.guestQrOrdering = restaurantConfig.qrOrdering.enabled;
+          }
+        }
+        if (restaurantConfig.paymentMethods) {
+          restaurant.restaurantConfig.paymentMethods = {
+            ...restaurant.restaurantConfig.paymentMethods || {},
+            ...restaurantConfig.paymentMethods
+          };
+        }
+        if (restaurantConfig.setupWizardCompleted !== void 0) {
+          restaurant.restaurantConfig.setupWizardCompleted = Boolean(restaurantConfig.setupWizardCompleted);
+        }
+        if (restaurantConfig.setupStep !== void 0) {
+          restaurant.restaurantConfig.setupStep = Number(restaurantConfig.setupStep);
+        }
+        restaurant.markModified("restaurantConfig");
       }
       if (req.body.removeLogo === true || req.body.removeLogo === "true" || req.body.logo === "") {
         restaurant.logo = "";
@@ -127472,6 +127941,182 @@ var updateMyRestaurant = async (req, res) => {
     }
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+var getRestaurantPublicConfig = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id || !import_mongoose13.default.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid restaurant ID" });
+    }
+    const restaurant = await Restaurant_default.findById(id).select("name logo restaurantConfig posConfig billingConfig");
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
+    const config = restaurant.restaurantConfig || {};
+    res.json({
+      restaurantName: restaurant.name,
+      logo: restaurant.logo,
+      qrOrdering: {
+        enabled: config.qrOrdering?.enabled ?? true,
+        allowSelfDineIn: config.qrOrdering?.allowSelfDineIn ?? true,
+        allowWaiterOrdering: config.qrOrdering?.allowWaiterOrdering ?? true
+      },
+      paymentMethods: {
+        cash: config.paymentMethods?.cash ?? true,
+        upi: config.paymentMethods?.upi ?? true,
+        card: config.paymentMethods?.card ?? true,
+        onlineGateway: config.paymentMethods?.onlineGateway ?? true
+      },
+      waiterTips: {
+        enabled: config.waiterTips?.enabled ?? true,
+        allowCustomerTips: config.waiterTips?.allowCustomerTips ?? true,
+        tipPercentages: config.waiterTips?.tipPercentages || [5, 10, 15, 20],
+        customTipAllowed: config.waiterTips?.customTipAllowed ?? true
+      },
+      orderKitchen: {
+        kotEnabled: config.orderKitchen?.kotEnabled ?? true,
+        kdsEnabled: config.orderKitchen?.kdsEnabled ?? true,
+        kotPrintEnabled: config.orderKitchen?.kotPrintEnabled ?? true
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var getRestaurantConfig = async (req, res) => {
+  try {
+    const restaurantId = req.user.restaurantId;
+    if (!restaurantId) {
+      return res.status(400).json({ message: "No restaurant associated with this user" });
+    }
+    const restaurant = await Restaurant_default.findById(restaurantId);
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
+    const planName = restaurant.subscription?.plan || "Basic";
+    const PlanModel = import_mongoose13.default.model("Plan");
+    const planDoc = await PlanModel.findOne({ name: new RegExp(`^${planName}$`, "i") });
+    const planFeatures = planDoc?.features || [];
+    const config = restaurant.restaurantConfig || {
+      orderKitchen: { kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
+      waiterTips: { enabled: true, allowCustomerTips: true, tipPercentages: [5, 10, 15, 20], customTipAllowed: true },
+      qrOrdering: { enabled: true, allowSelfDineIn: true, allowWaiterOrdering: true },
+      paymentMethods: { cash: true, upi: true, card: true, onlineGateway: true },
+      setupWizardCompleted: false,
+      setupStep: 1
+    };
+    res.json({
+      config,
+      planName,
+      planFeatures,
+      isTrialActive: restaurant.subscription?.trialActive || false
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var updateRestaurantConfig = async (req, res) => {
+  try {
+    const restaurantId = req.user.restaurantId;
+    if (!restaurantId) {
+      return res.status(400).json({ message: "No restaurant associated with this user" });
+    }
+    const restaurant = await Restaurant_default.findById(restaurantId);
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
+    const { orderKitchen, waiterTips, qrOrdering, paymentMethods, setupWizardCompleted, setupStep } = req.body;
+    const currentPm = restaurant.restaurantConfig?.paymentMethods || { cash: true, upi: true, card: true, onlineGateway: true };
+    const mergedPm = paymentMethods ? { ...currentPm, ...paymentMethods } : currentPm;
+    if (paymentMethods && !mergedPm.cash && !mergedPm.upi && !mergedPm.card && !mergedPm.onlineGateway) {
+      return res.status(400).json({
+        message: "At least one payment method (Cash, UPI, Card, or Online Gateway) must remain enabled."
+      });
+    }
+    const planName = restaurant.subscription?.plan || "Basic";
+    const isSuperAdmin = req.user.role === "SuperAdmin";
+    if (!isSuperAdmin) {
+      const PlanModel = import_mongoose13.default.model("Plan");
+      const planDoc = await PlanModel.findOne({ name: new RegExp(`^${planName}$`, "i") });
+      const planFeatures = planDoc?.features || [];
+      const isFeatureAllowed = (featureKeyword) => {
+        if (["Pro", "Enterprise"].includes(planName) && (featureKeyword === "kds" || featureKeyword === "tips")) return true;
+        return planFeatures.some((f) => f.toLowerCase().includes(featureKeyword.toLowerCase()));
+      };
+      if (orderKitchen?.kdsEnabled === true && !restaurant.restaurantConfig?.orderKitchen?.kdsEnabled) {
+        if (!isFeatureAllowed("Kitchen Display System") && !isFeatureAllowed("KDS") && planName === "Basic") {
+          return res.status(403).json({
+            message: `Kitchen Display System (KDS) requires a Pro or Enterprise subscription. Your restaurant is currently on the ${planName} plan.`,
+            requiresUpgrade: true,
+            requiredPlan: "Pro"
+          });
+        }
+      }
+    }
+    if (!restaurant.restaurantConfig) {
+      restaurant.restaurantConfig = {
+        orderKitchen: { kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
+        waiterTips: { enabled: true, allowCustomerTips: true, tipPercentages: [5, 10, 15, 20], customTipAllowed: true },
+        qrOrdering: { enabled: true, allowSelfDineIn: true, allowWaiterOrdering: true },
+        paymentMethods: { cash: true, upi: true, card: true, onlineGateway: true },
+        setupWizardCompleted: false,
+        setupStep: 1
+      };
+    }
+    if (orderKitchen) {
+      restaurant.restaurantConfig.orderKitchen = {
+        ...restaurant.restaurantConfig.orderKitchen || {},
+        ...orderKitchen
+      };
+      if (orderKitchen.kdsEnabled !== void 0) {
+        if (!restaurant.posConfig) restaurant.posConfig = {};
+        restaurant.posConfig.kdsEnabled = orderKitchen.kdsEnabled;
+      }
+    }
+    if (waiterTips) {
+      restaurant.restaurantConfig.waiterTips = {
+        ...restaurant.restaurantConfig.waiterTips || {},
+        ...waiterTips
+      };
+    }
+    if (qrOrdering) {
+      restaurant.restaurantConfig.qrOrdering = {
+        ...restaurant.restaurantConfig.qrOrdering || {},
+        ...qrOrdering
+      };
+      if (qrOrdering.enabled !== void 0) {
+        if (!restaurant.posConfig) restaurant.posConfig = {};
+        restaurant.posConfig.guestQrOrdering = qrOrdering.enabled;
+      }
+    }
+    if (paymentMethods) {
+      restaurant.restaurantConfig.paymentMethods = mergedPm;
+      if (!restaurant.billingConfig) restaurant.billingConfig = {};
+      if (!restaurant.billingConfig.paymentMethods) restaurant.billingConfig.paymentMethods = {};
+      restaurant.billingConfig.paymentMethods.cash = mergedPm.cash;
+      restaurant.billingConfig.paymentMethods.upi = mergedPm.upi;
+      restaurant.billingConfig.paymentMethods.card = mergedPm.card;
+    }
+    if (setupWizardCompleted !== void 0) {
+      restaurant.restaurantConfig.setupWizardCompleted = Boolean(setupWizardCompleted);
+    }
+    if (setupStep !== void 0) {
+      restaurant.restaurantConfig.setupStep = Number(setupStep);
+    }
+    restaurant.markModified("restaurantConfig");
+    restaurant.markModified("posConfig");
+    restaurant.markModified("billingConfig");
+    await restaurant.save();
+    res.json({
+      success: true,
+      message: "Restaurant configuration updated successfully",
+      config: restaurant.restaurantConfig,
+      restaurantConfig: restaurant.restaurantConfig
+    });
+  } catch (error) {
+    console.error("Error updating restaurant config:", error);
+    res.status(500).json({ message: error.message || "Failed to update restaurant configuration" });
   }
 };
 var getBranches = async (req, res) => {
@@ -127965,6 +128610,8 @@ router2.route("/verification/all").get(protect, authorize("SuperAdmin"), getAllV
 router2.route("/verification/:id").get(protect, authorize("SuperAdmin"), getVerificationById).delete(protect, authorize("SuperAdmin"), deleteVerification);
 router2.route("/verification/:id/review").put(protect, authorize("SuperAdmin"), reviewVerification);
 router2.route("/mine").get(protect, getMyRestaurant).put(protect, authorize("RestaurantAdmin"), logoUpload, updateMyRestaurant);
+router2.route("/mine/config").get(protect, authorize("RestaurantAdmin", "BranchManager", "SuperAdmin", "Admin"), getRestaurantConfig).put(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), updateRestaurantConfig);
+router2.route("/:id/public-config").get(getRestaurantPublicConfig);
 router2.route("/mine/billing-history").get(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), getMyBillingHistory);
 router2.route("/mine/upgrade").post(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), upgradeSubscription);
 router2.route("/mine/downgrade").post(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), downgradeSubscription);
@@ -127985,6 +128632,7 @@ var import_express3 = __toESM(require_express2(), 1);
 
 // controllers/branchController.js
 init_Branch();
+init_Restaurant();
 init_Plan();
 var getBranches2 = async (req, res) => {
   try {
@@ -128100,14 +128748,334 @@ var import_express4 = __toESM(require_express2(), 1);
 
 // controllers/orderController.js
 init_Order();
+
+// models/KOT.js
+var import_mongoose14 = __toESM(require_mongoose2(), 1);
+var kotItemSchema = new import_mongoose14.default.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  qty: {
+    type: Number,
+    required: true,
+    min: 1
+  },
+  price: {
+    type: Number,
+    default: 0
+  },
+  notes: {
+    type: String,
+    default: ""
+  },
+  product: {
+    type: import_mongoose14.default.Schema.Types.ObjectId,
+    ref: "MenuItem"
+  },
+  kitchenStation: {
+    type: String,
+    default: "Main Kitchen"
+  },
+  status: {
+    type: String,
+    enum: ["Pending", "Preparing", "Ready", "Served", "Cancelled"],
+    default: "Pending"
+  }
+}, { _id: true });
+var kotSchema = new import_mongoose14.default.Schema({
+  kotNumber: {
+    type: String,
+    required: true,
+    index: true
+  },
+  kotSequence: {
+    type: Number,
+    required: true,
+    index: true
+  },
+  orderId: {
+    type: import_mongoose14.default.Schema.Types.ObjectId,
+    ref: "Order",
+    required: true,
+    index: true
+  },
+  orderNumber: {
+    type: String,
+    default: ""
+  },
+  restaurantId: {
+    type: import_mongoose14.default.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: true,
+    index: true
+  },
+  branchId: {
+    type: import_mongoose14.default.Schema.Types.ObjectId,
+    ref: "Branch",
+    required: true,
+    index: true
+  },
+  tableNumber: {
+    type: String,
+    default: ""
+  },
+  orderType: {
+    type: String,
+    enum: ["Dine In", "Self-Pickup", "Delivery", "Takeaway"],
+    default: "Dine In"
+  },
+  serviceType: {
+    type: String,
+    default: "Waiter Table Service"
+  },
+  customerName: {
+    type: String,
+    default: ""
+  },
+  customerPhone: {
+    type: String,
+    default: ""
+  },
+  kitchenStation: {
+    type: String,
+    required: true,
+    default: "Main Kitchen",
+    index: true
+  },
+  items: [kotItemSchema],
+  notes: {
+    type: String,
+    default: ""
+  },
+  isAddon: {
+    type: Boolean,
+    default: false
+  },
+  status: {
+    type: String,
+    enum: ["Pending", "Preparing", "Ready", "Served", "Cancelled"],
+    default: "Pending",
+    index: true
+  },
+  statusHistory: [
+    {
+      status: { type: String, required: true },
+      timestamp: { type: Date, default: Date.now },
+      updatedBy: { type: import_mongoose14.default.Schema.Types.ObjectId, ref: "User" }
+    }
+  ],
+  prepStartTime: {
+    type: Date,
+    default: null
+  },
+  prepReadyTime: {
+    type: Date,
+    default: null
+  },
+  servedTime: {
+    type: Date,
+    default: null
+  },
+  isPrinted: {
+    type: Boolean,
+    default: false
+  },
+  printedAt: {
+    type: Date,
+    default: null
+  },
+  printCount: {
+    type: Number,
+    default: 0
+  },
+  serverName: {
+    type: String,
+    default: "System / Customer"
+  },
+  createdBy: {
+    type: import_mongoose14.default.Schema.Types.ObjectId,
+    ref: "User",
+    default: null
+  }
+}, { timestamps: true });
+kotSchema.index({ restaurantId: 1, status: 1, createdAt: -1 });
+kotSchema.index({ restaurantId: 1, branchId: 1, status: 1 });
+kotSchema.index({ orderId: 1, createdAt: -1 });
+var KOT = import_mongoose14.default.model("KOT", kotSchema);
+var KOT_default = KOT;
+
+// controllers/orderController.js
+init_Restaurant();
 init_Branch();
 init_User();
-var import_mongoose15 = __toESM(require_mongoose2(), 1);
+var import_mongoose18 = __toESM(require_mongoose2(), 1);
+
+// utils/kotHelper.js
+init_MenuItem();
+init_Order();
+var determineKitchenStation = (item, menuItem = null) => {
+  if (item.kitchenStation && item.kitchenStation.trim() !== "") {
+    return item.kitchenStation.trim();
+  }
+  if (menuItem && menuItem.kitchenStation && menuItem.kitchenStation.trim() !== "") {
+    return menuItem.kitchenStation.trim();
+  }
+  const text = `${item.name || ""} ${item.category || (menuItem?.category || "")} ${item.notes || ""}`.toLowerCase();
+  if (/beverage|drink|juice|shake|smoothie|tea|coffee|soda|cola|beer|cocktail|mocktail|wine|water|cold drink|lassi|mojito|bar/i.test(text)) {
+    return "Beverages";
+  }
+  if (/dessert|ice cream|icecream|cake|pastry|pudding|sweet|brownie|waffle|halwa|gulab jamun|kheer|tiramisu|sundae|custard/i.test(text)) {
+    return "Desserts";
+  }
+  if (/pizza|calzone|garlic bread|pasta|lasagna|lasagne|oven|bake|gratin|flatbread/i.test(text)) {
+    return "Pizza / Oven";
+  }
+  if (/salad|cold bar|raita|soup|chaat|curd|appetizer/i.test(text)) {
+    return "Cold / Salad";
+  }
+  return "Main Kitchen";
+};
+var getNextKotNumber = async (restaurantId, branchId) => {
+  try {
+    const lastKot = await KOT_default.findOne({ restaurantId }).sort({ createdAt: -1 });
+    let nextSeq = 1001;
+    if (lastKot && typeof lastKot.kotSequence === "number" && !isNaN(lastKot.kotSequence)) {
+      nextSeq = lastKot.kotSequence + 1;
+    } else if (lastKot && lastKot.kotNumber) {
+      const match = String(lastKot.kotNumber).match(/\d+/);
+      if (match) {
+        nextSeq = parseInt(match[0], 10) + 1;
+      }
+    }
+    return {
+      kotNumber: `KOT-${nextSeq}`,
+      kotSequence: nextSeq
+    };
+  } catch (err) {
+    const fallbackSeq = Date.now() % 1e5;
+    return {
+      kotNumber: `KOT-${fallbackSeq}`,
+      kotSequence: fallbackSeq
+    };
+  }
+};
+var generateKOTsForOrder = async (order, options = {}) => {
+  if (!order) return [];
+  try {
+    const Restaurant3 = (await Promise.resolve().then(() => (init_Restaurant(), Restaurant_exports))).default;
+    const targetRest = await Restaurant3.findById(order.restaurantId).select("restaurantConfig");
+    if (targetRest?.restaurantConfig?.orderKitchen?.kotEnabled === false) {
+      return [];
+    }
+  } catch (e) {
+    console.error("Error checking kotEnabled config:", e);
+  }
+  const itemsToProcess = options.items || order.orderItems || [];
+  if (!itemsToProcess || itemsToProcess.length === 0) return [];
+  const isAddon = Boolean(options.isAddon);
+  const serverName = options.serverName || options.user?.name || (order.customerName ? `Guest (${order.customerName})` : "System POS");
+  const orderNumber = options.orderNumber || `#${String(order._id).slice(-5).toUpperCase()}`;
+  const productIds = itemsToProcess.map((i) => i.product).filter((p) => p && String(p).match(/^[0-9a-fA-F]{24}$/));
+  let menuItemsMap = /* @__PURE__ */ new Map();
+  if (productIds.length > 0) {
+    try {
+      const menuItems = await MenuItem_default.find({ _id: { $in: productIds } }).select("name category kitchenStation");
+      menuItems.forEach((m) => menuItemsMap.set(String(m._id), m));
+    } catch (e) {
+      console.error("Error fetching menu items for KOT station routing", e);
+    }
+  }
+  const stationGroups = /* @__PURE__ */ new Map();
+  itemsToProcess.forEach((item) => {
+    const menuItem = item.product ? menuItemsMap.get(String(item.product)) : null;
+    const station = determineKitchenStation(item, menuItem);
+    if (!stationGroups.has(station)) {
+      stationGroups.set(station, []);
+    }
+    stationGroups.get(station).push({
+      name: item.name,
+      qty: item.qty || 1,
+      price: item.price || 0,
+      notes: item.notes || item.specialInstructions || "",
+      product: item.product || null,
+      kitchenStation: station,
+      status: "Pending"
+    });
+  });
+  const createdKOTs = [];
+  for (const [station, stationItems] of stationGroups.entries()) {
+    const { kotNumber, kotSequence } = await getNextKotNumber(order.restaurantId, order.branchId);
+    const kot = new KOT_default({
+      kotNumber,
+      kotSequence,
+      orderId: order._id,
+      orderNumber,
+      restaurantId: order.restaurantId,
+      branchId: order.branchId,
+      tableNumber: order.tableNumber || "",
+      orderType: order.orderType || "Dine In",
+      serviceType: order.serviceType || "Waiter Table Service",
+      customerName: order.customerName || "",
+      customerPhone: order.customerPhone || "",
+      kitchenStation: station,
+      items: stationItems,
+      notes: isAddon ? options.notes ? `[Add-on Item] ${options.notes}` : `[Add-on Item] Additional order placed for Table ${order.tableNumber || ""}` : order.notes || options.notes || "",
+      isAddon,
+      status: "Pending",
+      statusHistory: [{
+        status: "Pending",
+        timestamp: /* @__PURE__ */ new Date(),
+        updatedBy: options.user?._id || null
+      }],
+      serverName,
+      createdBy: options.user?._id || null
+    });
+    const savedKOT = await kot.save();
+    createdKOTs.push(savedKOT);
+    broadcastToRestaurant(order.restaurantId, "new_kot", savedKOT);
+  }
+  try {
+    const kotIds = createdKOTs.map((k) => k._id);
+    const kotNums = createdKOTs.map((k) => k.kotNumber);
+    await Order_default.findByIdAndUpdate(order._id, {
+      $addToSet: {
+        kots: { $each: kotIds },
+        kotNumbers: { $each: kotNums }
+      }
+    });
+  } catch (orderUpdateErr) {
+    console.error("Error linking KOTs to Order", orderUpdateErr);
+  }
+  return createdKOTs;
+};
+var validateKOTStatusTransition = (currentStatus, newStatus) => {
+  if (currentStatus === newStatus) return { valid: true };
+  const allowedTransitions = {
+    "Pending": ["Preparing", "Cancelled"],
+    "Preparing": ["Ready", "Cancelled"],
+    "Ready": ["Served", "Cancelled"],
+    "Served": [],
+    // Terminal state
+    "Cancelled": []
+    // Terminal state
+  };
+  const allowedNext = allowedTransitions[currentStatus] || [];
+  if (!allowedNext.includes(newStatus)) {
+    return {
+      valid: false,
+      message: `Invalid KOT status transition: cannot change from "${currentStatus}" to "${newStatus}". Allowed next: ${allowedNext.join(", ") || "None (Terminal state)"}.`
+    };
+  }
+  return { valid: true };
+};
+
+// controllers/orderController.js
 var sanitizeOrderItems = (items) => {
   if (!items) return items;
   return items.map((item) => {
     const sanitizedItem = { ...item };
-    if (sanitizedItem.product && !import_mongoose15.default.Types.ObjectId.isValid(sanitizedItem.product)) {
+    if (sanitizedItem.product && !import_mongoose18.default.Types.ObjectId.isValid(sanitizedItem.product)) {
       delete sanitizedItem.product;
     }
     if (!sanitizedItem.image) {
@@ -128118,39 +129086,58 @@ var sanitizeOrderItems = (items) => {
 };
 var addOrderItems = async (req, res) => {
   try {
-    const { orderItems, orderType, source, restaurantId, branchId, paymentMethod, subscriptionPlan, taxPrice, totalPrice, tableNumber, notes, customerLocation, restaurantLocation, shippingAddress } = req.body;
+    const {
+      orderItems,
+      orderType,
+      source,
+      restaurantId,
+      branchId,
+      paymentMethod,
+      subscriptionPlan,
+      taxPrice,
+      totalPrice,
+      tableNumber,
+      notes,
+      customerLocation,
+      restaurantLocation,
+      shippingAddress,
+      customerName,
+      customerPhone,
+      serviceType,
+      isPaid
+    } = req.body;
     if (!orderItems || orderItems.length === 0) {
       return res.status(400).json({ message: "No order items" });
     }
     const validSources = ["Walk-in", "QR", "Self-Pickup"];
     const finalSource = validSources.includes(source) ? source : orderType === "Delivery" ? "Walk-in" : "Self-Pickup";
-    let finalBranchId = branchId && import_mongoose15.default.Types.ObjectId.isValid(branchId) ? branchId : req.user ? req.user.branchId : null;
-    let finalRestaurantId = restaurantId && import_mongoose15.default.Types.ObjectId.isValid(restaurantId) ? restaurantId : req.user ? req.user.restaurantId : null;
+    let finalBranchId = branchId && import_mongoose18.default.Types.ObjectId.isValid(branchId) ? branchId : req.user ? req.user.branchId : null;
+    let finalRestaurantId = restaurantId && import_mongoose18.default.Types.ObjectId.isValid(restaurantId) ? restaurantId : req.user ? req.user.restaurantId : null;
     if (!finalRestaurantId && orderItems && orderItems.length > 0 && orderItems[0].product) {
-      const MenuItem2 = import_mongoose15.default.model("MenuItem");
+      const MenuItem2 = import_mongoose18.default.model("MenuItem");
       const itemObj = await MenuItem2.findById(orderItems[0].product);
       if (itemObj && itemObj.restaurantId) {
         finalRestaurantId = itemObj.restaurantId;
       }
     }
     if (!finalBranchId && finalRestaurantId) {
-      const Branch3 = import_mongoose15.default.model("Branch");
+      const Branch3 = import_mongoose18.default.model("Branch");
       const firstBranch = await Branch3.findOne({ restaurantId: finalRestaurantId });
       if (firstBranch) {
         finalBranchId = firstBranch._id;
       }
     }
     if (!finalRestaurantId || !finalBranchId) {
-      const Restaurant3 = import_mongoose15.default.model("Restaurant");
-      const Branch3 = import_mongoose15.default.model("Branch");
+      const Restaurant3 = import_mongoose18.default.model("Restaurant");
+      const Branch3 = import_mongoose18.default.model("Branch");
       let demoRestaurant = await Restaurant3.findOne({ name: "Pizza Palace" }) || await Restaurant3.findOne({ isDemo: true });
       if (!demoRestaurant) {
-        const User3 = import_mongoose15.default.model("User");
+        const User3 = import_mongoose18.default.model("User");
         const adminUser = await User3.findOne({ role: "SuperAdmin" }) || await User3.findOne();
         demoRestaurant = await Restaurant3.create({
           name: "Pizza Palace",
           isDemo: true,
-          ownerId: adminUser ? adminUser._id : new import_mongoose15.default.Types.ObjectId(),
+          ownerId: adminUser ? adminUser._id : new import_mongoose18.default.Types.ObjectId(),
           approvalStatus: "Approved",
           subscription: { status: "Active", plan: "Pro" }
         });
@@ -128167,7 +129154,7 @@ var addOrderItems = async (req, res) => {
     }
     let finalUserId = req.user ? req.user._id : null;
     if (!finalUserId) {
-      const User3 = import_mongoose15.default.model("User");
+      const User3 = import_mongoose18.default.model("User");
       let guestUser = await User3.findOne({ role: "Customer" }) || await User3.findOne();
       if (!guestUser) {
         guestUser = await User3.create({
@@ -128214,12 +129201,50 @@ var addOrderItems = async (req, res) => {
       }
     }
     const deliveryOtp = orderType === "Delivery" ? Math.floor(1e3 + Math.random() * 9e3).toString() : null;
+    const restConfig = targetRestaurant?.restaurantConfig || {};
+    const determinedServiceType = serviceType || (orderType === "Self-Pickup" ? "Self Dine-In (KFC Style)" : "Waiter Table Service");
+    if (finalSource === "QR") {
+      if (restConfig.qrOrdering?.enabled === false) {
+        return res.status(400).json({ message: "QR Table Ordering is currently disabled for this restaurant." });
+      }
+      if (determinedServiceType === "Self Dine-In (KFC Style)" && restConfig.qrOrdering?.allowSelfDineIn === false) {
+        return res.status(400).json({ message: "Self Dine-in ordering is currently disabled for this restaurant." });
+      }
+      if (determinedServiceType === "Waiter Table Service" && restConfig.qrOrdering?.allowWaiterOrdering === false) {
+        return res.status(400).json({ message: "Waiter table service ordering is currently disabled for this restaurant." });
+      }
+      if (restConfig.qrOrdering?.allowSelfDineIn === false && restConfig.qrOrdering?.allowWaiterOrdering === false) {
+        return res.status(400).json({ message: "Table ordering service modes are currently disabled." });
+      }
+    }
+    const pmConfig = restConfig.paymentMethods || { cash: true, upi: true, card: true, onlineGateway: true };
+    const lowerMethod = String(paymentMethod || "").toLowerCase();
+    if ((lowerMethod.includes("cash") || lowerMethod.includes("counter")) && pmConfig.cash === false) {
+      return res.status(400).json({ message: "Cash payment method is currently disabled by this restaurant." });
+    }
+    if (lowerMethod.includes("upi") && pmConfig.upi === false) {
+      return res.status(400).json({ message: "UPI payment method is currently disabled by this restaurant." });
+    }
+    if (lowerMethod.includes("card") && pmConfig.card === false) {
+      return res.status(400).json({ message: "Card payment method is currently disabled by this restaurant." });
+    }
+    if (lowerMethod.includes("online") && pmConfig.onlineGateway === false) {
+      return res.status(400).json({ message: "Online payment gateway is currently disabled by this restaurant." });
+    }
+    const rawTip = Number(req.body.tipAmount) || 0;
+    const finalTip = restConfig.waiterTips?.enabled !== false && rawTip > 0 ? rawTip : 0;
+    const defaultPrepMins = orderType === "Delivery" ? 30 : 20;
+    const finalPrepMinutes = Number(req.body.estimatedPrepMinutes) || defaultPrepMins;
+    const finalEstimatedReadyTime = req.body.estimatedReadyTime ? new Date(req.body.estimatedReadyTime) : new Date(Date.now() + finalPrepMinutes * 60 * 1e3);
     const order = new Order_default({
       orderItems: sanitizeOrderItems(orderItems),
       user: finalUserId,
       restaurantId: finalRestaurantId,
       branchId: finalBranchId,
       orderType,
+      serviceType: determinedServiceType,
+      customerName: customerName || "",
+      customerPhone: customerPhone || "",
       tableNumber,
       notes,
       source: finalSource,
@@ -128227,6 +129252,8 @@ var addOrderItems = async (req, res) => {
       subscriptionPlan: subscriptionPlan || "One-time Order",
       taxPrice,
       totalPrice,
+      tipAmount: finalTip,
+      waiter: req.user?.role === "Waiter" ? req.user._id : void 0,
       deliveryOtp,
       shippingAddress,
       customerLocation: finalCustomerLoc,
@@ -128235,14 +129262,36 @@ var addOrderItems = async (req, res) => {
       // Strictly force new order to Pending status
       deliveryStatus: "None",
       // Strictly force None on creation until kitchen marks Ready for Pickup
-      isPaid: false,
-      // Will be paid later or by cashier
+      isPaid: Boolean(isPaid),
+      paidAt: isPaid ? /* @__PURE__ */ new Date() : null,
+      estimatedPrepMinutes: finalPrepMinutes,
+      estimatedReadyTime: finalEstimatedReadyTime,
       statusHistory: [{
         status: "Pending",
         timestamp: Date.now()
       }]
     });
     const createdOrder = await order.save();
+    if (finalTip > 0) {
+      try {
+        const Tip2 = (await Promise.resolve().then(() => (init_Tip(), Tip_exports))).default;
+        await Tip2.create({
+          restaurantId: finalRestaurantId,
+          branchId: finalBranchId,
+          orderId: createdOrder._id,
+          tableNumber: createdOrder.tableNumber || "",
+          amount: finalTip,
+          paymentMethod: createdOrder.paymentMethod,
+          source: finalSource === "QR" ? "Customer QR" : "Cashier Settlement",
+          status: createdOrder.isPaid ? "Settled" : "Pending",
+          waiterId: req.user?.role === "Waiter" ? req.user._id : null,
+          waiterName: req.user?.role === "Waiter" ? req.user.name : "Table Service Staff",
+          date: /* @__PURE__ */ new Date()
+        });
+      } catch (tipErr) {
+        console.error("Failed to log tip record:", tipErr);
+      }
+    }
     if (orderType === "Dine In" && tableNumber) {
       try {
         const Table2 = (await Promise.resolve().then(() => (init_Table(), Table_exports))).default;
@@ -128269,7 +129318,7 @@ var addOrderItems = async (req, res) => {
       const Notification2 = (await Promise.resolve().then(() => (init_Notification(), Notification_exports))).default;
       await Notification2.create({
         title: `\u{1F514} New Order #${createdOrder._id.toString().substring(createdOrder._id.toString().length - 5).toUpperCase()}`,
-        desc: `${orderType} ${tableNumber ? `(Table ${tableNumber})` : ""} - ${orderItems.map((i) => `${i.qty}x ${i.name}`).join(", ")} (\u20B9${totalPrice})`,
+        desc: `${determinedServiceType} ${tableNumber ? `(Table ${tableNumber})` : ""}${customerName ? ` \u2022 Guest: ${customerName}` : ""} - ${orderItems.map((i) => `${i.qty}x ${i.name}`).join(", ")} (\u20B9${totalPrice})`,
         type: "Order",
         restaurantId: finalRestaurantId,
         targetRole: ["Chef", "Kitchen", "Waiter", "Cashier", "RestaurantAdmin", "Admin"],
@@ -128278,8 +129327,24 @@ var addOrderItems = async (req, res) => {
     } catch (notifErr) {
       console.error("Failed to create order notification", notifErr);
     }
-    broadcastToRestaurant(finalRestaurantId, "new_order", createdOrder);
-    return res.status(201).json(createdOrder);
+    let generatedKOTs = [];
+    try {
+      generatedKOTs = await generateKOTsForOrder(createdOrder, {
+        user: req.user,
+        serverName: req.user?.name || (createdOrder.customerName ? `Guest (${createdOrder.customerName})` : "QR / Customer"),
+        notes: notes || createdOrder.notes
+      });
+    } catch (kotErr) {
+      console.error("Failed to auto-generate KOT for order:", kotErr);
+    }
+    const responseOrder = createdOrder.toObject ? createdOrder.toObject() : createdOrder;
+    responseOrder.kots = generatedKOTs;
+    responseOrder.kotNumbers = generatedKOTs.map((k) => k.kotNumber);
+    responseOrder.isKdsEnabled = restConfig.orderKitchen ? restConfig.orderKitchen.kdsEnabled !== false : true;
+    responseOrder.isKotEnabled = restConfig.orderKitchen ? restConfig.orderKitchen.kotEnabled !== false : true;
+    responseOrder.orderWorkflow = !responseOrder.isKdsEnabled && responseOrder.isKotEnabled ? "KOT" : responseOrder.isKdsEnabled && !responseOrder.isKotEnabled ? "KDS" : "HYBRID";
+    broadcastToRestaurant(finalRestaurantId, "new_order", responseOrder);
+    return res.status(201).json(responseOrder);
   } catch (error) {
     console.error("Error creating order:", error);
     return res.status(500).json({ message: error.message || "Server error creating order" });
@@ -128303,6 +129368,18 @@ ${notes}` : notes;
       }
       order.status = "Preparing";
       const updatedOrder = await order.save();
+      let addonKOTs = [];
+      try {
+        addonKOTs = await generateKOTsForOrder(updatedOrder, {
+          items: orderItems,
+          isAddon: true,
+          user: req.user,
+          serverName: req.user?.name || (updatedOrder.customerName ? `Guest (${updatedOrder.customerName})` : "Waiter / QR"),
+          notes: notes || "Additional items added"
+        });
+      } catch (kotErr) {
+        console.error("Failed to generate add-on KOT for appended items:", kotErr);
+      }
       try {
         const Notification2 = (await Promise.resolve().then(() => (init_Notification(), Notification_exports))).default;
         await Notification2.create({
@@ -128317,7 +129394,9 @@ ${notes}` : notes;
       }
       broadcastToRestaurant(order.restaurantId, "order_updated", updatedOrder);
       broadcastToCustomerOrder(order._id, "order_status_updated", updatedOrder);
-      res.json(updatedOrder);
+      const responseData = updatedOrder.toObject ? updatedOrder.toObject() : updatedOrder;
+      responseData.newKots = addonKOTs;
+      res.json(responseData);
     } else {
       res.status(404).json({ message: "Order not found" });
     }
@@ -128326,13 +129405,28 @@ ${notes}` : notes;
   }
 };
 var getOrderById = async (req, res) => {
-  const order = await Order_default.findById(req.params.id).populate("user", "name email").populate("deliveryPartner", "name email phoneNumber");
+  const order = await Order_default.findById(req.params.id).populate("user", "name email").populate("deliveryPartner", "name email phoneNumber").populate("restaurantId", "name address phone restaurantConfig logo");
   if (order) {
     if (order.orderType === "Delivery" && !order.deliveryOtp) {
       order.deliveryOtp = Math.floor(1e3 + Math.random() * 9e3).toString();
       await order.save();
     }
-    res.json(order);
+    const orderObj = order.toObject();
+    try {
+      const kots = await KOT_default.find({ orderId: order._id }).sort({ createdAt: 1 }).select("kotNumber kotSequence kitchenStation status isAddon createdAt");
+      orderObj.kots = kots;
+      orderObj.kotNumbers = kots.map((k) => k.kotNumber);
+    } catch (kotFindErr) {
+      orderObj.kots = [];
+      orderObj.kotNumbers = [];
+    }
+    const restConfig = order.restaurantId?.restaurantConfig || {};
+    const kdsEnabled = restConfig.orderKitchen ? restConfig.orderKitchen.kdsEnabled !== false : true;
+    const kotEnabled = restConfig.orderKitchen ? restConfig.orderKitchen.kotEnabled !== false : true;
+    orderObj.isKdsEnabled = kdsEnabled;
+    orderObj.isKotEnabled = kotEnabled;
+    orderObj.orderWorkflow = !kdsEnabled && kotEnabled ? "KOT" : kdsEnabled && !kotEnabled ? "KDS" : "HYBRID";
+    res.json(orderObj);
   } else {
     res.status(404).json({ message: "Order not found" });
   }
@@ -128399,7 +129493,7 @@ var getOrders = async (req, res) => {
         } else {
           return res.json([]);
         }
-      } else if (req.query.branchId && import_mongoose15.default.Types.ObjectId.isValid(req.query.branchId)) {
+      } else if (req.query.branchId && import_mongoose18.default.Types.ObjectId.isValid(req.query.branchId)) {
         filter.branchId = req.query.branchId;
       }
       const isDemoUser = req.user.email && (req.user.email.toLowerCase().includes("pizzapalace") || req.user.email.toLowerCase().includes("demo"));
@@ -128407,9 +129501,9 @@ var getOrders = async (req, res) => {
         const cutoff = new Date(new Date(req.user.createdAt).getTime() - 5 * 60 * 1e3);
         filter.createdAt = { $gte: cutoff };
       }
-    } else if (req.query.restaurantId && import_mongoose15.default.Types.ObjectId.isValid(req.query.restaurantId)) {
+    } else if (req.query.restaurantId && import_mongoose18.default.Types.ObjectId.isValid(req.query.restaurantId)) {
       filter.restaurantId = req.query.restaurantId;
-      if (req.query.branchId && import_mongoose15.default.Types.ObjectId.isValid(req.query.branchId)) {
+      if (req.query.branchId && import_mongoose18.default.Types.ObjectId.isValid(req.query.branchId)) {
         filter.branchId = req.query.branchId;
       }
     }
@@ -128441,7 +129535,7 @@ var updateOrderStatus = async (req, res) => {
       order.tableNumber = newTableNum;
       if (order.orderType === "Dine In") {
         try {
-          const Table2 = import_mongoose15.default.model("Table");
+          const Table2 = import_mongoose18.default.model("Table");
           if (oldTableNum) {
             const oldTable = await Table2.findOne({
               tableNumber: oldTableNum,
@@ -128514,6 +129608,26 @@ var updateOrderStatus = async (req, res) => {
         timestamp: Date.now(),
         updatedBy: req.user ? req.user._id : null
       });
+      try {
+        if (newStatus === "Cancelled") {
+          await KOT_default.updateMany(
+            { orderId: order._id, status: { $ne: "Cancelled" } },
+            { $set: { status: "Cancelled" }, $push: { statusHistory: { status: "Cancelled", timestamp: Date.now(), updatedBy: req.user?._id || null } } }
+          );
+        } else if (newStatus === "Served" || newStatus === "Completed") {
+          await KOT_default.updateMany(
+            { orderId: order._id, status: { $nin: ["Served", "Cancelled"] } },
+            { $set: { status: "Served", servedTime: /* @__PURE__ */ new Date() }, $push: { statusHistory: { status: "Served", timestamp: Date.now(), updatedBy: req.user?._id || null } } }
+          );
+        } else if (["Ready", "Ready for Pickup"].includes(newStatus)) {
+          await KOT_default.updateMany(
+            { orderId: order._id, status: { $in: ["Pending", "Preparing"] } },
+            { $set: { status: "Ready", prepReadyTime: /* @__PURE__ */ new Date() }, $push: { statusHistory: { status: "Ready", timestamp: Date.now(), updatedBy: req.user?._id || null } } }
+          );
+        }
+      } catch (kotSyncErr) {
+        console.error("Error synchronizing KOT status on order update", kotSyncErr);
+      }
       const ticketNum = order._id.toString().substring(order._id.toString().length - 5).toUpperCase();
       if (newStatus === "Preparing") {
         try {
@@ -128612,7 +129726,7 @@ var updateOrderStatus = async (req, res) => {
         }
         if (order.orderType === "Dine In") {
           try {
-            const Table2 = import_mongoose15.default.model("Table");
+            const Table2 = import_mongoose18.default.model("Table");
             const table = await Table2.findOne({
               tableNumber: order.tableNumber,
               restaurantId: order.restaurantId,
@@ -128659,8 +129773,8 @@ var updateOrderToPaid = async (req, res) => {
     };
     if (order.orderType === "Dine In") {
       try {
-        const mongoose39 = await Promise.resolve().then(() => __toESM(require_mongoose2(), 1));
-        const Table2 = mongoose39.model("Table");
+        const mongoose53 = await Promise.resolve().then(() => __toESM(require_mongoose2(), 1));
+        const Table2 = mongoose53.model("Table");
         const table = await Table2.findOne({
           tableNumber: order.tableNumber,
           restaurantId: order.restaurantId,
@@ -128700,7 +129814,7 @@ var mergeOrders = async (req, res) => {
 Merged from table ${sourceOrder.tableNumber || "Any"}` : `Merged from table ${sourceOrder.tableNumber || "Any"}`;
     await targetOrder.save();
     if (sourceOrder.orderType === "Dine In" && sourceOrder.tableNumber) {
-      const Table2 = import_mongoose15.default.model("Table");
+      const Table2 = import_mongoose18.default.model("Table");
       const table = await Table2.findOne({
         tableNumber: sourceOrder.tableNumber,
         restaurantId: sourceOrder.restaurantId,
@@ -128843,7 +129957,7 @@ var updateDeliveryLocation = async (req, res) => {
 var router4 = import_express4.default.Router();
 router4.route("/razorpay-order").post(createRazorpayCustomerOrder);
 router4.route("/razorpay-verify").post(verifyRazorpayCustomerPayment);
-router4.route("/").post(optionalProtect, addOrderItems).get(protect, getOrders);
+router4.route("/").post(optionalProtect, addOrderItems).get(protect, checkBillingModule("dineInTakeawayOrders"), getOrders);
 router4.route("/myorders").get(protect, getMyOrders);
 router4.route("/:id").get(optionalProtect, getOrderById);
 router4.route("/:id/items").put(optionalProtect, appendOrderItems);
@@ -128858,9 +129972,475 @@ var orderRoutes_default = router4;
 var import_express5 = __toESM(require_express2(), 1);
 
 // controllers/analyticsController.js
-var import_mongoose16 = __toESM(require_mongoose2(), 1);
+var import_mongoose24 = __toESM(require_mongoose2(), 1);
 init_Order();
 init_Branch();
+init_Expense();
+
+// models/MaterialPurchase.js
+var import_mongoose20 = __toESM(require_mongoose2(), 1);
+var purchaseItemSchema = new import_mongoose20.default.Schema({
+  material: {
+    type: import_mongoose20.default.Schema.Types.ObjectId,
+    ref: "Inventory",
+    required: false
+  },
+  itemName: {
+    type: String,
+    required: true
+  },
+  category: {
+    type: String,
+    default: "General"
+  },
+  quantity: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  unit: {
+    type: String,
+    required: true
+  },
+  unitPrice: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  taxPercent: {
+    type: Number,
+    default: 0
+  },
+  taxAmount: {
+    type: Number,
+    default: 0
+  },
+  totalCost: {
+    type: Number,
+    required: true,
+    min: 0
+  }
+}, { _id: true });
+var materialPurchasePaymentSchema = new import_mongoose20.default.Schema({
+  amount: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  paymentDate: {
+    type: Date,
+    default: Date.now,
+    required: true
+  },
+  paymentMethod: {
+    type: String,
+    enum: ["Cash", "Bank Transfer", "UPI", "Cheque", "Credit"],
+    required: true
+  },
+  reference: {
+    type: String,
+    default: ""
+  },
+  notes: {
+    type: String,
+    default: ""
+  },
+  recordedBy: {
+    type: import_mongoose20.default.Schema.Types.ObjectId,
+    ref: "User"
+  }
+}, { _id: true, timestamps: true });
+var materialPurchaseSchema = new import_mongoose20.default.Schema({
+  restaurantId: {
+    type: import_mongoose20.default.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: true,
+    index: true
+  },
+  branchId: {
+    type: import_mongoose20.default.Schema.Types.ObjectId,
+    ref: "Branch",
+    required: true,
+    index: true
+  },
+  supplier: {
+    type: import_mongoose20.default.Schema.Types.ObjectId,
+    ref: "Supplier"
+  },
+  supplierName: {
+    type: String,
+    default: "Unknown Supplier"
+  },
+  supplierPhone: {
+    type: String,
+    default: ""
+  },
+  invoiceNumber: {
+    type: String,
+    required: true
+  },
+  purchaseDate: {
+    type: Date,
+    default: Date.now,
+    required: true
+  },
+  items: [purchaseItemSchema],
+  subtotal: {
+    type: Number,
+    required: true,
+    default: 0
+  },
+  taxAmount: {
+    type: Number,
+    default: 0
+  },
+  totalAmount: {
+    type: Number,
+    required: true,
+    default: 0
+  },
+  paidAmount: {
+    type: Number,
+    default: 0
+  },
+  balanceDue: {
+    type: Number,
+    default: 0
+  },
+  paymentStatus: {
+    type: String,
+    enum: ["Unpaid", "Partially Paid", "Paid"],
+    default: "Unpaid"
+  },
+  payments: [materialPurchasePaymentSchema],
+  notes: {
+    type: String,
+    default: ""
+  },
+  linkedExpenseId: {
+    type: import_mongoose20.default.Schema.Types.ObjectId,
+    ref: "Expense"
+  },
+  createdBy: {
+    type: import_mongoose20.default.Schema.Types.ObjectId,
+    ref: "User"
+  }
+}, { timestamps: true });
+materialPurchaseSchema.index({ restaurantId: 1, invoiceNumber: 1 });
+materialPurchaseSchema.index({ restaurantId: 1, purchaseDate: -1 });
+var MaterialPurchase = import_mongoose20.default.model("MaterialPurchase", materialPurchaseSchema);
+var MaterialPurchase_default = MaterialPurchase;
+
+// models/StockMovement.js
+var import_mongoose21 = __toESM(require_mongoose2(), 1);
+var stockMovementSchema = new import_mongoose21.default.Schema({
+  restaurantId: {
+    type: import_mongoose21.default.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: true,
+    index: true
+  },
+  branchId: {
+    type: import_mongoose21.default.Schema.Types.ObjectId,
+    ref: "Branch",
+    required: true,
+    index: true
+  },
+  inventoryItem: {
+    type: import_mongoose21.default.Schema.Types.ObjectId,
+    ref: "Inventory",
+    required: true,
+    index: true
+  },
+  itemName: {
+    type: String,
+    required: true
+  },
+  movementType: {
+    type: String,
+    enum: ["Purchase Received", "Stock Consumed", "Damaged", "Wastage", "Stock Adjustment", "Return"],
+    required: true
+  },
+  quantityChanged: {
+    type: Number,
+    required: true
+    // Positive for inward, negative for outward
+  },
+  previousQuantity: {
+    type: Number,
+    required: true
+  },
+  newQuantity: {
+    type: Number,
+    required: true
+  },
+  unit: {
+    type: String,
+    required: true
+  },
+  unitCost: {
+    type: Number,
+    default: 0
+  },
+  totalValue: {
+    type: Number,
+    default: 0
+  },
+  reference: {
+    type: String,
+    // e.g. "Invoice #INV-204", "Kitchen Daily Consumption", "Stock Adjustment"
+    default: ""
+  },
+  reason: {
+    type: String,
+    default: ""
+  },
+  performedBy: {
+    type: import_mongoose21.default.Schema.Types.ObjectId,
+    ref: "User"
+  },
+  date: {
+    type: Date,
+    default: Date.now,
+    index: true
+  }
+}, { timestamps: true });
+stockMovementSchema.index({ restaurantId: 1, inventoryItem: 1, date: -1 });
+var StockMovement = import_mongoose21.default.model("StockMovement", stockMovementSchema);
+var StockMovement_default = StockMovement;
+
+// models/Payroll.js
+var import_mongoose22 = __toESM(require_mongoose2(), 1);
+var payrollPaymentSchema = new import_mongoose22.default.Schema({
+  amount: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  paymentDate: {
+    type: Date,
+    default: Date.now,
+    required: true
+  },
+  paymentMethod: {
+    type: String,
+    enum: ["Cash", "Bank Transfer", "UPI", "Cheque"],
+    default: "Bank Transfer",
+    required: true
+  },
+  reference: {
+    type: String,
+    default: ""
+  },
+  notes: {
+    type: String,
+    default: ""
+  },
+  paidBy: {
+    type: import_mongoose22.default.Schema.Types.ObjectId,
+    ref: "User"
+  }
+}, { _id: true, timestamps: true });
+var payrollSchema = new import_mongoose22.default.Schema({
+  restaurantId: {
+    type: import_mongoose22.default.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: true,
+    index: true
+  },
+  branchId: {
+    type: import_mongoose22.default.Schema.Types.ObjectId,
+    ref: "Branch",
+    index: true
+  },
+  employee: {
+    type: import_mongoose22.default.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+    index: true
+  },
+  month: {
+    type: Number,
+    // 1 to 12
+    required: true
+  },
+  year: {
+    type: Number,
+    // e.g., 2026
+    required: true
+  },
+  periodString: {
+    type: String,
+    // e.g., "2026-10"
+    required: true
+  },
+  payPeriod: {
+    startDate: { type: Date, required: true },
+    endDate: { type: Date, required: true }
+  },
+  salaryFrequency: {
+    type: String,
+    enum: ["Monthly", "Daily", "Hourly"],
+    default: "Monthly"
+  },
+  basicSalary: {
+    type: Number,
+    required: true,
+    default: 0
+  },
+  attendanceSummary: {
+    presentDays: { type: Number, default: 0 },
+    absentDays: { type: Number, default: 0 },
+    leaveDays: { type: Number, default: 0 },
+    halfDays: { type: Number, default: 0 },
+    holidays: { type: Number, default: 0 },
+    overtimeHours: { type: Number, default: 0 },
+    totalWorkingDays: { type: Number, default: 26 }
+  },
+  calculations: {
+    earnedBasic: { type: Number, default: 0 },
+    overtimePay: { type: Number, default: 0 },
+    bonuses: { type: Number, default: 0 },
+    allowances: { type: Number, default: 0 },
+    grossSalary: { type: Number, default: 0 },
+    deductions: { type: Number, default: 0 },
+    advances: { type: Number, default: 0 },
+    netSalaryPayable: { type: Number, default: 0 }
+  },
+  paidAmount: {
+    type: Number,
+    default: 0
+  },
+  balanceDue: {
+    type: Number,
+    default: 0
+  },
+  paymentStatus: {
+    type: String,
+    enum: ["Pending", "Partially Paid", "Paid"],
+    default: "Pending"
+  },
+  payments: [payrollPaymentSchema],
+  status: {
+    type: String,
+    enum: ["Draft", "Approved", "Processed"],
+    default: "Draft"
+  },
+  approvedBy: {
+    type: import_mongoose22.default.Schema.Types.ObjectId,
+    ref: "User"
+  },
+  approvedAt: {
+    type: Date
+  },
+  notes: {
+    type: String,
+    default: ""
+  }
+}, { timestamps: true });
+payrollSchema.index({ restaurantId: 1, employee: 1, month: 1, year: 1 }, { unique: true });
+var Payroll = import_mongoose22.default.model("Payroll", payrollSchema);
+var Payroll_default = Payroll;
+
+// models/Payment.js
+var import_mongoose23 = __toESM(require_mongoose2(), 1);
+var paymentSchema = new import_mongoose23.default.Schema({
+  order: {
+    type: import_mongoose23.default.Schema.Types.ObjectId,
+    ref: "Order",
+    required: true
+  },
+  branch: {
+    type: import_mongoose23.default.Schema.Types.ObjectId,
+    ref: "Branch",
+    required: true
+  },
+  amount: {
+    type: Number,
+    required: true
+  },
+  paymentMethod: {
+    type: String,
+    enum: ["Cash", "Card", "UPI", "Online"],
+    required: true
+  },
+  transactionId: {
+    type: String
+    // from payment gateway
+  },
+  status: {
+    type: String,
+    enum: ["Pending", "Completed", "Failed", "Refunded"],
+    default: "Completed"
+  },
+  cashier: {
+    type: import_mongoose23.default.Schema.Types.ObjectId,
+    ref: "User"
+  }
+}, { timestamps: true });
+var Payment = import_mongoose23.default.model("Payment", paymentSchema);
+
+// controllers/analyticsController.js
+init_Restaurant();
+var getUserRestaurantId = async (user, query = {}) => {
+  let rId = user?.restaurantId || user?.restaurant;
+  if (!rId && user?.branchId) {
+    const branchDoc = await Branch_default.findById(user.branchId);
+    if (branchDoc) rId = branchDoc.restaurantId;
+  }
+  if (!rId && query?.restaurantId) {
+    rId = query.restaurantId;
+  }
+  if (!rId && user?.role === "SuperAdmin") {
+    const firstRest = await Restaurant_default.findOne().select("_id");
+    if (firstRest) rId = firstRest._id;
+  }
+  return rId;
+};
+var parseDateFilter = (period, startDate, endDate) => {
+  const now = /* @__PURE__ */ new Date();
+  let start = null;
+  let end = /* @__PURE__ */ new Date();
+  end.setHours(23, 59, 59, 999);
+  if (period === "today") {
+    start = /* @__PURE__ */ new Date();
+    start.setHours(0, 0, 0, 0);
+  } else if (period === "yesterday") {
+    start = /* @__PURE__ */ new Date();
+    start.setDate(now.getDate() - 1);
+    start.setHours(0, 0, 0, 0);
+    end = new Date(start);
+    end.setHours(23, 59, 59, 999);
+  } else if (period === "last7days" || period === "weekly") {
+    start = /* @__PURE__ */ new Date();
+    start.setDate(now.getDate() - 7);
+    start.setHours(0, 0, 0, 0);
+  } else if (period === "last30days") {
+    start = /* @__PURE__ */ new Date();
+    start.setDate(now.getDate() - 30);
+    start.setHours(0, 0, 0, 0);
+  } else if (period === "thismonth" || period === "monthly") {
+    start = new Date(now.getFullYear(), now.getMonth(), 1);
+    start.setHours(0, 0, 0, 0);
+  } else if (period === "lastmonth") {
+    start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    start.setHours(0, 0, 0, 0);
+    end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+  } else if (startDate || endDate) {
+    if (startDate) {
+      start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+    }
+    if (endDate) {
+      end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+    }
+  } else {
+    start = new Date(now.getFullYear(), now.getMonth(), 1);
+    start.setHours(0, 0, 0, 0);
+  }
+  return { start, end };
+};
 var getDashboardAnalytics = async (req, res) => {
   try {
     const timeframe = parseInt(req.query.timeframe) || 7;
@@ -128877,24 +130457,15 @@ var getDashboardAnalytics = async (req, res) => {
       isPaid: true,
       createdAt: { $gte: previousStartDate, $lt: startDate }
     };
-    let userRestaurantId = req.user.restaurantId || req.user.restaurant;
-    if (!userRestaurantId && req.user.branchId) {
-      const branchDoc = await Branch_default.findById(req.user.branchId);
-      if (branchDoc) userRestaurantId = branchDoc.restaurantId;
-    }
-    const isDemoUser = req.user.email && (req.user.email.toLowerCase().includes("pizzapalace") || req.user.email.toLowerCase().includes("demo"));
-    if (!isDemoUser && req.user.createdAt) {
-      const cutoff = new Date(new Date(req.user.createdAt).getTime() - 5 * 60 * 1e3);
-      currentPeriodMatch.createdAt = { $gte: cutoff, $lte: now };
-    }
+    let userRestaurantId = await getUserRestaurantId(req.user, req.query);
     if (userRestaurantId) {
-      currentPeriodMatch.restaurantId = new import_mongoose16.default.Types.ObjectId(userRestaurantId);
-      previousPeriodMatch.restaurantId = new import_mongoose16.default.Types.ObjectId(userRestaurantId);
+      currentPeriodMatch.restaurantId = new import_mongoose24.default.Types.ObjectId(userRestaurantId);
+      previousPeriodMatch.restaurantId = new import_mongoose24.default.Types.ObjectId(userRestaurantId);
       if (req.user.role === "BranchManager" || req.user.branchId) {
         const effectiveBranchId = req.user.branchId || (await Branch_default.findOne({ manager: req.user._id }))?._id;
         if (effectiveBranchId) {
-          currentPeriodMatch.branchId = new import_mongoose16.default.Types.ObjectId(effectiveBranchId);
-          previousPeriodMatch.branchId = new import_mongoose16.default.Types.ObjectId(effectiveBranchId);
+          currentPeriodMatch.branchId = new import_mongoose24.default.Types.ObjectId(effectiveBranchId);
+          previousPeriodMatch.branchId = new import_mongoose24.default.Types.ObjectId(effectiveBranchId);
         }
       }
     } else if (req.user.role !== "SuperAdmin") {
@@ -128957,7 +130528,7 @@ var getDashboardAnalytics = async (req, res) => {
       name: item.name,
       value: item.totalSold
     })).slice(0, 4);
-    const restIdObj = req.user.restaurantId ? new import_mongoose16.default.Types.ObjectId(req.user.restaurantId) : null;
+    const restIdObj = userRestaurantId ? new import_mongoose24.default.Types.ObjectId(userRestaurantId) : null;
     let activeTables = 0;
     let currentOrders = 0;
     let pendingOrders = 0;
@@ -128968,7 +130539,7 @@ var getDashboardAnalytics = async (req, res) => {
     let avgPrepTime = 15;
     if (restIdObj) {
       try {
-        const Table2 = import_mongoose16.default.model("Table");
+        const Table2 = import_mongoose24.default.model("Table");
         activeTables = await Table2.countDocuments({
           restaurantId: restIdObj,
           status: { $in: ["Occupied", "Reserved", "Billing"] }
@@ -129016,7 +130587,7 @@ var getDashboardAnalytics = async (req, res) => {
     let totalDeliveryEarnings = 0;
     if (restIdObj) {
       try {
-        const DeliveryPartner2 = import_mongoose16.default.model("DeliveryPartner");
+        const DeliveryPartner2 = import_mongoose24.default.model("DeliveryPartner");
         onlinePartners = await DeliveryPartner2.countDocuments({
           restaurantId: restIdObj,
           status: "Online",
@@ -129055,7 +130626,6 @@ var getDashboardAnalytics = async (req, res) => {
         avgOrderValue: curAvg,
         avgChange,
         activeCustomers: curOrders > 0 ? Math.floor(curOrders * 0.8) : 0,
-        // Fallback to 80% of orders as unique customers if we don't do distinct aggregation, but avoid 0.8 * 0 showing as 0. Wait, curOrders=0 -> 0.
         customersChange: ordersChange
       },
       revenueTrend,
@@ -129083,10 +130653,375 @@ var getDashboardAnalytics = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+var getProfitAndLoss = async (req, res) => {
+  try {
+    const restaurantId = await getUserRestaurantId(req.user, req.query);
+    if (!restaurantId) return res.status(400).json({ message: "Restaurant ID required" });
+    const restObjId = new import_mongoose24.default.Types.ObjectId(restaurantId);
+    const { start, end } = parseDateFilter(req.query.period, req.query.startDate, req.query.endDate);
+    const orderMatch = {
+      restaurantId: restObjId,
+      createdAt: { $gte: start, $lte: end }
+    };
+    const expenseMatch = {
+      restaurantId: restObjId,
+      date: { $gte: start, $lte: end }
+    };
+    if (req.user.role === "BranchManager" && req.user.branchId) {
+      orderMatch.branchId = new import_mongoose24.default.Types.ObjectId(req.user.branchId);
+      expenseMatch.branchId = new import_mongoose24.default.Types.ObjectId(req.user.branchId);
+    } else if (req.query.branchId && req.query.branchId !== "All") {
+      orderMatch.branchId = new import_mongoose24.default.Types.ObjectId(req.query.branchId);
+      expenseMatch.branchId = new import_mongoose24.default.Types.ObjectId(req.query.branchId);
+    }
+    const orders = await Order_default.find(orderMatch).lean();
+    let grossSales = 0;
+    let discounts = 0;
+    let refunds = 0;
+    let netSales = 0;
+    let amountCollected = 0;
+    let outstandingCustomerPayments = 0;
+    let totalOrdersCount = orders.length;
+    let completedOrdersCount = 0;
+    let cancelledOrdersCount = 0;
+    const paymentMethodBreakdown = {
+      Cash: 0,
+      Card: 0,
+      UPI: 0,
+      Online: 0,
+      Other: 0
+    };
+    for (const ord of orders) {
+      const tot = Number(ord.totalPrice) || 0;
+      const disc = Number(ord.discountAmount || ord.discount) || 0;
+      if (ord.status === "Cancelled") {
+        cancelledOrdersCount++;
+        refunds += tot;
+        continue;
+      }
+      if (ord.isPaid) {
+        grossSales += tot + disc;
+        discounts += disc;
+        amountCollected += tot;
+        completedOrdersCount++;
+        const method = ord.paymentMethod || "Card";
+        if (method.includes("Cash")) paymentMethodBreakdown.Cash += tot;
+        else if (method.includes("UPI")) paymentMethodBreakdown.UPI += tot;
+        else if (method.includes("Card")) paymentMethodBreakdown.Card += tot;
+        else if (method.includes("Online")) paymentMethodBreakdown.Online += tot;
+        else paymentMethodBreakdown.Other += tot;
+      } else {
+        outstandingCustomerPayments += tot;
+      }
+    }
+    netSales = Math.max(0, grossSales - discounts - refunds);
+    const expenses = await Expense_default.find(expenseMatch).lean();
+    let materialPurchasesIncurred = 0;
+    let materialPurchasesPaid = 0;
+    let staffSalariesIncurred = 0;
+    let staffSalariesPaid = 0;
+    let rentIncurred = 0;
+    let rentPaid = 0;
+    let electricityIncurred = 0;
+    let electricityPaid = 0;
+    let waterInternetIncurred = 0;
+    let waterInternetPaid = 0;
+    let maintenanceIncurred = 0;
+    let maintenancePaid = 0;
+    let deliveryTransportIncurred = 0;
+    let deliveryTransportPaid = 0;
+    let otherExpensesIncurred = 0;
+    let otherExpensesPaid = 0;
+    for (const exp of expenses) {
+      const amt = Number(exp.amount) || 0;
+      const paid = Number(exp.paidAmount) || 0;
+      const cat = exp.category;
+      if (cat === "Material purchases" || cat === "Kitchen Supplies") {
+        materialPurchasesIncurred += amt;
+        materialPurchasesPaid += paid;
+      } else if (cat === "Staff salary" || cat === "Staff Welfare") {
+        staffSalariesIncurred += amt;
+        staffSalariesPaid += paid;
+      } else if (cat === "Rent") {
+        rentIncurred += amt;
+        rentPaid += paid;
+      } else if (cat === "Electricity") {
+        electricityIncurred += amt;
+        electricityPaid += paid;
+      } else if (cat === "Water" || cat === "Internet" || cat === "Utility Bill") {
+        waterInternetIncurred += amt;
+        waterInternetPaid += paid;
+      } else if (cat === "Maintenance" || cat === "Equipment maintenance") {
+        maintenanceIncurred += amt;
+        maintenancePaid += paid;
+      } else if (cat === "Delivery and transport") {
+        deliveryTransportIncurred += amt;
+        deliveryTransportPaid += paid;
+      } else {
+        otherExpensesIncurred += amt;
+        otherExpensesPaid += paid;
+      }
+    }
+    const movementMatch = {
+      restaurantId: restObjId,
+      date: { $gte: start, $lte: end },
+      movementType: { $in: ["Stock Consumed", "Wastage"] }
+    };
+    if (orderMatch.branchId) movementMatch.branchId = orderMatch.branchId;
+    const consumedAgg = await StockMovement_default.aggregate([
+      { $match: movementMatch },
+      { $group: { _id: null, totalConsumed: { $sum: "$totalValue" } } }
+    ]);
+    const actualStockConsumed = consumedAgg.length > 0 ? consumedAgg[0].totalConsumed : 0;
+    const cogsFoodCost = materialPurchasesIncurred > 0 ? materialPurchasesIncurred : actualStockConsumed;
+    const grossProfit = Math.round((netSales - cogsFoodCost) * 100) / 100;
+    const grossProfitMargin = netSales > 0 ? Math.round(grossProfit / netSales * 1e3) / 10 : 0;
+    const totalOperatingExpensesIncurred = Math.round((staffSalariesIncurred + rentIncurred + electricityIncurred + waterInternetIncurred + maintenanceIncurred + deliveryTransportIncurred + otherExpensesIncurred) * 100) / 100;
+    const totalOperatingExpensesPaid = Math.round((staffSalariesPaid + rentPaid + electricityPaid + waterInternetPaid + maintenancePaid + deliveryTransportPaid + otherExpensesPaid) * 100) / 100;
+    const netOperatingProfit = Math.round((grossProfit - totalOperatingExpensesIncurred) * 100) / 100;
+    const netProfitMargin = netSales > 0 ? Math.round(netOperatingProfit / netSales * 1e3) / 10 : 0;
+    const actualCashOutflows = materialPurchasesPaid + totalOperatingExpensesPaid;
+    const netCashFlow = Math.round((amountCollected - actualCashOutflows) * 100) / 100;
+    const totalOutstandingLiabilities = Math.round((materialPurchasesIncurred - materialPurchasesPaid + (totalOperatingExpensesIncurred - totalOperatingExpensesPaid)) * 100) / 100;
+    const formattedSales = {
+      grossSales: Math.round(grossSales * 100) / 100,
+      discounts: Math.round(discounts * 100) / 100,
+      refunds: Math.round(refunds * 100) / 100,
+      netSales: Math.round(netSales * 100) / 100,
+      amountCollected: Math.round(amountCollected * 100) / 100,
+      outstandingCustomerPayments: Math.round(outstandingCustomerPayments * 100) / 100,
+      paymentMethods: paymentMethodBreakdown,
+      totalOrders: totalOrdersCount,
+      completedOrders: completedOrdersCount,
+      cancelledOrders: cancelledOrdersCount
+    };
+    const formattedExpenses = {
+      materialAndFoodCosts: Math.round(cogsFoodCost * 100) / 100,
+      materialPurchasesIncurred: Math.round(materialPurchasesIncurred * 100) / 100,
+      materialPurchasesPaid: Math.round(materialPurchasesPaid * 100) / 100,
+      actualStockConsumed: Math.round(actualStockConsumed * 100) / 100,
+      staffSalaryExpenses: Math.round(staffSalariesIncurred * 100) / 100,
+      rent: Math.round(rentIncurred * 100) / 100,
+      electricity: Math.round(electricityIncurred * 100) / 100,
+      waterAndInternet: Math.round(waterInternetIncurred * 100) / 100,
+      maintenance: Math.round(maintenanceIncurred * 100) / 100,
+      otherOperatingExpenses: Math.round((deliveryTransportIncurred + otherExpensesIncurred) * 100) / 100,
+      totalExpensesIncurred: totalOperatingExpensesIncurred,
+      totalExpensesPaid: totalOperatingExpensesPaid,
+      outstandingExpensesLiability: totalOutstandingLiabilities
+    };
+    const formattedProfitability = {
+      grossProfit,
+      grossProfitMarginPercent: grossProfitMargin,
+      netOperatingProfitLoss: netOperatingProfit,
+      netProfitMarginPercent: netProfitMargin,
+      netCashFlow,
+      outstandingLiabilities: totalOutstandingLiabilities
+    };
+    const formattedCashFlow = {
+      actualCashCollected: Math.round(amountCollected * 100) / 100,
+      actualCashOutflow: actualCashOutflows,
+      netCashFlow
+    };
+    res.json({
+      period: {
+        startDate: start,
+        endDate: end,
+        label: req.query.period || "Custom Range"
+      },
+      dateRange: {
+        startDate: start ? start.toISOString().split("T")[0] : "",
+        endDate: end ? end.toISOString().split("T")[0] : ""
+      },
+      sales: formattedSales,
+      expenses: formattedExpenses,
+      profitability: formattedProfitability,
+      cashFlow: formattedCashFlow,
+      revenue: formattedSales,
+      costOfGoodsSold: {
+        materialAndFoodCosts: Math.round(cogsFoodCost * 100) / 100,
+        materialPurchasesIncurred: Math.round(materialPurchasesIncurred * 100) / 100,
+        materialPurchasesPaid: Math.round(materialPurchasesPaid * 100) / 100,
+        actualStockConsumed: Math.round(actualStockConsumed * 100) / 100,
+        methodology: materialPurchasesIncurred > 0 ? "Based on actual supplier material purchases in period" : "Based on recorded kitchen stock consumption and wastage"
+      },
+      operatingExpenses: {
+        staffSalaries: { incurred: Math.round(staffSalariesIncurred * 100) / 100, paid: Math.round(staffSalariesPaid * 100) / 100 },
+        rent: { incurred: Math.round(rentIncurred * 100) / 100, paid: Math.round(rentPaid * 100) / 100 },
+        electricity: { incurred: Math.round(electricityIncurred * 100) / 100, paid: Math.round(electricityPaid * 100) / 100 },
+        waterAndInternet: { incurred: Math.round(waterInternetIncurred * 100) / 100, paid: Math.round(waterInternetPaid * 100) / 100 },
+        maintenance: { incurred: Math.round(maintenanceIncurred * 100) / 100, paid: Math.round(maintenancePaid * 100) / 100 },
+        deliveryAndTransport: { incurred: Math.round(deliveryTransportIncurred * 100) / 100, paid: Math.round(deliveryTransportPaid * 100) / 100 },
+        otherExpenses: { incurred: Math.round(otherExpensesIncurred * 100) / 100, paid: Math.round(otherExpensesPaid * 100) / 100 },
+        totalIncurred: totalOperatingExpensesIncurred,
+        totalPaid: totalOperatingExpensesPaid
+      },
+      profitMetrics: formattedProfitability,
+      calculationBreakdown: {
+        netSalesFormula: "Gross Sales minus Discounts minus Cancelled Orders",
+        grossProfitFormula: "Net Sales minus Material and Food Costs",
+        netOperatingProfitLossFormula: "Gross Profit minus Total Operating Overhead",
+        antiDoubleCountingRule: "Material purchases linked to expenses are reconciled without duplication"
+      }
+    });
+  } catch (error) {
+    console.error("Error generating Profit & Loss statement:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+var getDailyEarnings = async (req, res) => {
+  try {
+    const restaurantId = await getUserRestaurantId(req.user, req.query);
+    if (!restaurantId) return res.status(400).json({ message: "Restaurant ID required" });
+    const restObjId = new import_mongoose24.default.Types.ObjectId(restaurantId);
+    const targetDate = req.query.date ? new Date(req.query.date) : /* @__PURE__ */ new Date();
+    const startOfDay = new Date(targetDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23, 59, 59, 999);
+    const orderMatch = {
+      restaurantId: restObjId,
+      createdAt: { $gte: startOfDay, $lte: endOfDay }
+    };
+    const expenseMatch = {
+      restaurantId: restObjId,
+      date: { $gte: startOfDay, $lte: endOfDay }
+    };
+    if (req.user.role === "BranchManager" && req.user.branchId) {
+      orderMatch.branchId = new import_mongoose24.default.Types.ObjectId(req.user.branchId);
+      expenseMatch.branchId = new import_mongoose24.default.Types.ObjectId(req.user.branchId);
+    } else if (req.query.branchId && req.query.branchId !== "All") {
+      orderMatch.branchId = new import_mongoose24.default.Types.ObjectId(req.query.branchId);
+      expenseMatch.branchId = new import_mongoose24.default.Types.ObjectId(req.query.branchId);
+    }
+    const orders = await Order_default.find(orderMatch).lean();
+    let totalOrders = orders.length;
+    let grossSales = 0;
+    let discounts = 0;
+    let refunds = 0;
+    let amountCollected = 0;
+    let outstandingCustomerPayments = 0;
+    let completedCount = 0;
+    let cancelledCount = 0;
+    const collectionBreakdown = { Cash: 0, Card: 0, UPI: 0, Online: 0, Other: 0 };
+    const hourlyTrend = Array.from({ length: 24 }, (_, h) => ({
+      hour: `${h.toString().padStart(2, "0")}:00`,
+      orders: 0,
+      revenue: 0,
+      collected: 0
+    }));
+    for (const ord of orders) {
+      const tot = Number(ord.totalPrice) || 0;
+      const disc = Number(ord.discountAmount || ord.discount) || 0;
+      const hour = new Date(ord.createdAt).getHours();
+      if (ord.status === "Cancelled") {
+        cancelledCount++;
+        refunds += tot;
+        continue;
+      }
+      hourlyTrend[hour].orders++;
+      if (ord.isPaid) {
+        completedCount++;
+        grossSales += tot + disc;
+        discounts += disc;
+        amountCollected += tot;
+        hourlyTrend[hour].revenue += tot + disc;
+        hourlyTrend[hour].collected += tot;
+        const m = ord.paymentMethod || "Card";
+        if (m.includes("Cash")) collectionBreakdown.Cash += tot;
+        else if (m.includes("UPI")) collectionBreakdown.UPI += tot;
+        else if (m.includes("Card")) collectionBreakdown.Card += tot;
+        else if (m.includes("Online")) collectionBreakdown.Online += tot;
+        else collectionBreakdown.Other += tot;
+      } else {
+        outstandingCustomerPayments += tot;
+        hourlyTrend[hour].revenue += tot;
+      }
+    }
+    const netSales = Math.max(0, grossSales - discounts - refunds);
+    const expensesToday = await Expense_default.find(expenseMatch).lean();
+    let materialCostsToday = 0;
+    let staffExpensesToday = 0;
+    let rentAndUtilitiesToday = 0;
+    let otherExpensesToday = 0;
+    for (const exp of expensesToday) {
+      const paid = Number(exp.paidAmount) || 0;
+      const cat = exp.category;
+      if (cat === "Material purchases" || cat === "Kitchen Supplies") {
+        materialCostsToday += paid;
+      } else if (cat === "Staff salary" || cat === "Staff Welfare") {
+        staffExpensesToday += paid;
+      } else if (["Rent", "Electricity", "Water", "Internet", "Utility Bill"].includes(cat)) {
+        rentAndUtilitiesToday += paid;
+      } else {
+        otherExpensesToday += paid;
+      }
+    }
+    const monthlyExpenses = await Expense_default.find({
+      restaurantId: restObjId,
+      category: { $in: ["Rent", "Electricity", "Water", "Internet", "Utility Bill"] },
+      date: { $gte: new Date(targetDate.getFullYear(), targetDate.getMonth(), 1) }
+    }).lean();
+    const totalMonthlyRentUtils = monthlyExpenses.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+    const daysInMonth = new Date(targetDate.getFullYear(), targetDate.getMonth() + 1, 0).getDate();
+    const proratedDailyRentUtils = totalMonthlyRentUtils > 0 ? Math.round(totalMonthlyRentUtils / daysInMonth * 100) / 100 : 0;
+    const todayMovement = await StockMovement_default.aggregate([
+      {
+        $match: {
+          restaurantId: restObjId,
+          date: { $gte: startOfDay, $lte: endOfDay },
+          movementType: { $in: ["Stock Consumed", "Wastage"] }
+        }
+      },
+      { $group: { _id: null, total: { $sum: "$totalValue" } } }
+    ]);
+    const dailyStockConsumed = todayMovement.length > 0 ? todayMovement[0].total : 0;
+    const effectiveMaterialCost = materialCostsToday > 0 ? materialCostsToday : dailyStockConsumed;
+    const effectiveRentUtils = rentAndUtilitiesToday > 0 ? rentAndUtilitiesToday : proratedDailyRentUtils;
+    const totalDailyExpenses = Math.round((effectiveMaterialCost + staffExpensesToday + effectiveRentUtils + otherExpensesToday) * 100) / 100;
+    const estimatedProfitLoss = Math.round((netSales - totalDailyExpenses) * 100) / 100;
+    const confirmedCashProfit = Math.round((amountCollected - (materialCostsToday + staffExpensesToday + rentAndUtilitiesToday + otherExpensesToday)) * 100) / 100;
+    res.json({
+      date: startOfDay.toISOString().split("T")[0],
+      dateLabel: startOfDay.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", year: "numeric" }),
+      metrics: {
+        totalOrders,
+        completedOrders: completedCount,
+        cancelledOrders: cancelledCount,
+        grossSales: Math.round(grossSales * 100) / 100,
+        discounts: Math.round(discounts * 100) / 100,
+        refunds: Math.round(refunds * 100) / 100,
+        netSales: Math.round(netSales * 100) / 100,
+        amountCollected: Math.round(amountCollected * 100) / 100,
+        outstandingCustomerPayments: Math.round(outstandingCustomerPayments * 100) / 100,
+        collectionBreakdown
+      },
+      expenses: {
+        materialCosts: Math.round(effectiveMaterialCost * 100) / 100,
+        staffExpenses: Math.round(staffExpensesToday * 100) / 100,
+        rentAndUtilities: Math.round(effectiveRentUtils * 100) / 100,
+        otherExpenses: Math.round(otherExpensesToday * 100) / 100,
+        totalDailyExpenses
+      },
+      profitability: {
+        estimatedProfitLoss,
+        confirmedCashProfit,
+        isEstimated: effectiveRentUtils === proratedDailyRentUtils && proratedDailyRentUtils > 0,
+        costProrationNotes: effectiveRentUtils === proratedDailyRentUtils && proratedDailyRentUtils > 0 ? `Rent and utilities include daily prorated allocation of \u20B9${proratedDailyRentUtils} from monthly bills.` : "All costs represent actual expenses paid today."
+      },
+      hourlyTrend
+    });
+  } catch (error) {
+    console.error("Error fetching daily earnings:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // routes/analyticsRoutes.js
 var router5 = import_express5.default.Router();
-router5.route("/dashboard").get(protect, authorize("SuperAdmin", "RestaurantAdmin", "BranchManager"), getDashboardAnalytics);
+router5.route("/dashboard").get(protect, authorize("SuperAdmin", "RestaurantAdmin", "BranchManager", "Admin"), getDashboardAnalytics);
+router5.route("/profit-loss").get(protect, authorize("SuperAdmin", "RestaurantAdmin", "BranchManager", "Admin"), getProfitAndLoss);
+router5.route("/daily-earnings").get(protect, authorize("SuperAdmin", "RestaurantAdmin", "BranchManager", "Admin"), getDailyEarnings);
 var analyticsRoutes_default = router5;
 
 // routes/menuRoutes.js
@@ -129178,14 +131113,15 @@ var deleteMenuItem = async (req, res) => {
 
 // routes/menuRoutes.js
 var router6 = import_express6.default.Router();
-router6.route("/").get(optionalProtect, getMenuItems).post(protect, createMenuItem);
-router6.route("/:id").put(protect, updateMenuItem).delete(protect, deleteMenuItem);
+router6.route("/").get(optionalProtect, getMenuItems).post(protect, checkBillingModule("menuManagement"), createMenuItem);
+router6.route("/:id").put(protect, checkBillingModule("menuManagement"), updateMenuItem).delete(protect, checkBillingModule("menuManagement"), deleteMenuItem);
 var menuRoutes_default = router6;
 
 // routes/superAdminRoutes.js
 var import_express7 = __toESM(require_express2(), 1);
 
 // controllers/superAdminController.js
+init_Restaurant();
 init_User();
 init_Order();
 init_Plan();
@@ -129308,6 +131244,17 @@ var getRestaurants2 = async (req, res) => {
     }
     const restaurants = await Restaurant_default.find().populate("ownerId", "name email").sort({ createdAt: -1 }).lean();
     const repairedRestaurants = await Promise.all(restaurants.map(async (r) => {
+      if (!r.ownerId) {
+        const owner = await User3.findOne({ restaurantId: r._id, role: { $in: ["RestaurantAdmin", "Admin"] } }).select("name email");
+        if (owner) {
+          r.ownerId = { _id: owner._id, name: owner.name, email: owner.email };
+          try {
+            await Restaurant_default.findByIdAndUpdate(r._id, { ownerId: owner._id });
+          } catch (e) {
+            console.error("Failed to persist ownerId", e);
+          }
+        }
+      }
       if (!r.name || r.name.trim() === "" || r.name === "Unnamed") {
         const ownerName = r.ownerId?.name || "Partner";
         r.name = `${ownerName}'s Restaurant`;
@@ -129703,7 +131650,7 @@ var superAdminRoutes_default = router7;
 var import_express8 = __toESM(require_express2(), 1);
 
 // controllers/tableController.js
-var import_mongoose24 = __toESM(require_mongoose2(), 1);
+var import_mongoose30 = __toESM(require_mongoose2(), 1);
 init_Table();
 init_Order();
 var getTables = async (req, res) => {
@@ -129726,7 +131673,7 @@ var createTable = async (req, res) => {
   try {
     let finalBranchId = branchId || req.user.branchId;
     if (!finalBranchId) {
-      const Branch3 = import_mongoose24.default.model("Branch");
+      const Branch3 = import_mongoose30.default.model("Branch");
       const firstBranch = await Branch3.findOne({ restaurantId: req.user.restaurantId });
       if (firstBranch) {
         finalBranchId = firstBranch._id;
@@ -129784,16 +131731,16 @@ var deleteTable = async (req, res) => {
 
 // routes/tableRoutes.js
 var router8 = import_express8.default.Router();
-router8.route("/").get(protect, authorize("SuperAdmin", "Admin", "RestaurantAdmin", "BranchManager", "Waiter", "Cashier"), getTables).post(protect, authorize("SuperAdmin", "Admin", "RestaurantAdmin", "BranchManager"), createTable);
-router8.route("/:id").delete(protect, authorize("SuperAdmin", "Admin", "RestaurantAdmin", "BranchManager"), deleteTable);
-router8.route("/:id/status").put(protect, authorize("SuperAdmin", "Admin", "RestaurantAdmin", "BranchManager", "Waiter", "Cashier"), updateTableStatus);
+router8.route("/").get(protect, checkBillingModule("tableManagement"), authorize("SuperAdmin", "Admin", "RestaurantAdmin", "BranchManager", "Waiter", "Cashier"), getTables).post(protect, checkBillingModule("tableManagement"), authorize("SuperAdmin", "Admin", "RestaurantAdmin", "BranchManager"), createTable);
+router8.route("/:id").delete(protect, checkBillingModule("tableManagement"), authorize("SuperAdmin", "Admin", "RestaurantAdmin", "BranchManager"), deleteTable);
+router8.route("/:id/status").put(protect, checkBillingModule("tableManagement"), authorize("SuperAdmin", "Admin", "RestaurantAdmin", "BranchManager", "Waiter", "Cashier"), updateTableStatus);
 var tableRoutes_default = router8;
 
 // routes/customerRoutes.js
 var import_express9 = __toESM(require_express2(), 1);
 
 // controllers/customerController.js
-var import_mongoose25 = __toESM(require_mongoose2(), 1);
+var import_mongoose31 = __toESM(require_mongoose2(), 1);
 init_User();
 init_Order();
 var getCustomers = async (req, res) => {
@@ -129803,7 +131750,7 @@ var getCustomers = async (req, res) => {
       return res.json([]);
     }
     const orderCustomerIds = await Order_default.distinct("user", {
-      restaurantId: new import_mongoose25.default.Types.ObjectId(restaurantId),
+      restaurantId: new import_mongoose31.default.Types.ObjectId(restaurantId),
       user: { $exists: true, $ne: null }
     });
     const customers = await User_default.find({
@@ -129814,7 +131761,7 @@ var getCustomers = async (req, res) => {
       ]
     }).select("name email phoneNumber createdAt");
     const orderStats = await Order_default.aggregate([
-      { $match: { restaurantId: new import_mongoose25.default.Types.ObjectId(restaurantId), user: { $exists: true, $ne: null } } },
+      { $match: { restaurantId: new import_mongoose31.default.Types.ObjectId(restaurantId), user: { $exists: true, $ne: null } } },
       {
         $group: {
           _id: "$user",
@@ -129887,6 +131834,7 @@ var router9 = import_express9.default.Router();
 router9.use(protect);
 router9.use(authorize("RestaurantAdmin", "BranchManager"));
 router9.use(checkSubscription);
+router9.use(checkBillingModule("customerManagement"));
 router9.route("/").get(getCustomers).post(createCustomer);
 var customerRoutes_default = router9;
 
@@ -129894,103 +131842,209 @@ var customerRoutes_default = router9;
 var import_express10 = __toESM(require_express2(), 1);
 
 // controllers/staffController.js
+var import_mongoose33 = __toESM(require_mongoose2(), 1);
 init_User();
 init_Branch();
+init_Restaurant();
 init_DeliveryPartner();
 init_Plan();
-var updateStaff = async (req, res) => {
-  const { name, phone, role, branchId, password } = req.body;
-  try {
-    const staff = await User_default.findById(req.params.id);
-    if (!staff) {
-      return res.status(404).json({ message: "Staff member not found" });
-    }
-    if (staff.restaurantId?.toString() !== req.user.restaurantId.toString()) {
-      return res.status(403).json({ message: "Not authorized to update this staff" });
-    }
-    const restaurant = await Restaurant_default.findById(req.user.restaurantId);
-    const hasEnterprise = restaurant?.subscription?.plan === "Enterprise";
-    const validRoles = hasEnterprise ? ["BranchManager", "Chef", "Waiter", "Cashier", "DeliveryPartner"] : ["BranchManager", "Chef", "Waiter", "Cashier"];
-    if (role && !validRoles.includes(role)) {
-      return res.status(400).json({ message: "Invalid staff role" });
-    }
-    const oldRole = staff.role;
-    staff.name = name || staff.name;
-    if (phone !== void 0) {
-      staff.phoneNumber = phone;
-    }
-    staff.role = role || staff.role;
-    if (branchId !== void 0) {
-      staff.branchId = branchId === "" ? null : branchId;
-    }
-    if (password) {
-      staff.password = password;
-    }
-    await staff.save();
-    if (staff.role === "BranchManager" && staff.branchId) {
-      await Branch_default.updateMany({ manager: staff._id, _id: { $ne: staff.branchId } }, { $unset: { manager: 1 } });
-      await Branch_default.findByIdAndUpdate(staff.branchId, { manager: staff._id });
-    } else {
-      await Branch_default.updateMany({ manager: staff._id }, { $unset: { manager: 1 } });
-    }
-    if (staff.role === "DeliveryPartner" && oldRole !== "DeliveryPartner") {
-      const exists = await DeliveryPartner_default.findOne({ userId: staff._id });
-      if (!exists) {
-        await DeliveryPartner_default.create({
-          userId: staff._id,
-          restaurantId: req.user.restaurantId,
-          verificationStatus: "Approved",
-          vehicleDetails: {
-            type: "Bike",
-            model: "",
-            rcNumber: "",
-            licenseNumber: ""
-          },
-          documents: {
-            profilePhoto: "",
-            drivingLicense: "",
-            aadhaarProof: ""
-          }
-        });
+
+// models/Attendance.js
+var import_mongoose32 = __toESM(require_mongoose2(), 1);
+var attendanceSchema = new import_mongoose32.default.Schema({
+  restaurantId: {
+    type: import_mongoose32.default.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: true,
+    index: true
+  },
+  branchId: {
+    type: import_mongoose32.default.Schema.Types.ObjectId,
+    ref: "Branch",
+    required: true,
+    index: true
+  },
+  employee: {
+    type: import_mongoose32.default.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+    index: true
+  },
+  date: {
+    type: Date,
+    required: true
+  },
+  dateString: {
+    type: String,
+    // YYYY-MM-DD format for timezone-safe grouping and uniqueness
+    required: true
+  },
+  status: {
+    type: String,
+    enum: ["Present", "Absent", "Leave", "Half-day", "Holiday"],
+    required: true,
+    default: "Present"
+  },
+  checkIn: {
+    type: Date
+  },
+  checkOut: {
+    type: Date
+  },
+  lateMinutes: {
+    type: Number,
+    default: 0
+  },
+  overtimeHours: {
+    type: Number,
+    default: 0
+  },
+  workingHours: {
+    type: Number,
+    default: 0
+  },
+  notes: {
+    type: String,
+    default: ""
+  },
+  isCorrected: {
+    type: Boolean,
+    default: false
+  },
+  correctionHistory: [
+    {
+      previousStatus: String,
+      newStatus: String,
+      previousCheckIn: Date,
+      newCheckIn: Date,
+      previousCheckOut: Date,
+      newCheckOut: Date,
+      correctedBy: {
+        type: import_mongoose32.default.Schema.Types.ObjectId,
+        ref: "User"
+      },
+      reason: {
+        type: String,
+        required: true
+      },
+      correctedAt: {
+        type: Date,
+        default: Date.now
       }
-      const restaurantDoc = await Restaurant_default.findById(req.user.restaurantId);
-      if (restaurantDoc) {
-        if (!restaurantDoc.deliverySettings) {
-          restaurantDoc.deliverySettings = { enabled: true };
-        } else {
-          restaurantDoc.deliverySettings.enabled = true;
-        }
-        await restaurantDoc.save();
-      }
     }
-    const updatedStaff = await User_default.findById(staff._id).populate("branchId", "name").select("-password");
-    res.json(updatedStaff);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  ],
+  createdBy: {
+    type: import_mongoose32.default.Schema.Types.ObjectId,
+    ref: "User"
   }
+}, { timestamps: true });
+attendanceSchema.index({ restaurantId: 1, employee: 1, dateString: 1 }, { unique: true });
+var Attendance = import_mongoose32.default.model("Attendance", attendanceSchema);
+var Attendance_default = Attendance;
+
+// controllers/staffController.js
+init_Expense();
+var getUserRestaurantId2 = async (user, queryOrBody = {}) => {
+  let rId = user?.restaurantId || user?.restaurant;
+  if (!rId && user?.branchId) {
+    const branchDoc = await Branch_default.findById(user.branchId);
+    if (branchDoc) rId = branchDoc.restaurantId;
+  }
+  if (!rId && queryOrBody?.restaurantId) {
+    rId = queryOrBody.restaurantId;
+  }
+  if (!rId && user?.role === "SuperAdmin") {
+    const firstRest = await Restaurant_default.findOne().select("_id");
+    if (firstRest) rId = firstRest._id;
+  }
+  return rId;
 };
 var getStaff = async (req, res) => {
   try {
-    const restaurant = await Restaurant_default.findById(req.user.restaurantId);
+    const restaurantId = await getUserRestaurantId2(req.user);
+    const restaurant = await Restaurant_default.findById(restaurantId);
     const hasEnterprise = restaurant?.subscription?.plan === "Enterprise";
-    const staffRoles = hasEnterprise ? ["BranchManager", "Chef", "Waiter", "Cashier", "DeliveryPartner"] : ["BranchManager", "Chef", "Waiter", "Cashier"];
-    const staff = await User_default.find({
-      restaurantId: req.user.restaurantId,
+    const staffRoles = hasEnterprise ? ["BranchManager", "Manager", "Chef", "Waiter", "Cashier", "DeliveryPartner", "Staff"] : ["BranchManager", "Manager", "Chef", "Waiter", "Cashier", "Staff"];
+    const filter = {
+      restaurantId,
       role: { $in: staffRoles }
-    }).populate("branchId", "name").select("-password");
+    };
+    if (req.query.role && req.query.role !== "All") {
+      if (req.query.role === "Manager" || req.query.role === "BranchManager") {
+        filter.role = { $in: ["BranchManager", "Manager"] };
+      } else {
+        filter.role = req.query.role;
+      }
+    }
+    if (req.user.role === "BranchManager" && req.user.branchId) {
+      filter.branchId = req.user.branchId;
+    } else if (req.query.branchId && req.query.branchId !== "All") {
+      filter.branchId = req.query.branchId;
+    }
+    if (req.query.employmentStatus && req.query.employmentStatus !== "All") {
+      filter.employmentStatus = req.query.employmentStatus;
+    }
+    const staff = await User_default.find(filter).populate("branchId", "name").select("-password").sort({ name: 1 });
     res.json(staff);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+var normalizeSalaryConfig = (config) => {
+  if (!config) {
+    return {
+      basicSalary: 0,
+      salaryFrequency: "Monthly",
+      overtimeRatePerHour: 0,
+      dailyWorkHours: 8,
+      monthlyWorkingDays: 26,
+      allowances: [],
+      deductions: []
+    };
+  }
+  let allowances = [];
+  if (Array.isArray(config.allowances)) {
+    allowances = config.allowances;
+  } else if (typeof config.allowances === "number" && config.allowances > 0) {
+    allowances = [{ name: "Standard Allowance", amount: config.allowances }];
+  }
+  let deductions = [];
+  if (Array.isArray(config.deductions)) {
+    deductions = config.deductions;
+  } else if (typeof config.deductions === "number" && config.deductions > 0) {
+    deductions = [{ name: "Standard Deduction", amount: config.deductions }];
+  }
+  return {
+    basicSalary: Number(config.basicSalary) || 0,
+    salaryFrequency: ["Monthly", "Daily", "Hourly"].includes(config.salaryFrequency) ? config.salaryFrequency : "Monthly",
+    overtimeRatePerHour: Number(config.overtimeRatePerHour) || 0,
+    dailyWorkHours: Number(config.dailyWorkHours) || 8,
+    monthlyWorkingDays: Number(config.monthlyWorkingDays) || 26,
+    allowances,
+    deductions
+  };
+};
 var createStaff = async (req, res) => {
-  const { name, email, phone, role, branchId, password } = req.body;
+  const {
+    name,
+    email,
+    phone,
+    role,
+    branchId,
+    password,
+    employeeId,
+    joiningDate,
+    employmentStatus,
+    salaryConfig,
+    bankDetails
+  } = req.body;
   try {
+    const restaurantId = await getUserRestaurantId2(req.user);
     const userExists = await User_default.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: "A user with this email already exists" });
     }
-    const restaurant = await Restaurant_default.findById(req.user.restaurantId);
+    const restaurant = await Restaurant_default.findById(restaurantId);
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant not found" });
     }
@@ -129999,14 +132053,12 @@ var createStaff = async (req, res) => {
     let staffLimit = 5;
     if (planDoc && planDoc.staffLimit !== void 0) {
       staffLimit = planDoc.staffLimit;
-    } else {
-      if (planName === "Pro" || planName === "Professional" || planName === "Enterprise") {
-        staffLimit = Infinity;
-      }
+    } else if (["Pro", "Professional", "Enterprise"].includes(planName)) {
+      staffLimit = Infinity;
     }
     const currentStaffCount = await User_default.countDocuments({
-      restaurantId: req.user.restaurantId,
-      role: { $in: ["BranchManager", "Chef", "Waiter", "Cashier", "DeliveryPartner"] }
+      restaurantId,
+      role: { $in: ["BranchManager", "Manager", "Chef", "Waiter", "Cashier", "DeliveryPartner", "Staff"] }
     });
     if (currentStaffCount >= staffLimit) {
       return res.status(403).json({
@@ -130014,19 +132066,27 @@ var createStaff = async (req, res) => {
         limitExceeded: true
       });
     }
-    const hasEnterprise = restaurant.subscription?.plan === "Enterprise";
-    const validRoles = hasEnterprise ? ["BranchManager", "Chef", "Waiter", "Cashier", "DeliveryPartner"] : ["BranchManager", "Chef", "Waiter", "Cashier"];
-    if (!validRoles.includes(role)) {
+    let normalizedRole = role;
+    if (normalizedRole === "Manager") normalizedRole = "BranchManager";
+    const validRoles = ["BranchManager", "Chef", "Waiter", "Cashier", "DeliveryPartner", "Staff"];
+    if (!validRoles.includes(normalizedRole)) {
       return res.status(400).json({ message: "Invalid staff role" });
     }
+    const empId = employeeId ? employeeId.trim() : `EMP-${(currentStaffCount + 1).toString().padStart(4, "0")}`;
+    const targetBranch = branchId && branchId !== "" && branchId !== "All" ? branchId : null;
     const user = await User_default.create({
       name,
       email,
       phoneNumber: phone,
-      password: password || "password123",
-      role,
-      restaurantId: req.user.restaurantId,
-      branchId: branchId === "" ? null : branchId
+      password: password || "Staff@123",
+      role: normalizedRole,
+      restaurantId,
+      branchId: targetBranch,
+      employeeId: empId,
+      joiningDate: joiningDate ? new Date(joiningDate) : /* @__PURE__ */ new Date(),
+      employmentStatus: employmentStatus || "Active",
+      salaryConfig: normalizeSalaryConfig(salaryConfig),
+      bankDetails: bankDetails || {}
     });
     if (user.role === "BranchManager" && user.branchId) {
       await Branch_default.updateMany({ manager: user._id, _id: { $ne: user.branchId } }, { $unset: { manager: 1 } });
@@ -130035,52 +132095,657 @@ var createStaff = async (req, res) => {
     if (user.role === "DeliveryPartner") {
       await DeliveryPartner_default.create({
         userId: user._id,
-        restaurantId: req.user.restaurantId,
+        restaurantId,
         verificationStatus: "Approved",
-        vehicleDetails: {
-          type: "Bike",
-          model: "",
-          rcNumber: "",
-          licenseNumber: ""
-        },
-        documents: {
-          profilePhoto: "",
-          drivingLicense: "",
-          aadhaarProof: ""
-        }
+        vehicleDetails: { type: "Bike", model: "", rcNumber: "", licenseNumber: "" },
+        documents: { profilePhoto: "", drivingLicense: "", aadhaarProof: "" }
       });
-      const restaurantDoc = await Restaurant_default.findById(req.user.restaurantId);
-      if (restaurantDoc) {
-        if (!restaurantDoc.deliverySettings) {
-          restaurantDoc.deliverySettings = { enabled: true };
-        } else {
-          restaurantDoc.deliverySettings.enabled = true;
-        }
-        await restaurantDoc.save();
-      }
     }
     const populatedUser = await User_default.findById(user._id).populate("branchId", "name").select("-password");
     res.status(201).json(populatedUser);
   } catch (error) {
+    console.error("Error in createStaff:", error);
     res.status(400).json({ message: error.message });
+  }
+};
+var updateStaff = async (req, res) => {
+  const {
+    name,
+    phone,
+    role,
+    branchId,
+    password,
+    employeeId,
+    joiningDate,
+    employmentStatus,
+    salaryConfig,
+    bankDetails
+  } = req.body;
+  try {
+    const restaurantId = await getUserRestaurantId2(req.user);
+    const staff = await User_default.findById(req.params.id);
+    if (!staff) {
+      return res.status(404).json({ message: "Staff member not found" });
+    }
+    if (restaurantId && staff.restaurantId && staff.restaurantId.toString() !== restaurantId.toString()) {
+      return res.status(403).json({ message: "Not authorized to update this staff" });
+    }
+    let normalizedRole = role;
+    if (normalizedRole === "Manager") normalizedRole = "BranchManager";
+    const validRoles = ["BranchManager", "Chef", "Waiter", "Cashier", "DeliveryPartner", "Staff"];
+    if (normalizedRole && !validRoles.includes(normalizedRole)) {
+      return res.status(400).json({ message: "Invalid staff role" });
+    }
+    const oldRole = staff.role;
+    staff.name = name || staff.name;
+    if (phone !== void 0) staff.phoneNumber = phone;
+    if (normalizedRole) staff.role = normalizedRole;
+    if (branchId !== void 0) {
+      staff.branchId = branchId && branchId !== "" && branchId !== "All" ? branchId : null;
+    }
+    if (password) staff.password = password;
+    if (employeeId !== void 0) staff.employeeId = employeeId;
+    if (joiningDate !== void 0) staff.joiningDate = new Date(joiningDate);
+    if (employmentStatus !== void 0) staff.employmentStatus = employmentStatus;
+    if (salaryConfig !== void 0) staff.salaryConfig = normalizeSalaryConfig(salaryConfig);
+    if (bankDetails !== void 0) staff.bankDetails = bankDetails;
+    await staff.save();
+    if (staff.role === "BranchManager" && staff.branchId) {
+      await Branch_default.updateMany({ manager: staff._id, _id: { $ne: staff.branchId } }, { $unset: { manager: 1 } });
+      await Branch_default.findByIdAndUpdate(staff.branchId, { manager: staff._id });
+    } else if (oldRole === "BranchManager" && staff.role !== "BranchManager") {
+      await Branch_default.updateMany({ manager: staff._id }, { $unset: { manager: 1 } });
+    }
+    if (staff.role === "DeliveryPartner" && oldRole !== "DeliveryPartner") {
+      const exists = await DeliveryPartner_default.findOne({ userId: staff._id });
+      if (!exists) {
+        await DeliveryPartner_default.create({
+          userId: staff._id,
+          restaurantId,
+          verificationStatus: "Approved",
+          vehicleDetails: { type: "Bike", model: "", rcNumber: "", licenseNumber: "" },
+          documents: { profilePhoto: "", drivingLicense: "", aadhaarProof: "" }
+        });
+      }
+    }
+    const updatedStaff = await User_default.findById(staff._id).populate("branchId", "name").select("-password");
+    res.json(updatedStaff);
+  } catch (error) {
+    console.error("Error in updateStaff:", error);
+    res.status(500).json({ message: error.message });
   }
 };
 var deleteStaff = async (req, res) => {
   try {
+    const restaurantId = await getUserRestaurantId2(req.user);
     const staff = await User_default.findById(req.params.id);
-    if (staff) {
-      if (staff.restaurantId?.toString() !== req.user.restaurantId.toString()) {
-        return res.status(403).json({ message: "Not authorized to delete this staff" });
-      }
-      await Branch_default.updateMany({ manager: staff._id }, { $unset: { manager: 1 } });
-      if (staff.role === "DeliveryPartner") {
-        await DeliveryPartner_default.deleteOne({ userId: staff._id });
-      }
-      await staff.deleteOne();
-      res.json({ message: "Staff member removed" });
-    } else {
-      res.status(404).json({ message: "Staff member not found" });
+    if (!staff) {
+      return res.status(404).json({ message: "Staff member not found" });
     }
+    if (staff.restaurantId?.toString() !== restaurantId.toString()) {
+      return res.status(403).json({ message: "Not authorized to delete this staff" });
+    }
+    await Branch_default.updateMany({ manager: staff._id }, { $unset: { manager: 1 } });
+    if (staff.role === "DeliveryPartner") {
+      await DeliveryPartner_default.deleteOne({ userId: staff._id });
+    }
+    await staff.deleteOne();
+    res.json({ message: "Staff member removed" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var bulkMarkAttendance = async (req, res) => {
+  const { date, records, branchId } = req.body;
+  try {
+    const restaurantId = await getUserRestaurantId2(req.user);
+    if (!date || !records || !records.length) {
+      return res.status(400).json({ message: "Date and attendance records are required" });
+    }
+    const dateObj = new Date(date);
+    const dateString = dateObj.toISOString().split("T")[0];
+    const results = [];
+    for (const r of records) {
+      const employeeId = r.employeeId || r.employee;
+      if (!employeeId) continue;
+      const staffMember = await User_default.findById(employeeId);
+      if (!staffMember) continue;
+      const targetBranch = staffMember.branchId || branchId || req.user.branchId;
+      let att = await Attendance_default.findOne({
+        restaurantId,
+        employee: employeeId,
+        dateString
+      });
+      const checkInVal = r.checkIn || r.checkInTime;
+      const checkOutVal = r.checkOut || r.checkOutTime;
+      if (att) {
+        att.status = r.status || att.status;
+        if (checkInVal) att.checkIn = new Date(checkInVal);
+        if (checkOutVal) att.checkOut = new Date(checkOutVal);
+        if (r.lateMinutes !== void 0) att.lateMinutes = Number(r.lateMinutes);
+        if (r.overtimeHours !== void 0) att.overtimeHours = Number(r.overtimeHours);
+        if (r.workingHours !== void 0) att.workingHours = Number(r.workingHours);
+        if (r.notes !== void 0) att.notes = r.notes;
+        await att.save();
+        results.push(att);
+      } else {
+        att = await Attendance_default.create({
+          restaurantId,
+          branchId: targetBranch,
+          employee: employeeId,
+          date: dateObj,
+          dateString,
+          status: r.status || "Present",
+          checkIn: checkInVal ? new Date(checkInVal) : void 0,
+          checkOut: checkOutVal ? new Date(checkOutVal) : void 0,
+          lateMinutes: Number(r.lateMinutes) || 0,
+          overtimeHours: Number(r.overtimeHours) || 0,
+          workingHours: Number(r.workingHours) || (r.status === "Present" ? 8 : r.status === "Half-day" ? 4 : 0),
+          notes: r.notes || "",
+          createdBy: req.user._id
+        });
+        results.push(att);
+      }
+    }
+    res.json({ message: `Processed ${results.length} attendance records`, records: results });
+  } catch (error) {
+    console.error("Error marking attendance:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+var getAttendance = async (req, res) => {
+  try {
+    const restaurantId = await getUserRestaurantId2(req.user);
+    const filter = { restaurantId };
+    if (req.user.role === "BranchManager" && req.user.branchId) {
+      filter.branchId = req.user.branchId;
+    } else if (req.query.branchId && req.query.branchId !== "All") {
+      filter.branchId = req.query.branchId;
+    }
+    if (req.query.employee && req.query.employee !== "All") {
+      filter.employee = req.query.employee;
+    }
+    if (req.query.status && req.query.status !== "All") {
+      filter.status = req.query.status;
+    }
+    if (req.query.date) {
+      const dateStr = new Date(req.query.date).toISOString().split("T")[0];
+      filter.dateString = dateStr;
+    } else if (req.query.startDate || req.query.endDate) {
+      filter.date = {};
+      if (req.query.startDate) {
+        const s = new Date(req.query.startDate);
+        s.setHours(0, 0, 0, 0);
+        filter.date.$gte = s;
+      }
+      if (req.query.endDate) {
+        const e = new Date(req.query.endDate);
+        e.setHours(23, 59, 59, 999);
+        filter.date.$lte = e;
+      }
+    }
+    const records = await Attendance_default.find(filter).populate("employee", "name email role employeeId phoneNumber salaryConfig").populate("branchId", "name").populate("correctionHistory.correctedBy", "name role").sort({ date: -1, "employee.name": 1 });
+    let filteredRecords = records;
+    if (req.query.role && req.query.role !== "All Roles") {
+      filteredRecords = records.filter((r) => r.employee?.role === req.query.role);
+    }
+    res.json(filteredRecords);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var correctAttendance = async (req, res) => {
+  const { newStatus, checkIn, checkOut, lateMinutes, overtimeHours, workingHours, reason } = req.body;
+  try {
+    const restaurantId = await getUserRestaurantId2(req.user);
+    const att = await Attendance_default.findById(req.params.id);
+    if (!att) {
+      return res.status(404).json({ message: "Attendance record not found" });
+    }
+    if (att.restaurantId.toString() !== restaurantId.toString()) {
+      return res.status(403).json({ message: "Not authorized to correct this record" });
+    }
+    if (!reason || !reason.trim()) {
+      return res.status(400).json({ message: "Audit correction reason is mandatory" });
+    }
+    att.correctionHistory.push({
+      previousStatus: att.status,
+      newStatus: newStatus || att.status,
+      previousCheckIn: att.checkIn,
+      newCheckIn: checkIn ? new Date(checkIn) : att.checkIn,
+      previousCheckOut: att.checkOut,
+      newCheckOut: checkOut ? new Date(checkOut) : att.checkOut,
+      correctedBy: req.user._id,
+      reason: reason.trim(),
+      correctedAt: /* @__PURE__ */ new Date()
+    });
+    att.isCorrected = true;
+    if (newStatus) att.status = newStatus;
+    if (checkIn) att.checkIn = new Date(checkIn);
+    if (checkOut) att.checkOut = new Date(checkOut);
+    if (lateMinutes !== void 0) att.lateMinutes = Number(lateMinutes);
+    if (overtimeHours !== void 0) att.overtimeHours = Number(overtimeHours);
+    if (workingHours !== void 0) att.workingHours = Number(workingHours);
+    await att.save();
+    const populated = await Attendance_default.findById(att._id).populate("employee", "name email role employeeId").populate("correctionHistory.correctedBy", "name role");
+    res.json(populated);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+var getAttendanceSummary = async (req, res) => {
+  try {
+    const restaurantId = await getUserRestaurantId2(req.user);
+    const { startDate, endDate, branchId } = req.query;
+    const matchFilter = { restaurantId: new import_mongoose33.default.Types.ObjectId(restaurantId) };
+    if (branchId && branchId !== "All") {
+      matchFilter.branchId = new import_mongoose33.default.Types.ObjectId(branchId);
+    } else if (req.user.role === "BranchManager" && req.user.branchId) {
+      matchFilter.branchId = new import_mongoose33.default.Types.ObjectId(req.user.branchId);
+    }
+    if (startDate || endDate) {
+      matchFilter.date = {};
+      if (startDate) {
+        const s = new Date(startDate);
+        s.setHours(0, 0, 0, 0);
+        matchFilter.date.$gte = s;
+      }
+      if (endDate) {
+        const e = new Date(endDate);
+        e.setHours(23, 59, 59, 999);
+        matchFilter.date.$lte = e;
+      }
+    }
+    const summary = await Attendance_default.aggregate([
+      { $match: matchFilter },
+      {
+        $group: {
+          _id: "$employee",
+          totalRecords: { $sum: 1 },
+          presentDays: { $sum: { $cond: [{ $eq: ["$status", "Present"] }, 1, 0] } },
+          absentDays: { $sum: { $cond: [{ $eq: ["$status", "Absent"] }, 1, 0] } },
+          leaveDays: { $sum: { $cond: [{ $eq: ["$status", "Leave"] }, 1, 0] } },
+          halfDays: { $sum: { $cond: [{ $eq: ["$status", "Half-day"] }, 1, 0] } },
+          holidays: { $sum: { $cond: [{ $eq: ["$status", "Holiday"] }, 1, 0] } },
+          totalOvertimeHours: { $sum: "$overtimeHours" },
+          totalWorkingHours: { $sum: "$workingHours" },
+          totalLateMinutes: { $sum: "$lateMinutes" }
+        }
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "employeeInfo"
+        }
+      },
+      { $unwind: "$employeeInfo" },
+      {
+        $project: {
+          employeeId: "$_id",
+          name: "$employeeInfo.name",
+          email: "$employeeInfo.email",
+          role: "$employeeInfo.role",
+          empCode: "$employeeInfo.employeeId",
+          salaryConfig: "$employeeInfo.salaryConfig",
+          presentDays: 1,
+          absentDays: 1,
+          leaveDays: 1,
+          halfDays: 1,
+          holidays: 1,
+          totalOvertimeHours: 1,
+          totalWorkingHours: 1,
+          totalLateMinutes: 1,
+          attendanceRate: {
+            $cond: [
+              { $gt: ["$totalRecords", 0] },
+              { $multiply: [{ $divide: [{ $add: ["$presentDays", { $multiply: ["$halfDays", 0.5] }] }, "$totalRecords"] }, 100] },
+              0
+            ]
+          }
+        }
+      },
+      { $sort: { name: 1 } }
+    ]);
+    res.json(summary);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var parseMonthNumber = (val) => {
+  if (!val) return null;
+  if (typeof val === "number") return val >= 1 && val <= 12 ? val : null;
+  const parsed = parseInt(val, 10);
+  if (!isNaN(parsed) && parsed >= 1 && parsed <= 12) return parsed;
+  const months = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+  const idx = months.indexOf(String(val).trim().toLowerCase());
+  return idx !== -1 ? idx + 1 : null;
+};
+var calculateEmployeePayrollItem = async (emp, m, y, restaurantId) => {
+  const startDate = new Date(y, m - 1, 1);
+  const endDate = new Date(y, m, 0, 23, 59, 59, 999);
+  const daysInMonth = new Date(y, m, 0).getDate();
+  const config = emp.salaryConfig || {};
+  const basic = Number(config.basicSalary) || 0;
+  const freq = config.salaryFrequency || "Monthly";
+  const otRate = Number(config.overtimeRatePerHour) || 0;
+  const standardWorkDays = Number(config.monthlyWorkingDays) || 26;
+  const dailyHours = Number(config.dailyWorkHours) || 8;
+  const attendance = await Attendance_default.find({
+    restaurantId,
+    employee: emp._id,
+    date: { $gte: startDate, $lte: endDate }
+  });
+  let presentDays = 0;
+  let absentDays = 0;
+  let leaveDays = 0;
+  let halfDays = 0;
+  let holidays = 0;
+  let overtimeHours = 0;
+  let totalWorkingHours = 0;
+  for (const a of attendance) {
+    if (a.status === "Present") presentDays++;
+    else if (a.status === "Absent") absentDays++;
+    else if (a.status === "Leave") leaveDays++;
+    else if (a.status === "Half-day") halfDays++;
+    else if (a.status === "Holiday") holidays++;
+    overtimeHours += a.overtimeHours || 0;
+    totalWorkingHours += a.workingHours || 0;
+  }
+  let earnedBasic = 0;
+  let calculatedOtRate = otRate;
+  if (freq === "Monthly") {
+    const perDayRate = standardWorkDays > 0 ? basic / standardWorkDays : basic / daysInMonth;
+    if (calculatedOtRate === 0 && perDayRate > 0) {
+      calculatedOtRate = Math.round(perDayRate / dailyHours * 1.5 * 100) / 100;
+    }
+    const paidDayUnits = attendance.length === 0 ? standardWorkDays : presentDays + halfDays * 0.5 + holidays;
+    earnedBasic = Math.min(basic, Math.round(perDayRate * paidDayUnits * 100) / 100);
+  } else if (freq === "Daily") {
+    if (calculatedOtRate === 0 && basic > 0) {
+      calculatedOtRate = Math.round(basic / dailyHours * 1.5 * 100) / 100;
+    }
+    earnedBasic = Math.round(basic * (presentDays + halfDays * 0.5) * 100) / 100;
+  } else if (freq === "Hourly") {
+    calculatedOtRate = otRate || basic * 1.5;
+    earnedBasic = Math.round(basic * totalWorkingHours * 100) / 100;
+  }
+  const overtimePay = Math.round(overtimeHours * calculatedOtRate * 100) / 100;
+  const allowancesTotal = (config.allowances || []).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+  const deductionsTotal = (config.deductions || []).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+  const grossSalary = Math.round((earnedBasic + overtimePay + allowancesTotal) * 100) / 100;
+  const netSalary = Math.max(0, Math.round((grossSalary - deductionsTotal) * 100) / 100);
+  return {
+    employee: {
+      _id: emp._id,
+      name: emp.name,
+      email: emp.email,
+      role: emp.role,
+      employeeId: emp.employeeId,
+      branch: emp.branchId
+    },
+    month: m,
+    year: y,
+    periodString: `${y}-${m.toString().padStart(2, "0")}`,
+    payPeriod: { startDate, endDate },
+    salaryFrequency: freq,
+    basicSalary: basic,
+    attendanceSummary: {
+      presentDays,
+      absentDays,
+      leaveDays,
+      halfDays,
+      holidays,
+      overtimeHours,
+      totalWorkingDays: standardWorkDays
+    },
+    calculations: {
+      earnedBasic,
+      overtimePay,
+      bonuses: 0,
+      allowances: allowancesTotal,
+      grossSalary,
+      deductions: deductionsTotal,
+      advances: 0,
+      netSalaryPayable: netSalary
+    },
+    paidAmount: 0,
+    balanceDue: netSalary,
+    paymentStatus: "Pending",
+    status: "Draft"
+  };
+};
+var calculatePayroll = async (req, res) => {
+  const { month, year, branchId } = req.body;
+  try {
+    const restaurantId = await getUserRestaurantId2(req.user);
+    const m = parseMonthNumber(month);
+    const y = parseInt(year);
+    if (!m || !y || m < 1 || m > 12) {
+      return res.status(400).json({ message: "Valid month and year are required" });
+    }
+    const staffFilter = {
+      restaurantId,
+      role: { $in: ["BranchManager", "Chef", "Waiter", "Cashier", "DeliveryPartner"] },
+      employmentStatus: { $ne: "Terminated" }
+    };
+    if (branchId && branchId !== "All") {
+      staffFilter.branchId = branchId;
+    } else if (req.user.role === "BranchManager" && req.user.branchId) {
+      staffFilter.branchId = req.user.branchId;
+    }
+    const employees = await User_default.find(staffFilter).populate("branchId", "name");
+    const calculatedPayroll = [];
+    for (const emp of employees) {
+      const item = await calculateEmployeePayrollItem(emp, m, y, restaurantId);
+      calculatedPayroll.push(item);
+    }
+    res.json({
+      month: m,
+      year: y,
+      count: calculatedPayroll.length,
+      totalEmployees: calculatedPayroll.length,
+      totalGrossPayable: calculatedPayroll.reduce((acc, c) => acc + c.calculations.grossSalary, 0),
+      totalNetPayable: calculatedPayroll.reduce((acc, c) => acc + c.calculations.netSalaryPayable, 0),
+      payroll: calculatedPayroll
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var generatePayroll = async (req, res) => {
+  const { month, year, branchId, payrollData } = req.body;
+  try {
+    const restaurantId = await getUserRestaurantId2(req.user);
+    const m = parseMonthNumber(month);
+    const y = parseInt(year);
+    if (!m || !y) {
+      return res.status(400).json({ message: "Valid month and year are required" });
+    }
+    let itemsToProcess = payrollData;
+    if (!itemsToProcess || !itemsToProcess.length) {
+      const staffFilter = {
+        restaurantId,
+        role: { $in: ["BranchManager", "Chef", "Waiter", "Cashier", "DeliveryPartner"] },
+        employmentStatus: { $ne: "Terminated" }
+      };
+      if (branchId && branchId !== "All") {
+        staffFilter.branchId = branchId;
+      } else if (req.user.role === "BranchManager" && req.user.branchId) {
+        staffFilter.branchId = req.user.branchId;
+      }
+      const employees = await User_default.find(staffFilter).populate("branchId", "name");
+      itemsToProcess = [];
+      for (const emp of employees) {
+        const item = await calculateEmployeePayrollItem(emp, m, y, restaurantId);
+        itemsToProcess.push(item);
+      }
+    }
+    const periodString = `${y}-${m.toString().padStart(2, "0")}`;
+    const savedRecords = [];
+    for (const item of itemsToProcess) {
+      const empId = item.employee?._id || item.employee;
+      let pr = await Payroll_default.findOne({
+        restaurantId,
+        employee: empId,
+        month: m,
+        year: y
+      });
+      if (pr) {
+        pr.attendanceSummary = item.attendanceSummary;
+        pr.calculations = item.calculations;
+        pr.balanceDue = Math.max(0, item.calculations.netSalaryPayable - pr.paidAmount);
+        pr.paymentStatus = pr.paidAmount >= item.calculations.netSalaryPayable ? "Paid" : pr.paidAmount > 0 ? "Partially Paid" : "Pending";
+        pr.status = "Approved";
+        pr.approvedBy = req.user._id;
+        pr.approvedAt = /* @__PURE__ */ new Date();
+        await pr.save();
+        savedRecords.push(pr);
+      } else {
+        pr = await Payroll_default.create({
+          restaurantId,
+          branchId: item.employee?.branch?._id || branchId || req.user.branchId,
+          employee: empId,
+          month: m,
+          year: y,
+          periodString,
+          payPeriod: item.payPeriod,
+          salaryFrequency: item.salaryFrequency,
+          basicSalary: item.basicSalary,
+          attendanceSummary: item.attendanceSummary,
+          calculations: item.calculations,
+          paidAmount: 0,
+          balanceDue: item.calculations.netSalaryPayable,
+          paymentStatus: "Pending",
+          status: "Approved",
+          approvedBy: req.user._id,
+          approvedAt: /* @__PURE__ */ new Date()
+        });
+        savedRecords.push(pr);
+      }
+    }
+    res.status(201).json({
+      message: `Successfully processed ${savedRecords.length} payroll records for ${periodString}`,
+      count: savedRecords.length,
+      records: savedRecords
+    });
+  } catch (error) {
+    console.error("Error generating payroll:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+var getPayrollRecords = async (req, res) => {
+  try {
+    const restaurantId = await getUserRestaurantId2(req.user);
+    const filter = { restaurantId };
+    if (req.user.role === "BranchManager" && req.user.branchId) {
+      filter.branchId = req.user.branchId;
+    } else if (req.query.branchId && req.query.branchId !== "All") {
+      filter.branchId = req.query.branchId;
+    }
+    if (req.query.month && req.query.month !== "All") {
+      const m = parseMonthNumber(req.query.month);
+      if (m) filter.month = m;
+    }
+    if (req.query.year && req.query.year !== "All") {
+      filter.year = parseInt(req.query.year);
+    }
+    if (req.query.employee && req.query.employee !== "All") {
+      filter.employee = req.query.employee;
+    }
+    if (req.query.paymentStatus && req.query.paymentStatus !== "All") {
+      filter.paymentStatus = req.query.paymentStatus;
+    }
+    const records = await Payroll_default.find(filter).populate("employee", "name email role employeeId phoneNumber bankDetails").populate("branchId", "name").populate("approvedBy", "name role").populate("payments.paidBy", "name").sort({ year: -1, month: -1, "employee.name": 1 });
+    res.json(records);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var getPayrollById = async (req, res) => {
+  try {
+    const restaurantId = await getUserRestaurantId2(req.user);
+    const record = await Payroll_default.findById(req.params.id).populate("employee", "name email role employeeId phoneNumber bankDetails joiningDate salaryConfig").populate("branchId", "name address phone").populate("restaurantId", "name address phone logo currency").populate("approvedBy", "name role").populate("payments.paidBy", "name role");
+    if (!record) {
+      return res.status(404).json({ message: "Payroll record not found" });
+    }
+    if (record.restaurantId._id.toString() !== restaurantId.toString()) {
+      return res.status(403).json({ message: "Not authorized to view this record" });
+    }
+    res.json(record);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var recordPayrollPayment = async (req, res) => {
+  const { amount, paymentMethod, reference, notes, paymentDate } = req.body;
+  try {
+    const restaurantId = await getUserRestaurantId2(req.user);
+    const payroll = await Payroll_default.findById(req.params.id).populate("employee", "name email employeeId");
+    if (!payroll) {
+      return res.status(404).json({ message: "Payroll record not found" });
+    }
+    if (payroll.restaurantId.toString() !== restaurantId.toString()) {
+      return res.status(403).json({ message: "Not authorized to modify this record" });
+    }
+    const payAmount = Number(amount);
+    if (!payAmount || payAmount <= 0) {
+      return res.status(400).json({ message: "Valid payment amount is required" });
+    }
+    const netPayable = payroll.calculations.netSalaryPayable;
+    const newPaid = Math.min(netPayable, (payroll.paidAmount || 0) + payAmount);
+    const newBalance = Math.max(0, netPayable - newPaid);
+    const newPaymentStatus = newPaid >= netPayable ? "Paid" : newPaid > 0 ? "Partially Paid" : "Pending";
+    const payDate = paymentDate ? new Date(paymentDate) : /* @__PURE__ */ new Date();
+    payroll.paidAmount = newPaid;
+    payroll.balanceDue = newBalance;
+    payroll.paymentStatus = newPaymentStatus;
+    payroll.payments.push({
+      amount: payAmount,
+      paymentDate: payDate,
+      paymentMethod: paymentMethod || "Bank Transfer",
+      reference: reference || "",
+      notes: notes || "",
+      paidBy: req.user._id
+    });
+    await payroll.save();
+    await Expense_default.create({
+      title: `Salary Payment - ${payroll.employee?.name || "Staff"} (${payroll.periodString})`,
+      category: "Staff salary",
+      amount: payAmount,
+      paidAmount: payAmount,
+      balanceDue: 0,
+      paymentStatus: "Paid",
+      paymentMethod: paymentMethod || "Bank Transfer",
+      paymentDate: payDate,
+      description: `Salary Payment for ${payroll.employee?.name || "Staff"} (${payroll.periodString}) - Ref: ${reference || "N/A"}`,
+      date: payDate,
+      billingPeriod: payroll.periodString,
+      staff: req.user.name || "Admin",
+      restaurantId,
+      branchId: payroll.branchId,
+      source: "Payroll",
+      sourceId: payroll._id,
+      createdBy: req.user._id,
+      notes: notes || `Payroll salary disbursed for ${payroll.periodString}`
+    });
+    res.json({
+      message: "Salary payment recorded successfully",
+      payroll
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+var getEmployeeSalaryHistory = async (req, res) => {
+  try {
+    const restaurantId = await getUserRestaurantId2(req.user);
+    const records = await Payroll_default.find({
+      restaurantId,
+      employee: req.params.id
+    }).sort({ year: -1, month: -1 });
+    res.json(records);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -130090,6 +132755,17 @@ var deleteStaff = async (req, res) => {
 var router10 = import_express10.default.Router();
 router10.use(protect);
 router10.use(checkSubscription);
+router10.use(checkBillingModule("staffManagement"));
+router10.post("/attendance/bulk", authorize("RestaurantAdmin", "BranchManager"), bulkMarkAttendance);
+router10.get("/attendance", authorize("RestaurantAdmin", "BranchManager"), getAttendance);
+router10.put("/attendance/:id/correct", authorize("RestaurantAdmin", "BranchManager"), correctAttendance);
+router10.get("/attendance/summary", authorize("RestaurantAdmin", "BranchManager"), getAttendanceSummary);
+router10.post("/payroll/calculate", authorize("RestaurantAdmin", "BranchManager"), calculatePayroll);
+router10.post("/payroll/generate", authorize("RestaurantAdmin"), generatePayroll);
+router10.get("/payroll", authorize("RestaurantAdmin", "BranchManager"), getPayrollRecords);
+router10.get("/payroll/:id", authorize("RestaurantAdmin", "BranchManager"), getPayrollById);
+router10.post("/payroll/:id/pay", authorize("RestaurantAdmin"), recordPayrollPayment);
+router10.get("/payroll/employee/:id/history", authorize("RestaurantAdmin", "BranchManager"), getEmployeeSalaryHistory);
 router10.route("/").get(authorize("RestaurantAdmin", "BranchManager"), getStaff).post(authorize("RestaurantAdmin"), createStaff);
 router10.route("/:id").put(authorize("RestaurantAdmin"), updateStaff).delete(authorize("RestaurantAdmin"), deleteStaff);
 var staffRoutes_default = router10;
@@ -130306,15 +132982,15 @@ var roleRoutes_default = router12;
 var import_express13 = __toESM(require_express2(), 1);
 
 // models/Reservation.js
-var import_mongoose26 = __toESM(require_mongoose2(), 1);
-var reservationSchema = new import_mongoose26.default.Schema({
+var import_mongoose34 = __toESM(require_mongoose2(), 1);
+var reservationSchema = new import_mongoose34.default.Schema({
   branch: {
-    type: import_mongoose26.default.Schema.Types.ObjectId,
+    type: import_mongoose34.default.Schema.Types.ObjectId,
     ref: "Branch",
     required: true
   },
   customer: {
-    type: import_mongoose26.default.Schema.Types.ObjectId,
+    type: import_mongoose34.default.Schema.Types.ObjectId,
     ref: "User"
   },
   guestName: {
@@ -130339,7 +133015,7 @@ var reservationSchema = new import_mongoose26.default.Schema({
     required: true
   },
   table: {
-    type: import_mongoose26.default.Schema.Types.ObjectId,
+    type: import_mongoose34.default.Schema.Types.ObjectId,
     ref: "Table"
   },
   status: {
@@ -130351,7 +133027,7 @@ var reservationSchema = new import_mongoose26.default.Schema({
     type: String
   }
 }, { timestamps: true });
-var Reservation = import_mongoose26.default.model("Reservation", reservationSchema);
+var Reservation = import_mongoose34.default.model("Reservation", reservationSchema);
 var Reservation_default = Reservation;
 
 // controllers/reservationController.js
@@ -130506,27 +133182,79 @@ var categoryRoutes_default = router14;
 var import_express15 = __toESM(require_express2(), 1);
 
 // controllers/inventoryController.js
+var import_mongoose35 = __toESM(require_mongoose2(), 1);
 init_Inventory();
 init_WastageLog();
 init_Notification();
 init_Branch();
+init_Expense();
+init_Restaurant();
+var getUserRestaurantId3 = async (user, queryOrBody = {}) => {
+  let rId = user?.restaurantId || user?.restaurant;
+  if (!rId && user?.branchId) {
+    const branchDoc = await Branch_default.findById(user.branchId);
+    if (branchDoc) rId = branchDoc.restaurantId;
+  }
+  if (!rId && queryOrBody?.restaurantId) {
+    rId = queryOrBody.restaurantId;
+  }
+  if (!rId && user?.role === "SuperAdmin") {
+    const firstRest = await Restaurant_default.findOne().select("_id");
+    if (firstRest) rId = firstRest._id;
+  }
+  return rId;
+};
 var logWastage = async (req, res) => {
-  const { ingredientName, quantity, unit, reason } = req.body;
+  const { ingredientName, quantity, unit, reason, inventoryId } = req.body;
   try {
+    const restaurantId = await getUserRestaurantId3(req.user);
+    const branchId = req.user.branchId || req.body.branchId;
     const log = await WastageLog_default.create({
       ingredientName,
-      quantity,
+      quantity: Number(quantity),
       unit,
       reason,
-      restaurantId: req.user.restaurantId,
-      branchId: req.user.branchId
+      restaurantId,
+      branchId
     });
+    let item = null;
+    if (inventoryId) {
+      item = await Inventory_default.findById(inventoryId);
+    } else {
+      item = await Inventory_default.findOne({
+        itemName: { $regex: new RegExp(`^${ingredientName.trim()}$`, "i") },
+        branch: branchId
+      });
+    }
+    if (item) {
+      const prevQty = item.quantity;
+      item.quantity = Math.max(0, item.quantity - Number(quantity));
+      await item.save();
+      await StockMovement_default.create({
+        restaurantId,
+        branchId: item.branch,
+        inventoryItem: item._id,
+        itemName: item.itemName,
+        movementType: "Wastage",
+        quantityChanged: -Number(quantity),
+        previousQuantity: prevQty,
+        newQuantity: item.quantity,
+        unit: item.unit,
+        unitCost: item.pricePerUnit || 0,
+        totalValue: Number(quantity) * (item.pricePerUnit || 0),
+        reference: `Wastage Log #${log._id.toString().substring(18)}`,
+        reason: reason || "Kitchen Wastage",
+        performedBy: req.user._id,
+        date: /* @__PURE__ */ new Date()
+      });
+    }
     await Notification_default.create({
       title: `Wastage Logged: ${ingredientName}`,
       desc: `${quantity} ${unit} wasted. Reason: ${reason}`,
       type: "Info",
-      restaurantId: req.user.restaurantId,
-      branchId: req.user.branchId
+      restaurantId,
+      branchId
+    }).catch(() => {
     });
     res.status(201).json(log);
   } catch (error) {
@@ -130536,11 +133264,12 @@ var logWastage = async (req, res) => {
 var getInventory = async (req, res) => {
   try {
     const filter = {};
+    const restaurantId = await getUserRestaurantId3(req.user);
     if (req.user && req.user.role !== "SuperAdmin") {
       if (req.user.branchId) {
         filter.branch = req.user.branchId;
-      } else if (req.user.restaurantId) {
-        const branches = await Branch_default.find({ restaurantId: req.user.restaurantId }).select("_id");
+      } else if (restaurantId) {
+        const branches = await Branch_default.find({ restaurantId }).select("_id");
         filter.branch = { $in: branches.map((b) => b._id) };
       } else {
         return res.json([]);
@@ -130548,25 +133277,73 @@ var getInventory = async (req, res) => {
     } else if (req.query.branch) {
       filter.branch = req.query.branch;
     }
-    const items = await Inventory_default.find(filter).populate("branch", "name");
+    if (req.query.branchId && req.query.branchId !== "All") {
+      filter.branch = req.query.branchId;
+    }
+    if (req.query.category && req.query.category !== "All Categories") {
+      filter.category = req.query.category;
+    }
+    if (req.query.status) {
+      if (req.query.status === "Low Stock") {
+        filter.$expr = { $and: [{ $gt: ["$quantity", 0] }, { $lte: ["$quantity", "$minStockLevel"] }] };
+      } else if (req.query.status === "Out of Stock") {
+        filter.quantity = { $lte: 0 };
+      } else if (req.query.status === "In Stock") {
+        filter.$expr = { $gt: ["$quantity", "$minStockLevel"] };
+      }
+    }
+    if (req.query.search) {
+      filter.itemName = { $regex: req.query.search, $options: "i" };
+    }
+    const items = await Inventory_default.find(filter).populate("branch", "name").populate("supplier", "name phone email").sort({ itemName: 1 });
     res.json(items);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 var createInventoryItem = async (req, res) => {
-  const { itemName, category, quantity, unit, minStockLevel, branch } = req.body;
+  const { itemName, category, quantity, unit, minStockLevel, pricePerUnit, supplier, branch, description } = req.body;
   try {
+    const restaurantId = await getUserRestaurantId3(req.user);
+    const branchId = req.user.branchId || branch;
+    if (!branchId) {
+      return res.status(400).json({ message: "Branch is required" });
+    }
+    const qty = Number(quantity) || 0;
+    const price = Number(pricePerUnit) || 0;
     const item = await Inventory_default.create({
-      itemName,
-      category,
-      quantity,
+      restaurantId,
+      itemName: itemName.trim(),
+      category: category || "General",
+      quantity: qty,
       unit,
-      minStockLevel,
-      branch: req.user.branchId || branch
-      // Use user's branch if they have one, else from body
+      minStockLevel: Number(minStockLevel) || 10,
+      pricePerUnit: price,
+      lastPurchasePrice: price,
+      supplier: supplier || void 0,
+      branch: branchId,
+      description: description || ""
     });
-    const populatedItem = await Inventory_default.findById(item._id).populate("branch", "name");
+    if (qty > 0) {
+      await StockMovement_default.create({
+        restaurantId,
+        branchId,
+        inventoryItem: item._id,
+        itemName: item.itemName,
+        movementType: "Stock Adjustment",
+        quantityChanged: qty,
+        previousQuantity: 0,
+        newQuantity: qty,
+        unit: item.unit,
+        unitCost: price,
+        totalValue: qty * price,
+        reference: "Initial Stock Creation",
+        reason: "Initial Inventory Entry",
+        performedBy: req.user._id,
+        date: /* @__PURE__ */ new Date()
+      });
+    }
+    const populatedItem = await Inventory_default.findById(item._id).populate("branch", "name").populate("supplier", "name phone email");
     res.status(201).json(populatedItem);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -130574,12 +133351,36 @@ var createInventoryItem = async (req, res) => {
 };
 var updateInventoryItem = async (req, res) => {
   try {
-    const item = await Inventory_default.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate("branch", "name");
-    if (item) {
-      res.json(item);
-    } else {
-      res.status(404).json({ message: "Inventory item not found" });
+    const item = await Inventory_default.findById(req.params.id);
+    if (!item) {
+      return res.status(404).json({ message: "Inventory item not found" });
     }
+    const oldQty = item.quantity;
+    const newQty = req.body.quantity !== void 0 ? Number(req.body.quantity) : oldQty;
+    if (req.body.quantity !== void 0 && newQty !== oldQty) {
+      const restaurantId = await getUserRestaurantId3(req.user);
+      await StockMovement_default.create({
+        restaurantId,
+        branchId: item.branch,
+        inventoryItem: item._id,
+        itemName: item.itemName,
+        movementType: "Stock Adjustment",
+        quantityChanged: newQty - oldQty,
+        previousQuantity: oldQty,
+        newQuantity: newQty,
+        unit: item.unit,
+        unitCost: req.body.pricePerUnit !== void 0 ? Number(req.body.pricePerUnit) : item.pricePerUnit,
+        totalValue: Math.abs(newQty - oldQty) * (item.pricePerUnit || 0),
+        reference: req.body.adjustmentReason || "Manual Inventory Adjustment",
+        reason: req.body.adjustmentReason || "Stock count update",
+        performedBy: req.user._id,
+        date: /* @__PURE__ */ new Date()
+      });
+    }
+    Object.assign(item, req.body);
+    await item.save();
+    const populated = await Inventory_default.findById(item._id).populate("branch", "name").populate("supplier", "name phone email");
+    res.json(populated);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -130597,13 +133398,423 @@ var deleteInventoryItem = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+var recordMaterialPurchase = async (req, res) => {
+  const {
+    branchId,
+    supplier,
+    supplierName,
+    invoiceNumber,
+    purchaseDate,
+    items,
+    subtotal,
+    taxAmount,
+    totalAmount,
+    paidAmount,
+    paymentMethod,
+    paymentStatus,
+    notes
+  } = req.body;
+  try {
+    const restaurantId = await getUserRestaurantId3(req.user);
+    const targetBranchId = branchId || req.user.branchId;
+    if (!targetBranchId) {
+      return res.status(400).json({ message: "Branch is required" });
+    }
+    if (!items || !items.length) {
+      return res.status(400).json({ message: "Purchase items list cannot be empty" });
+    }
+    if (!invoiceNumber) {
+      return res.status(400).json({ message: "Invoice number is required" });
+    }
+    const tot = Number(totalAmount) || 0;
+    const paid = Number(paidAmount !== void 0 ? paidAmount : req.body.amountPaid) || 0;
+    const balance = Math.max(0, tot - paid);
+    let finalPaymentStatus = paymentStatus || (paid >= tot ? "Paid" : paid > 0 ? "Partially Paid" : "Unpaid");
+    const sName = supplierName || req.body.supplier?.name || (typeof supplier === "string" && !import_mongoose35.default.Types.ObjectId.isValid(supplier) ? supplier : "General Supplier");
+    const sPhone = req.body.supplierPhone || req.body.supplier?.phone || "";
+    const sId = supplier && import_mongoose35.default.Types.ObjectId.isValid(supplier) ? supplier : void 0;
+    const normalizedItems = (items || []).map((i) => {
+      const matId = i.material || i.materialId;
+      const name = i.itemName || i.name || "Raw Material";
+      const qty = Number(i.quantity) || 1;
+      const price = Number(i.unitPrice) || 0;
+      const total = Number(i.totalCost || i.total || qty * price);
+      return {
+        material: matId && import_mongoose35.default.Types.ObjectId.isValid(matId) ? matId : void 0,
+        itemName: name,
+        category: i.category || "General",
+        quantity: qty,
+        unit: i.unit || "kg",
+        unitPrice: price,
+        taxPercent: Number(i.taxPercent || 0),
+        taxAmount: Number(i.taxAmount || 0),
+        totalCost: total
+      };
+    });
+    const purchase = await MaterialPurchase_default.create({
+      restaurantId,
+      branchId: targetBranchId,
+      supplier: sId,
+      supplierName: sName,
+      supplierPhone: sPhone,
+      invoiceNumber,
+      purchaseDate: purchaseDate ? new Date(purchaseDate) : /* @__PURE__ */ new Date(),
+      items: normalizedItems,
+      subtotal: Number(subtotal) || tot,
+      taxAmount: Number(taxAmount) || 0,
+      totalAmount: tot,
+      paidAmount: paid,
+      balanceDue: balance,
+      paymentStatus: finalPaymentStatus,
+      payments: paid > 0 ? [{
+        amount: paid,
+        paymentDate: purchaseDate ? new Date(purchaseDate) : /* @__PURE__ */ new Date(),
+        paymentMethod: paymentMethod || "Bank Transfer",
+        reference: req.body.paymentReference || `Initial Payment - Inv #${invoiceNumber}`,
+        notes: notes || "",
+        recordedBy: req.user._id
+      }] : [],
+      notes: notes || "",
+      createdBy: req.user._id
+    });
+    for (const itm of normalizedItems) {
+      let invItem = itm.material ? await Inventory_default.findById(itm.material) : null;
+      if (!invItem) {
+        invItem = await Inventory_default.findOne({
+          itemName: { $regex: new RegExp(`^${itm.itemName.trim()}$`, "i") },
+          branch: targetBranchId
+        });
+      }
+      const inQty = Number(itm.quantity);
+      const inPrice = Number(itm.unitPrice);
+      if (invItem) {
+        const prevQty = invItem.quantity || 0;
+        const prevPrice = invItem.pricePerUnit || 0;
+        const newQty = prevQty + inQty;
+        let newAvgPrice = inPrice;
+        if (newQty > 0) {
+          newAvgPrice = (prevQty * prevPrice + inQty * inPrice) / newQty;
+        }
+        invItem.quantity = newQty;
+        invItem.pricePerUnit = Math.round(newAvgPrice * 100) / 100;
+        invItem.lastPurchasePrice = inPrice;
+        invItem.lastPurchaseDate = purchase.purchaseDate;
+        if (sId) invItem.supplier = sId;
+        await invItem.save();
+        await StockMovement_default.create({
+          restaurantId,
+          branchId: targetBranchId,
+          inventoryItem: invItem._id,
+          itemName: invItem.itemName,
+          movementType: "Purchase Received",
+          quantityChanged: inQty,
+          previousQuantity: prevQty,
+          newQuantity: newQty,
+          unit: invItem.unit,
+          unitCost: inPrice,
+          totalValue: inQty * inPrice,
+          reference: `Invoice #${invoiceNumber}`,
+          reason: `Material purchase from ${sName}`,
+          performedBy: req.user._id,
+          date: purchase.purchaseDate
+        });
+      } else {
+        const createdItem = await Inventory_default.create({
+          restaurantId,
+          branch: targetBranchId,
+          supplier: sId,
+          itemName: itm.itemName,
+          category: itm.category || "General",
+          quantity: inQty,
+          unit: itm.unit,
+          minStockLevel: 10,
+          pricePerUnit: inPrice,
+          lastPurchasePrice: inPrice,
+          lastPurchaseDate: purchase.purchaseDate,
+          costingMethod: "Weighted Average"
+        });
+        await StockMovement_default.create({
+          restaurantId,
+          branchId: targetBranchId,
+          inventoryItem: createdItem._id,
+          itemName: createdItem.itemName,
+          movementType: "Purchase Received",
+          quantityChanged: inQty,
+          previousQuantity: 0,
+          newQuantity: inQty,
+          unit: createdItem.unit,
+          unitCost: inPrice,
+          totalValue: inQty * inPrice,
+          reference: `Invoice #${invoiceNumber}`,
+          reason: `New material created via purchase from ${sName}`,
+          performedBy: req.user._id,
+          date: purchase.purchaseDate
+        });
+      }
+    }
+    const exp = await Expense_default.create({
+      category: "Material purchases",
+      amount: tot,
+      paidAmount: paid,
+      balanceDue: balance,
+      paymentStatus: finalPaymentStatus === "Paid" ? "Paid" : finalPaymentStatus === "Partially Paid" ? "Partially Paid" : "Pending",
+      paymentMethod: paymentMethod || "Bank Transfer",
+      paymentDate: paid > 0 ? purchase.purchaseDate : void 0,
+      description: `Material Purchase - Inv #${invoiceNumber} (${supplierName || "Supplier"})`,
+      date: purchase.purchaseDate,
+      billingPeriod: purchase.purchaseDate.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+      staff: req.user.name || "Admin",
+      restaurantId,
+      branchId: targetBranchId,
+      source: "Material Purchase",
+      sourceId: purchase._id,
+      createdBy: req.user._id,
+      notes: notes || `Auto-linked from Material Purchase #${invoiceNumber}`
+    });
+    purchase.linkedExpenseId = exp._id;
+    await purchase.save();
+    const populatedPurchase = await MaterialPurchase_default.findById(purchase._id).populate("branchId", "name").populate("supplier", "name phone email").populate("items.material", "itemName unit quantity");
+    res.status(201).json(populatedPurchase);
+  } catch (error) {
+    console.error("Error recording material purchase:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+var getMaterialPurchases = async (req, res) => {
+  try {
+    const restaurantId = await getUserRestaurantId3(req.user);
+    const filter = { restaurantId };
+    if (req.user.branchId) {
+      filter.branchId = req.user.branchId;
+    } else if (req.query.branchId && req.query.branchId !== "All") {
+      filter.branchId = req.query.branchId;
+    }
+    if (req.query.supplier && req.query.supplier !== "All") {
+      filter.supplier = req.query.supplier;
+    }
+    if (req.query.paymentStatus && req.query.paymentStatus !== "All") {
+      filter.paymentStatus = req.query.paymentStatus;
+    }
+    if (req.query.period && req.query.period !== "all") {
+      const now = /* @__PURE__ */ new Date();
+      let start = /* @__PURE__ */ new Date();
+      let end = /* @__PURE__ */ new Date();
+      if (req.query.period === "today") {
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+      } else if (req.query.period === "yesterday") {
+        start.setDate(start.getDate() - 1);
+        start.setHours(0, 0, 0, 0);
+        end.setDate(end.getDate() - 1);
+        end.setHours(23, 59, 59, 999);
+      } else if (req.query.period === "last7days") {
+        start.setDate(start.getDate() - 7);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+      } else if (req.query.period === "thismonth") {
+        start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+      } else if (req.query.period === "lastmonth") {
+        start = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0);
+        end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+      }
+      filter.purchaseDate = { $gte: start, $lte: end };
+    } else if (req.query.startDate || req.query.endDate) {
+      filter.purchaseDate = {};
+      if (req.query.startDate) {
+        const s = new Date(req.query.startDate);
+        s.setHours(0, 0, 0, 0);
+        filter.purchaseDate.$gte = s;
+      }
+      if (req.query.endDate) {
+        const e = new Date(req.query.endDate);
+        e.setHours(23, 59, 59, 999);
+        filter.purchaseDate.$lte = e;
+      }
+    }
+    const purchases = await MaterialPurchase_default.find(filter).populate("branchId", "name").populate("supplier", "name phone email").sort({ purchaseDate: -1, createdAt: -1 });
+    res.json(purchases);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var recordMaterialPurchasePayment = async (req, res) => {
+  const { amount, paymentMethod, reference, notes, paymentDate } = req.body;
+  try {
+    const purchase = await MaterialPurchase_default.findById(req.params.id);
+    if (!purchase) {
+      return res.status(404).json({ message: "Purchase invoice not found" });
+    }
+    const payAmount = Number(amount);
+    if (!payAmount || payAmount <= 0) {
+      return res.status(400).json({ message: "Valid payment amount is required" });
+    }
+    const newPaid = Math.min(purchase.totalAmount, (purchase.paidAmount || 0) + payAmount);
+    const newBalance = Math.max(0, purchase.totalAmount - newPaid);
+    const newStatus = newPaid >= purchase.totalAmount ? "Paid" : newPaid > 0 ? "Partially Paid" : "Unpaid";
+    purchase.paidAmount = newPaid;
+    purchase.balanceDue = newBalance;
+    purchase.paymentStatus = newStatus;
+    purchase.payments.push({
+      amount: payAmount,
+      paymentDate: paymentDate ? new Date(paymentDate) : /* @__PURE__ */ new Date(),
+      paymentMethod: paymentMethod || "Bank Transfer",
+      reference: reference || "",
+      notes: notes || "",
+      recordedBy: req.user._id
+    });
+    await purchase.save();
+    if (purchase.linkedExpenseId) {
+      const exp = await Expense_default.findById(purchase.linkedExpenseId);
+      if (exp) {
+        exp.paidAmount = newPaid;
+        exp.balanceDue = newBalance;
+        exp.paymentStatus = newStatus === "Paid" ? "Paid" : newStatus === "Partially Paid" ? "Partially Paid" : "Pending";
+        exp.paymentDate = /* @__PURE__ */ new Date();
+        exp.payments.push({
+          amount: payAmount,
+          paidDate: paymentDate ? new Date(paymentDate) : /* @__PURE__ */ new Date(),
+          paymentMethod: paymentMethod || "Bank Transfer",
+          reference: reference || "",
+          notes: notes || "",
+          recordedBy: req.user._id
+        });
+        await exp.save();
+      }
+    }
+    res.json(purchase);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+var getStockMovements = async (req, res) => {
+  try {
+    const restaurantId = await getUserRestaurantId3(req.user);
+    const filter = { restaurantId };
+    if (req.user.branchId) {
+      filter.branchId = req.user.branchId;
+    } else if (req.query.branchId && req.query.branchId !== "All") {
+      filter.branchId = req.query.branchId;
+    }
+    if (req.query.inventoryItem) {
+      filter.inventoryItem = req.query.inventoryItem;
+    }
+    if (req.query.movementType && req.query.movementType !== "All") {
+      filter.movementType = req.query.movementType;
+    }
+    if (req.query.startDate || req.query.endDate) {
+      filter.date = {};
+      if (req.query.startDate) {
+        const s = new Date(req.query.startDate);
+        s.setHours(0, 0, 0, 0);
+        filter.date.$gte = s;
+      }
+      if (req.query.endDate) {
+        const e = new Date(req.query.endDate);
+        e.setHours(23, 59, 59, 999);
+        filter.date.$lte = e;
+      }
+    }
+    const movements = await StockMovement_default.find(filter).populate("branchId", "name").populate("performedBy", "name role").sort({ date: -1 }).limit(100);
+    res.json(movements);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var recordStockAdjustment = async (req, res) => {
+  const { inventoryId, newQuantity, movementType, reason, reference } = req.body;
+  try {
+    const restaurantId = await getUserRestaurantId3(req.user);
+    const item = await Inventory_default.findById(inventoryId);
+    if (!item) {
+      return res.status(404).json({ message: "Inventory item not found" });
+    }
+    const prevQty = item.quantity;
+    const targetQty = Number(newQuantity);
+    const qtyDiff = targetQty - prevQty;
+    item.quantity = Math.max(0, targetQty);
+    await item.save();
+    const movement = await StockMovement_default.create({
+      restaurantId,
+      branchId: item.branch,
+      inventoryItem: item._id,
+      itemName: item.itemName,
+      movementType: movementType || "Stock Adjustment",
+      quantityChanged: qtyDiff,
+      previousQuantity: prevQty,
+      newQuantity: item.quantity,
+      unit: item.unit,
+      unitCost: item.pricePerUnit || 0,
+      totalValue: Math.abs(qtyDiff) * (item.pricePerUnit || 0),
+      reference: reference || "Manual Adjustment",
+      reason: reason || "Inventory Reconciliation",
+      performedBy: req.user._id,
+      date: /* @__PURE__ */ new Date()
+    });
+    res.status(201).json({ item, movement });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+var getInventoryValuation = async (req, res) => {
+  try {
+    const restaurantId = await getUserRestaurantId3(req.user);
+    const filter = {};
+    if (req.user.branchId) {
+      filter.branch = req.user.branchId;
+    } else if (restaurantId) {
+      const branches = await Branch_default.find({ restaurantId }).select("_id");
+      filter.branch = { $in: branches.map((b) => b._id) };
+    }
+    if (req.query.branchId && req.query.branchId !== "All") {
+      filter.branch = new import_mongoose35.default.Types.ObjectId(req.query.branchId);
+    }
+    const items = await Inventory_default.find(filter);
+    let totalValuation = 0;
+    let totalItems = items.length;
+    let lowStockCount = 0;
+    let outOfStockCount = 0;
+    const categoryMap = {};
+    for (const itm of items) {
+      const val = (itm.quantity || 0) * (itm.pricePerUnit || 0);
+      totalValuation += val;
+      if (itm.quantity <= 0) {
+        outOfStockCount++;
+      } else if (itm.quantity <= itm.minStockLevel) {
+        lowStockCount++;
+      }
+      const cat = itm.category || "General";
+      categoryMap[cat] = (categoryMap[cat] || 0) + val;
+    }
+    const categoryBreakdown = Object.entries(categoryMap).map(([category, value]) => ({
+      category,
+      value: Math.round(value * 100) / 100
+    })).sort((a, b) => b.value - a.value);
+    res.json({
+      totalValuation: Math.round(totalValuation * 100) / 100,
+      totalItems,
+      lowStockCount,
+      outOfStockCount,
+      categoryBreakdown
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // routes/inventoryRoutes.js
 var router15 = import_express15.default.Router();
 router15.use(protect);
 router15.use(authorize("RestaurantAdmin", "BranchManager", "Chef", "Staff"));
 router15.use(checkSubscription);
-router15.post("/wastage", checkFeature("Waste Management"), logWastage);
+router15.use(checkBillingModule("inventoryManagement"));
+router15.get("/purchases", getMaterialPurchases);
+router15.post("/purchases", recordMaterialPurchase);
+router15.post("/purchases/:id/pay", recordMaterialPurchasePayment);
+router15.get("/stock-movements", getStockMovements);
+router15.post("/stock-adjustments", recordStockAdjustment);
+router15.get("/valuation", getInventoryValuation);
+router15.post("/wastage", logWastage);
 router15.route("/").get(getInventory).post(createInventoryItem);
 router15.route("/:id").put(updateInventoryItem).delete(deleteInventoryItem);
 var inventoryRoutes_default = router15;
@@ -130612,10 +133823,10 @@ var inventoryRoutes_default = router15;
 var import_express16 = __toESM(require_express2(), 1);
 
 // models/Supplier.js
-var import_mongoose27 = __toESM(require_mongoose2(), 1);
-var supplierSchema = new import_mongoose27.default.Schema({
+var import_mongoose36 = __toESM(require_mongoose2(), 1);
+var supplierSchema = new import_mongoose36.default.Schema({
   branch: {
-    type: import_mongoose27.default.Schema.Types.ObjectId,
+    type: import_mongoose36.default.Schema.Types.ObjectId,
     ref: "Branch",
     required: true
   },
@@ -130645,7 +133856,7 @@ var supplierSchema = new import_mongoose27.default.Schema({
     default: true
   }
 }, { timestamps: true });
-var Supplier = import_mongoose27.default.model("Supplier", supplierSchema);
+var Supplier = import_mongoose36.default.model("Supplier", supplierSchema);
 var Supplier_default = Supplier;
 
 // controllers/supplierController.js
@@ -130722,8 +133933,8 @@ var supplierRoutes_default = router16;
 var import_express17 = __toESM(require_express2(), 1);
 
 // models/Offer.js
-var import_mongoose28 = __toESM(require_mongoose2(), 1);
-var offerSchema = new import_mongoose28.default.Schema({
+var import_mongoose37 = __toESM(require_mongoose2(), 1);
+var offerSchema = new import_mongoose37.default.Schema({
   code: {
     type: String,
     required: true,
@@ -130761,7 +133972,7 @@ var offerSchema = new import_mongoose28.default.Schema({
     default: true
   }
 }, { timestamps: true });
-var Offer = import_mongoose28.default.model("Offer", offerSchema);
+var Offer = import_mongoose37.default.model("Offer", offerSchema);
 var Offer_default = Offer;
 
 // controllers/offerController.js
@@ -130831,17 +134042,17 @@ var deleteOffer = async (req, res) => {
 // routes/offerRoutes.js
 var router17 = import_express17.default.Router();
 router17.get("/", getOffers);
-router17.post("/", protect, authorize("RestaurantAdmin", "BranchManager"), checkSubscription, createOffer);
-router17.put("/:id", protect, authorize("RestaurantAdmin", "BranchManager"), checkSubscription, updateOffer);
-router17.delete("/:id", protect, authorize("RestaurantAdmin", "BranchManager"), checkSubscription, deleteOffer);
+router17.post("/", protect, authorize("RestaurantAdmin", "BranchManager"), checkBillingModule("discounts"), checkSubscription, createOffer);
+router17.put("/:id", protect, authorize("RestaurantAdmin", "BranchManager"), checkBillingModule("discounts"), checkSubscription, updateOffer);
+router17.delete("/:id", protect, authorize("RestaurantAdmin", "BranchManager"), checkBillingModule("discounts"), checkSubscription, deleteOffer);
 var offerRoutes_default = router17;
 
 // routes/taxRoutes.js
 var import_express18 = __toESM(require_express2(), 1);
 
 // models/Tax.js
-var import_mongoose29 = __toESM(require_mongoose2(), 1);
-var taxSchema = new import_mongoose29.default.Schema({
+var import_mongoose38 = __toESM(require_mongoose2(), 1);
+var taxSchema = new import_mongoose38.default.Schema({
   name: {
     type: String,
     required: true,
@@ -130867,7 +134078,7 @@ var taxSchema = new import_mongoose29.default.Schema({
     default: true
   }
 }, { timestamps: true });
-var Tax = import_mongoose29.default.model("Tax", taxSchema);
+var Tax = import_mongoose38.default.model("Tax", taxSchema);
 var Tax_default = Tax;
 
 // controllers/taxController.js
@@ -130933,38 +134144,93 @@ var taxRoutes_default = router18;
 var import_express19 = __toESM(require_express2(), 1);
 
 // controllers/reportController.js
+var import_mongoose39 = __toESM(require_mongoose2(), 1);
 init_Order();
+init_Restaurant();
 init_Plan();
+init_Expense();
+init_Branch();
+init_User();
+var getUserRestaurantId4 = async (user, queryOrBody = {}) => {
+  let rId = user?.restaurantId || user?.restaurant;
+  if (!rId && user?.branchId) {
+    const branchDoc = await Branch_default.findById(user.branchId);
+    if (branchDoc) rId = branchDoc.restaurantId;
+  }
+  if (!rId && queryOrBody?.restaurantId) {
+    rId = queryOrBody.restaurantId;
+  }
+  if (!rId && user?.role === "SuperAdmin") {
+    const firstRest = await Restaurant_default.findOne().select("_id");
+    if (firstRest) rId = firstRest._id;
+  }
+  return rId;
+};
+var parseDateRange = (period, startDate, endDate) => {
+  const now = /* @__PURE__ */ new Date();
+  let start = null;
+  let end = /* @__PURE__ */ new Date();
+  end.setHours(23, 59, 59, 999);
+  if (period === "today") {
+    start = /* @__PURE__ */ new Date();
+    start.setHours(0, 0, 0, 0);
+  } else if (period === "yesterday") {
+    start = /* @__PURE__ */ new Date();
+    start.setDate(now.getDate() - 1);
+    start.setHours(0, 0, 0, 0);
+    end = new Date(start);
+    end.setHours(23, 59, 59, 999);
+  } else if (period === "last7days" || period === "weekly") {
+    start = /* @__PURE__ */ new Date();
+    start.setDate(now.getDate() - 7);
+    start.setHours(0, 0, 0, 0);
+  } else if (period === "last30days") {
+    start = /* @__PURE__ */ new Date();
+    start.setDate(now.getDate() - 30);
+    start.setHours(0, 0, 0, 0);
+  } else if (period === "thismonth" || period === "monthly") {
+    start = new Date(now.getFullYear(), now.getMonth(), 1);
+    start.setHours(0, 0, 0, 0);
+  } else if (period === "lastmonth") {
+    start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    start.setHours(0, 0, 0, 0);
+    end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+  } else if (startDate || endDate) {
+    if (startDate) {
+      start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+    }
+    if (endDate) {
+      end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+    }
+  } else {
+    start = new Date(now.getFullYear(), now.getMonth(), 1);
+    start.setHours(0, 0, 0, 0);
+  }
+  return { start, end };
+};
 var generateReport = async (req, res) => {
-  const { reportType, startDate, endDate, branch } = req.body;
+  const {
+    reportType,
+    period,
+    startDate,
+    endDate,
+    branch,
+    branchId,
+    category,
+    employee,
+    paymentStatus,
+    supplier,
+    material
+  } = req.body;
   try {
-    const restaurant = await Restaurant_default.findById(req.user.restaurantId);
-    const planName = restaurant?.subscription?.plan || "Basic";
-    const plan = await Plan_default.findOne({ name: planName });
-    let hasPermission = true;
-    if (plan) {
-      if ([3, 4].includes(Number(reportType))) {
-        hasPermission = plan.features.some(
-          (f) => f.toLowerCase() === "advanced analytics" || f.toLowerCase() === "profit & loss" || f.toLowerCase() === "staff performance" || f.toLowerCase() === "basic reports"
-        );
-      }
-    } else {
-      if (planName === "Basic" && [3, 4].includes(Number(reportType))) {
-        hasPermission = false;
-      }
-    }
-    if (!hasPermission) {
-      return res.status(403).json({
-        message: `This report is not available in your current ${planName} plan. Please upgrade your subscription.`,
-        requiresUpgrade: true
-      });
-    }
-    let matchStage = { status: "Completed" };
-    if (req.user && req.user.restaurantId) {
-      matchStage.restaurantId = new (await Promise.resolve().then(() => __toESM(require_mongoose2(), 1))).default.Types.ObjectId(req.user.restaurantId);
-    } else if (req.user && req.user.role !== "SuperAdmin") {
+    const restaurantId = await getUserRestaurantId4(req.user, { ...req.query, ...req.body });
+    const restObjId = restaurantId ? new import_mongoose39.default.Types.ObjectId(restaurantId) : null;
+    if (!restObjId && req.user.role !== "SuperAdmin") {
       return res.json({
         reportType,
+        period,
         startDate,
         endDate,
         branch,
@@ -130972,36 +134238,390 @@ var generateReport = async (req, res) => {
         generatedAt: /* @__PURE__ */ new Date()
       });
     }
-    if (startDate && endDate) {
-      matchStage.createdAt = {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate)
-      };
-    } else if (startDate) {
-      matchStage.createdAt = { $gte: new Date(startDate) };
-    } else if (endDate) {
-      matchStage.createdAt = { $lte: new Date(endDate) };
-    }
-    if (branch && branch !== "All Branches" && branch !== "") {
-      matchStage.branch = branch;
-    } else if (req.user && req.user.branchId) {
-      matchStage.branch = req.user.branchId;
+    const { start, end } = parseDateRange(period, startDate, endDate);
+    let effectiveBranchId = null;
+    if (req.user.role === "BranchManager" && req.user.branchId) {
+      effectiveBranchId = req.user.branchId;
+    } else if (branchId && branchId !== "All" && branchId !== "All Branches") {
+      effectiveBranchId = branchId;
+    } else if (branch && branch !== "All Branches" && branch !== "All") {
+      effectiveBranchId = branch;
     }
     let reportData = [];
-    if (reportType === 1) {
-      reportData = await Order_default.aggregate([
+    let summary = {};
+    if (reportType === "daily_earnings" || reportType === 1) {
+      const matchStage = {
+        restaurantId: restObjId,
+        createdAt: { $gte: start, $lte: end }
+      };
+      if (effectiveBranchId) matchStage.branchId = new import_mongoose39.default.Types.ObjectId(effectiveBranchId);
+      const dailyOrders = await Order_default.aggregate([
         { $match: matchStage },
         {
           $group: {
             _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-            totalRevenue: { $sum: "$totalAmount" },
-            totalTax: { $sum: "$taxAmount" },
-            orderCount: { $sum: 1 }
+            totalOrders: { $sum: 1 },
+            grossSales: { $sum: { $add: ["$totalPrice", { $ifNull: ["$discountAmount", { $ifNull: ["$discount", 0] }] }] } },
+            discounts: { $sum: { $ifNull: ["$discountAmount", { $ifNull: ["$discount", 0] }] } },
+            netSales: {
+              $sum: {
+                $cond: [{ $eq: ["$status", "Cancelled"] }, 0, "$totalPrice"]
+              }
+            },
+            amountCollected: {
+              $sum: {
+                $cond: [{ $and: [{ $eq: ["$isPaid", true] }, { $ne: ["$status", "Cancelled"] }] }, "$totalPrice", 0]
+              }
+            },
+            uncollectedAmount: {
+              $sum: {
+                $cond: [{ $and: [{ $eq: ["$isPaid", false] }, { $ne: ["$status", "Cancelled"] }] }, "$totalPrice", 0]
+              }
+            },
+            refunds: {
+              $sum: {
+                $cond: [{ $eq: ["$status", "Cancelled"] }, "$totalPrice", 0]
+              }
+            }
           }
         },
-        { $sort: { _id: 1 } }
+        { $sort: { _id: -1 } }
       ]);
+      const expenseMatch = {
+        restaurantId: restObjId,
+        date: { $gte: start, $lte: end }
+      };
+      if (effectiveBranchId) expenseMatch.branchId = new import_mongoose39.default.Types.ObjectId(effectiveBranchId);
+      const dailyExpenses = await Expense_default.aggregate([
+        { $match: expenseMatch },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+            totalIncurred: { $sum: "$amount" },
+            totalPaid: { $sum: "$paidAmount" }
+          }
+        }
+      ]);
+      const expenseMap = /* @__PURE__ */ new Map();
+      dailyExpenses.forEach((e) => expenseMap.set(e._id, e));
+      reportData = dailyOrders.map((d) => {
+        const exp = expenseMap.get(d._id) || { totalIncurred: 0, totalPaid: 0 };
+        const netProfit = Math.round((d.netSales - exp.totalIncurred) * 100) / 100;
+        return {
+          date: d._id,
+          totalOrders: d.totalOrders,
+          grossSales: Math.round(d.grossSales * 100) / 100,
+          discounts: Math.round(d.discounts * 100) / 100,
+          refunds: Math.round(d.refunds * 100) / 100,
+          netSales: Math.round(d.netSales * 100) / 100,
+          amountCollected: Math.round(d.amountCollected * 100) / 100,
+          uncollectedAmount: Math.round(d.uncollectedAmount * 100) / 100,
+          dailyExpenses: Math.round(exp.totalIncurred * 100) / 100,
+          expensesPaid: Math.round(exp.totalPaid * 100) / 100,
+          netProfit
+        };
+      });
+      summary = {
+        totalOrders: reportData.reduce((acc, r) => acc + r.totalOrders, 0),
+        totalGross: Math.round(reportData.reduce((acc, r) => acc + r.grossSales, 0) * 100) / 100,
+        totalNet: Math.round(reportData.reduce((acc, r) => acc + r.netSales, 0) * 100) / 100,
+        totalCollected: Math.round(reportData.reduce((acc, r) => acc + r.amountCollected, 0) * 100) / 100,
+        totalExpenses: Math.round(reportData.reduce((acc, r) => acc + r.dailyExpenses, 0) * 100) / 100,
+        totalNetProfit: Math.round(reportData.reduce((acc, r) => acc + r.netProfit, 0) * 100) / 100
+      };
+    } else if (reportType === "weekly_sales") {
+      const matchStage = {
+        restaurantId: restObjId,
+        createdAt: { $gte: start, $lte: end },
+        status: { $ne: "Cancelled" }
+      };
+      if (effectiveBranchId) matchStage.branchId = new import_mongoose39.default.Types.ObjectId(effectiveBranchId);
+      reportData = await Order_default.aggregate([
+        { $match: matchStage },
+        {
+          $group: {
+            _id: {
+              isoWeekYear: { $isoWeekYear: "$createdAt" },
+              isoWeek: { $isoWeek: "$createdAt" }
+            },
+            startDate: { $min: "$createdAt" },
+            endDate: { $max: "$createdAt" },
+            totalOrders: { $sum: 1 },
+            grossSales: { $sum: { $add: ["$totalPrice", { $ifNull: ["$discountAmount", { $ifNull: ["$discount", 0] }] }] } },
+            discounts: { $sum: { $ifNull: ["$discountAmount", { $ifNull: ["$discount", 0] }] } },
+            netSales: { $sum: "$totalPrice" },
+            amountCollected: { $sum: { $cond: [{ $eq: ["$isPaid", true] }, "$totalPrice", 0] } }
+          }
+        },
+        { $sort: { "_id.isoWeekYear": -1, "_id.isoWeek": -1 } },
+        {
+          $project: {
+            _id: 0,
+            weekNumber: { $concat: ["Week ", { $toString: "$_id.isoWeek" }, " (", { $toString: "$_id.isoWeekYear" }, ")"] },
+            startDate: { $dateToString: { format: "%Y-%m-%d", date: "$startDate" } },
+            endDate: { $dateToString: { format: "%Y-%m-%d", date: "$endDate" } },
+            totalOrders: 1,
+            grossSales: { $round: ["$grossSales", 2] },
+            discounts: { $round: ["$discounts", 2] },
+            netSales: { $round: ["$netSales", 2] },
+            amountCollected: { $round: ["$amountCollected", 2] },
+            averageOrderValue: { $round: [{ $divide: ["$netSales", { $cond: [{ $eq: ["$totalOrders", 0] }, 1, "$totalOrders"] }] }, 2] }
+          }
+        }
+      ]);
+      summary = {
+        totalWeeks: reportData.length,
+        totalOrders: reportData.reduce((acc, r) => acc + r.totalOrders, 0),
+        totalNetSales: Math.round(reportData.reduce((acc, r) => acc + r.netSales, 0) * 100) / 100,
+        totalCollected: Math.round(reportData.reduce((acc, r) => acc + r.amountCollected, 0) * 100) / 100
+      };
+    } else if (reportType === "monthly_profit_loss") {
+      const matchOrders = {
+        restaurantId: restObjId,
+        createdAt: { $gte: start, $lte: end }
+      };
+      if (effectiveBranchId) matchOrders.branchId = new import_mongoose39.default.Types.ObjectId(effectiveBranchId);
+      const monthlyOrders = await Order_default.aggregate([
+        { $match: matchOrders },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+            totalOrders: { $sum: 1 },
+            grossSales: { $sum: { $add: ["$totalPrice", { $ifNull: ["$discountAmount", { $ifNull: ["$discount", 0] }] }] } },
+            discounts: { $sum: { $ifNull: ["$discountAmount", { $ifNull: ["$discount", 0] }] } },
+            refunds: { $sum: { $cond: [{ $eq: ["$status", "Cancelled"] }, "$totalPrice", 0] } },
+            netSales: { $sum: { $cond: [{ $eq: ["$status", "Cancelled"] }, 0, "$totalPrice"] } },
+            amountCollected: { $sum: { $cond: [{ $and: [{ $eq: ["$isPaid", true] }, { $ne: ["$status", "Cancelled"] }] }, "$totalPrice", 0] } }
+          }
+        },
+        { $sort: { _id: -1 } }
+      ]);
+      const matchExpenses = {
+        restaurantId: restObjId,
+        date: { $gte: start, $lte: end }
+      };
+      if (effectiveBranchId) matchExpenses.branchId = new import_mongoose39.default.Types.ObjectId(effectiveBranchId);
+      const monthlyExpenses = await Expense_default.aggregate([
+        { $match: matchExpenses },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m", date: "$date" } },
+            materialCost: { $sum: { $cond: [{ $eq: ["$category", "Material purchases"] }, "$amount", 0] } },
+            salaryExpense: { $sum: { $cond: [{ $eq: ["$category", "Staff salary"] }, "$amount", 0] } },
+            rentExpense: { $sum: { $cond: [{ $eq: ["$category", "Rent"] }, "$amount", 0] } },
+            utilitiesExpense: { $sum: { $cond: [{ $in: ["$category", ["Electricity", "Water", "Internet"]] }, "$amount", 0] } },
+            otherExpenses: { $sum: { $cond: [{ $not: [{ $in: ["$category", ["Material purchases", "Staff salary", "Rent", "Electricity", "Water", "Internet"]] }] }, "$amount", 0] } },
+            totalExpenses: { $sum: "$amount" },
+            totalPaidExpenses: { $sum: "$paidAmount" }
+          }
+        }
+      ]);
+      const expMap = /* @__PURE__ */ new Map();
+      monthlyExpenses.forEach((e) => expMap.set(e._id, e));
+      reportData = monthlyOrders.map((mo) => {
+        const exp = expMap.get(mo._id) || {
+          materialCost: 0,
+          salaryExpense: 0,
+          rentExpense: 0,
+          utilitiesExpense: 0,
+          otherExpenses: 0,
+          totalExpenses: 0,
+          totalPaidExpenses: 0
+        };
+        const grossProfit = Math.round((mo.netSales - exp.materialCost) * 100) / 100;
+        const netOperatingProfit = Math.round((mo.netSales - exp.totalExpenses) * 100) / 100;
+        const profitMarginPercent = mo.netSales > 0 ? Math.round(netOperatingProfit / mo.netSales * 1e4) / 100 : 0;
+        return {
+          month: mo._id,
+          grossSales: Math.round(mo.grossSales * 100) / 100,
+          discounts: Math.round(mo.discounts * 100) / 100,
+          refunds: Math.round(mo.refunds * 100) / 100,
+          netSales: Math.round(mo.netSales * 100) / 100,
+          materialCost: Math.round(exp.materialCost * 100) / 100,
+          grossProfit,
+          staffSalary: Math.round(exp.salaryExpense * 100) / 100,
+          rent: Math.round(exp.rentExpense * 100) / 100,
+          utilities: Math.round(exp.utilitiesExpense * 100) / 100,
+          otherExpenses: Math.round(exp.otherExpenses * 100) / 100,
+          totalExpenses: Math.round(exp.totalExpenses * 100) / 100,
+          netOperatingProfit,
+          profitMarginPercent
+        };
+      });
+      summary = {
+        totalNetSales: Math.round(reportData.reduce((acc, r) => acc + r.netSales, 0) * 100) / 100,
+        totalMaterialCost: Math.round(reportData.reduce((acc, r) => acc + r.materialCost, 0) * 100) / 100,
+        totalGrossProfit: Math.round(reportData.reduce((acc, r) => acc + r.grossProfit, 0) * 100) / 100,
+        totalExpenses: Math.round(reportData.reduce((acc, r) => acc + r.totalExpenses, 0) * 100) / 100,
+        totalNetProfit: Math.round(reportData.reduce((acc, r) => acc + r.netOperatingProfit, 0) * 100) / 100
+      };
+    } else if (reportType === "expenses") {
+      const query = {
+        restaurantId: restObjId,
+        date: { $gte: start, $lte: end }
+      };
+      if (effectiveBranchId) query.branchId = effectiveBranchId;
+      if (category && category !== "All") query.category = category;
+      if (paymentStatus && paymentStatus !== "All") query.paymentStatus = paymentStatus;
+      const expenses = await Expense_default.find(query).sort({ date: -1 }).populate("createdBy", "name email").populate("branchId", "name").lean();
+      reportData = expenses.map((e) => ({
+        id: e._id,
+        expenseDate: new Date(e.date).toISOString().split("T")[0],
+        category: e.category,
+        description: e.title || e.description || "-",
+        amount: e.amount,
+        paymentStatus: e.paymentStatus,
+        paidAmount: e.paidAmount || 0,
+        balanceDue: e.balanceDue || 0,
+        dueDate: e.dueDate ? new Date(e.dueDate).toISOString().split("T")[0] : "-",
+        paymentMethod: e.paymentMethod || "-",
+        branchName: e.branchId?.name || "Main Branch",
+        source: e.source || "Manual"
+      }));
+      summary = {
+        totalCount: reportData.length,
+        totalIncurred: Math.round(reportData.reduce((acc, r) => acc + r.amount, 0) * 100) / 100,
+        totalPaid: Math.round(reportData.reduce((acc, r) => acc + r.paidAmount, 0) * 100) / 100,
+        totalOutstanding: Math.round(reportData.reduce((acc, r) => acc + r.balanceDue, 0) * 100) / 100
+      };
+    } else if (reportType === "material_purchases") {
+      const query = {
+        restaurantId: restObjId,
+        purchaseDate: { $gte: start, $lte: end }
+      };
+      if (effectiveBranchId) query.branchId = effectiveBranchId;
+      if (supplier && supplier !== "All") {
+        query.$or = [
+          { supplierName: new RegExp(supplier, "i") },
+          { "supplier.name": new RegExp(supplier, "i") }
+        ];
+      }
+      if (paymentStatus && paymentStatus !== "All") query.paymentStatus = paymentStatus;
+      const purchases = await MaterialPurchase_default.find(query).sort({ purchaseDate: -1 }).populate("branchId", "name").populate("purchasedBy", "name").lean();
+      reportData = purchases.map((p) => ({
+        id: p._id,
+        purchaseDate: new Date(p.purchaseDate).toISOString().split("T")[0],
+        invoiceNumber: p.invoiceNumber || "-",
+        supplierName: p.supplierName || p.supplier?.name || "General Supplier",
+        supplierContact: p.supplierPhone || p.supplier?.contactPerson || p.supplier?.phone || "-",
+        itemCount: p.items?.length || 0,
+        subtotal: p.subtotal || 0,
+        taxAmount: p.taxAmount || 0,
+        totalAmount: p.totalAmount || 0,
+        paidAmount: p.paidAmount || 0,
+        balanceDue: p.balanceDue || 0,
+        paymentStatus: p.paymentStatus,
+        branchName: p.branchId?.name || "Main Branch"
+      }));
+      summary = {
+        totalInvoices: reportData.length,
+        totalPurchased: Math.round(reportData.reduce((acc, r) => acc + r.totalAmount, 0) * 100) / 100,
+        totalPaid: Math.round(reportData.reduce((acc, r) => acc + r.paidAmount, 0) * 100) / 100,
+        totalBalanceDue: Math.round(reportData.reduce((acc, r) => acc + r.balanceDue, 0) * 100) / 100
+      };
+    } else if (reportType === "attendance") {
+      const query = {
+        restaurantId: restObjId,
+        date: { $gte: start, $lte: end }
+      };
+      if (effectiveBranchId) query.branchId = effectiveBranchId;
+      if (employee && employee !== "All") query.employee = employee;
+      const attendanceRecords = await Attendance_default.find(query).sort({ date: -1 }).populate("employee", "name employeeId role email").populate("branchId", "name").lean();
+      reportData = attendanceRecords.map((a) => ({
+        id: a._id,
+        date: a.dateString || new Date(a.date).toISOString().split("T")[0],
+        employeeId: a.employee?.employeeId || "-",
+        employeeName: a.employee?.name || "Unknown",
+        role: a.employee?.role || "-",
+        status: a.status,
+        checkIn: a.checkInTime ? new Date(a.checkInTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "-",
+        checkOut: a.checkOutTime ? new Date(a.checkOutTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "-",
+        lateMinutes: a.lateMinutes || 0,
+        overtimeHours: a.overtimeHours || 0,
+        workingHours: a.workingHours || 0,
+        hasCorrections: a.correctionHistory && a.correctionHistory.length > 0 ? "Yes" : "No"
+      }));
+      summary = {
+        totalRecords: reportData.length,
+        presentCount: reportData.filter((r) => r.status === "Present").length,
+        absentCount: reportData.filter((r) => r.status === "Absent").length,
+        halfDayCount: reportData.filter((r) => r.status === "Half-day").length,
+        leaveCount: reportData.filter((r) => r.status === "Leave").length,
+        holidayCount: reportData.filter((r) => r.status === "Holiday").length,
+        totalOvertimeHours: Math.round(reportData.reduce((acc, r) => acc + r.overtimeHours, 0) * 10) / 10
+      };
+    } else if (reportType === "payroll") {
+      const query = {
+        restaurantId: restObjId
+      };
+      if (effectiveBranchId) query.branchId = effectiveBranchId;
+      if (employee && employee !== "All") query.employee = employee;
+      if (paymentStatus && paymentStatus !== "All") query.paymentStatus = paymentStatus;
+      const payrolls = await Payroll_default.find(query).sort({ year: -1, month: -1 }).populate("employee", "name employeeId role email").populate("branchId", "name").lean();
+      reportData = payrolls.map((p) => ({
+        id: p._id,
+        period: `${p.month} ${p.year}`,
+        employeeId: p.employee?.employeeId || "-",
+        employeeName: p.employee?.name || "Unknown",
+        role: p.employee?.role || "-",
+        basicSalary: p.salaryConfig?.basicSalary || 0,
+        earnedBasic: p.earnedBasicSalary || 0,
+        overtimePay: p.overtimePay || 0,
+        bonuses: p.bonuses || 0,
+        deductions: p.totalDeductions || 0,
+        grossPayable: p.grossPayable || 0,
+        netPayable: p.netPayable || 0,
+        paidAmount: p.paidAmount || 0,
+        balanceDue: p.balanceDue || 0,
+        paymentStatus: p.paymentStatus,
+        status: p.status
+      }));
+      summary = {
+        totalEmployeesCovered: reportData.length,
+        totalGrossPayable: Math.round(reportData.reduce((acc, r) => acc + r.grossPayable, 0) * 100) / 100,
+        totalNetPayable: Math.round(reportData.reduce((acc, r) => acc + r.netPayable, 0) * 100) / 100,
+        totalPaid: Math.round(reportData.reduce((acc, r) => acc + r.paidAmount, 0) * 100) / 100,
+        totalPending: Math.round(reportData.reduce((acc, r) => acc + r.balanceDue, 0) * 100) / 100
+      };
+    } else if (reportType === "pending_bills") {
+      const query = {
+        restaurantId: restObjId,
+        paymentStatus: { $in: ["Pending", "Partially Paid", "Overdue"] },
+        balanceDue: { $gt: 0 }
+      };
+      if (effectiveBranchId) query.branchId = effectiveBranchId;
+      if (category && category !== "All") query.category = category;
+      const pendingExpenses = await Expense_default.find(query).sort({ dueDate: 1, date: 1 }).populate("branchId", "name").lean();
+      const today = /* @__PURE__ */ new Date();
+      reportData = pendingExpenses.map((e) => {
+        const isOverdue = e.dueDate ? new Date(e.dueDate) < today : false;
+        return {
+          id: e._id,
+          category: e.category,
+          title: e.title || e.description,
+          totalAmount: e.amount,
+          paidAmount: e.paidAmount || 0,
+          balanceDue: e.balanceDue || e.amount,
+          dueDate: e.dueDate ? new Date(e.dueDate).toISOString().split("T")[0] : "Not Set",
+          billingPeriod: e.billingPeriod || "-",
+          status: isOverdue ? "Overdue" : e.paymentStatus,
+          branchName: e.branchId?.name || "Main Branch",
+          isRecurring: e.isRecurring ? "Yes" : "No"
+        };
+      });
+      summary = {
+        totalPendingBills: reportData.length,
+        overdueCount: reportData.filter((r) => r.status === "Overdue").length,
+        totalAmountDue: Math.round(reportData.reduce((acc, r) => acc + r.balanceDue, 0) * 100) / 100,
+        totalOriginalAmount: Math.round(reportData.reduce((acc, r) => acc + r.totalAmount, 0) * 100) / 100
+      };
     } else if (reportType === 2) {
+      const matchStage = {
+        status: "Completed",
+        restaurantId: restObjId,
+        createdAt: { $gte: start, $lte: end }
+      };
+      if (effectiveBranchId) matchStage.branch = effectiveBranchId;
       reportData = await Order_default.aggregate([
         { $match: matchStage },
         { $unwind: "$items" },
@@ -131016,12 +134636,17 @@ var generateReport = async (req, res) => {
         { $sort: { quantitySold: -1 } }
       ]);
     } else if (reportType === 3) {
+      const matchStage = {
+        status: "Completed",
+        restaurantId: restObjId,
+        createdAt: { $gte: start, $lte: end }
+      };
+      if (effectiveBranchId) matchStage.branch = effectiveBranchId;
       reportData = await Order_default.aggregate([
         { $match: matchStage },
         {
           $group: {
             _id: "$server",
-            // Assuming we have server IDs, though we might not. If null, we'll map to Unknown
             ordersHandled: { $sum: 1 },
             totalRevenue: { $sum: "$totalAmount" }
           }
@@ -131036,7 +134661,7 @@ var generateReport = async (req, res) => {
         },
         {
           $project: {
-            staffName: { $ifNull: [{ $arrayElemAt: ["$staff.name", 0] }, "Unknown Staff/Self-Serve"] },
+            staffName: { $ifNull: [{ $arrayElemAt: ["$staff.name", 0] }, "Staff Member"] },
             ordersHandled: 1,
             totalRevenue: 1
           }
@@ -131044,6 +134669,12 @@ var generateReport = async (req, res) => {
         { $sort: { totalRevenue: -1 } }
       ]);
     } else if (reportType === 4) {
+      const matchStage = {
+        status: "Completed",
+        restaurantId: restObjId,
+        createdAt: { $gte: start, $lte: end }
+      };
+      if (effectiveBranchId) matchStage.branch = effectiveBranchId;
       reportData = await Order_default.aggregate([
         { $match: matchStage },
         {
@@ -131058,13 +134689,16 @@ var generateReport = async (req, res) => {
     }
     res.json({
       reportType,
-      startDate,
-      endDate,
-      branch,
+      period,
+      startDate: start.toISOString().split("T")[0],
+      endDate: end.toISOString().split("T")[0],
+      branch: effectiveBranchId || "All",
+      summary,
       data: reportData,
       generatedAt: /* @__PURE__ */ new Date()
     });
   } catch (error) {
+    console.error("Error generating report:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -131072,8 +134706,9 @@ var generateReport = async (req, res) => {
 // routes/reportRoutes.js
 var router19 = import_express19.default.Router();
 router19.use(protect);
-router19.use(authorize("RestaurantAdmin", "BranchManager"));
+router19.use(authorize("RestaurantAdmin", "BranchManager", "SuperAdmin"));
 router19.use(checkSubscription);
+router19.use(checkBillingModule("salesReports"));
 router19.route("/generate").post(generateReport);
 var reportRoutes_default = router19;
 
@@ -131213,11 +134848,12 @@ var notificationRoutes_default = router20;
 var import_express21 = __toESM(require_express2(), 1);
 
 // controllers/planController.js
-var import_mongoose30 = __toESM(require_mongoose2(), 1);
+var import_mongoose40 = __toESM(require_mongoose2(), 1);
 init_Plan();
+init_Restaurant();
 var getPublicPlans = async (req, res) => {
   try {
-    if (import_mongoose30.default.connection.readyState !== 1) {
+    if (import_mongoose40.default.connection.readyState !== 1) {
       return res.json([
         { _id: "p1", name: "Basic", monthlyPrice: 2999, yearlyPrice: 2399, features: ["1 Branch", "Basic POS Billing", "QR Ordering", "Email Support"], isActive: true },
         { _id: "p2", name: "Pro", monthlyPrice: 5999, yearlyPrice: 4799, features: ["Up to 3 Branches", "Kitchen Display System", "Online Ordering", "Advanced Analytics", "Priority Support"], isActive: true },
@@ -131342,13 +134978,13 @@ var import_express22 = __toESM(require_express2(), 1);
 
 // controllers/serviceRequestController.js
 init_ServiceRequest();
-var import_mongoose31 = __toESM(require_mongoose2(), 1);
+var import_mongoose41 = __toESM(require_mongoose2(), 1);
 var createServiceRequest = async (req, res) => {
   const { restaurantId, branchId, tableNumber, requestType } = req.body;
   try {
     let finalBranchId = branchId;
     if (!finalBranchId) {
-      const Branch3 = import_mongoose31.default.model("Branch");
+      const Branch3 = import_mongoose41.default.model("Branch");
       const branch = await Branch3.findOne({ restaurantId });
       if (branch) finalBranchId = branch._id;
     }
@@ -131405,56 +135041,247 @@ var serviceRequestRoutes_default = router22;
 var import_express23 = __toESM(require_express2(), 1);
 
 // controllers/expenseController.js
+var import_mongoose42 = __toESM(require_mongoose2(), 1);
 init_Expense();
+init_Branch();
+init_Restaurant();
+var getUserRestaurantId5 = async (user, queryOrBody = {}) => {
+  let rId = user?.restaurantId || user?.restaurant;
+  if (!rId && user?.branchId) {
+    const branchDoc = await Branch_default.findById(user.branchId);
+    if (branchDoc) rId = branchDoc.restaurantId;
+  }
+  if (!rId && queryOrBody?.restaurantId) {
+    rId = queryOrBody.restaurantId;
+  }
+  if (!rId && user?.role === "SuperAdmin") {
+    const firstRest = await Restaurant_default.findOne().select("_id");
+    if (firstRest) rId = firstRest._id;
+  }
+  return rId;
+};
+var parseDateRange2 = (period, startDate, endDate) => {
+  const now = /* @__PURE__ */ new Date();
+  let start = null;
+  let end = /* @__PURE__ */ new Date();
+  end.setHours(23, 59, 59, 999);
+  if (period === "today") {
+    start = /* @__PURE__ */ new Date();
+    start.setHours(0, 0, 0, 0);
+  } else if (period === "yesterday") {
+    start = /* @__PURE__ */ new Date();
+    start.setDate(now.getDate() - 1);
+    start.setHours(0, 0, 0, 0);
+    end = new Date(start);
+    end.setHours(23, 59, 59, 999);
+  } else if (period === "last7days" || period === "weekly") {
+    start = /* @__PURE__ */ new Date();
+    start.setDate(now.getDate() - 7);
+    start.setHours(0, 0, 0, 0);
+  } else if (period === "last30days") {
+    start = /* @__PURE__ */ new Date();
+    start.setDate(now.getDate() - 30);
+    start.setHours(0, 0, 0, 0);
+  } else if (period === "thismonth" || period === "monthly") {
+    start = new Date(now.getFullYear(), now.getMonth(), 1);
+    start.setHours(0, 0, 0, 0);
+  } else if (period === "lastmonth") {
+    start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    start.setHours(0, 0, 0, 0);
+    end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+  } else if (startDate || endDate) {
+    if (startDate) {
+      start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+    }
+    if (endDate) {
+      end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+    }
+  }
+  return { start, end };
+};
 var getExpenses = async (req, res) => {
   try {
-    const filter = {};
-    if (req.user && req.user.branchId) {
+    const restaurantId = await getUserRestaurantId5(req.user, req.query);
+    const filter = { restaurantId };
+    if (req.user && req.user.role === "BranchManager" && req.user.branchId) {
       filter.branchId = req.user.branchId;
-    } else if (req.user && req.user.restaurantId) {
-      filter.restaurantId = req.user.restaurantId;
-      if (req.query.branchId && req.query.branchId !== "All") {
-        filter.branchId = req.query.branchId;
-      }
-    } else if (req.user && req.user.role !== "SuperAdmin") {
-      return res.json([]);
+    } else if (req.query.branchId && req.query.branchId !== "All") {
+      filter.branchId = req.query.branchId;
     }
-    const { period } = req.query;
-    if (period) {
-      const now = /* @__PURE__ */ new Date();
-      let startDate = /* @__PURE__ */ new Date();
-      if (period === "today") {
-        startDate.setHours(0, 0, 0, 0);
-        filter.date = { $gte: startDate };
-      } else if (period === "weekly") {
-        const day = now.getDay();
-        const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-        startDate = new Date(now.setDate(diff));
-        startDate.setHours(0, 0, 0, 0);
-        filter.date = { $gte: startDate };
-      } else if (period === "monthly") {
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        filter.date = { $gte: startDate };
+    if (req.query.category && req.query.category !== "All") {
+      filter.category = req.query.category;
+    }
+    if (req.query.paymentStatus && req.query.paymentStatus !== "All") {
+      filter.paymentStatus = req.query.paymentStatus;
+    }
+    const { start, end } = parseDateRange2(req.query.period, req.query.startDate, req.query.endDate);
+    if (start || end) {
+      filter.date = {};
+      if (start) filter.date.$gte = start;
+      if (end) filter.date.$lte = end;
+    }
+    if (req.query.search) {
+      const query = req.query.search.trim();
+      filter.$or = [
+        { description: { $regex: query, $options: "i" } },
+        { billingPeriod: { $regex: query, $options: "i" } },
+        { staff: { $regex: query, $options: "i" } }
+      ];
+    }
+    const expenses = await Expense_default.find(filter).populate("branchId", "name").populate("createdBy", "name role").populate("payments.recordedBy", "name role").sort({ date: -1, createdAt: -1 });
+    const now = /* @__PURE__ */ new Date();
+    const enrichedExpenses = expenses.map((exp) => {
+      const doc = exp.toObject();
+      if (doc.paymentStatus === "Pending" && doc.dueDate && new Date(doc.dueDate) < now) {
+        doc.isOverdue = true;
+      }
+      return doc;
+    });
+    res.json(enrichedExpenses);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var getExpenseSummary = async (req, res) => {
+  try {
+    const restaurantId = await getUserRestaurantId5(req.user, req.query);
+    const matchFilter = { restaurantId: new import_mongoose42.default.Types.ObjectId(restaurantId) };
+    if (req.user && req.user.role === "BranchManager" && req.user.branchId) {
+      matchFilter.branchId = new import_mongoose42.default.Types.ObjectId(req.user.branchId);
+    } else if (req.query.branchId && req.query.branchId !== "All") {
+      matchFilter.branchId = new import_mongoose42.default.Types.ObjectId(req.query.branchId);
+    }
+    const { start, end } = parseDateRange2(req.query.period, req.query.startDate, req.query.endDate);
+    if (start || end) {
+      matchFilter.date = {};
+      if (start) matchFilter.date.$gte = start;
+      if (end) matchFilter.date.$lte = end;
+    }
+    const expenses = await Expense_default.find(matchFilter);
+    const now = /* @__PURE__ */ new Date();
+    const next15Days = new Date(now.getTime() + 15 * 24 * 60 * 60 * 1e3);
+    let totalIncurred = 0;
+    let totalPaid = 0;
+    let totalOutstanding = 0;
+    let overdueCount = 0;
+    let overdueAmount = 0;
+    let upcomingCount = 0;
+    let upcomingAmount = 0;
+    const categoryMap = {};
+    for (const exp of expenses) {
+      const amount = Number(exp.amount) || 0;
+      const paid = Number(exp.paidAmount) || 0;
+      const balance = Math.max(0, amount - paid);
+      totalIncurred += amount;
+      totalPaid += paid;
+      totalOutstanding += balance;
+      const cat = exp.category || "Others";
+      categoryMap[cat] = (categoryMap[cat] || 0) + amount;
+      if (balance > 0 && exp.dueDate && new Date(exp.dueDate) < now) {
+        overdueCount++;
+        overdueAmount += balance;
+      }
+      if (balance > 0 && exp.dueDate && new Date(exp.dueDate) >= now && new Date(exp.dueDate) <= next15Days) {
+        upcomingCount++;
+        upcomingAmount += balance;
       }
     }
-    const expenses = await Expense_default.find(filter).populate("branchId", "name").sort({ date: -1 });
-    res.json(expenses);
+    const categoryBreakdown = Object.entries(categoryMap).map(([category, amount]) => ({
+      category,
+      amount: Math.round(amount * 100) / 100,
+      percentage: totalIncurred > 0 ? Math.round(amount / totalIncurred * 100) : 0
+    })).sort((a, b) => b.amount - a.amount);
+    res.json({
+      totalIncurred: Math.round(totalIncurred * 100) / 100,
+      totalPaid: Math.round(totalPaid * 100) / 100,
+      totalOutstanding: Math.round(totalOutstanding * 100) / 100,
+      outstandingLiabilities: Math.round(totalOutstanding * 100) / 100,
+      overdueCount,
+      overdueBillsCount: overdueCount,
+      overdueAmount: Math.round(overdueAmount * 100) / 100,
+      upcomingCount,
+      upcomingAmount: Math.round(upcomingAmount * 100) / 100,
+      categoryBreakdown
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 var createExpense = async (req, res) => {
-  const { category, amount, description, date, staff, branchId } = req.body;
+  const {
+    title,
+    category,
+    amount,
+    description,
+    date,
+    dueDate,
+    billingPeriod,
+    paymentStatus,
+    paidAmount,
+    paymentMethod,
+    paymentDate,
+    isRecurring,
+    recurringFrequency,
+    recurringKey,
+    receiptUrl,
+    notes,
+    staff,
+    branchId
+  } = req.body;
   try {
+    const restaurantId = await getUserRestaurantId5(req.user);
     const targetBranchId = branchId || req.user.branchId;
+    const amt = Number(amount) || 0;
+    const finalTitle = (title || description || `${category} Expense`).trim();
+    const finalDescription = (description || title || finalTitle).trim();
+    const initialStatus = paymentStatus || (Number(paidAmount) >= amt ? "Paid" : Number(paidAmount) > 0 ? "Partially Paid" : "Pending");
+    let initialPaid = 0;
+    if (initialStatus === "Paid") {
+      initialPaid = amt;
+    } else if (initialStatus === "Partially Paid") {
+      initialPaid = Number(paidAmount) || 0;
+    }
+    const initialBalance = Math.max(0, amt - initialPaid);
+    if (recurringKey) {
+      const exists = await Expense_default.findOne({ restaurantId, recurringKey });
+      if (exists) {
+        return res.status(400).json({ message: `A recurring bill for this cycle (${recurringKey}) already exists.` });
+      }
+    }
+    const expenseDate = date ? new Date(date) : /* @__PURE__ */ new Date();
     const expense = await Expense_default.create({
+      title: finalTitle,
       category,
-      amount,
-      description,
-      date: date || /* @__PURE__ */ new Date(),
+      amount: amt,
+      description: finalDescription,
+      date: expenseDate,
+      dueDate: dueDate ? new Date(dueDate) : void 0,
+      billingPeriod: billingPeriod || expenseDate.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+      paymentStatus: initialStatus,
+      paidAmount: initialPaid,
+      balanceDue: initialBalance,
+      paymentMethod: paymentMethod || "Cash",
+      paymentDate: initialPaid > 0 ? paymentDate ? new Date(paymentDate) : expenseDate : void 0,
+      payments: initialPaid > 0 ? [{
+        amount: initialPaid,
+        paidDate: paymentDate ? new Date(paymentDate) : expenseDate,
+        paymentMethod: paymentMethod || "Cash",
+        reference: "Initial Payment",
+        notes: notes || "",
+        recordedBy: req.user._id
+      }] : [],
+      isRecurring: Boolean(isRecurring),
+      recurringFrequency: isRecurring ? recurringFrequency || "Monthly" : void 0,
+      recurringKey: isRecurring ? recurringKey || `${category.toLowerCase().replace(/\s+/g, "_")}_${targetBranchId || "main"}_${expenseDate.toISOString().slice(0, 7)}` : void 0,
+      receiptUrl: receiptUrl || "",
+      notes: notes || "",
       staff: staff || req.user.name || "Staff",
-      restaurantId: req.user.restaurantId,
-      branchId: targetBranchId
+      restaurantId,
+      branchId: targetBranchId,
+      source: "Manual",
+      createdBy: req.user._id
     });
     const populated = await Expense_default.findById(expense._id).populate("branchId", "name");
     res.status(201).json(populated);
@@ -131462,10 +135289,209 @@ var createExpense = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+var updateExpense = async (req, res) => {
+  try {
+    const restaurantId = await getUserRestaurantId5(req.user);
+    const expense = await Expense_default.findById(req.params.id);
+    if (!expense) {
+      return res.status(404).json({ message: "Expense record not found" });
+    }
+    if (expense.restaurantId.toString() !== restaurantId.toString()) {
+      return res.status(403).json({ message: "Not authorized to modify this record" });
+    }
+    const {
+      title,
+      category,
+      amount,
+      description,
+      date,
+      dueDate,
+      billingPeriod,
+      paymentStatus,
+      paidAmount,
+      paymentMethod,
+      isRecurring,
+      recurringFrequency,
+      notes,
+      branchId
+    } = req.body;
+    if (title !== void 0) expense.title = title.trim();
+    if (description !== void 0) expense.description = description.trim();
+    if (category !== void 0) expense.category = category;
+    if (amount !== void 0) {
+      expense.amount = Number(amount) || 0;
+    }
+    if (paidAmount !== void 0) {
+      expense.paidAmount = Number(paidAmount) || 0;
+    }
+    expense.balanceDue = Math.max(0, (expense.amount || 0) - (expense.paidAmount || 0));
+    if (paymentStatus !== void 0) {
+      expense.paymentStatus = paymentStatus;
+    } else {
+      expense.paymentStatus = expense.paidAmount >= expense.amount ? "Paid" : expense.paidAmount > 0 ? "Partially Paid" : "Pending";
+    }
+    if (date !== void 0) expense.date = new Date(date);
+    if (dueDate !== void 0) expense.dueDate = dueDate ? new Date(dueDate) : void 0;
+    if (billingPeriod !== void 0) expense.billingPeriod = billingPeriod;
+    if (paymentMethod !== void 0) expense.paymentMethod = paymentMethod;
+    if (notes !== void 0) expense.notes = notes;
+    if (isRecurring !== void 0) expense.isRecurring = Boolean(isRecurring);
+    if (recurringFrequency !== void 0) expense.recurringFrequency = recurringFrequency;
+    if (branchId !== void 0) expense.branchId = branchId || void 0;
+    await expense.save();
+    const populated = await Expense_default.findById(expense._id).populate("branchId", "name").populate("createdBy", "name role").populate("payments.recordedBy", "name role");
+    res.json(populated);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+var recordExpensePayment = async (req, res) => {
+  const { amount, paymentMethod, reference, notes, paidDate } = req.body;
+  try {
+    const restaurantId = await getUserRestaurantId5(req.user);
+    const expense = await Expense_default.findById(req.params.id);
+    if (!expense) {
+      return res.status(404).json({ message: "Expense record not found" });
+    }
+    if (expense.restaurantId.toString() !== restaurantId.toString()) {
+      return res.status(403).json({ message: "Not authorized to modify this record" });
+    }
+    const payAmt = Number(amount);
+    if (!payAmt || payAmt <= 0) {
+      return res.status(400).json({ message: "Valid payment amount is required" });
+    }
+    const newPaid = Math.min(expense.amount, (expense.paidAmount || 0) + payAmt);
+    const newBalance = Math.max(0, expense.amount - newPaid);
+    const newStatus = newPaid >= expense.amount ? "Paid" : newPaid > 0 ? "Partially Paid" : "Pending";
+    const paymentTimestamp = paidDate ? new Date(paidDate) : /* @__PURE__ */ new Date();
+    expense.paidAmount = newPaid;
+    expense.balanceDue = newBalance;
+    expense.paymentStatus = newStatus;
+    expense.paymentDate = paymentTimestamp;
+    expense.paymentMethod = paymentMethod || expense.paymentMethod || "Cash";
+    expense.payments.push({
+      amount: payAmt,
+      paidDate: paymentTimestamp,
+      paymentMethod: paymentMethod || "Cash",
+      reference: reference || "",
+      notes: notes || "",
+      recordedBy: req.user._id
+    });
+    await expense.save();
+    const populated = await Expense_default.findById(expense._id).populate("branchId", "name").populate("payments.recordedBy", "name");
+    res.json({ message: "Payment recorded successfully", expense: populated });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+var generateRecurringBills = async (req, res) => {
+  const { billingMonth, billingYear, targetBillingPeriod, branchId } = req.body;
+  try {
+    const restaurantId = await getUserRestaurantId5(req.user);
+    const now = /* @__PURE__ */ new Date();
+    const m = billingMonth !== void 0 ? parseInt(billingMonth) : now.getMonth() + 1;
+    const y = billingYear !== void 0 ? parseInt(billingYear) : now.getFullYear();
+    const periodKey = `${y}-${m.toString().padStart(2, "0")}`;
+    const periodLabel = targetBillingPeriod || new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    const filter = { restaurantId, isRecurring: true };
+    if (branchId && branchId !== "All") {
+      filter.branchId = branchId;
+    }
+    let recurringTemplates = await Expense_default.find(filter);
+    if (!recurringTemplates.length) {
+      const defaultTemplates = [
+        { category: "Rent", title: "Monthly Premises Rent", amount: 25e3, description: `Premises Rent - ${periodLabel}` },
+        { category: "Electricity", title: "Electricity & Power Utility", amount: 6500, description: `Electricity Bill - ${periodLabel}` },
+        { category: "Internet", title: "High-Speed Broadband Internet", amount: 1500, description: `Broadband Internet Bill - ${periodLabel}` },
+        { category: "Water", title: "Commercial Water Utility", amount: 1200, description: `Commercial Water Bill - ${periodLabel}` }
+      ];
+      const createdDefaults = [];
+      const billDueDate = new Date(y, m - 1, 10, 23, 59, 59);
+      for (const dt of defaultTemplates) {
+        const cycleKey = `${dt.category.toLowerCase()}_${branchId || "main"}_${periodKey}`;
+        const bill = await Expense_default.create({
+          category: dt.category,
+          title: dt.title,
+          description: dt.description,
+          amount: dt.amount,
+          date: new Date(y, m - 1, 1),
+          dueDate: billDueDate,
+          billingPeriod: periodLabel,
+          paymentStatus: "Pending",
+          paidAmount: 0,
+          balanceDue: dt.amount,
+          paymentMethod: "Bank Transfer",
+          isRecurring: true,
+          recurringFrequency: "Monthly",
+          recurringKey: cycleKey,
+          notes: `Recurring standard monthly bill for ${periodLabel}`,
+          staff: req.user.name || "Admin",
+          restaurantId,
+          branchId: branchId && branchId !== "All" ? branchId : req.user.branchId,
+          source: "Recurring",
+          createdBy: req.user._id
+        });
+        createdDefaults.push(bill);
+      }
+      return res.json({
+        message: `Generated ${createdDefaults.length} recurring utility & rent bills for ${periodLabel}`,
+        createdCount: createdDefaults.length,
+        bills: createdDefaults
+      });
+    }
+    const templatesByKey = {};
+    for (const t of recurringTemplates) {
+      const key = `${t.category}_${t.branchId || "main"}`;
+      if (!templatesByKey[key]) templatesByKey[key] = t;
+    }
+    const generated = [];
+    for (const [key, tmpl] of Object.entries(templatesByKey)) {
+      const cycleKey = `${key}_${periodKey}`;
+      const alreadyExists = await Expense_default.findOne({ restaurantId, recurringKey: cycleKey });
+      if (!alreadyExists) {
+        const billDueDate = new Date(y, m - 1, 10, 23, 59, 59);
+        const newBill = await Expense_default.create({
+          category: tmpl.category,
+          title: tmpl.title || `${tmpl.category} Bill`,
+          amount: tmpl.amount,
+          description: `${tmpl.title || tmpl.category} - ${periodLabel}`,
+          date: new Date(y, m - 1, 1),
+          dueDate: billDueDate,
+          billingPeriod: periodLabel,
+          paymentStatus: "Pending",
+          paidAmount: 0,
+          balanceDue: tmpl.amount,
+          paymentMethod: tmpl.paymentMethod || "Bank Transfer",
+          isRecurring: true,
+          recurringFrequency: tmpl.recurringFrequency || "Monthly",
+          recurringKey: cycleKey,
+          notes: `Auto-generated recurring monthly bill for ${periodLabel}`,
+          staff: req.user.name || "Admin",
+          restaurantId,
+          branchId: tmpl.branchId,
+          source: "Recurring",
+          createdBy: req.user._id
+        });
+        generated.push(newBill);
+      }
+    }
+    res.json({
+      message: generated.length > 0 ? `Generated ${generated.length} recurring bills for ${periodLabel}` : `All recurring bills for ${periodLabel} are already up to date.`,
+      createdCount: generated.length,
+      bills: generated
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 var deleteExpense = async (req, res) => {
   try {
+    const restaurantId = await getUserRestaurantId5(req.user);
     const expense = await Expense_default.findById(req.params.id);
     if (expense) {
+      if (expense.restaurantId.toString() !== restaurantId.toString()) {
+        return res.status(403).json({ message: "Not authorized to delete this expense" });
+      }
       await expense.deleteOne();
       res.json({ message: "Expense record deleted" });
     } else {
@@ -131481,8 +135507,12 @@ var router23 = import_express23.default.Router();
 router23.use(protect);
 router23.use(authorize("RestaurantAdmin", "BranchManager"));
 router23.use(checkSubscription);
+router23.get("/summary", getExpenseSummary);
+router23.post("/generate-recurring", generateRecurringBills);
+router23.post("/recurring/generate", generateRecurringBills);
+router23.post("/:id/pay", recordExpensePayment);
 router23.route("/").get(getExpenses).post(createExpense);
-router23.route("/:id").delete(deleteExpense);
+router23.route("/:id").put(updateExpense).delete(deleteExpense);
 var expenseRoutes_default = router23;
 
 // routes/supportRoutes.js
@@ -131492,15 +135522,15 @@ var import_express24 = __toESM(require_express2(), 1);
 init_Ticket();
 
 // models/TicketReply.js
-var import_mongoose32 = __toESM(require_mongoose2(), 1);
-var ticketReplySchema = new import_mongoose32.default.Schema({
+var import_mongoose43 = __toESM(require_mongoose2(), 1);
+var ticketReplySchema = new import_mongoose43.default.Schema({
   ticketId: {
-    type: import_mongoose32.default.Schema.Types.ObjectId,
+    type: import_mongoose43.default.Schema.Types.ObjectId,
     ref: "Ticket",
     required: true
   },
   senderId: {
-    type: import_mongoose32.default.Schema.Types.ObjectId,
+    type: import_mongoose43.default.Schema.Types.ObjectId,
     ref: "User",
     required: true
   },
@@ -131516,20 +135546,20 @@ var ticketReplySchema = new import_mongoose32.default.Schema({
     default: false
   },
   readBy: [{
-    type: import_mongoose32.default.Schema.Types.ObjectId,
+    type: import_mongoose43.default.Schema.Types.ObjectId,
     ref: "User"
   }]
 }, {
   timestamps: true
 });
-var TicketReply = import_mongoose32.default.model("TicketReply", ticketReplySchema);
+var TicketReply = import_mongoose43.default.model("TicketReply", ticketReplySchema);
 var TicketReply_default = TicketReply;
 
 // models/SupportAgent.js
-var import_mongoose33 = __toESM(require_mongoose2(), 1);
-var supportAgentSchema = new import_mongoose33.default.Schema({
+var import_mongoose44 = __toESM(require_mongoose2(), 1);
+var supportAgentSchema = new import_mongoose44.default.Schema({
   userId: {
-    type: import_mongoose33.default.Schema.Types.ObjectId,
+    type: import_mongoose44.default.Schema.Types.ObjectId,
     ref: "User",
     required: true,
     unique: true
@@ -131560,12 +135590,12 @@ var supportAgentSchema = new import_mongoose33.default.Schema({
 }, {
   timestamps: true
 });
-var SupportAgent = import_mongoose33.default.model("SupportAgent", supportAgentSchema);
+var SupportAgent = import_mongoose44.default.model("SupportAgent", supportAgentSchema);
 var SupportAgent_default = SupportAgent;
 
 // models/KnowledgeBase.js
-var import_mongoose34 = __toESM(require_mongoose2(), 1);
-var knowledgeBaseSchema = new import_mongoose34.default.Schema({
+var import_mongoose45 = __toESM(require_mongoose2(), 1);
+var knowledgeBaseSchema = new import_mongoose45.default.Schema({
   title: {
     type: String,
     required: true
@@ -131606,12 +135636,12 @@ var knowledgeBaseSchema = new import_mongoose34.default.Schema({
 }, {
   timestamps: true
 });
-var KnowledgeBase = import_mongoose34.default.model("KnowledgeBase", knowledgeBaseSchema);
+var KnowledgeBase = import_mongoose45.default.model("KnowledgeBase", knowledgeBaseSchema);
 var KnowledgeBase_default = KnowledgeBase;
 
 // models/SupportAnnouncement.js
-var import_mongoose35 = __toESM(require_mongoose2(), 1);
-var supportAnnouncementSchema = new import_mongoose35.default.Schema({
+var import_mongoose46 = __toESM(require_mongoose2(), 1);
+var supportAnnouncementSchema = new import_mongoose46.default.Schema({
   title: {
     type: String,
     required: true
@@ -131635,21 +135665,21 @@ var supportAnnouncementSchema = new import_mongoose35.default.Schema({
     default: true
   },
   createdBy: {
-    type: import_mongoose35.default.Schema.Types.ObjectId,
+    type: import_mongoose46.default.Schema.Types.ObjectId,
     ref: "User",
     required: true
   }
 }, {
   timestamps: true
 });
-var SupportAnnouncement = import_mongoose35.default.model("SupportAnnouncement", supportAnnouncementSchema);
+var SupportAnnouncement = import_mongoose46.default.model("SupportAnnouncement", supportAnnouncementSchema);
 var SupportAnnouncement_default = SupportAnnouncement;
 
 // models/TicketActivityLog.js
-var import_mongoose36 = __toESM(require_mongoose2(), 1);
-var ticketActivityLogSchema = new import_mongoose36.default.Schema({
+var import_mongoose47 = __toESM(require_mongoose2(), 1);
+var ticketActivityLogSchema = new import_mongoose47.default.Schema({
   ticketId: {
-    type: import_mongoose36.default.Schema.Types.ObjectId,
+    type: import_mongoose47.default.Schema.Types.ObjectId,
     ref: "Ticket",
     required: true
   },
@@ -131658,7 +135688,7 @@ var ticketActivityLogSchema = new import_mongoose36.default.Schema({
     required: true
   },
   performedBy: {
-    type: import_mongoose36.default.Schema.Types.ObjectId,
+    type: import_mongoose47.default.Schema.Types.ObjectId,
     ref: "User",
     required: true
   },
@@ -131673,10 +135703,11 @@ var ticketActivityLogSchema = new import_mongoose36.default.Schema({
 }, {
   timestamps: true
 });
-var TicketActivityLog = import_mongoose36.default.model("TicketActivityLog", ticketActivityLogSchema);
+var TicketActivityLog = import_mongoose47.default.model("TicketActivityLog", ticketActivityLogSchema);
 var TicketActivityLog_default = TicketActivityLog;
 
 // controllers/supportController.js
+init_Restaurant();
 init_User();
 init_Notification();
 var import_multer3 = __toESM(require("multer"), 1);
@@ -132320,10 +136351,10 @@ init_User();
 init_DeliveryPartner();
 
 // models/DeliveryWithdrawal.js
-var import_mongoose37 = __toESM(require_mongoose2(), 1);
-var deliveryWithdrawalSchema = new import_mongoose37.default.Schema({
+var import_mongoose48 = __toESM(require_mongoose2(), 1);
+var deliveryWithdrawalSchema = new import_mongoose48.default.Schema({
   partnerId: {
-    type: import_mongoose37.default.Schema.Types.ObjectId,
+    type: import_mongoose48.default.Schema.Types.ObjectId,
     ref: "DeliveryPartner",
     required: true
   },
@@ -132341,11 +136372,12 @@ var deliveryWithdrawalSchema = new import_mongoose37.default.Schema({
     default: ""
   }
 }, { timestamps: true });
-var DeliveryWithdrawal = import_mongoose37.default.model("DeliveryWithdrawal", deliveryWithdrawalSchema);
+var DeliveryWithdrawal = import_mongoose48.default.model("DeliveryWithdrawal", deliveryWithdrawalSchema);
 var DeliveryWithdrawal_default = DeliveryWithdrawal;
 
 // controllers/deliveryController.js
 init_Order();
+init_Restaurant();
 var import_jsonwebtoken3 = __toESM(require_jsonwebtoken(), 1);
 var generateToken2 = (id) => {
   return import_jsonwebtoken3.default.sign({ id }, process.env.JWT_SECRET || "supersecretjwtkey123", {
@@ -132366,29 +136398,10 @@ var sendOtp = async (req, res) => {
       role: "DeliveryPartner"
     });
     if (!user) {
-      if (last10Digits === "9876543210" || last10Digits === "8888888888" || last10Digits === "1234567890") {
-        console.log(`[Auto-Seed Demo Delivery Partner] Auto-creating account for ${phoneNumber}`);
-        let demoRest = await Restaurant_default.findOne({ name: "Pizza Palace" }) || await Restaurant_default.findOne({ isDemo: true });
-        user = await User_default.create({
-          name: "Speedy Express Driver",
-          email: `delivery_${last10Digits}@pizzapalace.com`,
-          phoneNumber,
-          password: "password123",
-          role: "DeliveryPartner",
-          restaurantId: demoRest ? demoRest._id : void 0
-        });
-        await DeliveryPartner_default.create({
-          userId: user._id,
-          restaurantId: demoRest ? demoRest._id : void 0,
-          vehicleType: "Bike",
-          status: "Available"
-        });
-      } else {
-        return res.status(404).json({ message: "Delivery partner not registered. Please contact restaurant admin." });
-      }
+      return res.status(404).json({ message: "Delivery partner not registered. Please contact restaurant admin." });
     }
     console.log(`[OTP Sent] To: ${phoneNumber} | OTP: 1234`);
-    res.json({ message: "OTP sent successfully (Simulated: Use code 1234)", phoneNumber });
+    res.json({ message: "OTP sent successfully", phoneNumber });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -132409,25 +136422,7 @@ var verifyOtp = async (req, res) => {
       role: "DeliveryPartner"
     });
     if (!user) {
-      if (last10Digits === "9876543210" || last10Digits === "8888888888" || last10Digits === "1234567890") {
-        let demoRest = await Restaurant_default.findOne({ name: "Pizza Palace" }) || await Restaurant_default.findOne({ isDemo: true });
-        user = await User_default.create({
-          name: "Speedy Express Driver",
-          email: `delivery_${last10Digits}@pizzapalace.com`,
-          phoneNumber,
-          password: "password123",
-          role: "DeliveryPartner",
-          restaurantId: demoRest ? demoRest._id : void 0
-        });
-        await DeliveryPartner_default.create({
-          userId: user._id,
-          restaurantId: demoRest ? demoRest._id : void 0,
-          vehicleType: "Bike",
-          status: "Available"
-        });
-      } else {
-        return res.status(404).json({ message: "Delivery partner not found" });
-      }
+      return res.status(404).json({ message: "Delivery partner not found" });
     }
     const partnerProfile = await DeliveryPartner_default.findOne({ userId: user._id });
     res.json({
@@ -132948,15 +136943,15 @@ var deliveryRoutes_default = router25;
 var import_express26 = __toESM(require_express2(), 1);
 
 // models/Inquiry.js
-var import_mongoose38 = __toESM(require_mongoose2(), 1);
-var inquirySchema = new import_mongoose38.default.Schema({
+var import_mongoose49 = __toESM(require_mongoose2(), 1);
+var inquirySchema = new import_mongoose49.default.Schema({
   name: {
     type: String,
     required: true
   },
   email: {
     type: String,
-    required: true
+    default: "N/A"
   },
   phone: {
     type: String,
@@ -132982,23 +136977,23 @@ var inquirySchema = new import_mongoose38.default.Schema({
 }, {
   timestamps: true
 });
-var Inquiry = import_mongoose38.default.model("Inquiry", inquirySchema);
+var Inquiry = import_mongoose49.default.model("Inquiry", inquirySchema);
 var Inquiry_default = Inquiry;
 
 // controllers/inquiryController.js
 var createInquiry = async (req, res) => {
   try {
     const { name, email, phone, restaurantName, subject, message } = req.body;
-    if (!name || !email || !phone || !restaurantName || !subject || !message) {
-      return res.status(400).json({ message: "All fields are required" });
+    if (!name || !phone || !restaurantName) {
+      return res.status(400).json({ message: "Name, phone number, and restaurant name are required" });
     }
     const inquiry = new Inquiry_default({
       name,
-      email,
+      email: email || `${phone.replace(/\D/g, "") || "lead"}@lead.restauranthub.com`,
       phone,
       restaurantName,
-      subject,
-      message
+      subject: subject || "Demo",
+      message: message || "Free Walkthrough Demo requested"
     });
     await inquiry.save();
     res.status(201).json({ success: true, data: inquiry });
@@ -133051,10 +137046,993 @@ router26.route("/admin").get(protect, authorize("SuperAdmin"), getInquiries);
 router26.route("/admin/:id").put(protect, authorize("SuperAdmin"), updateInquiryStatus).delete(protect, authorize("SuperAdmin"), deleteInquiry);
 var inquiryRoutes_default = router26;
 
+// routes/billingDemoRoutes.js
+var import_express27 = __toESM(require_express2(), 1);
+
+// models/BillingDemoRequest.js
+var import_mongoose50 = __toESM(require_mongoose2(), 1);
+var billingDemoRequestSchema = new import_mongoose50.default.Schema({
+  fullName: {
+    type: String,
+    required: [true, "Full name is required"],
+    trim: true
+  },
+  phoneNumber: {
+    type: String,
+    required: [true, "Phone number is required"],
+    trim: true
+  },
+  restaurantName: {
+    type: String,
+    required: [true, "Restaurant name is required"],
+    trim: true
+  },
+  city: {
+    type: String,
+    default: "N/A",
+    trim: true
+  },
+  outletFormat: {
+    type: String,
+    default: "Fine Dine & Resto-Bar",
+    trim: true
+  },
+  status: {
+    type: String,
+    enum: ["Pending", "Contacted", "Demo Scheduled", "Demo Completed", "Activated", "Rejected"],
+    default: "Pending"
+  },
+  notes: {
+    type: String,
+    default: ""
+  },
+  restaurantId: {
+    type: import_mongoose50.default.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    default: null
+  },
+  customBillingConfig: {
+    modules: {
+      posBilling: { type: Boolean, default: true },
+      menuManagement: { type: Boolean, default: true },
+      tableManagement: { type: Boolean, default: true },
+      dineInTakeawayOrders: { type: Boolean, default: true },
+      kitchenOrderManagement: { type: Boolean, default: true },
+      gstInvoice: { type: Boolean, default: true },
+      discounts: { type: Boolean, default: true },
+      customerManagement: { type: Boolean, default: true },
+      inventoryManagement: { type: Boolean, default: true },
+      salesReports: { type: Boolean, default: true },
+      staffManagement: { type: Boolean, default: true }
+    },
+    paymentMethods: {
+      cash: { type: Boolean, default: true },
+      upi: { type: Boolean, default: true },
+      card: { type: Boolean, default: true },
+      split: { type: Boolean, default: true }
+    },
+    serviceChargePercent: { type: Number, default: 5 },
+    gstRatePercent: { type: Number, default: 5 }
+  },
+  activatedAt: {
+    type: Date,
+    default: null
+  }
+}, {
+  timestamps: true
+});
+billingDemoRequestSchema.index({ phoneNumber: 1, status: 1 });
+billingDemoRequestSchema.index({ createdAt: -1 });
+var BillingDemoRequest = import_mongoose50.default.model("BillingDemoRequest", billingDemoRequestSchema);
+var BillingDemoRequest_default = BillingDemoRequest;
+
+// controllers/billingDemoController.js
+init_Restaurant();
+init_User();
+init_Branch();
+var createBillingDemoRequest = async (req, res) => {
+  try {
+    const { fullName, phoneNumber, restaurantName, city, outletFormat } = req.body;
+    if (!fullName || !fullName.trim()) {
+      return res.status(400).json({ message: "Full Name is required" });
+    }
+    if (!phoneNumber || !phoneNumber.trim()) {
+      return res.status(400).json({ message: "Mobile Phone Number is required" });
+    }
+    if (!restaurantName || !restaurantName.trim()) {
+      return res.status(400).json({ message: "Restaurant Name is required" });
+    }
+    const cleanPhone = phoneNumber.trim();
+    const cleanName = fullName.trim();
+    const cleanRestName = restaurantName.trim();
+    const cleanCity = city ? city.trim() : "N/A";
+    const cleanOutlet = outletFormat ? outletFormat.trim() : "Fine Dine & Resto-Bar";
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1e3);
+    const existingPending = await BillingDemoRequest_default.findOne({
+      phoneNumber: cleanPhone,
+      status: { $in: ["Pending", "Demo Scheduled"] },
+      createdAt: { $gte: twentyFourHoursAgo }
+    });
+    if (existingPending) {
+      return res.status(200).json({
+        success: true,
+        duplicate: true,
+        message: `We already have an active walkthrough request for ${cleanRestName} on ${cleanPhone}. Our POS specialist will contact you shortly!`,
+        data: existingPending
+      });
+    }
+    const existingRestaurant = await Restaurant_default.findOne({
+      $or: [
+        { name: { $regex: new RegExp(`^${cleanRestName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } },
+        { phone: cleanPhone }
+      ]
+    });
+    const newDemoRequest = new BillingDemoRequest_default({
+      fullName: cleanName,
+      phoneNumber: cleanPhone,
+      restaurantName: cleanRestName,
+      city: cleanCity,
+      outletFormat: cleanOutlet,
+      restaurantId: existingRestaurant ? existingRestaurant._id : null,
+      status: "Pending",
+      customBillingConfig: {
+        modules: {
+          posBilling: true,
+          menuManagement: true,
+          tableManagement: cleanOutlet !== "Quick Service (QSR)" && cleanOutlet !== "Cloud Kitchen",
+          dineInTakeawayOrders: true,
+          kitchenOrderManagement: true,
+          gstInvoice: true,
+          discounts: true,
+          customerManagement: true,
+          inventoryManagement: true,
+          salesReports: true,
+          staffManagement: true
+        },
+        paymentMethods: {
+          cash: true,
+          upi: true,
+          card: true,
+          split: true
+        },
+        serviceChargePercent: cleanOutlet.includes("Fine Dine") || cleanOutlet.includes("Pub") ? 5 : 0,
+        gstRatePercent: 5
+      }
+    });
+    const savedRequest = await newDemoRequest.save();
+    res.status(201).json({
+      success: true,
+      message: `Thank you, ${cleanName}! Your free walkthrough request for ${cleanRestName} has been booked. Our specialist will call you on ${cleanPhone}.`,
+      data: savedRequest
+    });
+  } catch (error) {
+    console.error("Error creating billing demo request:", error);
+    res.status(500).json({ message: error.message || "Server error creating demo request" });
+  }
+};
+var getBillingDemoRequests = async (req, res) => {
+  try {
+    const { search, status, outletFormat } = req.query;
+    const query = {};
+    if (status && status !== "ALL") {
+      query.status = status;
+    }
+    if (outletFormat && outletFormat !== "ALL") {
+      query.outletFormat = outletFormat;
+    }
+    if (search && search.trim()) {
+      const regex = new RegExp(search.trim(), "i");
+      query.$or = [
+        { fullName: regex },
+        { phoneNumber: regex },
+        { restaurantName: regex },
+        { city: regex },
+        { notes: regex }
+      ];
+    }
+    const requests = await BillingDemoRequest_default.find(query).sort({ createdAt: -1 }).populate("restaurantId", "name contactEmail phone subscription approvalStatus billingConfig logo address");
+    const all = await BillingDemoRequest_default.find().lean();
+    const counts = {
+      total: all.length,
+      pending: all.filter((r) => r.status === "Pending").length,
+      contacted: all.filter((r) => r.status === "Contacted").length,
+      scheduled: all.filter((r) => r.status === "Demo Scheduled").length,
+      completed: all.filter((r) => r.status === "Demo Completed").length,
+      activated: all.filter((r) => r.status === "Activated").length,
+      rejected: all.filter((r) => r.status === "Rejected").length
+    };
+    res.json({
+      success: true,
+      counts,
+      data: requests
+    });
+  } catch (error) {
+    console.error("Error fetching billing demo requests:", error);
+    res.status(500).json({ message: error.message || "Server error fetching demo requests" });
+  }
+};
+var getBillingDemoRequestById = async (req, res) => {
+  try {
+    const request = await BillingDemoRequest_default.findById(req.params.id).populate("restaurantId");
+    if (!request) {
+      return res.status(404).json({ message: "Demo request not found" });
+    }
+    res.json({ success: true, data: request });
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Server error" });
+  }
+};
+var updateBillingDemoStatus = async (req, res) => {
+  try {
+    const { status, notes } = req.body;
+    const validStatuses = ["Pending", "Contacted", "Demo Scheduled", "Demo Completed", "Activated", "Rejected"];
+    if (status && !validStatuses.includes(status)) {
+      return res.status(400).json({ message: `Invalid status. Must be one of: ${validStatuses.join(", ")}` });
+    }
+    const request = await BillingDemoRequest_default.findById(req.params.id);
+    if (!request) {
+      return res.status(404).json({ message: "Demo request not found" });
+    }
+    if (status) request.status = status;
+    if (notes !== void 0) request.notes = notes;
+    await request.save();
+    res.json({
+      success: true,
+      message: `Status updated to "${request.status}"`,
+      data: request
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Server error updating status" });
+  }
+};
+var updateBillingDemoConfig = async (req, res) => {
+  try {
+    const { modules, paymentMethods, serviceChargePercent, gstRatePercent, notes } = req.body;
+    const request = await BillingDemoRequest_default.findById(req.params.id);
+    if (!request) {
+      return res.status(404).json({ message: "Demo request not found" });
+    }
+    if (!request.customBillingConfig) {
+      request.customBillingConfig = {};
+    }
+    if (modules) {
+      request.customBillingConfig.modules = {
+        ...request.customBillingConfig.modules,
+        ...modules
+      };
+    }
+    if (paymentMethods) {
+      request.customBillingConfig.paymentMethods = {
+        ...request.customBillingConfig.paymentMethods,
+        ...paymentMethods
+      };
+    }
+    if (serviceChargePercent !== void 0) {
+      request.customBillingConfig.serviceChargePercent = Number(serviceChargePercent);
+    }
+    if (gstRatePercent !== void 0) {
+      request.customBillingConfig.gstRatePercent = Number(gstRatePercent);
+    }
+    if (notes !== void 0) {
+      request.notes = notes;
+    }
+    await request.save();
+    if (request.restaurantId) {
+      await Restaurant_default.findByIdAndUpdate(request.restaurantId, {
+        "billingConfig.modules": request.customBillingConfig.modules,
+        "billingConfig.paymentMethods": request.customBillingConfig.paymentMethods,
+        "billingConfig.serviceChargePercent": request.customBillingConfig.serviceChargePercent,
+        "billingConfig.gstRatePercent": request.customBillingConfig.gstRatePercent
+      });
+    }
+    res.json({
+      success: true,
+      message: "Custom billing configuration updated successfully",
+      data: request
+    });
+  } catch (error) {
+    console.error("Error updating demo config:", error);
+    res.status(500).json({ message: error.message || "Server error updating config" });
+  }
+};
+var activateBillingDemo = async (req, res) => {
+  try {
+    const request = await BillingDemoRequest_default.findById(req.params.id);
+    if (!request) {
+      return res.status(404).json({ message: "Demo request not found" });
+    }
+    let restaurant = null;
+    let ownerUser = null;
+    if (request.restaurantId) {
+      restaurant = await Restaurant_default.findById(request.restaurantId);
+    }
+    if (!restaurant) {
+      restaurant = await Restaurant_default.findOne({
+        $or: [
+          { name: { $regex: new RegExp(`^${request.restaurantName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } },
+          { phone: request.phoneNumber }
+        ]
+      });
+    }
+    if (!restaurant) {
+      const cleanDigits = request.phoneNumber.replace(/\D/g, "") || "9876543210";
+      const ownerEmail = `owner_${cleanDigits}@restosys.com`;
+      ownerUser = await User_default.findOne({
+        $or: [{ email: ownerEmail }, { phoneNumber: request.phoneNumber }]
+      });
+      if (!ownerUser) {
+        ownerUser = await User_default.create({
+          name: request.fullName,
+          email: ownerEmail,
+          phoneNumber: request.phoneNumber,
+          password: "password123",
+          // Default test password
+          role: "RestaurantAdmin",
+          isActive: true
+        });
+      }
+      restaurant = await Restaurant_default.create({
+        name: request.restaurantName,
+        phone: request.phoneNumber,
+        address: request.city || "Primary City",
+        ownerId: ownerUser._id,
+        approvalStatus: "Approved",
+        verificationStatus: "Verified",
+        isActive: true,
+        subscription: {
+          status: "Active",
+          plan: "Pro",
+          billingCycle: "monthly",
+          trialActive: false,
+          startDate: /* @__PURE__ */ new Date(),
+          expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1e3)
+        }
+      });
+      ownerUser.restaurantId = restaurant._id;
+      await ownerUser.save();
+      await Branch_default.create({
+        restaurantId: restaurant._id,
+        name: `${restaurant.name} - Main Outlet`,
+        location: { address: request.city || "Main Street" },
+        contact: { phone: request.phoneNumber },
+        isActive: true
+      });
+    } else if (restaurant.ownerId && !ownerUser) {
+      ownerUser = await User_default.findById(restaurant.ownerId);
+    }
+    restaurant.billingConfig = {
+      isCustomBillingActive: true,
+      activatedAt: /* @__PURE__ */ new Date(),
+      demoRequestId: request._id,
+      outletFormat: request.outletFormat || "Fine Dine & Resto-Bar",
+      modules: request.customBillingConfig?.modules || {
+        posBilling: true,
+        menuManagement: true,
+        tableManagement: true,
+        dineInTakeawayOrders: true,
+        kitchenOrderManagement: true,
+        gstInvoice: true,
+        discounts: true,
+        customerManagement: true,
+        inventoryManagement: true,
+        salesReports: true,
+        staffManagement: true
+      },
+      paymentMethods: request.customBillingConfig?.paymentMethods || {
+        cash: true,
+        upi: true,
+        card: true,
+        split: true
+      },
+      serviceChargePercent: request.customBillingConfig?.serviceChargePercent ?? 5,
+      gstRatePercent: request.customBillingConfig?.gstRatePercent ?? 5
+    };
+    await restaurant.save();
+    request.status = "Activated";
+    request.activatedAt = /* @__PURE__ */ new Date();
+    request.restaurantId = restaurant._id;
+    await request.save();
+    res.json({
+      success: true,
+      message: `Custom billing setup activated for "${restaurant.name}"!`,
+      data: {
+        request,
+        restaurant: {
+          _id: restaurant._id,
+          name: restaurant.name,
+          phone: restaurant.phone,
+          billingConfig: restaurant.billingConfig
+        },
+        credentials: ownerUser ? {
+          email: ownerUser.email,
+          password: "password123"
+        } : null
+      }
+    });
+  } catch (error) {
+    console.error("Error activating billing demo:", error);
+    res.status(500).json({ message: error.message || "Server error activating demo" });
+  }
+};
+var deleteBillingDemoRequest = async (req, res) => {
+  try {
+    const request = await BillingDemoRequest_default.findById(req.params.id);
+    if (!request) {
+      return res.status(404).json({ message: "Demo request not found" });
+    }
+    await BillingDemoRequest_default.findByIdAndDelete(req.params.id);
+    res.json({
+      success: true,
+      message: "Billing demo request deleted successfully"
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Server error deleting request" });
+  }
+};
+
+// routes/billingDemoRoutes.js
+var router27 = import_express27.default.Router();
+router27.route("/").post(createBillingDemoRequest);
+router27.route("/admin").get(protect, authorize("SuperAdmin"), getBillingDemoRequests);
+router27.route("/admin/:id").get(protect, authorize("SuperAdmin"), getBillingDemoRequestById).delete(protect, authorize("SuperAdmin"), deleteBillingDemoRequest);
+router27.route("/admin/:id/status").put(protect, authorize("SuperAdmin"), updateBillingDemoStatus);
+router27.route("/admin/:id/config").put(protect, authorize("SuperAdmin"), updateBillingDemoConfig);
+router27.route("/admin/:id/activate").post(protect, authorize("SuperAdmin"), activateBillingDemo);
+var billingDemoRoutes_default = router27;
+
+// routes/kotRoutes.js
+var import_express28 = __toESM(require_express2(), 1);
+
+// controllers/kotController.js
+init_Order();
+init_Restaurant();
+init_Branch();
+var import_mongoose51 = __toESM(require_mongoose2(), 1);
+var extractId2 = (id) => {
+  if (!id) return null;
+  if (typeof id === "object") return String(id._id || id.id || id);
+  return String(id);
+};
+var getKOTs = async (req, res) => {
+  try {
+    const restaurantId = extractId2(req.user?.restaurantId);
+    if (!restaurantId && req.user?.role !== "SuperAdmin") {
+      return res.status(403).json({ message: "Restaurant access not configured for user." });
+    }
+    const query = {};
+    if (req.user?.role !== "SuperAdmin") {
+      query.restaurantId = restaurantId;
+    }
+    const branchId = extractId2(req.query.branchId || req.user?.branchId);
+    if (branchId && req.user?.role !== "SuperAdmin" && req.user?.role !== "RestaurantAdmin") {
+      query.branchId = branchId;
+    }
+    if (req.query.status && req.query.status !== "All") {
+      if (req.query.status === "Active") {
+        query.status = { $in: ["Pending", "Preparing", "Ready"] };
+      } else {
+        query.status = req.query.status;
+      }
+    }
+    if (req.query.station && req.query.station !== "All") {
+      query.kitchenStation = req.query.station;
+    }
+    if (req.query.orderId) {
+      query.orderId = req.query.orderId;
+    }
+    if (req.query.tableNumber) {
+      query.tableNumber = new RegExp(req.query.tableNumber, "i");
+    }
+    if (req.query.date === "today") {
+      const startOfDay = /* @__PURE__ */ new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      query.createdAt = { $gte: startOfDay };
+    } else if (req.query.startDate && req.query.endDate) {
+      query.createdAt = {
+        $gte: new Date(req.query.startDate),
+        $lte: new Date(req.query.endDate)
+      };
+    }
+    const kots = await KOT_default.find(query).sort({ createdAt: -1 }).limit(Number(req.query.limit) || 150);
+    return res.status(200).json(kots);
+  } catch (error) {
+    console.error("Error fetching KOTs:", error);
+    return res.status(500).json({ message: error.message || "Server error fetching KOTs" });
+  }
+};
+var getKOTById = async (req, res) => {
+  try {
+    const kot = await KOT_default.findById(req.params.id);
+    if (!kot) {
+      return res.status(404).json({ message: "Kitchen Order Ticket not found" });
+    }
+    const userRestId = extractId2(req.user?.restaurantId);
+    if (userRestId && req.user?.role !== "SuperAdmin" && String(kot.restaurantId) !== userRestId) {
+      return res.status(403).json({ message: "Not authorized to view KOT from another restaurant." });
+    }
+    const [restaurant, branch] = await Promise.all([
+      Restaurant_default.findById(kot.restaurantId).select("name logo address phone"),
+      Branch_default.findById(kot.branchId).select("name address phone")
+    ]);
+    return res.status(200).json({
+      ...kot.toObject(),
+      restaurantName: restaurant?.name || "Restaurant",
+      restaurantAddress: restaurant?.address || "",
+      restaurantPhone: restaurant?.phone || "",
+      branchName: branch?.name || "Main Branch",
+      branchAddress: branch?.address || "",
+      branchPhone: branch?.phone || ""
+    });
+  } catch (error) {
+    console.error("Error fetching KOT by ID:", error);
+    return res.status(500).json({ message: error.message || "Server error fetching KOT" });
+  }
+};
+var updateKOTStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status) {
+      return res.status(400).json({ message: "New status is required" });
+    }
+    const kot = await KOT_default.findById(req.params.id);
+    if (!kot) {
+      return res.status(404).json({ message: "KOT not found" });
+    }
+    const userRestId = extractId2(req.user?.restaurantId);
+    if (userRestId && req.user?.role !== "SuperAdmin" && String(kot.restaurantId) !== userRestId) {
+      return res.status(403).json({ message: "Not authorized to update this KOT" });
+    }
+    const validation = validateKOTStatusTransition(kot.status, status);
+    if (!validation.valid) {
+      return res.status(400).json({ message: validation.message });
+    }
+    const oldStatus = kot.status;
+    kot.status = status;
+    const now = /* @__PURE__ */ new Date();
+    if (status === "Preparing" && !kot.prepStartTime) {
+      kot.prepStartTime = now;
+    } else if (status === "Ready" && !kot.prepReadyTime) {
+      kot.prepReadyTime = now;
+    } else if (status === "Served" && !kot.servedTime) {
+      kot.servedTime = now;
+    }
+    kot.statusHistory.push({
+      status,
+      timestamp: now,
+      updatedBy: req.user?._id || null
+    });
+    if (kot.items && kot.items.length > 0) {
+      kot.items.forEach((item) => {
+        if (item.status !== "Cancelled") {
+          item.status = status;
+        }
+      });
+    }
+    const updatedKOT = await kot.save();
+    if (kot.orderId) {
+      try {
+        const siblingKOTs = await KOT_default.find({ orderId: kot.orderId });
+        const nonCancelledKOTs = siblingKOTs.filter((k) => k.status !== "Cancelled");
+        if (nonCancelledKOTs.length > 0) {
+          const allReadyOrBeyond = nonCancelledKOTs.every((k) => ["Ready", "Served"].includes(k.status));
+          const allServed = nonCancelledKOTs.every((k) => k.status === "Served");
+          const parentOrder = await Order_default.findById(kot.orderId);
+          if (parentOrder) {
+            if (allServed && !["Served", "Completed"].includes(parentOrder.status)) {
+              parentOrder.status = "Served";
+              await parentOrder.save();
+            } else if (allReadyOrBeyond && !["Ready", "Ready for Pickup", "Served", "Completed"].includes(parentOrder.status)) {
+              parentOrder.status = parentOrder.orderType === "Self-Pickup" || parentOrder.serviceType?.includes("Self") ? "Ready for Pickup" : "Ready";
+              await parentOrder.save();
+            }
+          }
+        }
+      } catch (syncErr) {
+        console.error("Error synchronizing parent order with KOT statuses", syncErr);
+      }
+    }
+    broadcastToRestaurant(kot.restaurantId, "kot_status_updated", {
+      kotId: kot._id,
+      kotNumber: kot.kotNumber,
+      orderId: kot.orderId,
+      tableNumber: kot.tableNumber,
+      kitchenStation: kot.kitchenStation,
+      oldStatus,
+      newStatus: status,
+      updatedKOT
+    });
+    if (status === "Ready") {
+      broadcastToRestaurant(kot.restaurantId, "ready_to_serve", {
+        orderId: kot.orderId,
+        kotNumber: kot.kotNumber,
+        tableNumber: kot.tableNumber,
+        customerName: kot.customerName,
+        serviceType: kot.serviceType,
+        status: "Ready"
+      });
+    }
+    return res.status(200).json(updatedKOT);
+  } catch (error) {
+    console.error("Error updating KOT status:", error);
+    return res.status(500).json({ message: error.message || "Server error updating KOT" });
+  }
+};
+var markKOTPrinted = async (req, res) => {
+  try {
+    const kot = await KOT_default.findById(req.params.id);
+    if (!kot) {
+      return res.status(404).json({ message: "KOT not found" });
+    }
+    const userRestId = extractId2(req.user?.restaurantId);
+    if (userRestId && req.user?.role !== "SuperAdmin" && String(kot.restaurantId) !== userRestId) {
+      return res.status(403).json({ message: "Not authorized for this KOT" });
+    }
+    kot.isPrinted = true;
+    kot.printedAt = /* @__PURE__ */ new Date();
+    kot.printCount = (kot.printCount || 0) + 1;
+    const updatedKOT = await kot.save();
+    return res.status(200).json({
+      message: "KOT marked as printed",
+      printCount: updatedKOT.printCount,
+      printedAt: updatedKOT.printedAt,
+      kot: updatedKOT
+    });
+  } catch (error) {
+    console.error("Error marking KOT as printed:", error);
+    return res.status(500).json({ message: error.message || "Server error updating print status" });
+  }
+};
+var manualCreateKOT = async (req, res) => {
+  try {
+    const { orderId, items, tableNumber, notes, kitchenStation, customerName } = req.body;
+    if (!items || items.length === 0) {
+      return res.status(400).json({ message: "Items list is required for KOT" });
+    }
+    let restaurantId = extractId2(req.user?.restaurantId);
+    let branchId = extractId2(req.user?.branchId);
+    let order = null;
+    if (orderId && import_mongoose51.default.Types.ObjectId.isValid(orderId)) {
+      order = await Order_default.findById(orderId);
+      if (order) {
+        restaurantId = restaurantId || extractId2(order.restaurantId);
+        branchId = branchId || extractId2(order.branchId);
+      }
+    }
+    if (!restaurantId) {
+      return res.status(400).json({ message: "Restaurant ID missing" });
+    }
+    if (!branchId) {
+      const firstBranch = await Branch_default.findOne({ restaurantId });
+      branchId = firstBranch?._id;
+    }
+    const { kotNumber, kotSequence } = await getNextKotNumber(restaurantId, branchId);
+    const station = kitchenStation || (items[0] ? determineKitchenStation(items[0]) : "Main Kitchen");
+    const kot = new KOT_default({
+      kotNumber,
+      kotSequence,
+      orderId: order ? order._id : new import_mongoose51.default.Types.ObjectId(),
+      orderNumber: order ? `#${String(order._id).slice(-5).toUpperCase()}` : "MANUAL",
+      restaurantId,
+      branchId,
+      tableNumber: tableNumber || order?.tableNumber || "",
+      orderType: order?.orderType || "Dine In",
+      serviceType: order?.serviceType || "Waiter Table Service",
+      customerName: customerName || order?.customerName || "",
+      kitchenStation: station,
+      items: items.map((i) => ({
+        name: i.name,
+        qty: Number(i.qty) || 1,
+        price: Number(i.price) || 0,
+        notes: i.notes || "",
+        product: i.product && import_mongoose51.default.Types.ObjectId.isValid(i.product) ? i.product : null,
+        kitchenStation: station,
+        status: "Pending"
+      })),
+      notes: notes || "",
+      status: "Pending",
+      statusHistory: [{
+        status: "Pending",
+        timestamp: /* @__PURE__ */ new Date(),
+        updatedBy: req.user?._id || null
+      }],
+      serverName: req.user?.name || "Staff User",
+      createdBy: req.user?._id || null
+    });
+    const savedKOT = await kot.save();
+    if (order) {
+      await Order_default.findByIdAndUpdate(order._id, {
+        $addToSet: {
+          kots: savedKOT._id,
+          kotNumbers: savedKOT.kotNumber
+        }
+      });
+    }
+    broadcastToRestaurant(restaurantId, "new_kot", savedKOT);
+    return res.status(201).json(savedKOT);
+  } catch (error) {
+    console.error("Error creating manual KOT:", error);
+    return res.status(500).json({ message: error.message || "Server error creating KOT" });
+  }
+};
+var getKOTSummary = async (req, res) => {
+  try {
+    const restaurantId = extractId2(req.user?.restaurantId);
+    const query = {};
+    if (restaurantId && req.user?.role !== "SuperAdmin") {
+      query.restaurantId = restaurantId;
+    }
+    const startOfDay = /* @__PURE__ */ new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    query.createdAt = { $gte: startOfDay };
+    const todayKOTs = await KOT_default.find(query);
+    const totalToday = todayKOTs.length;
+    const pendingCount = todayKOTs.filter((k) => k.status === "Pending").length;
+    const preparingCount = todayKOTs.filter((k) => k.status === "Preparing").length;
+    const readyCount = todayKOTs.filter((k) => k.status === "Ready").length;
+    const servedCount = todayKOTs.filter((k) => k.status === "Served").length;
+    const cancelledCount = todayKOTs.filter((k) => k.status === "Cancelled").length;
+    const completedPrep = todayKOTs.filter((k) => k.prepStartTime && k.prepReadyTime);
+    let avgPrepMinutes = 12;
+    if (completedPrep.length > 0) {
+      const totalMs = completedPrep.reduce((acc, curr) => {
+        const diff = new Date(curr.prepReadyTime) - new Date(curr.prepStartTime);
+        return acc + (diff > 0 ? diff : 0);
+      }, 0);
+      avgPrepMinutes = Math.round(totalMs / (completedPrep.length * 60 * 1e3)) || 1;
+    }
+    return res.status(200).json({
+      totalToday,
+      pendingCount,
+      preparingCount,
+      readyCount,
+      servedCount,
+      cancelledCount,
+      avgPrepMinutes
+    });
+  } catch (error) {
+    console.error("Error fetching KOT summary:", error);
+    return res.status(500).json({ message: error.message || "Server error fetching KOT summary" });
+  }
+};
+
+// routes/kotRoutes.js
+var router28 = import_express28.default.Router();
+router28.use(protect);
+router28.route("/").get(getKOTs).post(manualCreateKOT);
+router28.route("/summary").get(getKOTSummary);
+router28.route("/:id").get(getKOTById);
+router28.route("/:id/status").put(updateKOTStatus);
+router28.route("/:id/print").put(markKOTPrinted);
+var kotRoutes_default = router28;
+
+// routes/tipRoutes.js
+var import_express29 = __toESM(require_express2(), 1);
+
+// controllers/tipController.js
+init_Tip();
+init_User();
+var import_mongoose52 = __toESM(require_mongoose2(), 1);
+var getTips = async (req, res) => {
+  try {
+    const restaurantId = req.user.restaurantId;
+    if (!restaurantId) {
+      return res.status(400).json({ message: "No restaurant associated with this account" });
+    }
+    const { waiterId, status, startDate, endDate, branchId } = req.query;
+    const query = { restaurantId };
+    if (branchId && import_mongoose52.default.Types.ObjectId.isValid(branchId)) {
+      query.branchId = branchId;
+    }
+    if (waiterId && import_mongoose52.default.Types.ObjectId.isValid(waiterId)) {
+      query.waiterId = waiterId;
+    }
+    if (status && ["Pending", "Settled"].includes(status)) {
+      query.status = status;
+    }
+    if (startDate || endDate) {
+      query.date = {};
+      if (startDate) {
+        query.date.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        query.date.$lte = end;
+      }
+    }
+    const tips = await Tip_default.find(query).populate("waiterId", "name email employeeId").populate("settledBy", "name email role").populate("orderId", "tableNumber totalPrice orderType serviceType createdAt").sort({ createdAt: -1 });
+    res.json(tips);
+  } catch (error) {
+    console.error("Error fetching tips:", error);
+    res.status(500).json({ message: error.message || "Failed to fetch tips" });
+  }
+};
+var getTipSummary = async (req, res) => {
+  try {
+    const restaurantId = req.user.restaurantId;
+    if (!restaurantId) {
+      return res.status(400).json({ message: "No restaurant associated with this account" });
+    }
+    const matchQuery = { restaurantId: new import_mongoose52.default.Types.ObjectId(restaurantId) };
+    if (req.query.branchId && import_mongoose52.default.Types.ObjectId.isValid(req.query.branchId)) {
+      matchQuery.branchId = new import_mongoose52.default.Types.ObjectId(req.query.branchId);
+    }
+    const totalsAgg = await Tip_default.aggregate([
+      { $match: matchQuery },
+      {
+        $group: {
+          _id: null,
+          totalTips: { $sum: "$amount" },
+          totalCount: { $sum: 1 },
+          settledTips: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "Settled"] }, "$amount", 0]
+            }
+          },
+          settledCount: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "Settled"] }, 1, 0]
+            }
+          },
+          pendingTips: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "Pending"] }, "$amount", 0]
+            }
+          },
+          pendingCount: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "Pending"] }, 1, 0]
+            }
+          }
+        }
+      }
+    ]);
+    const totals = totalsAgg[0] || {
+      totalTips: 0,
+      totalCount: 0,
+      settledTips: 0,
+      settledCount: 0,
+      pendingTips: 0,
+      pendingCount: 0
+    };
+    const waiterSummary = await Tip_default.aggregate([
+      { $match: matchQuery },
+      {
+        $group: {
+          _id: "$waiterId",
+          waiterName: { $first: "$waiterName" },
+          totalAmount: { $sum: "$amount" },
+          tipCount: { $sum: 1 },
+          settledAmount: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "Settled"] }, "$amount", 0]
+            }
+          },
+          pendingAmount: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "Pending"] }, "$amount", 0]
+            }
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "waiterInfo"
+        }
+      },
+      {
+        $project: {
+          waiterId: "$_id",
+          waiterName: {
+            $ifNull: [{ $arrayElemAt: ["$waiterInfo.name", 0] }, "$waiterName"]
+          },
+          employeeId: { $arrayElemAt: ["$waiterInfo.employeeId", 0] },
+          totalAmount: 1,
+          tipCount: 1,
+          settledAmount: 1,
+          pendingAmount: 1
+        }
+      },
+      { $sort: { totalAmount: -1 } }
+    ]);
+    const dateSummary = await Tip_default.aggregate([
+      { $match: matchQuery },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+          totalAmount: { $sum: "$amount" },
+          tipCount: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+    res.json({
+      totals,
+      waiterSummary,
+      dateSummary
+    });
+  } catch (error) {
+    console.error("Error fetching tip summary:", error);
+    res.status(500).json({ message: error.message || "Failed to fetch tip summary" });
+  }
+};
+var getMyWaiterTips = async (req, res) => {
+  try {
+    const waiterId = req.user._id;
+    const restaurantId = req.user.restaurantId;
+    if (!restaurantId) {
+      return res.status(400).json({ message: "No restaurant associated with this staff user" });
+    }
+    const tips = await Tip_default.find({
+      restaurantId,
+      waiterId
+    }).populate("orderId", "tableNumber totalPrice serviceType createdAt").sort({ createdAt: -1 }).limit(50);
+    const totalEarned = tips.reduce((acc, t) => acc + (t.amount || 0), 0);
+    const settledTips = tips.filter((t) => t.status === "Settled").reduce((acc, t) => acc + (t.amount || 0), 0);
+    const pendingTips = tips.filter((t) => t.status === "Pending").reduce((acc, t) => acc + (t.amount || 0), 0);
+    const todayStart = /* @__PURE__ */ new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayTips = tips.filter((t) => new Date(t.date || t.createdAt) >= todayStart).reduce((acc, t) => acc + (t.amount || 0), 0);
+    res.json({
+      totalEarned,
+      todayTips,
+      settledTips,
+      pendingTips,
+      tipCount: tips.length,
+      records: tips
+    });
+  } catch (error) {
+    console.error("Error fetching waiter tips:", error);
+    res.status(500).json({ message: error.message || "Failed to fetch waiter tips" });
+  }
+};
+var settleTips = async (req, res) => {
+  try {
+    const restaurantId = req.user.restaurantId;
+    const { tipIds, waiterId, transactionReference, notes } = req.body;
+    const updateFilter = { restaurantId, status: "Pending" };
+    if (Array.isArray(tipIds) && tipIds.length > 0) {
+      updateFilter._id = { $in: tipIds };
+    } else if (waiterId && import_mongoose52.default.Types.ObjectId.isValid(waiterId)) {
+      updateFilter.waiterId = waiterId;
+    } else {
+      return res.status(400).json({ message: "Must provide either specific tipIds or a valid waiterId to settle" });
+    }
+    const updateResult = await Tip_default.updateMany(updateFilter, {
+      $set: {
+        status: "Settled",
+        settledAt: /* @__PURE__ */ new Date(),
+        settledBy: req.user._id,
+        transactionReference: transactionReference || `SETTLE-${Date.now()}`,
+        notes: notes || "Settled through admin console"
+      }
+    });
+    res.json({
+      success: true,
+      message: `Successfully settled ${updateResult.modifiedCount} tip transaction(s)`,
+      settledCount: updateResult.modifiedCount
+    });
+  } catch (error) {
+    console.error("Error settling tips:", error);
+    res.status(500).json({ message: error.message || "Failed to settle tips" });
+  }
+};
+
+// routes/tipRoutes.js
+var router29 = import_express29.default.Router();
+router29.route("/waiter-mine").get(protect, authorize("Waiter", "RestaurantAdmin", "BranchManager", "SuperAdmin"), getMyWaiterTips);
+router29.route("/summary").get(protect, authorize("RestaurantAdmin", "BranchManager", "SuperAdmin", "Admin"), getTipSummary);
+router29.route("/settle").post(protect, authorize("RestaurantAdmin", "BranchManager", "SuperAdmin", "Admin"), settleTips);
+router29.route("/").get(protect, authorize("RestaurantAdmin", "BranchManager", "SuperAdmin", "Admin"), getTips);
+var tipRoutes_default = router29;
+
 // index.js
 init_Plan();
 import_dotenv.default.config();
-var app = (0, import_express27.default)();
+var app = (0, import_express30.default)();
 app.use((req, res, next) => {
   const origin = req.headers.origin || "*";
   res.setHeader("Access-Control-Allow-Origin", origin);
@@ -133073,8 +138051,8 @@ app.use((0, import_cors.default)({
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", "cache-control", "pragma"],
   optionsSuccessStatus: 204
 }));
-app.use(import_express27.default.json({ limit: "50mb" }));
-app.use(import_express27.default.urlencoded({ limit: "50mb", extended: true }));
+app.use(import_express30.default.json({ limit: "50mb" }));
+app.use(import_express30.default.urlencoded({ limit: "50mb", extended: true }));
 app.use((0, import_cookie_parser.default)());
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", time: (/* @__PURE__ */ new Date()).toISOString() });
@@ -133114,16 +138092,19 @@ app.use("/api/support", supportRoutes_default);
 app.use("/api/delivery", deliveryRoutes_default);
 app.use("/api/auth/delivery", deliveryRoutes_default);
 app.use("/api/inquiries", inquiryRoutes_default);
+app.use("/api/billing-demos", billingDemoRoutes_default);
 app.use("/api/expenses", expenseRoutes_default);
+app.use("/api/kot", kotRoutes_default);
+app.use("/api/tips", tipRoutes_default);
 var PORT = process.env.PORT || 5e3;
 var __dirname = import_path5.default.resolve();
-app.use("/uploads", import_express27.default.static(import_path5.default.join(__dirname, "uploads")));
+app.use("/uploads", import_express30.default.static(import_path5.default.join(__dirname, "uploads")));
 app.get("/", (req, res) => {
   res.status(200).json({ status: "ok", message: "Restaurant SaaS API is running live" });
 });
 var frontendDistPath = import_path5.default.join(__dirname, "../frontend/dist");
 if (import_fs5.default.existsSync(frontendDistPath)) {
-  app.use(import_express27.default.static(frontendDistPath));
+  app.use(import_express30.default.static(frontendDistPath));
   app.get(/(.*)/, (req, res, next) => {
     if (req.originalUrl.startsWith("/api")) return next();
     res.sendFile(import_path5.default.resolve(frontendDistPath, "index.html"));

@@ -250,6 +250,27 @@ const ManagerStaff = () => {
                 </div>
             </div>
 
+            {/* Sleek Manager Shift Control Strip */}
+            <div className="bg-slate-900 text-white px-4 py-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-md border border-slate-800 shrink-0">
+                <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span className="text-xs font-black tracking-wide uppercase text-slate-200">Terminal Shift Roster</span>
+                        <span className="text-slate-600">|</span>
+                        <span className="text-xs text-slate-400 font-medium truncate max-w-[200px]">Supervisor: {user?.name || 'Duty Manager'}</span>
+                    </div>
+                    {/* Compact Shift Attendance Widget */}
+                    <StaffShiftClockWidget compact={true} userRole="Branch Manager" userName={user?.name || "Manager"} />
+                </div>
+
+                <div className="flex items-center gap-2.5 flex-wrap">
+                    <div className="flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-xl text-xs border border-slate-700/60 font-semibold shadow-xs">
+                        <span className="text-slate-400">Total Shift Roster:</span>
+                        <span className="font-mono font-black text-emerald-400">{staff.length} Members</span>
+                    </div>
+                </div>
+            </div>
+
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm flex items-center gap-4">

@@ -129,6 +129,11 @@ const WaiterKitchenTracker = () => {
                                         </span>
                                     )}
                                     <span className="text-xs font-bold text-slate-400">#{order._id.substring(order._id.length - 6).toUpperCase()}</span>
+                                    {order.kotNumbers && order.kotNumbers.length > 0 && (
+                                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-slate-900 text-white shadow-xs">
+                                            {order.kotNumbers.join(', ')}
+                                        </span>
+                                    )}
                                     {order.customerName && (
                                         <span className="text-xs font-semibold text-slate-700">
                                             👤 {order.customerName}

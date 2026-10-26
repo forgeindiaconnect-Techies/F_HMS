@@ -5,7 +5,7 @@ import { protect, authorize, checkSubscription, checkBillingModule } from '../mi
 const router = express.Router();
 
 router.use(protect);
-router.use(authorize('RestaurantAdmin', 'BranchManager'));
+router.use(authorize('RestaurantAdmin', 'BranchManager', 'SuperAdmin'));
 router.use(checkSubscription);
 router.use(checkBillingModule('salesReports'));
 

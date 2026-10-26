@@ -323,6 +323,32 @@ export const getMyRestaurant = async (req, res) => {
             }
         }
         
+        // Auto-initialize restaurantConfig with defaults if missing
+        if (!restaurant.restaurantConfig) {
+            restaurant.restaurantConfig = {
+                orderKitchen: { kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
+                waiterTips: { enabled: true, allowCustomerTips: true, tipPercentages: [5, 10, 15, 20], customTipAllowed: true },
+                qrOrdering: { enabled: true, allowSelfDineIn: true, allowWaiterOrdering: true },
+                paymentMethods: { cash: true, upi: true, card: true, onlineGateway: true },
+                setupWizardCompleted: false,
+                setupStep: 1
+            };
+        } else {
+            // Guarantee nested objects exist
+            if (!restaurant.restaurantConfig.orderKitchen) {
+                restaurant.restaurantConfig.orderKitchen = { kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true };
+            }
+            if (!restaurant.restaurantConfig.waiterTips) {
+                restaurant.restaurantConfig.waiterTips = { enabled: true, allowCustomerTips: true, tipPercentages: [5, 10, 15, 20], customTipAllowed: true };
+            }
+            if (!restaurant.restaurantConfig.qrOrdering) {
+                restaurant.restaurantConfig.qrOrdering = { enabled: true, allowSelfDineIn: true, allowWaiterOrdering: true };
+            }
+            if (!restaurant.restaurantConfig.paymentMethods) {
+                restaurant.restaurantConfig.paymentMethods = { cash: true, upi: true, card: true, onlineGateway: true };
+            }
+        }
+
         res.json(restaurant);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -338,7 +364,7 @@ export const updateMyRestaurant = async (req, res) => {
             return res.status(404).json({ message: 'No restaurant associated with this user' });
         }
         
-        const { name, contactEmail, phone, address, currency, timezone, features } = req.body;
+        const { name, contactEmail, phone, address, currency, timezone, features, restaurantConfig } = req.body;
         
         const restaurant = await Restaurant.findById(req.user.restaurantId);
         if (restaurant) {
@@ -361,6 +387,49 @@ export const updateMyRestaurant = async (req, res) => {
                 };
             }
 
+            if (restaurantConfig) {
+                if (!restaurant.restaurantConfig) restaurant.restaurantConfig = {};
+                if (restaurantConfig.orderKitchen) {
+                    restaurant.restaurantConfig.orderKitchen = {
+                        ...(restaurant.restaurantConfig.orderKitchen || {}),
+                        ...restaurantConfig.orderKitchen
+                    };
+                    if (restaurantConfig.orderKitchen.kdsEnabled !== undefined) {
+                        if (!restaurant.posConfig) restaurant.posConfig = {};
+                        restaurant.posConfig.kdsEnabled = restaurantConfig.orderKitchen.kdsEnabled;
+                    }
+                }
+                if (restaurantConfig.waiterTips) {
+                    restaurant.restaurantConfig.waiterTips = {
+                        ...(restaurant.restaurantConfig.waiterTips || {}),
+                        ...restaurantConfig.waiterTips
+                    };
+                }
+                if (restaurantConfig.qrOrdering) {
+                    restaurant.restaurantConfig.qrOrdering = {
+                        ...(restaurant.restaurantConfig.qrOrdering || {}),
+                        ...restaurantConfig.qrOrdering
+                    };
+                    if (restaurantConfig.qrOrdering.enabled !== undefined) {
+                        if (!restaurant.posConfig) restaurant.posConfig = {};
+                        restaurant.posConfig.guestQrOrdering = restaurantConfig.qrOrdering.enabled;
+                    }
+                }
+                if (restaurantConfig.paymentMethods) {
+                    restaurant.restaurantConfig.paymentMethods = {
+                        ...(restaurant.restaurantConfig.paymentMethods || {}),
+                        ...restaurantConfig.paymentMethods
+                    };
+                }
+                if (restaurantConfig.setupWizardCompleted !== undefined) {
+                    restaurant.restaurantConfig.setupWizardCompleted = Boolean(restaurantConfig.setupWizardCompleted);
+                }
+                if (restaurantConfig.setupStep !== undefined) {
+                    restaurant.restaurantConfig.setupStep = Number(restaurantConfig.setupStep);
+                }
+                restaurant.markModified('restaurantConfig');
+            }
+
             // Handle logo upload or removal (Base64 data URL, uploaded file, or removal)
             if (req.body.removeLogo === true || req.body.removeLogo === 'true' || req.body.logo === '') {
                 restaurant.logo = '';
@@ -377,6 +446,218 @@ export const updateMyRestaurant = async (req, res) => {
         }
     } catch (error) {
         res.status(400).json({ message: error.message });
+    }
+};
+
+// @desc    Get public configuration for customer QR menu
+// @route   GET /api/restaurants/:id/public-config
+// @access  Public
+export const getRestaurantPublicConfig = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: 'Invalid restaurant ID' });
+        }
+        const restaurant = await Restaurant.findById(id).select('name logo restaurantConfig posConfig billingConfig');
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        const config = restaurant.restaurantConfig || {};
+        res.json({
+            restaurantName: restaurant.name,
+            logo: restaurant.logo,
+            qrOrdering: {
+                enabled: config.qrOrdering?.enabled ?? true,
+                allowSelfDineIn: config.qrOrdering?.allowSelfDineIn ?? true,
+                allowWaiterOrdering: config.qrOrdering?.allowWaiterOrdering ?? true
+            },
+            paymentMethods: {
+                cash: config.paymentMethods?.cash ?? true,
+                upi: config.paymentMethods?.upi ?? true,
+                card: config.paymentMethods?.card ?? true,
+                onlineGateway: config.paymentMethods?.onlineGateway ?? true
+            },
+            waiterTips: {
+                enabled: config.waiterTips?.enabled ?? true,
+                allowCustomerTips: config.waiterTips?.allowCustomerTips ?? true,
+                tipPercentages: config.waiterTips?.tipPercentages || [5, 10, 15, 20],
+                customTipAllowed: config.waiterTips?.customTipAllowed ?? true
+            },
+            orderKitchen: {
+                kotEnabled: config.orderKitchen?.kotEnabled ?? true,
+                kdsEnabled: config.orderKitchen?.kdsEnabled ?? true,
+                kotPrintEnabled: config.orderKitchen?.kotPrintEnabled ?? true
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get authenticated restaurant's operational configuration & plan permissions
+// @route   GET /api/restaurants/mine/config
+// @access  Private (Admin, Manager)
+export const getRestaurantConfig = async (req, res) => {
+    try {
+        const restaurantId = req.user.restaurantId;
+        if (!restaurantId) {
+            return res.status(400).json({ message: 'No restaurant associated with this user' });
+        }
+        const restaurant = await Restaurant.findById(restaurantId);
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        const planName = restaurant.subscription?.plan || 'Basic';
+        const PlanModel = mongoose.model('Plan');
+        const planDoc = await PlanModel.findOne({ name: new RegExp(`^${planName}$`, 'i') });
+        const planFeatures = planDoc?.features || [];
+
+        const config = restaurant.restaurantConfig || {
+            orderKitchen: { kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
+            waiterTips: { enabled: true, allowCustomerTips: true, tipPercentages: [5, 10, 15, 20], customTipAllowed: true },
+            qrOrdering: { enabled: true, allowSelfDineIn: true, allowWaiterOrdering: true },
+            paymentMethods: { cash: true, upi: true, card: true, onlineGateway: true },
+            setupWizardCompleted: false,
+            setupStep: 1
+        };
+
+        res.json({
+            config,
+            planName,
+            planFeatures,
+            isTrialActive: restaurant.subscription?.trialActive || false
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Update authenticated restaurant's operational configuration with validation and plan control
+// @route   PUT /api/restaurants/mine/config
+// @access  Private (Admin)
+export const updateRestaurantConfig = async (req, res) => {
+    try {
+        const restaurantId = req.user.restaurantId;
+        if (!restaurantId) {
+            return res.status(400).json({ message: 'No restaurant associated with this user' });
+        }
+        const restaurant = await Restaurant.findById(restaurantId);
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        const { orderKitchen, waiterTips, qrOrdering, paymentMethods, setupWizardCompleted, setupStep } = req.body;
+
+        // 1. Validation: Prevent saving with zero payment methods
+        const currentPm = restaurant.restaurantConfig?.paymentMethods || { cash: true, upi: true, card: true, onlineGateway: true };
+        const mergedPm = paymentMethods ? { ...currentPm, ...paymentMethods } : currentPm;
+        
+        if (paymentMethods && !mergedPm.cash && !mergedPm.upi && !mergedPm.card && !mergedPm.onlineGateway) {
+            return res.status(400).json({ 
+                message: 'At least one payment method (Cash, UPI, Card, or Online Gateway) must remain enabled.' 
+            });
+        }
+
+        // 2. Feature Gating vs Subscription Plan
+        const planName = restaurant.subscription?.plan || 'Basic';
+        const isSuperAdmin = req.user.role === 'SuperAdmin';
+        
+        if (!isSuperAdmin) {
+            const PlanModel = mongoose.model('Plan');
+            const planDoc = await PlanModel.findOne({ name: new RegExp(`^${planName}$`, 'i') });
+            const planFeatures = planDoc?.features || [];
+
+            const isFeatureAllowed = (featureKeyword) => {
+                if (['Pro', 'Enterprise'].includes(planName) && (featureKeyword === 'kds' || featureKeyword === 'tips')) return true;
+                return planFeatures.some(f => f.toLowerCase().includes(featureKeyword.toLowerCase()));
+            };
+
+            // If attempting to enable KDS when plan forbids it:
+            if (orderKitchen?.kdsEnabled === true && !restaurant.restaurantConfig?.orderKitchen?.kdsEnabled) {
+                if (!isFeatureAllowed('Kitchen Display System') && !isFeatureAllowed('KDS') && planName === 'Basic') {
+                    return res.status(403).json({
+                        message: `Kitchen Display System (KDS) requires a Pro or Enterprise subscription. Your restaurant is currently on the ${planName} plan.`,
+                        requiresUpgrade: true,
+                        requiredPlan: 'Pro'
+                    });
+                }
+            }
+        }
+
+        // 3. Merge configuration into restaurant document
+        if (!restaurant.restaurantConfig) {
+            restaurant.restaurantConfig = {
+                orderKitchen: { kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
+                waiterTips: { enabled: true, allowCustomerTips: true, tipPercentages: [5, 10, 15, 20], customTipAllowed: true },
+                qrOrdering: { enabled: true, allowSelfDineIn: true, allowWaiterOrdering: true },
+                paymentMethods: { cash: true, upi: true, card: true, onlineGateway: true },
+                setupWizardCompleted: false,
+                setupStep: 1
+            };
+        }
+
+        if (orderKitchen) {
+            restaurant.restaurantConfig.orderKitchen = {
+                ...(restaurant.restaurantConfig.orderKitchen || {}),
+                ...orderKitchen
+            };
+            if (orderKitchen.kdsEnabled !== undefined) {
+                if (!restaurant.posConfig) restaurant.posConfig = {};
+                restaurant.posConfig.kdsEnabled = orderKitchen.kdsEnabled;
+            }
+        }
+
+        if (waiterTips) {
+            restaurant.restaurantConfig.waiterTips = {
+                ...(restaurant.restaurantConfig.waiterTips || {}),
+                ...waiterTips
+            };
+        }
+
+        if (qrOrdering) {
+            restaurant.restaurantConfig.qrOrdering = {
+                ...(restaurant.restaurantConfig.qrOrdering || {}),
+                ...qrOrdering
+            };
+            if (qrOrdering.enabled !== undefined) {
+                if (!restaurant.posConfig) restaurant.posConfig = {};
+                restaurant.posConfig.guestQrOrdering = qrOrdering.enabled;
+            }
+        }
+
+        if (paymentMethods) {
+            restaurant.restaurantConfig.paymentMethods = mergedPm;
+            if (!restaurant.billingConfig) restaurant.billingConfig = {};
+            if (!restaurant.billingConfig.paymentMethods) restaurant.billingConfig.paymentMethods = {};
+            restaurant.billingConfig.paymentMethods.cash = mergedPm.cash;
+            restaurant.billingConfig.paymentMethods.upi = mergedPm.upi;
+            restaurant.billingConfig.paymentMethods.card = mergedPm.card;
+        }
+
+        if (setupWizardCompleted !== undefined) {
+            restaurant.restaurantConfig.setupWizardCompleted = Boolean(setupWizardCompleted);
+        }
+        if (setupStep !== undefined) {
+            restaurant.restaurantConfig.setupStep = Number(setupStep);
+        }
+
+        restaurant.markModified('restaurantConfig');
+        restaurant.markModified('posConfig');
+        restaurant.markModified('billingConfig');
+
+        await restaurant.save();
+
+        res.json({
+            success: true,
+            message: 'Restaurant configuration updated successfully',
+            config: restaurant.restaurantConfig,
+            restaurantConfig: restaurant.restaurantConfig
+        });
+    } catch (error) {
+        console.error('Error updating restaurant config:', error);
+        res.status(500).json({ message: error.message || 'Failed to update restaurant configuration' });
     }
 };
 

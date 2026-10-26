@@ -34,6 +34,35 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: true,
     },
+    employeeId: {
+        type: String,
+        trim: true,
+    },
+    joiningDate: {
+        type: Date,
+        default: Date.now,
+    },
+    employmentStatus: {
+        type: String,
+        enum: ['Active', 'On Leave', 'Terminated', 'Probation'],
+        default: 'Active',
+    },
+    salaryConfig: {
+        basicSalary: { type: Number, default: 0 },
+        salaryFrequency: { type: String, enum: ['Monthly', 'Daily', 'Hourly'], default: 'Monthly' },
+        overtimeRatePerHour: { type: Number, default: 0 },
+        dailyWorkHours: { type: Number, default: 8 },
+        monthlyWorkingDays: { type: Number, default: 26 },
+        allowances: { type: mongoose.Schema.Types.Mixed, default: [] },
+        deductions: { type: mongoose.Schema.Types.Mixed, default: [] },
+    },
+    bankDetails: {
+        accountName: { type: String, default: '' },
+        accountNumber: { type: String, default: '' },
+        bankName: { type: String, default: '' },
+        ifscCode: { type: String, default: '' },
+        upiId: { type: String, default: '' },
+    },
     refreshToken: {
         type: String,
     }

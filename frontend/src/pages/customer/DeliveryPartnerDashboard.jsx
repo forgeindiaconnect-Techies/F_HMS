@@ -365,8 +365,24 @@ const DeliveryPartnerDashboard = () => {
             {/* TAB CONTAINER */}
             <main className="flex-1 px-6 py-10 w-full max-w-6xl mx-auto space-y-6">
 
-                {/* Shift Attendance Clock In / Clock Out Status Bar */}
-                <StaffShiftClockWidget userRole="Delivery Runner Partner" userName={user?.name || "Delivery Agent"} />
+                {/* Sleek Delivery Shift & Fleet Control Strip */}
+                <div className="bg-slate-900 text-white px-4 py-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-md border border-slate-800 shrink-0">
+                    <div className="flex items-center gap-3 flex-wrap">
+                        <div className="flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span className="text-xs font-black tracking-wide uppercase text-slate-200">Delivery Fleet Active</span>
+                            <span className="text-slate-600">|</span>
+                            <span className="text-xs text-slate-400 font-medium truncate max-w-[200px]">Partner: {user?.name || 'Delivery Partner'}</span>
+                        </div>
+                        <StaffShiftClockWidget compact={true} userRole="Delivery Runner Partner" userName={user?.name || "Delivery Agent"} />
+                    </div>
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                        <div className="flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-xl text-xs border border-slate-700/60 font-semibold shadow-xs">
+                            <span className="text-slate-400">Assigned Orders:</span>
+                            <span className="font-mono font-black text-emerald-400">{assignedOrders.length} Runs</span>
+                        </div>
+                    </div>
+                </div>
 
                 {/* ─── TAB 1: ACTIVE TASKS ────────────────────────────────── */}
                 {activeSection === 'tasks' && (

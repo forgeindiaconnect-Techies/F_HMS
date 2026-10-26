@@ -54,8 +54,27 @@ const WaiterShiftStatus = () => {
                 </div>
             </div>
 
+            {/* Sleek Shift Control Strip */}
+            <div className="bg-slate-900 text-white px-4 py-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-md border border-slate-800 shrink-0">
+                <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span className="text-xs font-black tracking-wide uppercase text-slate-200">Terminal Clock In Desk</span>
+                        <span className="text-slate-600">|</span>
+                        <span className="text-xs text-slate-400 font-medium">{zone}</span>
+                    </div>
+                    <StaffShiftClockWidget compact={true} userRole="Waitstaff / Floor Captain" userName="Floor Captain" />
+                </div>
+                <div className="flex items-center gap-2.5 flex-wrap">
+                    <div className="flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-xl text-xs border border-slate-700/60 font-semibold shadow-xs">
+                        <span className="text-slate-400">Current Zone:</span>
+                        <span className="font-mono font-black text-emerald-400">{zone}</span>
+                    </div>
+                </div>
+            </div>
+
             {/* Shift Duty Control Card */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
                 {/* Timer Box */}
                 <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-4">
@@ -103,11 +122,6 @@ const WaiterShiftStatus = () => {
                             </button>
                         ))}
                     </div>
-                </div>
-
-                {/* Full Shift Clock Widget */}
-                <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-center">
-                    <StaffShiftClockWidget />
                 </div>
 
             </div>

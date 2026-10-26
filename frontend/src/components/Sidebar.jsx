@@ -5,7 +5,7 @@ import {
     Activity, UserCheck, Key, ListTree, PackageSearch, Truck, Heart, 
     CalendarCheck, ShoppingBag, CreditCard, Tag, FileText, PieChart, 
     Bell, ReceiptText, Lock, QrCode, MessageSquare, HelpCircle, Volume2, LifeBuoy,
-    Network, ChefHat, Receipt
+    Network, ChefHat, Receipt, TrendingUp, DollarSign, Clock, Sparkles, Sliders
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../context/AuthContext';
@@ -83,21 +83,32 @@ const Sidebar = () => {
 
     const rawNavGroups = [
         {
-            title: 'Overview',
+            title: 'Overview & Earnings',
             items: [
                 { name: 'Business Overview', path: '/admin', icon: LayoutDashboard },
+                { name: 'Daily Earnings', path: '/admin/daily-earnings', icon: Clock, moduleKey: 'salesReports' },
+                { name: 'Profit & Loss', path: '/admin/profit-loss', icon: TrendingUp, moduleKey: 'salesReports' },
                 { name: 'Sales Analytics', path: '/admin/analytics', icon: PieChart, moduleKey: 'salesReports' },
-                { name: 'Expense Summary', path: '/admin/expenses', icon: ReceiptText, moduleKey: 'salesReports' },
             ]
         },
         {
-            title: 'Management',
+            title: 'Finance & Bills',
+            items: [
+                { name: 'Expenses', path: '/admin/expenses', icon: DollarSign, moduleKey: 'salesReports' },
+                { name: 'Rent & Bills', path: '/admin/expenses?tab=bills', icon: ReceiptText, moduleKey: 'salesReports' },
+                { name: 'Payroll & Salary', path: '/admin/staff?tab=payroll', icon: CreditCard, moduleKey: 'staffManagement' },
+                { name: 'Waiter Tips & Gratuity', path: '/admin/tips', icon: Heart, moduleKey: 'salesReports' },
+                { name: 'Financial Reports', path: '/admin/reports', icon: FileText, moduleKey: 'salesReports' },
+            ]
+        },
+        {
+            title: 'Management & Materials',
             items: [
                 { name: 'Billing Management', path: '/admin/billing-management', icon: Receipt, moduleKey: 'posBilling' },
+                { name: 'Material Management', path: '/admin/inventory', icon: PackageSearch, moduleKey: 'inventoryManagement' },
+                { name: 'Staff Management', path: '/admin/staff', icon: UserCheck, moduleKey: 'staffManagement' },
                 { name: 'Branch Management', path: '/admin/branches', icon: Store, moduleKey: 'staffManagement' },
                 { name: 'Menu Management', path: '/admin/menu', icon: UtensilsCrossed, moduleKey: 'menuManagement' },
-                { name: 'Inventory Management', path: '/admin/inventory', icon: PackageSearch, moduleKey: 'inventoryManagement' },
-                { name: 'Staff Management', path: '/admin/staff', icon: UserCheck, moduleKey: 'staffManagement' },
                 { name: 'Customer Management', path: '/admin/customers', icon: Users, moduleKey: 'customerManagement' },
             ]
         },
@@ -139,8 +150,10 @@ const Sidebar = () => {
         {
             title: 'Reports & Config',
             items: [
+                { name: 'Setup Wizard', path: '/admin/setup-wizard', icon: Sparkles },
+                { name: 'Restaurant Settings', path: '/admin/settings?tab=operations', icon: Sliders },
+                { name: 'General Settings', path: '/admin/settings', icon: Settings },
                 { name: 'Reports', path: '/admin/reports', icon: FileText, moduleKey: 'salesReports' },
-                { name: 'Settings', path: '/admin/settings', icon: Settings },
                 { name: 'Notifications', path: '/admin/notifications', icon: Bell },
                 { name: 'Verification', path: '/admin/verification', icon: FileText },
             ]
@@ -237,6 +250,18 @@ const Sidebar = () => {
                                     }
                                     if (item.name === 'QR Digital Menu') {
                                         return location.pathname === '/admin/tables' && location.search === '?tab=qr';
+                                    }
+                                    if (item.name === 'Payroll & Salary') {
+                                        return location.pathname === '/admin/staff' && location.search === '?tab=payroll';
+                                    }
+                                    if (item.name === 'Staff Management') {
+                                        return location.pathname === '/admin/staff' && location.search !== '?tab=payroll';
+                                    }
+                                    if (item.name === 'Rent & Bills') {
+                                        return location.pathname === '/admin/expenses' && location.search === '?tab=bills';
+                                    }
+                                    if (item.name === 'Expenses') {
+                                        return location.pathname === '/admin/expenses' && (location.search === '' || location.search === '?tab=expenses');
                                     }
                                     if (item.path === '/admin') {
                                         return location.pathname === '/admin';

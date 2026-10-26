@@ -118,8 +118,8 @@ const WaiterDashboard = () => {
                         label: hasTable ? (isSelfDineIn ? 'SELF DINE-IN READY' : 'FOOD READY') : 'PICKUP READY',
                         time: 'Just now',
                         title: hasTable 
-                            ? `Food Ready for ${tableText}${o.customerName ? ` (${o.customerName})` : ''}`
-                            : 'Self-Pickup Counter Transfer',
+                            ? `Food Ready for ${tableText}${o.customerName ? ` (${o.customerName})` : ''}${o.kotNumbers?.[0] ? ` [${o.kotNumbers[0]}]` : ''}`
+                            : `Self-Pickup Counter Transfer${o.kotNumbers?.[0] ? ` [${o.kotNumbers[0]}]` : ''}`,
                         details: o.orderItems?.map(i => `${i.qty}x ${i.name}`).join(', ') || 'Order items',
                         buttonLabel: hasTable ? `Serve to ${tableText}` : 'Collect & Transfer to Cashier',
                         icon: Utensils,
@@ -624,6 +624,31 @@ const WaiterDashboard = () => {
             
             <main className="max-w-[1700px] mx-auto px-4 sm:px-6 pt-6 space-y-6">
                 
+                {/* Sleek Waitstaff Shift & Station Control Strip */}
+                <div className="bg-slate-900 text-white px-4 py-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-md border border-slate-800 shrink-0">
+                    <div className="flex items-center gap-3 flex-wrap">
+                        <div className="flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span className="text-xs font-black tracking-wide uppercase text-slate-200">Waitstaff Station</span>
+                            <span className="text-slate-600">|</span>
+                            <span className="text-xs text-slate-400 font-medium truncate max-w-[200px]">Staff: {user?.name || 'Floor Captain'}</span>
+                        </div>
+                        {/* Compact Shift Attendance Widget */}
+                        <StaffShiftClockWidget compact={true} userRole="Waitstaff / Floor Captain" userName={user?.name || "Floor Staff"} />
+                    </div>
+
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                        <div className="flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-xl text-xs border border-slate-700/60 font-semibold shadow-xs">
+                            <span className="text-slate-400">Assigned Tables:</span>
+                            <span className="font-mono font-black text-emerald-400">{assignedIds.length}</span>
+                        </div>
+                        <div className="flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-xl text-xs border border-slate-700/60 font-semibold shadow-xs">
+                            <span className="text-slate-400">Active Orders:</span>
+                            <span className="font-mono font-black text-amber-400">{activeOrders.length}</span>
+                        </div>
+                    </div>
+                </div>
+
                 {/* -------------------------------------------------- */}
                 {/* SHIFT SUMMARY CARDS */}
                 {/* -------------------------------------------------- */}

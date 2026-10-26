@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
-    MonitorDot, ClipboardList, BookOpen, AlertTriangle, LogOut, ChefHat
+    MonitorDot, ClipboardList, BookOpen, AlertTriangle, LogOut, ChefHat, Receipt
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useNavigate } from 'react-router-dom';
@@ -43,12 +43,24 @@ const ChefSidebar = () => {
         navigate('/login');
     };
 
+    const kdsEnabled = restaurant?.restaurantConfig?.orderKitchen?.kdsEnabled !== false;
+    const kotEnabled = restaurant?.restaurantConfig?.orderKitchen?.kotEnabled !== false;
+
+    const kitchenItems = [];
+    if (kdsEnabled) {
+        kitchenItems.push({ name: 'Active KDS', path: '/chef', icon: MonitorDot });
+    }
+    if (kotEnabled) {
+        kitchenItems.push({ name: 'Kitchen Tickets (KOT)', path: '/chef/kot', icon: Receipt });
+    }
+    if (!kdsEnabled && !kotEnabled) {
+        kitchenItems.push({ name: 'Kitchen Ops (Inactive)', path: '/chef', icon: MonitorDot });
+    }
+
     const navGroups = [
         {
             title: 'Kitchen Ops',
-            items: [
-                { name: 'Active KDS', path: '/chef', icon: MonitorDot },
-            ]
+            items: kitchenItems
         },
         {
             title: 'Resources',

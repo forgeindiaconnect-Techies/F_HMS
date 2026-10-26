@@ -46,6 +46,11 @@ const CustomerMenu = () => {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [paymentStep, setPaymentStep] = useState('idle'); // 'idle' | 'simulating' | 'success'
 
+    // Operational Settings from Backend
+    const [publicConfig, setPublicConfig] = useState(null);
+    const [tipPercent, setTipPercent] = useState(0); // 0, 5, 10, 15, 20 or -1 for custom
+    const [customTipAmount, setCustomTipAmount] = useState('');
+
     const API_URL = getApiUrl();
 
     useEffect(() => {
@@ -60,10 +65,31 @@ const CustomerMenu = () => {
                 const res = await api.get(`/menu?restaurantId=${restaurantId}&branchId=${branchId || ''}`);
                 setMenuItems(res.data);
                 
-                // Fetch restaurant info for header display
-                const restRes = await api.get(`/restaurants/${restaurantId}`).catch(() => null);
+                // Fetch public operational settings & restaurant info
+                const [restRes, configRes] = await Promise.all([
+                    api.get(`/restaurants/${restaurantId}`).catch(() => null),
+                    api.get(`/restaurants/${restaurantId}/public-config`).catch(() => null)
+                ]);
+
                 if (restRes && restRes.data) {
                     setRestaurantName(restRes.data.name);
+                }
+
+                if (configRes && configRes.data) {
+                    setPublicConfig(configRes.data);
+                    if (configRes.data.restaurantName) {
+                        setRestaurantName(configRes.data.restaurantName);
+                    }
+
+                    // Auto-adjust default service mode based on active options
+                    const qrCfg = configRes.data.qrOrdering || {};
+                    if (qrCfg.allowSelfDineIn && !qrCfg.allowWaiterOrdering) {
+                        setServiceType('Self Dine-In (KFC Style)');
+                        setPaymentOption('UPI');
+                    } else if (!qrCfg.allowSelfDineIn && qrCfg.allowWaiterOrdering) {
+                        setServiceType('Waiter Table Service');
+                        setPaymentOption('WaiterCash');
+                    }
                 }
             } catch (error) {
                 console.error("Failed to load menu", error);
@@ -140,9 +166,27 @@ const CustomerMenu = () => {
         }
     };
 
+    const getTipAmount = () => {
+        if (!publicConfig?.waiterTips?.enabled || !publicConfig?.waiterTips?.allowCustomerTips) {
+            return 0;
+        }
+        if (tipPercent === -1) {
+            const parsed = parseFloat(customTipAmount);
+            return !isNaN(parsed) && parsed > 0 ? Math.round(parsed) : 0;
+        }
+        if (tipPercent > 0) {
+            return Math.round((getCartTotal() * tipPercent) / 100);
+        }
+        return 0;
+    };
+
     // Actual submission to backend
     const submitOrderToBackend = async (isPrePaid = false) => {
         setIsSubmitting(true);
+
+        const tipAmt = getTipAmount();
+        const cartAmt = getCartTotal();
+        const finalTotal = cartAmt + tipAmt;
 
         const orderData = {
             orderItems: cart.map(item => ({
@@ -167,10 +211,11 @@ const CustomerMenu = () => {
                            paymentOption === 'Counter' ? 'Pay at Counter' : 'Cash to Waiter',
             isPaid: isPrePaid,
             taxPrice: 0,
-            totalPrice: getCartTotal(),
+            tipAmount: tipAmt,
+            totalPrice: finalTotal,
             notes: activeOrderId 
-                ? `Appended Items [${serviceType}] • Guest: ${customerName.trim()}`
-                : `[${serviceType}] • Guest: ${customerName.trim()}${customerPhone ? ` (${customerPhone.trim()})` : ''}`
+                ? `Appended Items [${serviceType}] • Guest: ${customerName.trim()}${tipAmt > 0 ? ` • Tip: ₹${tipAmt}` : ''}`
+                : `[${serviceType}] • Guest: ${customerName.trim()}${customerPhone ? ` (${customerPhone.trim()})` : ''}${tipAmt > 0 ? ` • Tip: ₹${tipAmt}` : ''}`
         };
 
         try {
@@ -206,6 +251,37 @@ const CustomerMenu = () => {
             }, 800);
         }, 1200);
     };
+
+    if (!loading && publicConfig && publicConfig.qrOrdering?.enabled === false) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 text-slate-800">
+                <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-slate-200 shadow-xl text-center space-y-5 animate-in zoom-in-95 duration-200">
+                    <div className="w-16 h-16 rounded-2xl bg-amber-100 text-amber-700 mx-auto flex items-center justify-center shadow-inner">
+                        <QrCode size={36} />
+                    </div>
+                    <div>
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-rose-50 text-rose-700 px-3 py-1 rounded-full border border-rose-200">
+                            Digital Ordering Inactive
+                        </span>
+                        <h2 className="text-xl font-black text-slate-900 mt-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            QR Table Ordering is Disabled
+                        </h2>
+                        <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+                            <strong>{restaurantName}</strong> has currently paused digital QR ordering for {tableNumber ? `Table ${tableNumber}` : 'dining tables'}.
+                        </p>
+                    </div>
+                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-600 space-y-2 text-left">
+                        <p className="flex items-center gap-2">
+                            <span>🛎️</span> Please place your order directly with your table waiter.
+                        </p>
+                        <p className="flex items-center gap-2">
+                            <span>🧾</span> Or visit the food counter / cashier desk for assistance.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 font-sans pb-36 text-slate-800 transition-colors">
@@ -479,190 +555,288 @@ const CustomerMenu = () => {
                                 </div>
                             </div>
 
-                            {/* 3. Choose Dining Service Mode (Option 1: Self Dine-In like KFC vs Option 2: Waiter Service) */}
-                            <div className="space-y-3">
-                                <label className="text-xs font-black text-slate-900 uppercase tracking-wider block">
-                                    Choose Dine-In Service Method:
-                                </label>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {/* Option A: Self Dine-In (KFC Style) */}
-                                    <div
-                                        onClick={() => {
-                                            setServiceType('Self Dine-In (KFC Style)');
-                                            setPaymentOption('UPI');
-                                        }}
-                                        className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative ${
-                                            serviceType === 'Self Dine-In (KFC Style)'
-                                                ? 'bg-emerald-50/80 border-emerald-600 shadow-md shadow-emerald-500/10'
-                                                : 'bg-white border-slate-200 hover:border-slate-300'
-                                        }`}
-                                    >
-                                        <div className="flex items-start gap-3">
-                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                                                serviceType === 'Self Dine-In (KFC Style)'
-                                                    ? 'bg-emerald-600 text-white'
-                                                    : 'bg-slate-100 text-slate-600'
-                                            }`}>
-                                                <Store size={20} />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-1.5 flex-wrap">
-                                                    <span className="font-black text-slate-900 text-sm">Self Dine-In</span>
-                                                    <span className="text-[10px] bg-amber-100 text-amber-800 font-black px-2 py-0.5 rounded-full border border-amber-200">
-                                                        Like KFC / QSR
-                                                    </span>
-                                                </div>
-                                                <p className="text-[11px] text-slate-600 mt-1 leading-snug">
-                                                    Collect your food from the pickup counter when your token is called.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
+                            {/* 3. Choose Dining Service Mode based on Restaurant Settings */}
+                            {(() => {
+                                const allowSelf = publicConfig?.qrOrdering?.allowSelfDineIn ?? true;
+                                const allowWaiter = publicConfig?.qrOrdering?.allowWaiterOrdering ?? true;
 
-                                    {/* Option B: Waiter Table Service */}
-                                    <div
-                                        onClick={() => {
-                                            setServiceType('Waiter Table Service');
-                                            setPaymentOption('WaiterCash');
-                                        }}
-                                        className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative ${
-                                            serviceType === 'Waiter Table Service'
-                                                ? 'bg-emerald-50/80 border-emerald-600 shadow-md shadow-emerald-500/10'
-                                                : 'bg-white border-slate-200 hover:border-slate-300'
-                                        }`}
-                                    >
-                                        <div className="flex items-start gap-3">
-                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                                                serviceType === 'Waiter Table Service'
-                                                    ? 'bg-emerald-600 text-white'
-                                                    : 'bg-slate-100 text-slate-600'
-                                            }`}>
-                                                <UtensilsCrossed size={20} />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-1.5 flex-wrap">
-                                                    <span className="font-black text-slate-900 text-sm">Waiter Service</span>
-                                                    <span className="text-[10px] bg-blue-100 text-blue-800 font-black px-2 py-0.5 rounded-full border border-blue-200">
-                                                        Table Served
-                                                    </span>
+                                if (!allowSelf && !allowWaiter) {
+                                    return (
+                                        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold text-center">
+                                            Online table ordering service modes are currently disabled by the restaurant.
+                                        </div>
+                                    );
+                                }
+
+                                return (
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-black text-slate-900 uppercase tracking-wider block">
+                                            Choose Dine-In Service Method:
+                                        </label>
+                                        <div className={`grid gap-3 ${allowSelf && allowWaiter ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
+                                            {/* Option A: Self Dine-In (KFC Style) */}
+                                            {allowSelf && (
+                                                <div
+                                                    onClick={() => {
+                                                        setServiceType('Self Dine-In (KFC Style)');
+                                                        if (publicConfig?.paymentMethods?.upi ?? true) setPaymentOption('UPI');
+                                                        else if (publicConfig?.paymentMethods?.card ?? true) setPaymentOption('Card');
+                                                        else setPaymentOption('Counter');
+                                                    }}
+                                                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative ${
+                                                        serviceType === 'Self Dine-In (KFC Style)'
+                                                            ? 'bg-emerald-50/80 border-emerald-600 shadow-md shadow-emerald-500/10'
+                                                            : 'bg-white border-slate-200 hover:border-slate-300'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-start gap-3">
+                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                                                            serviceType === 'Self Dine-In (KFC Style)'
+                                                                ? 'bg-emerald-600 text-white'
+                                                                : 'bg-slate-100 text-slate-600'
+                                                        }`}>
+                                                            <Store size={20} />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                                                <span className="font-black text-slate-900 text-sm">Self Dine-In</span>
+                                                                <span className="text-[10px] bg-amber-100 text-amber-800 font-black px-2 py-0.5 rounded-full border border-amber-200">
+                                                                    Like KFC / QSR
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-[11px] text-slate-600 mt-1 leading-snug">
+                                                                Collect your food from the pickup counter when your token is called.
+                                                            </p>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <p className="text-[11px] text-slate-600 mt-1 leading-snug">
-                                                    Waiter collects your food from the kitchen and serves directly to Table {tableNumber || 'your table'}.
-                                                </p>
-                                            </div>
+                                            )}
+
+                                            {/* Option B: Waiter Table Service */}
+                                            {allowWaiter && (
+                                                <div
+                                                    onClick={() => {
+                                                        setServiceType('Waiter Table Service');
+                                                        if (publicConfig?.paymentMethods?.cash ?? true) setPaymentOption('WaiterCash');
+                                                        else if (publicConfig?.paymentMethods?.upi ?? true) setPaymentOption('UPI');
+                                                        else setPaymentOption('WaiterCard');
+                                                    }}
+                                                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative ${
+                                                        serviceType === 'Waiter Table Service'
+                                                            ? 'bg-emerald-50/80 border-emerald-600 shadow-md shadow-emerald-500/10'
+                                                            : 'bg-white border-slate-200 hover:border-slate-300'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-start gap-3">
+                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                                                            serviceType === 'Waiter Table Service'
+                                                                ? 'bg-emerald-600 text-white'
+                                                                : 'bg-slate-100 text-slate-600'
+                                                        }`}>
+                                                            <UtensilsCrossed size={20} />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                                                <span className="font-black text-slate-900 text-sm">Waiter Service</span>
+                                                                <span className="text-[10px] bg-blue-100 text-blue-800 font-black px-2 py-0.5 rounded-full border border-blue-200">
+                                                                    Table Served
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-[11px] text-slate-600 mt-1 leading-snug">
+                                                                Waiter collects food from the kitchen and serves directly to Table {tableNumber || 'your table'}.
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
+                                );
+                            })()}
+
+                            {/* 4. Payment Options tailored to selected service mode & enabled methods */}
+                            {(() => {
+                                const pmCash = publicConfig?.paymentMethods?.cash ?? true;
+                                const pmUpi = publicConfig?.paymentMethods?.upi ?? true;
+                                const pmCard = publicConfig?.paymentMethods?.card ?? true;
+                                const pmOnline = publicConfig?.paymentMethods?.onlineGateway ?? true;
+
+                                return (
+                                    <div className="space-y-2.5">
+                                        <label className="text-xs font-black text-slate-900 uppercase tracking-wider block">
+                                            {serviceType === 'Self Dine-In (KFC Style)' ? 'Self Dine-In Payment Options:' : 'Table Service Payment Options:'}
+                                        </label>
+
+                                        {serviceType === 'Self Dine-In (KFC Style)' ? (
+                                            <div className="space-y-2">
+                                                {/* UPI / Dynamic QR */}
+                                                {pmUpi && (
+                                                    <label 
+                                                        onClick={() => setPaymentOption('UPI')}
+                                                        className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${paymentOption === 'UPI' ? 'border-emerald-600 bg-emerald-50/60 shadow-sm' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <input type="radio" name="paymentOption" checked={paymentOption === 'UPI'} onChange={() => setPaymentOption('UPI')} className="text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
+                                                            <div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-xs font-black text-slate-900">Instant UPI / QR Code</span>
+                                                                    <span className="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded">Fastest</span>
+                                                                </div>
+                                                                <p className="text-[11px] text-slate-500">Scan & pay via GPay, PhonePe, Paytm, or CRED</p>
+                                                            </div>
+                                                        </div>
+                                                        <QrCode size={20} className="text-emerald-600 shrink-0" />
+                                                    </label>
+                                                )}
+
+                                                {/* Online Card */}
+                                                {(pmCard || pmOnline) && (
+                                                    <label 
+                                                        onClick={() => setPaymentOption('Card')}
+                                                        className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${paymentOption === 'Card' ? 'border-emerald-600 bg-emerald-50/60 shadow-sm' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <input type="radio" name="paymentOption" checked={paymentOption === 'Card'} onChange={() => setPaymentOption('Card')} className="text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
+                                                            <div>
+                                                                <span className="text-xs font-black text-slate-900">Credit / Debit Card</span>
+                                                                <p className="text-[11px] text-slate-500">Instant online card checkout</p>
+                                                            </div>
+                                                        </div>
+                                                        <CreditCard size={20} className="text-slate-600 shrink-0" />
+                                                    </label>
+                                                )}
+
+                                                {/* Pay at Pickup Counter */}
+                                                {pmCash && (
+                                                    <label 
+                                                        onClick={() => setPaymentOption('Counter')}
+                                                        className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${paymentOption === 'Counter' ? 'border-emerald-600 bg-emerald-50/60 shadow-sm' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <input type="radio" name="paymentOption" checked={paymentOption === 'Counter'} onChange={() => setPaymentOption('Counter')} className="text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
+                                                            <div>
+                                                                <span className="text-xs font-black text-slate-900">Pay at Counter (Cash / UPI / Card)</span>
+                                                                <p className="text-[11px] text-slate-500">Pay at the food pickup counter when your token is called</p>
+                                                            </div>
+                                                        </div>
+                                                        <Store size={20} className="text-slate-600 shrink-0" />
+                                                    </label>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                {/* Pay to Waiter on Table */}
+                                                {pmCash && (
+                                                    <label 
+                                                        onClick={() => setPaymentOption('WaiterCash')}
+                                                        className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${paymentOption === 'WaiterCash' ? 'border-emerald-600 bg-emerald-50/60 shadow-sm' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <input type="radio" name="paymentOption" checked={paymentOption === 'WaiterCash'} onChange={() => setPaymentOption('WaiterCash')} className="text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
+                                                            <div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-xs font-black text-slate-900">Pay to Waiter on Table</span>
+                                                                    <span className="text-[9px] bg-blue-100 text-blue-800 font-bold px-1.5 py-0.2 rounded">Post-Meal</span>
+                                                                </div>
+                                                                <p className="text-[11px] text-slate-500">Pay cash or UPI when waiter brings the bill after dining</p>
+                                                            </div>
+                                                        </div>
+                                                        <Receipt size={20} className="text-blue-600 shrink-0" />
+                                                    </label>
+                                                )}
+
+                                                {/* Pre-Pay Online via UPI */}
+                                                {pmUpi && (
+                                                    <label 
+                                                        onClick={() => setPaymentOption('UPI')}
+                                                        className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${paymentOption === 'UPI' ? 'border-emerald-600 bg-emerald-50/60 shadow-sm' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <input type="radio" name="paymentOption" checked={paymentOption === 'UPI'} onChange={() => setPaymentOption('UPI')} className="text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
+                                                            <div>
+                                                                <span className="text-xs font-black text-slate-900">Pre-Pay Online (UPI / QR)</span>
+                                                                <p className="text-[11px] text-slate-500">Instant contactless payment from your table</p>
+                                                            </div>
+                                                        </div>
+                                                        <QrCode size={20} className="text-emerald-600 shrink-0" />
+                                                    </label>
+                                                )}
+
+                                                {/* Card on Table */}
+                                                {pmCard && (
+                                                    <label 
+                                                        onClick={() => setPaymentOption('WaiterCard')}
+                                                        className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${paymentOption === 'WaiterCard' ? 'border-emerald-600 bg-emerald-50/60 shadow-sm' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <input type="radio" name="paymentOption" checked={paymentOption === 'WaiterCard'} onChange={() => setPaymentOption('WaiterCard')} className="text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
+                                                            <div>
+                                                                <span className="text-xs font-black text-slate-900">Card on Table (POS Machine)</span>
+                                                                <p className="text-[11px] text-slate-500">Waiter will bring portable swipe terminal to your table</p>
+                                                            </div>
+                                                        </div>
+                                                        <CreditCard size={20} className="text-slate-600 shrink-0" />
+                                                    </label>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })()}
+
+                            {/* 5. Optional Waiter Tips Section */}
+                            {publicConfig?.waiterTips?.enabled && publicConfig?.waiterTips?.allowCustomerTips && (
+                                <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Sparkles size={16} className="text-amber-600" />
+                                            <span className="text-xs font-black text-slate-900">Add Tip for Waiter &amp; Staff</span>
+                                        </div>
+                                        <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">
+                                            Optional Gratuity
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-5 gap-1.5">
+                                        {[0, ...(publicConfig.waiterTips?.tipPercentages || [5, 10, 15, 20])].map((pct) => (
+                                            <button
+                                                key={pct}
+                                                type="button"
+                                                onClick={() => { setTipPercent(pct); setCustomTipAmount(''); }}
+                                                className={`py-2 rounded-xl text-xs font-black transition-all ${
+                                                    tipPercent === pct 
+                                                        ? 'bg-amber-500 text-white shadow-xs' 
+                                                        : 'bg-white text-slate-700 border border-amber-200 hover:bg-amber-100/50'
+                                                }`}
+                                            >
+                                                {pct === 0 ? 'No Tip' : `${pct}%`}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    {publicConfig.waiterTips?.customTipAllowed && (
+                                        <div className="flex items-center gap-2 pt-1">
+                                            <button
+                                                type="button"
+                                                onClick={() => setTipPercent(-1)}
+                                                className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all ${
+                                                    tipPercent === -1 ? 'bg-amber-500 text-white' : 'bg-white border border-amber-200 text-slate-700'
+                                                }`}
+                                            >
+                                                Custom ₹
+                                            </button>
+                                            {tipPercent === -1 && (
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    placeholder="Enter tip (e.g. 50)"
+                                                    value={customTipAmount}
+                                                    onChange={(e) => setCustomTipAmount(e.target.value)}
+                                                    className="w-full bg-white border border-amber-300 rounded-xl px-3 py-1.5 text-xs text-slate-900 font-bold focus:outline-none"
+                                                />
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
-
-                            {/* 4. Payment Options tailored to selected service mode */}
-                            <div className="space-y-2.5">
-                                <label className="text-xs font-black text-slate-900 uppercase tracking-wider block">
-                                    {serviceType === 'Self Dine-In (KFC Style)' ? 'Self Dine-In Payment Options:' : 'Table Service Payment Options:'}
-                                </label>
-
-                                {serviceType === 'Self Dine-In (KFC Style)' ? (
-                                    <div className="space-y-2">
-                                        {/* UPI / Dynamic QR */}
-                                        <label 
-                                            onClick={() => setPaymentOption('UPI')}
-                                            className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${paymentOption === 'UPI' ? 'border-emerald-600 bg-emerald-50/60 shadow-sm' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <input type="radio" name="paymentOption" checked={paymentOption === 'UPI'} onChange={() => setPaymentOption('UPI')} className="text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
-                                                <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-xs font-black text-slate-900">Instant UPI / QR Code</span>
-                                                        <span className="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded">Fastest</span>
-                                                    </div>
-                                                    <p className="text-[11px] text-slate-500">Scan & pay via GPay, PhonePe, Paytm, or CRED</p>
-                                                </div>
-                                            </div>
-                                            <QrCode size={20} className="text-emerald-600 shrink-0" />
-                                        </label>
-
-                                        {/* Online Card */}
-                                        <label 
-                                            onClick={() => setPaymentOption('Card')}
-                                            className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${paymentOption === 'Card' ? 'border-emerald-600 bg-emerald-50/60 shadow-sm' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <input type="radio" name="paymentOption" checked={paymentOption === 'Card'} onChange={() => setPaymentOption('Card')} className="text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
-                                                <div>
-                                                    <span className="text-xs font-black text-slate-900">Credit / Debit Card</span>
-                                                    <p className="text-[11px] text-slate-500">Instant online card checkout</p>
-                                                </div>
-                                            </div>
-                                            <CreditCard size={20} className="text-slate-600 shrink-0" />
-                                        </label>
-
-                                        {/* Pay at Pickup Counter */}
-                                        <label 
-                                            onClick={() => setPaymentOption('Counter')}
-                                            className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${paymentOption === 'Counter' ? 'border-emerald-600 bg-emerald-50/60 shadow-sm' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <input type="radio" name="paymentOption" checked={paymentOption === 'Counter'} onChange={() => setPaymentOption('Counter')} className="text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
-                                                <div>
-                                                    <span className="text-xs font-black text-slate-900">Pay at Counter (Cash / UPI / Card)</span>
-                                                    <p className="text-[11px] text-slate-500">Pay at the food pickup counter when your token is called</p>
-                                                </div>
-                                            </div>
-                                            <Store size={20} className="text-slate-600 shrink-0" />
-                                        </label>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-2">
-                                        {/* Pay to Waiter on Table */}
-                                        <label 
-                                            onClick={() => setPaymentOption('WaiterCash')}
-                                            className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${paymentOption === 'WaiterCash' ? 'border-emerald-600 bg-emerald-50/60 shadow-sm' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <input type="radio" name="paymentOption" checked={paymentOption === 'WaiterCash'} onChange={() => setPaymentOption('WaiterCash')} className="text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
-                                                <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-xs font-black text-slate-900">Pay to Waiter on Table</span>
-                                                        <span className="text-[9px] bg-blue-100 text-blue-800 font-bold px-1.5 py-0.2 rounded">Post-Meal</span>
-                                                    </div>
-                                                    <p className="text-[11px] text-slate-500">Pay cash or UPI when waiter brings the bill after dining</p>
-                                                </div>
-                                            </div>
-                                            <Receipt size={20} className="text-blue-600 shrink-0" />
-                                        </label>
-
-                                        {/* Pre-Pay Online via UPI */}
-                                        <label 
-                                            onClick={() => setPaymentOption('UPI')}
-                                            className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${paymentOption === 'UPI' ? 'border-emerald-600 bg-emerald-50/60 shadow-sm' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <input type="radio" name="paymentOption" checked={paymentOption === 'UPI'} onChange={() => setPaymentOption('UPI')} className="text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
-                                                <div>
-                                                    <span className="text-xs font-black text-slate-900">Pre-Pay Online (UPI / QR)</span>
-                                                    <p className="text-[11px] text-slate-500">Instant contactless payment from your table</p>
-                                                </div>
-                                            </div>
-                                            <QrCode size={20} className="text-emerald-600 shrink-0" />
-                                        </label>
-
-                                        {/* Card on Table */}
-                                        <label 
-                                            onClick={() => setPaymentOption('WaiterCard')}
-                                            className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${paymentOption === 'WaiterCard' ? 'border-emerald-600 bg-emerald-50/60 shadow-sm' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <input type="radio" name="paymentOption" checked={paymentOption === 'WaiterCard'} onChange={() => setPaymentOption('WaiterCard')} className="text-emerald-600 focus:ring-emerald-500 w-4 h-4" />
-                                                <div>
-                                                    <span className="text-xs font-black text-slate-900">Card on Table (POS Machine)</span>
-                                                    <p className="text-[11px] text-slate-500">Waiter will bring portable swipe terminal to your table</p>
-                                                </div>
-                                            </div>
-                                            <CreditCard size={20} className="text-slate-600 shrink-0" />
-                                        </label>
-                                    </div>
-                                )}
-                            </div>
+                            )}
                         </div>
 
                         {/* Modal Sticky Bottom Action Bar */}

@@ -55,6 +55,31 @@ const ManagerDashboard = () => {
   return (
     <div className="w-full max-w-[1600px] mx-auto space-y-4 sm:space-y-6">
 
+      {/* Sleek Manager Shift & Station Control Strip */}
+      <div className="bg-slate-900 text-white px-4 py-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-md border border-slate-800 shrink-0">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="text-xs font-black tracking-wide uppercase text-slate-200">Management Console</span>
+            <span className="text-slate-600">|</span>
+            <span className="text-xs text-slate-400 font-medium truncate max-w-[200px]">Manager: {user?.name || 'Branch Manager'}</span>
+          </div>
+          {/* Compact Shift Attendance Widget */}
+          <StaffShiftClockWidget compact={true} userRole="Branch Manager / Supervisor" userName={user?.name || "Manager"} />
+        </div>
+
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-xl text-xs border border-slate-700/60 font-semibold shadow-xs">
+            <span className="text-slate-400">On-Duty Staff:</span>
+            <span className="font-mono font-black text-emerald-400">{staffList.length}</span>
+          </div>
+          <div className="flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-xl text-xs border border-slate-700/60 font-semibold shadow-xs">
+            <span className="text-slate-400">Stock Alerts:</span>
+            <span className="font-mono font-black text-rose-400">{stockAlerts.length}</span>
+          </div>
+        </div>
+      </div>
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden group">

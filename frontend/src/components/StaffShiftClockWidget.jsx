@@ -163,24 +163,37 @@ const StaffShiftClockWidget = ({ userRole = 'Staff', userName = 'Staff Member', 
                         Clock In
                     </button>
                 ) : (
-                    <button
-                        onClick={handleClockOut}
-                        className="ml-1 px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition-all cursor-pointer shadow-sm"
-                    >
-                        Clock Out
-                    </button>
+                    <div className="flex items-center gap-1 ml-1">
+                        <button
+                            onClick={handleToggleBreak}
+                            className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                                shiftState.status === 'OnBreak' 
+                                    ? 'bg-amber-400 hover:bg-amber-500 text-slate-950 font-black' 
+                                    : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'
+                            }`}
+                            title={shiftState.status === 'OnBreak' ? 'Resume Shift' : 'Take a Break'}
+                        >
+                            {shiftState.status === 'OnBreak' ? 'Resume' : 'Break'}
+                        </button>
+                        <button
+                            onClick={handleClockOut}
+                            className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition-all cursor-pointer shadow-sm"
+                        >
+                            Clock Out
+                        </button>
+                    </div>
                 )}
             </div>
         );
     }
 
     return (
-        <div className="w-full max-w-full bg-slate-900/95 backdrop-blur-xl border border-slate-800 p-5 rounded-2xl shadow-xl text-white my-2">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="w-full max-w-full bg-slate-900 text-white px-4 py-2.5 rounded-2xl shadow-md border border-slate-800 my-1.5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 
                 {/* Left: Status Icon + Staff Info + Pill */}
-                <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border ${
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
                         shiftState.status === 'ClockedIn'
                             ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
                             : shiftState.status === 'OnBreak'
@@ -188,11 +201,11 @@ const StaffShiftClockWidget = ({ userRole = 'Staff', userName = 'Staff Member', 
                             : 'bg-rose-500/15 border-rose-500/30 text-rose-400'
                     }`}>
                         {shiftState.status === 'ClockedIn' ? (
-                            <UserCheck size={22} className="animate-pulse" />
+                            <UserCheck size={18} className="animate-pulse" />
                         ) : shiftState.status === 'OnBreak' ? (
-                            <Coffee size={22} />
+                            <Coffee size={18} />
                         ) : (
-                            <Clock size={22} />
+                            <Clock size={18} />
                         )}
                     </div>
 

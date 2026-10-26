@@ -35,6 +35,10 @@ const menuItemSchema = new mongoose.Schema({
         type: Boolean,
         default: true,
     },
+    kitchenStation: {
+        type: String,
+        default: 'Main Kitchen',
+    },
     restaurantId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Restaurant',

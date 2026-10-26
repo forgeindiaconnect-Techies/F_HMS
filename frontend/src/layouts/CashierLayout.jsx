@@ -29,7 +29,7 @@ const CashierLayout = () => {
                 <CashierSidebar />
             <div className="flex-1 flex flex-col h-full overflow-hidden">
                 <CashierTopbar />
-                <main className="flex-1 overflow-hidden p-2 sm:p-4 md:p-6">
+                <main className="flex-1 overflow-hidden p-2 md:p-3.5">
                     <div className="h-full">
                         {isFrozen ? (
                             <SubscriptionFreezeOverlay onUnfrozen={() => fetchRestaurant()} />

@@ -5,7 +5,8 @@ import {
     selfSubscribe, logoUpload, getMyBillingHistory, upgradeSubscription, 
     downgradeSubscription, renewSubscription,
     createRazorpaySubscriptionOrder, verifyRazorpaySubscriptionPayment,
-    generateRazorpaySubscriptionQR, confirmSubscriptionQRPayment
+    generateRazorpaySubscriptionQR, confirmSubscriptionQRPayment,
+    getRestaurantConfig, updateRestaurantConfig, getRestaurantPublicConfig
 } from '../controllers/restaurantController.js';
 import { submitVerification, getMyVerification, getAllVerifications, getVerificationById, reviewVerification, verificationUpload, deleteVerification } from '../controllers/verificationController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
@@ -39,6 +40,13 @@ router.route('/verification/:id/review')
 router.route('/mine')
     .get(protect, getMyRestaurant)
     .put(protect, authorize('RestaurantAdmin'), logoUpload, updateMyRestaurant);
+
+router.route('/mine/config')
+    .get(protect, authorize('RestaurantAdmin', 'BranchManager', 'SuperAdmin', 'Admin'), getRestaurantConfig)
+    .put(protect, authorize('RestaurantAdmin', 'SuperAdmin', 'Admin'), updateRestaurantConfig);
+
+router.route('/:id/public-config')
+    .get(getRestaurantPublicConfig);
 
 router.route('/mine/billing-history')
     .get(protect, authorize('RestaurantAdmin', 'SuperAdmin', 'Admin'), getMyBillingHistory);
