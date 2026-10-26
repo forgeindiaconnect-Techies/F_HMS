@@ -157,6 +157,8 @@ export const getRestaurants = async (req, res) => {
                     } catch (e) {
                         console.error("Failed to persist ownerId", e);
                     }
+                } else {
+                    r.ownerId = { name: `${r.name} Admin`, email: `admin@${r.name.toLowerCase().replace(/[^a-z0-9]/g, '') || 'restaurant'}.com` };
                 }
             }
             if (!r.name || r.name.trim() === '' || r.name === 'Unnamed') {
