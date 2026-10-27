@@ -59,26 +59,44 @@ const ProfitAndLoss = () => {
 
     const handleExportCSV = () => {
         if (!data) return;
-        const s = data.sales;
-        const e = data.expenses;
-        const p = data.profitability;
+        const s = data.sales || {};
+        const e = data.expenses || {};
+        const p = data.profitability || {};
+        const cf = data.cashFlow || {};
+        const bs = data.billsStatus || {};
 
-        let csv = 'Metric,Amount (INR),Notes\n';
-        csv += `Gross Sales,${s.grossSales},Orders before discounts and cancellations\n`;
-        csv += `Discounts,${s.discounts},Promotional discounts and coupons\n`;
-        csv += `Refunds & Cancellations,${s.refunds},Cancelled orders\n`;
-        csv += `Net Sales,${s.netSales},Realized sales revenue\n`;
-        csv += `Material & Food Costs,${e.materialAndFoodCosts},Cost of goods sold without double-counting\n`;
-        csv += `Gross Profit,${p.grossProfit},Net Sales minus Material Costs\n`;
-        csv += `Staff Salary Expenses,${e.staffSalaryExpenses},Payroll and wages\n`;
-        csv += `Rent,${e.rent},Facility rent\n`;
-        csv += `Electricity Bills,${e.electricity},Power utilities\n`;
-        csv += `Water & Internet,${e.waterAndInternet},Water and broadband\n`;
-        csv += `Maintenance Costs,${e.maintenance},Equipment upkeep\n`;
-        csv += `Other Operating Expenses,${e.otherOperatingExpenses},Delivery and operations\n`;
-        csv += `Total Incurred Expenses,${e.totalExpensesIncurred},Total operating expenses\n`;
-        csv += `Net Operating Profit / Loss,${p.netOperatingProfitLoss},Accrual-basis operational profit\n`;
-        csv += `Net Cash Flow,${data.cashFlow?.netCashFlow || 0},Actual money collected minus actual expenses paid\n`;
+        let csv = 'Profit & Loss Statement\n';
+        csv += `Restaurant,${data.restaurant?.name || 'Authenticated Restaurant'}\n`;
+        csv += `Report Period,${data.dateRange?.period || period} (${data.dateRange?.startDate} to ${data.dateRange?.endDate})\n`;
+        csv += `Generated At,${new Date().toISOString()}\n\n`;
+
+        csv += 'Metric Category,Metric Name,Amount (INR),Notes\n';
+        csv += `Revenue,Gross Sales,${s.grossSales || 0},Total bill amounts before discounts and cancellations\n`;
+        csv += `Revenue,Discounts Given,${s.discounts || 0},Promotional discounts and coupons applied\n`;
+        csv += `Revenue,Refunds & Cancellations,${s.refunds || 0},Cancelled orders\n`;
+        csv += `Revenue,Net Realized Sales,${s.netSales || 0},Realized operating sales\n`;
+        csv += `Revenue,Taxes Collected,${s.taxesCollected || 0},GST/VAT collected (kept balance-neutral)\n`;
+        csv += `COGS,Raw Material & Food Costs,${e.materialAndFoodCosts || 0},Stock purchases & kitchen supplies (anti-double-counted)\n`;
+        csv += `Profitability,Gross Profit,${p.grossProfit || 0},Net Sales minus Material Costs\n`;
+        csv += `Profitability,Gross Profit Margin %,${p.grossProfitMarginPercent || 0}%,Margin on Net Sales\n`;
+        csv += `Operating Expenses,Staff Salary & Wages,${e.staffSalaryExpenses || 0},Payroll and labor expenses\n`;
+        csv += `Operating Expenses,Rent,${e.rent || 0},Premises lease/rent\n`;
+        csv += `Operating Expenses,Electricity,${e.electricity || 0},Power utility costs\n`;
+        csv += `Operating Expenses,Water & Internet,${e.waterAndInternet || 0},Water and communication utilities\n`;
+        csv += `Operating Expenses,Maintenance & Repairs,${e.maintenance || 0},Upkeep and repairs\n`;
+        csv += `Operating Expenses,Other Operating Overheads,${e.otherOperatingExpenses || 0},Delivery and other operational costs\n`;
+        csv += `Operating Expenses,Total Operating Overhead,${e.totalExpensesIncurred || 0},Accrued operational expenditures\n`;
+        csv += `Profitability,Net Operating Profit / Loss,${p.netOperatingProfitLoss || 0},Operating profit (Net Sales - Total Operating Overhead)\n`;
+        csv += `Profitability,Net Profit Margin %,${p.netProfitMarginPercent || 0}%,Net profit margin percentage\n`;
+        csv += `Cash Flow,Actual Cash Collections,${cf.actualCashCollected || 0},Total paid orders collected\n`;
+        csv += `Cash Flow,Customer Unpaid Receivables,${cf.unpaidCustomerReceivables || 0},Pending customer payments\n`;
+        csv += `Cash Flow,Actual Cash Disbursements,${cf.actualCashOutflow || 0},Paid expenses disbursed\n`;
+        csv += `Cash Flow,Outstanding Liabilities Due,${cf.outstandingLiabilities || 0},Pending supplier & utility payments\n`;
+        csv += `Cash Flow,Net Cash Flow,${cf.netCashFlow || 0},Actual Cash Inflow minus Actual Cash Outflow\n`;
+        csv += `Liabilities Status,Overdue Bills Amount,${bs.overdueBillsAmount || 0},Overdue unpaid bills\n`;
+        csv += `Liabilities Status,Overdue Bills Count,${bs.overdueBillsCount || 0},Count of overdue bills\n`;
+        csv += `Liabilities Status,Pending Bills Count,${bs.pendingBillsCount || 0},Count of pending bills\n`;
+        csv += `Liabilities Status,Paid Bills Count,${bs.paidBillsCount || 0},Count of settled bills\n`;
 
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
@@ -213,6 +231,17 @@ const ProfitAndLoss = () => {
                     )}
                 </div>
             </div>
+
+            {/* Empty State Notification */}
+            {data?.isEmpty && (
+                <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 flex items-center gap-3 text-amber-800 dark:text-amber-300 text-sm">
+                    <AlertCircle size={20} className="shrink-0 text-amber-600 dark:text-amber-400" />
+                    <div>
+                        <p className="font-bold">No financial transactions recorded for this period</p>
+                        <p className="text-xs text-amber-700 dark:text-amber-400">All calculated metrics reflect real database values (₹0). Try selecting a different date range or recording new orders and expenses.</p>
+                    </div>
+                </div>
+            )}
 
             {/* KPI Cards: Net Sales, Gross Profit, Total Incurred, Net Profit */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

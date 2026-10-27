@@ -1057,22 +1057,22 @@ const StaffManagement = () => {
                                                     {typeof p.month === 'number' ? new Date(2000, p.month - 1, 1).toLocaleString('en-US', { month: 'long' }) : p.month} {p.year}
                                                 </td>
                                                 <td className="py-4 px-6">
-                                                    ₹{p.salaryConfig?.basicSalary?.toLocaleString('en-IN') || 0}
+                                                    ₹{(p.basicSalary ?? p.salaryConfig?.basicSalary ?? 0).toLocaleString('en-IN')}
                                                 </td>
                                                 <td className="py-4 px-6 font-semibold">
-                                                    ₹{p.earnedBasicSalary?.toLocaleString('en-IN') || 0}
+                                                    ₹{(p.calculations?.earnedBasic ?? p.earnedBasicSalary ?? 0).toLocaleString('en-IN')}
                                                 </td>
                                                 <td className="py-4 px-6 text-emerald-600 font-semibold">
-                                                    +₹{p.overtimePay || 0}
+                                                    +₹{(p.calculations?.overtimePay ?? p.overtimePay ?? 0).toLocaleString('en-IN')}
                                                 </td>
                                                 <td className="py-4 px-6 font-bold text-slate-900 dark:text-white">
-                                                    ₹{p.netPayable?.toLocaleString('en-IN') || 0}
+                                                    ₹{(p.calculations?.netSalaryPayable ?? p.netPayable ?? 0).toLocaleString('en-IN')}
                                                 </td>
                                                 <td className="py-4 px-6 font-bold text-emerald-600 dark:text-emerald-400">
-                                                    ₹{p.paidAmount?.toLocaleString('en-IN') || 0}
+                                                    ₹{(p.paidAmount ?? 0).toLocaleString('en-IN')}
                                                 </td>
                                                 <td className="py-4 px-6 font-bold text-amber-600 dark:text-amber-400">
-                                                    ₹{p.balanceDue?.toLocaleString('en-IN') || 0}
+                                                    ₹{(p.balanceDue ?? 0).toLocaleString('en-IN')}
                                                 </td>
                                                 <td className="py-4 px-6">
                                                     {getPayrollBadge(p.paymentStatus)}
@@ -1536,7 +1536,7 @@ const StaffManagement = () => {
                         <div className="p-3 bg-slate-50 rounded-xl text-xs grid grid-cols-4 gap-2 mb-4">
                             <div>
                                 <span className="text-slate-400 block">Working Days:</span>
-                                <span className="font-bold">{salarySlipData.attendanceSummary?.totalDays || 0}</span>
+                                <span className="font-bold">{salarySlipData.attendanceSummary?.totalWorkingDays ?? salarySlipData.attendanceSummary?.totalDays ?? 26}</span>
                             </div>
                             <div>
                                 <span className="text-slate-400 block">Present Days:</span>
@@ -1555,46 +1555,46 @@ const StaffManagement = () => {
                         {/* Earnings & Deductions Table */}
                         <div className="border border-slate-200 rounded-xl overflow-hidden text-xs mb-4">
                             <div className="grid grid-cols-2 bg-slate-100 font-bold p-2.5">
-                                <div>Earnings</div>
-                                <div>Deductions</div>
+                                <div>Earnings & Allowances</div>
+                                <div>Deductions & Adjustments</div>
                             </div>
                             <div className="grid grid-cols-2 divide-x divide-slate-200 p-3 gap-2">
                                 <div className="space-y-1.5">
                                     <div className="flex justify-between">
                                         <span className="text-slate-500">Basic Earned:</span>
-                                        <span className="font-semibold">₹{salarySlipData.earnedBasicSalary}</span>
+                                        <span className="font-semibold">₹{(salarySlipData.calculations?.earnedBasic ?? salarySlipData.earnedBasicSalary ?? salarySlipData.basicSalary ?? 0).toLocaleString('en-IN')}</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-slate-500">Overtime Pay:</span>
-                                        <span className="font-semibold text-emerald-600">+₹{salarySlipData.overtimePay || 0}</span>
+                                        <span className="font-semibold text-emerald-600">+₹{(salarySlipData.calculations?.overtimePay ?? salarySlipData.overtimePay ?? 0).toLocaleString('en-IN')}</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-slate-500">Bonuses:</span>
-                                        <span className="font-semibold">+₹{salarySlipData.bonuses || 0}</span>
+                                        <span className="font-semibold">+₹{(salarySlipData.calculations?.bonuses ?? salarySlipData.bonuses ?? 0).toLocaleString('en-IN')}</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-slate-500">Allowances:</span>
-                                        <span className="font-semibold">+₹{salarySlipData.allowances || 0}</span>
+                                        <span className="font-semibold text-emerald-600">+₹{(salarySlipData.calculations?.allowances ?? salarySlipData.allowances ?? 0).toLocaleString('en-IN')}</span>
+                                    </div>
+                                    <div className="flex justify-between pt-1 border-t border-slate-200 font-bold">
+                                        <span className="text-slate-700">Gross Salary:</span>
+                                        <span className="text-slate-900">₹{(salarySlipData.calculations?.grossSalary ?? salarySlipData.grossPayable ?? 0).toLocaleString('en-IN')}</span>
                                     </div>
                                 </div>
                                 <div className="space-y-1.5 pl-2">
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500">Unpaid Leaves:</span>
-                                        <span className="font-semibold text-red-600">-₹{salarySlipData.unpaidLeaveDeductions || 0}</span>
+                                        <span className="text-slate-500">Total Deductions:</span>
+                                        <span className="font-semibold text-red-600">-₹{(salarySlipData.calculations?.deductions ?? salarySlipData.totalDeductions ?? 0).toLocaleString('en-IN')}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500">Late Deductions:</span>
-                                        <span className="font-semibold text-red-600">-₹{salarySlipData.lateArrivalDeductions || 0}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-slate-500">Advances / Other:</span>
-                                        <span className="font-semibold text-red-600">-₹{salarySlipData.otherDeductions || 0}</span>
+                                        <span className="text-slate-500">Salary Advances:</span>
+                                        <span className="font-semibold text-red-600">-₹{(salarySlipData.calculations?.advances ?? 0).toLocaleString('en-IN')}</span>
                                     </div>
                                 </div>
                             </div>
                             <div className="bg-slate-50 p-3 border-t border-slate-200 flex justify-between font-bold text-sm">
                                 <span>Net Salary Payable:</span>
-                                <span className="text-emerald-700 text-base">₹{salarySlipData.netPayable?.toLocaleString('en-IN')}</span>
+                                <span className="text-emerald-700 text-base">₹{(salarySlipData.calculations?.netSalaryPayable ?? salarySlipData.netPayable ?? 0).toLocaleString('en-IN')}</span>
                             </div>
                         </div>
 

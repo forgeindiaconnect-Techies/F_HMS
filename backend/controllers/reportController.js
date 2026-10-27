@@ -17,7 +17,8 @@ const getUserRestaurantId = async (user, queryOrBody = {}) => {
         const branchDoc = await Branch.findById(user.branchId);
         if (branchDoc) rId = branchDoc.restaurantId;
     }
-    if (!rId && queryOrBody?.restaurantId) {
+    // Only SuperAdmin is allowed to query other restaurant's reports
+    if (user?.role === 'SuperAdmin' && queryOrBody?.restaurantId) {
         rId = queryOrBody.restaurantId;
     }
     if (!rId && user?.role === 'SuperAdmin') {
@@ -311,11 +312,23 @@ export const generateReport = async (req, res) => {
                 }
             ]);
 
+            const orderMap = new Map();
+            monthlyOrders.forEach(o => orderMap.set(o._id, o));
             const expMap = new Map();
             monthlyExpenses.forEach(e => expMap.set(e._id, e));
 
-            reportData = monthlyOrders.map(mo => {
-                const exp = expMap.get(mo._id) || {
+            const allMonths = Array.from(new Set([...orderMap.keys(), ...expMap.keys()])).sort().reverse();
+
+            reportData = allMonths.map(monthStr => {
+                const mo = orderMap.get(monthStr) || {
+                    totalOrders: 0,
+                    grossSales: 0,
+                    discounts: 0,
+                    refunds: 0,
+                    netSales: 0,
+                    amountCollected: 0
+                };
+                const exp = expMap.get(monthStr) || {
                     materialCost: 0,
                     salaryExpense: 0,
                     rentExpense: 0,
@@ -330,7 +343,7 @@ export const generateReport = async (req, res) => {
                 const profitMarginPercent = mo.netSales > 0 ? Math.round((netOperatingProfit / mo.netSales) * 10000) / 100 : 0;
 
                 return {
-                    month: mo._id,
+                    month: monthStr,
                     grossSales: Math.round(mo.grossSales * 100) / 100,
                     discounts: Math.round(mo.discounts * 100) / 100,
                     refunds: Math.round(mo.refunds * 100) / 100,
@@ -502,13 +515,13 @@ export const generateReport = async (req, res) => {
                 employeeId: p.employee?.employeeId || '-',
                 employeeName: p.employee?.name || 'Unknown',
                 role: p.employee?.role || '-',
-                basicSalary: p.salaryConfig?.basicSalary || 0,
-                earnedBasic: p.earnedBasicSalary || 0,
-                overtimePay: p.overtimePay || 0,
-                bonuses: p.bonuses || 0,
-                deductions: p.totalDeductions || 0,
-                grossPayable: p.grossPayable || 0,
-                netPayable: p.netPayable || 0,
+                basicSalary: p.basicSalary ?? p.salaryConfig?.basicSalary ?? 0,
+                earnedBasic: p.calculations?.earnedBasic ?? p.earnedBasicSalary ?? 0,
+                overtimePay: p.calculations?.overtimePay ?? p.overtimePay ?? 0,
+                bonuses: p.calculations?.bonuses ?? p.bonuses ?? 0,
+                deductions: p.calculations?.deductions ?? p.totalDeductions ?? 0,
+                grossPayable: p.calculations?.grossSalary ?? p.grossPayable ?? 0,
+                netPayable: p.calculations?.netSalaryPayable ?? p.netPayable ?? 0,
                 paidAmount: p.paidAmount || 0,
                 balanceDue: p.balanceDue || 0,
                 paymentStatus: p.paymentStatus,

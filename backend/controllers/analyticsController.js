@@ -8,24 +8,26 @@ import Payroll from '../models/Payroll.js';
 import Payment from '../models/Payment.js';
 import Restaurant from '../models/Restaurant.js';
 
-// Helper to resolve user's restaurantId safely
+// Helper to resolve user's restaurantId safely with strict tenant isolation
 const getUserRestaurantId = async (user, query = {}) => {
     let rId = user?.restaurantId || user?.restaurant;
     if (!rId && user?.branchId) {
         const branchDoc = await Branch.findById(user.branchId);
         if (branchDoc) rId = branchDoc.restaurantId;
     }
-    if (!rId && query?.restaurantId) {
-        rId = query.restaurantId;
-    }
-    if (!rId && user?.role === 'SuperAdmin') {
-        const firstRest = await Restaurant.findOne().select('_id');
-        if (firstRest) rId = firstRest._id;
+    // Security: Only SuperAdmin is allowed to view other restaurants via query param
+    if (user?.role === 'SuperAdmin') {
+        if (query?.restaurantId) {
+            rId = query.restaurantId;
+        } else if (!rId) {
+            const firstRest = await Restaurant.findOne().select('_id');
+            if (firstRest) rId = firstRest._id;
+        }
     }
     return rId;
 };
 
-// Date range parser
+// Timezone-safe date range parser
 const parseDateFilter = (period, startDate, endDate) => {
     const now = new Date();
     let start = null;
@@ -43,11 +45,11 @@ const parseDateFilter = (period, startDate, endDate) => {
         end.setHours(23, 59, 59, 999);
     } else if (period === 'last7days' || period === 'weekly') {
         start = new Date();
-        start.setDate(now.getDate() - 7);
+        start.setDate(now.getDate() - 6);
         start.setHours(0, 0, 0, 0);
     } else if (period === 'last30days') {
         start = new Date();
-        start.setDate(now.getDate() - 30);
+        start.setDate(now.getDate() - 29);
         start.setHours(0, 0, 0, 0);
     } else if (period === 'thismonth' || period === 'monthly') {
         start = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -58,15 +60,27 @@ const parseDateFilter = (period, startDate, endDate) => {
         end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
     } else if (startDate || endDate) {
         if (startDate) {
-            start = new Date(startDate);
-            start.setHours(0, 0, 0, 0);
+            const sParts = String(startDate).split('-');
+            if (sParts.length === 3) {
+                start = new Date(parseInt(sParts[0], 10), parseInt(sParts[1], 10) - 1, parseInt(sParts[2], 10), 0, 0, 0, 0);
+            } else {
+                start = new Date(startDate);
+                start.setHours(0, 0, 0, 0);
+            }
         }
         if (endDate) {
-            end = new Date(endDate);
-            end.setHours(23, 59, 59, 999);
+            const eParts = String(endDate).split('-');
+            if (eParts.length === 3) {
+                end = new Date(parseInt(eParts[0], 10), parseInt(eParts[1], 10) - 1, parseInt(eParts[2], 10), 23, 59, 59, 999);
+            } else {
+                end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+            }
+        }
+        if (!start && end) {
+            start = new Date(end.getFullYear(), end.getMonth(), 1, 0, 0, 0, 0);
         }
     } else {
-        // Default to this month
         start = new Date(now.getFullYear(), now.getMonth(), 1);
         start.setHours(0, 0, 0, 0);
     }
@@ -242,8 +256,7 @@ export const getDashboardAnalytics = async (req, res) => {
                     { $project: { duration: { $divide: [ { $subtract: [ "$updatedAt", "$createdAt" ] }, 60000 ] } } },
                     { $group: { _id: null, avgDuration: { $avg: "$duration" } } }
                 ]);
-                avgPrepTime = prepTimeAvg.length > 0 ? Math.round(prepTimeAvg[0].avgDuration || 0) : 15;
-                if (avgPrepTime < 1) avgPrepTime = 12;
+                avgPrepTime = prepTimeAvg.length > 0 ? Math.round(prepTimeAvg[0].avgDuration || 0) : 0;
             } catch (qrErr) {
                 console.error("Failed to aggregate QR stats", qrErr);
             }
@@ -293,6 +306,16 @@ export const getDashboardAnalytics = async (req, res) => {
             }
         }
 
+        // Distinct customer calculation from actual orders
+        let activeCustomers = 0;
+        if (restIdObj && curOrders > 0) {
+            const distinctPhones = await Order.distinct('customerPhone', {
+                ...currentPeriodMatch,
+                customerPhone: { $exists: true, $ne: '' }
+            });
+            activeCustomers = distinctPhones.length > 0 ? distinctPhones.length : curOrders;
+        }
+
         res.json({
             overview: {
                 totalRevenue: curRevenue,
@@ -301,7 +324,7 @@ export const getDashboardAnalytics = async (req, res) => {
                 ordersChange,
                 avgOrderValue: curAvg,
                 avgChange,
-                activeCustomers: curOrders > 0 ? Math.floor(curOrders * 0.8) : 0,
+                activeCustomers,
                 customersChange: ordersChange
             },
             revenueTrend,
@@ -330,8 +353,6 @@ export const getDashboardAnalytics = async (req, res) => {
     }
 };
 
-// ─── MODULE 2: PROFIT AND LOSS MANAGEMENT ─────────────────────────────────────
-
 // @desc    Get complete Profit and Loss Statement with real database records
 // @route   GET /api/analytics/profit-loss
 // @access  Private/Admin
@@ -341,6 +362,7 @@ export const getProfitAndLoss = async (req, res) => {
         if (!restaurantId) return res.status(400).json({ message: 'Restaurant ID required' });
 
         const restObjId = new mongoose.Types.ObjectId(restaurantId);
+        const restaurantDoc = await Restaurant.findById(restaurantId).select('name currency logo');
         const { start, end } = parseDateFilter(req.query.period, req.query.startDate, req.query.endDate);
 
         const orderMatch = {
@@ -367,7 +389,7 @@ export const getProfitAndLoss = async (req, res) => {
         let grossSales = 0;
         let discounts = 0;
         let refunds = 0;
-        let netSales = 0;
+        let taxesCollected = 0;
         let amountCollected = 0;
         let outstandingCustomerPayments = 0;
         let totalOrdersCount = orders.length;
@@ -385,6 +407,7 @@ export const getProfitAndLoss = async (req, res) => {
         for (const ord of orders) {
             const tot = Number(ord.totalPrice) || 0;
             const disc = Number(ord.discountAmount || ord.discount) || 0;
+            const tax = Number(ord.taxPrice) || 0;
 
             if (ord.status === 'Cancelled') {
                 cancelledOrdersCount++;
@@ -392,9 +415,10 @@ export const getProfitAndLoss = async (req, res) => {
                 continue;
             }
 
-            // Completed or Active Paid Orders
+            taxesCollected += tax;
+
             if (ord.isPaid) {
-                grossSales += tot + disc; // Gross before discount
+                grossSales += tot + disc; // Gross sales before discounts
                 discounts += disc;
                 amountCollected += tot;
                 completedOrdersCount++;
@@ -406,20 +430,62 @@ export const getProfitAndLoss = async (req, res) => {
                 else if (method.includes('Online')) paymentMethodBreakdown.Online += tot;
                 else paymentMethodBreakdown.Other += tot;
             } else {
-                // Pending customer payment
+                grossSales += tot + disc;
+                discounts += disc;
                 outstandingCustomerPayments += tot;
             }
         }
 
-        netSales = Math.max(0, grossSales - discounts - refunds);
+        const netSales = Math.max(0, grossSales - discounts - refunds);
 
-        // 2. Expenses & COGS Aggregation
+        // 2. Material Purchases Query (to reconcile with Expenses and avoid double counting)
+        const purchaseMatch = {
+            restaurantId: restObjId,
+            purchaseDate: { $gte: start, $lte: end }
+        };
+        if (orderMatch.branchId) purchaseMatch.branchId = orderMatch.branchId;
+
+        const materialPurchases = await MaterialPurchase.find(purchaseMatch).lean();
+        const accountedPurchaseIds = new Set();
+
+        // 3. Payroll Records Query (to reconcile accrued salaries vs disbursed expenses)
+        const payrollPeriods = [];
+        let currMonth = new Date(start.getFullYear(), start.getMonth(), 1);
+        const lastMonth = new Date(end.getFullYear(), end.getMonth(), 1);
+        while (currMonth <= lastMonth) {
+            payrollPeriods.push({ month: currMonth.getMonth() + 1, year: currMonth.getFullYear() });
+            currMonth.setMonth(currMonth.getMonth() + 1);
+        }
+
+        const payrollQuery = {
+            restaurantId: restObjId,
+            $or: payrollPeriods.length > 0 ? payrollPeriods.map(p => ({ month: p.month, year: p.year })) : [{ month: -1 }],
+            status: { $ne: 'Draft' }
+        };
+        if (orderMatch.branchId) payrollQuery.branchId = orderMatch.branchId;
+
+        const payrollRecords = await Payroll.find(payrollQuery).lean();
+
+        let payrollSalaryIncurred = 0;
+        let payrollSalaryPaid = 0;
+        let payrollSalaryDue = 0;
+
+        for (const pr of payrollRecords) {
+            const net = Number(pr.calculations?.netSalaryPayable ?? pr.netPayable) || 0;
+            const paid = Number(pr.paidAmount) || 0;
+            const due = Number(pr.balanceDue ?? Math.max(0, net - paid)) || 0;
+            payrollSalaryIncurred += net;
+            payrollSalaryPaid += paid;
+            payrollSalaryDue += due;
+        }
+
+        // 4. Expenses Aggregation
         const expenses = await Expense.find(expenseMatch).lean();
 
         let materialPurchasesIncurred = 0;
         let materialPurchasesPaid = 0;
-        let staffSalariesIncurred = 0;
-        let staffSalariesPaid = 0;
+        let manualSalaryIncurred = 0;
+        let manualSalaryPaid = 0;
         let rentIncurred = 0;
         let rentPaid = 0;
         let electricityIncurred = 0;
@@ -433,17 +499,38 @@ export const getProfitAndLoss = async (req, res) => {
         let otherExpensesIncurred = 0;
         let otherExpensesPaid = 0;
 
+        let paidBillsCount = 0;
+        let pendingBillsCount = 0;
+        let overdueBillsCount = 0;
+        let overdueBillsAmount = 0;
+        const now = new Date();
+
         for (const exp of expenses) {
             const amt = Number(exp.amount) || 0;
             const paid = Number(exp.paidAmount) || 0;
+            const due = Math.max(0, amt - paid);
             const cat = exp.category;
+
+            if (due === 0 && amt > 0) paidBillsCount++;
+            else if (due > 0) {
+                pendingBillsCount++;
+                if (exp.dueDate && new Date(exp.dueDate) < now) {
+                    overdueBillsCount++;
+                    overdueBillsAmount += due;
+                }
+            }
 
             if (cat === 'Material purchases' || cat === 'Kitchen Supplies') {
                 materialPurchasesIncurred += amt;
                 materialPurchasesPaid += paid;
+                if (exp.sourceId) accountedPurchaseIds.add(exp.sourceId.toString());
             } else if (cat === 'Staff salary' || cat === 'Staff Welfare') {
-                staffSalariesIncurred += amt;
-                staffSalariesPaid += paid;
+                if (exp.source === 'Payroll') {
+                    // Already captured in payrollSalaryIncurred to prevent double-counting
+                } else {
+                    manualSalaryIncurred += amt;
+                    manualSalaryPaid += paid;
+                }
             } else if (cat === 'Rent') {
                 rentIncurred += amt;
                 rentPaid += paid;
@@ -465,7 +552,22 @@ export const getProfitAndLoss = async (req, res) => {
             }
         }
 
-        // 3. Stock Consumption from StockMovement (Kitchen ingredients consumed)
+        // Add any material purchases recorded in MaterialPurchase that do not have a linked Expense
+        for (const mp of materialPurchases) {
+            if (!accountedPurchaseIds.has(mp._id.toString())) {
+                const mpTot = Number(mp.totalAmount) || 0;
+                const mpPaid = Number(mp.paidAmount) || 0;
+                materialPurchasesIncurred += mpTot;
+                materialPurchasesPaid += mpPaid;
+            }
+        }
+
+        // Combine payroll batch salaries with manual salary expenses
+        const staffSalariesIncurred = Math.round((payrollSalaryIncurred + manualSalaryIncurred) * 100) / 100;
+        const staffSalariesPaid = Math.round((payrollSalaryPaid + manualSalaryPaid) * 100) / 100;
+        const staffSalariesOutstanding = Math.round((payrollSalaryDue + Math.max(0, manualSalaryIncurred - manualSalaryPaid)) * 100) / 100;
+
+        // 5. Stock Consumption from StockMovement
         const movementMatch = {
             restaurantId: restObjId,
             date: { $gte: start, $lte: end },
@@ -477,13 +579,12 @@ export const getProfitAndLoss = async (req, res) => {
             { $match: movementMatch },
             { $group: { _id: null, totalConsumed: { $sum: '$totalValue' } } }
         ]);
-        const actualStockConsumed = consumedAgg.length > 0 ? consumedAgg[0].totalConsumed : 0;
+        const actualStockConsumed = consumedAgg.length > 0 ? Math.round(consumedAgg[0].totalConsumed * 100) / 100 : 0;
 
-        // Cost of Goods Sold (COGS): To avoid double counting:
-        // Use actual material purchases paid/incurred, or stock consumed if purchases is 0.
+        // Cost of Goods Sold: Use actual material purchases incurred, or stock consumed if direct purchases are 0
         const cogsFoodCost = materialPurchasesIncurred > 0 ? materialPurchasesIncurred : actualStockConsumed;
 
-        // 4. Profit & Loss Formulas
+        // 6. Profitability Calculations
         const grossProfit = Math.round((netSales - cogsFoodCost) * 100) / 100;
         const grossProfitMargin = netSales > 0 ? Math.round((grossProfit / netSales) * 1000) / 10 : 0;
 
@@ -500,8 +601,8 @@ export const getProfitAndLoss = async (req, res) => {
         const netOperatingProfit = Math.round((grossProfit - totalOperatingExpensesIncurred) * 100) / 100;
         const netProfitMargin = netSales > 0 ? Math.round((netOperatingProfit / netSales) * 1000) / 10 : 0;
 
-        // Cash flow net (Actual Cash Collected minus Actual Cash Outflows)
-        const actualCashOutflows = materialPurchasesPaid + totalOperatingExpensesPaid;
+        // Cash flow: Actual cash collected minus actual disbursements paid
+        const actualCashOutflows = Math.round((materialPurchasesPaid + totalOperatingExpensesPaid) * 100) / 100;
         const netCashFlow = Math.round((amountCollected - actualCashOutflows) * 100) / 100;
 
         const totalOutstandingLiabilities = Math.round((
@@ -509,11 +610,14 @@ export const getProfitAndLoss = async (req, res) => {
             (totalOperatingExpensesIncurred - totalOperatingExpensesPaid)
         ) * 100) / 100;
 
+        const isEmpty = totalOrdersCount === 0 && expenses.length === 0 && payrollRecords.length === 0 && materialPurchases.length === 0;
+
         const formattedSales = {
             grossSales: Math.round(grossSales * 100) / 100,
             discounts: Math.round(discounts * 100) / 100,
             refunds: Math.round(refunds * 100) / 100,
             netSales: Math.round(netSales * 100) / 100,
+            taxesCollected: Math.round(taxesCollected * 100) / 100,
             amountCollected: Math.round(amountCollected * 100) / 100,
             outstandingCustomerPayments: Math.round(outstandingCustomerPayments * 100) / 100,
             paymentMethods: paymentMethodBreakdown,
@@ -527,15 +631,28 @@ export const getProfitAndLoss = async (req, res) => {
             materialPurchasesIncurred: Math.round(materialPurchasesIncurred * 100) / 100,
             materialPurchasesPaid: Math.round(materialPurchasesPaid * 100) / 100,
             actualStockConsumed: Math.round(actualStockConsumed * 100) / 100,
-            staffSalaryExpenses: Math.round(staffSalariesIncurred * 100) / 100,
+            staffSalaryExpenses: staffSalariesIncurred,
+            staffSalaryPaid: staffSalariesPaid,
+            staffSalaryDue: staffSalariesOutstanding,
             rent: Math.round(rentIncurred * 100) / 100,
+            rentPaid: Math.round(rentPaid * 100) / 100,
             electricity: Math.round(electricityIncurred * 100) / 100,
+            electricityPaid: Math.round(electricityPaid * 100) / 100,
             waterAndInternet: Math.round(waterInternetIncurred * 100) / 100,
+            waterAndInternetPaid: Math.round(waterInternetPaid * 100) / 100,
             maintenance: Math.round(maintenanceIncurred * 100) / 100,
+            maintenancePaid: Math.round(maintenancePaid * 100) / 100,
+            deliveryTransport: Math.round(deliveryTransportIncurred * 100) / 100,
             otherOperatingExpenses: Math.round((deliveryTransportIncurred + otherExpensesIncurred) * 100) / 100,
             totalExpensesIncurred: totalOperatingExpensesIncurred,
             totalExpensesPaid: totalOperatingExpensesPaid,
-            outstandingExpensesLiability: totalOutstandingLiabilities
+            outstandingExpensesLiability: totalOutstandingLiabilities,
+            billsStatus: {
+                paidBillsCount,
+                pendingBillsCount,
+                overdueBillsCount,
+                overdueBillsAmount: Math.round(overdueBillsAmount * 100) / 100
+            }
         };
 
         const formattedProfitability = {
@@ -544,7 +661,8 @@ export const getProfitAndLoss = async (req, res) => {
             netOperatingProfitLoss: netOperatingProfit,
             netProfitMarginPercent: netProfitMargin,
             netCashFlow,
-            outstandingLiabilities: totalOutstandingLiabilities
+            outstandingLiabilities: totalOutstandingLiabilities,
+            outstandingCustomerReceivables: Math.round(outstandingCustomerPayments * 100) / 100
         };
 
         const formattedCashFlow = {
@@ -554,6 +672,12 @@ export const getProfitAndLoss = async (req, res) => {
         };
 
         res.json({
+            isEmpty,
+            restaurant: {
+                id: restaurantId,
+                name: restaurantDoc?.name || 'Restaurant',
+                currency: restaurantDoc?.currency || 'INR'
+            },
             period: {
                 startDate: start,
                 endDate: end,
@@ -578,7 +702,7 @@ export const getProfitAndLoss = async (req, res) => {
                     : 'Based on recorded kitchen stock consumption and wastage'
             },
             operatingExpenses: {
-                staffSalaries: { incurred: Math.round(staffSalariesIncurred * 100) / 100, paid: Math.round(staffSalariesPaid * 100) / 100 },
+                staffSalaries: { incurred: staffSalariesIncurred, paid: staffSalariesPaid, due: staffSalariesOutstanding },
                 rent: { incurred: Math.round(rentIncurred * 100) / 100, paid: Math.round(rentPaid * 100) / 100 },
                 electricity: { incurred: Math.round(electricityIncurred * 100) / 100, paid: Math.round(electricityPaid * 100) / 100 },
                 waterAndInternet: { incurred: Math.round(waterInternetIncurred * 100) / 100, paid: Math.round(waterInternetPaid * 100) / 100 },
@@ -590,10 +714,12 @@ export const getProfitAndLoss = async (req, res) => {
             },
             profitMetrics: formattedProfitability,
             calculationBreakdown: {
+                accountingStandard: 'Accrual-basis Income Statement with Cash Flow Reconciliation',
                 netSalesFormula: 'Gross Sales minus Discounts minus Cancelled Orders',
-                grossProfitFormula: 'Net Sales minus Material and Food Costs',
-                netOperatingProfitLossFormula: 'Gross Profit minus Total Operating Overhead',
-                antiDoubleCountingRule: 'Material purchases linked to expenses are reconciled without duplication'
+                grossProfitFormula: 'Net Realized Sales minus Cost of Goods Sold',
+                netOperatingProfitLossFormula: 'Gross Profit minus Total Incurred Operating Expenses',
+                cashFlowFormula: 'Actual Cash Collected minus Actual Cash Outflows Disbursed',
+                antiDoubleCountingRule: 'Payroll salary disbursements and material purchase payments linked to expense ledgers are reconciled without duplication'
             }
         });
     } catch (error) {

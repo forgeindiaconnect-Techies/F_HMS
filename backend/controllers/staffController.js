@@ -15,7 +15,8 @@ const getUserRestaurantId = async (user, queryOrBody = {}) => {
         const branchDoc = await Branch.findById(user.branchId);
         if (branchDoc) rId = branchDoc.restaurantId;
     }
-    if (!rId && queryOrBody?.restaurantId) {
+    // Only SuperAdmin is allowed to query other restaurant's staff / payroll
+    if (user?.role === 'SuperAdmin' && queryOrBody?.restaurantId) {
         rId = queryOrBody.restaurantId;
     }
     if (!rId && user?.role === 'SuperAdmin') {
@@ -597,6 +598,48 @@ const parseMonthNumber = (val) => {
     return idx !== -1 ? idx + 1 : null;
 };
 
+// Robust helper to parse allowance or deduction values from mixed types (number, string, array)
+const parseConfigComponentTotal = (component) => {
+    if (!component) return 0;
+    if (typeof component === 'number') return isNaN(component) ? 0 : component;
+    if (typeof component === 'string') {
+        const n = parseFloat(component);
+        return isNaN(n) ? 0 : n;
+    }
+    if (Array.isArray(component)) {
+        return component.reduce((acc, curr) => {
+            if (typeof curr === 'number') return acc + curr;
+            if (typeof curr === 'string') {
+                const n = parseFloat(curr);
+                return acc + (isNaN(n) ? 0 : n);
+            }
+            if (curr && typeof curr === 'object') {
+                const amt = Number(curr.amount);
+                return acc + (isNaN(amt) ? 0 : amt);
+            }
+            return acc;
+        }, 0);
+    }
+    return 0;
+};
+
+// Helper to attach backward-compatible flat aliases to a payroll record or plain object
+const enrichPayrollWithAliases = (doc) => {
+    if (!doc) return doc;
+    const r = doc?.toObject ? doc.toObject() : { ...doc };
+    const calc = r.calculations || {};
+    return {
+        ...r,
+        earnedBasicSalary: calc.earnedBasic ?? r.basicSalary ?? 0,
+        overtimePay: calc.overtimePay ?? 0,
+        bonuses: calc.bonuses ?? 0,
+        allowances: calc.allowances ?? 0,
+        totalDeductions: calc.deductions ?? 0,
+        grossPayable: calc.grossSalary ?? 0,
+        netPayable: calc.netSalaryPayable ?? 0,
+    };
+};
+
 const calculateEmployeePayrollItem = async (emp, m, y, restaurantId) => {
     const startDate = new Date(y, m - 1, 1);
     const endDate = new Date(y, m, 0, 23, 59, 59, 999);
@@ -659,9 +702,9 @@ const calculateEmployeePayrollItem = async (emp, m, y, restaurantId) => {
 
     const overtimePay = Math.round(overtimeHours * calculatedOtRate * 100) / 100;
 
-    // Allowances & Deductions from config
-    const allowancesTotal = (config.allowances || []).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
-    const deductionsTotal = (config.deductions || []).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+    // Allowances & Deductions safely parsed from config
+    const allowancesTotal = Math.round(parseConfigComponentTotal(config.allowances) * 100) / 100;
+    const deductionsTotal = Math.round(parseConfigComponentTotal(config.deductions) * 100) / 100;
 
     const grossSalary = Math.round((earnedBasic + overtimePay + allowancesTotal) * 100) / 100;
     const netSalary = Math.max(0, Math.round((grossSalary - deductionsTotal) * 100) / 100);
@@ -681,6 +724,13 @@ const calculateEmployeePayrollItem = async (emp, m, y, restaurantId) => {
         payPeriod: { startDate, endDate },
         salaryFrequency: freq,
         basicSalary: basic,
+        earnedBasicSalary: earnedBasic,
+        overtimePay,
+        bonuses: 0,
+        allowances: allowancesTotal,
+        totalDeductions: deductionsTotal,
+        grossPayable: grossSalary,
+        netPayable: netSalary,
         attendanceSummary: {
             presentDays,
             absentDays,
@@ -848,7 +898,7 @@ export const generatePayroll = async (req, res) => {
         res.status(201).json({
             message: `Successfully processed ${savedRecords.length} payroll records for ${periodString}`,
             count: savedRecords.length,
-            records: savedRecords
+            records: savedRecords.map(enrichPayrollWithAliases)
         });
     } catch (error) {
         console.error('Error generating payroll:', error);
@@ -894,7 +944,7 @@ export const getPayrollRecords = async (req, res) => {
             .populate('payments.paidBy', 'name')
             .sort({ year: -1, month: -1, 'employee.name': 1 });
 
-        res.json(records);
+        res.json(records.map(enrichPayrollWithAliases));
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -921,7 +971,7 @@ export const getPayrollById = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized to view this record' });
         }
 
-        res.json(record);
+        res.json(enrichPayrollWithAliases(record));
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -997,7 +1047,7 @@ export const recordPayrollPayment = async (req, res) => {
 
         res.json({
             message: 'Salary payment recorded successfully',
-            payroll
+            payroll: enrichPayrollWithAliases(payroll)
         });
     } catch (error) {
         res.status(400).json({ message: error.message });
