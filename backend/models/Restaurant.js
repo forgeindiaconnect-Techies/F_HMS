@@ -96,9 +96,36 @@ const restaurantSchema = new mongoose.Schema({
             longitude: { type: Number, default: 80.2090 }
         }
     },
+    status: {
+        type: String,
+        enum: ['Active', 'Inactive', 'Suspended', 'Deleted'],
+        default: 'Active',
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false,
+    },
+    deletedAt: {
+        type: Date,
+        default: null,
+    },
+    deletedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null,
+    },
+    gstin: {
+        type: String,
+        default: '',
+    },
     isActive: {
         type: Boolean,
         default: true,
+    },
+    kitchenMode: {
+        type: String,
+        enum: ['KDS', 'KOT_ONLY'],
+        default: 'KDS',
     },
     posConfig: {
         outletFormat: { type: String, default: 'Fine Dine & Resto-Bar' },
@@ -143,6 +170,7 @@ const restaurantSchema = new mongoose.Schema({
     },
     restaurantConfig: {
         orderKitchen: {
+            kitchenMode: { type: String, enum: ['KDS', 'KOT_ONLY'], default: 'KDS' },
             kotEnabled: { type: Boolean, default: true },
             kdsEnabled: { type: Boolean, default: true },
             kotPrintEnabled: { type: Boolean, default: true }
@@ -163,6 +191,19 @@ const restaurantSchema = new mongoose.Schema({
             upi: { type: Boolean, default: true },
             card: { type: Boolean, default: true },
             onlineGateway: { type: Boolean, default: true }
+        },
+        payrollConfig: {
+            lopCalculationPolicy: {
+                type: String,
+                enum: ['Configured_Working_Days', 'Standard_26_Days', 'Calendar_Days'],
+                default: 'Configured_Working_Days'
+            },
+            monthlyPaidLeaveQuota: { type: Number, default: 2 },
+            unpaidLeaveDeductionType: {
+                type: String,
+                enum: ['Full_Day_Basic', 'Pro_Rata_Gross'],
+                default: 'Full_Day_Basic'
+            }
         },
         setupWizardCompleted: { type: Boolean, default: false },
         setupStep: { type: Number, default: 1 }

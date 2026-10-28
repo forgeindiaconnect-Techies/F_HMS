@@ -9,6 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 import { getApiUrl } from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
 import KOTPrintModal from '../../components/KOTPrintModal';
+import { generateThermalKOTHtml, printKOTViaIframe, printKOTViaWindow } from '../../utils/receiptGenerator';
 
 const STATION_OPTIONS = [
     { id: 'All', label: 'All Stations', icon: ChefHat },
@@ -50,6 +51,32 @@ const ChefKOTManagement = () => {
     // Thermal Print Modal State
     const [printModalOpen, setPrintModalOpen] = useState(false);
     const [selectedKotForPrint, setSelectedKotForPrint] = useState(null);
+    const [autoPrintKOTEnabled, setAutoPrintKOTEnabled] = useState(() => localStorage.getItem('resto_kitchen_kot_autoprint') !== 'false');
+    const seenPrintedKOTsRef = useRef(new Set());
+
+    const toggleAutoPrintKOT = () => {
+        setAutoPrintKOTEnabled(prev => {
+            const next = !prev;
+            localStorage.setItem('resto_kitchen_kot_autoprint', String(next));
+            return next;
+        });
+        const next = !autoPrintKOTEnabled;
+        toast.success(next ? 'Kitchen KOT auto-print enabled' : 'Kitchen KOT auto-print disabled', {
+            id: 'chef-kot-autoprint-toggle'
+        });
+    };
+
+    const autoPrintIncomingKOT = (kotData) => {
+        if (!kotData) return;
+        const key = kotData._id || kotData.kotNumber;
+        if (!key || seenPrintedKOTsRef.current.has(key)) return;
+        seenPrintedKOTsRef.current.add(key);
+
+        if (autoPrintKOTEnabled) {
+            const html = generateThermalKOTHtml(kotData, restaurant);
+            printKOTViaIframe(html);
+        }
+    };
 
     // Live clock
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -129,14 +156,19 @@ const ChefKOTManagement = () => {
                         if (['new_kot', 'kot_status_updated', 'new_order', 'order_updated'].includes(msg.type)) {
                             fetchKOTData();
 
-                            if (msg.type === 'new_kot') {
+                            if (msg.type === 'new_kot' || msg.type === 'new_order') {
                                 playKitchenBell();
-                                const kotNum = msg.data?.kotNumber || 'New KOT';
-                                const tableInfo = msg.data?.tableNumber ? `Table ${msg.data.tableNumber}` : 'Counter';
+                                const kotPayload = msg.data?.orderData || msg.data;
+                                const kotNum = kotPayload?.kotNumber || kotPayload?.kotNumbers?.[0] || 'New KOT';
+                                const tableInfo = kotPayload?.tableNumber ? `Table ${kotPayload.tableNumber}` : 'Counter';
+                                
                                 toast.success(`🔔 ${kotNum} Received for ${tableInfo}!`, {
                                     duration: 6000,
                                     position: 'top-right'
                                 });
+
+                                // Trigger auto-print of thermal KOT slip
+                                autoPrintIncomingKOT(kotPayload);
                             }
                         }
                     } catch (e) {}
@@ -224,7 +256,7 @@ const ChefKOTManagement = () => {
     }
 
     return (
-        <div className="max-w-[1700px] mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6 min-h-screen">
+        <div className="w-full max-w-[1700px] mx-auto space-y-4 sm:space-y-6 pb-12">
             
             {/* -------------------------------------------------- */}
             {/* TOP BAR / STATS OVERVIEW */}
@@ -267,6 +299,22 @@ const ChefKOTManagement = () => {
                             <span className="text-xs sm:text-sm font-black text-slate-800 dark:text-slate-200">{summary.avgPrepMinutes}m</span>
                         </div>
                     </div>
+                    {/* Kitchen KOT Auto-Print Toggle */}
+                    <button
+                        type="button"
+                        onClick={toggleAutoPrintKOT}
+                        className={`text-xs font-bold px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl flex items-center gap-1.5 transition-all cursor-pointer border ${
+                            autoPrintKOTEnabled 
+                                ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700' 
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'
+                        }`}
+                        title="Toggle automatic printing of incoming KOT tickets in kitchen"
+                    >
+                        <Printer size={15} className={autoPrintKOTEnabled ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'} />
+                        <span className="hidden sm:inline">Auto-Print:</span>
+                        <span>{autoPrintKOTEnabled ? 'ON' : 'OFF'}</span>
+                    </button>
+
                     <button
                         onClick={fetchKOTData}
                         className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"

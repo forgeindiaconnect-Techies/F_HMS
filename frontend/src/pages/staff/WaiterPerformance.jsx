@@ -44,7 +44,7 @@ const WaiterPerformance = () => {
     const avgServeTimeMinutes = servedOrders.length > 0 ? 12 : 0;
 
     return (
-        <div className="max-w-[1400px] mx-auto space-y-6">
+        <div className="w-full max-w-[1600px] mx-auto space-y-6 pb-12">
             
             {/* Banner Header */}
             <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-green-700 rounded-3xl p-6 text-white shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

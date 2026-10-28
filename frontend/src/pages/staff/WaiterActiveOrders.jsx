@@ -42,7 +42,7 @@ const WaiterActiveOrders = () => {
     };
 
     return (
-        <div className="max-w-[1200px] mx-auto space-y-6">
+        <div className="w-full max-w-[1600px] mx-auto space-y-6 pb-12">
             <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>All Active Orders</h2>

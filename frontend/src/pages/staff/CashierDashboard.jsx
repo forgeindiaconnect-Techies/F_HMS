@@ -1,19 +1,27 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
     Receipt, CreditCard, Banknote, QrCode, 
     Calculator, Split, Printer, CheckCircle, 
     ArrowLeftRight, Tag, Undo2, Coins, Landmark,
     ChevronDown, ChevronUp, Clock, Utensils, Plus, Sparkles,
-    ShoppingBag, History
+    ShoppingBag, History, Settings
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 import { getApiUrl } from '../../utils/axiosInstance';
 import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 import KOTPrintModal from '../../components/KOTPrintModal';
+import CashierSettingsModal from '../../components/CashierSettingsModal';
+import { 
+    generateThermalReceiptHtml, generateThermalKOTHtml, 
+    printReceiptViaIframe, printKOTViaIframe, 
+    printReceiptViaWindow, printKOTViaWindow 
+} from '../../utils/receiptGenerator';
 
 const CashierDashboard = () => {
     const { api, restaurant } = useAuth();
+    const navigate = useNavigate();
     const [queue, setQueue] = useState([]);
     const [selfPickupQueue, setSelfPickupQueue] = useState([]);
     const [history, setHistory] = useState([]);
@@ -30,6 +38,11 @@ const CashierDashboard = () => {
     const [isMerging, setIsMerging] = useState(false);
     const [mergeTargetId, setMergeTargetId] = useState('');
     const [autoPrintBillEnabled, setAutoPrintBillEnabled] = useState(() => localStorage.getItem('resto_cashier_autoprint') !== 'false');
+    const [autoPrintKOTEnabled, setAutoPrintKOTEnabled] = useState(() => localStorage.getItem('resto_cashier_kot_autoprint') !== 'false');
+    const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+    const [paperWidth, setPaperWidth] = useState(() => localStorage.getItem('resto_cashier_paper_width') || '80mm');
+    const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem('resto_cashier_sound') !== 'false');
+    const [readySoundEnabled, setReadySoundEnabled] = useState(() => localStorage.getItem('resto_cashier_ready_sound') !== 'false');
     const [searchQuery, setSearchQuery] = useState('');
     const seenPrintedOrdersRef = useRef(new Set());
 
@@ -37,8 +50,13 @@ const CashierDashboard = () => {
         const handleSearch = (e) => {
             setSearchQuery(e.detail || '');
         };
+        const handleOpenSettings = () => setSettingsModalOpen(true);
         window.addEventListener('cashier-search', handleSearch);
-        return () => window.removeEventListener('cashier-search', handleSearch);
+        window.addEventListener('open-cashier-settings', handleOpenSettings);
+        return () => {
+            window.removeEventListener('cashier-search', handleSearch);
+            window.removeEventListener('open-cashier-settings', handleOpenSettings);
+        };
     }, []);
 
     const pmConfig = restaurant?.restaurantConfig?.paymentMethods || { cash: true, upi: true, card: true, onlineGateway: true };
@@ -134,6 +152,25 @@ const CashierDashboard = () => {
                             if (msg.type === 'new_order' && orderData && orderData._id) {
                                 if (!seenPrintedOrdersRef.current.has(orderData._id)) {
                                     seenPrintedOrdersRef.current.add(orderData._id);
+
+                                    // Ensure restaurant context is passed if missing
+                                    if (!orderData.restaurantId && restaurant) {
+                                        orderData.restaurantId = restaurant;
+                                    }
+
+                                    const isKotMode = orderData.kitchenMode === 'KOT_ONLY' || 
+                                                      restaurant?.kitchenMode === 'KOT_ONLY' || 
+                                                      restaurant?.restaurantConfig?.orderKitchen?.kitchenMode === 'KOT_ONLY' ||
+                                                      restaurant?.restaurantConfig?.orderKitchen?.kdsEnabled === false ||
+                                                      orderData.isKotEnabled === true ||
+                                                      orderData.orderWorkflow === 'KOT';
+
+                                    // 1. Kitchen Side: Auto-print Kitchen KOT for KOT-method restaurants or if KOT auto-print toggle is ON
+                                    if (autoPrintKOTEnabled || isKotMode) {
+                                        autoPrintKitchenKOT(orderData);
+                                    }
+
+                                    // 2. Cashier Side: Auto-print Cashier Bill if auto-print bill is ON
                                     if (autoPrintBillEnabled) {
                                         autoPrintCashierBill(orderData);
                                     }
@@ -145,20 +182,22 @@ const CashierDashboard = () => {
                                 if (status === 'Picked Up' || status === 'Ready for Pickup') {
                                     const ticketNum = orderData?._id ? String(orderData._id).substring(String(orderData._id).length - 5).toUpperCase() : 'ALERT';
                                     
-                                    try {
-                                        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                                        const osc = audioCtx.createOscillator();
-                                        const gain = audioCtx.createGain();
-                                        osc.type = 'sine';
-                                        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-                                        osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.4);
-                                        gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-                                        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-                                        osc.connect(gain);
-                                        gain.connect(audioCtx.destination);
-                                        osc.start();
-                                        osc.stop(audioCtx.currentTime + 0.4);
-                                    } catch (e) {}
+                                    if (readySoundEnabled) {
+                                        try {
+                                            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                                            const osc = audioCtx.createOscillator();
+                                            const gain = audioCtx.createGain();
+                                            osc.type = 'sine';
+                                            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                                            osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.4);
+                                            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                                            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                                            osc.connect(gain);
+                                            gain.connect(audioCtx.destination);
+                                            osc.start();
+                                            osc.stop(audioCtx.currentTime + 0.4);
+                                        } catch (e) {}
+                                    }
 
                                     setActiveTab('Self-Pickup');
                                     toast.success(`📦 SELF-PICKUP QUEUE: Order #${ticketNum} arrived at Cashier counter!`, {
@@ -208,11 +247,24 @@ const CashierDashboard = () => {
         }
     }, [window.location.pathname]);
 
-    // Calculate subtotal, discount, tax, totals
-    const subtotal = activeBill ? activeBill.orderItems.reduce((acc, item) => acc + (item.price * item.qty), 0) : 0;
-    const discountAmount = subtotal * (discount / 100);
-    const taxAmount = (subtotal - discountAmount) * 0.05;
-    const total = subtotal - discountAmount + taxAmount;
+    // Calculate subtotal, discount, tax, delivery fee, tip, totals
+    const billItems = activeBill && Array.isArray(activeBill.orderItems) ? activeBill.orderItems : [];
+    const subtotal = billItems.reduce((acc, item) => {
+        const q = Number(item.qty || item.quantity || 1);
+        const p = Number(item.price || 0);
+        return acc + (q * p);
+    }, 0);
+
+    const discountAmount = Math.round(subtotal * ((Number(discount) || 0) / 100) * 100) / 100;
+    const deliveryCharge = Number(activeBill?.deliveryCharge || 0);
+    const tipAmount = Number(activeBill?.tipAmount || 0);
+
+    const baseTaxRate = restaurant?.taxRate ? Number(restaurant.taxRate) / 100 : (activeBill?.taxPrice && subtotal > 0 ? Number(activeBill.taxPrice) / subtotal : 0.05);
+    const taxAmount = discount > 0 
+        ? Math.round(Math.max(0, subtotal - discountAmount) * baseTaxRate * 100) / 100
+        : (activeBill?.taxPrice !== undefined ? Number(activeBill.taxPrice) : Math.round(subtotal * 0.05 * 100) / 100);
+
+    const total = Math.max(0, Math.round((subtotal - discountAmount + taxAmount + deliveryCharge + tipAmount) * 100) / 100);
 
     // Settle payment action
     const handleSelectBill = (bill) => {
@@ -343,19 +395,26 @@ const CashierDashboard = () => {
             await api.put(`/orders/${activeBill._id}/pay`, {
                 paymentMethod: finalMethod,
                 taxPrice: taxAmount,
-                totalPrice: total
+                totalPrice: total,
+                discountAmount: discountAmount
             });
             await api.put(`/orders/${activeBill._id}/status`, { status: 'Completed' });
             
-            handlePrintReceipt({
+            const settledReceipt = {
                 ...activeBill,
                 paymentMethod: finalMethod,
                 taxPrice: taxAmount,
+                discountAmount: discountAmount,
+                deliveryCharge: deliveryCharge,
+                tipAmount: tipAmount,
                 totalPrice: total,
+                isPaid: true,
                 paidAt: new Date()
-            });
+            };
 
-            toast.success('Payment successfully processed!');
+            handlePrintReceipt(settledReceipt);
+
+            toast.success('Payment successfully processed and bill settled!');
             setTimeout(() => {
                 setActiveBill(null);
                 setSettled(false);
@@ -378,19 +437,26 @@ const CashierDashboard = () => {
                 await api.put(`/orders/${activeBill._id}/pay`, {
                     paymentMethod: finalMethod,
                     taxPrice: taxAmount,
-                    totalPrice: total
+                    totalPrice: total,
+                    discountAmount: discountAmount
                 });
             }
             
             await api.put(`/orders/${activeBill._id}/status`, { status: 'Completed' });
 
-            handlePrintReceipt({
+            const settledReceipt = {
                 ...activeBill,
                 paymentMethod: finalMethod,
                 taxPrice: taxAmount,
+                discountAmount: discountAmount,
+                deliveryCharge: deliveryCharge,
+                tipAmount: tipAmount,
                 totalPrice: total,
+                isPaid: true,
                 paidAt: new Date()
-            });
+            };
+
+            handlePrintReceipt(settledReceipt);
 
             toast.success('Order completed and handed over.');
             setTimeout(() => {
@@ -473,184 +539,101 @@ const CashierDashboard = () => {
         setAutoPrintBillEnabled(prev => {
             const next = !prev;
             localStorage.setItem('resto_cashier_autoprint', String(next));
-            toast.success(next ? 'Auto-print on new orders enabled' : 'Auto-print disabled');
             return next;
         });
+        const next = !autoPrintBillEnabled;
+        toast.success(next ? 'Cashier Bill auto-print enabled' : 'Cashier Bill auto-print disabled', {
+            id: 'cashier-autoprint-bill-toggle'
+        });
+    };
+
+    const toggleAutoPrintKOT = () => {
+        setAutoPrintKOTEnabled(prev => {
+            const next = !prev;
+            localStorage.setItem('resto_cashier_kot_autoprint', String(next));
+            return next;
+        });
+        const next = !autoPrintKOTEnabled;
+        toast.success(next ? 'Kitchen KOT auto-print enabled' : 'Kitchen KOT auto-print disabled', {
+            id: 'cashier-autoprint-kot-toggle'
+        });
+    };
+
+    const handlePaperWidthChange = (width) => {
+        setPaperWidth(width);
+        localStorage.setItem('resto_cashier_paper_width', width);
+    };
+
+    // Auto-Print Kitchen KOT Slip via hidden iframe for kitchen side
+    const autoPrintKitchenKOT = (orderData) => {
+        if (!orderData) return;
+        const ticketNum = orderData._id ? String(orderData._id).slice(-5).toUpperCase() : 'NEW';
+        const kotNum = orderData.kotNumbers?.[0] || orderData.kots?.[0]?.kotNumber || `KOT-${ticketNum}`;
+
+        toast.success(`👨‍🍳 [Kitchen Side] Auto-Printed KOT ${kotNum}${orderData.tableNumber ? ` (Table ${orderData.tableNumber})` : ''}`, {
+            id: `cashier-kot-autoprint-${orderData._id}`,
+            duration: 6000,
+            icon: '👨‍🍳'
+        });
+
+        const html = generateThermalKOTHtml(orderData, restaurant, { paperWidth });
+        printKOTViaIframe(html);
     };
 
     // Auto-Print Cashier Bill via hidden iframe to bypass popup blockers
     const autoPrintCashierBill = (receipt) => {
         if (!receipt) return;
-        try {
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
-            osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15);
-            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.35);
-        } catch (e) {}
+        if (soundEnabled) {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.35);
+            } catch (e) {}
+        }
 
         const ticketNum = receipt._id ? String(receipt._id).slice(-5).toUpperCase() : 'NEW';
-        toast.success(`🖨️ Auto-Printed Bill Receipt for Order #${ticketNum}${receipt.tableNumber ? ` (Table ${receipt.tableNumber})` : ''}`, {
+        toast.success(`🧾 [Cashier Side] Auto-Printed Bill Receipt for Order #${ticketNum}${receipt.tableNumber ? ` (Table ${receipt.tableNumber})` : ''}`, {
             id: `cashier-autoprint-${receipt._id}`,
             duration: 6000,
             icon: '🧾'
         });
 
-        const items = receipt.orderItems || [];
-        const itemsHtml = items.map(item => `
-            <tr style="border-bottom: 1px dashed #ddd;">
-                <td style="padding: 5px 0; font-weight: bold;">${item.qty}x ${item.name}</td>
-                <td style="text-align: right; padding: 5px 0; font-family: monospace;">₹${((item.price || 0) * (item.qty || 1)).toFixed(2)}</td>
-            </tr>
-        `).join('');
-
-        const subtotal = items.reduce((acc, it) => acc + (it.price || 0) * (it.qty || 1), 0);
-        const tax = receipt.taxPrice || 0;
-        const tip = receipt.tipAmount || 0;
-        const total = receipt.totalPrice || (subtotal + tax + tip);
-
-        const printContent = `
-            <!DOCTYPE html>
-            <html>
-                <head>
-                    <title>Bill Receipt #${ticketNum}</title>
-                    <style>
-                        @page { size: 80mm auto; margin: 4mm; }
-                        body {
-                            font-family: 'Courier New', Courier, monospace;
-                            width: 78mm;
-                            max-width: 78mm;
-                            margin: 0 auto;
-                            padding: 8px 4px;
-                            font-size: 13px;
-                            line-height: 1.3;
-                            color: #000;
-                        }
-                        .center { text-align: center; }
-                        .line { border-bottom: 1px dashed #000; margin: 8px 0; }
-                        table { width: 100%; border-collapse: collapse; font-size: 12px; }
-                    </style>
-                </head>
-                <body>
-                    <div class="center">
-                        <h2 style="margin: 0; font-size: 18px; font-weight: 900;">RESTOSYS POS</h2>
-                        <p style="margin: 3px 0; font-weight: bold;">OFFICIAL BILL RECEIPT</p>
-                        <p style="margin: 2px 0;">Order #${ticketNum}</p>
-                        <p style="margin: 2px 0; font-weight: bold;">${receipt.orderType || 'Dine In'} ${receipt.tableNumber ? `• Table ${receipt.tableNumber}` : ''}</p>
-                        ${receipt.customerName ? `<p style="margin: 2px 0;">Guest: ${receipt.customerName}</p>` : ''}
-                    </div>
-                    <div class="line"></div>
-                    <table>
-                        ${itemsHtml}
-                    </table>
-                    <div class="line"></div>
-                    <table>
-                        <tr><td>Subtotal</td><td style="text-align: right;">₹${subtotal.toFixed(2)}</td></tr>
-                        ${tax > 0 ? `<tr><td>Tax</td><td style="text-align: right;">₹${tax.toFixed(2)}</td></tr>` : ''}
-                        ${tip > 0 ? `<tr><td>Staff Tip</td><td style="text-align: right;">₹${tip.toFixed(2)}</td></tr>` : ''}
-                        <tr style="font-weight: 900; font-size: 14px;"><td>Grand Total</td><td style="text-align: right;">₹${total.toFixed(2)}</td></tr>
-                    </table>
-                    <div class="line"></div>
-                    <div class="center" style="font-size: 11px;">
-                        Payment: ${receipt.paymentMethod || 'Pay at Counter / Waiter'}<br/>
-                        Status: ${receipt.isPaid ? 'PAID & SETTLED' : 'PAYMENT DUE'}<br/>
-                        Date: ${new Date(receipt.createdAt || Date.now()).toLocaleString()}<br/><br/>
-                        Thank you for dining with us!
-                    </div>
-                </body>
-            </html>
-        `;
-
-        let printFrame = document.getElementById('cashier-auto-print-frame');
-        if (!printFrame) {
-            printFrame = document.createElement('iframe');
-            printFrame.id = 'cashier-auto-print-frame';
-            printFrame.style.position = 'fixed';
-            printFrame.style.right = '0';
-            printFrame.style.bottom = '0';
-            printFrame.style.width = '0';
-            printFrame.style.height = '0';
-            printFrame.style.border = '0';
-            document.body.appendChild(printFrame);
-        }
-        const frameDoc = printFrame.contentWindow.document;
-        frameDoc.open();
-        frameDoc.write(printContent);
-        frameDoc.close();
-        setTimeout(() => {
-            try {
-                printFrame.contentWindow.focus();
-                printFrame.contentWindow.print();
-            } catch (e) {
-                console.error('Auto print trigger error:', e);
-            }
-        }, 400);
+        // Generate verified thermal receipt HTML and trigger silent print via iframe
+        const html = generateThermalReceiptHtml(receipt, restaurant, { paperWidth });
+        printReceiptViaIframe(html);
     };
 
     // Invoice generator (print receipt window)
     const handlePrintReceipt = (receipt) => {
         if (!receipt) return;
-        const printWindow = window.open('', '_blank');
-        const itemsHtml = receipt.orderItems.map(item => `
-            <tr style="border-bottom: 1px dashed #eee;">
-                <td style="padding: 6px 0;">${item.qty}x ${item.name}</td>
-                <td style="text-align: right; padding: 6px 0;">₹${(item.price * item.qty).toFixed(2)}</td>
-            </tr>
-        `).join('');
+        const html = generateThermalReceiptHtml(receipt, restaurant, { paperWidth });
+        printReceiptViaWindow(html);
+    };
 
-        printWindow.document.write(`
-            <html>
-                <head>
-                    <title>Bill Receipt #${receipt._id.substring(receipt._id.length - 6).toUpperCase()}</title>
-                    <style>
-                        body {
-                            font-family: 'Courier New', Courier, monospace;
-                            width: 300px;
-                            margin: 0 auto;
-                            padding: 20px 10px;
-                            font-size: 13px;
-                        }
-                        .center { text-align: center; }
-                        .line { border-bottom: 1px dashed #000; margin: 12px 0; }
-                    </style>
-                </head>
-                <body>
-                    <div class="center">
-                        <h2 style="margin: 0;">RESTOSYS POS</h2>
-                        <p style="margin: 5px 0;">INVOICE RECEIPTS</p>
-                        <p style="margin: 2px 0;">ID: #${receipt._id.toUpperCase()}</p>
-                        <p style="margin: 2px 0;">Type: ${receipt.orderType} ${receipt.tableNumber ? `(Table ${receipt.tableNumber})` : ''}</p>
-                    </div>
-                    <div class="line"></div>
-                    <table style="width: 100%; border-collapse: collapse;">
-                        ${itemsHtml}
-                    </table>
-                    <div class="line"></div>
-                    <table style="width: 100%;">
-                        <tr><td>Subtotal</td><td style="text-align: right;">₹${(receipt.totalPrice - (receipt.taxPrice || 0)).toFixed(2)}</td></tr>
-                        <tr><td>Tax (5%)</td><td style="text-align: right;">₹${(receipt.taxPrice || 0).toFixed(2)}</td></tr>
-                        <tr style="font-weight: bold; font-size: 15px;"><td>Grand Total</td><td style="text-align: right;">₹${receipt.totalPrice.toFixed(2)}</td></tr>
-                    </table>
-                    <div class="line"></div>
-                    <div class="center">
-                        Paid via: ${receipt.paymentMethod || 'Settled'}<br/>
-                        Date: ${new Date(receipt.paidAt || new Date()).toLocaleString()}<br/><br/>
-                        Thank you for dining with us!
-                    </div>
-                    <script>
-                        window.onload = function() { window.print(); window.close(); }
-                    </script>
-                </body>
-            </html>
-        `);
-        printWindow.document.close();
+    // Direct manual thermal KOT print
+    const handlePrintDirectKOT = (orderData) => {
+        if (!orderData) return;
+        const html = generateThermalKOTHtml(orderData, restaurant, { paperWidth });
+        printKOTViaWindow(html);
+    };
+
+    // Print Both (Kitchen KOT + Cashier Bill)
+    const handlePrintBoth = (orderData) => {
+        if (!orderData) return;
+        const kotHtml = generateThermalKOTHtml(orderData, restaurant, { paperWidth });
+        const billHtml = generateThermalReceiptHtml(orderData, restaurant, { paperWidth });
+        printKOTViaIframe(kotHtml);
+        printReceiptViaIframe(billHtml);
+        toast.success(`Queued both Kitchen KOT and Cashier Bill for Order #${String(orderData._id).slice(-5).toUpperCase()}!`);
     };
 
     // Calculate Cash summaries for the daily drawer
@@ -675,10 +658,46 @@ const CashierDashboard = () => {
     else if (path.includes('/cashier/refunds')) currentView = 'refunds';
     else if (path.includes('/cashier/summary')) currentView = 'summary';
     else if (path.includes('/cashier/history')) currentView = 'history';
+    else if (path.includes('/cashier/settings')) currentView = 'settings';
+
+    if (currentView === 'settings') {
+        return (
+            <div className="w-full max-w-[1400px] mx-auto space-y-6 pb-16 animate-in fade-in duration-300">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">POS & Terminal Settings</h2>
+                        <p className="text-gray-500 dark:text-slate-400 mt-1 text-sm">Configure receipt printing, automatic KOT routing, sound notifications, and display preferences.</p>
+                    </div>
+                    <Link
+                        to="/cashier"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-200 font-bold text-xs rounded-xl border border-gray-200 dark:border-slate-700 shadow-xs transition-all w-fit cursor-pointer"
+                    >
+                        <span>← Back to POS Billing</span>
+                    </Link>
+                </div>
+                <CashierSettingsModal
+                    isOpen={true}
+                    isPageMode={true}
+                    onClose={() => navigate('/cashier')}
+                    paperWidth={paperWidth}
+                    onPaperWidthChange={handlePaperWidthChange}
+                    autoPrintBillEnabled={autoPrintBillEnabled}
+                    toggleAutoPrintBill={toggleAutoPrintBill}
+                    autoPrintKOTEnabled={autoPrintKOTEnabled}
+                    toggleAutoPrintKOT={toggleAutoPrintKOT}
+                    soundEnabled={soundEnabled}
+                    setSoundEnabled={setSoundEnabled}
+                    readySoundEnabled={readySoundEnabled}
+                    setReadySoundEnabled={setReadySoundEnabled}
+                    restaurant={restaurant}
+                />
+            </div>
+        );
+    }
 
     if (currentView === 'split') {
         return (
-            <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="w-full max-w-[1500px] mx-auto space-y-6 pb-12 animate-in fade-in duration-300">
                 <div>
                     <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Split Bill Workspace</h2>
                     <p className="text-gray-500 mt-1">Configure and divide active dine-in table bills among guests.</p>
@@ -697,7 +716,7 @@ const CashierDashboard = () => {
                                     >
                                         <p className="font-bold text-gray-950 dark:text-white group-hover:text-purple-650">Table {bill.tableNumber || 'Any'}</p>
                                         <p className="text-[10px] text-gray-400 font-mono">#{bill._id.substring(bill._id.length - 6).toUpperCase()}</p>
-                                        <p className="text-sm font-black text-green-700 dark:text-green-400 mt-2">₹{bill.totalPrice.toFixed(2)}</p>
+                                        <p className="text-sm font-black text-green-700 dark:text-green-400 mt-2">₹{Number(bill.totalPrice || 0).toFixed(2)}</p>
                                     </button>
                                 ))}
                                 {queue.length === 0 && (
@@ -714,16 +733,16 @@ const CashierDashboard = () => {
                                 <button onClick={() => setActiveBill(null)} className="text-xs text-purple-600 font-bold hover:underline">← Back to Tables</button>
                             </div>
                             <div className="divide-y divide-gray-100 dark:divide-slate-800 text-xs">
-                                {activeBill.orderItems.map((item, idx) => (
+                                {(activeBill.orderItems || []).map((item, idx) => (
                                     <div key={idx} className="py-3 flex justify-between text-gray-900 dark:text-gray-300">
-                                        <span className="font-semibold">{item.qty}x {item.name}</span>
-                                        <span className="font-extrabold">₹{(item.price * item.qty).toFixed(2)}</span>
+                                        <span className="font-semibold">{item.qty || 1}x {item.name}</span>
+                                        <span className="font-extrabold">₹{(Number(item.price || 0) * Number(item.qty || 1)).toFixed(2)}</span>
                                     </div>
                                 ))}
                             </div>
                             <div className="border-t dark:border-slate-800 pt-4 flex justify-between font-bold text-sm">
                                 <span className="text-gray-800 dark:text-white font-sans">Grand Total</span>
-                                <span className="text-green-700 dark:text-green-400">₹{activeBill.totalPrice.toFixed(2)}</span>
+                                <span className="text-green-700 dark:text-green-400">₹{Number(activeBill.totalPrice || 0).toFixed(2)}</span>
                             </div>
                         </div>
 
@@ -741,7 +760,7 @@ const CashierDashboard = () => {
 
                             <div className="p-4 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900/50 rounded-xl space-y-1">
                                 <p className="text-[10px] text-purple-600 dark:text-purple-400 uppercase font-black">Amount per Person</p>
-                                <p className="text-2xl font-black text-purple-950 dark:text-purple-100">₹{(activeBill.totalPrice / splitParts).toFixed(2)}</p>
+                                <p className="text-2xl font-black text-purple-950 dark:text-purple-100">₹{(Number(activeBill.totalPrice || 0) / Math.max(1, splitParts || 1)).toFixed(2)}</p>
                             </div>
 
                             <button
@@ -762,7 +781,7 @@ const CashierDashboard = () => {
         const targetBill = queue.find(q => q._id === mergeTargetId);
         
         return (
-            <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="w-full max-w-[1500px] mx-auto space-y-6 pb-12 animate-in fade-in duration-300">
                 <div>
                     <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Merge Bills & Tables</h2>
                     <p className="text-gray-500 mt-1">Combine two active table bills into a single invoice.</p>
@@ -782,7 +801,7 @@ const CashierDashboard = () => {
                                 >
                                     <option value="">Select Table</option>
                                     {queue.map(q => (
-                                        <option key={q._id} value={q._id}>Table {q.tableNumber || 'Any'} (₹{q.totalPrice.toFixed(2)})</option>
+                                        <option key={q._id} value={q._id}>Table {q.tableNumber || 'Any'} (₹{Number(q.totalPrice || 0).toFixed(2)})</option>
                                     ))}
                                 </select>
                             </div>
@@ -796,7 +815,7 @@ const CashierDashboard = () => {
                                 >
                                     <option value="">Select Table</option>
                                     {queue.filter(q => q._id !== activeBill?._id).map(q => (
-                                        <option key={q._id} value={q._id}>Table {q.tableNumber || 'Any'} (₹{q.totalPrice.toFixed(2)})</option>
+                                        <option key={q._id} value={q._id}>Table {q.tableNumber || 'Any'} (₹{Number(q.totalPrice || 0).toFixed(2)})</option>
                                     ))}
                                 </select>
                             </div>
@@ -804,20 +823,20 @@ const CashierDashboard = () => {
 
                         {sourceBill && targetBill && (
                             <div className="p-4 bg-orange-50/50 dark:bg-orange-950/10 border border-orange-200 dark:border-orange-900/50 rounded-xl space-y-4 text-xs">
-                                <h4 className="font-bold text-orange-850 dark:text-orange-300">Merge Preview Summary</h4>
+                                <h4 className="font-bold text-orange-850 dark:orange-300">Merge Preview Summary</h4>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                         <p className="font-bold text-gray-400">Source Table {sourceBill.tableNumber}</p>
-                                        <p className="font-black text-gray-900 dark:text-white">₹{sourceBill.totalPrice.toFixed(2)}</p>
+                                        <p className="font-black text-gray-900 dark:text-white">₹{Number(sourceBill.totalPrice || 0).toFixed(2)}</p>
                                     </div>
                                     <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                         <p className="font-bold text-gray-400">Target Table {targetBill.tableNumber}</p>
-                                        <p className="font-black text-gray-900 dark:text-white">₹{targetBill.totalPrice.toFixed(2)}</p>
+                                        <p className="font-black text-gray-900 dark:text-white">₹{Number(targetBill.totalPrice || 0).toFixed(2)}</p>
                                     </div>
                                 </div>
                                 <div className="border-t border-orange-200/50 dark:border-orange-900/40 pt-3 flex justify-between font-bold text-sm">
                                     <span>Combined Total Invoice</span>
-                                    <span className="text-green-700 dark:text-green-400">₹{(sourceBill.totalPrice + targetBill.totalPrice).toFixed(2)}</span>
+                                    <span className="text-green-700 dark:text-green-400">₹{(Number(sourceBill.totalPrice || 0) + Number(targetBill.totalPrice || 0)).toFixed(2)}</span>
                                 </div>
                             </div>
                         )}
@@ -843,7 +862,7 @@ const CashierDashboard = () => {
 
     if (currentView === 'discounts') {
         return (
-            <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="w-full max-w-[1500px] mx-auto space-y-6 pb-12 animate-in fade-in duration-300">
                 <div>
                     <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Discount & Promotion Center</h2>
                     <p className="text-gray-500 mt-1">Apply percentage deductions or promotional discounts to active table invoices.</p>
@@ -860,7 +879,7 @@ const CashierDashboard = () => {
                                     className="p-5 rounded-2xl border-2 border-gray-100 dark:border-slate-800 hover:border-purple-500 bg-white dark:bg-slate-900 transition-all text-left space-y-2 group hover:scale-[1.02]"
                                 >
                                     <p className="font-bold text-gray-955 dark:text-white group-hover:text-purple-600">Table {bill.tableNumber || 'Any'}</p>
-                                    <p className="text-xs text-gray-400 font-bold">Subtotal: ₹{(bill.totalPrice).toFixed(2)}</p>
+                                    <p className="text-xs text-gray-400 font-bold">Subtotal: ₹{Number(bill.totalPrice || 0).toFixed(2)}</p>
                                 </button>
                             ))}
                             {queue.length === 0 && (
@@ -927,7 +946,7 @@ const CashierDashboard = () => {
 
     if (currentView === 'collection') {
         return (
-            <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="w-full max-w-[1500px] mx-auto space-y-6 pb-12 animate-in fade-in duration-300">
                 <div>
                     <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Payment Collection Console</h2>
                     <p className="text-gray-500 mt-1">Select table invoices and record customer payments via physical or digital channels.</p>
@@ -944,7 +963,7 @@ const CashierDashboard = () => {
                                 >
                                     <div>
                                         <p className="font-bold text-gray-950 dark:text-white">Table {bill.tableNumber || 'Any'}</p>
-                                        <p className="text-sm font-black text-green-700 dark:text-green-400 mt-1">₹{bill.totalPrice.toFixed(2)}</p>
+                                        <p className="text-sm font-black text-green-700 dark:text-green-400 mt-1">₹{Number(bill.totalPrice || 0).toFixed(2)}</p>
                                     </div>
                                     <button
                                         onClick={() => { setActiveBill(bill); setPaymentMethod('Card'); }}
@@ -1022,7 +1041,7 @@ const CashierDashboard = () => {
 
     if (currentView === 'summary') {
         return (
-            <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="w-full max-w-[1500px] mx-auto space-y-6 pb-12 animate-in fade-in duration-300">
                 <div>
                     <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Shift Sales & Cash Summary</h2>
                     <p className="text-gray-500 mt-1">Real-time breakdown of cash register collections and payment transactions for this shift.</p>
@@ -1082,7 +1101,7 @@ const CashierDashboard = () => {
 
     if (currentView === 'history') {
         return (
-            <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="w-full max-w-[1500px] mx-auto space-y-6 pb-12 animate-in fade-in duration-300">
                 <div>
                     <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Transaction History Logs</h2>
                     <p className="text-gray-500 mt-1">Audit log of all payments settled or refunded during the current business day.</p>
@@ -1111,7 +1130,7 @@ const CashierDashboard = () => {
                                         <td className="p-4">{new Date(bill.paidAt || bill.updatedAt).toLocaleString()}</td>
                                         <td className="p-4 font-semibold">{isSelfOrder(bill) ? '📦 Self-Pickup' : (bill.orderType === 'Dine In' ? `Table ${bill.tableNumber || 'Any'}` : bill.orderType)}</td>
                                         <td className="p-4"><span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 rounded-lg font-bold">{bill.paymentMethod}</span></td>
-                                        <td className="p-4 font-black text-green-700 dark:text-green-400">₹{bill.totalPrice.toFixed(2)}</td>
+                                        <td className="p-4 font-black text-green-700 dark:text-green-400">₹{Number(bill.totalPrice || 0).toFixed(2)}</td>
                                         <td className="p-4 text-right space-x-2">
                                             <button onClick={() => handlePrintReceipt(bill)} className="px-3 py-1.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 font-bold rounded-lg transition-all">Print</button>
                                         </td>
@@ -1132,7 +1151,7 @@ const CashierDashboard = () => {
 
     if (currentView === 'refunds') {
         return (
-            <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="w-full max-w-[1500px] mx-auto space-y-6 pb-12 animate-in fade-in duration-300">
                 <div>
                     <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Refund & Void Manager</h2>
                     <p className="text-gray-500 mt-1">Search settled receipts and process immediate order payment refunds.</p>
@@ -1160,7 +1179,7 @@ const CashierDashboard = () => {
                                             <td className="p-4 font-mono font-bold">#{bill._id.toUpperCase()}</td>
                                             <td className="p-4 font-semibold">{bill.orderType === 'Dine In' ? `Table ${bill.tableNumber || 'Any'}` : bill.orderType}</td>
                                             <td className="p-4">{bill.paymentMethod}</td>
-                                            <td className="p-4 font-black text-green-700 dark:text-green-400">₹{bill.totalPrice.toFixed(2)}</td>
+                                            <td className="p-4 font-black text-green-700 dark:text-green-400">₹{Number(bill.totalPrice || 0).toFixed(2)}</td>
                                             <td className="p-4 text-right">
                                                 {bill.status === 'Refunded' ? (
                                                     <span className="text-red-500 font-bold bg-red-50 dark:bg-red-950/20 px-2.5 py-1 rounded-lg">Refunded</span>
@@ -1189,7 +1208,7 @@ const CashierDashboard = () => {
 
     if (currentView === 'invoices') {
         return (
-            <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="w-full max-w-[1500px] mx-auto space-y-6 pb-12 animate-in fade-in duration-300">
                 <div>
                     <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Invoice Generator & Printers</h2>
                     <p className="text-gray-500 mt-1">Generate and print previews or final thermal invoices for active and previous orders.</p>
@@ -1224,7 +1243,7 @@ const CashierDashboard = () => {
                                             </td>
                                             <td className="p-4 font-semibold">{bill.orderType} {bill.tableNumber ? `(Table ${bill.tableNumber})` : ''}</td>
                                             <td className="p-4"><span className="px-2 py-0.5 bg-orange-50 dark:bg-orange-950/20 text-orange-700 dark:text-orange-400 rounded font-bold">{bill.status}</span></td>
-                                            <td className="p-4 font-black">₹{bill.totalPrice.toFixed(2)}</td>
+                                            <td className="p-4 font-black">₹{Number(bill.totalPrice || 0).toFixed(2)}</td>
                                             <td className="p-4 text-right">
                                                 <div className="flex items-center justify-end gap-1.5">
                                                     <button onClick={() => handlePrintKOT(bill)} className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-lg border border-slate-200 transition-all flex items-center gap-1 text-[11px]" title="Print Kitchen Order Ticket">
@@ -1263,41 +1282,18 @@ const CashierDashboard = () => {
     return (
         <div className="h-full flex flex-col gap-2.5 sm:gap-3 min-h-0 overflow-hidden font-sans">
             
-            {/* Sleek, Space-Efficient Cashier POS Status Bar */}
+            {/* Space-Efficient Cashier POS Status Bar */}
             <div className="bg-slate-900 text-white px-3 sm:px-4 py-2 rounded-2xl flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 shadow-md border border-slate-800 shrink-0">
                 <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
                     <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                         <span className="text-xs font-black tracking-wide uppercase text-slate-200">Billing Counter #1</span>
                         <span className="text-slate-600">|</span>
-                        <span className="text-xs text-slate-400 font-medium truncate max-w-[140px] sm:max-w-[180px]">Cashier: {restaurant?.name || 'Active Session'}</span>
+                        <span className="text-xs text-slate-400 font-medium truncate max-w-[160px] sm:max-w-[220px]">Cashier: {restaurant?.name || 'Active Session'}</span>
                     </div>
-                    {/* Compact Shift Attendance Widget */}
-                    <StaffShiftClockWidget compact={true} userName="Cashier" userRole="POS Cashier / Billing Agent" />
                 </div>
-
-                <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
-                    {/* Shift Sales Pill */}
-                    <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-800/90 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs border border-slate-700/60 font-semibold shadow-xs">
-                        <span className="text-slate-400">Shift Total:</span>
-                        <span className="font-mono font-black text-emerald-400">₹{cashSummary.total.toFixed(2)}</span>
-                    </div>
-
-                    {/* Auto-Print Thermal Receipt Toggle */}
-                    <button
-                        type="button"
-                        onClick={toggleAutoPrintBill}
-                        className={`text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer border ${
-                            autoPrintBillEnabled 
-                                ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/25' 
-                                : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-750'
-                        }`}
-                        title="Click to toggle automatic bill printing on incoming orders"
-                    >
-                        <Printer size={13} className={autoPrintBillEnabled ? 'text-emerald-400' : 'text-slate-400'} />
-                        <span>Auto-Print: {autoPrintBillEnabled ? 'ON' : 'OFF'}</span>
-                    </button>
-                </div>
+                {/* Compact Shift Attendance Widget */}
+                <StaffShiftClockWidget compact={true} userName="Cashier" userRole="POS Cashier / Billing Agent" />
             </div>
 
             {/* Main POS Interface (Left Queue + Right Billing Console) */}
@@ -1596,7 +1592,7 @@ const CashierDashboard = () => {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-200/60 dark:divide-slate-800/60">
-                                            {activeBill.orderItems.map((item, idx) => (
+                                            {(activeBill.orderItems || []).map((item, idx) => (
                                                 <tr key={idx} className="hover:bg-slate-100/50 dark:hover:bg-slate-800/40 transition-colors">
                                                     <td className="py-2.5 px-3 font-bold text-slate-800 dark:text-slate-200">
                                                         <div>{item.name}</div>
@@ -1608,11 +1604,11 @@ const CashierDashboard = () => {
                                                     </td>
                                                     <td className="py-2.5 px-2 text-center">
                                                         <span className="font-extrabold px-2 py-0.5 bg-slate-200/70 dark:bg-slate-800 rounded-md text-xs">
-                                                            {item.qty}
+                                                            {item.qty || 1}
                                                         </span>
                                                     </td>
-                                                    <td className="py-2.5 px-3 text-right text-slate-500 dark:text-slate-400 font-mono">₹{item.price.toFixed(2)}</td>
-                                                    <td className="py-2.5 px-3 text-right font-black font-mono text-slate-900 dark:text-white">₹{(item.price * item.qty).toFixed(2)}</td>
+                                                    <td className="py-2.5 px-3 text-right text-slate-500 dark:text-slate-400 font-mono">₹{Number(item.price || 0).toFixed(2)}</td>
+                                                    <td className="py-2.5 px-3 text-right font-black font-mono text-slate-900 dark:text-white">₹{(Number(item.price || 0) * Number(item.qty || 1)).toFixed(2)}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -1621,7 +1617,7 @@ const CashierDashboard = () => {
 
                                 {/* Items Footer info */}
                                 <div className="flex items-center justify-between pt-2 px-1 text-xs text-slate-500 font-medium shrink-0">
-                                    <span>{activeBill.orderItems.reduce((s, it) => s + (it.qty || 1), 0)} items ({activeBill.orderItems.length} lines)</span>
+                                    <span>{(activeBill.orderItems || []).reduce((s, it) => s + (it.qty || 1), 0)} items ({(activeBill.orderItems || []).length} lines)</span>
                                     <span className="font-mono text-slate-700 dark:text-slate-300 font-bold">Subtotal: ₹{subtotal.toFixed(2)}</span>
                                 </div>
                             </div>
@@ -1640,7 +1636,7 @@ const CashierDashboard = () => {
                                             </div>
                                             <div className="border-t border-emerald-200 dark:border-emerald-800/60 pt-2 flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
                                                 <span>Settled Amount:</span>
-                                                <span className="font-mono text-emerald-600 dark:text-emerald-400 font-black text-sm">₹{activeBill.totalPrice.toFixed(2)}</span>
+                                                <span className="font-mono text-emerald-600 dark:text-emerald-400 font-black text-sm">₹{Number(activeBill.totalPrice || 0).toFixed(2)}</span>
                                             </div>
                                         </div>
                                         <div className="space-y-2 mt-auto">
@@ -1810,6 +1806,23 @@ const CashierDashboard = () => {
                     isOpen={!!printModalKOT}
                     onClose={() => setPrintModalKOT(null)}
                     kot={printModalKOT}
+                />
+
+                {/* Cashier POS Settings Modal */}
+                <CashierSettingsModal
+                    isOpen={settingsModalOpen}
+                    onClose={() => setSettingsModalOpen(false)}
+                    paperWidth={paperWidth}
+                    onPaperWidthChange={handlePaperWidthChange}
+                    autoPrintBillEnabled={autoPrintBillEnabled}
+                    toggleAutoPrintBill={toggleAutoPrintBill}
+                    autoPrintKOTEnabled={autoPrintKOTEnabled}
+                    toggleAutoPrintKOT={toggleAutoPrintKOT}
+                    soundEnabled={soundEnabled}
+                    setSoundEnabled={setSoundEnabled}
+                    readySoundEnabled={readySoundEnabled}
+                    setReadySoundEnabled={setReadySoundEnabled}
+                    restaurant={restaurant}
                 />
             </div>
         </div>

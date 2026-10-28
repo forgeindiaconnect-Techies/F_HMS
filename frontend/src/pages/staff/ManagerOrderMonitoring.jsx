@@ -120,7 +120,7 @@ const ManagerOrderMonitoring = () => {
     };
 
     return (
-        <div className="p-3 sm:p-6 md:p-8 max-w-[1600px] mx-auto space-y-4 sm:space-y-6 font-sans relative">
+        <div className="w-full max-w-[1600px] mx-auto space-y-4 sm:space-y-6 pb-12 font-sans relative">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>Live Order Monitoring</h2>

@@ -47,10 +47,15 @@ export const getStats = async (req, res) => {
             }
         }
 
-        const totalRestaurants = await Restaurant.countDocuments();
-        const activeRestaurants = await Restaurant.countDocuments({ approvalStatus: { $ne: 'Rejected' }, 'subscription.status': { $ne: 'Cancelled' } });
-        const pendingRestaurants = await Restaurant.countDocuments({ approvalStatus: 'Pending' });
-        const frozenRestaurants = await Restaurant.countDocuments({ 'subscription.status': 'Frozen' });
+        const totalRestaurants = await Restaurant.countDocuments({ isDeleted: { $ne: true } });
+        const activeRestaurants = await Restaurant.countDocuments({ 
+            isDeleted: { $ne: true }, 
+            status: 'Active', 
+            approvalStatus: 'Approved', 
+            'subscription.status': { $nin: ['Cancelled', 'Frozen', 'Expired', 'Suspended', 'Inactive'] } 
+        });
+        const pendingRestaurants = await Restaurant.countDocuments({ isDeleted: { $ne: true }, approvalStatus: 'Pending' });
+        const frozenRestaurants = await Restaurant.countDocuments({ isDeleted: { $ne: true }, 'subscription.status': 'Frozen' });
         const totalUsers = await User.countDocuments();
         const totalOrders = await Order.countDocuments();
 
@@ -213,68 +218,140 @@ export const updateSubscription = async (req, res) => {
     }
 };
 
-// @desc    Delete a restaurant
+// @desc    Update restaurant visibility status (Active, Inactive, Suspended, Deleted)
+// @route   PUT /api/super-admin/restaurants/:id/status
+// @access  Private/SuperAdmin
+export const updateRestaurantVisibilityStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        const validStatuses = ['Active', 'Inactive', 'Suspended', 'Deleted'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ 
+                message: `Invalid status. Must be one of: ${validStatuses.join(', ')}` 
+            });
+        }
+
+        const restaurant = await Restaurant.findById(id);
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        restaurant.status = status;
+        if (status === 'Active') {
+            restaurant.isActive = true;
+            restaurant.isDeleted = false;
+            restaurant.deletedAt = null;
+            restaurant.deletedBy = null;
+            if (restaurant.subscription && (restaurant.subscription.status === 'Suspended' || restaurant.subscription.status === 'Frozen')) {
+                restaurant.subscription.status = 'Active';
+            }
+        } else if (status === 'Inactive') {
+            restaurant.isActive = false;
+            restaurant.isDeleted = false;
+        } else if (status === 'Suspended') {
+            restaurant.isActive = false;
+            restaurant.isDeleted = false;
+            if (restaurant.subscription) {
+                restaurant.subscription.status = 'Suspended';
+            }
+        } else if (status === 'Deleted') {
+            restaurant.isActive = false;
+            restaurant.isDeleted = true;
+            restaurant.deletedAt = new Date();
+            restaurant.deletedBy = req.user._id;
+        }
+
+        await restaurant.save();
+
+        res.json({
+            message: `Restaurant status updated to ${status} successfully`,
+            restaurant
+        });
+    } catch (error) {
+        console.error("Failed to update restaurant status:", error);
+        res.status(500).json({ message: error.message || 'Failed to update restaurant status' });
+    }
+};
+
+// @desc    Restore a soft-deleted or inactive restaurant
+// @route   PUT /api/super-admin/restaurants/:id/restore
+// @access  Private/SuperAdmin
+export const restoreRestaurant = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const restaurant = await Restaurant.findById(id);
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        restaurant.status = 'Active';
+        restaurant.isActive = true;
+        restaurant.isDeleted = false;
+        restaurant.deletedAt = null;
+        restaurant.deletedBy = null;
+        if (restaurant.subscription && (restaurant.subscription.status === 'Suspended' || restaurant.subscription.status === 'Frozen')) {
+            restaurant.subscription.status = 'Active';
+        }
+
+        await restaurant.save();
+
+        res.json({
+            message: 'Restaurant restored and activated successfully',
+            restaurant
+        });
+    } catch (error) {
+        console.error("Failed to restore restaurant:", error);
+        res.status(500).json({ message: error.message || 'Failed to restore restaurant' });
+    }
+};
+
+// @desc    Delete a restaurant (Safe Soft Delete by default, preserves orders & billing records)
 // @route   DELETE /api/super-admin/restaurants/:id
 // @access  Private/SuperAdmin
 export const deleteRestaurant = async (req, res) => {
     try {
         const { id } = req.params;
-
-        // Dynamic imports for related models
-        const Branch = (await import('../models/Branch.js')).default;
-        const RestaurantVerification = (await import('../models/RestaurantVerification.js')).default;
-        const Menu = (await import('../models/Menu.js')).default;
-        const MenuItem = (await import('../models/MenuItem.js')).default;
-        const Order = (await import('../models/Order.js')).default;
-        const Table = (await import('../models/Table.js')).default;
-        const Category = (await import('../models/Category.js')).default;
-        const Inventory = (await import('../models/Inventory.js')).default;
-        const Expense = (await import('../models/Expense.js')).default;
-        const DeliveryPartner = (await import('../models/DeliveryPartner.js')).default;
-        const ServiceRequest = (await import('../models/ServiceRequest.js')).default;
-        const Role = (await import('../models/Role.js')).default;
-        const WastageLog = (await import('../models/WastageLog.js')).default;
-        const Ticket = (await import('../models/Ticket.js')).default;
-        const Notification = (await import('../models/Notification.js')).default;
-        const SubscriptionPayment = (await import('../models/SubscriptionPayment.js')).default;
+        const isPermanent = req.query.permanent === 'true';
 
         const restaurant = await Restaurant.findById(id);
-        if (restaurant) {
-            // Delete associated owner user and staff accounts
-            if (restaurant.ownerId) {
-                await User.findByIdAndDelete(restaurant.ownerId);
-            }
-            await User.deleteMany({ restaurantId: id });
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
 
-            // Cascade delete sub-resources
+        if (isPermanent) {
+            // Hard delete only if explicitly requested with ?permanent=true
+            const Branch = (await import('../models/Branch.js')).default;
+            const RestaurantVerification = (await import('../models/RestaurantVerification.js')).default;
+            const Menu = (await import('../models/Menu.js')).default;
+            const MenuItem = (await import('../models/MenuItem.js')).default;
+            const Table = (await import('../models/Table.js')).default;
+            const Category = (await import('../models/Category.js')).default;
+
             await Branch.deleteMany({ restaurantId: id });
             await RestaurantVerification.deleteMany({ restaurantId: id });
             await Menu.deleteMany({ restaurantId: id });
             await MenuItem.deleteMany({ restaurantId: id });
-            await Order.deleteMany({ restaurantId: id });
             await Table.deleteMany({ restaurantId: id });
             await Category.deleteMany({ restaurantId: id });
-            await Inventory.deleteMany({ restaurantId: id });
-            await Expense.deleteMany({ restaurantId: id });
-            await DeliveryPartner.deleteMany({ restaurantId: id });
-            await ServiceRequest.deleteMany({ restaurantId: id });
-            await Role.deleteMany({ restaurantId: id });
-            await WastageLog.deleteMany({ restaurantId: id });
-            await Ticket.deleteMany({ restaurantId: id });
-            await Notification.deleteMany({ restaurantId: id });
-            await SubscriptionPayment.deleteMany({ restaurantId: id });
+            await Restaurant.findByIdAndDelete(id);
 
-            // Delete restaurant record
-            await Restaurant.findByIdAndDelete(id);
-        } else {
-            // If restaurant was already deleted or not found, try cleanup by ID anyway
-            await User.deleteMany({ restaurantId: id });
-            await Branch.deleteMany({ restaurantId: id });
-            await RestaurantVerification.deleteMany({ restaurantId: id });
-            await Restaurant.findByIdAndDelete(id);
+            return res.json({ message: 'Restaurant permanently removed.' });
         }
 
-        res.json({ message: 'Restaurant deleted successfully' });
+        // Safe Soft Delete: mark deleted, preserve all historical billing, orders, and payments
+        restaurant.status = 'Deleted';
+        restaurant.isDeleted = true;
+        restaurant.deletedAt = new Date();
+        restaurant.deletedBy = req.user._id;
+        restaurant.isActive = false;
+        await restaurant.save();
+
+        res.json({ 
+            message: 'Restaurant safely deactivated and soft-deleted. Historical orders and financial reports preserved.',
+            restaurant
+        });
     } catch (error) {
         console.error("Failed to delete restaurant:", error);
         res.status(500).json({ message: error.message || 'Failed to delete restaurant' });

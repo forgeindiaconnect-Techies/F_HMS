@@ -23,6 +23,8 @@ const CustomerMenu = () => {
     const [loading, setLoading] = useState(true);
     const [restaurantName, setRestaurantName] = useState('RestoSys Client');
     const [activeCategory, setActiveCategory] = useState('All');
+    const [isUnavailable, setIsUnavailable] = useState(false);
+    const [unavailableReason, setUnavailableReason] = useState('');
     
     // Cart state
     const [cart, setCart] = useState([]);
@@ -61,19 +63,34 @@ const CustomerMenu = () => {
 
         const fetchMenu = async () => {
             try {
-                // Fetch public menu items
-                const res = await api.get(`/menu?restaurantId=${restaurantId}&branchId=${branchId || ''}`);
-                setMenuItems(res.data);
-                
                 // Fetch public operational settings & restaurant info
                 const [restRes, configRes] = await Promise.all([
-                    api.get(`/restaurants/${restaurantId}`).catch(() => null),
-                    api.get(`/restaurants/${restaurantId}/public-config`).catch(() => null)
+                    api.get(`/restaurants/${restaurantId}`).catch((err) => err.response || null),
+                    api.get(`/restaurants/${restaurantId}/public-config`).catch((err) => err.response || null)
                 ]);
+
+                // Verify restaurant is active and visible
+                if (
+                    restRes?.status === 403 || 
+                    restRes?.status === 404 || 
+                    !restRes?.data || 
+                    restRes?.data?.isDeleted || 
+                    (restRes?.data?.status && restRes?.data?.status !== 'Active') ||
+                    restRes?.data?.isActive === false
+                ) {
+                    setIsUnavailable(true);
+                    setUnavailableReason(restRes?.data?.message || 'This restaurant is currently hidden, inactive, or suspended.');
+                    setLoading(false);
+                    return;
+                }
 
                 if (restRes && restRes.data) {
                     setRestaurantName(restRes.data.name);
                 }
+
+                // Fetch public menu items
+                const res = await api.get(`/menu?restaurantId=${restaurantId}&branchId=${branchId || ''}`);
+                setMenuItems(Array.isArray(res.data) ? res.data : []);
 
                 if (configRes && configRes.data) {
                     setPublicConfig(configRes.data);
@@ -93,7 +110,12 @@ const CustomerMenu = () => {
                 }
             } catch (error) {
                 console.error("Failed to load menu", error);
-                toast.error("Failed to load restaurant menu.");
+                if (error.response?.status === 403 || error.response?.status === 404) {
+                    setIsUnavailable(true);
+                    setUnavailableReason(error.response?.data?.message || 'Restaurant is currently unavailable.');
+                } else {
+                    toast.error("Failed to load restaurant menu.");
+                }
             } finally {
                 setLoading(false);
             }
@@ -251,6 +273,26 @@ const CustomerMenu = () => {
             }, 800);
         }, 1200);
     };
+
+    if (!loading && isUnavailable) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center font-sans">
+                <div className="w-20 h-20 bg-amber-50 border border-amber-200 rounded-3xl flex items-center justify-center text-amber-600 mb-6 shadow-sm">
+                    <Store size={36} />
+                </div>
+                <h2 className="text-2xl font-black text-slate-900 mb-2">Restaurant Currently Unavailable</h2>
+                <p className="text-sm text-slate-500 max-w-md mb-8">
+                    {unavailableReason || 'This restaurant is currently hidden, inactive, or suspended. Online ordering is disabled.'}
+                </p>
+                <button
+                    onClick={() => navigate('/explore')}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 hover:bg-black text-white font-bold rounded-2xl shadow-lg transition-all text-sm"
+                >
+                    <ArrowRight size={16} /> Explore Other Restaurants
+                </button>
+            </div>
+        );
+    }
 
     if (!loading && publicConfig && publicConfig.qrOrdering?.enabled === false) {
         return (

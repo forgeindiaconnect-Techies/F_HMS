@@ -51,7 +51,7 @@ const CashierOverview = () => {
     }
 
     return (
-        <div className="max-w-[1200px] mx-auto space-y-6 animate-in fade-in duration-500">
+        <div className="w-full max-w-[1400px] mx-auto space-y-6 pb-12 animate-in fade-in duration-500">
             <div>
                 <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>Welcome back, {user?.name || 'Cashier'}!</h2>
                 <p className="text-gray-500 mt-1">Here's what's happening at the register today.</p>

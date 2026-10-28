@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { MapPin, Star, Clock, Info, ShoppingBag, Plus, Minus, CheckCircle } from 'lucide-react';
+import { MapPin, Star, Clock, Info, ShoppingBag, Plus, Minus, CheckCircle, Store, AlertCircle, ArrowLeft } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { getItemImage } from '../../utils/imageHelper';
 import { getApiUrl } from '../../utils/axiosInstance';
@@ -114,21 +114,62 @@ const RestaurantDetails = () => {
             }
             try {
                 let API_URL = getApiUrl();
+
+                // Fetch restaurant profile directly to verify visibility and status
+                let fetchedRest = null;
+                try {
+                    const restRes = await axios.get(`${API_URL}/restaurants/${id}`);
+                    fetchedRest = restRes.data;
+                } catch (rErr) {
+                    // Fallback to list search
+                    const listRes = await axios.get(`${API_URL}/restaurants`);
+                    fetchedRest = listRes.data.find(r => r._id === id);
+                }
+
+                // Check if restaurant is inactive, suspended, or soft-deleted
+                if (
+                    !fetchedRest || 
+                    fetchedRest.isDeleted || 
+                    (fetchedRest.status && fetchedRest.status !== 'Active') || 
+                    fetchedRest.isActive === false || 
+                    fetchedRest.approvalStatus === 'Rejected'
+                ) {
+                    setRestaurant(null);
+                    // Automatically clean up cart if it holds items for this unavailable restaurant
+                    try {
+                        const savedCart = JSON.parse(localStorage.getItem('restosys_cart') || '[]');
+                        const cleanedCart = savedCart.filter(item => {
+                            const rId = typeof item.restaurantId === 'object' ? item.restaurantId?._id : (item.restaurantId || item.restaurant);
+                            return String(rId) !== String(id);
+                        });
+                        if (cleanedCart.length !== savedCart.length) {
+                            localStorage.setItem('restosys_cart', JSON.stringify(cleanedCart));
+                        }
+                    } catch (e) {}
+                    setLoading(false);
+                    return;
+                }
+
+                setRestaurant(fetchedRest);
+
                 // Fetch branches
-                const branchRes = await axios.get(`${API_URL}/restaurants/${id}/branches`);
-                setBranches(branchRes.data);
-                if (branchRes.data.length > 0) {
-                    setSelectedBranch(branchRes.data[0]._id);
+                try {
+                    const branchRes = await axios.get(`${API_URL}/restaurants/${id}/branches`);
+                    setBranches(branchRes.data || []);
+                    if (branchRes.data?.length > 0) {
+                        setSelectedBranch(branchRes.data[0]._id);
+                    }
+                } catch (bErr) {
+                    setBranches([]);
                 }
                 
-                const menuRes = await axios.get(`${API_URL}/menu`);
-                setMenu(menuRes.data.filter(m => m.restaurantId === id));
-                
-                const restRes = await axios.get(`${API_URL}/restaurants`);
-                setRestaurant(restRes.data.find(r => r._id === id));
+                // Fetch menu
+                const menuRes = await axios.get(`${API_URL}/menu?restaurantId=${id}`);
+                setMenu(Array.isArray(menuRes.data) ? menuRes.data.filter(m => m.restaurantId === id) : []);
                 
             } catch (error) {
                 console.error("Failed to load restaurant details", error);
+                setRestaurant(null);
             } finally {
                 setLoading(false);
             }
@@ -152,7 +193,26 @@ const RestaurantDetails = () => {
     };
 
     if (loading) return <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-slate-950"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div></div>;
-    if (!restaurant) return <div className="p-20 text-center text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-950 min-h-screen">Restaurant not found.</div>;
+    
+    if (!restaurant) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-slate-950 px-4 text-center">
+                <div className="w-20 h-20 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-3xl flex items-center justify-center text-amber-600 mb-6 shadow-sm">
+                    <Store size={36} />
+                </div>
+                <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Restaurant Currently Unavailable</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mb-8">
+                    This restaurant is currently hidden, inactive, or not accepting online orders at this time. Please check back later or explore other nearby restaurants.
+                </p>
+                <Link 
+                    to="/explore"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-2xl shadow-lg shadow-red-600/20 transition-all text-sm"
+                >
+                    <ArrowLeft size={16} /> Explore Other Restaurants
+                </Link>
+            </div>
+        );
+    }
 
     const categories = [...new Set(menu.map(item => item.category))];
 

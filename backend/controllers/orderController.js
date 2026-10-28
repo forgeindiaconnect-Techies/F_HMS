@@ -114,6 +114,24 @@ export const addOrderItems = async (req, res) => {
         };
 
         const targetRestaurant = await Restaurant.findById(finalRestaurantId);
+        if (!targetRestaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        // Validate restaurant visibility and status before accepting order
+        const isRestBlocked = targetRestaurant.isDeleted || 
+            targetRestaurant.status === 'Deleted' || 
+            targetRestaurant.status === 'Inactive' || 
+            targetRestaurant.status === 'Suspended' || 
+            targetRestaurant.isActive === false || 
+            targetRestaurant.approvalStatus !== 'Approved';
+
+        if (isRestBlocked) {
+            return res.status(403).json({ 
+                message: 'This restaurant is currently inactive or suspended and cannot accept orders.' 
+            });
+        }
+
         const restDeliverySettings = targetRestaurant?.deliverySettings || {};
         
         const restCoords = restDeliverySettings.location || {};
@@ -157,7 +175,18 @@ export const addOrderItems = async (req, res) => {
 
         const restConfig = targetRestaurant?.restaurantConfig || {};
 
-        const determinedServiceType = serviceType || (orderType === 'Self-Pickup' ? 'Self Dine-In (KFC Style)' : 'Waiter Table Service');
+        let determinedServiceType = serviceType;
+        if (!determinedServiceType) {
+            if (orderType === 'Self-Pickup' || orderType === 'Takeaway') {
+                determinedServiceType = 'Self-Pickup';
+            } else if (orderType === 'Delivery') {
+                determinedServiceType = 'Delivery';
+            } else {
+                determinedServiceType = 'Waiter Table Service';
+            }
+        } else if ((orderType === 'Self-Pickup' || orderType === 'Takeaway') && determinedServiceType === 'Self Dine-In (KFC Style)') {
+            determinedServiceType = 'Self-Pickup';
+        }
 
         // Validate QR Ordering and Service Modes
         if (finalSource === 'QR') {
@@ -202,6 +231,11 @@ export const addOrderItems = async (req, res) => {
             ? new Date(req.body.estimatedReadyTime) 
             : new Date(Date.now() + finalPrepMinutes * 60 * 1000);
 
+        const isCashMethod = ['cash on delivery', 'cash', 'pay at counter', 'cod'].some(m =>
+            String(paymentMethod || '').toLowerCase().includes(m)
+        );
+        const restaurantKitchenMode = targetRestaurant.kitchenMode || restConfig.orderKitchen?.kitchenMode || (restConfig.orderKitchen?.kdsEnabled === false ? 'KOT_ONLY' : 'KDS');
+
         const order = new Order({
             orderItems: sanitizeOrderItems(orderItems),
             user: finalUserId,
@@ -216,8 +250,11 @@ export const addOrderItems = async (req, res) => {
             source: finalSource,
             paymentMethod,
             subscriptionPlan: subscriptionPlan || 'One-time Order',
-            taxPrice,
-            totalPrice,
+            taxPrice: Number(taxPrice) || 0,
+            totalPrice: Number(totalPrice) || 0,
+            discountAmount: Number(req.body.discountAmount) || 0,
+            deliveryCharge: Number(req.body.deliveryCharge) || 0,
+            deliveryDistance: Number(req.body.deliveryDistance) || 0,
             tipAmount: finalTip,
             waiter: req.user?.role === 'Waiter' ? req.user._id : undefined,
             deliveryOtp,
@@ -225,9 +262,10 @@ export const addOrderItems = async (req, res) => {
             customerLocation: finalCustomerLoc,
             restaurantLocation: finalRestaurantLoc,
             status: 'Pending', // Strictly force new order to Pending status
+            kitchenMode: restaurantKitchenMode,
             deliveryStatus: 'None', // Strictly force None on creation until kitchen marks Ready for Pickup
-            isPaid: Boolean(isPaid),
-            paidAt: isPaid ? new Date() : null,
+            isPaid: isCashMethod ? false : Boolean(isPaid),
+            paidAt: (!isCashMethod && isPaid) ? new Date() : null,
             estimatedPrepMinutes: finalPrepMinutes,
             estimatedReadyTime: finalEstimatedReadyTime,
             statusHistory: [{
@@ -314,9 +352,22 @@ export const addOrderItems = async (req, res) => {
         const responseOrder = createdOrder.toObject ? createdOrder.toObject() : createdOrder;
         responseOrder.kots = generatedKOTs;
         responseOrder.kotNumbers = generatedKOTs.map(k => k.kotNumber);
+        responseOrder.kitchenMode = restaurantKitchenMode;
         responseOrder.isKdsEnabled = restConfig.orderKitchen ? (restConfig.orderKitchen.kdsEnabled !== false) : true;
         responseOrder.isKotEnabled = restConfig.orderKitchen ? (restConfig.orderKitchen.kotEnabled !== false) : true;
         responseOrder.orderWorkflow = (!responseOrder.isKdsEnabled && responseOrder.isKotEnabled) ? 'KOT' : (responseOrder.isKdsEnabled && !responseOrder.isKotEnabled ? 'KDS' : 'HYBRID');
+
+        // Attach populated restaurant metadata to responseOrder so auto-print receipts and kitchen screens have restaurant info
+        responseOrder.restaurantId = {
+            _id: targetRestaurant._id,
+            name: targetRestaurant.name,
+            address: targetRestaurant.address,
+            phone: targetRestaurant.phone,
+            gstin: targetRestaurant.gstin,
+            kitchenMode: restaurantKitchenMode,
+            restaurantConfig: targetRestaurant.restaurantConfig,
+            logo: targetRestaurant.logo
+        };
 
         // Broadcast real-time websocket alert to kitchen display, cashier, and staff
         broadcastToRestaurant(finalRestaurantId, 'new_order', responseOrder);
@@ -551,6 +602,8 @@ export const getOrders = async (req, res) => {
         let query = Order.find(filter)
             .populate('user', 'id name email')
             .populate('deliveryPartner', 'id name phoneNumber')
+            .populate('restaurantId', 'name address phone restaurantConfig logo gstin kitchenMode')
+            .populate('branchId', 'name location contact')
             .sort({ createdAt: -1 });
 
         if (req.query.limit) {
@@ -655,7 +708,7 @@ export const updateOrderStatus = async (req, res) => {
                 if (['Pending', 'Accepted', 'Preparing'].includes(newStatus)) {
                     order.deliveryStatus = 'None';
                     order.deliveryPartner = null;
-                } else if (['Ready', 'Ready for Pickup'].includes(newStatus)) {
+                } else if (['Ready', 'Ready for Pickup', 'Ready for Dispatch'].includes(newStatus)) {
                     order.deliveryStatus = 'Pending Assignment';
                 } else if (newStatus === 'Out for Delivery') {
                     order.deliveryStatus = 'On the Way';
@@ -681,7 +734,7 @@ export const updateOrderStatus = async (req, res) => {
                         { orderId: order._id, status: { $nin: ['Served', 'Cancelled'] } },
                         { $set: { status: 'Served', servedTime: new Date() }, $push: { statusHistory: { status: 'Served', timestamp: Date.now(), updatedBy: req.user?._id || null } } }
                     );
-                } else if (['Ready', 'Ready for Pickup'].includes(newStatus)) {
+                } else if (['Ready', 'Ready for Pickup', 'Ready for Dispatch'].includes(newStatus)) {
                     await KOT.updateMany(
                         { orderId: order._id, status: { $in: ['Pending', 'Preparing'] } },
                         { $set: { status: 'Ready', prepReadyTime: new Date() }, $push: { statusHistory: { status: 'Ready', timestamp: Date.now(), updatedBy: req.user?._id || null } } }
@@ -709,7 +762,7 @@ export const updateOrderStatus = async (req, res) => {
                 }
             }
 
-            if (newStatus === 'Ready' || newStatus === 'Ready for Pickup') {
+            if (newStatus === 'Ready' || newStatus === 'Ready for Pickup' || newStatus === 'Ready for Dispatch') {
                 // Waiter & Cashier notification
                 try {
                     const Notification = (await import('../models/Notification.js')).default;
@@ -845,6 +898,18 @@ export const updateOrderToPaid = async (req, res) => {
     const order = await Order.findById(req.params.id);
 
     if (order) {
+        const effectiveMethod = paymentMethod || order.paymentMethod;
+        const isCashMethod = ['cash on delivery', 'cash', 'pay at counter', 'cod'].some(m =>
+            String(effectiveMethod || '').toLowerCase().includes(m)
+        );
+        const isStaff = req.user && ['SuperAdmin', 'RestaurantAdmin', 'BranchManager', 'Cashier', 'Waiter', 'DeliveryPartner'].includes(req.user.role);
+
+        if (isCashMethod && !isStaff && req.body.paymentStatus !== 'CASH_COLLECTED') {
+            return res.status(400).json({ 
+                message: 'Cash on Delivery orders cannot be marked as paid online. Payment will be collected upon delivery or at the counter.' 
+            });
+        }
+
         order.isPaid = true;
         order.paidAt = Date.now();
         

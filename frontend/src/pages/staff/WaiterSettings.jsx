@@ -12,7 +12,7 @@ const WaiterSettings = () => {
     const [assignedZone, setAssignedZone] = useState('Zone A - Main Dining Room');
 
     return (
-        <div className="p-4 md:p-8 max-w-[1600px] mx-auto space-y-6 font-sans">
+        <div className="w-full max-w-[1600px] mx-auto space-y-6 pb-12 font-sans">
             {/* Page Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 dark:border-slate-800 pb-4">
                 <div>

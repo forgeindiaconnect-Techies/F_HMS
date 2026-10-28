@@ -7,6 +7,7 @@ import Plan from '../models/Plan.js';
 import Attendance from '../models/Attendance.js';
 import Payroll from '../models/Payroll.js';
 import Expense from '../models/Expense.js';
+import Leave from '../models/Leave.js';
 
 // Helper to resolve user's restaurantId safely
 const getUserRestaurantId = async (user, queryOrBody = {}) => {
@@ -538,6 +539,36 @@ export const getAttendanceSummary = async (req, res) => {
                     presentDays: { $sum: { $cond: [{ $eq: ['$status', 'Present'] }, 1, 0] } },
                     absentDays: { $sum: { $cond: [{ $eq: ['$status', 'Absent'] }, 1, 0] } },
                     leaveDays: { $sum: { $cond: [{ $eq: ['$status', 'Leave'] }, 1, 0] } },
+                    paidLeaveDays: { 
+                        $sum: { 
+                            $cond: [
+                                { $and: [{ $eq: ['$status', 'Leave'] }, { $ne: ['$isPaidLeave', false] }] }, 
+                                1, 
+                                0
+                            ] 
+                        } 
+                    },
+                    unpaidLeaveDays: { 
+                        $sum: { 
+                            $cond: [
+                                { $and: [{ $eq: ['$status', 'Leave'] }, { $or: [{ $eq: ['$isPaidLeave', false] }, { $eq: ['$isLOP', true] }] }] }, 
+                                1, 
+                                0
+                            ] 
+                        } 
+                    },
+                    lopDays: {
+                        $sum: {
+                            $cond: [
+                                { $or: [
+                                    { $eq: ['$status', 'Absent'] },
+                                    { $and: [{ $eq: ['$status', 'Leave'] }, { $or: [{ $eq: ['$isPaidLeave', false] }, { $eq: ['$isLOP', true] }] }] }
+                                ]},
+                                1,
+                                0
+                            ]
+                        }
+                    },
                     halfDays: { $sum: { $cond: [{ $eq: ['$status', 'Half-day'] }, 1, 0] } },
                     holidays: { $sum: { $cond: [{ $eq: ['$status', 'Holiday'] }, 1, 0] } },
                     totalOvertimeHours: { $sum: '$overtimeHours' },
@@ -565,6 +596,9 @@ export const getAttendanceSummary = async (req, res) => {
                     presentDays: 1,
                     absentDays: 1,
                     leaveDays: 1,
+                    paidLeaveDays: 1,
+                    unpaidLeaveDays: 1,
+                    lopDays: 1,
                     halfDays: 1,
                     holidays: 1,
                     totalOvertimeHours: 1,
@@ -631,10 +665,11 @@ const enrichPayrollWithAliases = (doc) => {
     return {
         ...r,
         earnedBasicSalary: calc.earnedBasic ?? r.basicSalary ?? 0,
+        lopDeduction: calc.lopDeduction ?? 0,
         overtimePay: calc.overtimePay ?? 0,
         bonuses: calc.bonuses ?? 0,
         allowances: calc.allowances ?? 0,
-        totalDeductions: calc.deductions ?? 0,
+        totalDeductions: calc.totalDeductions ?? ((calc.deductions ?? 0) + (calc.lopDeduction ?? 0)),
         grossPayable: calc.grossSalary ?? 0,
         netPayable: calc.netSalaryPayable ?? 0,
     };
@@ -644,6 +679,11 @@ const calculateEmployeePayrollItem = async (emp, m, y, restaurantId) => {
     const startDate = new Date(y, m - 1, 1);
     const endDate = new Date(y, m, 0, 23, 59, 59, 999);
     const daysInMonth = new Date(y, m, 0).getDate();
+
+    // Fetch Restaurant LOP and Leave Policy
+    const restaurant = await Restaurant.findById(restaurantId).select('restaurantConfig');
+    const payrollConfig = restaurant?.restaurantConfig?.payrollConfig || {};
+    const lopPolicy = payrollConfig.lopCalculationPolicy || 'Configured_Working_Days';
 
     const config = emp.salaryConfig || {};
     const basic = Number(config.basicSalary) || 0;
@@ -662,6 +702,8 @@ const calculateEmployeePayrollItem = async (emp, m, y, restaurantId) => {
     let presentDays = 0;
     let absentDays = 0;
     let leaveDays = 0;
+    let paidLeaveDays = 0;
+    let unpaidLeaveDays = 0;
     let halfDays = 0;
     let holidays = 0;
     let overtimeHours = 0;
@@ -670,7 +712,14 @@ const calculateEmployeePayrollItem = async (emp, m, y, restaurantId) => {
     for (const a of attendance) {
         if (a.status === 'Present') presentDays++;
         else if (a.status === 'Absent') absentDays++;
-        else if (a.status === 'Leave') leaveDays++;
+        else if (a.status === 'Leave') {
+            leaveDays++;
+            if (a.isPaidLeave === false || a.isLOP === true) {
+                unpaidLeaveDays++;
+            } else {
+                paidLeaveDays++;
+            }
+        }
         else if (a.status === 'Half-day') halfDays++;
         else if (a.status === 'Holiday') holidays++;
 
@@ -678,23 +727,36 @@ const calculateEmployeePayrollItem = async (emp, m, y, restaurantId) => {
         totalWorkingHours += (a.workingHours || 0);
     }
 
-    // Calculations based on frequency
-    let earnedBasic = 0;
-    let calculatedOtRate = otRate;
+    // Determine working days divisor based on restaurant's configured LOP policy
+    let divisorDays = standardWorkDays;
+    if (lopPolicy === 'Calendar_Days') {
+        divisorDays = daysInMonth;
+    } else if (lopPolicy === 'Standard_26_Days') {
+        divisorDays = 26;
+    } else {
+        divisorDays = standardWorkDays > 0 ? standardWorkDays : 26;
+    }
 
+    const perDayRate = divisorDays > 0 ? (basic / divisorDays) : 0;
+    const lopDays = unpaidLeaveDays + absentDays;
+    const lopDeduction = Math.round(lopDays * perDayRate * 100) / 100;
+
+    let calculatedOtRate = otRate;
+    if (calculatedOtRate === 0 && perDayRate > 0) {
+        calculatedOtRate = Math.round((perDayRate / dailyHours) * 1.5 * 100) / 100;
+    }
+
+    // Calculations based on salary frequency
+    let earnedBasic = 0;
     if (freq === 'Monthly') {
-        const perDayRate = standardWorkDays > 0 ? (basic / standardWorkDays) : (basic / daysInMonth);
-        if (calculatedOtRate === 0 && perDayRate > 0) {
-            calculatedOtRate = Math.round((perDayRate / dailyHours) * 1.5 * 100) / 100;
+        // If employee has 0 attendance records, assume regular full month
+        if (attendance.length === 0) {
+            earnedBasic = basic;
+        } else {
+            earnedBasic = Math.max(0, Math.round((basic - lopDeduction) * 100) / 100);
         }
-        // If employee has 0 attendance records, still give full basic salary for monthly employees if no absent records
-        const paidDayUnits = attendance.length === 0 ? standardWorkDays : (presentDays + (halfDays * 0.5) + holidays);
-        earnedBasic = Math.min(basic, Math.round(perDayRate * paidDayUnits * 100) / 100);
     } else if (freq === 'Daily') {
-        if (calculatedOtRate === 0 && basic > 0) {
-            calculatedOtRate = Math.round((basic / dailyHours) * 1.5 * 100) / 100;
-        }
-        earnedBasic = Math.round(basic * (presentDays + (halfDays * 0.5)) * 100) / 100;
+        earnedBasic = Math.round(basic * (presentDays + (halfDays * 0.5) + paidLeaveDays) * 100) / 100;
     } else if (freq === 'Hourly') {
         calculatedOtRate = otRate || (basic * 1.5);
         earnedBasic = Math.round(basic * totalWorkingHours * 100) / 100;
@@ -704,10 +766,11 @@ const calculateEmployeePayrollItem = async (emp, m, y, restaurantId) => {
 
     // Allowances & Deductions safely parsed from config
     const allowancesTotal = Math.round(parseConfigComponentTotal(config.allowances) * 100) / 100;
-    const deductionsTotal = Math.round(parseConfigComponentTotal(config.deductions) * 100) / 100;
+    const otherDeductionsTotal = Math.round(parseConfigComponentTotal(config.deductions) * 100) / 100;
+    const totalDeductions = Math.round((otherDeductionsTotal + lopDeduction) * 100) / 100;
 
     const grossSalary = Math.round((earnedBasic + overtimePay + allowancesTotal) * 100) / 100;
-    const netSalary = Math.max(0, Math.round((grossSalary - deductionsTotal) * 100) / 100);
+    const netSalary = Math.max(0, Math.round((grossSalary - otherDeductionsTotal) * 100) / 100);
 
     return {
         employee: {
@@ -725,35 +788,42 @@ const calculateEmployeePayrollItem = async (emp, m, y, restaurantId) => {
         salaryFrequency: freq,
         basicSalary: basic,
         earnedBasicSalary: earnedBasic,
+        lopDeduction,
         overtimePay,
         bonuses: 0,
         allowances: allowancesTotal,
-        totalDeductions: deductionsTotal,
+        otherDeductions: otherDeductionsTotal,
+        totalDeductions,
         grossPayable: grossSalary,
         netPayable: netSalary,
         attendanceSummary: {
             presentDays,
             absentDays,
             leaveDays,
+            paidLeaveDays,
+            unpaidLeaveDays,
+            lopDays,
             halfDays,
             holidays,
             overtimeHours,
-            totalWorkingDays: standardWorkDays
+            totalWorkingDays: divisorDays
         },
         calculations: {
             earnedBasic,
+            lopDeduction,
             overtimePay,
             bonuses: 0,
             allowances: allowancesTotal,
             grossSalary,
-            deductions: deductionsTotal,
+            deductions: otherDeductionsTotal,
+            totalDeductions,
             advances: 0,
             netSalaryPayable: netSalary
         },
         paidAmount: 0,
         balanceDue: netSalary,
         paymentStatus: 'Pending',
-        status: 'Draft'
+        status: 'Generated'
     };
 };
 
@@ -1019,11 +1089,20 @@ export const recordPayrollPayment = async (req, res) => {
             paidBy: req.user._id
         });
 
+        // Record payment in audit history
+        if (!payroll.auditHistory) payroll.auditHistory = [];
+        payroll.auditHistory.push({
+            action: 'Payment Recorded',
+            performedBy: req.user._id,
+            performedByName: req.user.name || 'Admin',
+            timestamp: payDate,
+            notes: `Disbursed ₹${payAmount} via ${paymentMethod || 'Bank Transfer'} (Ref: ${reference || 'N/A'})`,
+            changes: { amount: payAmount, paymentMethod, reference }
+        });
+
         await payroll.save();
 
         // Connect to Expenses Management WITHOUT DOUBLE-COUNTING:
-        // Create an Expense record for the paid amount, tagged with source: 'Payroll' and sourceId: payroll._id.
-        // It records the paid amount directly into cash-flow and profit & loss!
         await Expense.create({
             title: `Salary Payment - ${payroll.employee?.name || 'Staff'} (${payroll.periodString})`,
             category: 'Staff salary',
@@ -1065,8 +1144,517 @@ export const getEmployeeSalaryHistory = async (req, res) => {
             employee: req.params.id
         }).sort({ year: -1, month: -1 });
 
-        res.json(records);
+        res.json(records.map(enrichPayrollWithAliases));
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
+
+// ─── LEAVE MANAGEMENT APIS ──────────────────────────────────────────────────
+
+// @desc    Staff applies for leave
+// @route   POST /api/staff/leave
+// @access  Private (Staff, Waiter, Chef, Cashier, Manager, Admin)
+export const applyLeave = async (req, res) => {
+    try {
+        const { leaveType, startDate, endDate, reason } = req.body;
+        if (!startDate || !endDate || !reason) {
+            return res.status(400).json({ message: 'Start date, end date, and reason are required' });
+        }
+
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            return res.status(400).json({ message: 'Invalid start or end date' });
+        }
+
+        if (start > end) {
+            return res.status(400).json({ message: 'End date must be on or after start date' });
+        }
+
+        const restaurantId = await getUserRestaurantId(req.user);
+        const userDoc = await User.findById(req.user._id);
+        const branchId = userDoc?.branchId || req.user.branchId;
+
+        if (!branchId) {
+            return res.status(400).json({ message: 'No branch assigned to your staff profile' });
+        }
+
+        // Prevent duplicate or overlapping leave requests for the same employee
+        const overlappingLeave = await Leave.findOne({
+            restaurantId,
+            employee: req.user._id,
+            status: { $in: ['Pending', 'Approved'] },
+            startDate: { $lte: end },
+            endDate: { $gte: start }
+        });
+
+        if (overlappingLeave) {
+            return res.status(400).json({ 
+                message: `You already have an active (${overlappingLeave.status}) leave request overlapping these dates (${new Date(overlappingLeave.startDate).toLocaleDateString()} to ${new Date(overlappingLeave.endDate).toLocaleDateString()})` 
+            });
+        }
+
+        // Calculate days count
+        const diffMs = end.getTime() - start.getTime();
+        const daysCount = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24)));
+
+        // Determine if paid according to policy
+        let isPaid = true;
+        if (leaveType === 'Unpaid Leave') {
+            isPaid = false;
+        } else {
+            const restaurant = await Restaurant.findById(restaurantId).select('restaurantConfig');
+            const quota = restaurant?.restaurantConfig?.payrollConfig?.monthlyPaidLeaveQuota ?? 2;
+            const startMonth = start.getMonth() + 1;
+            const startYear = start.getFullYear();
+            const monthStart = new Date(startYear, startMonth - 1, 1);
+            const monthEnd = new Date(startYear, startMonth, 0, 23, 59, 59, 999);
+
+            const existingPaidLeaves = await Leave.find({
+                restaurantId,
+                employee: req.user._id,
+                status: 'Approved',
+                isPaid: true,
+                startDate: { $gte: monthStart, $lte: monthEnd }
+            });
+            const usedPaidDays = existingPaidLeaves.reduce((acc, l) => acc + (l.daysCount || 0), 0);
+            if (usedPaidDays + daysCount > quota && quota > 0) {
+                isPaid = false;
+            }
+        }
+
+        const leave = await Leave.create({
+            restaurantId,
+            branchId,
+            employee: req.user._id,
+            leaveType: leaveType || 'Casual Leave',
+            isPaid,
+            startDate: start,
+            endDate: end,
+            daysCount,
+            reason: reason.trim(),
+            status: 'Pending',
+            appliedAt: new Date()
+        });
+
+        const populatedLeave = await Leave.findById(leave._id)
+            .populate('branchId', 'name')
+            .populate('employee', 'name email role employeeId');
+
+        res.status(201).json({
+            message: 'Leave request submitted successfully',
+            leave: populatedLeave
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get logged-in staff member's leave request history
+// @route   GET /api/staff/leave/my
+// @access  Private (Staff)
+export const getMyLeaves = async (req, res) => {
+    try {
+        const restaurantId = await getUserRestaurantId(req.user);
+        const leaves = await Leave.find({
+            restaurantId,
+            employee: req.user._id
+        })
+        .populate('branchId', 'name')
+        .populate('approvedBy', 'name role')
+        .sort({ createdAt: -1 });
+
+        res.json(leaves);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Staff cancels a pending leave request
+// @route   PUT /api/staff/leave/:id/cancel
+// @access  Private (Staff)
+export const cancelMyLeave = async (req, res) => {
+    try {
+        const leave = await Leave.findById(req.params.id);
+        if (!leave) return res.status(404).json({ message: 'Leave request not found' });
+
+        if (leave.employee.toString() !== req.user._id.toString() && req.user.role !== 'RestaurantAdmin' && req.user.role !== 'SuperAdmin') {
+            return res.status(403).json({ message: 'Not authorized to cancel this leave request' });
+        }
+
+        if (leave.status !== 'Pending') {
+            return res.status(400).json({ message: `Cannot cancel a leave request that is already ${leave.status}` });
+        }
+
+        leave.status = 'Cancelled';
+        leave.cancelledAt = new Date();
+        leave.cancellationReason = req.body?.reason || 'Cancelled by employee';
+        await leave.save();
+
+        res.json({ message: 'Leave request cancelled successfully', leave });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get leave requests for branch manager or admin
+// @route   GET /api/staff/leave
+// @access  Private (BranchManager, RestaurantAdmin)
+export const getLeaveRequests = async (req, res) => {
+    try {
+        const restaurantId = await getUserRestaurantId(req.user);
+        const filter = { restaurantId };
+
+        if (req.user.role === 'BranchManager' && req.user.branchId) {
+            filter.branchId = req.user.branchId;
+        } else if (req.query.branchId && req.query.branchId !== 'All') {
+            filter.branchId = req.query.branchId;
+        }
+
+        if (req.query.status && req.query.status !== 'All') {
+            filter.status = req.query.status;
+        }
+
+        if (req.query.leaveType && req.query.leaveType !== 'All') {
+            filter.leaveType = req.query.leaveType;
+        }
+
+        if (req.query.employeeId) {
+            filter.employee = req.query.employeeId;
+        }
+
+        const leaves = await Leave.find(filter)
+            .populate('employee', 'name email role employeeId phoneNumber salaryConfig')
+            .populate('branchId', 'name')
+            .populate('approvedBy', 'name role')
+            .sort({ status: 1, createdAt: -1 });
+
+        res.json(leaves);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Approve or reject a leave request
+// @route   PUT /api/staff/leave/:id/status
+// @access  Private (BranchManager, RestaurantAdmin)
+export const updateLeaveStatus = async (req, res) => {
+    try {
+        const { status, managerRemarks, isPaid } = req.body;
+        if (!['Approved', 'Rejected'].includes(status)) {
+            return res.status(400).json({ message: 'Status must be either Approved or Rejected' });
+        }
+
+        const leave = await Leave.findById(req.params.id);
+        if (!leave) return res.status(404).json({ message: 'Leave request not found' });
+
+        if (req.user.role === 'BranchManager' && req.user.branchId) {
+            if (leave.branchId.toString() !== req.user.branchId.toString()) {
+                return res.status(403).json({ message: 'Unauthorized: You can only approve leaves for your assigned branch' });
+            }
+        }
+
+        leave.status = status;
+        leave.approvedBy = req.user._id;
+        leave.approvalDate = new Date();
+        leave.managerRemarks = managerRemarks || '';
+        if (isPaid !== undefined) {
+            leave.isPaid = Boolean(isPaid);
+        }
+        await leave.save();
+
+        // When Approved: Synchronize into Attendance records
+        if (status === 'Approved') {
+            const start = new Date(leave.startDate);
+            const end = new Date(leave.endDate);
+            let curr = new Date(start);
+
+            while (curr <= end) {
+                const dateString = curr.toISOString().split('T')[0];
+                const dayDate = new Date(curr);
+
+                await Attendance.findOneAndUpdate(
+                    {
+                        restaurantId: leave.restaurantId,
+                        employee: leave.employee,
+                        dateString
+                    },
+                    {
+                        $set: {
+                            restaurantId: leave.restaurantId,
+                            branchId: leave.branchId,
+                            employee: leave.employee,
+                            date: dayDate,
+                            dateString,
+                            status: 'Leave',
+                            leaveId: leave._id,
+                            leaveType: leave.leaveType,
+                            isPaidLeave: leave.isPaid,
+                            isLOP: !leave.isPaid,
+                            notes: `Approved Leave: ${leave.leaveType} (${leave.isPaid ? 'Paid' : 'Unpaid/LOP'})${managerRemarks ? ' - ' + managerRemarks : ''}`
+                        }
+                    },
+                    { upsert: true, new: true }
+                );
+
+                curr.setDate(curr.getDate() + 1);
+            }
+        } else if (status === 'Rejected') {
+            await Attendance.deleteMany({
+                restaurantId: leave.restaurantId,
+                employee: leave.employee,
+                leaveId: leave._id
+            });
+        }
+
+        const updatedLeave = await Leave.findById(leave._id)
+            .populate('employee', 'name email role employeeId')
+            .populate('branchId', 'name')
+            .populate('approvedBy', 'name role');
+
+        res.json({
+            message: `Leave request ${status.toLowerCase()} successfully`,
+            leave: updatedLeave
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// ─── STAFF MY PAYROLL APIS ──────────────────────────────────────────────────
+
+// @desc    Get logged-in staff member's payroll records
+// @route   GET /api/staff/payroll/my
+// @access  Private (Staff: Waiter, Chef, Cashier, etc.)
+export const getMyPayroll = async (req, res) => {
+    try {
+        const restaurantId = await getUserRestaurantId(req.user);
+        const records = await Payroll.find({
+            restaurantId,
+            employee: req.user._id
+        })
+        .populate('branchId', 'name address phone')
+        .sort({ year: -1, month: -1 });
+
+        res.json(records.map(enrichPayrollWithAliases));
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get printable salary slip for logged-in staff member
+// @route   GET /api/staff/payroll/my/:id/slip
+// @access  Private (Staff)
+export const getMyPayrollSlip = async (req, res) => {
+    try {
+        const restaurantId = await getUserRestaurantId(req.user);
+        const payroll = await Payroll.findOne({
+            _id: req.params.id,
+            restaurantId,
+            employee: req.user._id
+        })
+        .populate('employee', 'name email role employeeId phoneNumber bankDetails salaryConfig')
+        .populate('branchId', 'name address phone')
+        .populate('approvedBy', 'name role');
+
+        if (!payroll) {
+            return res.status(404).json({ message: 'Salary slip not found or not authorized' });
+        }
+
+        const restaurant = await Restaurant.findById(restaurantId)
+            .select('name address phone logo gstin email');
+
+        res.json({
+            payroll: enrichPayrollWithAliases(payroll),
+            restaurant
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// ─── PAYROLL CORRECTIONS, REPORTS & CONFIG APIS ─────────────────────────────
+
+// @desc    Correct payroll calculation components before or after final generation
+// @route   PUT /api/staff/payroll/:id/correct
+// @access  Private (RestaurantAdmin, BranchManager)
+export const correctPayrollRecord = async (req, res) => {
+    try {
+        const restaurantId = await getUserRestaurantId(req.user);
+        const payroll = await Payroll.findOne({ _id: req.params.id, restaurantId })
+            .populate('employee', 'name employeeId role');
+
+        if (!payroll) return res.status(404).json({ message: 'Payroll record not found' });
+
+        if (req.user.role === 'BranchManager' && req.user.branchId) {
+            if (payroll.branchId && payroll.branchId.toString() !== req.user.branchId.toString()) {
+                return res.status(403).json({ message: 'Unauthorized: You cannot modify payroll for another branch' });
+            }
+        }
+
+        if (payroll.paymentStatus === 'Paid' && req.user.role !== 'SuperAdmin' && req.user.role !== 'RestaurantAdmin') {
+            return res.status(400).json({ message: 'Cannot modify a finalized and fully paid payroll record' });
+        }
+
+        const { basicSalary, allowances, overtimePay, bonuses, deductions, advances, notes } = req.body;
+
+        const previousCalculations = { ...(payroll.calculations?.toObject ? payroll.calculations.toObject() : payroll.calculations) };
+
+        if (!payroll.calculations) payroll.calculations = {};
+        if (basicSalary !== undefined) payroll.basicSalary = Number(basicSalary);
+        if (allowances !== undefined) payroll.calculations.allowances = Number(allowances);
+        if (overtimePay !== undefined) payroll.calculations.overtimePay = Number(overtimePay);
+        if (bonuses !== undefined) payroll.calculations.bonuses = Number(bonuses);
+        if (deductions !== undefined) payroll.calculations.deductions = Number(deductions);
+        if (advances !== undefined) payroll.calculations.advances = Number(advances);
+
+        const earned = payroll.calculations.earnedBasic || payroll.basicSalary;
+        const gross = Math.round((earned + (payroll.calculations.overtimePay || 0) + (payroll.calculations.bonuses || 0) + (payroll.calculations.allowances || 0)) * 100) / 100;
+        const totalDed = Math.round(((payroll.calculations.deductions || 0) + (payroll.calculations.lopDeduction || 0) + (payroll.calculations.advances || 0)) * 100) / 100;
+        const net = Math.max(0, Math.round((gross - (payroll.calculations.deductions || 0) - (payroll.calculations.advances || 0)) * 100) / 100);
+
+        payroll.calculations.grossSalary = gross;
+        payroll.calculations.totalDeductions = totalDed;
+        payroll.calculations.netSalaryPayable = net;
+        payroll.balanceDue = Math.max(0, net - (payroll.paidAmount || 0));
+        payroll.paymentStatus = (payroll.paidAmount || 0) >= net ? 'Paid' : ((payroll.paidAmount || 0) > 0 ? 'Partially Paid' : 'Pending');
+
+        if (!payroll.auditHistory) payroll.auditHistory = [];
+        payroll.auditHistory.push({
+            action: 'Payroll Correction',
+            performedBy: req.user._id,
+            performedByName: req.user.name || 'Admin',
+            timestamp: new Date(),
+            notes: notes || 'Manual adjustment of payroll components',
+            changes: {
+                previous: previousCalculations,
+                updated: payroll.calculations
+            }
+        });
+
+        await payroll.save();
+
+        res.json({
+            message: 'Payroll record corrected successfully',
+            payroll: enrichPayrollWithAliases(payroll)
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get aggregated payroll reports and summaries
+// @route   GET /api/staff/payroll/reports
+// @access  Private (RestaurantAdmin, BranchManager)
+export const getPayrollReports = async (req, res) => {
+    try {
+        const restaurantId = await getUserRestaurantId(req.user);
+        const { year, month, branchId, status } = req.query;
+
+        const filter = { restaurantId };
+        if (year) filter.year = Number(year);
+        if (month) filter.month = parseMonthNumber(month) || Number(month);
+        if (branchId && branchId !== 'All') filter.branchId = branchId;
+        else if (req.user.role === 'BranchManager' && req.user.branchId) filter.branchId = req.user.branchId;
+        if (status && status !== 'All') filter.paymentStatus = status;
+
+        const records = await Payroll.find(filter)
+            .populate('employee', 'name email role employeeId')
+            .populate('branchId', 'name')
+            .sort({ year: -1, month: -1 });
+
+        const totalGross = records.reduce((sum, r) => sum + (r.calculations?.grossSalary || 0), 0);
+        const totalNet = records.reduce((sum, r) => sum + (r.calculations?.netSalaryPayable || 0), 0);
+        const totalPaid = records.reduce((sum, r) => sum + (r.paidAmount || 0), 0);
+        const totalDue = records.reduce((sum, r) => sum + (r.balanceDue || 0), 0);
+        const totalLOP = records.reduce((sum, r) => sum + (r.calculations?.lopDeduction || 0), 0);
+        const paidCount = records.filter(r => r.paymentStatus === 'Paid').length;
+        const pendingCount = records.filter(r => r.paymentStatus !== 'Paid').length;
+
+        const branchBreakdown = {};
+        for (const r of records) {
+            const bName = r.branchId?.name || 'Main Branch';
+            if (!branchBreakdown[bName]) {
+                branchBreakdown[bName] = { branchName: bName, totalEmployees: 0, gross: 0, net: 0, paid: 0, due: 0 };
+            }
+            branchBreakdown[bName].totalEmployees++;
+            branchBreakdown[bName].gross += (r.calculations?.grossSalary || 0);
+            branchBreakdown[bName].net += (r.calculations?.netSalaryPayable || 0);
+            branchBreakdown[bName].paid += (r.paidAmount || 0);
+            branchBreakdown[bName].due += (r.balanceDue || 0);
+        }
+
+        res.json({
+            count: records.length,
+            totalGrossPayable: Math.round(totalGross * 100) / 100,
+            totalNetPayable: Math.round(totalNet * 100) / 100,
+            totalPaid: Math.round(totalPaid * 100) / 100,
+            totalDue: Math.round(totalDue * 100) / 100,
+            totalLOPDeductions: Math.round(totalLOP * 100) / 100,
+            paidCount,
+            pendingCount,
+            branchBreakdown: Object.values(branchBreakdown),
+            records: records.map(enrichPayrollWithAliases)
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get restaurant payroll and LOP configuration
+// @route   GET /api/staff/payroll/config
+// @access  Private (RestaurantAdmin, BranchManager)
+export const getPayrollConfig = async (req, res) => {
+    try {
+        const restaurantId = await getUserRestaurantId(req.user);
+        const restaurant = await Restaurant.findById(restaurantId).select('restaurantConfig.payrollConfig');
+        const config = restaurant?.restaurantConfig?.payrollConfig || {
+            lopCalculationPolicy: 'Configured_Working_Days',
+            monthlyPaidLeaveQuota: 2,
+            unpaidLeaveDeductionType: 'Full_Day_Basic'
+        };
+        res.json(config);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Update restaurant payroll and LOP configuration
+// @route   PUT /api/staff/payroll/config
+// @access  Private (RestaurantAdmin)
+export const updatePayrollConfig = async (req, res) => {
+    try {
+        const restaurantId = await getUserRestaurantId(req.user);
+        const { lopCalculationPolicy, monthlyPaidLeaveQuota, unpaidLeaveDeductionType } = req.body;
+
+        const restaurant = await Restaurant.findById(restaurantId);
+        if (!restaurant) return res.status(404).json({ message: 'Restaurant not found' });
+
+        if (!restaurant.restaurantConfig) restaurant.restaurantConfig = {};
+        if (!restaurant.restaurantConfig.payrollConfig) restaurant.restaurantConfig.payrollConfig = {};
+
+        if (lopCalculationPolicy) {
+            restaurant.restaurantConfig.payrollConfig.lopCalculationPolicy = lopCalculationPolicy;
+        }
+        if (monthlyPaidLeaveQuota !== undefined) {
+            restaurant.restaurantConfig.payrollConfig.monthlyPaidLeaveQuota = Number(monthlyPaidLeaveQuota);
+        }
+        if (unpaidLeaveDeductionType) {
+            restaurant.restaurantConfig.payrollConfig.unpaidLeaveDeductionType = unpaidLeaveDeductionType;
+        }
+
+        await restaurant.save();
+
+        res.json({
+            message: 'Payroll configuration updated successfully',
+            config: restaurant.restaurantConfig.payrollConfig
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+

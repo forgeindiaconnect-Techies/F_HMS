@@ -189,7 +189,7 @@ const WaiterPriorityActions = () => {
             : displayItems.filter(item => item.type === filter));
 
     return (
-        <div className="max-w-[1400px] mx-auto space-y-6">
+        <div className="w-full max-w-[1600px] mx-auto space-y-6 pb-12">
             
             {/* Header Banner */}
             <div className="bg-gradient-to-r from-rose-600 via-red-600 to-amber-600 rounded-3xl p-6 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">

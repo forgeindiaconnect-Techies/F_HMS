@@ -1,6 +1,7 @@
 import express from 'express';
 import { 
     getStats, getRestaurants, updateSubscription, deleteRestaurant, 
+    updateRestaurantVisibilityStatus, restoreRestaurant,
     getSuperAdminNotifications, markSuperAdminNotificationAsRead, 
     getPlans, createPlan, updatePlan, deletePlan, getTickets, 
     updateTicket, deleteTicket, updateApprovalStatus, getAllUsers, updateUserStatus, deleteUser,
@@ -17,6 +18,8 @@ router.use(protect, authorize('SuperAdmin'));
 router.route('/stats').get(getStats);
 router.route('/restaurants').get(getRestaurants);
 router.route('/restaurants/:id').delete(deleteRestaurant);
+router.route('/restaurants/:id/status').put(updateRestaurantVisibilityStatus);
+router.route('/restaurants/:id/restore').put(restoreRestaurant);
 router.route('/restaurants/:id/subscription').put(updateSubscription);
 router.route('/restaurants/:id/approval').put(updateApprovalStatus);
 

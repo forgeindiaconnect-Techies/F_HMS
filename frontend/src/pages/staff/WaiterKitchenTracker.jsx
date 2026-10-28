@@ -61,7 +61,7 @@ const WaiterKitchenTracker = () => {
         : displayOrders.filter(o => o.status === stageFilter);
 
     return (
-        <div className="max-w-[1400px] mx-auto space-y-4 sm:space-y-6">
+        <div className="w-full max-w-[1600px] mx-auto space-y-4 sm:space-y-6 pb-12">
             
             {/* Banner */}
             <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">

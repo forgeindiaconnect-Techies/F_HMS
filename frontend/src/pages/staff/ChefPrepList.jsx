@@ -66,7 +66,7 @@ const ChefPrepList = () => {
         : 0;
 
     return (
-        <div className="w-full max-w-[1600px] mx-auto font-sans space-y-6">
+        <div className="w-full max-w-[1600px] mx-auto font-sans space-y-6 pb-12">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6">
                 <div>
                     <h2 className="text-2xl font-bold text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>Kitchen Prep List</h2>

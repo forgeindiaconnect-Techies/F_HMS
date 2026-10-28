@@ -71,7 +71,7 @@ const DashboardHome = () => {
         : [];
 
     return (
-        <div className="space-y-6 text-slate-900 dark:text-slate-100">
+        <div className="w-full max-w-[1600px] mx-auto space-y-6 pb-12 text-slate-900 dark:text-slate-100">
             <div>
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100" style={{ fontFamily: 'Poppins, sans-serif' }}>Business Overview</h2>
                 <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Welcome back! Manage your overall business operations, sales, staff, and customer orders.</p>

@@ -53,7 +53,7 @@ const ManagerDashboard = () => {
   const goalRemaining = Math.max(0, revenueGoal - totalRevenue);
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto space-y-4 sm:space-y-6">
+    <div className="w-full max-w-[1600px] mx-auto space-y-4 sm:space-y-6 pb-12">
 
       {/* Sleek Manager Shift & Station Control Strip */}
       <div className="bg-slate-900 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 shadow-md border border-slate-800 shrink-0">

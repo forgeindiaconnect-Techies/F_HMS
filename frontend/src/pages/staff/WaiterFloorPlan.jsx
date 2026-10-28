@@ -102,7 +102,7 @@ const WaiterFloorPlan = () => {
     };
 
     return (
-        <div className="max-w-[1500px] mx-auto space-y-6">
+        <div className="w-full max-w-[1600px] mx-auto space-y-6 pb-12">
             
             {/* Header */}
             <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

@@ -258,6 +258,7 @@ const Checkout = () => {
                     product: (item._id || item.id) && String(item._id || item.id).length === 24 ? String(item._id || item.id) : undefined
                 })),
                 orderType: orderType === 'Delivery' ? 'Delivery' : 'Self-Pickup',
+                serviceType: orderType === 'Delivery' ? 'Delivery' : 'Self-Pickup',
                 source: orderType === 'Delivery' ? 'Walk-in' : 'Self-Pickup',
                 restaurantId: targetResId && targetResId !== 'cart_rest' && /^[0-9a-fA-F]{24}$/.test(targetResId) ? targetResId : undefined,
                 branchId: branchId || undefined,
@@ -275,8 +276,12 @@ const Checkout = () => {
             
             const { data: createdOrder } = await api.post('/orders', orderData);
 
-            // Fire background payment status update without blocking order confirmation UI
-            if (createdOrder && createdOrder._id) {
+            // Only mark as paid in background for online/card payments, NEVER for Cash on Delivery
+            const isCashPayment = ['Cash on Delivery', 'Cash', 'Pay at Counter', 'COD'].some(m => 
+                String(orderData.paymentMethod || '').toLowerCase().includes(m.toLowerCase())
+            );
+
+            if (createdOrder && createdOrder._id && !isCashPayment) {
                 api.put(`/orders/${createdOrder._id}/pay`, {
                     paymentMethod: orderData.paymentMethod,
                     paymentStatus: 'COMPLETED',

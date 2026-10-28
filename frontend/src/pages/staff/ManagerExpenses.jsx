@@ -86,7 +86,7 @@ const ManagerExpenses = () => {
     const totalAmount = filteredExpenses.reduce((sum, item) => sum + item.amount, 0);
 
     return (
-        <div className="w-full max-w-[1600px] mx-auto space-y-4 sm:space-y-6">
+        <div className="w-full max-w-[1600px] mx-auto space-y-4 sm:space-y-6 pb-12 font-sans">
             <div className="flex justify-between items-center">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>Expense Tracking</h2>

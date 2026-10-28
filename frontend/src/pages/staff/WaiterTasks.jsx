@@ -134,7 +134,7 @@ const WaiterTasks = () => {
         : tasks.filter(t => t.urgent && !t.done);
 
     return (
-        <div className="max-w-[1200px] mx-auto space-y-6">
+        <div className="w-full max-w-[1400px] mx-auto space-y-6 pb-12">
             
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-6 text-white shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

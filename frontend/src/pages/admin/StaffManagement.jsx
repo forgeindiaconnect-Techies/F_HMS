@@ -4,7 +4,8 @@ import {
     Search, Plus, Filter, Mail, Phone, Calendar, Clock, 
     MoreVertical, ShieldCheck, MapPin, X, Trash2, Edit2, 
     CheckCircle2, AlertCircle, DollarSign, FileText, Printer, 
-    CreditCard, ArrowRight, UserCheck, Users, ChevronRight, History
+    CreditCard, ArrowRight, UserCheck, Users, ChevronRight, History,
+    CalendarDays, FileSpreadsheet, Check, Ban, Settings2, Sliders, Eye, RefreshCw, Download
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -34,10 +35,14 @@ const getAttendancePill = (status) => {
 
 const getPayrollBadge = (status) => {
     switch (status) {
-        case 'Paid': return <span className="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full text-xs font-bold">Paid</span>;
-        case 'Partially Paid': return <span className="bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full text-xs font-bold">Partially Paid</span>;
-        case 'Pending': return <span className="bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full text-xs font-bold">Pending</span>;
-        default: return <span className="bg-slate-100 text-slate-800 px-2.5 py-1 rounded-full text-xs font-bold">{status}</span>;
+        case 'Paid': return <span className="bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-2.5 py-1 rounded-full text-xs font-bold">Paid</span>;
+        case 'Partially Paid': return <span className="bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 px-2.5 py-1 rounded-full text-xs font-bold">Partially Paid</span>;
+        case 'Approved': return <span className="bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 px-2.5 py-1 rounded-full text-xs font-bold">Approved</span>;
+        case 'Generated': return <span className="bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 px-2.5 py-1 rounded-full text-xs font-bold">Generated</span>;
+        case 'Pending Payment':
+        case 'Pending': return <span className="bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 px-2.5 py-1 rounded-full text-xs font-bold">Pending</span>;
+        case 'Draft': return <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full text-xs font-bold">Draft</span>;
+        default: return <span className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-300 px-2.5 py-1 rounded-full text-xs font-bold">{status}</span>;
     }
 };
 
@@ -51,13 +56,13 @@ const formatRoleName = (role) => {
 const StaffManagement = () => {
     const { api, restaurant } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
-    const initialTab = searchParams.get('tab') || 'staff'; // 'staff' | 'attendance' | 'payroll'
+    const initialTab = searchParams.get('tab') || 'staff'; // 'staff' | 'attendance' | 'payroll' | 'leaves' | 'reports'
     const [activeTab, setActiveTab] = useState(initialTab);
 
     // Keep url in sync
     useEffect(() => {
         const tabParam = searchParams.get('tab');
-        if (tabParam && ['staff', 'attendance', 'payroll'].includes(tabParam)) {
+        if (tabParam && ['staff', 'attendance', 'payroll', 'leaves', 'reports'].includes(tabParam)) {
             setActiveTab(tabParam);
         }
     }, [searchParams]);
@@ -135,6 +140,59 @@ const StaffManagement = () => {
     });
     const [isSalarySlipModalOpen, setIsSalarySlipModalOpen] = useState(false);
     const [salarySlipData, setSalarySlipData] = useState(null);
+
+    // TAB 4: Leave Management (Admin)
+    const [leavesList, setLeavesList] = useState([]);
+    const [leavesLoading, setLeavesLoading] = useState(false);
+    const [leaveStatusFilter, setLeaveStatusFilter] = useState('All');
+    const [leaveBranchFilter, setLeaveBranchFilter] = useState('All');
+    const [leaveSearch, setLeaveSearch] = useState('');
+    const [selectedLeaveForAction, setSelectedLeaveForAction] = useState(null);
+    const [leaveActionForm, setLeaveActionForm] = useState({
+        status: 'Approved',
+        isPaid: true,
+        managerRemarks: ''
+    });
+    const [leaveActionSubmitting, setLeaveActionSubmitting] = useState(false);
+
+    // LOP Policy Config State
+    const [isLOPConfigModalOpen, setIsLOPConfigModalOpen] = useState(false);
+    const [lopConfigForm, setLopConfigForm] = useState({
+        lopCalculationPolicy: 'Configured_Working_Days',
+        monthlyPaidLeaveQuota: 2,
+        unpaidLeaveDeductionType: 'Full_Day_Basic'
+    });
+    const [lopSaving, setLopSaving] = useState(false);
+
+    // Payroll Interactive Preview Modal State
+    const [isPayrollPreviewModalOpen, setIsPayrollPreviewModalOpen] = useState(false);
+
+    // Payroll Adjustment & Corrections State
+    const [isPayrollAdjustModalOpen, setIsPayrollAdjustModalOpen] = useState(false);
+    const [adjustTarget, setAdjustTarget] = useState(null);
+    const [adjustForm, setAdjustForm] = useState({
+        basicSalary: 0,
+        allowances: 0,
+        overtimePay: 0,
+        bonuses: 0,
+        deductions: 0,
+        advances: 0,
+        notes: ''
+    });
+    const [adjustSaving, setAdjustSaving] = useState(false);
+
+    // Payroll Audit History Viewer State
+    const [isAuditHistoryModalOpen, setIsAuditHistoryModalOpen] = useState(false);
+    const [selectedAuditHistory, setSelectedAuditHistory] = useState([]);
+    const [auditHistoryEmpName, setAuditHistoryEmpName] = useState('');
+
+    // TAB 5: Payroll Reports State
+    const [payrollReportsData, setPayrollReportsData] = useState(null);
+    const [reportsLoading, setReportsLoading] = useState(false);
+    const [reportMonth, setReportMonth] = useState('All');
+    const [reportYear, setReportYear] = useState(currentYear);
+    const [reportBranch, setReportBranch] = useState('All');
+    const [reportStatus, setReportStatus] = useState('All');
 
     // Confirm Modal
     const [confirmModal, setConfirmModal] = useState({
@@ -346,8 +404,166 @@ const StaffManagement = () => {
     useEffect(() => {
         if (activeTab === 'payroll') {
             fetchPayrollRecords();
+        } else if (activeTab === 'leaves') {
+            fetchLeavesList();
+        } else if (activeTab === 'reports') {
+            fetchPayrollReports();
         }
-    }, [activeTab, payrollMonth, payrollYear, payrollBranch]);
+    }, [activeTab, payrollMonth, payrollYear, payrollBranch, leaveStatusFilter, leaveBranchFilter, reportYear, reportMonth, reportBranch, reportStatus]);
+
+    // ── Leaves Fetching & Approvals ──────────────────────────────────────────
+    const fetchLeavesList = async () => {
+        setLeavesLoading(true);
+        try {
+            const params = {};
+            if (leaveStatusFilter !== 'All') params.status = leaveStatusFilter;
+            if (leaveBranchFilter !== 'All') params.branchId = leaveBranchFilter;
+            const res = await api.get('/staff/leave', { params });
+            setLeavesList(res.data || []);
+        } catch (error) {
+            console.error('Failed to fetch leave requests', error);
+            toast.error('Failed to load leave requests');
+        } finally {
+            setLeavesLoading(false);
+        }
+    };
+
+    const handleOpenLeaveAction = (leave, defaultStatus = 'Approved') => {
+        setSelectedLeaveForAction(leave);
+        setLeaveActionForm({
+            status: defaultStatus,
+            isPaid: leave.isPaid ?? true,
+            managerRemarks: ''
+        });
+    };
+
+    const handleSubmitLeaveAction = async (e) => {
+        e.preventDefault();
+        if (!selectedLeaveForAction) return;
+
+        try {
+            setLeaveActionSubmitting(true);
+            await api.put(`/staff/leave/${selectedLeaveForAction._id}/status`, {
+                status: leaveActionForm.status,
+                isPaid: leaveActionForm.isPaid,
+                managerRemarks: leaveActionForm.managerRemarks
+            });
+
+            toast.success(`Leave request ${leaveActionForm.status.toLowerCase()} and attendance records synced.`);
+            setSelectedLeaveForAction(null);
+            fetchLeavesList();
+        } catch (error) {
+            console.error('Failed to update leave status', error);
+            toast.error(error.response?.data?.message || 'Error updating leave request');
+        } finally {
+            setLeaveActionSubmitting(false);
+        }
+    };
+
+    // ── LOP Policy Config ────────────────────────────────────────────────────
+    const fetchLOPConfig = async () => {
+        try {
+            const res = await api.get('/staff/payroll/config');
+            if (res.data) {
+                setLopConfigForm({
+                    lopCalculationPolicy: res.data.lopCalculationPolicy || 'Configured_Working_Days',
+                    monthlyPaidLeaveQuota: res.data.monthlyPaidLeaveQuota ?? 2,
+                    unpaidLeaveDeductionType: res.data.unpaidLeaveDeductionType || 'Full_Day_Basic'
+                });
+            }
+        } catch (error) {
+            console.error('Failed to fetch LOP policy config', error);
+        }
+    };
+
+    const handleOpenLOPConfigModal = () => {
+        fetchLOPConfig();
+        setIsLOPConfigModalOpen(true);
+    };
+
+    const handleSaveLOPConfig = async (e) => {
+        e.preventDefault();
+        setLopSaving(true);
+        try {
+            await api.put('/staff/payroll/config', lopConfigForm);
+            toast.success('Restaurant LOP and Paid Leave policy saved successfully!');
+            setIsLOPConfigModalOpen(false);
+        } catch (error) {
+            console.error('Failed to update LOP policy', error);
+            toast.error(error.response?.data?.message || 'Error saving LOP policy');
+        } finally {
+            setLopSaving(false);
+        }
+    };
+
+    // ── Payroll Adjustments & Audit History ──────────────────────────────────
+    const handleOpenPayrollAdjustModal = (payroll) => {
+        setAdjustTarget(payroll);
+        setAdjustForm({
+            basicSalary: payroll.basicSalary || 0,
+            allowances: payroll.calculations?.allowances || 0,
+            overtimePay: payroll.calculations?.overtimePay || 0,
+            bonuses: payroll.calculations?.bonuses || 0,
+            deductions: payroll.calculations?.deductions || 0,
+            advances: payroll.calculations?.advances || 0,
+            notes: ''
+        });
+        setIsPayrollAdjustModalOpen(true);
+    };
+
+    const handleSavePayrollAdjustment = async (e) => {
+        e.preventDefault();
+        if (!adjustTarget) return;
+
+        setAdjustSaving(true);
+        try {
+            await api.put(`/staff/payroll/${adjustTarget._id}/correct`, {
+                basicSalary: Number(adjustForm.basicSalary),
+                allowances: Number(adjustForm.allowances),
+                overtimePay: Number(adjustForm.overtimePay),
+                bonuses: Number(adjustForm.bonuses),
+                deductions: Number(adjustForm.deductions),
+                advances: Number(adjustForm.advances),
+                notes: adjustForm.notes || 'Admin manual correction before finalization'
+            });
+
+            toast.success('Payroll components adjusted and audit logged!');
+            setIsPayrollAdjustModalOpen(false);
+            setAdjustTarget(null);
+            fetchPayrollRecords();
+        } catch (error) {
+            console.error('Failed to correct payroll record', error);
+            toast.error(error.response?.data?.message || 'Error adjusting payroll record');
+        } finally {
+            setAdjustSaving(false);
+        }
+    };
+
+    const handleOpenAuditHistory = (payroll) => {
+        setSelectedAuditHistory(payroll.auditHistory || []);
+        setAuditHistoryEmpName(payroll.employee?.name || 'Employee');
+        setIsAuditHistoryModalOpen(true);
+    };
+
+    // ── Payroll Reports Fetching ─────────────────────────────────────────────
+    const fetchPayrollReports = async () => {
+        setReportsLoading(true);
+        try {
+            const params = {};
+            if (reportYear) params.year = reportYear;
+            if (reportMonth !== 'All') params.month = reportMonth;
+            if (reportBranch !== 'All') params.branchId = reportBranch;
+            if (reportStatus !== 'All') params.status = reportStatus;
+
+            const res = await api.get('/staff/payroll/reports', { params });
+            setPayrollReportsData(res.data);
+        } catch (error) {
+            console.error('Failed to load payroll reports', error);
+            toast.error('Failed to fetch payroll reports');
+        } finally {
+            setReportsLoading(false);
+        }
+    };
 
     const handleCalculatePayroll = async () => {
         setIsCalculatingPayroll(true);
@@ -358,7 +574,8 @@ const StaffManagement = () => {
                 branchId: payrollBranch !== 'All' ? payrollBranch : undefined
             });
             setPayrollPreview(res.data);
-            toast.success(`Calculated payroll for ${payrollMonth} ${payrollYear}`);
+            setIsPayrollPreviewModalOpen(true);
+            toast.success(`Calculated preview for ${res.data.count || 0} employees.`);
         } catch (error) {
             console.error('Failed to calculate payroll', error);
             toast.error(error.response?.data?.message || 'Error calculating payroll');
@@ -592,7 +809,7 @@ const StaffManagement = () => {
                 </button>
                 <button
                     onClick={() => handleTabChange('attendance')}
-                    className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
+                    className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${
                         activeTab === 'attendance'
                             ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs'
                             : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -601,14 +818,39 @@ const StaffManagement = () => {
                     <Calendar size={16} /> Daily Attendance Tracker
                 </button>
                 <button
+                    onClick={() => handleTabChange('leaves')}
+                    className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${
+                        activeTab === 'leaves'
+                            ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs'
+                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    }`}
+                >
+                    <CalendarDays size={16} /> Leave Management & Approvals
+                    {leavesList.filter(l => l.status === 'Pending').length > 0 && (
+                        <span className="bg-amber-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full ml-1">
+                            {leavesList.filter(l => l.status === 'Pending').length}
+                        </span>
+                    )}
+                </button>
+                <button
                     onClick={() => handleTabChange('payroll')}
-                    className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
+                    className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${
                         activeTab === 'payroll'
                             ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs'
                             : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                     }`}
                 >
                     <DollarSign size={16} /> Payroll & Salary Disbursements
+                </button>
+                <button
+                    onClick={() => handleTabChange('reports')}
+                    className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${
+                        activeTab === 'reports'
+                            ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs'
+                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    }`}
+                >
+                    <FileSpreadsheet size={16} /> Payroll Reports & Summary
                 </button>
             </div>
 
@@ -951,11 +1193,208 @@ const StaffManagement = () => {
                     </div>
                 </div>
             )}
+                 {/* TAB 3: LEAVE MANAGEMENT & APPROVALS */}
+            {activeTab === 'leaves' && (
+                <div className="space-y-4">
+                    {/* Leave Summary Stats */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-xs">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Pending Requests</span>
+                            <span className="text-2xl font-black text-amber-500 mt-1 block">
+                                {leavesList.filter(l => l.status === 'Pending').length}
+                            </span>
+                        </div>
+                        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-xs">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Approved Leaves</span>
+                            <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block">
+                                {leavesList.filter(l => l.status === 'Approved').length}
+                            </span>
+                        </div>
+                        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-xs">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Rejected</span>
+                            <span className="text-2xl font-black text-rose-500 mt-1 block">
+                                {leavesList.filter(l => l.status === 'Rejected').length}
+                            </span>
+                        </div>
+                        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-xs">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Total Recorded</span>
+                            <span className="text-2xl font-black text-slate-900 dark:text-white mt-1 block">
+                                {leavesList.length}
+                            </span>
+                        </div>
+                    </div>
 
-            {/* TAB 3: PAYROLL & SALARY */}
+                    {/* Filter & Search Bar */}
+                    <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-xs flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1">Status:</span>
+                            {['All', 'Pending', 'Approved', 'Rejected', 'Cancelled'].map(st => (
+                                <button
+                                    key={st}
+                                    onClick={() => setLeaveStatusFilter(st)}
+                                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                                        leaveStatusFilter === st
+                                            ? 'bg-emerald-600 text-white shadow-xs'
+                                            : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                                    }`}
+                                >
+                                    {st}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="flex items-center gap-3 w-full md:w-auto">
+                            {branches.length > 1 && (
+                                <select
+                                    value={leaveBranchFilter}
+                                    onChange={(e) => setLeaveBranchFilter(e.target.value)}
+                                    className="px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold"
+                                >
+                                    <option value="All">All Branches</option>
+                                    {branches.map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
+                                </select>
+                            )}
+
+                            <div className="relative flex-1 md:w-64">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
+                                <input
+                                    type="text"
+                                    placeholder="Search by staff name/ID..."
+                                    value={leaveSearch}
+                                    onChange={(e) => setLeaveSearch(e.target.value)}
+                                    className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Leaves Table */}
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-xs overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                                <thead className="bg-slate-50/80 dark:bg-slate-900/50 text-xs uppercase font-bold text-slate-400 border-b border-slate-100 dark:border-slate-700/60">
+                                    <tr>
+                                        <th className="py-4 px-6">Employee</th>
+                                        <th className="py-4 px-6">Branch</th>
+                                        <th className="py-4 px-6">Leave Type</th>
+                                        <th className="py-4 px-6">Dates</th>
+                                        <th className="py-4 px-6">Days</th>
+                                        <th className="py-4 px-6">Reason</th>
+                                        <th className="py-4 px-6">Pay Policy</th>
+                                        <th className="py-4 px-6">Status</th>
+                                        <th className="py-4 px-6 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
+                                    {leavesList
+                                        .filter(l => {
+                                            const n = l.employee?.name?.toLowerCase() || '';
+                                            const c = l.employee?.employeeId?.toLowerCase() || '';
+                                            return !leaveSearch || n.includes(leaveSearch.toLowerCase()) || c.includes(leaveSearch.toLowerCase());
+                                        })
+                                        .map(leave => {
+                                            const startStr = new Date(leave.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                            const endStr = new Date(leave.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+                                            return (
+                                                <tr key={leave._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors">
+                                                    <td className="py-4 px-6 font-bold text-slate-900 dark:text-white">
+                                                        <div>{leave.employee?.name || 'Staff Member'}</div>
+                                                        <span className="text-xs text-slate-400">{leave.employee?.employeeId || leave.employee?.role}</span>
+                                                    </td>
+                                                    <td className="py-4 px-6 text-xs text-slate-500">
+                                                        {leave.branchId?.name || 'Main Branch'}
+                                                    </td>
+                                                    <td className="py-4 px-6">
+                                                        <span className="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 rounded-lg text-xs font-bold text-slate-800 dark:text-slate-200">
+                                                            {leave.leaveType}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-4 px-6 text-xs text-slate-600 dark:text-slate-300">
+                                                        {startStr} - {endStr}
+                                                    </td>
+                                                    <td className="py-4 px-6 font-bold text-slate-900 dark:text-white">
+                                                        {leave.daysCount}d
+                                                    </td>
+                                                    <td className="py-4 px-6 max-w-xs truncate text-xs text-slate-500" title={leave.reason}>
+                                                        {leave.reason}
+                                                    </td>
+                                                    <td className="py-4 px-6">
+                                                        {leave.isPaid ? (
+                                                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+                                                                Paid Leave
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-800">
+                                                                Unpaid / LOP
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td className="py-4 px-6">
+                                                        {leave.status === 'Pending' && (
+                                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                                                                <Clock size={12} /> Pending Review
+                                                            </span>
+                                                        )}
+                                                        {leave.status === 'Approved' && (
+                                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                                                                <CheckCircle2 size={12} /> Approved
+                                                            </span>
+                                                        )}
+                                                        {leave.status === 'Rejected' && (
+                                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
+                                                                <AlertCircle size={12} /> Rejected
+                                                            </span>
+                                                        )}
+                                                        {leave.status === 'Cancelled' && (
+                                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300">
+                                                                Cancelled
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td className="py-4 px-6 text-right">
+                                                        {leave.status === 'Pending' ? (
+                                                            <div className="flex items-center justify-end gap-1.5">
+                                                                <button
+                                                                    onClick={() => handleOpenLeaveAction(leave, 'Approved')}
+                                                                    className="px-3 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                                                                >
+                                                                    <Check size={13} /> Approve
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleOpenLeaveAction(leave, 'Rejected')}
+                                                                    className="px-3 py-1.5 text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 hover:bg-rose-100 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                                                                >
+                                                                    <Ban size={13} /> Reject
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-xs text-slate-400">
+                                                                {leave.approvedBy?.name ? `By ${leave.approvedBy.name}` : '-'}
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    {leavesList.length === 0 && (
+                                        <tr>
+                                            <td colSpan="9" className="py-12 text-center text-slate-400">
+                                                {leavesLoading ? 'Loading leave requests...' : 'No leave requests recorded.'}
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* TAB 4: PAYROLL & SALARY */}
             {activeTab === 'payroll' && (
                 <div className="space-y-4">
-                    {/* Month Picker & Actions */}
+                    {/* Period Picker & Action Strip */}
                     <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="flex flex-wrap items-center gap-3">
                             <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Pay Period:</span>
@@ -974,7 +1413,7 @@ const StaffManagement = () => {
                                 onChange={(e) => setPayrollYear(Number(e.target.value))}
                                 className="px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold"
                             >
-                                {[2024, 2025, 2026, 2027].map(y => (
+                                {[currentYear, currentYear - 1, currentYear - 2].map(y => (
                                     <option key={y} value={y}>{y}</option>
                                 ))}
                             </select>
@@ -991,35 +1430,30 @@ const StaffManagement = () => {
                             )}
                         </div>
 
-                        <div className="flex items-center gap-2.5">
+                        <div className="flex flex-wrap items-center gap-2.5">
+                            <button
+                                onClick={handleOpenLOPConfigModal}
+                                className="px-3.5 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl text-sm font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
+                                title="Configure LOP Calculation & Paid Leave Rules"
+                            >
+                                <Settings2 size={16} /> LOP Policy
+                            </button>
                             <button 
                                 onClick={handleCalculatePayroll}
                                 disabled={isCalculatingPayroll}
-                                className="px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 rounded-xl text-sm font-bold transition-colors"
+                                className="px-4 py-2 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100 border border-blue-200 dark:border-blue-800 rounded-xl text-sm font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
                             >
-                                {isCalculatingPayroll ? 'Calculating...' : 'Recalculate Wages'}
+                                <Eye size={16} />
+                                {isCalculatingPayroll ? 'Calculating...' : 'Preview Wages'}
                             </button>
                             <button 
                                 onClick={handleGeneratePayrollBatch}
-                                className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-colors shadow-xs"
+                                className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
                             >
-                                Generate Payroll Batch
+                                <Plus size={16} /> Generate Payroll Batch
                             </button>
                         </div>
                     </div>
-
-                    {/* Payroll Preview Banner if active */}
-                    {payrollPreview && (
-                        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl border border-emerald-200 dark:border-emerald-800 text-sm">
-                            <div className="flex items-center justify-between font-bold text-emerald-900 dark:text-emerald-300 mb-2">
-                                <span>Payroll Calculation Summary for {payrollMonth} {payrollYear}</span>
-                                <span>{payrollPreview.count} Staff Members Evaluated</span>
-                            </div>
-                            <p className="text-xs text-emerald-800/80 dark:text-emerald-300/80">
-                                Click "Generate Payroll Batch" to create official payroll records. Salaries start in <strong>Pending</strong> status until actual payment records are disbursed.
-                            </p>
-                        </div>
-                    )}
 
                     {/* Payroll Records Table */}
                     <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-xs overflow-hidden">
@@ -1030,11 +1464,11 @@ const StaffManagement = () => {
                                         <th className="py-4 px-6">Employee</th>
                                         <th className="py-4 px-6">Pay Period</th>
                                         <th className="py-4 px-6">Basic Pay</th>
-                                        <th className="py-4 px-6">Earned Basic</th>
-                                        <th className="py-4 px-6">Overtime Pay</th>
+                                        <th className="py-4 px-6">Attendance &amp; Leave</th>
+                                        <th className="py-4 px-6">LOP Deduct</th>
+                                        <th className="py-4 px-6">Overtime</th>
+                                        <th className="py-4 px-6">Gross Pay</th>
                                         <th className="py-4 px-6">Net Payable</th>
-                                        <th className="py-4 px-6">Disbursed (Paid)</th>
-                                        <th className="py-4 px-6">Pending Due</th>
                                         <th className="py-4 px-6">Status</th>
                                         <th className="py-4 px-6 text-right">Actions</th>
                                     </tr>
@@ -1043,75 +1477,236 @@ const StaffManagement = () => {
                                     {payrollRecords.length === 0 ? (
                                         <tr>
                                             <td colSpan="10" className="py-12 text-center text-slate-400">
-                                                No payroll batch generated for {payrollMonth} {payrollYear}. Click "Generate Payroll Batch" to compute salaries.
+                                                No payroll batch generated for {payrollMonth} {payrollYear}. Click "Preview Wages" to calculate and review before generating.
                                             </td>
                                         </tr>
                                     ) : (
-                                        payrollRecords.map(p => (
-                                            <tr key={p._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors">
-                                                <td className="py-4 px-6 font-bold text-slate-900 dark:text-white">
-                                                    <div>{p.employee?.name || 'Staff Member'}</div>
-                                                    <span className="text-xs text-slate-400">{p.employee?.employeeId || formatRoleName(p.employee?.role)}</span>
-                                                </td>
-                                                <td className="py-4 px-6 text-xs text-slate-500 whitespace-nowrap">
-                                                    {typeof p.month === 'number' ? new Date(2000, p.month - 1, 1).toLocaleString('en-US', { month: 'long' }) : p.month} {p.year}
-                                                </td>
-                                                <td className="py-4 px-6">
-                                                    ₹{(p.basicSalary ?? p.salaryConfig?.basicSalary ?? 0).toLocaleString('en-IN')}
-                                                </td>
-                                                <td className="py-4 px-6 font-semibold">
-                                                    ₹{(p.calculations?.earnedBasic ?? p.earnedBasicSalary ?? 0).toLocaleString('en-IN')}
-                                                </td>
-                                                <td className="py-4 px-6 text-emerald-600 font-semibold">
-                                                    +₹{(p.calculations?.overtimePay ?? p.overtimePay ?? 0).toLocaleString('en-IN')}
-                                                </td>
-                                                <td className="py-4 px-6 font-bold text-slate-900 dark:text-white">
-                                                    ₹{(p.calculations?.netSalaryPayable ?? p.netPayable ?? 0).toLocaleString('en-IN')}
-                                                </td>
-                                                <td className="py-4 px-6 font-bold text-emerald-600 dark:text-emerald-400">
-                                                    ₹{(p.paidAmount ?? 0).toLocaleString('en-IN')}
-                                                </td>
-                                                <td className="py-4 px-6 font-bold text-amber-600 dark:text-amber-400">
-                                                    ₹{(p.balanceDue ?? 0).toLocaleString('en-IN')}
-                                                </td>
-                                                <td className="py-4 px-6">
-                                                    {getPayrollBadge(p.paymentStatus)}
-                                                </td>
-                                                <td className="py-4 px-6 text-right">
-                                                    <div className="flex items-center justify-end gap-1.5">
-                                                        {p.balanceDue > 0 && (
+                                        payrollRecords.map(p => {
+                                            const c = p.calculations || {};
+                                            const att = p.attendanceSummary || {};
+
+                                            return (
+                                                <tr key={p._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors">
+                                                    <td className="py-4 px-6 font-bold text-slate-900 dark:text-white">
+                                                        <div>{p.employee?.name || 'Staff Member'}</div>
+                                                        <span className="text-xs text-slate-400">{p.employee?.employeeId || formatRoleName(p.employee?.role)}</span>
+                                                    </td>
+                                                    <td className="py-4 px-6 text-xs text-slate-500 whitespace-nowrap">
+                                                        <div>{typeof p.month === 'number' ? new Date(2000, p.month - 1, 1).toLocaleString('en-US', { month: 'long' }) : p.month} {p.year}</div>
+                                                        <span className="text-[11px] text-slate-400">{p.branchId?.name || 'Main Branch'}</span>
+                                                    </td>
+                                                    <td className="py-4 px-6 font-mono font-semibold">
+                                                        ₹{(p.basicSalary ?? p.salaryConfig?.basicSalary ?? 0).toLocaleString('en-IN')}
+                                                    </td>
+                                                    <td className="py-4 px-6 text-xs text-slate-600 dark:text-slate-300">
+                                                        <div>Present: <span className="font-bold text-emerald-600">{att.presentDays || 0}d</span></div>
+                                                        <div className="text-[11px] text-slate-400">
+                                                            Paid Leave: {att.paidLeaveDays || 0}d | LOP: <span className="text-rose-500 font-bold">{att.lopDays || 0}d</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-4 px-6 text-sm font-mono font-bold text-rose-600 dark:text-rose-400">
+                                                        {c.lopDeduction ? `-₹${c.lopDeduction.toLocaleString('en-IN')}` : '₹0'}
+                                                    </td>
+                                                    <td className="py-4 px-6 text-sm font-mono text-emerald-600 font-semibold">
+                                                        +₹{(c.overtimePay || 0).toLocaleString('en-IN')}
+                                                    </td>
+                                                    <td className="py-4 px-6 font-mono text-slate-700 dark:text-slate-300">
+                                                        ₹{(c.grossSalary || 0).toLocaleString('en-IN')}
+                                                    </td>
+                                                    <td className="py-4 px-6 font-mono font-bold text-slate-900 dark:text-white">
+                                                        ₹{(c.netSalaryPayable || 0).toLocaleString('en-IN')}
+                                                    </td>
+                                                    <td className="py-4 px-6">
+                                                        {getPayrollBadge(p.paymentStatus || p.status)}
+                                                    </td>
+                                                    <td className="py-4 px-6 text-right">
+                                                        <div className="flex items-center justify-end gap-1.5">
+                                                            {p.balanceDue > 0 && (
+                                                                <button 
+                                                                    onClick={() => {
+                                                                        setSelectedPayrollForPayment(p);
+                                                                        setPaymentForm({
+                                                                            amount: p.balanceDue,
+                                                                            paymentMethod: 'Bank Transfer',
+                                                                            paymentReference: '',
+                                                                            notes: `Salary disbursement for ${p.month} ${p.year}`
+                                                                        });
+                                                                        setIsPaymentModalOpen(true);
+                                                                    }}
+                                                                    className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer"
+                                                                >
+                                                                    <CreditCard size={12} /> Disburse
+                                                                </button>
+                                                            )}
                                                             <button 
-                                                                onClick={() => {
-                                                                    setSelectedPayrollForPayment(p);
-                                                                    setPaymentForm({
-                                                                        amount: p.balanceDue,
-                                                                        paymentMethod: 'Bank Transfer',
-                                                                        paymentReference: '',
-                                                                        notes: `Salary disbursement for ${p.month} ${p.year}`
-                                                                    });
-                                                                    setIsPaymentModalOpen(true);
-                                                                }}
-                                                                className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1"
+                                                                onClick={() => handleOpenSalarySlip(p._id)}
+                                                                className="p-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
+                                                                title="Generate Printable Salary Slip"
                                                             >
-                                                                <CreditCard size={12} /> Disburse
+                                                                <FileText size={15} />
                                                             </button>
-                                                        )}
-                                                        <button 
-                                                            onClick={() => handleOpenSalarySlip(p._id)}
-                                                            className="p-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
-                                                            title="Generate Printable Salary Slip"
-                                                        >
-                                                            <FileText size={15} />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))
+                                                            {p.paymentStatus !== 'Paid' && (
+                                                                <button
+                                                                    onClick={() => handleOpenPayrollAdjustModal(p)}
+                                                                    className="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-lg transition-colors cursor-pointer"
+                                                                    title="Authorized Payroll Correction / Adjustment"
+                                                                >
+                                                                    <Edit2 size={15} />
+                                                                </button>
+                                                            )}
+                                                            {p.auditHistory?.length > 0 && (
+                                                                <button
+                                                                    onClick={() => handleOpenAuditHistory(p)}
+                                                                    className="p-1.5 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40 rounded-lg transition-colors cursor-pointer"
+                                                                    title={`View Audit History (${p.auditHistory.length} logs)`}
+                                                                >
+                                                                    <History size={15} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
                                     )}
                                 </tbody>
                             </table>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* TAB 5: PAYROLL REPORTS & SUMMARY ANALYTICS */}
+            {activeTab === 'reports' && (
+                <div className="space-y-6">
+                    {/* Filter Strip */}
+                    <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-xs flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Filters:</span>
+                            <select
+                                value={reportYear}
+                                onChange={(e) => setReportYear(Number(e.target.value))}
+                                className="px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold"
+                            >
+                                {[currentYear, currentYear - 1, currentYear - 2].map(y => (
+                                    <option key={y} value={y}>{y}</option>
+                                ))}
+                            </select>
+
+                            <select
+                                value={reportMonth}
+                                onChange={(e) => setReportMonth(e.target.value)}
+                                className="px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold"
+                            >
+                                <option value="All">All Months</option>
+                                {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
+                                    <option key={m} value={m}>{m}</option>
+                                ))}
+                            </select>
+
+                            {branches.length > 1 && (
+                                <select
+                                    value={reportBranch}
+                                    onChange={(e) => setReportBranch(e.target.value)}
+                                    className="px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold"
+                                >
+                                    <option value="All">All Branches</option>
+                                    {branches.map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
+                                </select>
+                            )}
+
+                            <select
+                                value={reportStatus}
+                                onChange={(e) => setReportStatus(e.target.value)}
+                                className="px-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold"
+                            >
+                                <option value="All">All Payment Statuses</option>
+                                <option value="Paid">Paid</option>
+                                <option value="Pending">Pending / Unpaid</option>
+                                <option value="Partially Paid">Partially Paid</option>
+                            </select>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={fetchPayrollReports}
+                                className="px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-800 dark:text-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                            >
+                                <RefreshCw size={14} /> Refresh Report
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Report KPI Cards */}
+                    {payrollReportsData && (
+                        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-xs">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Total Net Payable</span>
+                                <span className="text-2xl font-black text-slate-900 dark:text-white mt-1 block font-mono">
+                                    ₹{payrollReportsData.totalNetPayable?.toLocaleString('en-IN')}
+                                </span>
+                            </div>
+                            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-xs">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Total Disbursed (Paid)</span>
+                                <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block font-mono">
+                                    ₹{payrollReportsData.totalPaid?.toLocaleString('en-IN')}
+                                </span>
+                            </div>
+                            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-xs">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Outstanding Due</span>
+                                <span className="text-2xl font-black text-amber-500 mt-1 block font-mono">
+                                    ₹{payrollReportsData.totalDue?.toLocaleString('en-IN')}
+                                </span>
+                            </div>
+                            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-xs">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Total LOP Deductions</span>
+                                <span className="text-2xl font-black text-rose-500 mt-1 block font-mono">
+                                    ₹{payrollReportsData.totalLOPDeductions?.toLocaleString('en-IN')}
+                                </span>
+                            </div>
+                            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-xs">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Paid vs Pending Batches</span>
+                                <span className="text-lg font-black text-slate-900 dark:text-white mt-1 block">
+                                    <span className="text-emerald-600">{payrollReportsData.paidCount} Paid</span> / <span className="text-amber-500">{payrollReportsData.pendingCount} Pending</span>
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Branch-wise Breakdown Table */}
+                    {payrollReportsData?.branchBreakdown?.length > 0 && (
+                        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-xs overflow-hidden">
+                            <div className="p-4 border-b border-slate-100 dark:border-slate-700/60 bg-slate-50/50 dark:bg-slate-900/50">
+                                <h4 className="font-bold text-slate-900 dark:text-white text-sm">Branch-wise Payroll Summary</h4>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                                    <thead className="bg-slate-50/80 dark:bg-slate-900/50 text-xs uppercase font-bold text-slate-400 border-b border-slate-100 dark:border-slate-700/60">
+                                        <tr>
+                                            <th className="py-3 px-6">Branch Name</th>
+                                            <th className="py-3 px-6">Employees</th>
+                                            <th className="py-3 px-6">Gross Wages</th>
+                                            <th className="py-3 px-6">Net Wages</th>
+                                            <th className="py-3 px-6">Paid Disbursed</th>
+                                            <th className="py-3 px-6 text-right">Balance Due</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
+                                        {payrollReportsData.branchBreakdown.map((b, i) => (
+                                            <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20">
+                                                <td className="py-3 px-6 font-bold text-slate-900 dark:text-white">{b.branchName}</td>
+                                                <td className="py-3 px-6">{b.totalEmployees}</td>
+                                                <td className="py-3 px-6 font-mono">₹{b.gross?.toLocaleString('en-IN')}</td>
+                                                <td className="py-3 px-6 font-mono font-bold">₹{b.net?.toLocaleString('en-IN')}</td>
+                                                <td className="py-3 px-6 font-mono text-emerald-600 font-bold">₹{b.paid?.toLocaleString('en-IN')}</td>
+                                                <td className="py-3 px-6 font-mono text-amber-500 font-bold text-right">₹{b.due?.toLocaleString('en-IN')}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -1617,6 +2212,532 @@ const StaffManagement = () => {
                         <div className="pt-6 mt-4 border-t border-slate-200 text-center text-[10px] text-slate-400">
                             Computer generated salary slip. Confirmed and verified against actual attendance logs.
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL 5: LOP & PAID LEAVE POLICY CONFIG */}
+            {isLOPConfigModalOpen && (
+                <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2.5">
+                                <div className="p-2 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 rounded-xl">
+                                    <Settings2 size={20} />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">LOP &amp; Leave Quota Policy</h3>
+                                    <p className="text-xs text-slate-400">Configure Loss of Pay wage calculation and monthly paid leave limits</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setIsLOPConfigModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSaveLOPConfig} className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold uppercase text-slate-500 dark:text-slate-400 mb-1.5">
+                                    LOP Calculation Policy (Divisor Base)
+                                </label>
+                                <select
+                                    value={lopConfigForm.lopCalculationPolicy}
+                                    onChange={(e) => setLopConfigForm({ ...lopConfigForm, lopCalculationPolicy: e.target.value })}
+                                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold"
+                                >
+                                    <option value="Configured_Working_Days">Configured Working Days (e.g. 26 Days per profile)</option>
+                                    <option value="Standard_26_Days">Standard 26 Working Days (Fixed Statutory standard)</option>
+                                    <option value="Calendar_Days">Actual Calendar Days in Month (28 - 31 days)</option>
+                                </select>
+                                <p className="text-[11px] text-slate-400 mt-1">
+                                    Determines the per-day wage rate: Basic Salary ÷ Working Days Base.
+                                </p>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold uppercase text-slate-500 dark:text-slate-400 mb-1.5">
+                                    Monthly Paid Leave Quota (Days per month)
+                                </label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="15"
+                                    value={lopConfigForm.monthlyPaidLeaveQuota}
+                                    onChange={(e) => setLopConfigForm({ ...lopConfigForm, monthlyPaidLeaveQuota: Number(e.target.value) })}
+                                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold"
+                                />
+                                <p className="text-[11px] text-slate-400 mt-1">
+                                    Approved leaves within quota are paid; leaves exceeding this become unpaid Loss of Pay (LOP).
+                                </p>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold uppercase text-slate-500 dark:text-slate-400 mb-1.5">
+                                    Unpaid Leave Deduction Basis
+                                </label>
+                                <select
+                                    value={lopConfigForm.unpaidLeaveDeductionType}
+                                    onChange={(e) => setLopConfigForm({ ...lopConfigForm, unpaidLeaveDeductionType: e.target.value })}
+                                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold"
+                                >
+                                    <option value="Full_Day_Basic">Full Day Basic Pay Deduction</option>
+                                    <option value="Full_Day_Gross">Full Day Gross Pay Deduction (Basic + Allowances)</option>
+                                </select>
+                            </div>
+
+                            <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsLOPConfigModalOpen(false)}
+                                    className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={lopSaving}
+                                    className="px-5 py-2 text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-xs disabled:opacity-50"
+                                >
+                                    {lopSaving ? 'Saving...' : 'Save Configuration'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL 6: PAYROLL PREVIEW & GENERATION */}
+            {isPayrollPreviewModalOpen && payrollPreview && (
+                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-5xl w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-800 my-8 max-h-[90vh] flex flex-col">
+                        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+                            <div>
+                                <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                                    <FileSpreadsheet className="text-emerald-600" size={22} />
+                                    Payroll Calculation Preview: {payrollMonth} {payrollYear}
+                                </h3>
+                                <p className="text-xs text-slate-400">
+                                    Review auto-calculated wage components, attendance totals, and LOP deductions before finalizing batch.
+                                </p>
+                            </div>
+                            <button onClick={() => setIsPayrollPreviewModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Preview Summary Strip */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-4">
+                            <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-2xl border border-slate-100 dark:border-slate-700/60">
+                                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Employees</span>
+                                <span className="text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 block">
+                                    {payrollPreview.count || 0}
+                                </span>
+                            </div>
+                            <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-2xl border border-slate-100 dark:border-slate-700/60">
+                                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Gross Wages</span>
+                                <span className="text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 block">
+                                    ₹{(payrollPreview.totalGross || 0).toLocaleString('en-IN')}
+                                </span>
+                            </div>
+                            <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-2xl border border-slate-100 dark:border-slate-700/60">
+                                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total LOP Deductions</span>
+                                <span className="text-xl font-black text-rose-500 font-mono mt-0.5 block">
+                                    -₹{(payrollPreview.totalLOPDeductions || 0).toLocaleString('en-IN')}
+                                </span>
+                            </div>
+                            <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-2xl border border-slate-100 dark:border-slate-700/60">
+                                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Net Payable</span>
+                                <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono mt-0.5 block">
+                                    ₹{(payrollPreview.totalNetPayable || 0).toLocaleString('en-IN')}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Table of Calculated Items */}
+                        <div className="flex-1 overflow-y-auto border border-slate-100 dark:border-slate-800 rounded-2xl">
+                            <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+                                <thead className="bg-slate-50 dark:bg-slate-800/80 sticky top-0 uppercase font-bold text-slate-400 border-b border-slate-100 dark:border-slate-700/60">
+                                    <tr>
+                                        <th className="py-3 px-4">Employee</th>
+                                        <th className="py-3 px-4">Attendance / Leave</th>
+                                        <th className="py-3 px-4">Basic Pay</th>
+                                        <th className="py-3 px-4">Overtime</th>
+                                        <th className="py-3 px-4">Gross Pay</th>
+                                        <th className="py-3 px-4">LOP Deduct</th>
+                                        <th className="py-3 px-4">Total Deductions</th>
+                                        <th className="py-3 px-4 text-right">Net Payable</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                    {(payrollPreview.items || []).map((item, idx) => {
+                                        const att = item.attendanceSummary || {};
+                                        const c = item.calculations || {};
+                                        return (
+                                            <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                                                <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
+                                                    <div>{item.employeeName}</div>
+                                                    <span className="text-[11px] text-slate-400">{item.employeeId} • {item.branchName}</span>
+                                                </td>
+                                                <td className="py-3 px-4 text-[11px]">
+                                                    <div>Present: <span className="font-bold text-emerald-600">{att.presentDays || 0}d</span></div>
+                                                    <div className="text-slate-400">Paid Lv: {att.paidLeaveDays || 0}d | LOP: <span className="font-bold text-rose-500">{att.lopDays || 0}d</span></div>
+                                                </td>
+                                                <td className="py-3 px-4 font-mono font-semibold">
+                                                    ₹{(item.basicSalary || 0).toLocaleString('en-IN')}
+                                                </td>
+                                                <td className="py-3 px-4 font-mono text-emerald-600 font-semibold">
+                                                    +₹{(c.overtimePay || 0).toLocaleString('en-IN')}
+                                                </td>
+                                                <td className="py-3 px-4 font-mono">
+                                                    ₹{(c.grossSalary || 0).toLocaleString('en-IN')}
+                                                </td>
+                                                <td className="py-3 px-4 font-mono font-bold text-rose-500">
+                                                    {c.lopDeduction ? `-₹${c.lopDeduction.toLocaleString('en-IN')}` : '₹0'}
+                                                </td>
+                                                <td className="py-3 px-4 font-mono text-rose-600">
+                                                    -₹{(c.deductions || 0).toLocaleString('en-IN')}
+                                                </td>
+                                                <td className="py-3 px-4 font-mono font-bold text-right text-emerald-600 text-sm">
+                                                    ₹{(c.netSalaryPayable || 0).toLocaleString('en-IN')}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Actions footer */}
+                        <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-100 dark:border-slate-800">
+                            <span className="text-xs text-slate-400">
+                                Wages calculated according to active attendance logs &amp; approved leaves.
+                            </span>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsPayrollPreviewModalOpen(false)}
+                                    className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"
+                                >
+                                    Close
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={async () => {
+                                        await handleGeneratePayrollBatch();
+                                        setIsPayrollPreviewModalOpen(false);
+                                    }}
+                                    className="px-5 py-2 text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs flex items-center gap-2 cursor-pointer"
+                                >
+                                    <Check size={16} /> Confirm &amp; Generate Batch
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL 7: PAYROLL ADJUSTMENT & AUDIT */}
+            {isPayrollAdjustModalOpen && adjustTarget && (
+                <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-800 my-8">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Authorized Payroll Adjustment</h3>
+                                <p className="text-xs text-slate-400">
+                                    {adjustTarget.employee?.name} • {adjustTarget.month} {adjustTarget.year}
+                                </p>
+                            </div>
+                            <button onClick={() => setIsPayrollAdjustModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSavePayrollAdjustment} className="space-y-4">
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Basic Salary (₹)</label>
+                                    <input
+                                        type="number"
+                                        value={adjustForm.basicSalary}
+                                        onChange={(e) => setAdjustForm({ ...adjustForm, basicSalary: e.target.value })}
+                                        className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Allowances (₹)</label>
+                                    <input
+                                        type="number"
+                                        value={adjustForm.allowances}
+                                        onChange={(e) => setAdjustForm({ ...adjustForm, allowances: e.target.value })}
+                                        className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Overtime Pay (₹)</label>
+                                    <input
+                                        type="number"
+                                        value={adjustForm.overtimePay}
+                                        onChange={(e) => setAdjustForm({ ...adjustForm, overtimePay: e.target.value })}
+                                        className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Bonuses / Incentives (₹)</label>
+                                    <input
+                                        type="number"
+                                        value={adjustForm.bonuses}
+                                        onChange={(e) => setAdjustForm({ ...adjustForm, bonuses: e.target.value })}
+                                        className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Deductions (₹)</label>
+                                    <input
+                                        type="number"
+                                        value={adjustForm.deductions}
+                                        onChange={(e) => setAdjustForm({ ...adjustForm, deductions: e.target.value })}
+                                        className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-rose-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Salary Advances (₹)</label>
+                                    <input
+                                        type="number"
+                                        value={adjustForm.advances}
+                                        onChange={(e) => setAdjustForm({ ...adjustForm, advances: e.target.value })}
+                                        className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-rose-500"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Live Preview of Net Calculated */}
+                            <div className="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-100 dark:border-slate-700 flex justify-between items-center text-xs">
+                                <span className="font-semibold text-slate-500">Calculated Net Payable:</span>
+                                <span className="font-mono font-bold text-base text-emerald-600">
+                                    ₹{(
+                                        (Number(adjustForm.basicSalary) || 0) +
+                                        (Number(adjustForm.allowances) || 0) +
+                                        (Number(adjustForm.overtimePay) || 0) +
+                                        (Number(adjustForm.bonuses) || 0) -
+                                        (Number(adjustForm.deductions) || 0) -
+                                        (Number(adjustForm.advances) || 0)
+                                    ).toLocaleString('en-IN')}
+                                </span>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
+                                    Adjustment Justification / Reason (Required for Audit) *
+                                </label>
+                                <textarea
+                                    required
+                                    rows="2"
+                                    value={adjustForm.notes}
+                                    onChange={(e) => setAdjustForm({ ...adjustForm, notes: e.target.value })}
+                                    placeholder="e.g. Approved incentive bonus, corrected overtime hours per kitchen log"
+                                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm"
+                                />
+                            </div>
+
+                            <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsPayrollAdjustModalOpen(false)}
+                                    className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={adjustSaving}
+                                    className="px-5 py-2 text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-xs disabled:opacity-50 cursor-pointer"
+                                >
+                                    {adjustSaving ? 'Saving...' : 'Apply Correction & Log Audit'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL 8: PAYROLL AUDIT HISTORY */}
+            {isAuditHistoryModalOpen && (
+                <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-800 my-8">
+                        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+                            <div className="flex items-center gap-2.5">
+                                <div className="p-2 bg-purple-50 dark:bg-purple-950/50 text-purple-600 rounded-xl">
+                                    <History size={20} />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">Audit History: {auditHistoryEmpName}</h3>
+                                    <p className="text-xs text-slate-400">Complete record of adjustments, corrections, and disbursements</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setIsAuditHistoryModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="py-4 space-y-3 max-h-[60vh] overflow-y-auto">
+                            {selectedAuditHistory.length === 0 ? (
+                                <div className="text-center py-8 text-slate-400 text-xs">
+                                    No audit history entries logged for this payroll record.
+                                </div>
+                            ) : (
+                                selectedAuditHistory.map((item, idx) => (
+                                    <div key={idx} className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-100 dark:border-slate-700/60 text-xs space-y-1.5">
+                                        <div className="flex items-center justify-between">
+                                            <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold rounded-md text-[11px]">
+                                                {item.action || 'Modification'}
+                                            </span>
+                                            <span className="text-slate-400 text-[11px]">
+                                                {new Date(item.timestamp).toLocaleString()}
+                                            </span>
+                                        </div>
+                                        <div className="text-slate-600 dark:text-slate-300">
+                                            <strong>Performed By:</strong> {item.performedBy?.name || 'Administrator'} ({item.performedBy?.role || 'Admin'})
+                                        </div>
+                                        {item.notes && (
+                                            <div className="text-slate-500 italic">
+                                                "{item.notes}"
+                                            </div>
+                                        )}
+                                        {item.previousCalculations && item.updatedCalculations && (
+                                            <div className="pt-1.5 border-t border-slate-200 dark:border-slate-700/60 flex items-center justify-between font-mono text-[11px]">
+                                                <span className="text-slate-400">
+                                                    Prev Net: ₹{(item.previousCalculations.netSalaryPayable || 0).toLocaleString('en-IN')}
+                                                </span>
+                                                <ArrowRight size={12} className="text-slate-400" />
+                                                <span className="text-emerald-600 font-bold">
+                                                    New Net: ₹{(item.updatedCalculations.netSalaryPayable || 0).toLocaleString('en-IN')}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setIsAuditHistoryModalOpen(false)}
+                                className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl cursor-pointer"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL 9: LEAVE ACTION & REVIEW */}
+            {selectedLeaveForAction && (
+                <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Review Leave Request</h3>
+                            <button onClick={() => setSelectedLeaveForAction(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-100 dark:border-slate-700 text-xs space-y-1 mb-4">
+                            <div>Employee: <strong>{selectedLeaveForAction.employee?.name}</strong> ({selectedLeaveForAction.employee?.employeeId})</div>
+                            <div>Leave Type: <strong>{selectedLeaveForAction.leaveType}</strong></div>
+                            <div>
+                                Dates: <strong>{new Date(selectedLeaveForAction.startDate).toLocaleDateString()} to {new Date(selectedLeaveForAction.endDate).toLocaleDateString()}</strong> ({selectedLeaveForAction.daysCount} days)
+                            </div>
+                            <div className="pt-1 text-slate-500">Reason: "{selectedLeaveForAction.reason}"</div>
+                        </div>
+
+                        <form onSubmit={handleSubmitLeaveAction} className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Decision *</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setLeaveActionForm({ ...leaveActionForm, status: 'Approved' })}
+                                        className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
+                                            leaveActionForm.status === 'Approved'
+                                                ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                                                : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                                        }`}
+                                    >
+                                        <Check size={14} /> Approve Leave
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setLeaveActionForm({ ...leaveActionForm, status: 'Rejected' })}
+                                        className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
+                                            leaveActionForm.status === 'Rejected'
+                                                ? 'bg-rose-600 text-white border-rose-600 shadow-xs'
+                                                : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                                        }`}
+                                    >
+                                        <Ban size={14} /> Reject Leave
+                                    </button>
+                                </div>
+                            </div>
+
+                            {leaveActionForm.status === 'Approved' && (
+                                <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-2xl border border-emerald-100 dark:border-emerald-800/60">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={leaveActionForm.isPaid}
+                                            onChange={(e) => setLeaveActionForm({ ...leaveActionForm, isPaid: e.target.checked })}
+                                            className="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500"
+                                        />
+                                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                                            Mark as Paid Leave
+                                        </span>
+                                    </label>
+                                    <p className="text-[11px] text-slate-400 mt-1 pl-6">
+                                        If unchecked, these days will be marked as Loss of Pay (LOP) and deducted during monthly payroll calculation.
+                                    </p>
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="block text-xs font-bold uppercase text-slate-500 mb-1">
+                                    Manager / Admin Remarks
+                                </label>
+                                <textarea
+                                    rows="2"
+                                    value={leaveActionForm.managerRemarks}
+                                    onChange={(e) => setLeaveActionForm({ ...leaveActionForm, managerRemarks: e.target.value })}
+                                    placeholder="e.g. Approved as per medical certificate, or alternative shift arranged"
+                                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm"
+                                />
+                            </div>
+
+                            <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedLeaveForAction(null)}
+                                    className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={leaveActionSubmitting}
+                                    className={`px-5 py-2 text-sm font-bold text-white rounded-xl shadow-xs disabled:opacity-50 cursor-pointer ${
+                                        leaveActionForm.status === 'Approved' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'
+                                    }`}
+                                >
+                                    {leaveActionSubmitting ? 'Submitting...' : `Confirm ${leaveActionForm.status}`}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

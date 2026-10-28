@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
-    MonitorDot, ClipboardList, BookOpen, AlertTriangle, LogOut, ChefHat, Receipt
+    MonitorDot, ClipboardList, BookOpen, AlertTriangle, LogOut, ChefHat, Receipt,
+    CalendarDays, CreditCard
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useNavigate } from 'react-router-dom';
@@ -66,6 +67,13 @@ const ChefSidebar = () => {
             title: 'Resources',
             items: [
                 { name: 'Wastage & Restock', path: '/chef/inventory', icon: AlertTriangle },
+            ]
+        },
+        {
+            title: 'My Workspace',
+            items: [
+                { name: 'My Leave', path: '/chef/leave', icon: CalendarDays },
+                { name: 'My Salary & Slips', path: '/chef/payroll', icon: CreditCard },
             ]
         }
     ];

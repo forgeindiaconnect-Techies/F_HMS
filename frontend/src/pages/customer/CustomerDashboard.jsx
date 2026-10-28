@@ -296,11 +296,6 @@ const CustomerDashboard = () => {
     const userPoints = user?.loyaltyPoints || (safeOrders.filter(o => o.status === 'Completed' || o.status === 'Delivered').length * 50) || 0;
     const tierName = userPoints >= 1000 ? 'GOLD MEMBER' : userPoints >= 500 ? 'SILVER MEMBER' : 'BRONZE MEMBER';
 
-    const readySelfPickupOrders = safeOrders.filter(o => 
-        (o.orderType === 'Self-Pickup' || o.orderType === 'Self Pickup') && 
-        (['Ready for Pickup', 'Ready'].includes(o.status))
-    );
-
     const activeOrders = safeOrders.filter(o => 
         !['Delivered', 'Completed', 'Served', 'Cancelled'].includes(o.status) &&
         o.deliveryStatus !== 'Delivered'
@@ -321,31 +316,6 @@ const CustomerDashboard = () => {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 animate-in fade-in duration-500 text-gray-800">
-            
-            {/* Ready for Pickup Alert Banner */}
-            {readySelfPickupOrders.map(order => (
-                <div key={order._id} className="bg-gradient-to-r from-orange-500 to-red-600 rounded-3xl p-6 text-white shadow-xl flex flex-col sm:flex-row justify-between items-center gap-4 animate-pulse relative overflow-hidden group">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white shrink-0">
-                            <span className="relative flex h-3 w-3">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
-                            </span>
-                        </div>
-                        <div>
-                            <h3 className="font-extrabold text-lg" style={{ fontFamily: 'Poppins, sans-serif' }}>Your Order is Ready for Pickup!</h3>
-                            <p className="text-white/90 text-sm mt-0.5 font-medium">Please collect your Order <span className="font-bold font-mono">#{getShortId(order._id)}</span> from the Pickup Counter.</p>
-                        </div>
-                    </div>
-                    <Link 
-                        to={`/track/${order._id}?restaurantId=${order.restaurantId?._id || order.restaurantId}`}
-                        className="px-6 py-2.5 bg-white text-orange-600 font-extrabold text-sm rounded-full hover:bg-orange-50 hover:scale-105 active:scale-95 transition-all shadow-md shrink-0 flex items-center gap-2"
-                    >
-                        Track & View QR
-                    </Link>
-                </div>
-            ))}
-
             {/* Header Welcome banner */}
             <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6">
                 <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-center sm:text-left">
@@ -402,9 +372,7 @@ const CustomerDashboard = () => {
                         {activeOrders.map(order => {
                             const readyInfo = getOrderReadyTimeInfo(order);
                             const isReady = readyInfo?.isReady;
-                            const trackingUrl = order.orderType === 'Delivery'
-                                ? `/track/${order._id}?restaurantId=${order.restaurantId?._id || order.restaurantId}&branchId=${order.branchId?._id || order.branchId || ''}`
-                                : `/customer/track/${order._id}?restaurantId=${order.restaurantId?._id || order.restaurantId}&branchId=${order.branchId?._id || order.branchId || ''}`;
+                            const trackingUrl = `/track/${order._id}?restaurantId=${order.restaurantId?._id || order.restaurantId}&branchId=${order.branchId?._id || order.branchId || ''}`;
 
                             return (
                                 <div 
@@ -425,15 +393,33 @@ const CustomerDashboard = () => {
                                                 {order.restaurantId?.name || 'Restaurant Outlet'}
                                             </span>
                                         </div>
-                                        <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${
-                                            order.orderType === 'Delivery' 
-                                                ? 'bg-blue-50 text-blue-700 border-blue-200' 
-                                                : (order.serviceType === 'Self Dine-In (KFC Style)' || order.orderType?.includes('Pickup'))
+                                        {(() => {
+                                            const isSelfPickupOrder = order.orderType === 'Self-Pickup' || order.orderType === 'Takeaway' || order.source === 'Self-Pickup' || String(order.orderType || '').toLowerCase().includes('pickup');
+                                            const isSelfDineInOrder = !isSelfPickupOrder && (order.serviceType === 'Self Dine-In (KFC Style)' || String(order.serviceType || '').toLowerCase().includes('self dine-in'));
+                                            const isDeliveryOrder = order.orderType === 'Delivery';
+
+                                            const badgeText = isDeliveryOrder
+                                                ? 'Home Delivery'
+                                                : isSelfPickupOrder
+                                                ? 'Self-Pickup'
+                                                : isSelfDineInOrder
+                                                ? 'Self Dine-In'
+                                                : 'Waiter Service';
+
+                                            const badgeStyle = isDeliveryOrder
+                                                ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                                : isSelfPickupOrder
                                                 ? 'bg-amber-50 text-amber-800 border-amber-200'
-                                                : 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                                        }`}>
-                                            {order.serviceType || order.orderType || 'Dine In'} {order.tableNumber ? `(T-${order.tableNumber})` : ''}
-                                        </span>
+                                                : isSelfDineInOrder
+                                                ? 'bg-orange-50 text-orange-800 border-orange-200'
+                                                : 'bg-emerald-50 text-emerald-800 border-emerald-200';
+
+                                            return (
+                                                <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${badgeStyle}`}>
+                                                    {badgeText} {order.tableNumber && !isSelfPickupOrder && !isDeliveryOrder && order.tableNumber !== 'Any' ? `(T-${order.tableNumber})` : ''}
+                                                </span>
+                                            );
+                                        })()}
                                     </div>
 
                                     {/* Items List */}
@@ -762,11 +748,33 @@ const CustomerDashboard = () => {
                                             <div className="flex justify-between items-center flex-wrap gap-2 border-b border-gray-50 pb-3">
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-extrabold text-sm text-gray-900 font-mono">#{getShortId(order._id)}</span>
-                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                                        order.orderType === 'Delivery' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-orange-50 text-orange-700 border border-orange-200'
-                                                    }`}>
-                                                        {order.orderType}
-                                                    </span>
+                                                    {(() => {
+                                                        const isSelfPickupOrder = order.orderType === 'Self-Pickup' || order.orderType === 'Takeaway' || order.source === 'Self-Pickup' || String(order.orderType || '').toLowerCase().includes('pickup');
+                                                        const isSelfDineInOrder = !isSelfPickupOrder && (order.serviceType === 'Self Dine-In (KFC Style)' || String(order.serviceType || '').toLowerCase().includes('self dine-in'));
+                                                        const isDeliveryOrder = order.orderType === 'Delivery';
+
+                                                        const badgeText = isDeliveryOrder
+                                                            ? 'Home Delivery'
+                                                            : isSelfPickupOrder
+                                                            ? 'Self-Pickup'
+                                                            : isSelfDineInOrder
+                                                            ? 'Self Dine-In'
+                                                            : 'Waiter Service';
+
+                                                        const badgeStyle = isDeliveryOrder
+                                                            ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                                            : isSelfPickupOrder
+                                                            ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                                            : isSelfDineInOrder
+                                                            ? 'bg-orange-50 text-orange-800 border-orange-200'
+                                                            : 'bg-emerald-50 text-emerald-800 border-emerald-200';
+
+                                                        return (
+                                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeStyle}`}>
+                                                                {badgeText} {order.tableNumber && !isSelfPickupOrder && !isDeliveryOrder && order.tableNumber !== 'Any' ? `(T-${order.tableNumber})` : ''}
+                                                            </span>
+                                                        );
+                                                    })()}
                                                 </div>
                                                 <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] ${
                                                      (order.status === 'Delivered' || order.status === 'Completed' || order.deliveryStatus === 'Delivered')
@@ -835,24 +843,13 @@ const CustomerDashboard = () => {
                                                     <span className="font-extrabold text-gray-950 text-sm">₹{order.totalPrice ? order.totalPrice.toFixed(2) : '0.00'}</span>
                                                     
                                                     {/* Tracking button */}
-                                                    {order.orderType === 'Delivery' ? (
-                                                        (order.status !== 'Delivered' && order.deliveryStatus !== 'Delivered') && (
-                                                            <Link 
-                                                                to={`/track/${order._id}?restaurantId=${order.restaurantId?._id || order.restaurantId}&branchId=${order.branchId?._id || order.branchId || ''}`}
-                                                                className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg transition-colors text-xs shadow-sm"
-                                                            >
-                                                                Track Live
-                                                            </Link>
-                                                        )
-                                                    ) : (
-                                                        (order.status !== 'Completed' && order.status !== 'Served' && order.status !== 'Delivered') && (
-                                                            <Link 
-                                                                to={`/customer/track/${order._id}?restaurantId=${order.restaurantId?._id || order.restaurantId}&branchId=${order.branchId?._id || order.branchId || ''}`}
-                                                                className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg transition-colors text-xs shadow-sm"
-                                                            >
-                                                                Track Live
-                                                            </Link>
-                                                        )
+                                                    {(order.status !== 'Delivered' && order.deliveryStatus !== 'Delivered' && order.status !== 'Completed' && order.status !== 'Cancelled') && (
+                                                        <Link 
+                                                            to={`/track/${order._id}?restaurantId=${order.restaurantId?._id || order.restaurantId}&branchId=${order.branchId?._id || order.branchId || ''}`}
+                                                            className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg transition-colors text-xs shadow-sm"
+                                                        >
+                                                            Track Live
+                                                        </Link>
                                                     )}
                                                     
                                                     <button 

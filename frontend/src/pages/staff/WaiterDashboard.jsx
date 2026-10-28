@@ -4,13 +4,14 @@ import {
     Coffee, CheckCircle2, Clock, Utensils, AlertTriangle, 
     Plus, Minus, X, Send, Receipt, Users, MessageSquare, Bell, Check, Star, RefreshCw,
     Search, Flame, ShieldAlert, Sparkles, UserCheck, DollarSign, ArrowRightLeft, 
-    HelpCircle, ChevronRight, Award, Layers, TrendingUp, CheckSquare, HeartPulse, Filter, Settings
+    HelpCircle, ChevronRight, Award, Layers, TrendingUp, CheckSquare, HeartPulse, Filter, Settings, Printer
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getApiUrl } from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
 import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 import ThemeSettingCard from '../../components/ThemeToggle';
+import KOTPrintModal from '../../components/KOTPrintModal';
 
 const WaiterDashboard = () => {
     const location = useLocation();
@@ -37,6 +38,7 @@ const WaiterDashboard = () => {
     const [splitParts, setSplitParts] = useState(2);
     const [managerModalOpen, setManagerModalOpen] = useState(false);
     const [managerReason, setManagerReason] = useState('Table Assistance Needed');
+    const [printModalKOT, setPrintModalKOT] = useState(null);
 
     // Live Date & Time Clock
     const [now, setNow] = useState(new Date());
@@ -450,6 +452,47 @@ const WaiterDashboard = () => {
         }
     };
 
+    const isKotOnlyOrder = (order) => {
+        if (!order) return false;
+        if (order.kitchenMode === 'KOT_ONLY') return true;
+        if (order.restaurantId?.kitchenMode === 'KOT_ONLY') return true;
+        if (order.restaurantId?.restaurantConfig?.orderKitchen?.kitchenMode === 'KOT_ONLY') return true;
+        if (order.restaurantId?.restaurantConfig?.orderKitchen?.kdsEnabled === false) return true;
+        return false;
+    };
+
+    const handlePrintOrderKOT = async (order) => {
+        if (!order) return;
+        try {
+            const res = await api.get(`/kot?orderId=${order._id}`).catch(() => null);
+            if (res && res.data && res.data.length > 0) {
+                setPrintModalKOT(res.data[0]);
+                return;
+            }
+        } catch (e) {}
+
+        const kotNum = order.kotNumbers?.[0] || `KOT-${String(order._id).slice(-4).toUpperCase()}`;
+        setPrintModalKOT({
+            _id: order._id,
+            kotNumber: kotNum,
+            orderId: order._id,
+            orderNumber: `#${String(order._id).slice(-5).toUpperCase()}`,
+            tableNumber: order.tableNumber || (order.orderType === 'Delivery' ? 'Delivery' : 'Counter'),
+            orderType: order.orderType || 'Dine In',
+            serviceType: order.serviceType,
+            customerName: order.customerName,
+            kitchenStation: 'Main Kitchen',
+            items: (order.orderItems || []).map(i => ({
+                name: i.name,
+                qty: i.qty || i.quantity || 1,
+                price: i.price || 0,
+                notes: i.notes || ''
+            })),
+            notes: order.notes,
+            createdAt: order.createdAt || new Date().toISOString()
+        });
+    };
+
     const handleUpdateStatus = async (orderId, status) => {
         try {
             await api.put(`/orders/${orderId}/status`, { status });
@@ -457,7 +500,8 @@ const WaiterDashboard = () => {
             toast.success(`Order status updated to: ${status}`);
         } catch (error) {
             console.error('Failed to update status', error);
-            toast.error('Failed to update status');
+            const errDetail = error.response?.data?.message || 'Failed to update status';
+            toast.error(errDetail);
         }
     };
 
@@ -603,10 +647,10 @@ const WaiterDashboard = () => {
     // Helper for Live Order Stage progress step count (1 to 5)
     const getOrderStageStep = (status) => {
         switch (status) {
-            case 'Order Received': case 'Pending': return 1;
+            case 'Order Received': case 'Pending': case 'Accepted': return 1;
             case 'Preparing': case 'In Kitchen': return 2;
-            case 'Ready': case 'Ready for Pickup': return 3;
-            case 'Picked Up': return 4;
+            case 'Ready': case 'Ready for Pickup': case 'Ready for Dispatch': return 3;
+            case 'Picked Up': case 'Out for Delivery': return 4;
             case 'Served': case 'Completed': case 'Delivered': return 5;
             default: return 2;
         }
@@ -620,9 +664,8 @@ const WaiterDashboard = () => {
     const splitPerGuest = splitParts > 0 ? (splitBillTotal / splitParts).toFixed(2) : 0;
 
     return (
-        <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-16 selection:bg-emerald-100 selection:text-emerald-900">
-            
-            <main className="max-w-[1700px] mx-auto px-3 sm:px-6 pt-3 sm:pt-6 space-y-4 sm:space-y-6">
+        <div className="w-full max-w-[1700px] mx-auto text-slate-900 font-sans pb-16 selection:bg-emerald-100 selection:text-emerald-900">
+            <div className="space-y-4 sm:space-y-6">
                 
                 {/* Sleek Waitstaff Shift & Station Control Strip */}
                 <div className="bg-slate-900 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 shadow-md border border-slate-800 shrink-0">
@@ -996,8 +1039,13 @@ const WaiterDashboard = () => {
                                                         <span className="font-black text-sm text-slate-900">
                                                             {order.tableNumber && order.tableNumber !== 'Any' && order.tableNumber !== 'Takeout'
                                                                 ? (order.tableNumber.startsWith('Table') ? order.tableNumber : `Table ${order.tableNumber}`) 
-                                                                : '📦 Self-Pickup Counter'}
+                                                                : (order.orderType === 'Delivery' ? '🛵 Delivery' : '📦 Self-Pickup Counter')}
                                                         </span>
+                                                        {isKotOnlyOrder(order) && (
+                                                            <span className="text-[10px] font-black text-orange-700 bg-orange-100/80 border border-orange-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                                                                <Printer size={10} /> KOT Mode
+                                                            </span>
+                                                        )}
                                                         {order.tableNumber && order.tableNumber !== 'Any' && order.tableNumber !== 'Takeout' && (
                                                             <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border ${
                                                                 order.serviceType === 'Self Dine-In (KFC Style)'
@@ -1054,36 +1102,160 @@ const WaiterDashboard = () => {
                                                     </div>
                                                 </div>
 
-                                                {/* Serve / Pickup Quick Action Buttons */}
-                                                {(order.status === 'Ready' || order.status === 'Ready for Pickup') && (
-                                                    <div className="flex justify-end pt-1 gap-2 flex-wrap">
-                                                        {order.tableNumber && order.tableNumber !== 'Any' && order.tableNumber !== 'Takeout' ? (
-                                                            <>
-                                                                <button
-                                                                    onClick={() => handleUpdateStatus(order._id, 'Served')}
-                                                                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-3.5 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
-                                                                >
-                                                                    <CheckCircle2 size={14} /> Serve to {order.tableNumber.startsWith('Table') ? order.tableNumber : `Table ${order.tableNumber}`}
-                                                                </button>
-                                                                {order.serviceType === 'Self Dine-In (KFC Style)' && (
-                                                                    <button
-                                                                        onClick={() => handleUpdateStatus(order._id, 'Picked Up')}
-                                                                        className="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-extrabold px-3 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
-                                                                        title="Customer collected tray directly from counter"
-                                                                    >
-                                                                        Customer Picked Up
-                                                                    </button>
-                                                                )}
-                                                            </>
-                                                        ) : (
-                                                            <button
-                                                                onClick={() => handleUpdateStatus(order._id, 'Picked Up')}
-                                                                className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-4 py-2 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
-                                                            >
-                                                                <CheckCircle2 size={14} /> Collect &amp; Transfer to Cashier Counter
-                                                            </button>
-                                                        )}
+                                                {/* Action Buttons: KOT_ONLY vs KDS Mode */}
+                                                {isKotOnlyOrder(order) ? (
+                                                    <div className="flex items-center justify-between pt-2 gap-2 flex-wrap border-t border-slate-200/60">
+                                                        {/* Physical KOT Print Trigger (does NOT mark ready/completed) */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handlePrintOrderKOT(order)}
+                                                            className="bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold px-3 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                                                            title="Print Kitchen Order Ticket (ESC/POS 80mm)"
+                                                        >
+                                                            <Printer size={13} className="text-orange-600" /> Print KOT
+                                                        </button>
+
+                                                        {/* Status Actions based on Order Type & Current Status */}
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            {/* 1. Dine In Workflow */}
+                                                            {(order.orderType === 'Dine In' || (!order.orderType && order.tableNumber)) && (
+                                                                <>
+                                                                    {(order.status === 'Pending' || order.status === 'Accepted') && (
+                                                                        <button
+                                                                            onClick={() => handleUpdateStatus(order._id, 'Preparing')}
+                                                                            className="bg-amber-600 hover:bg-amber-700 text-white font-extrabold px-3 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                                                                        >
+                                                                            <Clock size={13} /> Mark Preparing
+                                                                        </button>
+                                                                    )}
+                                                                    {order.status === 'Preparing' && (
+                                                                        <button
+                                                                            onClick={() => handleUpdateStatus(order._id, 'Ready')}
+                                                                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-3.5 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                                                                        >
+                                                                            <CheckCircle2 size={13} /> Mark Plated &amp; Ready
+                                                                        </button>
+                                                                    )}
+                                                                    {order.status === 'Ready' && (
+                                                                        <button
+                                                                            onClick={() => handleUpdateStatus(order._id, 'Served')}
+                                                                            className="bg-teal-600 hover:bg-teal-700 text-white font-extrabold px-3.5 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                                                                        >
+                                                                            <CheckCircle2 size={13} /> Serve to {order.tableNumber?.startsWith('Table') ? order.tableNumber : `Table ${order.tableNumber || ''}`}
+                                                                        </button>
+                                                                    )}
+                                                                    {order.status === 'Served' && (
+                                                                        <button
+                                                                            onClick={() => handleUpdateStatus(order._id, 'Billing Requested')}
+                                                                            className="bg-purple-600 hover:bg-purple-700 text-white font-extrabold px-3.5 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                                                                        >
+                                                                            <Receipt size={13} /> Request Bill
+                                                                        </button>
+                                                                    )}
+                                                                </>
+                                                            )}
+
+                                                            {/* 2. Self-Pickup / Takeaway Workflow */}
+                                                            {(order.orderType === 'Self-Pickup' || order.orderType === 'Takeaway') && (
+                                                                <>
+                                                                    {(order.status === 'Pending' || order.status === 'Accepted') && (
+                                                                        <button
+                                                                            onClick={() => handleUpdateStatus(order._id, 'Preparing')}
+                                                                            className="bg-amber-600 hover:bg-amber-700 text-white font-extrabold px-3 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                                                                        >
+                                                                            <Clock size={13} /> Mark Preparing
+                                                                        </button>
+                                                                    )}
+                                                                    {order.status === 'Preparing' && (
+                                                                        <button
+                                                                            onClick={() => handleUpdateStatus(order._id, 'Ready for Pickup')}
+                                                                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-3.5 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                                                                        >
+                                                                            <CheckCircle2 size={13} /> Mark Ready for Pickup
+                                                                        </button>
+                                                                    )}
+                                                                    {(order.status === 'Ready' || order.status === 'Ready for Pickup') && (
+                                                                        <button
+                                                                            onClick={() => handleUpdateStatus(order._id, 'Picked Up')}
+                                                                            className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-3.5 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                                                                        >
+                                                                            <CheckCircle2 size={13} /> Customer Picked Up
+                                                                        </button>
+                                                                    )}
+                                                                </>
+                                                            )}
+
+                                                            {/* 3. Delivery Workflow */}
+                                                            {order.orderType === 'Delivery' && (
+                                                                <>
+                                                                    {(order.status === 'Pending' || order.status === 'Accepted') && (
+                                                                        <button
+                                                                            onClick={() => handleUpdateStatus(order._id, 'Preparing')}
+                                                                            className="bg-amber-600 hover:bg-amber-700 text-white font-extrabold px-3 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                                                                        >
+                                                                            <Clock size={13} /> Mark Preparing
+                                                                        </button>
+                                                                    )}
+                                                                    {order.status === 'Preparing' && (
+                                                                        <button
+                                                                            onClick={() => handleUpdateStatus(order._id, 'Ready for Dispatch')}
+                                                                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-3.5 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                                                                        >
+                                                                            <CheckCircle2 size={13} /> Ready for Dispatch
+                                                                        </button>
+                                                                    )}
+                                                                    {(order.status === 'Ready for Dispatch' || order.status === 'Ready') && (
+                                                                        <button
+                                                                            onClick={() => handleUpdateStatus(order._id, 'Out for Delivery')}
+                                                                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold px-3.5 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                                                                        >
+                                                                            <CheckCircle2 size={13} /> Out for Delivery
+                                                                        </button>
+                                                                    )}
+                                                                    {order.status === 'Out for Delivery' && (
+                                                                        <button
+                                                                            onClick={() => handleUpdateStatus(order._id, 'Delivered')}
+                                                                            className="bg-teal-600 hover:bg-teal-700 text-white font-extrabold px-3.5 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                                                                        >
+                                                                            <CheckCircle2 size={13} /> Mark Delivered
+                                                                        </button>
+                                                                    )}
+                                                                </>
+                                                            )}
+                                                        </div>
                                                     </div>
+                                                ) : (
+                                                    /* Existing KDS Restaurant Workflow — completely unchanged */
+                                                    (order.status === 'Ready' || order.status === 'Ready for Pickup') && (
+                                                        <div className="flex justify-end pt-1 gap-2 flex-wrap">
+                                                            {order.tableNumber && order.tableNumber !== 'Any' && order.tableNumber !== 'Takeout' ? (
+                                                                <>
+                                                                    <button
+                                                                        onClick={() => handleUpdateStatus(order._id, 'Served')}
+                                                                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-3.5 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                                                                    >
+                                                                        <CheckCircle2 size={14} /> Serve to {order.tableNumber.startsWith('Table') ? order.tableNumber : `Table ${order.tableNumber}`}
+                                                                    </button>
+                                                                    {order.serviceType === 'Self Dine-In (KFC Style)' && (
+                                                                        <button
+                                                                            onClick={() => handleUpdateStatus(order._id, 'Picked Up')}
+                                                                            className="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-extrabold px-3 py-1.5 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
+                                                                            title="Customer collected tray directly from counter"
+                                                                        >
+                                                                            Customer Picked Up
+                                                                        </button>
+                                                                    )}
+                                                                </>
+                                                            ) : (
+                                                                <button
+                                                                    onClick={() => handleUpdateStatus(order._id, 'Picked Up')}
+                                                                    className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-4 py-2 rounded-xl text-xs shadow-xs active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
+                                                                >
+                                                                    <CheckCircle2 size={14} /> Collect &amp; Transfer to Cashier Counter
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    )
                                                 )}
 
                                             </div>
@@ -1237,8 +1409,7 @@ const WaiterDashboard = () => {
                     </div>
 
                 </div>
-
-            </main>
+            </div>
 
             {/* -------------------------------------------------- */}
             {/* TABLE DETAILS PANEL (Slide-out) */}
@@ -1731,6 +1902,13 @@ const WaiterDashboard = () => {
                     </div>
                 </div>
             )}
+
+            {/* Thermal KOT Print Modal */}
+            <KOTPrintModal
+                isOpen={!!printModalKOT}
+                onClose={() => setPrintModalKOT(null)}
+                kot={printModalKOT}
+            />
 
         </div>
     );

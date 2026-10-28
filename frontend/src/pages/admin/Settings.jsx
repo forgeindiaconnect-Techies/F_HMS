@@ -176,7 +176,8 @@ const Settings = () => {
 
     // Restaurant-Specific Operational Configuration
     const [restConfig, setRestConfig] = useState({
-        orderKitchen: { kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
+        kitchenMode: 'KDS',
+        orderKitchen: { kitchenMode: 'KDS', kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
         waiterTips: { enabled: true, allowCustomerTips: true, tipPercentages: [5, 10, 15, 20], customTipAllowed: true },
         qrOrdering: { enabled: true, allowSelfDineIn: true, allowWaiterOrdering: true },
         paymentMethods: { cash: true, upi: true, card: true, onlineGateway: true },
@@ -584,8 +585,101 @@ const Settings = () => {
                                         </div>
                                     </div>
                                     <span className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-orange-50 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 border border-orange-200/60 dark:border-orange-900">
-                                        Mode: {restConfig.orderKitchen?.kotEnabled && restConfig.orderKitchen?.kdsEnabled ? 'Hybrid (KOT + KDS)' : restConfig.orderKitchen?.kdsEnabled ? 'Digital KDS Only' : restConfig.orderKitchen?.kotEnabled ? 'Printed KOT Only' : 'Direct Billing'}
+                                        Mode: {(restConfig.orderKitchen?.kitchenMode === 'KOT_ONLY' || restConfig.kitchenMode === 'KOT_ONLY' || restConfig.orderKitchen?.kdsEnabled === false) ? 'Printed KOT Only (No KDS)' : 'Digital KDS (Interactive Screen)'}
                                     </span>
+                                </div>
+
+                                {/* Kitchen Operating Mode Selection Cards */}
+                                <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
+                                    <div>
+                                        <h5 className="font-bold text-sm text-gray-900 dark:text-white flex items-center gap-2">
+                                            <Utensils size={16} className="text-orange-500" /> Kitchen Operating Workflow
+                                        </h5>
+                                        <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                                            Choose how kitchen food preparation is tracked and managed across your restaurant.
+                                        </p>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                                        {/* KDS Option */}
+                                        <div 
+                                            onClick={() => {
+                                                if (planName === 'Basic') {
+                                                    toast.error('Digital KDS requires a Pro or Enterprise subscription. Please upgrade your plan.');
+                                                    return;
+                                                }
+                                                setRestConfig(prev => ({
+                                                    ...prev,
+                                                    kitchenMode: 'KDS',
+                                                    orderKitchen: {
+                                                        ...prev.orderKitchen,
+                                                        kitchenMode: 'KDS',
+                                                        kdsEnabled: true,
+                                                        kotEnabled: true
+                                                    }
+                                                }));
+                                            }}
+                                            className={`p-3.5 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between gap-2.5 ${
+                                                (restConfig.orderKitchen?.kitchenMode !== 'KOT_ONLY' && restConfig.kitchenMode !== 'KOT_ONLY' && restConfig.orderKitchen?.kdsEnabled !== false)
+                                                    ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/30'
+                                                    : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                                            }`}
+                                        >
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div className="flex items-center gap-2">
+                                                    <MonitorDot size={18} className="text-blue-600" />
+                                                    <span className="font-extrabold text-sm text-gray-900 dark:text-white">Kitchen Display System (KDS)</span>
+                                                </div>
+                                                {(restConfig.orderKitchen?.kitchenMode !== 'KOT_ONLY' && restConfig.kitchenMode !== 'KOT_ONLY' && restConfig.orderKitchen?.kdsEnabled !== false) && (
+                                                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-gray-500 dark:text-slate-400">
+                                                Digital kitchen screen for chefs. Kitchen staff track active orders, timers, and advance cooking stages on display.
+                                            </p>
+                                            <span className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">
+                                                Digital Kitchen Screen Active
+                                            </span>
+                                        </div>
+
+                                        {/* KOT Only Option */}
+                                        <div 
+                                            onClick={() => {
+                                                setRestConfig(prev => ({
+                                                    ...prev,
+                                                    kitchenMode: 'KOT_ONLY',
+                                                    orderKitchen: {
+                                                        ...prev.orderKitchen,
+                                                        kitchenMode: 'KOT_ONLY',
+                                                        kotEnabled: true,
+                                                        kotPrintEnabled: true,
+                                                        kdsEnabled: false
+                                                    }
+                                                }));
+                                            }}
+                                            className={`p-3.5 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between gap-2.5 ${
+                                                (restConfig.orderKitchen?.kitchenMode === 'KOT_ONLY' || restConfig.kitchenMode === 'KOT_ONLY' || restConfig.orderKitchen?.kdsEnabled === false)
+                                                    ? 'border-orange-600 bg-orange-50/50 dark:bg-orange-950/30'
+                                                    : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                                            }`}
+                                        >
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div className="flex items-center gap-2">
+                                                    <Printer size={18} className="text-orange-600" />
+                                                    <span className="font-extrabold text-sm text-gray-900 dark:text-white">KOT Printing Only</span>
+                                                </div>
+                                                {(restConfig.orderKitchen?.kitchenMode === 'KOT_ONLY' || restConfig.kitchenMode === 'KOT_ONLY' || restConfig.orderKitchen?.kdsEnabled === false) && (
+                                                    <span className="w-2.5 h-2.5 rounded-full bg-orange-600"></span>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-gray-500 dark:text-slate-400">
+                                                Physical printed Kitchen Order Tickets without kitchen screens. Waiters or managers update order statuses from the floor.
+                                            </p>
+                                            <span className="text-[10px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-wider">
+                                                Floor Waiter Controls Active
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

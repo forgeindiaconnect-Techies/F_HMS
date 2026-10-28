@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
-    Calculator, Receipt, LogOut, Split, ArrowLeftRight, Tag, Coins, Undo2, Landmark, History 
+    Calculator, Receipt, LogOut, Split, ArrowLeftRight, Tag, Coins, Undo2, Landmark, History, Settings,
+    CalendarDays, CreditCard
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import clsx from 'clsx';
@@ -49,6 +50,14 @@ const CashierSidebar = () => {
                 { name: 'Refund Management', icon: Undo2, path: '/cashier/refunds' },
                 { name: 'Daily Cash Summary', icon: Landmark, path: '/cashier/summary' },
                 { name: 'Transaction History', icon: History, path: '/cashier/history' },
+                { name: 'POS Settings', icon: Settings, path: '/cashier/settings' },
+            ]
+        },
+        {
+            title: 'MY WORKSPACE',
+            items: [
+                { name: 'My Leave', icon: CalendarDays, path: '/cashier/leave' },
+                { name: 'My Salary & Slips', icon: CreditCard, path: '/cashier/payroll' },
             ]
         }
     ];

@@ -83,44 +83,26 @@ export const getRestaurants = async (req, res) => {
             }
         }
 
-        let restaurants = await Restaurant.find({}).populate('ownerId', 'name email').sort({ createdAt: -1 }).lean();
-        
-        // Auto-repair missing names & ensure active default status
-        const populatedRestaurants = await Promise.all(restaurants.map(async (rest) => {
-            let updatedNeeded = false;
-            let updatePayload = {};
+        // Return only active, approved, non-deleted restaurants to customer listing
+        const filter = {
+            isDeleted: { $ne: true },
+            status: { $nin: ['Inactive', 'Suspended', 'Deleted'] },
+            isActive: { $ne: false },
+            approvalStatus: 'Approved',
+            'subscription.status': { $nin: ['Cancelled', 'Frozen', 'Expired', 'Suspended', 'Inactive'] }
+        };
 
+        let restaurants = await Restaurant.find(filter).populate('ownerId', 'name email').sort({ createdAt: -1 }).lean();
+        
+        // Auto-repair missing names if needed
+        const populatedRestaurants = await Promise.all(restaurants.map(async (rest) => {
             if (!rest.name || rest.name.trim() === '' || rest.name === 'Unnamed') {
                 const ownerName = rest.ownerId?.name || 'Partner';
                 rest.name = `${ownerName}'s Restaurant`;
-                updatePayload.name = rest.name;
-                updatedNeeded = true;
-            }
-
-            if (!rest.subscription || !rest.subscription.status || rest.subscription.status === 'Inactive') {
-                if (!rest.subscription) rest.subscription = {};
-                rest.subscription.status = 'Active';
-                updatePayload['subscription.status'] = 'Active';
-                updatedNeeded = true;
-            }
-
-            if (!rest.approvalStatus) {
-                rest.approvalStatus = 'Approved';
-                updatePayload.approvalStatus = 'Approved';
-                updatedNeeded = true;
-            }
-
-            if (rest.isActive === undefined || rest.isActive === false) {
-                rest.isActive = true;
-                updatePayload.isActive = true;
-                updatedNeeded = true;
-            }
-
-            if (updatedNeeded) {
                 try {
-                    await Restaurant.findByIdAndUpdate(rest._id, { $set: updatePayload });
+                    await Restaurant.findByIdAndUpdate(rest._id, { $set: { name: rest.name } });
                 } catch (err) {
-                    console.error('Failed auto-repairing restaurant record:', err);
+                    console.error('Failed auto-repairing restaurant name:', err);
                 }
             }
 
@@ -326,7 +308,7 @@ export const getMyRestaurant = async (req, res) => {
         // Auto-initialize restaurantConfig with defaults if missing
         if (!restaurant.restaurantConfig) {
             restaurant.restaurantConfig = {
-                orderKitchen: { kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
+                orderKitchen: { kitchenMode: restaurant.kitchenMode || 'KDS', kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
                 waiterTips: { enabled: true, allowCustomerTips: true, tipPercentages: [5, 10, 15, 20], customTipAllowed: true },
                 qrOrdering: { enabled: true, allowSelfDineIn: true, allowWaiterOrdering: true },
                 paymentMethods: { cash: true, upi: true, card: true, onlineGateway: true },
@@ -336,7 +318,9 @@ export const getMyRestaurant = async (req, res) => {
         } else {
             // Guarantee nested objects exist
             if (!restaurant.restaurantConfig.orderKitchen) {
-                restaurant.restaurantConfig.orderKitchen = { kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true };
+                restaurant.restaurantConfig.orderKitchen = { kitchenMode: restaurant.kitchenMode || 'KDS', kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true };
+            } else if (!restaurant.restaurantConfig.orderKitchen.kitchenMode) {
+                restaurant.restaurantConfig.orderKitchen.kitchenMode = restaurant.kitchenMode || 'KDS';
             }
             if (!restaurant.restaurantConfig.waiterTips) {
                 restaurant.restaurantConfig.waiterTips = { enabled: true, allowCustomerTips: true, tipPercentages: [5, 10, 15, 20], customTipAllowed: true };
@@ -387,6 +371,24 @@ export const updateMyRestaurant = async (req, res) => {
                 };
             }
 
+            if (req.body.kitchenMode) {
+                restaurant.kitchenMode = req.body.kitchenMode;
+                if (!restaurant.restaurantConfig) restaurant.restaurantConfig = {};
+                if (!restaurant.restaurantConfig.orderKitchen) restaurant.restaurantConfig.orderKitchen = {};
+                restaurant.restaurantConfig.orderKitchen.kitchenMode = req.body.kitchenMode;
+                if (req.body.kitchenMode === 'KOT_ONLY') {
+                    restaurant.restaurantConfig.orderKitchen.kotEnabled = true;
+                    restaurant.restaurantConfig.orderKitchen.kotPrintEnabled = true;
+                    restaurant.restaurantConfig.orderKitchen.kdsEnabled = false;
+                    if (!restaurant.posConfig) restaurant.posConfig = {};
+                    restaurant.posConfig.kdsEnabled = false;
+                } else if (req.body.kitchenMode === 'KDS') {
+                    restaurant.restaurantConfig.orderKitchen.kdsEnabled = true;
+                    if (!restaurant.posConfig) restaurant.posConfig = {};
+                    restaurant.posConfig.kdsEnabled = true;
+                }
+            }
+
             if (restaurantConfig) {
                 if (!restaurant.restaurantConfig) restaurant.restaurantConfig = {};
                 if (restaurantConfig.orderKitchen) {
@@ -394,7 +396,20 @@ export const updateMyRestaurant = async (req, res) => {
                         ...(restaurant.restaurantConfig.orderKitchen || {}),
                         ...restaurantConfig.orderKitchen
                     };
-                    if (restaurantConfig.orderKitchen.kdsEnabled !== undefined) {
+                    if (restaurantConfig.orderKitchen.kitchenMode) {
+                        restaurant.kitchenMode = restaurantConfig.orderKitchen.kitchenMode;
+                        if (restaurantConfig.orderKitchen.kitchenMode === 'KOT_ONLY') {
+                            restaurant.restaurantConfig.orderKitchen.kotEnabled = true;
+                            restaurant.restaurantConfig.orderKitchen.kotPrintEnabled = true;
+                            restaurant.restaurantConfig.orderKitchen.kdsEnabled = false;
+                            if (!restaurant.posConfig) restaurant.posConfig = {};
+                            restaurant.posConfig.kdsEnabled = false;
+                        } else if (restaurantConfig.orderKitchen.kitchenMode === 'KDS') {
+                            restaurant.restaurantConfig.orderKitchen.kdsEnabled = true;
+                            if (!restaurant.posConfig) restaurant.posConfig = {};
+                            restaurant.posConfig.kdsEnabled = true;
+                        }
+                    } else if (restaurantConfig.orderKitchen.kdsEnabled !== undefined) {
                         if (!restaurant.posConfig) restaurant.posConfig = {};
                         restaurant.posConfig.kdsEnabled = restaurantConfig.orderKitchen.kdsEnabled;
                     }
@@ -458,9 +473,16 @@ export const getRestaurantPublicConfig = async (req, res) => {
         if (!id || !mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: 'Invalid restaurant ID' });
         }
-        const restaurant = await Restaurant.findById(id).select('name logo restaurantConfig posConfig billingConfig');
+        const restaurant = await Restaurant.findById(id).select('name logo restaurantConfig posConfig billingConfig status isDeleted isActive approvalStatus');
         if (!restaurant) {
             return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        if (restaurant.isDeleted || restaurant.status === 'Deleted') {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+        if (restaurant.status === 'Inactive' || restaurant.status === 'Suspended' || !restaurant.isActive || restaurant.approvalStatus !== 'Approved') {
+            return res.status(403).json({ message: 'This restaurant is currently unavailable or inactive.' });
         }
 
         const config = restaurant.restaurantConfig || {};
@@ -485,6 +507,7 @@ export const getRestaurantPublicConfig = async (req, res) => {
                 customTipAllowed: config.waiterTips?.customTipAllowed ?? true
             },
             orderKitchen: {
+                kitchenMode: config.orderKitchen?.kitchenMode || targetRest.kitchenMode || 'KDS',
                 kotEnabled: config.orderKitchen?.kotEnabled ?? true,
                 kdsEnabled: config.orderKitchen?.kdsEnabled ?? true,
                 kotPrintEnabled: config.orderKitchen?.kotPrintEnabled ?? true
@@ -515,13 +538,16 @@ export const getRestaurantConfig = async (req, res) => {
         const planFeatures = planDoc?.features || [];
 
         const config = restaurant.restaurantConfig || {
-            orderKitchen: { kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
+            orderKitchen: { kitchenMode: restaurant.kitchenMode || 'KDS', kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
             waiterTips: { enabled: true, allowCustomerTips: true, tipPercentages: [5, 10, 15, 20], customTipAllowed: true },
             qrOrdering: { enabled: true, allowSelfDineIn: true, allowWaiterOrdering: true },
             paymentMethods: { cash: true, upi: true, card: true, onlineGateway: true },
             setupWizardCompleted: false,
             setupStep: 1
         };
+        if (!config.orderKitchen.kitchenMode) {
+            config.orderKitchen.kitchenMode = restaurant.kitchenMode || 'KDS';
+        }
 
         res.json({
             config,
@@ -548,7 +574,7 @@ export const updateRestaurantConfig = async (req, res) => {
             return res.status(404).json({ message: 'Restaurant not found' });
         }
 
-        const { orderKitchen, waiterTips, qrOrdering, paymentMethods, setupWizardCompleted, setupStep } = req.body;
+        const { orderKitchen, waiterTips, qrOrdering, paymentMethods, setupWizardCompleted, setupStep, kitchenMode } = req.body;
 
         // 1. Validation: Prevent saving with zero payment methods
         const currentPm = restaurant.restaurantConfig?.paymentMethods || { cash: true, upi: true, card: true, onlineGateway: true };
@@ -575,7 +601,7 @@ export const updateRestaurantConfig = async (req, res) => {
             };
 
             // If attempting to enable KDS when plan forbids it:
-            if (orderKitchen?.kdsEnabled === true && !restaurant.restaurantConfig?.orderKitchen?.kdsEnabled) {
+            if ((orderKitchen?.kdsEnabled === true || orderKitchen?.kitchenMode === 'KDS' || kitchenMode === 'KDS') && !restaurant.restaurantConfig?.orderKitchen?.kdsEnabled && restaurant.kitchenMode !== 'KDS') {
                 if (!isFeatureAllowed('Kitchen Display System') && !isFeatureAllowed('KDS') && planName === 'Basic') {
                     return res.status(403).json({
                         message: `Kitchen Display System (KDS) requires a Pro or Enterprise subscription. Your restaurant is currently on the ${planName} plan.`,
@@ -589,7 +615,7 @@ export const updateRestaurantConfig = async (req, res) => {
         // 3. Merge configuration into restaurant document
         if (!restaurant.restaurantConfig) {
             restaurant.restaurantConfig = {
-                orderKitchen: { kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
+                orderKitchen: { kitchenMode: restaurant.kitchenMode || 'KDS', kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
                 waiterTips: { enabled: true, allowCustomerTips: true, tipPercentages: [5, 10, 15, 20], customTipAllowed: true },
                 qrOrdering: { enabled: true, allowSelfDineIn: true, allowWaiterOrdering: true },
                 paymentMethods: { cash: true, upi: true, card: true, onlineGateway: true },
@@ -598,12 +624,33 @@ export const updateRestaurantConfig = async (req, res) => {
             };
         }
 
+        const effectiveKitchenMode = kitchenMode || orderKitchen?.kitchenMode;
+        if (effectiveKitchenMode) {
+            restaurant.kitchenMode = effectiveKitchenMode;
+            if (!restaurant.restaurantConfig.orderKitchen) restaurant.restaurantConfig.orderKitchen = {};
+            restaurant.restaurantConfig.orderKitchen.kitchenMode = effectiveKitchenMode;
+            if (effectiveKitchenMode === 'KOT_ONLY') {
+                restaurant.restaurantConfig.orderKitchen.kotEnabled = true;
+                restaurant.restaurantConfig.orderKitchen.kotPrintEnabled = true;
+                restaurant.restaurantConfig.orderKitchen.kdsEnabled = false;
+                if (!restaurant.posConfig) restaurant.posConfig = {};
+                restaurant.posConfig.kdsEnabled = false;
+            } else if (effectiveKitchenMode === 'KDS') {
+                restaurant.restaurantConfig.orderKitchen.kdsEnabled = true;
+                if (!restaurant.posConfig) restaurant.posConfig = {};
+                restaurant.posConfig.kdsEnabled = true;
+            }
+        }
+
         if (orderKitchen) {
             restaurant.restaurantConfig.orderKitchen = {
                 ...(restaurant.restaurantConfig.orderKitchen || {}),
                 ...orderKitchen
             };
-            if (orderKitchen.kdsEnabled !== undefined) {
+            if (orderKitchen.kitchenMode && !effectiveKitchenMode) {
+                restaurant.kitchenMode = orderKitchen.kitchenMode;
+            }
+            if (orderKitchen.kdsEnabled !== undefined && !effectiveKitchenMode) {
                 if (!restaurant.posConfig) restaurant.posConfig = {};
                 restaurant.posConfig.kdsEnabled = orderKitchen.kdsEnabled;
             }
@@ -700,6 +747,22 @@ export const getRestaurantById = async (req, res) => {
         const restaurant = await Restaurant.findById(req.params.id).lean();
         if (!restaurant) {
             return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        // Validate visibility for public customer access
+        const isSuperAdminOrStaff = req.user && (
+            req.user.role === 'SuperAdmin' || 
+            String(req.user.restaurantId) === String(restaurant._id) ||
+            String(req.user._id) === String(restaurant.ownerId)
+        );
+
+        if (!isSuperAdminOrStaff) {
+            if (restaurant.isDeleted || restaurant.status === 'Deleted') {
+                return res.status(404).json({ message: 'Restaurant not found' });
+            }
+            if (restaurant.status === 'Inactive' || restaurant.status === 'Suspended' || !restaurant.isActive || restaurant.approvalStatus !== 'Approved') {
+                return res.status(403).json({ message: 'This restaurant is currently unavailable or inactive.' });
+            }
         }
         
         // Dynamically enable delivery if there are registered delivery partners

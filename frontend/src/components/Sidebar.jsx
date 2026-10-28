@@ -5,7 +5,8 @@ import {
     Activity, UserCheck, Key, ListTree, PackageSearch, Truck, Heart, 
     CalendarCheck, ShoppingBag, CreditCard, Tag, FileText, PieChart, 
     Bell, ReceiptText, Lock, QrCode, MessageSquare, HelpCircle, Volume2, LifeBuoy,
-    Network, ChefHat, Receipt, TrendingUp, DollarSign, Clock, Sparkles, Sliders
+    Network, ChefHat, Receipt, TrendingUp, DollarSign, Clock, Sparkles, Sliders,
+    CalendarDays, FileSpreadsheet
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../context/AuthContext';
@@ -97,6 +98,7 @@ const Sidebar = () => {
                 { name: 'Expenses', path: '/admin/expenses', icon: DollarSign, moduleKey: 'salesReports' },
                 { name: 'Rent & Bills', path: '/admin/expenses?tab=bills', icon: ReceiptText, moduleKey: 'salesReports' },
                 { name: 'Payroll & Salary', path: '/admin/staff?tab=payroll', icon: CreditCard, moduleKey: 'staffManagement' },
+                { name: 'Payroll Reports', path: '/admin/staff?tab=reports', icon: FileSpreadsheet, moduleKey: 'staffManagement' },
                 { name: 'Waiter Tips & Gratuity', path: '/admin/tips', icon: Heart, moduleKey: 'salesReports' },
                 { name: 'Financial Reports', path: '/admin/reports', icon: FileText, moduleKey: 'salesReports' },
             ]
@@ -107,6 +109,7 @@ const Sidebar = () => {
                 { name: 'Billing Management', path: '/admin/billing-management', icon: Receipt, moduleKey: 'posBilling' },
                 { name: 'Material Management', path: '/admin/inventory', icon: PackageSearch, moduleKey: 'inventoryManagement' },
                 { name: 'Staff Management', path: '/admin/staff', icon: UserCheck, moduleKey: 'staffManagement' },
+                { name: 'Leave Management', path: '/admin/staff?tab=leaves', icon: CalendarDays, moduleKey: 'staffManagement' },
                 { name: 'Branch Management', path: '/admin/branches', icon: Store, moduleKey: 'staffManagement' },
                 { name: 'Menu Management', path: '/admin/menu', icon: UtensilsCrossed, moduleKey: 'menuManagement' },
                 { name: 'Customer Management', path: '/admin/customers', icon: Users, moduleKey: 'customerManagement' },

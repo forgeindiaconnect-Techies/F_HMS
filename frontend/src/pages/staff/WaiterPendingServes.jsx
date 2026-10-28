@@ -42,7 +42,7 @@ const WaiterPendingServes = () => {
     };
 
     return (
-        <div className="max-w-[1200px] mx-auto space-y-6">
+        <div className="w-full max-w-[1600px] mx-auto space-y-6 pb-12">
             <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-green-200">
                 <div>
                     <h2 className="text-2xl font-bold text-green-700" style={{ fontFamily: 'Poppins, sans-serif' }}>Pending Serves &amp; Transfers</h2>

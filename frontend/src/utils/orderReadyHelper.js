@@ -9,13 +9,13 @@ export const getOrderReadyTimeInfo = (order) => {
 
     const status = String(order.status || '').trim();
     const deliveryStatus = String(order.deliveryStatus || '').trim();
-    const isSelfPickup = order.orderType === 'Self-Pickup' || 
-                         order.orderType === 'Self Pickup' || 
-                         order.serviceType === 'Self Dine-In (KFC Style)';
+    const isDelivery = order.orderType === 'Delivery';
+    const isSelfPickup = order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup' || order.source === 'Self-Pickup' || String(order.orderType || '').toLowerCase().includes('pickup');
+    const isSelfDineIn = !isSelfPickup && (order.serviceType === 'Self Dine-In (KFC Style)' || String(order.serviceType || '').toLowerCase().includes('self dine-in'));
 
     const isCancelled = status === 'Cancelled';
     const isCompleted = ['Delivered', 'Completed', 'Served'].includes(status) || deliveryStatus === 'Delivered';
-    const isReady = ['Ready', 'Ready for Pickup'].includes(status);
+    const isReady = ['Ready', 'Ready for Pickup', 'Ready for Dispatch'].includes(status);
 
     if (isCancelled) {
         return {
@@ -38,7 +38,7 @@ export const getOrderReadyTimeInfo = (order) => {
             : 'Done';
         return {
             status: 'Completed',
-            label: order.orderType === 'Delivery' ? 'Delivered Safely' : 'Served & Completed',
+            label: isDelivery ? 'Delivered Safely' : isSelfPickup ? 'Picked Up & Completed' : 'Served & Completed',
             displayTime: completedTime,
             badgeClass: 'bg-green-50 text-green-700 border-green-200',
             isCancelled: false,
@@ -51,9 +51,23 @@ export const getOrderReadyTimeInfo = (order) => {
     }
 
     if (isReady) {
+        let label = 'Food is Ready & Plated!';
+        let pickupPrompt = 'Your order is plated and being brought to your table now.';
+
+        if (isDelivery) {
+            label = 'Packed & Ready for Dispatch';
+            pickupPrompt = 'Your order is packed and waiting for delivery partner pickup.';
+        } else if (isSelfPickup) {
+            label = 'Ready for Counter Pickup!';
+            pickupPrompt = 'Your packed order is ready! Please collect it from the pickup counter.';
+        } else if (isSelfDineIn) {
+            label = 'Ready at Counter!';
+            pickupPrompt = 'Your order is ready at the counter. Please collect your tray!';
+        }
+
         return {
             status: 'Ready',
-            label: isSelfPickup ? 'Ready for Counter Pickup!' : 'Food is Ready & Plated!',
+            label,
             displayTime: 'Ready Now',
             badgeClass: 'bg-emerald-600 text-white font-black animate-pulse shadow-sm',
             isCancelled: false,
@@ -62,15 +76,13 @@ export const getOrderReadyTimeInfo = (order) => {
             isPreparing: false,
             progressPercent: 100,
             remainingMinutes: 0,
-            pickupPrompt: isSelfPickup 
-                ? 'Your order is ready at the pickup counter. Please collect your tray!' 
-                : 'Your order is plated and being brought to your table now.'
+            pickupPrompt
         };
     }
 
     // Calculating Estimated Ready Time
     const createdDate = order.createdAt ? new Date(order.createdAt) : new Date();
-    const prepMinutes = Number(order.estimatedPrepMinutes) || (order.orderType === 'Delivery' ? 30 : 20);
+    const prepMinutes = Number(order.estimatedPrepMinutes) || (isDelivery ? 30 : 20);
 
     let readyDate;
     if (order.estimatedReadyTime) {
@@ -89,6 +101,15 @@ export const getOrderReadyTimeInfo = (order) => {
     const elapsedMs = Math.max(0, now - createdDate.getTime());
     const calculatedProgress = Math.min(95, Math.max(15, Math.round((elapsedMs / totalDurationMs) * 100)));
 
+    let pickupPrompt = `Chefs are preparing your dishes fresh. Estimated ready time is ${readyClock}.`;
+    if (isDelivery) {
+        pickupPrompt = `Chefs are preparing your order. Estimated dispatch time is ${readyClock}.`;
+    } else if (isSelfPickup) {
+        pickupPrompt = `Estimated ready time is ${readyClock}. You will receive an alert once your packed order is ready at the counter.`;
+    } else if (isSelfDineIn) {
+        pickupPrompt = `Estimated ready time is ${readyClock}. You will receive an alert once ready at the counter.`;
+    }
+
     return {
         status: status || 'Preparing',
         label: `Ready in ~${remainingMinutes} min${remainingMinutes > 1 ? 's' : ''}`,
@@ -102,8 +123,6 @@ export const getOrderReadyTimeInfo = (order) => {
         prepMinutes,
         remainingMinutes,
         progressPercent: calculatedProgress,
-        pickupPrompt: isSelfPickup 
-            ? `Estimated ready time is ${readyClock}. You will receive an alert once ready at the counter.`
-            : `Chefs are preparing your dishes fresh. Estimated ready time is ${readyClock}.`
+        pickupPrompt
     };
 };

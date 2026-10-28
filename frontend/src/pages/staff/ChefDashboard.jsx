@@ -11,6 +11,7 @@ import { getApiUrl } from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
 import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 import KOTPrintModal from '../../components/KOTPrintModal';
+import { generateThermalKOTHtml, printKOTViaIframe } from '../../utils/receiptGenerator';
 
 const ChefDashboard = () => {
     const { api, user, restaurant } = useAuth();
@@ -236,8 +237,11 @@ const ChefDashboard = () => {
         setAutoPrintKOTEnabled(prev => {
             const next = !prev;
             localStorage.setItem('resto_chef_kot_autoprint', String(next));
-            toast.success(next ? 'Auto-print KOT on new orders enabled' : 'Auto-print KOT disabled');
             return next;
+        });
+        const next = !autoPrintKOTEnabled;
+        toast.success(next ? 'Auto-print KOT on new orders enabled' : 'Auto-print KOT disabled', {
+            id: 'chef-dashboard-kot-autoprint-toggle'
         });
     };
 
@@ -253,86 +257,8 @@ const ChefDashboard = () => {
             icon: '👨‍🍳'
         });
 
-        const items = orderData.orderItems || [];
-        const itemsHtml = items.map(item => `
-            <div style="padding: 5px 0; border-bottom: 1px dashed #bbb;">
-                <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 15px;">
-                    <span>[${item.qty || item.quantity || 1}x] ${item.name}</span>
-                </div>
-                ${item.notes ? `<div style="font-size: 12px; font-weight: bold; margin-top: 2px;">*** NOTE: ${item.notes} ***</div>` : ''}
-            </div>
-        `).join('');
-
-        const printContent = `
-            <!DOCTYPE html>
-            <html>
-                <head>
-                    <title>${kotNum} - Kitchen Ticket</title>
-                    <style>
-                        @page { size: 80mm auto; margin: 4mm; }
-                        body {
-                            font-family: 'Courier New', Courier, monospace;
-                            width: 78mm;
-                            max-width: 78mm;
-                            margin: 0 auto;
-                            padding: 8px 4px;
-                            font-size: 13px;
-                            line-height: 1.3;
-                            color: #000;
-                        }
-                        .center { text-align: center; }
-                        .line { border-bottom: 2px dashed #000; margin: 8px 0; }
-                    </style>
-                </head>
-                <body>
-                    <div class="center">
-                        <h2 style="margin: 0; font-size: 18px; font-weight: 900;">*** KITCHEN ORDER TICKET ***</h2>
-                        <h3 style="margin: 4px 0; font-size: 17px; font-weight: 900;">${kotNum}</h3>
-                        <p style="margin: 2px 0; font-weight: bold; font-size: 13px;">Order #${ticketNum}</p>
-                        <p style="margin: 2px 0; font-weight: 900; font-size: 15px;">
-                            ${orderData.tableNumber ? `TABLE ${orderData.tableNumber}` : (orderData.orderType || 'DINE IN')}
-                        </p>
-                        ${orderData.customerName ? `<p style="margin: 2px 0;">Guest: ${orderData.customerName}</p>` : ''}
-                        <p style="margin: 2px 0; font-size: 11px;">Time: ${new Date().toLocaleTimeString()} | Date: ${new Date().toLocaleDateString()}</p>
-                    </div>
-                    <div class="line"></div>
-                    <div>
-                        ${itemsHtml}
-                    </div>
-                    <div class="line"></div>
-                    <div class="center" style="font-size: 11px; font-weight: bold;">
-                        Total Items: ${items.reduce((s, i) => s + (i.qty || i.quantity || 1), 0)}<br/>
-                        ${orderData.notes ? `Instructions: ${orderData.notes}<br/>` : ''}
-                        *** RUSH PREPARATION • KITCHEN ORDER ***
-                    </div>
-                </body>
-            </html>
-        `;
-
-        let printFrame = document.getElementById('chef-auto-print-frame');
-        if (!printFrame) {
-            printFrame = document.createElement('iframe');
-            printFrame.id = 'chef-auto-print-frame';
-            printFrame.style.position = 'fixed';
-            printFrame.style.right = '0';
-            printFrame.style.bottom = '0';
-            printFrame.style.width = '0';
-            printFrame.style.height = '0';
-            printFrame.style.border = '0';
-            document.body.appendChild(printFrame);
-        }
-        const frameDoc = printFrame.contentWindow.document;
-        frameDoc.open();
-        frameDoc.write(printContent);
-        frameDoc.close();
-        setTimeout(() => {
-            try {
-                printFrame.contentWindow.focus();
-                printFrame.contentWindow.print();
-            } catch (e) {
-                console.error('Kitchen auto print trigger error:', e);
-            }
-        }, 400);
+        const html = generateThermalKOTHtml(orderData, restaurant);
+        printKOTViaIframe(html);
     };
 
     // Print KOT Ticket Modal Trigger
@@ -503,7 +429,11 @@ const ChefDashboard = () => {
         return 'bg-emerald-600 text-white border-emerald-400';
     };
 
-    if (restaurant?.restaurantConfig?.orderKitchen?.kdsEnabled === false) {
+    const isKotOnlyKitchen = restaurant?.kitchenMode === 'KOT_ONLY' || 
+                             restaurant?.restaurantConfig?.orderKitchen?.kitchenMode === 'KOT_ONLY' || 
+                             restaurant?.restaurantConfig?.orderKitchen?.kdsEnabled === false;
+
+    if (isKotOnlyKitchen) {
         return (
             <div className="w-full max-w-2xl mx-auto my-12 p-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 text-center space-y-4 shadow-sm">
                 <div className="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 flex items-center justify-center mx-auto">

@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Check, X, Ban, RefreshCw, Eye, Trash2, Search, Store, Sparkles, TrendingUp, ShieldCheck, AlertCircle, Building2, Calendar, Phone, Mail, MapPin } from 'lucide-react';
+import { 
+    Check, X, Ban, RefreshCw, Eye, EyeOff, Trash2, Search, Store, 
+    Sparkles, TrendingUp, ShieldCheck, AlertCircle, Building2, Calendar, 
+    Phone, Mail, MapPin, RotateCcw, CheckCircle2, ShieldAlert
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../../components/ConfirmModal';
 
@@ -33,10 +37,11 @@ const PlatformRestaurants = () => {
         fetchRestaurants();
     }, [api]);
 
+    // Handle Restaurant Approval
     const handleApproval = async (id, status) => {
         try {
             await api.put(`/super-admin/restaurants/${id}/approval`, { approvalStatus: status });
-            setRestaurants(restaurants.map(r => 
+            setRestaurants(prev => prev.map(r => 
                 r._id === id ? { ...r, approvalStatus: status } : r
             ));
             toast.success(`Restaurant ${status.toLowerCase()} successfully!`);
@@ -45,35 +50,82 @@ const PlatformRestaurants = () => {
         }
     };
 
-    const handleFreezeAccount = async (id, currentStatus) => {
-        const newStatus = currentStatus === 'Active' ? 'Frozen' : 'Active';
-        try {
-            await api.put(`/super-admin/restaurants/${id}/subscription`, { status: newStatus });
-            setRestaurants(restaurants.map(r => 
-                r._id === id ? { ...r, subscription: { ...r.subscription, status: newStatus } } : r
-            ));
-            toast.success(`Account status updated to ${newStatus}!`);
-        } catch (error) {
-            toast.error('Failed to update subscription');
-        }
-    };
+    // Update Visibility Status (Active, Inactive, Suspended)
+    const handleUpdateStatus = (id, newStatus, name) => {
+        const isDestructive = newStatus === 'Suspended' || newStatus === 'Inactive';
+        const title = newStatus === 'Active' 
+            ? `Activate ${name || 'Restaurant'}`
+            : newStatus === 'Inactive'
+            ? `Hide / Deactivate ${name || 'Restaurant'}`
+            : `Suspend ${name || 'Restaurant'}`;
 
-    const handleDeleteRestaurant = async (id) => {
+        const message = newStatus === 'Active'
+            ? `Activate and publish "${name}" to the customer marketplace? Customers will be able to discover the restaurant, view the menu, and place orders (subject to approval).`
+            : newStatus === 'Inactive'
+            ? `Deactivate "${name}"? It will be hidden immediately from customer discovery, explore listings, and public menus. Existing historical orders and billing records remain intact.`
+            : `Suspend "${name}"? The restaurant will be blocked from public customer listings and prevented from accepting new customer orders immediately.`;
+
         setConfirmModal({
             isOpen: true,
-            title: 'Delete Restaurant',
-            message: 'Are you sure you want to permanently delete this restaurant? This action cannot be undone.',
+            title,
+            message,
+            isDestructive,
             onConfirm: async () => {
                 try {
-                    await api.delete(`/super-admin/restaurants/${id}`);
-                    setRestaurants(prev => prev.filter(r => r._id !== id));
-                    toast.success('Restaurant deleted successfully!');
+                    const res = await api.put(`/super-admin/restaurants/${id}/status`, { status: newStatus });
+                    setRestaurants(prev => prev.map(r => 
+                        r._id === id ? { ...r, status: newStatus, isActive: newStatus === 'Active' } : r
+                    ));
+                    toast.success(res.data?.message || `Restaurant status updated to ${newStatus}!`);
+                } catch (error) {
+                    console.error("Failed to update status", error);
+                    toast.error(error.response?.data?.message || 'Failed to update restaurant status');
+                }
+            }
+        });
+    };
+
+    // Safe Soft Delete
+    const handleDeleteRestaurant = (id, name) => {
+        setConfirmModal({
+            isOpen: true,
+            title: `Soft-Delete ${name || 'Restaurant'}`,
+            message: `Are you sure you want to soft-delete "${name}"? It will be removed from customer listings and will not accept new orders. All historical orders, bills, invoices, payments, and staff records are SAFELY PRESERVED in the database. You can restore this restaurant at any time.`,
+            isDestructive: true,
+            onConfirm: async () => {
+                try {
+                    const res = await api.delete(`/super-admin/restaurants/${id}`);
+                    setRestaurants(prev => prev.map(r => 
+                        r._id === id ? { ...r, status: 'Deleted', isDeleted: true, isActive: false, deletedAt: new Date() } : r
+                    ));
+                    toast.success(res.data?.message || 'Restaurant soft-deleted successfully! Historical records preserved.');
                 } catch (error) {
                     console.error("Failed to delete restaurant", error);
                     toast.error(error.response?.data?.message || 'Failed to delete restaurant');
                 }
-            },
-            isDestructive: true
+            }
+        });
+    };
+
+    // Restore Soft-Deleted Restaurant
+    const handleRestoreRestaurant = (id, name) => {
+        setConfirmModal({
+            isOpen: true,
+            title: `Restore ${name || 'Restaurant'}`,
+            message: `Are you sure you want to restore "${name}"? This will reactivate the restaurant and reinstate its platform access and marketplace visibility.`,
+            isDestructive: false,
+            onConfirm: async () => {
+                try {
+                    const res = await api.put(`/super-admin/restaurants/${id}/restore`);
+                    setRestaurants(prev => prev.map(r => 
+                        r._id === id ? { ...r, status: 'Active', isDeleted: false, isActive: true, deletedAt: null } : r
+                    ));
+                    toast.success(res.data?.message || 'Restaurant restored successfully!');
+                } catch (error) {
+                    console.error("Failed to restore restaurant", error);
+                    toast.error(error.response?.data?.message || 'Failed to restore restaurant');
+                }
+            }
         });
     };
 
@@ -97,15 +149,16 @@ const PlatformRestaurants = () => {
 
     // Calculate metrics
     const totalCount = restaurants.length;
-    const activeSubscribers = restaurants.filter(r => (r.subscription?.status || 'Active') === 'Active');
-    const enterpriseCount = restaurants.filter(r => (r.subscription?.plan || '').toLowerCase() === 'enterprise').length;
-    const proCount = restaurants.filter(r => ['pro', 'professional'].includes((r.subscription?.plan || '').toLowerCase())).length;
-    const basicCount = restaurants.filter(r => ['basic', 'starter'].includes((r.subscription?.plan || '').toLowerCase())).length;
-    const customPosCount = restaurants.filter(r => r.billingConfig?.isCustomBillingActive).length;
-    const pendingApprovalCount = restaurants.filter(r => r.approvalStatus === 'Pending').length;
-    const frozenCount = restaurants.filter(r => r.subscription?.status === 'Frozen').length;
+    const activeVisibilityCount = restaurants.filter(r => !r.isDeleted && (r.status || 'Active') === 'Active' && r.isActive !== false).length;
+    const inactiveCount = restaurants.filter(r => !r.isDeleted && (r.status === 'Inactive' || r.isActive === false)).length;
+    const suspendedCount = restaurants.filter(r => !r.isDeleted && r.status === 'Suspended').length;
+    const softDeletedCount = restaurants.filter(r => r.isDeleted || r.status === 'Deleted').length;
+    const enterpriseCount = restaurants.filter(r => !r.isDeleted && (r.subscription?.plan || '').toLowerCase() === 'enterprise').length;
+    const customPosCount = restaurants.filter(r => !r.isDeleted && r.billingConfig?.isCustomBillingActive).length;
+    const pendingApprovalCount = restaurants.filter(r => !r.isDeleted && r.approvalStatus === 'Pending').length;
 
     // Calculate total SaaS MRR
+    const activeSubscribers = restaurants.filter(r => !r.isDeleted && (r.subscription?.status || 'Active') === 'Active');
     const totalSaaSMRR = activeSubscribers.reduce((acc, r) => {
         const sub = r.subscription || {};
         if (sub.price && sub.price > 0) return acc + sub.price;
@@ -117,18 +170,19 @@ const PlatformRestaurants = () => {
 
     // Filtering logic
     const filteredRestaurants = restaurants.filter(r => {
+        const isDeleted = Boolean(r.isDeleted || r.status === 'Deleted');
+        const restStatus = isDeleted ? 'Deleted' : (r.status || (r.isActive === false ? 'Inactive' : 'Active'));
         const plan = (r.subscription?.plan || 'Basic').toLowerCase();
-        const subStatus = r.subscription?.status || 'Active';
         const isCustomPOS = Boolean(r.billingConfig?.isCustomBillingActive);
 
         let matchesTab = true;
-        if (activeFilterTab === 'Active Subscribers') matchesTab = subStatus === 'Active';
-        else if (activeFilterTab === 'Custom Setup') matchesTab = isCustomPOS;
-        else if (activeFilterTab === 'Enterprise') matchesTab = plan === 'enterprise';
-        else if (activeFilterTab === 'Pro') matchesTab = plan === 'pro' || plan === 'professional';
-        else if (activeFilterTab === 'Basic') matchesTab = plan === 'basic' || plan === 'starter';
-        else if (activeFilterTab === 'Pending Approval') matchesTab = r.approvalStatus === 'Pending';
-        else if (activeFilterTab === 'Frozen') matchesTab = subStatus === 'Frozen';
+        if (activeFilterTab === 'Active') matchesTab = restStatus === 'Active' && !isDeleted;
+        else if (activeFilterTab === 'Inactive') matchesTab = restStatus === 'Inactive' && !isDeleted;
+        else if (activeFilterTab === 'Suspended') matchesTab = restStatus === 'Suspended' && !isDeleted;
+        else if (activeFilterTab === 'Deleted') matchesTab = isDeleted;
+        else if (activeFilterTab === 'Custom Setup') matchesTab = isCustomPOS && !isDeleted;
+        else if (activeFilterTab === 'Enterprise') matchesTab = plan === 'enterprise' && !isDeleted;
+        else if (activeFilterTab === 'Pending Approval') matchesTab = r.approvalStatus === 'Pending' && !isDeleted;
 
         if (!matchesTab) return false;
 
@@ -151,7 +205,7 @@ const PlatformRestaurants = () => {
                 <div>
                     <h2 className="text-2xl font-black text-gray-900 font-sans tracking-tight">Platform Restaurants Registry</h2>
                     <p className="text-sm text-gray-500 mt-1">
-                        Comprehensive management for all {totalCount} subscribed restaurants, billing cycles, and custom POS systems.
+                        Comprehensive management for all {totalCount} registered restaurants, marketplace visibility, and custom POS systems.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -169,24 +223,24 @@ const PlatformRestaurants = () => {
                     <div className="text-2xl font-black text-gray-900 mt-1">{totalCount}</div>
                 </div>
                 <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                    <div className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Active Subs</div>
-                    <div className="text-2xl font-black text-emerald-700 mt-1">{activeSubscribers.length}</div>
+                    <div className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Active & Visible</div>
+                    <div className="text-2xl font-black text-emerald-700 mt-1">{activeVisibilityCount}</div>
                 </div>
                 <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                    <div className="text-[11px] font-bold text-purple-600 uppercase tracking-wider">Enterprise</div>
-                    <div className="text-2xl font-black text-purple-700 mt-1">{enterpriseCount}</div>
+                    <div className="text-[11px] font-bold text-amber-600 uppercase tracking-wider">Inactive / Hidden</div>
+                    <div className="text-2xl font-black text-amber-700 mt-1">{inactiveCount}</div>
                 </div>
                 <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                    <div className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">Pro Tier</div>
-                    <div className="text-2xl font-black text-blue-700 mt-1">{proCount}</div>
+                    <div className="text-[11px] font-bold text-rose-600 uppercase tracking-wider">Suspended</div>
+                    <div className="text-2xl font-black text-rose-700 mt-1">{suspendedCount}</div>
                 </div>
                 <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                    <div className="text-[11px] font-bold text-gray-600 uppercase tracking-wider">Basic Tier</div>
-                    <div className="text-2xl font-black text-gray-700 mt-1">{basicCount}</div>
+                    <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Soft-Deleted</div>
+                    <div className="text-2xl font-black text-gray-700 mt-1">{softDeletedCount}</div>
                 </div>
                 <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-                    <div className="text-[11px] font-bold text-amber-600 uppercase tracking-wider">Custom POS</div>
-                    <div className="text-2xl font-black text-amber-700 mt-1">{customPosCount}</div>
+                    <div className="text-[11px] font-bold text-purple-600 uppercase tracking-wider">Custom POS</div>
+                    <div className="text-2xl font-black text-purple-700 mt-1">{customPosCount}</div>
                 </div>
             </div>
 
@@ -216,13 +270,13 @@ const PlatformRestaurants = () => {
                         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
                             {[
                                 { key: 'All', label: 'All', count: totalCount },
-                                { key: 'Active Subscribers', label: 'Active Subs', count: activeSubscribers.length },
+                                { key: 'Active', label: 'Active & Visible', count: activeVisibilityCount },
+                                { key: 'Inactive', label: 'Inactive / Hidden', count: inactiveCount },
+                                { key: 'Suspended', label: 'Suspended', count: suspendedCount },
+                                { key: 'Deleted', label: 'Soft-Deleted', count: softDeletedCount },
                                 { key: 'Custom Setup', label: 'Custom POS', count: customPosCount },
                                 { key: 'Enterprise', label: 'Enterprise', count: enterpriseCount },
-                                { key: 'Pro', label: 'Pro', count: proCount },
-                                { key: 'Basic', label: 'Basic', count: basicCount },
-                                ...(pendingApprovalCount > 0 ? [{ key: 'Pending Approval', label: 'Pending', count: pendingApprovalCount }] : []),
-                                ...(frozenCount > 0 ? [{ key: 'Frozen', label: 'Frozen', count: frozenCount }] : [])
+                                ...(pendingApprovalCount > 0 ? [{ key: 'Pending Approval', label: 'Pending', count: pendingApprovalCount }] : [])
                             ].map((tab) => {
                                 const isActive = activeFilterTab === tab.key;
                                 return (
@@ -254,16 +308,19 @@ const PlatformRestaurants = () => {
                             <tr className="bg-gray-50/50 border-b border-gray-100 text-xs text-gray-400 uppercase tracking-wider">
                                 <th className="p-4 font-bold">Restaurant & Location</th>
                                 <th className="p-4 font-bold">Owner & Contact</th>
+                                <th className="p-4 font-bold">Marketplace Visibility</th>
                                 <th className="p-4 font-bold">Plan & Pricing</th>
                                 <th className="p-4 font-bold">POS Setup</th>
                                 <th className="p-4 font-bold">Approval</th>
                                 <th className="p-4 font-bold">Renewal Status</th>
-                                <th className="p-4 font-bold">Sub Status</th>
                                 <th className="p-4 font-bold text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                             {filteredRestaurants.map(restaurant => {
+                                const isDeleted = Boolean(restaurant.isDeleted || restaurant.status === 'Deleted');
+                                const restStatus = isDeleted ? 'Deleted' : (restaurant.status || (restaurant.isActive === false ? 'Inactive' : 'Active'));
+                                
                                 const planLower = (restaurant.subscription?.plan || 'basic').toLowerCase();
                                 const isEnterprise = planLower === 'enterprise';
                                 const isPro = planLower === 'pro' || planLower === 'professional';
@@ -278,7 +335,7 @@ const PlatformRestaurants = () => {
                                 const outletFormat = restaurant.billingConfig?.outletFormat || restaurant.posConfig?.outletFormat || 'Restaurant';
 
                                 return (
-                                    <tr key={restaurant._id} className="hover:bg-gray-50/80 transition-colors">
+                                    <tr key={restaurant._id} className={`hover:bg-gray-50/80 transition-colors ${isDeleted ? 'bg-gray-50/40 opacity-75' : ''}`}>
                                         <td className="p-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-11 h-11 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
@@ -291,7 +348,7 @@ const PlatformRestaurants = () => {
                                                     )}
                                                 </div>
                                                 <div>
-                                                    <span className="font-bold text-gray-900 block text-sm">{restaurant.name}</span>
+                                                    <span className={`font-bold block text-sm ${isDeleted ? 'text-gray-500 line-through' : 'text-gray-900'}`}>{restaurant.name}</span>
                                                     <span className="text-[11px] font-semibold text-gray-500 block">{outletFormat}</span>
                                                     {restaurant.address && (
                                                         <span className="text-[10px] text-gray-400 block truncate max-w-[180px]">{restaurant.address}</span>
@@ -304,6 +361,30 @@ const PlatformRestaurants = () => {
                                             <div className="text-[11px] text-gray-500">{restaurant.ownerId?.email || 'N/A'}</div>
                                             {restaurant.phone && (
                                                 <div className="text-[10px] text-gray-400 font-medium">📞 {restaurant.phone}</div>
+                                            )}
+                                        </td>
+                                        {/* Marketplace Visibility Column */}
+                                        <td className="p-4">
+                                            {isDeleted ? (
+                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 text-gray-600 border border-gray-300 rounded-lg text-xs font-bold">
+                                                    <Trash2 size={12} className="text-gray-400" /> Soft-Deleted
+                                                </span>
+                                            ) : restStatus === 'Active' ? (
+                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-bold">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Active / Visible
+                                                </span>
+                                            ) : restStatus === 'Inactive' ? (
+                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg text-xs font-bold">
+                                                    <EyeOff size={12} className="text-amber-500" /> Inactive / Hidden
+                                                </span>
+                                            ) : restStatus === 'Suspended' ? (
+                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold">
+                                                    <Ban size={12} className="text-rose-500" /> Suspended
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg text-xs font-medium">
+                                                    {restStatus}
+                                                </span>
                                             )}
                                         </td>
                                         <td className="p-4">
@@ -358,15 +439,6 @@ const PlatformRestaurants = () => {
                                                 <span className="text-xs text-gray-400 font-medium">Ongoing</span>
                                             )}
                                         </td>
-                                        <td className="p-4">
-                                            <span className={`px-2.5 py-1 text-xs font-bold rounded-lg border ${
-                                                restaurant.subscription?.status === 'Active' 
-                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                                                : 'bg-red-50 text-red-700 border-red-200'
-                                            }`}>
-                                                {restaurant.subscription?.status || 'Active'}
-                                            </span>
-                                        </td>
                                         <td className="p-4 text-right">
                                             <div className="flex items-center justify-end gap-1.5">
                                                 <button 
@@ -377,37 +449,77 @@ const PlatformRestaurants = () => {
                                                     <Eye size={16} />
                                                 </button>
 
-                                                {restaurant.approvalStatus === 'Pending' && (
+                                                {isDeleted ? (
+                                                    /* Restore Soft-Deleted Restaurant */
+                                                    <button
+                                                        onClick={() => handleRestoreRestaurant(restaurant._id, restaurant.name)}
+                                                        className="px-2.5 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-colors flex items-center gap-1 shadow-sm"
+                                                        title="Restore Restaurant to Active Status"
+                                                    >
+                                                        <RotateCcw size={14} /> Restore
+                                                    </button>
+                                                ) : (
                                                     <>
-                                                        <button onClick={() => handleApproval(restaurant._id, 'Approved')} className="p-2 text-green-600 bg-green-50 hover:bg-green-100 rounded-xl" title="Approve">
-                                                            <Check size={16} />
-                                                        </button>
-                                                        <button onClick={() => handleApproval(restaurant._id, 'Rejected')} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl" title="Reject">
-                                                            <X size={16} />
+                                                        {/* Approval Controls */}
+                                                        {restaurant.approvalStatus === 'Pending' && (
+                                                            <>
+                                                                <button onClick={() => handleApproval(restaurant._id, 'Approved')} className="p-2 text-green-600 bg-green-50 hover:bg-green-100 rounded-xl" title="Approve">
+                                                                    <Check size={16} />
+                                                                </button>
+                                                                <button onClick={() => handleApproval(restaurant._id, 'Rejected')} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl" title="Reject">
+                                                                    <X size={16} />
+                                                                </button>
+                                                            </>
+                                                        )}
+
+                                                        {/* Visibility Control: Toggle Active / Inactive */}
+                                                        {restStatus === 'Active' ? (
+                                                            <button 
+                                                                onClick={() => handleUpdateStatus(restaurant._id, 'Inactive', restaurant.name)}
+                                                                className="p-2 text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-xl transition-colors"
+                                                                title="Hide / Deactivate Restaurant (Remove from Customer Apps)"
+                                                            >
+                                                                <EyeOff size={16} />
+                                                            </button>
+                                                        ) : (
+                                                            <button 
+                                                                onClick={() => handleUpdateStatus(restaurant._id, 'Active', restaurant.name)}
+                                                                className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors"
+                                                                title="Activate Restaurant (Make Visible in Customer Apps)"
+                                                            >
+                                                                <CheckCircle2 size={16} />
+                                                            </button>
+                                                        )}
+
+                                                        {/* Visibility Control: Suspend / Unsuspend */}
+                                                        {restStatus === 'Suspended' ? (
+                                                            <button 
+                                                                onClick={() => handleUpdateStatus(restaurant._id, 'Active', restaurant.name)}
+                                                                className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors"
+                                                                title="Unsuspend Restaurant"
+                                                            >
+                                                                <RefreshCw size={16} />
+                                                            </button>
+                                                        ) : (
+                                                            <button 
+                                                                onClick={() => handleUpdateStatus(restaurant._id, 'Suspended', restaurant.name)}
+                                                                className="p-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors"
+                                                                title="Suspend Restaurant"
+                                                            >
+                                                                <Ban size={16} />
+                                                            </button>
+                                                        )}
+
+                                                        {/* Safe Soft Delete */}
+                                                        <button 
+                                                            onClick={() => handleDeleteRestaurant(restaurant._id, restaurant.name)} 
+                                                            className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors" 
+                                                            title="Soft-Delete Restaurant (Preserves Financial & Order Records)"
+                                                        >
+                                                            <Trash2 size={16} />
                                                         </button>
                                                     </>
                                                 )}
-                                                {restaurant.approvalStatus === 'Approved' && (
-                                                    <button 
-                                                        onClick={() => handleFreezeAccount(restaurant._id, restaurant.subscription?.status)}
-                                                        className={`p-2 rounded-xl transition-colors ${
-                                                            restaurant.subscription?.status === 'Active' 
-                                                            ? 'text-red-600 bg-red-50 hover:bg-red-100'
-                                                            : 'text-green-600 bg-green-50 hover:bg-green-100'
-                                                        }`}
-                                                        title={restaurant.subscription?.status === 'Active' ? 'Freeze Account' : 'Unfreeze Account'}
-                                                    >
-                                                        {restaurant.subscription?.status === 'Active' ? <Ban size={16} /> : <RefreshCw size={16} />}
-                                                    </button>
-                                                )}
-
-                                                <button 
-                                                    onClick={() => handleDeleteRestaurant(restaurant._id)} 
-                                                    className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors" 
-                                                    title="Delete Restaurant"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -434,8 +546,8 @@ const PlatformRestaurants = () => {
                     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg relative z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/70">
                             <div>
-                                <h3 className="font-bold text-gray-900 text-lg">Restaurant Subscription & Profile</h3>
-                                <p className="text-xs text-gray-500">Comprehensive membership and POS configuration details</p>
+                                <h3 className="font-bold text-gray-900 text-lg">Restaurant Profile & Visibility</h3>
+                                <p className="text-xs text-gray-500">Comprehensive membership, marketplace status, and POS configuration</p>
                             </div>
                             <button onClick={() => setViewingRestaurant(null)} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
                                 <X size={20} />
@@ -463,6 +575,26 @@ const PlatformRestaurants = () => {
                             </div>
                             
                             <div className="space-y-2.5 text-sm">
+                                {/* Marketplace Visibility Status */}
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 font-medium">Marketplace Status:</span>
+                                    {viewingRestaurant.isDeleted ? (
+                                        <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-black rounded-lg border border-gray-300">
+                                            Soft-Deleted
+                                        </span>
+                                    ) : (
+                                        <span className={`px-3 py-1 text-xs font-black rounded-lg border ${
+                                            (viewingRestaurant.status || 'Active') === 'Active'
+                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                                : viewingRestaurant.status === 'Suspended'
+                                                ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                                : 'bg-amber-50 text-amber-700 border-amber-200'
+                                        }`}>
+                                            {viewingRestaurant.status || 'Active'}
+                                        </span>
+                                    )}
+                                </div>
+
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-500 font-medium">Subscription Tier:</span>
                                     <span className="px-3 py-1 bg-purple-50 text-purple-700 text-xs font-black rounded-lg border border-purple-200">
@@ -521,6 +653,19 @@ const PlatformRestaurants = () => {
                                     </span>
                                 </div>
                             </div>
+
+                            {/* Soft-Deleted Banner */}
+                            {viewingRestaurant.isDeleted && (
+                                <div className="bg-gray-100 rounded-2xl p-4 border border-gray-200 space-y-1">
+                                    <div className="flex items-center gap-2 text-gray-800 font-bold text-xs uppercase tracking-wider">
+                                        <ShieldAlert size={14} className="text-gray-600" />
+                                        Soft-Deleted Restaurant
+                                    </div>
+                                    <p className="text-xs text-gray-600">
+                                        Deleted on {viewingRestaurant.deletedAt ? new Date(viewingRestaurant.deletedAt).toLocaleString() : 'N/A'}. All past order history, invoices, payments, and financial reports are securely preserved in the database.
+                                    </p>
+                                </div>
+                            )}
 
                             {/* Custom Billing POS Details */}
                             {viewingRestaurant.billingConfig?.isCustomBillingActive && (

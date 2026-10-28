@@ -106,8 +106,34 @@ const Explore = () => {
             try {
                 let API_URL = getApiUrl();
                 const res = await axios.get(`${API_URL}/restaurants`);
-                let realRest = Array.isArray(res.data) ? res.data.filter(r => r.isActive !== false && r.approvalStatus !== 'Rejected') : [];
+                let realRest = Array.isArray(res.data) 
+                    ? res.data.filter(r => 
+                        !r.isDeleted && 
+                        r.status !== 'Inactive' && 
+                        r.status !== 'Suspended' && 
+                        r.status !== 'Deleted' && 
+                        r.isActive !== false && 
+                        r.approvalStatus === 'Approved'
+                    ) 
+                    : [];
                 setRestaurants(realRest);
+
+                // Auto-clean localStorage so users never have stale items from inactive/deleted restaurants
+                try {
+                    const savedCart = JSON.parse(localStorage.getItem('restosys_cart') || '[]');
+                    if (Array.isArray(savedCart) && savedCart.length > 0) {
+                        const activeIds = new Set(realRest.map(r => String(r._id)));
+                        const validCart = savedCart.filter(item => {
+                            const rId = typeof item.restaurantId === 'object' ? item.restaurantId?._id : (item.restaurantId || item.restaurant);
+                            return !rId || activeIds.has(String(rId));
+                        });
+                        if (validCart.length !== savedCart.length) {
+                            localStorage.setItem('restosys_cart', JSON.stringify(validCart));
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Storage cleanup note:", e);
+                }
             } catch (error) {
                 console.error("Failed to load restaurants", error);
                 setRestaurants([]);

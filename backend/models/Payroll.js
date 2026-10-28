@@ -79,6 +79,9 @@ const payrollSchema = new mongoose.Schema({
         presentDays: { type: Number, default: 0 },
         absentDays: { type: Number, default: 0 },
         leaveDays: { type: Number, default: 0 },
+        paidLeaveDays: { type: Number, default: 0 },
+        unpaidLeaveDays: { type: Number, default: 0 },
+        lopDays: { type: Number, default: 0 },
         halfDays: { type: Number, default: 0 },
         holidays: { type: Number, default: 0 },
         overtimeHours: { type: Number, default: 0 },
@@ -86,6 +89,7 @@ const payrollSchema = new mongoose.Schema({
     },
     calculations: {
         earnedBasic: { type: Number, default: 0 },
+        lopDeduction: { type: Number, default: 0 },
         overtimePay: { type: Number, default: 0 },
         bonuses: { type: Number, default: 0 },
         allowances: { type: Number, default: 0 },
@@ -110,8 +114,8 @@ const payrollSchema = new mongoose.Schema({
     payments: [payrollPaymentSchema],
     status: {
         type: String,
-        enum: ['Draft', 'Approved', 'Processed'],
-        default: 'Draft',
+        enum: ['Draft', 'Generated', 'Approved', 'Finalized', 'Processed'],
+        default: 'Generated',
     },
     approvedBy: {
         type: mongoose.Schema.Types.ObjectId,
@@ -124,6 +128,16 @@ const payrollSchema = new mongoose.Schema({
         type: String,
         default: '',
     },
+    auditHistory: [
+        {
+            action: { type: String, required: true },
+            performedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+            performedByName: { type: String, default: '' },
+            timestamp: { type: Date, default: Date.now },
+            notes: { type: String, default: '' },
+            changes: { type: mongoose.Schema.Types.Mixed },
+        }
+    ],
 }, { timestamps: true });
 
 // Prevent duplicate payroll for the same employee in the same period

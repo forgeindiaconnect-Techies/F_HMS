@@ -166,7 +166,8 @@ const CustomerOrderTracking = () => {
     };
 
     const isDelivery = order?.orderType === 'Delivery';
-    const isSelfPickup = order?.orderType === 'Self-Pickup' || order?.orderType === 'Self Pickup' || order?.serviceType === 'Self Dine-In (KFC Style)';
+    const isSelfPickup = order?.orderType === 'Self-Pickup' || order?.orderType === 'Self Pickup' || order?.source === 'Self-Pickup' || order?.serviceType === 'Self-Pickup' || String(order?.orderType || '').toLowerCase().includes('pickup');
+    const isSelfDineIn = !isSelfPickup && (order?.serviceType === 'Self Dine-In (KFC Style)' || String(order?.serviceType || '').toLowerCase().includes('self dine-in'));
 
     // Distinguish KDS orders vs physical KOT ticket-based orders
     const isKdsEnabled = order?.isKdsEnabled ?? (order?.restaurantId?.restaurantConfig?.orderKitchen?.kdsEnabled !== false);
@@ -258,21 +259,34 @@ const CustomerOrderTracking = () => {
 
             if (st === 'Delivered' || delSt === 'Delivered') return 3; // Step 4 (index 3): Delivered
             if (st === 'Out for Delivery' || delSt === 'On the Way' || delSt === 'Picked Up' || st === 'Picked Up') return 2; // Step 3 (index 2): Out for Delivery
-            if (st === 'Preparing' || st === 'Accepted' || st === 'Ready' || st === 'Ready for Pickup') return 1; // Step 2 (index 1): Preparing
+            if (st === 'Preparing' || st === 'Accepted' || st === 'Ready' || st === 'Ready for Pickup' || st === 'Ready for Dispatch') return 1; // Step 2 (index 1): Preparing
             return 0; // Step 1 (index 0): Order Placed
         }
-        if (isSelfPickup) {
+        if (isSelfPickup || isSelfDineIn) {
             if (status === 'Completed') return 5;
-            if (status === 'Picked Up') return 4;
-            if (['Ready for Pickup', 'Ready'].includes(status)) return 3;
+            if (status === 'Picked Up' || status === 'Served') return 4;
+            if (['Ready for Pickup', 'Ready', 'Ready at Counter'].includes(status)) return 3;
             if (status === 'Preparing') return 2;
             if (status === 'Accepted') return 1;
             return 0;
         }
         if (['Served', 'Billing Requested', 'Delivered', 'Completed'].includes(status)) return 3;
-        if (['Ready', 'Ready for Pickup'].includes(status)) return 2;
+        if (['Ready', 'Ready for Pickup', 'Ready for Dispatch'].includes(status)) return 2;
         if (['Preparing', 'Accepted'].includes(status)) return 1;
         return 0;
+    };
+
+    const handleBack = () => {
+        const hasCustomerToken = localStorage.getItem('restosys_customer_user');
+        if (window.history.state && window.history.state.idx > 0) {
+            navigate(-1);
+        } else if (hasCustomerToken) {
+            navigate('/profile');
+        } else if (restaurantId) {
+            navigate(`/customer/menu?restaurantId=${restaurantId}&branchId=${branchId || ''}&tableNumber=${tableNumber || ''}`);
+        } else {
+            navigate('/');
+        }
     };
 
     if (loading) {
@@ -290,7 +304,7 @@ const CustomerOrderTracking = () => {
                 <h3 className="text-lg font-bold text-gray-900">Order Not Found</h3>
                 <p className="text-sm text-gray-500 mt-1">We couldn't retrieve the details for order #{orderId}.</p>
                 <button 
-                    onClick={() => navigate(-1)}
+                    onClick={handleBack}
                     className="mt-6 bg-gray-950 text-white font-bold py-2.5 px-6 rounded-xl hover:bg-black"
                 >
                     Go Back
@@ -308,10 +322,17 @@ const CustomerOrderTracking = () => {
     ] : isSelfPickup ? [
         { title: 'Order Received', desc: 'Awaiting kitchen accept' },
         { title: 'Accepted', desc: 'Chef accepted your order' },
-        { title: 'Preparing Food', desc: 'Chef is cooking your recipe' },
-        { title: 'Food Prepared', desc: 'Runner moving food to counter' },
-        { title: 'Ready for Pickup', desc: 'Collect it from the cashier counter!' },
-        { title: 'Collected', desc: 'Enjoy your meal!' }
+        { title: 'Preparing Food', desc: 'Chef is cooking your takeaway meal' },
+        { title: 'Food Packed', desc: 'Food packed & waiting at pickup counter' },
+        { title: 'Ready for Pickup', desc: 'Please collect it from the pickup counter!' },
+        { title: 'Collected', desc: 'Enjoy your takeaway meal!' }
+    ] : isSelfDineIn ? [
+        { title: 'Order Received', desc: 'Awaiting kitchen accept' },
+        { title: 'Accepted', desc: 'Chef accepted your order' },
+        { title: 'Preparing Food', desc: 'Chef is cooking and plating your tray' },
+        { title: 'Tray Plated', desc: 'Food tray ready at counter' },
+        { title: 'Ready at Counter', desc: 'Token called! Collect your food tray from counter' },
+        { title: 'Collected & Seated', desc: 'Enjoy your dine-in meal!' }
     ] : [
         { title: 'Order Received', desc: 'Awaiting kitchen accept' },
         { title: 'In the Kitchen', desc: 'Chef is cooking your recipe' },
@@ -324,8 +345,9 @@ const CustomerOrderTracking = () => {
             {/* Header */}
             <header className="bg-white border-b border-gray-100 px-6 py-5 sticky top-0 z-10 flex justify-between items-center shadow-sm shrink-0">
                 <button 
-                    onClick={() => navigate(`/customer/menu?restaurantId=${restaurantId}&branchId=${branchId || ''}&tableNumber=${tableNumber || ''}`)}
+                    onClick={handleBack}
                     className="p-2 border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-50"
+                    title="Go Back"
                 >
                     <ChevronLeft size={18} />
                 </button>
@@ -353,19 +375,29 @@ const CustomerOrderTracking = () => {
                 {!isDelivery && (
                     <div className={`p-4 rounded-3xl border shadow-sm flex items-center justify-between gap-3 ${
                         isSelfPickup 
-                            ? 'bg-amber-50/80 border-amber-200 text-amber-900' 
+                            ? 'bg-amber-50/90 border-amber-200 text-amber-900' 
+                            : isSelfDineIn
+                            ? 'bg-orange-50/90 border-orange-200 text-orange-950'
                             : 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
                     }`}>
                         <div className="flex items-center gap-3 min-w-0">
                             <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
-                                isSelfPickup ? 'bg-amber-500 text-white' : 'bg-emerald-600 text-white'
+                                isSelfPickup 
+                                    ? 'bg-amber-500 text-white' 
+                                    : isSelfDineIn
+                                    ? 'bg-orange-500 text-white'
+                                    : 'bg-emerald-600 text-white'
                             }`}>
-                                {isSelfPickup ? <Store size={20} /> : <Utensils size={20} />}
+                                {isSelfPickup ? <Store size={20} /> : isSelfDineIn ? <ShoppingBag size={20} /> : <Utensils size={20} />}
                             </div>
                             <div className="min-w-0">
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                     <span className="font-black text-xs truncate">
-                                        {order.serviceType || (isSelfPickup ? 'Self Dine-In (KFC Style)' : 'Waiter Table Service')}
+                                        {isSelfPickup 
+                                            ? 'Self-Pickup (Takeaway)' 
+                                            : isSelfDineIn 
+                                            ? 'Self Dine-In (KFC Style)' 
+                                            : (order.serviceType || 'Waiter Table Service')}
                                     </span>
                                     {order.tableNumber && (
                                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white border border-current shrink-0">
@@ -375,7 +407,9 @@ const CustomerOrderTracking = () => {
                                 </div>
                                 <p className="text-[11px] opacity-80 mt-0.5 leading-snug">
                                     {isSelfPickup 
-                                        ? 'Please collect your tray from the food counter when ready.' 
+                                        ? 'Please collect your packed order from the pickup counter when ready.' 
+                                        : isSelfDineIn
+                                        ? 'Please collect your tray from the food counter when your token is called.'
                                         : 'Relax at your table. Our waiter will bring your food to you.'}
                                 </p>
                             </div>
@@ -486,113 +520,51 @@ const CustomerOrderTracking = () => {
                     return null;
                 })()}
 
-                {/* Digital KDS Interactive Steps Timeline (Shown ONLY in KDS orders or Home Delivery) */}
-                {(!isKotOrder) && (
-                    <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-6">
-                        <div className="flex justify-between items-center pb-4 border-b border-gray-100">
-                            <div>
-                                <p className="text-xs text-gray-400 font-black tracking-wider uppercase">Current Status</p>
-                                <h3 className="text-xl font-black text-green-650 mt-1">{order.status}</h3>
-                            </div>
-                            <div className="bg-green-50 text-green-700 p-3 rounded-2xl animate-pulse">
-                                <Clock size={24} />
-                            </div>
+                {/* Digital Interactive Steps Timeline */}
+                <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-6">
+                    <div className="flex justify-between items-center pb-4 border-b border-gray-100">
+                        <div>
+                            <p className="text-xs text-gray-400 font-black tracking-wider uppercase">Current Status</p>
+                            <h3 className="text-xl font-black text-green-650 mt-1">{order.status}</h3>
                         </div>
+                        <div className="bg-green-50 text-green-700 p-3 rounded-2xl animate-pulse">
+                            <Clock size={24} />
+                        </div>
+                    </div>
 
-                        {/* Steps Timeline Visual */}
-                        <div className="relative pl-8 space-y-8">
-                            <div className="absolute left-3.5 top-2 bottom-2 w-0.5 bg-gray-200"></div>
-                            <div 
-                                className="absolute left-3.5 top-2 w-0.5 bg-orange-500 transition-all duration-700 ease-in-out"
-                                style={{ height: `${Math.min(100, (currentStep / (stepsList.length - 1)) * 100)}%` }}
-                            ></div>
-                            {stepsList.map((step, idx) => {
-                                const isDone = idx < currentStep;
-                                const isCurrent = idx === currentStep;
-                                const isActiveOrDone = idx <= currentStep;
+                    {/* Steps Timeline Visual */}
+                    <div className="relative pl-8 space-y-8">
+                        <div className="absolute left-3.5 top-2 bottom-2 w-0.5 bg-gray-200"></div>
+                        <div 
+                            className="absolute left-3.5 top-2 w-0.5 bg-orange-500 transition-all duration-700 ease-in-out"
+                            style={{ height: `${Math.min(100, (currentStep / (stepsList.length - 1)) * 100)}%` }}
+                        ></div>
+                        {stepsList.map((step, idx) => {
+                            const isDone = idx < currentStep;
+                            const isCurrent = idx === currentStep;
+                            const isActiveOrDone = idx <= currentStep;
 
-                                return (
-                                    <div key={idx} className="relative">
-                                        {/* Timeline dot */}
-                                        <div className={`absolute -left-8 top-1 w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all ${
-                                            isDone 
-                                            ? 'bg-green-600 border-green-600 text-white' 
-                                            : isCurrent
-                                            ? 'bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/20 animate-pulse'
-                                            : 'bg-white border-gray-200 text-gray-300'
-                                        }`}>
-                                            <CheckCircle2 size={14} className={isActiveOrDone ? 'opacity-100' : 'opacity-30'} />
-                                        </div>
-                                        <div>
-                                            <h4 className={`text-sm font-black transition-colors ${isCurrent ? 'text-orange-600' : isDone ? 'text-gray-900' : 'text-gray-400'}`}>{step.title}</h4>
-                                            <p className="text-xs text-gray-400 mt-0.5 font-medium">{step.desc}</p>
-                                        </div>
+                            return (
+                                <div key={idx} className="relative">
+                                    {/* Timeline dot */}
+                                    <div className={`absolute -left-8 top-1 w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all ${
+                                        isDone 
+                                        ? 'bg-green-600 border-green-600 text-white' 
+                                        : isCurrent
+                                        ? 'bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/20 animate-pulse'
+                                        : 'bg-white border-gray-200 text-gray-300'
+                                    }`}>
+                                        <CheckCircle2 size={14} className={isActiveOrDone ? 'opacity-100' : 'opacity-30'} />
                                     </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                )}
-
-                {/* KOT Order Confirmation & Physical Kitchen Ticket Card (Shown ONLY for KOT orders, KDS timeline hidden) */}
-                {isKotOrder && (
-                    <div className="bg-white rounded-3xl p-6 border border-emerald-100 shadow-sm space-y-5 animate-in fade-in duration-300">
-                        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                            <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shrink-0 border border-emerald-100">
-                                    <CheckCircle2 size={26} className="text-emerald-600" />
+                                    <div>
+                                        <h4 className={`text-sm font-black transition-colors ${isCurrent ? 'text-orange-600' : isDone ? 'text-gray-900' : 'text-gray-400'}`}>{step.title}</h4>
+                                        <p className="text-xs text-gray-400 mt-0.5 font-medium">{step.desc}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 inline-block mb-1">
-                                        Order Placed &amp; Dispatched
-                                    </span>
-                                    <h3 className="text-lg font-black text-slate-900 leading-tight">
-                                        Sent to Kitchen &amp; Cashier
-                                    </h3>
-                                </div>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={handlePrintCustomerBill}
-                                className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black text-xs flex items-center gap-1.5 shadow-sm transition-transform active:scale-95 cursor-pointer"
-                                title="Print or save bill receipt"
-                            >
-                                <Printer size={14} />
-                                <span>Print Bill</span>
-                            </button>
-                        </div>
-
-                        {/* KOT Ticket and Table Badges */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 text-xs">
-                            <div>
-                                <span className="text-[10px] text-slate-400 font-bold uppercase block">Kitchen Ticket</span>
-                                <span className="font-mono font-black text-slate-900 text-sm">
-                                    {order.kotNumbers?.[0] || (order.kots?.[0]?.kotNumber) || `#KOT-${order._id.slice(-4).toUpperCase()}`}
-                                </span>
-                            </div>
-                            <div>
-                                <span className="text-[10px] text-slate-400 font-bold uppercase block">Table / Station</span>
-                                <span className="font-black text-slate-900 text-sm">
-                                    {order.tableNumber ? `Table ${order.tableNumber}` : (order.orderType || 'Dine In')}
-                                </span>
-                            </div>
-                            <div className="col-span-2 sm:col-span-1">
-                                <span className="text-[10px] text-slate-400 font-bold uppercase block">Bill Status</span>
-                                <span className={`font-black text-xs ${order.isPaid ? 'text-emerald-700' : 'text-amber-700'}`}>
-                                    {order.isPaid ? '✓ Paid & Settled' : 'Pay at Counter / Waiter'}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/60 text-xs text-emerald-950 flex items-start gap-2.5">
-                            <span className="text-base shrink-0">👨‍🍳</span>
-                            <p className="leading-relaxed font-medium">
-                                Your Kitchen Order Ticket (KOT) has been printed automatically in the kitchen and cashier counter. 
-                                Our culinary team is preparing your freshly cooked dishes. Please relax at your table!
-                            </p>
-                        </div>
+                            );
+                        })}
                     </div>
-                )}
+                </div>
 
                 {/* Delivery Security Code (OTP) Card for Home Delivery */}
                 {isDelivery && order.deliveryOtp && (
@@ -611,12 +583,18 @@ const CustomerOrderTracking = () => {
                     </div>
                 )}
 
-                {/* Pickup Counter Verification Card */}
-                {isSelfPickup && (
+                {/* Counter Pickup / Verification Card (for Takeaway & Self Dine-In) */}
+                {(isSelfPickup || isSelfDineIn) && (
                     <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4 text-center">
                         <div className="border-b border-gray-100 pb-3">
-                            <h3 className="font-black text-gray-905 text-sm">Pickup Verification</h3>
-                            <p className="text-[10px] text-gray-400 mt-0.5">Present this QR Code or Order ID at the counter to collect your food.</p>
+                            <h3 className="font-black text-gray-900 text-sm">
+                                {isSelfPickup ? 'Self-Pickup Counter Token' : 'Self Dine-In Token'}
+                            </h3>
+                            <p className="text-[10px] text-gray-400 mt-0.5">
+                                {isSelfPickup 
+                                    ? 'Present this Order ID or QR Code at the pickup counter to collect your takeaway.' 
+                                    : 'Present this Order ID or QR Code at the counter when your token is called to collect your tray.'}
+                            </p>
                         </div>
                         
                         <div className="flex justify-center py-2">
@@ -630,13 +608,13 @@ const CustomerOrderTracking = () => {
                         </div>
 
                         <div className="bg-orange-50 text-orange-950 px-4 py-2.5 rounded-2xl font-mono text-xs font-bold border border-orange-100 tracking-wide select-all">
-                            ID: {order._id.toUpperCase()}
+                            TOKEN / ORDER ID: #{String(order._id).slice(-6).toUpperCase()}
                         </div>
                     </div>
                 )}
 
-                {/* Table Quick Requests */}
-                {!isDelivery && !isSelfPickup && (
+                {/* Table Quick Requests (Only for Waiter Table Service) */}
+                {!isDelivery && !isSelfPickup && !isSelfDineIn && (
                     <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                         <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest pl-2">Need Assistance?</h3>
                         <div className="grid grid-cols-2 gap-3">

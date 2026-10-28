@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
     LayoutGrid, ClipboardList, Clock, CheckSquare, LogOut, Utensils, Settings,
-    Flame, ChefHat, UserCheck, TrendingUp, Bell, Star
+    Flame, ChefHat, UserCheck, TrendingUp, Bell, Star, CalendarDays, CreditCard
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../context/AuthContext';
@@ -70,6 +70,13 @@ const WaiterSidebar = () => {
                 { name: 'Today\'s Tasks', path: '/waiter/tasks', icon: CheckSquare },
                 { name: tipsEnabled ? 'Performance & Tips' : 'Shift Performance', path: '/waiter/performance', icon: TrendingUp },
                 { name: 'Shift Status & Clock-In', path: '/waiter/shift-status', icon: UserCheck },
+            ]
+        },
+        {
+            title: 'My Workspace',
+            items: [
+                { name: 'My Leave', path: '/waiter/leave', icon: CalendarDays },
+                { name: 'My Salary & Slips', path: '/waiter/payroll', icon: CreditCard },
             ]
         },
         {

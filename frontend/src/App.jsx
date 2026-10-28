@@ -49,6 +49,8 @@ import ChefPrepList from './pages/staff/ChefPrepList';
 import ChefRecipes from './pages/staff/ChefRecipes';
 import ChefInventory from './pages/staff/ChefInventory';
 import ChefKOTManagement from './pages/staff/ChefKOTManagement';
+import StaffMyLeave from './components/staff/StaffMyLeave';
+import StaffMyPayroll from './components/staff/StaffMyPayroll';
 
 import ManagerDashboard from './pages/staff/ManagerDashboard';
 import ManagerOrderMonitoring from './pages/staff/ManagerOrderMonitoring';
@@ -252,6 +254,8 @@ function App() {
           <Route path="bills" element={<Navigate to="/admin/expenses?tab=bills" replace />} />
           <Route path="attendance" element={<Navigate to="/admin/staff?tab=attendance" replace />} />
           <Route path="payroll" element={<Navigate to="/admin/staff?tab=payroll" replace />} />
+          <Route path="leaves" element={<Navigate to="/admin/staff?tab=leaves" replace />} />
+          <Route path="payroll-reports" element={<Navigate to="/admin/staff?tab=reports" replace />} />
           
           {/* System & Configuration */}
           <Route path="settings" element={<Settings />} />
@@ -280,6 +284,8 @@ function App() {
           <Route index element={<ManagerDashboard />} />
           <Route path="orders" element={<ManagerOrderMonitoring />} />
           <Route path="staff" element={<ManagerStaff />} />
+          <Route path="leaves" element={<Navigate to="/manager/staff?tab=leaves" replace />} />
+          <Route path="payroll" element={<Navigate to="/manager/staff?tab=payroll" replace />} />
           <Route path="kitchen" element={<ManagerKitchenStatus />} />
           <Route path="inventory" element={<ManagerInventory />} />
           <Route path="tables" element={<TablesManagement />} />
@@ -307,6 +313,8 @@ function App() {
           <Route path="tasks" element={<WaiterTasks />} />
           <Route path="performance" element={<WaiterPerformance />} />
           <Route path="shift-status" element={<WaiterShiftStatus />} />
+          <Route path="leave" element={<StaffMyLeave />} />
+          <Route path="payroll" element={<StaffMyPayroll />} />
           <Route path="settings" element={<WaiterSettings />} />
         </Route>
         
@@ -316,6 +324,8 @@ function App() {
           <Route path="prep" element={<ChefPrepList />} />
           <Route path="recipes" element={<ChefRecipes />} />
           <Route path="inventory" element={<ChefInventory />} />
+          <Route path="leave" element={<StaffMyLeave />} />
+          <Route path="payroll" element={<StaffMyPayroll />} />
         </Route>
         
         <Route path="/cashier" element={<ProtectedRoute allowedRoles={['SuperAdmin', 'Cashier', 'RestaurantAdmin', 'BranchManager']}><CashierLayout /></ProtectedRoute>}>
@@ -329,6 +339,9 @@ function App() {
           <Route path="refunds" element={<CashierDashboard />} />
           <Route path="summary" element={<CashierDashboard />} />
           <Route path="history" element={<CashierDashboard />} />
+          <Route path="leave" element={<StaffMyLeave />} />
+          <Route path="payroll" element={<StaffMyPayroll />} />
+          <Route path="settings" element={<CashierDashboard />} />
         </Route>
 
         {/* Delivery Staff App */}

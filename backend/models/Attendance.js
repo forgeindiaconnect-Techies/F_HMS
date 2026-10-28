@@ -55,6 +55,22 @@ const attendanceSchema = new mongoose.Schema({
         type: String,
         default: '',
     },
+    leaveId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Leave',
+    },
+    leaveType: {
+        type: String,
+        default: '',
+    },
+    isPaidLeave: {
+        type: Boolean,
+        default: true,
+    },
+    isLOP: {
+        type: Boolean,
+        default: false,
+    },
     isCorrected: {
         type: Boolean,
         default: false,

@@ -1,4 +1,4 @@
-import { Bell, User, Search, LogOut, Menu } from 'lucide-react';
+import { Bell, User, Search, LogOut, Menu, Settings } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useState, useEffect, useRef } from 'react';
 
@@ -118,7 +118,17 @@ const CashierTopbar = () => {
                     )}
                 </div>
 
-                <div className="h-6 sm:h-8 w-px bg-gray-200"></div>
+                {/* Cashier POS Settings Button */}
+                <button
+                    type="button"
+                    onClick={() => window.dispatchEvent(new Event('open-cashier-settings'))}
+                    className="p-2 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors hover:bg-purple-50 dark:hover:bg-slate-800 rounded-lg group cursor-pointer"
+                    title="Cashier POS Settings"
+                >
+                    <Settings size={20} className="group-hover:rotate-45 transition-transform duration-300" />
+                </button>
+
+                <div className="h-6 sm:h-8 w-px bg-gray-200 dark:bg-slate-800"></div>
 
                 <div className="relative" ref={profileRef}>
                     <div 

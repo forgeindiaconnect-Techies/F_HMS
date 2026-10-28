@@ -41,7 +41,7 @@ const orderSchema = new mongoose.Schema({
     },
     serviceType: {
         type: String,
-        enum: ['Self Dine-In (KFC Style)', 'Waiter Table Service', 'Delivery', 'Takeaway', ''],
+        enum: ['Self Dine-In (KFC Style)', 'Waiter Table Service', 'Delivery', 'Takeaway', 'Self-Pickup', ''],
         default: 'Waiter Table Service'
     },
     customerName: {
@@ -111,8 +111,13 @@ const orderSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-        enum: ['Pending', 'Accepted', 'Preparing', 'Ready', 'Ready for Pickup', 'Picked Up', 'Served', 'Billing Requested', 'Out for Delivery', 'Delivered', 'Cancelled', 'Completed'],
+        enum: ['Pending', 'Accepted', 'Preparing', 'Ready', 'Ready for Pickup', 'Picked Up', 'Ready for Dispatch', 'Served', 'Billing Requested', 'Out for Delivery', 'Delivered', 'Cancelled', 'Completed'],
         default: 'Pending'
+    },
+    kitchenMode: {
+        type: String,
+        enum: ['KDS', 'KOT_ONLY'],
+        default: 'KDS'
     },
     statusHistory: [
         {
