@@ -266,32 +266,32 @@ const StaffAuthPage = () => {
         <form onSubmit={handleSubmit(onSubmitLogin)} className="space-y-4 min-w-0 pr-1.5 flex-1">
             <div>
                 <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-green-500 transition-colors">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F] transition-colors">
                         <Mail size={18} />
                     </div>
                     <input
                         type="text"
                         placeholder="Email Address"
                         {...register('email', { required: 'Email is required' })}
-                        className={`w-full pl-11 pr-4 py-3.5 bg-gray-50 border rounded-xl text-sm outline-none transition-all ${errors.email ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-gray-200 hover:border-gray-300 focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100'}`}
+                        className={`w-full pl-11 pr-4 py-3.5 bg-slate-50 border rounded-xl text-sm outline-none transition-all ${errors.email ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-slate-200 hover:border-slate-300 focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100'}`}
                     />
                 </div>
             </div>
             <div>
                 <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-green-500 transition-colors">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F] transition-colors">
                         <Lock size={18} />
                     </div>
                     <input
                         type={showPassword ? 'text' : 'password'}
                         placeholder="Password"
                         {...register('password', { required: 'Password is required' })}
-                        className={`w-full pl-11 pr-11 py-3.5 bg-gray-50 border rounded-xl text-sm outline-none transition-all ${errors.password ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-gray-200 hover:border-gray-300 focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100'}`}
+                        className={`w-full pl-11 pr-11 py-3.5 bg-slate-50 border rounded-xl text-sm outline-none transition-all ${errors.password ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-slate-200 hover:border-slate-300 focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100'}`}
                     />
                     <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-green-600 transition-colors"
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-[#FF5A1F] transition-colors cursor-pointer"
                     >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -300,7 +300,7 @@ const StaffAuthPage = () => {
             <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 active:scale-[0.98] text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-green-600/10 flex items-center justify-center gap-2 text-base cursor-pointer"
+                className="w-full mt-4 bg-gradient-to-r from-[#FF5A1F] to-[#E04812] hover:from-[#E04812] hover:to-[#C83B09] active:scale-[0.98] text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-orange-500/25 flex items-center justify-center gap-2 text-base cursor-pointer disabled:opacity-50"
             >
                 {loading ? 'Please wait...' : 'Sign In'}
                 {!loading && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
@@ -313,20 +313,20 @@ const StaffAuthPage = () => {
             <h2 className="text-xl font-bold text-gray-900 mb-4">Create your account</h2>
             
             <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-green-500">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F]">
                     <UserIcon size={18} />
                 </div>
                 <input
                     type="text"
                     placeholder="Full Name"
                     {...register('name', { required: 'Name is required' })}
-                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100 transition-all"
+                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
                 />
                 {errors.name && <p className="text-xs text-red-500 mt-1 pl-1">{errors.name.message}</p>}
             </div>
 
             <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-green-500">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F]">
                     <Mail size={18} />
                 </div>
                 <input
@@ -336,13 +336,13 @@ const StaffAuthPage = () => {
                         required: 'Email is required',
                         pattern: { value: /^\S+@\S+$/i, message: 'Invalid email address' }
                     })}
-                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100 transition-all"
+                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
                 />
                 {errors.email && <p className="text-xs text-red-500 mt-1 pl-1">{errors.email.message}</p>}
             </div>
 
             <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-green-500">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F]">
                     <Phone size={18} />
                 </div>
                 <input
@@ -353,14 +353,14 @@ const StaffAuthPage = () => {
                         pattern: { value: /^[0-9]{10}$/, message: 'Phone number must be exactly 10 digits' }
                     })}
                     onInput={(e) => { e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10); }}
-                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100 transition-all"
+                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
                 />
                 {errors.phoneNumber && <p className="text-xs text-red-500 mt-1 pl-1">{errors.phoneNumber.message}</p>}
             </div>
 
             <div className="group">
                 <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-green-500">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F]">
                         <Lock size={18} />
                     </div>
                     <input
@@ -370,12 +370,12 @@ const StaffAuthPage = () => {
                             required: 'Password is required', 
                             minLength: { value: 6, message: 'Password must be at least 6 characters long' } 
                         })}
-                        className="w-full pl-11 pr-11 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100 transition-all"
+                        className="w-full pl-11 pr-11 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
                     />
                     <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-green-600"
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-[#FF5A1F]"
                     >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -385,7 +385,7 @@ const StaffAuthPage = () => {
 
             <div className="group">
                 <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-green-500">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F]">
                         <Lock size={18} />
                     </div>
                     <input
@@ -395,12 +395,12 @@ const StaffAuthPage = () => {
                             required: 'Please confirm password',
                             validate: val => val === watch('password') || 'Passwords do not match'
                         })}
-                        className="w-full pl-11 pr-11 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100 transition-all"
+                        className="w-full pl-11 pr-11 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
                     />
                     <button
                         type="button"
                         onClick={() => setShowConfirm(!showConfirm)}
-                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-green-600"
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-[#FF5A1F]"
                     >
                         {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -411,7 +411,7 @@ const StaffAuthPage = () => {
             <button
                 type="button"
                 onClick={handleNextStep}
-                className="w-full mt-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 active:scale-[0.98] text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-green-600/10 flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full mt-6 bg-gradient-to-r from-[#FF5A1F] to-[#E04812] hover:from-[#E04812] hover:to-[#C83B09] active:scale-[0.98] text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 cursor-pointer"
             >
                 Next Step <ArrowRight size={18} />
             </button>
@@ -420,20 +420,20 @@ const StaffAuthPage = () => {
 
     const renderRegisterStep2 = () => (
         <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
-            <button onClick={() => setStep(1)} className="text-sm font-medium text-gray-500 hover:text-gray-900 mb-2 inline-flex items-center gap-1">
+            <button onClick={() => setStep(1)} className="text-sm font-medium text-slate-500 hover:text-slate-900 mb-2 inline-flex items-center gap-1 cursor-pointer">
                 &larr; Back
             </button>
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Choose your plan</h2>
+            <h2 className="text-xl font-bold text-slate-900 mb-4">Choose your plan</h2>
             
             <div className="relative group mb-6">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-green-500">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F]">
                     <UtensilsCrossed size={18} />
                 </div>
                 <input
                     type="text"
                     placeholder="Restaurant Name"
                     {...register('restaurantName', { required: 'Restaurant Name is required' })}
-                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100 transition-all"
+                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
                 />
             </div>
 
@@ -443,7 +443,7 @@ const StaffAuthPage = () => {
             </div>
 
             {plansLoading ? (
-                <div className="flex justify-center py-6"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div></div>
+                <div className="flex justify-center py-6"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF5A1F]"></div></div>
             ) : (
                 <div className="grid grid-cols-1 gap-3">
                     {(plans.length > 0 ? plans : [
@@ -458,23 +458,23 @@ const StaffAuthPage = () => {
                             ? Math.round((1 - yPrice / mPrice) * 100)
                             : 0;
                         return (
-                            <label key={plan._id || idx} className={`relative p-4 border-2 rounded-xl cursor-pointer transition-all ${selectedPlan?.toLowerCase() === plan.name?.toLowerCase() ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-200'}`}>
+                            <label key={plan._id || idx} className={`relative p-4 border-2 rounded-xl cursor-pointer transition-all ${selectedPlan?.toLowerCase() === plan.name?.toLowerCase() ? 'border-[#FF5A1F] bg-orange-50/50 shadow-xs' : 'border-slate-200 hover:border-orange-200'}`}>
                                 <input type="radio" value={plan.name} {...register('plan')} className="hidden" />
                                 <div className="flex justify-between items-center mb-1">
-                                    <span className="font-bold text-gray-900">{plan.name}</span>
-                                    <span className="font-bold text-green-600">
+                                    <span className="font-bold text-slate-900">{plan.name}</span>
+                                    <span className="font-bold text-[#FF5A1F]">
                                         ₹{(price || 0).toLocaleString('en-IN')}/mo
                                         {isYearly && savings > 0 && (
-                                            <span className="ml-2 text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-semibold">
-                                                Save {savings}%
-                                            </span>
+                                             <span className="ml-2 text-xs bg-orange-100 text-[#FF5A1F] px-1.5 py-0.5 rounded-full font-semibold">
+                                                 Save {savings}%
+                                             </span>
                                         )}
                                     </span>
                                 </div>
-                                <p className="text-xs text-gray-500 font-medium">
+                                <p className="text-xs text-slate-500 font-medium">
                                     {(plan.features || []).slice(0, 2).join(' · ')}{(plan.features || []).length > 2 ? ` · +${plan.features.length - 2} more` : ''}
                                 </p>
-                                {selectedPlan?.toLowerCase() === plan.name?.toLowerCase() && <CheckCircle2 size={18} className="absolute top-4 right-4 text-green-500" />}
+                                {selectedPlan?.toLowerCase() === plan.name?.toLowerCase() && <CheckCircle2 size={18} className="absolute top-4 right-4 text-[#FF5A1F]" />}
                             </label>
                         );
                     })}
@@ -484,7 +484,7 @@ const StaffAuthPage = () => {
             <button
                 type="button"
                 onClick={handleNextStep}
-                className="w-full mt-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 active:scale-[0.98] text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-green-600/10 flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full mt-6 bg-gradient-to-r from-[#FF5A1F] to-[#E04812] hover:from-[#E04812] hover:to-[#C83B09] active:scale-[0.98] text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 cursor-pointer"
             >
                 Continue to KYC Upload <ArrowRight size={18} />
             </button>
@@ -800,37 +800,38 @@ const StaffAuthPage = () => {
     );
 
     return (
-        <div className="min-h-screen relative flex items-center justify-center p-4 font-sans bg-gradient-to-br from-slate-50 via-green-50/30 to-slate-100 auth-page">
-            {/* Full screen background */}
-            <div className="absolute inset-0 z-0">
+        <div className="min-h-screen relative flex items-center justify-center p-4 font-sans bg-[#FFFDF9] selection:bg-[#FF5A1F] selection:text-white auth-page overflow-x-hidden">
+            {/* Ambient warm background glow matching landing page */}
+            <div className="absolute inset-0 z-0 pointer-events-none">
+                <div className="absolute top-0 right-1/4 w-96 h-96 bg-orange-100/40 rounded-full blur-3xl" />
+                <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-orange-50/60 rounded-full blur-3xl" />
                 <img
                     src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=2000&auto=format&fit=crop"
                     alt="Restaurant ambiance"
-                    className="w-full h-full object-cover opacity-20"
+                    className="w-full h-full object-cover opacity-10"
                 />
-                <div className="absolute inset-0 bg-white/70 backdrop-blur-[6px]"></div>
             </div>
 
             {/* Glass Card */}
-            <div className="relative z-10 w-full max-w-md bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-white/20">
+            <div className="relative z-10 w-full max-w-md bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-orange-100/80">
                 
-                {/* Branding Header */}
-                <div className="bg-gradient-to-br from-green-500 to-green-600 p-8 text-center relative overflow-hidden">
-                    <Link to="/" className="absolute top-4 right-4 text-white/80 hover:text-white bg-black/10 hover:bg-black/20 p-2 rounded-full transition-all z-20">
+                {/* Branding Header with Warm Vibrant FoodNest Orange */}
+                <div className="bg-gradient-to-br from-[#FF5A1F] to-[#E04812] p-8 text-center relative overflow-hidden shadow-md shadow-orange-500/20">
+                    <Link to="/" className="absolute top-4 right-4 text-white/80 hover:text-white bg-black/10 hover:bg-black/20 p-2 rounded-full transition-all z-20 cursor-pointer">
                         <X size={20} />
                     </Link>
 
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white font-extrabold text-[11px] uppercase tracking-wider mb-3 relative z-10">
-                        <ShieldCheck size={13} /> Restaurant Partner & Staff Portal
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white font-extrabold text-[11px] uppercase tracking-wider mb-3 relative z-10 backdrop-blur-xs">
+                        <ShieldCheck size={13} /> Restaurant Partner &amp; Staff Portal
                     </div>
 
-                    <Link to="/" className="inline-flex items-center justify-center gap-2 mb-1 relative z-10 w-full">
-                        <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                    <Link to="/" className="inline-flex items-center justify-center gap-2 mb-1 relative z-10 w-full group">
+                        <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm group-hover:scale-105 transition-transform">
                             <UtensilsCrossed size={28} className="text-white" />
                         </div>
                         <span className="text-3xl font-extrabold text-white tracking-tight">FoodNest</span>
                     </Link>
-                    <p className="text-green-50 text-xs font-semibold relative z-10 opacity-95">
+                    <p className="text-orange-100 text-xs font-semibold relative z-10 opacity-95">
                         {mode === 'login' ? 'Sign in to manage POS billing, KDS, inventory & staff' : 'Register your restaurant & choose a plan'}
                     </p>
                 </div>
@@ -872,21 +873,15 @@ const StaffAuthPage = () => {
                     {mode === 'register' && step === 5 && renderRegisterStep4()}
                     {mode === 'register' && step === 6 && renderRegisterStep5()}
 
-                    {/* Customer & Delivery Portal Switcher Footer */}
-                    <div className="mt-6 pt-4 border-t border-gray-100 text-center space-y-2">
-                        <p className="text-xs text-gray-500 font-medium">Looking for another portal?</p>
+                    {/* Portal Switcher Footer */}
+                    <div className="mt-6 pt-4 border-t border-slate-100 text-center space-y-2">
+                        <p className="text-xs text-slate-400 font-medium">Looking for another portal?</p>
                         <div className="flex flex-wrap gap-2 justify-center">
                             <Link 
-                                to="/customer/login" 
-                                className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-green-700 hover:text-green-800 bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded-xl transition-all border border-green-100 shadow-sm"
-                            >
-                                <UtensilsCrossed size={14} /> Customer Ordering
-                            </Link>
-                            <Link 
                                 to="/delivery/login" 
-                                className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-xl transition-all border border-emerald-100 shadow-sm"
+                                className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-slate-700 hover:text-[#FF5A1F] bg-slate-50 hover:bg-orange-50/60 px-4 py-2 rounded-xl transition-all border border-slate-200 hover:border-orange-200 shadow-2xs"
                             >
-                                <Truck size={14} /> Delivery Partner Portal
+                                <Truck size={14} className="text-[#FF5A1F]" /> Delivery Partner Portal
                             </Link>
                         </div>
                     </div>
