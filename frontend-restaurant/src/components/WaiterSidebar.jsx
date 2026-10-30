@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
     LayoutGrid, ClipboardList, Clock, CheckSquare, LogOut, Utensils, Settings,
-    Flame, ChefHat, UserCheck, TrendingUp, Bell, Star, CalendarDays, CreditCard
+    Flame, ChefHat, UserCheck, TrendingUp, Bell, Star, CalendarDays, CreditCard, ChevronRight
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../context/AuthContext';
@@ -144,21 +144,24 @@ const WaiterSidebar = () => {
                                         to={item.path}
                                         end={item.path === '/waiter'}
                                         className={clsx(
-                                            "relative flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm",
+                                            "relative flex items-center justify-between px-3 py-2.5 rounded-xl font-medium transition-all text-sm group",
                                             isActive 
-                                            ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-bold shadow-xs border-l-4 border-emerald-500 rounded-l-md pl-2.5" 
-                                            : "text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-100 font-medium"
+                                            ? "bg-teal-600 text-white shadow-lg shadow-teal-900/30 font-semibold" 
+                                            : "text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-100"
                                         )}
                                     >
                                         <div className="flex items-center gap-3 truncate">
-                                            <Icon size={18} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-emerald-600 dark:text-emerald-400" : "text-gray-400 dark:text-slate-500")} />
+                                            <Icon size={17} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-white" : "text-gray-400 dark:text-slate-500")} />
                                             <span className="truncate">{item.name}</span>
                                         </div>
-                                        {item.badge && (
-                                            <span className={clsx("text-[10px] font-black uppercase px-2 py-0.5 rounded-md shrink-0 ml-1", item.badgeColor)}>
-                                                {item.badge}
-                                            </span>
-                                        )}
+                                        <div className="flex items-center gap-1.5 shrink-0 ml-1">
+                                            {item.badge && (
+                                                <span className={clsx("text-[10px] font-black uppercase px-2 py-0.5 rounded-md shrink-0", isActive ? "bg-white/20 text-white" : item.badgeColor)}>
+                                                    {item.badge}
+                                                </span>
+                                            )}
+                                            {isActive && <ChevronRight size={14} className="opacity-80" />}
+                                        </div>
                                     </NavLink>
                                 );
                             })}

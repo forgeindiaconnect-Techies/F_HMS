@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
     MonitorDot, ClipboardList, BookOpen, AlertTriangle, LogOut, ChefHat, Receipt,
-    CalendarDays, CreditCard
+    CalendarDays, CreditCard, ChevronRight
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useNavigate } from 'react-router-dom';
@@ -131,14 +131,15 @@ const ChefSidebar = () => {
                                         to={item.path}
                                         end={item.path === '/chef'}
                                         className={({ isActive }) => clsx(
-                                            "relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm",
+                                            "relative flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm group",
                                             isActive 
-                                            ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold shadow-xs border-l-4 border-orange-500 rounded-l-md pl-2.5" 
-                                            : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#2a3040] hover:text-gray-900 dark:hover:text-white font-medium"
+                                            ? "bg-orange-500 text-white shadow-lg shadow-orange-900/30 font-semibold" 
+                                            : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#2a3040] hover:text-gray-900 dark:hover:text-white"
                                         )}
                                     >
-                                        <Icon size={18} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-orange-600 dark:text-orange-400" : "text-gray-400 group-hover:text-gray-700")} />
-                                        <span>{item.name}</span>
+                                        <Icon size={17} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-white" : "text-gray-400 group-hover:text-gray-700")} />
+                                        <span className="truncate">{item.name}</span>
+                                        {isActive && <ChevronRight size={14} className="ml-auto shrink-0 opacity-80" />}
                                     </NavLink>
                                 );
                             })}
