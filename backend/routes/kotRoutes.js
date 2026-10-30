@@ -7,11 +7,12 @@ import {
     manualCreateKOT,
     getKOTSummary
 } from '../controllers/kotController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { protect, checkBillingModule } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 router.use(protect);
+router.use(checkBillingModule(['kot', 'kitchenOrderManagement']));
 
 router.route('/')
     .get(getKOTs)

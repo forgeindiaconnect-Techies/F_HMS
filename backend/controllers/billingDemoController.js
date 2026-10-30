@@ -177,7 +177,17 @@ export const updateBillingDemoStatus = async (req, res) => {
     try {
         const { status, notes } = req.body;
 
-        const validStatuses = ['Pending', 'Contacted', 'Demo Scheduled', 'Demo Completed', 'Activated', 'Rejected'];
+        const validStatuses = [
+            'Pending', 
+            'Contacted', 
+            'Demo Scheduled', 
+            'Requirements Collected', 
+            'Proposal Sent', 
+            'Payment Pending', 
+            'Payment Verified', 
+            'Activated', 
+            'Rejected'
+        ];
         if (status && !validStatuses.includes(status)) {
             return res.status(400).json({ message: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
         }
@@ -207,7 +217,16 @@ export const updateBillingDemoStatus = async (req, res) => {
 // @access  Private/SuperAdmin
 export const updateBillingDemoConfig = async (req, res) => {
     try {
-        const { modules, paymentMethods, serviceChargePercent, gstRatePercent, notes } = req.body;
+        const { 
+            modules, 
+            paymentMethods, 
+            serviceChargePercent, 
+            gstRatePercent, 
+            notes, 
+            customPlan,
+            branchLimit,
+            staffLimit
+        } = req.body;
 
         const request = await BillingDemoRequest.findById(req.params.id);
         if (!request) {
@@ -215,7 +234,7 @@ export const updateBillingDemoConfig = async (req, res) => {
         }
 
         if (!request.customBillingConfig) {
-            request.customBillingConfig = {};
+            request.customBillingConfig = { modules: {}, paymentMethods: {} };
         }
 
         if (modules) {
@@ -240,6 +259,23 @@ export const updateBillingDemoConfig = async (req, res) => {
             request.customBillingConfig.gstRatePercent = Number(gstRatePercent);
         }
 
+        if (customPlan) {
+            request.customPlan = {
+                ...request.customPlan,
+                ...customPlan
+            };
+        }
+
+        if (branchLimit !== undefined) {
+            if (!request.customPlan) request.customPlan = {};
+            request.customPlan.branchLimit = Number(branchLimit);
+        }
+
+        if (staffLimit !== undefined) {
+            if (!request.customPlan) request.customPlan = {};
+            request.customPlan.staffLimit = Number(staffLimit);
+        }
+
         if (notes !== undefined) {
             request.notes = notes;
         }
@@ -252,13 +288,16 @@ export const updateBillingDemoConfig = async (req, res) => {
                 'billingConfig.modules': request.customBillingConfig.modules,
                 'billingConfig.paymentMethods': request.customBillingConfig.paymentMethods,
                 'billingConfig.serviceChargePercent': request.customBillingConfig.serviceChargePercent,
-                'billingConfig.gstRatePercent': request.customBillingConfig.gstRatePercent
+                'billingConfig.gstRatePercent': request.customBillingConfig.gstRatePercent,
+                'billingConfig.branchLimit': request.customPlan?.branchLimit || 1,
+                'billingConfig.staffLimit': request.customPlan?.staffLimit || 10,
+                'billingConfig.customPlanName': request.customPlan?.planName || 'Custom Plan'
             });
         }
 
         res.json({
             success: true,
-            message: 'Custom billing configuration updated successfully',
+            message: 'Custom billing & module configuration updated successfully',
             data: request
         });
     } catch (error) {
@@ -267,7 +306,102 @@ export const updateBillingDemoConfig = async (req, res) => {
     }
 };
 
-// @desc    Activate custom billing configuration for a restaurant (Super Admin)
+// @desc    Generate / Update Custom Proposal (Super Admin)
+// @route   POST /api/billing-demos/admin/:id/proposal
+// @access  Private/SuperAdmin
+export const createCustomProposal = async (req, res) => {
+    try {
+        const {
+            planName,
+            billingCycle,
+            durationMonths,
+            branchLimit,
+            staffLimit,
+            basePrice,
+            discountAmount,
+            finalAmount,
+            internalNotes,
+            modulePricing
+        } = req.body;
+
+        const request = await BillingDemoRequest.findById(req.params.id);
+        if (!request) {
+            return res.status(404).json({ message: 'Demo request not found' });
+        }
+
+        request.customPlan = {
+            planName: planName || 'Custom Tailored Plan',
+            billingCycle: billingCycle || 'yearly',
+            durationMonths: Number(durationMonths) || 12,
+            branchLimit: Number(branchLimit) || 1,
+            staffLimit: Number(staffLimit) || 10,
+            basePrice: Number(basePrice) || 0,
+            discountAmount: Number(discountAmount) || 0,
+            finalAmount: Number(finalAmount) || 0,
+            internalNotes: internalNotes || '',
+            modulePricing: modulePricing || {},
+            proposalSentAt: new Date()
+        };
+
+        request.status = 'Proposal Sent';
+        await request.save();
+
+        res.json({
+            success: true,
+            message: `Proposal "${request.customPlan.planName}" generated and marked as Proposal Sent!`,
+            data: request
+        });
+    } catch (error) {
+        console.error('Error creating custom proposal:', error);
+        res.status(500).json({ message: error.message || 'Server error generating proposal' });
+    }
+};
+
+// @desc    Verify Payment for Custom Onboarding (Super Admin)
+// @route   POST /api/billing-demos/admin/:id/verify-payment
+// @access  Private/SuperAdmin
+export const verifyDemoPayment = async (req, res) => {
+    try {
+        const { paymentMethod, transactionId, amountPaid } = req.body;
+
+        const request = await BillingDemoRequest.findById(req.params.id);
+        if (!request) {
+            return res.status(404).json({ message: 'Demo request not found' });
+        }
+
+        // Prevent duplicate payment verification
+        if (request.paymentDetails?.isVerified) {
+            return res.status(400).json({ 
+                message: 'Payment for this request has already been verified and processed.',
+                verifiedAt: request.paymentDetails.verifiedAt
+            });
+        }
+
+        request.paymentDetails = {
+            paymentMethod: paymentMethod || 'UPI',
+            transactionId: transactionId || `TXN_${Date.now()}`,
+            amountPaid: Number(amountPaid) || (request.customPlan?.finalAmount || 0),
+            paidAt: new Date(),
+            isVerified: true,
+            verifiedAt: new Date(),
+            verifiedBy: req.user?._id
+        };
+
+        request.status = 'Payment Verified';
+        await request.save();
+
+        res.json({
+            success: true,
+            message: `Payment of ₹${request.paymentDetails.amountPaid} verified successfully! Status is now Payment Verified.`,
+            data: request
+        });
+    } catch (error) {
+        console.error('Error verifying demo payment:', error);
+        res.status(500).json({ message: error.message || 'Server error verifying payment' });
+    }
+};
+
+// @desc    Activate custom billing configuration for a restaurant with secure invitation (Super Admin)
 // @route   POST /api/billing-demos/admin/:id/activate
 // @access  Private/SuperAdmin
 export const activateBillingDemo = async (req, res) => {
@@ -295,9 +429,13 @@ export const activateBillingDemo = async (req, res) => {
             });
         }
 
+        // Generate single-use secure activation token
+        const cryptoModule = await import('crypto');
+        const activationToken = cryptoModule.default.randomBytes(32).toString('hex');
+        const tokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7-day validity
+
         // 3. If still no restaurant exists, create a new active Restaurant & Owner user automatically!
         if (!restaurant) {
-            // Find or create Owner User
             const cleanDigits = request.phoneNumber.replace(/\D/g, '') || '9876543210';
             const ownerEmail = `owner_${cleanDigits}@restosys.com`;
             ownerUser = await User.findOne({
@@ -305,15 +443,26 @@ export const activateBillingDemo = async (req, res) => {
             });
 
             if (!ownerUser) {
+                // Generate a random temporary hash that cannot be guessed
+                const tempPassword = cryptoModule.default.randomBytes(24).toString('base64');
                 ownerUser = await User.create({
                     name: request.fullName,
                     email: ownerEmail,
                     phoneNumber: request.phoneNumber,
-                    password: 'password123', // Default test password
+                    password: tempPassword,
                     role: 'RestaurantAdmin',
-                    isActive: true
+                    isActive: true,
+                    activationToken: activationToken,
+                    activationExpires: tokenExpires
                 });
+            } else {
+                ownerUser.activationToken = activationToken;
+                ownerUser.activationExpires = tokenExpires;
+                await ownerUser.save();
             }
+
+            const durationMonths = request.customPlan?.durationMonths || 12;
+            const expiryDate = new Date(Date.now() + durationMonths * 30 * 24 * 60 * 60 * 1000);
 
             restaurant = await Restaurant.create({
                 name: request.restaurantName,
@@ -325,11 +474,11 @@ export const activateBillingDemo = async (req, res) => {
                 isActive: true,
                 subscription: {
                     status: 'Active',
-                    plan: 'Pro',
-                    billingCycle: 'monthly',
+                    plan: request.customPlan?.planName || 'Custom SaaS',
+                    billingCycle: request.customPlan?.billingCycle || 'yearly',
                     trialActive: false,
                     startDate: new Date(),
-                    expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+                    expiryDate: expiryDate
                 }
             });
 
@@ -346,6 +495,11 @@ export const activateBillingDemo = async (req, res) => {
             });
         } else if (restaurant.ownerId && !ownerUser) {
             ownerUser = await User.findById(restaurant.ownerId);
+            if (ownerUser) {
+                ownerUser.activationToken = activationToken;
+                ownerUser.activationExpires = tokenExpires;
+                await ownerUser.save();
+            }
         }
 
         // 4. Update the restaurant with the custom billing configuration
@@ -354,18 +508,32 @@ export const activateBillingDemo = async (req, res) => {
             activatedAt: new Date(),
             demoRequestId: request._id,
             outletFormat: request.outletFormat || 'Fine Dine & Resto-Bar',
+            branchLimit: request.customPlan?.branchLimit || 1,
+            staffLimit: request.customPlan?.staffLimit || 10,
+            customPlanName: request.customPlan?.planName || 'Custom Plan',
             modules: request.customBillingConfig?.modules || {
                 posBilling: true,
-                menuManagement: true,
-                tableManagement: true,
                 dineInTakeawayOrders: true,
-                kitchenOrderManagement: true,
-                gstInvoice: true,
-                discounts: true,
-                customerManagement: true,
+                kot: true,
+                kds: true,
+                menuManagement: true,
                 inventoryManagement: true,
+                rawMaterials: true,
+                staffManagement: true,
+                attendance: true,
+                payroll: true,
+                reports: true,
                 salesReports: true,
-                staffManagement: true
+                expenseManagement: true,
+                tableManagement: true,
+                reservations: true,
+                deliveryManagement: true,
+                customerManagement: true,
+                branchManagement: true,
+                qrOrdering: true,
+                onlineOrdering: true,
+                gstInvoice: true,
+                discounts: true
             },
             paymentMethods: request.customBillingConfig?.paymentMethods || {
                 cash: true,
@@ -377,17 +545,35 @@ export const activateBillingDemo = async (req, res) => {
             gstRatePercent: request.customBillingConfig?.gstRatePercent ?? 5
         };
 
+        // Align restaurantConfig.orderKitchen with KOT / KDS settings
+        if (!restaurant.restaurantConfig) restaurant.restaurantConfig = {};
+        if (!restaurant.restaurantConfig.orderKitchen) restaurant.restaurantConfig.orderKitchen = {};
+        const isKot = restaurant.billingConfig.modules.kot !== false;
+        const isKds = restaurant.billingConfig.modules.kds !== false;
+        restaurant.restaurantConfig.orderKitchen.kotEnabled = isKot;
+        restaurant.restaurantConfig.orderKitchen.kdsEnabled = isKds;
+        restaurant.restaurantConfig.orderKitchen.kitchenMode = isKds ? 'KDS' : 'KOT_ONLY';
+
         await restaurant.save();
 
         // 5. Update the demo request status to 'Activated'
         request.status = 'Activated';
         request.activatedAt = new Date();
         request.restaurantId = restaurant._id;
+        request.activation = {
+            token: activationToken,
+            tokenExpires: tokenExpires,
+            invitationSentAt: new Date(),
+            isActivated: true,
+            activatedAt: new Date()
+        };
         await request.save();
+
+        const activationUrl = `${req.protocol}://${req.get('host')}/activate-account?token=${activationToken}`;
 
         res.json({
             success: true,
-            message: `Custom billing setup activated for "${restaurant.name}"!`,
+            message: `Custom SaaS setup activated for "${restaurant.name}"! Invitation link generated.`,
             data: {
                 request,
                 restaurant: {
@@ -396,15 +582,126 @@ export const activateBillingDemo = async (req, res) => {
                     phone: restaurant.phone,
                     billingConfig: restaurant.billingConfig
                 },
-                credentials: ownerUser ? {
-                    email: ownerUser.email,
-                    password: 'password123'
-                } : null
+                invitation: {
+                    email: ownerUser ? ownerUser.email : null,
+                    phoneNumber: request.phoneNumber,
+                    token: activationToken,
+                    expiresAt: tokenExpires,
+                    activationUrl: activationUrl
+                }
             }
         });
     } catch (error) {
         console.error('Error activating billing demo:', error);
         res.status(500).json({ message: error.message || 'Server error activating demo' });
+    }
+};
+
+// @desc    Resend secure activation invitation link (Super Admin)
+// @route   POST /api/billing-demos/admin/:id/resend-invitation
+// @access  Private/SuperAdmin
+export const resendActivationInvitation = async (req, res) => {
+    try {
+        const request = await BillingDemoRequest.findById(req.params.id);
+        if (!request) {
+            return res.status(404).json({ message: 'Demo request not found' });
+        }
+
+        const cryptoModule = await import('crypto');
+        const newToken = cryptoModule.default.randomBytes(32).toString('hex');
+        const tokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+        request.activation = {
+            ...request.activation,
+            token: newToken,
+            tokenExpires: tokenExpires,
+            invitationSentAt: new Date()
+        };
+        await request.save();
+
+        // Sync with User
+        if (request.restaurantId) {
+            const rest = await Restaurant.findById(request.restaurantId);
+            if (rest?.ownerId) {
+                await User.findByIdAndUpdate(rest.ownerId, {
+                    activationToken: newToken,
+                    activationExpires: tokenExpires
+                });
+            }
+        }
+
+        const activationUrl = `${req.protocol}://${req.get('host')}/activate-account?token=${newToken}`;
+
+        res.json({
+            success: true,
+            message: 'A fresh single-use activation invitation has been generated.',
+            invitation: {
+                phoneNumber: request.phoneNumber,
+                token: newToken,
+                expiresAt: tokenExpires,
+                activationUrl: activationUrl
+            }
+        });
+    } catch (error) {
+        console.error('Error resending invitation:', error);
+        res.status(500).json({ message: error.message || 'Server error resending invitation' });
+    }
+};
+
+// @desc    Validate activation token & setup password (Public)
+// @route   POST /api/billing-demos/activate-account
+// @access  Public
+export const activateAccountWithToken = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+
+        if (!token) {
+            return res.status(400).json({ message: 'Activation token is required' });
+        }
+        if (!newPassword || newPassword.length < 6) {
+            return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+        }
+
+        // Find user with this activationToken
+        let user = await User.findOne({
+            activationToken: token,
+            activationExpires: { $gt: new Date() }
+        });
+
+        // Or search in BillingDemoRequest
+        if (!user) {
+            const demo = await BillingDemoRequest.findOne({
+                'activation.token': token,
+                'activation.tokenExpires': { $gt: new Date() }
+            });
+
+            if (demo && demo.restaurantId) {
+                const rest = await Restaurant.findById(demo.restaurantId);
+                if (rest?.ownerId) {
+                    user = await User.findById(rest.ownerId);
+                }
+            }
+        }
+
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid or expired activation link. Please contact Super Admin for a fresh invitation.' });
+        }
+
+        // Update password and clear token
+        user.password = newPassword;
+        user.activationToken = null;
+        user.activationExpires = null;
+        user.isActive = true;
+        await user.save();
+
+        res.json({
+            success: true,
+            message: 'Your account has been successfully secured! You can now log in with your credentials.',
+            email: user.email
+        });
+    } catch (error) {
+        console.error('Error activating account with token:', error);
+        res.status(500).json({ message: error.message || 'Server error activating account' });
     }
 };
 

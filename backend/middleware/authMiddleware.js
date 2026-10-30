@@ -231,7 +231,9 @@ export const checkFeature = (featureName) => {
 };
 
 // Enforce module permissions for custom billing configurations on the backend
-export const checkBillingModule = (moduleName) => {
+export const checkBillingModule = (moduleNames) => {
+    const modulesToCheck = Array.isArray(moduleNames) ? moduleNames : [moduleNames];
+
     return async (req, res, next) => {
         // SuperAdmin can bypass module restrictions
         if (req.user?.role === 'SuperAdmin') {
@@ -249,22 +251,26 @@ export const checkBillingModule = (moduleName) => {
             }
 
             // Only enforce if custom billing is specifically active for this restaurant
+            // If isCustomBillingActive is false or undefined, existing restaurants maintain 100% full backward-compatible access
             if (restaurant.billingConfig?.isCustomBillingActive) {
                 const modules = restaurant.billingConfig?.modules || {};
-                const isEnabled = modules[moduleName] !== false;
+                
+                // If any of the acceptable module keys is enabled, allow access
+                const isEnabled = modulesToCheck.some(mod => modules[mod] !== false);
 
                 if (!isEnabled) {
+                    const primaryModule = modulesToCheck[0];
                     return res.status(403).json({
-                        message: `Access denied: The "${moduleName}" module is disabled for your restaurant's billing configuration. Please contact Super Admin to activate this module.`,
+                        message: `Access denied: The "${primaryModule}" module is disabled for your restaurant's billing configuration. Please contact Super Admin to activate this module.`,
                         moduleDisabled: true,
-                        module: moduleName
+                        module: primaryModule
                     });
                 }
             }
 
             next();
         } catch (error) {
-            console.error(`Error in checkBillingModule (${moduleName}):`, error);
+            console.error(`Error in checkBillingModule (${modulesToCheck.join(',')}):`, error);
             next();
         }
     };

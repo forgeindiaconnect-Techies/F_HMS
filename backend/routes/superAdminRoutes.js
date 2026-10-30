@@ -6,7 +6,8 @@ import {
     getPlans, createPlan, updatePlan, deletePlan, getTickets, 
     updateTicket, deleteTicket, updateApprovalStatus, getAllUsers, updateUserStatus, deleteUser,
     broadcastNotification, deleteSuperAdminNotification,
-    getSubscriptionPayments, getSubscriptionAnalytics
+    getSubscriptionPayments, getSubscriptionAnalytics,
+    updateRestaurantModules
 } from '../controllers/superAdminController.js';
 import { deleteVerification } from '../controllers/verificationController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
@@ -22,6 +23,7 @@ router.route('/restaurants/:id/status').put(updateRestaurantVisibilityStatus);
 router.route('/restaurants/:id/restore').put(restoreRestaurant);
 router.route('/restaurants/:id/subscription').put(updateSubscription);
 router.route('/restaurants/:id/approval').put(updateApprovalStatus);
+router.route('/restaurants/:id/modules').put(updateRestaurantModules);
 
 router.route('/verifications/:id').delete(deleteVerification);
 

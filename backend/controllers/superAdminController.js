@@ -690,3 +690,70 @@ export const getSubscriptionAnalytics = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+// @desc    Update restaurant custom modules & limits directly (Super Admin)
+// @route   PUT /api/super-admin/restaurants/:id/modules
+// @access  Private/SuperAdmin
+export const updateRestaurantModules = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { modules, branchLimit, staffLimit, isCustomBillingActive, customPlanName } = req.body;
+
+        const restaurant = await Restaurant.findById(id);
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        if (!restaurant.billingConfig) {
+            restaurant.billingConfig = { modules: {}, paymentMethods: {} };
+        }
+
+        if (isCustomBillingActive !== undefined) {
+            restaurant.billingConfig.isCustomBillingActive = Boolean(isCustomBillingActive);
+        } else {
+            restaurant.billingConfig.isCustomBillingActive = true;
+        }
+
+        if (customPlanName) {
+            restaurant.billingConfig.customPlanName = customPlanName;
+        }
+
+        if (branchLimit !== undefined) {
+            restaurant.billingConfig.branchLimit = Number(branchLimit);
+        }
+
+        if (staffLimit !== undefined) {
+            restaurant.billingConfig.staffLimit = Number(staffLimit);
+        }
+
+        if (modules) {
+            restaurant.billingConfig.modules = {
+                ...restaurant.billingConfig.modules,
+                ...modules
+            };
+
+            // Sync kitchenMode, kotEnabled, kdsEnabled in restaurantConfig
+            if (!restaurant.restaurantConfig) restaurant.restaurantConfig = {};
+            if (!restaurant.restaurantConfig.orderKitchen) restaurant.restaurantConfig.orderKitchen = {};
+
+            if (modules.kot !== undefined) {
+                restaurant.restaurantConfig.orderKitchen.kotEnabled = modules.kot;
+            }
+            if (modules.kds !== undefined) {
+                restaurant.restaurantConfig.orderKitchen.kdsEnabled = modules.kds;
+                restaurant.restaurantConfig.orderKitchen.kitchenMode = modules.kds ? 'KDS' : 'KOT_ONLY';
+            }
+        }
+
+        await restaurant.save();
+
+        res.json({
+            success: true,
+            message: `Custom module permissions updated for "${restaurant.name}"!`,
+            data: restaurant.billingConfig
+        });
+    } catch (error) {
+        console.error('Error updating restaurant modules:', error);
+        res.status(500).json({ message: error.message || 'Server error updating modules' });
+    }
+};
