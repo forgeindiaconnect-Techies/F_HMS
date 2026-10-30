@@ -131,13 +131,13 @@ const ChefSidebar = () => {
                                         to={item.path}
                                         end={item.path === '/chef'}
                                         className={({ isActive }) => clsx(
-                                            "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm",
+                                            "relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm",
                                             isActive 
-                                            ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold" 
+                                            ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold shadow-xs border-l-4 border-orange-500 rounded-l-md pl-2.5" 
                                             : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#2a3040] hover:text-gray-900 dark:hover:text-white font-medium"
                                         )}
                                     >
-                                        <Icon size={18} className={clsx("transition-transform group-hover:scale-110", "shrink-0")} />
+                                        <Icon size={18} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-orange-600 dark:text-orange-400" : "text-gray-400 group-hover:text-gray-700")} />
                                         <span>{item.name}</span>
                                     </NavLink>
                                 );

@@ -286,13 +286,13 @@ const Sidebar = () => {
                                         key={item.name}
                                         to={item.path}
                                         className={clsx(
-                                            "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm",
+                                            "relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm",
                                             isActive 
-                                            ? "bg-green-50 dark:bg-green-950/50 text-green-700 dark:text-green-400 font-bold shadow-sm" 
+                                            ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-bold shadow-xs border-l-4 border-emerald-500 rounded-l-md pl-2.5" 
                                             : "text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-100 font-medium"
                                         )}
                                     >
-                                        <Icon size={18} className={clsx("transition-transform group-hover:scale-110", "shrink-0")} />
+                                        <Icon size={18} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-emerald-600 dark:text-emerald-400" : "text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-200")} />
                                         <span>{item.name}</span>
                                     </NavLink>
                                 );

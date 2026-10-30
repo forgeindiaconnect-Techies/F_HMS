@@ -117,9 +117,9 @@ const CashierSidebar = () => {
                                             to={item.path}
                                             end={item.path === '/cashier' || item.path === '/'}
                                             className={({ isActive }) => clsx(
-                                                "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm",
+                                                "relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm",
                                                 isActive 
-                                                ? "bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 font-bold" 
+                                                ? "bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 font-bold shadow-xs border-l-4 border-purple-600 rounded-l-md pl-2.5" 
                                                 : "text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-100 font-medium"
                                             )}
                                         >

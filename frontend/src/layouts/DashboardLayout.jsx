@@ -7,7 +7,6 @@ import { toast } from 'react-hot-toast';
 
 import VerificationBlockedOverlay from '../components/VerificationBlockedOverlay';
 import SubscriptionFreezeOverlay from '../components/SubscriptionFreezeOverlay';
-import { OwnerWhatsAppNotificationDrawer, OwnerWhatsAppFloatingToast } from '../components/OwnerWhatsAppNotificationDrawer';
 import { Sparkles, ArrowRight, X, CheckCircle, ShieldCheck, Zap, Lock } from 'lucide-react';
 
 // ─── Custom Billing Walkthrough Module Map ────────────────────────────────────
@@ -309,10 +308,6 @@ const DashboardLayout = () => {
                     )}
                 </main>
             </div>
-
-            {/* Owner WhatsApp Notification Hub Drawer & Floating Alert Toast */}
-            <OwnerWhatsAppFloatingToast />
-            <OwnerWhatsAppNotificationDrawer />
 
             {/* Plans Selection Overlay Modal */}
             {showPlansModal && (

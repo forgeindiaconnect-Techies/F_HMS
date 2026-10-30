@@ -144,9 +144,9 @@ const WaiterSidebar = () => {
                                         to={item.path}
                                         end={item.path === '/waiter'}
                                         className={clsx(
-                                            "flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm",
+                                            "relative flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm",
                                             isActive 
-                                            ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-bold" 
+                                            ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-bold shadow-xs border-l-4 border-emerald-500 rounded-l-md pl-2.5" 
                                             : "text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-100 font-medium"
                                         )}
                                     >

@@ -221,24 +221,9 @@ const NotificationCenter = () => {
                     >
                         Alerts
                     </button>
-                    <button 
-                        onClick={() => setFilter('WhatsApp')}
-                        className={`px-4 py-1.5 font-bold rounded-md text-sm transition-colors flex items-center gap-1.5 cursor-pointer ${filter === 'WhatsApp' ? 'bg-[#075E54] text-white shadow-sm' : 'hover:bg-white dark:hover:bg-slate-800 text-emerald-700 dark:text-emerald-400'}`}
-                    >
-                        <Phone size={13} className={filter === 'WhatsApp' ? 'text-emerald-300' : 'text-emerald-600'} />
-                        <span>WhatsApp Alerts ({waAlerts.length})</span>
-                    </button>
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <button
-                        type="button"
-                        onClick={() => setIsDrawerOpen(true)}
-                        className="px-3.5 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95 cursor-pointer"
-                    >
-                        <Phone size={13} />
-                        <span>Open WhatsApp Hub</span>
-                    </button>
 
                     {unreadCount > 0 && (
                         <button 
