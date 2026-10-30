@@ -388,7 +388,7 @@ const DashboardLayout = () => {
                                             title="Click QR Code to Simulate Payment & Activate"
                                         >
                                             <img 
-                                                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi%3A%2F%2Fpay%3Fpa%3Dresto%40upi%26pn%3DRestaurantHub%26am%3D${billingCycle === 'yearly' ? (selectedPlanToBuy.yearlyPrice || selectedPlanToBuy.monthlyPrice) : selectedPlanToBuy.monthlyPrice}%26cu%3DINR&bgcolor=ffffff&color=1e1b4b`}
+                                                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi%3A%2F%2Fpay%3Fpa%3Dresto%40upi%26pn%3DFoodNest%26am%3D${billingCycle === 'yearly' ? (selectedPlanToBuy.yearlyPrice || selectedPlanToBuy.monthlyPrice) : selectedPlanToBuy.monthlyPrice}%26cu%3DINR&bgcolor=ffffff&color=1e1b4b`}
                                                 alt="Subscription QR Code" 
                                                 className="w-44 h-44 object-contain"
                                             />

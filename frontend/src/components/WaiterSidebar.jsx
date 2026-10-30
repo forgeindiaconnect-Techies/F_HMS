@@ -118,7 +118,7 @@ const WaiterSidebar = () => {
                 )}
                 <div>
                     <h1 className="text-lg font-bold text-gray-900 dark:text-slate-100 leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                        {restaurant && restaurant.name ? restaurant.name : 'RestoSys'}
+                        {restaurant && restaurant.name ? restaurant.name : 'FoodNest'}
                     </h1>
                     <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block mt-0.5">Floor Desk</span>
                 </div>

@@ -109,7 +109,7 @@ const ChefSidebar = () => {
                 )}
                 <div>
                     <h1 className="text-lg font-bold text-gray-900 dark:text-white leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                        {restaurant && restaurant.name ? restaurant.name : 'RestoSys'}
+                        {restaurant && restaurant.name ? restaurant.name : 'FoodNest'}
                     </h1>
                     <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider block mt-0.5">Kitchen</span>
                 </div>

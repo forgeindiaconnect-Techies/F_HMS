@@ -4,7 +4,7 @@ import {
     LayoutDashboard, Store, CreditCard, Percent, TrendingUp, 
     Users, MessageSquare, SlidersHorizontal, Settings, BarChart3, 
     Bell, ShieldCheck, LogOut, User, Menu, X, ChevronRight, ArrowLeft,
-    CalendarCheck, Receipt
+    CalendarCheck, Receipt, MessageSquareQuote
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -77,6 +77,7 @@ const SuperAdminLayout = () => {
             { name: 'Reports & Analytics', href: '/super-admin/reports',       icon: BarChart3,       roles: ['SuperAdmin'] },
             { name: 'Notifications',       href: '/super-admin/notifications', icon: Bell,            roles: ['SuperAdmin'] },
             { name: 'Verifications',       href: '/super-admin/verifications', icon: ShieldCheck,     roles: ['SuperAdmin'] },
+            { name: 'Testimonials',        href: '/super-admin/testimonials',  icon: MessageSquareQuote, roles: ['SuperAdmin'] },
         ];
         return fullNavigation.filter(item => item.roles.includes(user?.role));
     };
@@ -111,7 +112,7 @@ const SuperAdminLayout = () => {
                 {/* Sidebar Header */}
                 <div className="h-16 flex items-center justify-between px-5 border-b border-slate-800 shrink-0">
                     <h1 className="text-lg font-bold tracking-tight truncate">
-                        RestaurantHub<span className="text-blue-400">SaaS</span>
+                        FoodNest<span className="text-orange-400">SaaS</span>
                     </h1>
                     <button 
                         onClick={() => setIsOpen(false)} 

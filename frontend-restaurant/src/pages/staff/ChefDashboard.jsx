@@ -1,0 +1,1173 @@
+import { useState, useEffect, useRef } from 'react';
+import { 
+    ChefHat, Timer, CheckCircle, AlertTriangle, 
+    Flame, AlertOctagon, Check, MessageSquare, 
+    Sliders, Star, Plus, Trash2, LayoutGrid, Columns,
+    Search, Clock, ArrowRight, Utensils, Sparkles, Printer, Receipt
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { getApiUrl } from '../../utils/axiosInstance';
+import toast from 'react-hot-toast';
+import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
+import KOTPrintModal from '../../components/KOTPrintModal';
+import { generateThermalKOTHtml, printKOTViaIframe } from '../../utils/receiptGenerator';
+
+const ChefDashboard = () => {
+    const { api, user, restaurant } = useAuth();
+    
+    // Core State
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('Incoming');
+    const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'kanban'
+    const [selectedStation, setSelectedStation] = useState('All');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [sortBy, setSortBy] = useState('priority'); // 'priority' | 'oldest' | 'newest'
+    
+    // 86 List (Out of Stock Ingredients)
+    const [outOfStock, setOutOfStock] = useState([]);
+    const [newIngredient, setNewIngredient] = useState('');
+    const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+    const [newTicketModalOrder, setNewTicketModalOrder] = useState(null);
+    const [printModalKOT, setPrintModalKOT] = useState(null);
+    const [autoPrintKOTEnabled, setAutoPrintKOTEnabled] = useState(() => localStorage.getItem('resto_chef_kot_autoprint') !== 'false');
+    const seenTicketIdsRef = useRef(new Set());
+    
+    // Priorities and item completion checklists (local ticket overrides)
+    const [manualPriority, setManualPriority] = useState({}); // orderId -> boolean
+    const [completedItems, setCompletedItems] = useState({}); // `${orderId}-${itemIdx}` -> boolean
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    const stations = [
+        'All',
+        '🔥 Grill & Fryer',
+        '🍕 Pizza & Oven',
+        '🥗 Cold & Salads',
+        '🍰 Desserts & Bakery',
+        '☕ Beverages & Bar'
+    ];
+
+    // Poll live orders and merge with real-time socket state
+    const fetchOrders = async () => {
+        try {
+            const { data } = await api.get('/orders');
+            if (Array.isArray(data)) {
+                setOrders(prev => {
+                    const fetchedMap = new Map(data.map(o => [o._id, o]));
+                    const merged = [...data];
+                    
+                    // Retain any active socket tickets that may not be in the current HTTP response yet
+                    prev.forEach(p => {
+                        if (p && p._id && !fetchedMap.has(p._id)) {
+                            if (!['Completed', 'Cancelled', 'Delivered', 'Served'].includes(p.status)) {
+                                merged.push(p);
+                            }
+                        }
+                    });
+                    
+                    return merged.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                });
+            }
+        } catch (error) {
+            console.error('Failed to fetch kitchen orders', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchOrders();
+        const pollInterval = setInterval(fetchOrders, 4000);
+        
+        // Ticking stopwatch timer every second
+        const timeInterval = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+
+        // Real-time WebSocket setup
+        let ws;
+        const connectWS = () => {
+            try {
+                let baseURL = getApiUrl();
+                let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
+                ws = new WebSocket(wsURL);
+
+                ws.onopen = () => {
+                    const rawRestId = user?.restaurantId;
+                    const cleanRestId = (rawRestId && typeof rawRestId === 'object') ? (rawRestId._id || rawRestId.id) : rawRestId;
+                    ws.send(JSON.stringify({
+                        type: 'register',
+                        restaurantId: cleanRestId || null,
+                        role: 'kitchen'
+                    }));
+                };
+
+                ws.onmessage = (event) => {
+                    try {
+                        const msg = JSON.parse(event.data);
+                        if (msg.type === 'new_order' || msg.type === 'order_updated' || msg.type === 'order_status_updated') {
+                            if (msg.data && msg.data._id) {
+                                setOrders(prev => {
+                                    const exists = prev.some(o => o._id === msg.data._id);
+                                    if (exists) {
+                                        return prev.map(o => o._id === msg.data._id ? msg.data : o);
+                                    }
+                                    return [msg.data, ...prev];
+                                });
+                            }
+                            fetchOrders();
+
+                            // Trigger modal popup and chime ONLY for actual new, unhandled orders
+                            if (msg.type === 'new_order' && msg.data && msg.data._id) {
+                                const orderData = msg.data;
+                                const isPendingStatus = !orderData.status || orderData.status === 'Pending' || orderData.status === 'Placed';
+                                
+                                if (isPendingStatus && !seenTicketIdsRef.current.has(orderData._id)) {
+                                    seenTicketIdsRef.current.add(orderData._id);
+                                    setNewTicketModalOrder(orderData);
+                                    if (autoPrintKOTEnabled) {
+                                        autoPrintKitchenKOT(orderData);
+                                    }
+
+                                    const ticketNum = String(orderData._id).substring(String(orderData._id).length - 5).toUpperCase();
+
+                                    try {
+                                        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                                        const osc = audioCtx.createOscillator();
+                                        const gain = audioCtx.createGain();
+                                        osc.type = 'sine';
+                                        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                                        osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.4);
+                                        gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                                        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                                        osc.connect(gain);
+                                        gain.connect(audioCtx.destination);
+                                        osc.start();
+                                        osc.stop(audioCtx.currentTime + 0.4);
+                                    } catch (e) {}
+
+                                    toast.success(`🔔 NEW ORDER RECEIVED! Ticket #${ticketNum}`, {
+                                        id: `new-order-${orderData._id}`, // Deduplicate toast notification
+                                        duration: 8000,
+                                        position: 'top-right'
+                                    });
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Error parsing websocket message in ChefDashboard', e);
+                    }
+                };
+
+                ws.onclose = () => {
+                    setTimeout(connectWS, 5000);
+                };
+            } catch (err) {
+                console.error('WebSocket error in ChefDashboard', err);
+            }
+        };
+
+        connectWS();
+
+        return () => {
+            clearInterval(pollInterval);
+            clearInterval(timeInterval);
+            if (ws) ws.close();
+        };
+    }, [api, user]);
+
+    // Update order status on backend
+    const updateStatus = async (id, newStatus) => {
+        // Track ticket as processed so modal popup never re-triggers for this order ID
+        if (id) {
+            seenTicketIdsRef.current.add(id);
+        }
+        setNewTicketModalOrder(prev => (prev && prev._id === id ? null : prev));
+
+        try {
+            await api.put(`/orders/${id}/status`, { status: newStatus });
+            toast.success(`Ticket status updated to ${newStatus}`);
+            fetchOrders();
+        } catch (error) {
+            console.error('Failed to update order status', error);
+            const msg = error.response?.data?.message || 'Failed to update status.';
+            toast.error(msg);
+        }
+    };
+
+    // Toggle individual dish item completion checklist
+    const toggleItemDone = (orderId, itemIdx) => {
+        const key = `${orderId}-${itemIdx}`;
+        setCompletedItems(prev => ({
+            ...prev,
+            [key]: !prev[key]
+        }));
+    };
+
+    // Toggle VIP Priority Flag
+    const togglePriority = (orderId) => {
+        setManualPriority(prev => ({
+            ...prev,
+            [orderId]: !prev[orderId]
+        }));
+        toast.success('VIP Priority status toggled!');
+    };
+
+    // Add ingredient to 86 list
+    const handleAddIngredient = (e) => {
+        e.preventDefault();
+        if (!newIngredient.trim()) return;
+        if (outOfStock.some(i => i.toLowerCase() === newIngredient.trim().toLowerCase())) {
+            toast.error('Ingredient is already on the 86 List');
+            return;
+        }
+        setOutOfStock([...outOfStock, newIngredient.trim()]);
+        setNewIngredient('');
+        toast.success('Ingredient added to 86 Out-of-Stock list');
+    };
+
+    // Remove ingredient from 86 list
+    const handleRemoveIngredient = (ing) => {
+        setOutOfStock(outOfStock.filter(i => i !== ing));
+        toast.success('Ingredient restored to active inventory!');
+    };
+
+    const toggleAutoPrintKOT = () => {
+        setAutoPrintKOTEnabled(prev => {
+            const next = !prev;
+            localStorage.setItem('resto_chef_kot_autoprint', String(next));
+            return next;
+        });
+        const next = !autoPrintKOTEnabled;
+        toast.success(next ? 'Auto-print KOT on new orders enabled' : 'Auto-print KOT disabled', {
+            id: 'chef-dashboard-kot-autoprint-toggle'
+        });
+    };
+
+    // Auto-Print 80mm Thermal KOT Slip via hidden iframe
+    const autoPrintKitchenKOT = (orderData) => {
+        if (!orderData) return;
+        const ticketNum = orderData._id ? String(orderData._id).slice(-5).toUpperCase() : 'NEW';
+        const kotNum = orderData.kotNumbers?.[0] || orderData.kots?.[0]?.kotNumber || `KOT-${ticketNum}`;
+
+        toast.success(`🖨️ Auto-Printed Kitchen KOT ${kotNum}${orderData.tableNumber ? ` (Table ${orderData.tableNumber})` : ''}`, {
+            id: `chef-autoprint-${orderData._id}`,
+            duration: 6000,
+            icon: '👨‍🍳'
+        });
+
+        const html = generateThermalKOTHtml(orderData, restaurant);
+        printKOTViaIframe(html);
+    };
+
+    // Print KOT Ticket Modal Trigger
+    const handlePrintOrderKOT = async (order) => {
+        try {
+            const res = await api.get(`/kot?orderId=${order._id}`).catch(() => null);
+            if (res && res.data && res.data.length > 0) {
+                setPrintModalKOT(res.data[0]);
+                return;
+            }
+        } catch (e) {}
+
+        const kotNum = order.kotNumbers?.[0] || `KOT-${order._id.substring(order._id.length - 4).toUpperCase()}`;
+        setPrintModalKOT({
+            _id: order._id,
+            kotNumber: kotNum,
+            orderId: order._id,
+            orderNumber: `#${order._id.substring(order._id.length - 5).toUpperCase()}`,
+            tableNumber: order.tableNumber || (order.orderType === 'Delivery' ? 'Delivery' : 'Counter'),
+            orderType: order.orderType || 'Dine In',
+            serviceType: order.serviceType,
+            customerName: order.customerName,
+            kitchenStation: selectedStation !== 'All' ? selectedStation.replace(/^[^\w]+/, '').trim() : 'Main Kitchen',
+            items: (order.orderItems || []).map(i => ({
+                name: i.name,
+                quantity: i.qty || i.quantity || 1,
+                notes: i.notes || ''
+            })),
+            notes: order.notes,
+            createdAt: order.createdAt || new Date().toISOString(),
+            restaurantName: user?.restaurantName || 'Restaurant',
+            branchName: user?.branchName || ''
+        });
+    };
+
+    // Priority Score Calculation
+    const getOrderPriorityScore = (order) => {
+        const timeDiffMinutes = Math.floor((currentTime - new Date(order.createdAt)) / 60000);
+        let score = 0;
+        if (manualPriority[order._id]) score += 100;
+        if (timeDiffMinutes > 15) score += 80;
+        else if (timeDiffMinutes > 10) score += 40;
+        if (order.orderType === 'Dine In') score += 15;
+        return score;
+    };
+
+    // Station item classification helper
+    const isItemInStation = (item, stationName) => {
+        if (!stationName || stationName === 'All') return true;
+        
+        const sName = stationName.toLowerCase();
+        const itemName = (item.name || '').toLowerCase();
+        const category = (item.category || item.product?.category || item.categoryName || '').toLowerCase();
+        const station = (item.station || item.product?.station || '').toLowerCase();
+
+        // 1. Direct explicit station property match
+        if (station && (sName.includes(station) || station.includes(sName))) return true;
+
+        // 2. Category & Name Matchers
+        const isMilkDessert = /milk\s*(cake|peda|sweet|pudding|halwa|barfi)|tres\s*leches|rabri|rasmalai|basundi|kheer/i.test(itemName);
+        const isMilkDrink = /milk|milkshake|badam\s*milk|chocolate\s*milk|hot\s*milk|cold\s*milk|flavored\s*milk|turmeric\s*milk/i.test(itemName) && !isMilkDessert;
+
+        const isBeverage = 
+            category.includes('beverage') || category.includes('drink') || category.includes('bar') || category.includes('juice') || category.includes('coffee') || category.includes('tea') || (category.includes('milk') && !isMilkDessert) ||
+            isMilkDrink ||
+            /coffee|shake|latte|tea|drink|juice|soda|beverage|water|mocktail|cocktail|beer|chai|espresso|cappuccino|mojito|smoothie|coke|pepsi|lassi|lemonade|wine|whiskey|vodka|rum|brew|boba|milk/i.test(itemName);
+
+        const isDessert = 
+            category.includes('dessert') || category.includes('sweet') || category.includes('bakery') || category.includes('cake') ||
+            isMilkDessert ||
+            /cake|brownie|ice cream|icecream|pie|sweet|dessert|halwa|jamun|pastry|waffle|pudding|kheer|cookie|chocolate|donut|tiramisu|sundae|custard|gulab|peda|rasgulla|barfi|mithai|kulfi/i.test(itemName);
+
+        const isPizzaOven = 
+            category.includes('pizza') || category.includes('oven') || category.includes('italian') || category.includes('baked') ||
+            /pizza|bread|calzone|pasta|baked|oven|garlic|lasagna|risotto|spaghetti|macaroni|panini/i.test(itemName);
+
+        const isColdSalad = 
+            category.includes('salad') || category.includes('cold') || category.includes('sushi') ||
+            /salad|roll|sushi|wrap|tacos|taco|cold|ice|soup|starter|appetizer|raita|curd|dip|hummus|kimchi|slaw/i.test(itemName);
+
+        const isGrillFryer = 
+            category.includes('grill') || category.includes('fry') || category.includes('main') || category.includes('chinese') || category.includes('indian') || category.includes('tandoor') || category.includes('bbq') ||
+            /burger|steak|fry|fries|chicken|bbq|grill|tikka|kebab|paneer|main|rice|biryani|noodle|curry|dal|roti|naan|thali|dosa|sandwich|manchurian|momos|bhatura|samosa|crispy|wings|patty/i.test(itemName);
+
+        if (sName.includes('beverage')) return isBeverage;
+        if (sName.includes('dessert')) return isDessert;
+        if (sName.includes('pizza')) return isPizzaOven;
+        if (sName.includes('cold')) return isColdSalad;
+        return true;
+    };
+
+    const isSelfOrder = (o) => {
+        if (!o) return false;
+        const type = String(o.orderType || '').toLowerCase();
+        return type.includes('pickup') || type.includes('takeaway') || type.includes('takeout') || type.includes('self') || (!o.tableNumber && type !== 'dine in' && type !== 'dine-in');
+    };
+
+    const isIncomingStatus = (status) => {
+        if (!status) return true;
+        const s = String(status).trim();
+        return s === 'Pending' || s === 'Accepted';
+    };
+
+    const isDoneStatus = (status) => {
+        if (!status) return false;
+        const s = String(status).trim();
+        return ['Completed', 'Served', 'Delivered', 'Cancelled'].includes(s);
+    };
+
+    // Filter Logic
+    const filterOrder = (order) => {
+        // Tab Filter
+        if (activeTab === 'All' && isDoneStatus(order.status)) return false;
+        if ((activeTab === 'Pending' || activeTab === 'Incoming') && !isIncomingStatus(order.status)) return false;
+        if (activeTab === 'Accepted' && order.status !== 'Accepted') return false;
+        if (activeTab === 'Preparing' && order.status !== 'Preparing') return false;
+        if (activeTab === 'Ready' && !['Ready', 'Ready for Pickup'].includes(order.status)) return false;
+        if (activeTab === 'Completed' && !isDoneStatus(order.status)) return false;
+
+        // Search Filter
+        if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase();
+            const idMatch = order._id.toLowerCase().includes(q);
+            const tableMatch = String(order.tableNumber || '').toLowerCase().includes(q);
+            const itemMatch = order.orderItems?.some(i => i.name.toLowerCase().includes(q));
+            if (!idMatch && !tableMatch && !itemMatch) return false;
+        }
+
+        // Station Filter
+        if (selectedStation !== 'All') {
+            const hasStationItem = order.orderItems?.some(item => isItemInStation(item, selectedStation));
+            if (!hasStationItem) return false;
+        }
+
+        return true;
+    };
+
+    // Sort Logic
+    const sortedOrders = [...orders].filter(filterOrder).sort((a, b) => {
+        if (sortBy === 'priority') {
+            return getOrderPriorityScore(b) - getOrderPriorityScore(a);
+        }
+        if (sortBy === 'oldest') {
+            return new Date(a.createdAt) - new Date(b.createdAt);
+        }
+        if (sortBy === 'newest') {
+            return new Date(b.createdAt) - new Date(a.createdAt);
+        }
+        return 0;
+    });
+
+    // Kitchen KDS Summary Metrics
+    const totalLive = orders.filter(o => !isDoneStatus(o.status)).length;
+    const incomingCount = orders.filter(o => isIncomingStatus(o.status)).length;
+    const preparingCount = orders.filter(o => o.status === 'Preparing').length;
+    const readyCount = orders.filter(o => ['Ready', 'Ready for Pickup'].includes(o.status)).length;
+    const completedCount = orders.filter(o => isDoneStatus(o.status)).length;
+    const overdueCount = orders.filter(o => {
+        if (['Completed', 'Served', 'Delivered'].includes(o.status)) return false;
+        const mins = Math.floor((currentTime - new Date(o.createdAt)) / 60000);
+        return mins >= 15;
+    }).length;
+
+    // Helper for Timer Color Badges
+    const getTimerColorClass = (mins) => {
+        if (mins >= 15) return 'bg-red-600 text-white animate-pulse border-red-400';
+        if (mins >= 10) return 'bg-amber-500 text-slate-950 border-amber-300';
+        return 'bg-emerald-600 text-white border-emerald-400';
+    };
+
+    const isKotOnlyKitchen = restaurant?.kitchenMode === 'KOT_ONLY' || 
+                             restaurant?.restaurantConfig?.orderKitchen?.kitchenMode === 'KOT_ONLY' || 
+                             restaurant?.restaurantConfig?.orderKitchen?.kdsEnabled === false;
+
+    if (isKotOnlyKitchen) {
+        return (
+            <div className="w-full max-w-2xl mx-auto my-12 p-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 text-center space-y-4 shadow-sm">
+                <div className="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 flex items-center justify-center mx-auto">
+                    <AlertTriangle size={32} />
+                </div>
+                <h2 className="text-xl font-black text-slate-900 dark:text-white">Kitchen Display System (KDS) Disabled</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+                    The digital Kitchen Display System is currently disabled in your Restaurant Settings. Orders are processed via physical printed KOT tickets or cashier floor tickets.
+                </p>
+                {restaurant?.restaurantConfig?.orderKitchen?.kotEnabled !== false && (
+                    <Link to="/chef/kot" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm shadow-md transition cursor-pointer">
+                        <Receipt size={16} /> Open Kitchen Order Tickets (KOT)
+                    </Link>
+                )}
+            </div>
+        );
+    }
+
+    return (
+        <div className="w-full max-w-[1700px] mx-auto font-sans space-y-4 sm:space-y-6 pb-24 text-slate-900 dark:text-slate-100 transition-colors">
+            
+            {/* Sleek Kitchen Shift & Station Control Strip */}
+            <div className="bg-slate-900 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 shadow-md border border-slate-800 shrink-0">
+                <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
+                    <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span className="text-xs font-black tracking-wide uppercase text-slate-200">Main Kitchen Display</span>
+                        <span className="text-slate-600">|</span>
+                        <span className="text-xs text-slate-400 font-medium truncate max-w-[140px] sm:max-w-[200px]">Lead: {user?.name || 'Master Chef'}</span>
+                    </div>
+                    {/* Compact Shift Attendance Widget */}
+                    <StaffShiftClockWidget compact={true} userRole="Head Chef / Kitchen Lead" userName={user?.name || "Master Chef"} />
+                </div>
+
+                <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+                    <div className="flex items-center gap-2 bg-slate-800/90 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs border border-slate-700/60 font-semibold shadow-xs">
+                        <span className="text-slate-400">Active Kitchen Tickets:</span>
+                        <span className="font-mono font-black text-amber-400">{orders.filter(o => o.status !== 'Served' && o.status !== 'Completed').length}</span>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={toggleAutoPrintKOT}
+                        className={`text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer border ${
+                            autoPrintKOTEnabled 
+                                ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 hover:bg-amber-500/25' 
+                                : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-750'
+                        }`}
+                        title="Click to toggle automatic thermal KOT printing on incoming orders"
+                    >
+                        <Printer size={13} className={autoPrintKOTEnabled ? 'text-amber-400' : 'text-slate-400'} />
+                        <span>KOT Auto-Print: {autoPrintKOTEnabled ? 'ON' : 'OFF'}</span>
+                    </button>
+                </div>
+            </div>
+
+            {/* 1. Live Ingredient 86-List Warning Banner */}
+            {outOfStock.length > 0 && (
+                <div className="bg-gradient-to-r from-red-50 via-white to-red-50 dark:from-red-950 dark:via-slate-900 dark:to-red-950 border border-red-200 dark:border-red-500/40 rounded-2xl sm:rounded-3xl p-3 sm:p-5 flex flex-col md:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 shadow-xl dark:shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
+                    
+                    <div className="flex items-start sm:items-center gap-3 z-10 min-w-0">
+                        <div className="p-2 sm:p-3 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-xl sm:rounded-2xl border border-red-200 dark:border-red-500/30 shrink-0">
+                            <AlertOctagon className="animate-bounce" size={22} />
+                        </div>
+                        <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                                <span className="text-red-700 dark:text-red-400 font-black text-[10px] sm:text-xs uppercase tracking-widest bg-red-100 dark:bg-red-500/20 px-2 sm:px-2.5 py-0.5 rounded-full border border-red-200 dark:border-red-500/30">
+                                    Active 86 List (Out of Stock)
+                                </span>
+                                <span className="text-slate-500 dark:text-slate-400 text-[11px] sm:text-xs font-semibold">({outOfStock.length} items flagged)</span>
+                            </div>
+                            <p className="text-slate-800 dark:text-slate-200 font-bold text-xs sm:text-sm mt-1 truncate">
+                                Flagged ingredients: <span className="text-red-600 dark:text-red-300 font-extrabold">{outOfStock.join(' · ')}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 z-10 w-full md:w-auto">
+                        <button 
+                            onClick={() => setIsAlertModalOpen(true)}
+                            className="w-full md:w-auto bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl shadow-lg shadow-red-600/30 transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
+                        >
+                            <Sliders size={15} /> Manage 86 List
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* 2. Top KDS Kitchen Command Header */}
+            <div className="bg-white dark:bg-slate-900/90 backdrop-blur-md p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-xl dark:shadow-2xl border border-slate-200 dark:border-slate-800 space-y-3.5 sm:space-y-6">
+                
+                {/* Header Title & Station Selector */}
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 sm:gap-6 pb-3.5 sm:pb-6 border-b border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="w-11 h-11 sm:w-14 sm:h-14 bg-gradient-to-tr from-orange-600 to-amber-500 rounded-xl sm:rounded-2xl flex items-center justify-center text-white shadow-xl shadow-orange-500/20 shrink-0">
+                            <ChefHat size={24} className="sm:hidden" />
+                            <ChefHat size={32} className="hidden sm:block" />
+                        </div>
+                        <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                                    Kitchen Display System (KDS)
+                                </h1>
+                                <span className="relative flex h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-full w-full bg-emerald-500"></span>
+                                </span>
+                            </div>
+                            <p className="text-slate-500 dark:text-slate-400 text-[11px] sm:text-xs md:text-sm font-semibold mt-0.5 line-clamp-2 sm:line-clamp-none">
+                                Real-time order routing, cooking timers, priority queueing, and station management.
+                            </p>
+                            <div className="mt-2.5 flex items-center gap-2 flex-wrap">
+                                <Link 
+                                    to="/chef/kot"
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-extrabold text-xs shadow-md shadow-orange-600/20 transition-all active:scale-95"
+                                >
+                                    <Receipt size={14} />
+                                    <span>Kitchen Order Tickets (KOT)</span>
+                                    <ArrowRight size={12} />
+                                </Link>
+                                <button
+                                    type="button"
+                                    onClick={toggleAutoPrintKOT}
+                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-extrabold text-xs transition-all border cursor-pointer active:scale-95 ${
+                                        autoPrintKOTEnabled
+                                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-700'
+                                            : 'bg-slate-100 text-slate-500 border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
+                                    }`}
+                                    title="Click to toggle automatic thermal printing of KOTs when new orders arrive"
+                                >
+                                    <Printer size={13} className={autoPrintKOTEnabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'} />
+                                    <span>Auto-Print KOT: {autoPrintKOTEnabled ? 'ON' : 'OFF'}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Station Filter Pills */}
+                    <div className="w-full xl:w-auto">
+                        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 -mx-2 px-2 touch-pan-x">
+                            <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider mr-1 shrink-0 hidden sm:inline">Station:</span>
+                            {stations.map(st => (
+                                <button
+                                    key={st}
+                                    onClick={() => setSelectedStation(st)}
+                                    className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-extrabold transition-all border cursor-pointer shrink-0 whitespace-nowrap active:scale-95 ${
+                                        selectedStation === st
+                                        ? 'bg-orange-500 text-white border-orange-400 shadow-md shadow-orange-500/25 scale-[1.02]'
+                                        : 'bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
+                                >
+                                    {st}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* KPI Metrics Strip */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+                    <div className="bg-slate-50 dark:bg-slate-950/70 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-2 sm:gap-3.5 min-w-0">
+                        <div className="p-2 sm:p-3 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg sm:rounded-xl border border-blue-500/20 shrink-0">
+                            <Utensils size={18} className="sm:w-5 sm:h-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">Live Queue</p>
+                            <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight">{totalLive}</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-slate-50 dark:bg-slate-950/70 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-2 sm:gap-3.5 min-w-0">
+                        <div className="p-2 sm:p-3 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg sm:rounded-xl border border-amber-500/20 shrink-0">
+                            <Clock size={18} className="sm:w-5 sm:h-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">Preparing</p>
+                            <p className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 leading-tight">{preparingCount}</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-slate-50 dark:bg-slate-950/70 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800/80 flex items-center gap-2 sm:gap-3.5 min-w-0">
+                        <div className="p-2 sm:p-3 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg sm:rounded-xl border border-emerald-500/20 shrink-0">
+                            <CheckCircle size={18} className="sm:w-5 sm:h-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">Prepared</p>
+                            <p className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 leading-tight">{readyCount}</p>
+                        </div>
+                    </div>
+
+                    <div className={`p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border flex items-center gap-2 sm:gap-3.5 min-w-0 transition-all ${
+                        overdueCount > 0 ? 'bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-500/40 animate-pulse' : 'bg-slate-50 dark:bg-slate-950/70 border-slate-200 dark:border-slate-800/80'
+                    }`}>
+                        <div className={`p-2 sm:p-3 rounded-lg sm:rounded-xl shrink-0 ${overdueCount > 0 ? 'bg-red-500 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}>
+                            <Flame size={18} className="sm:w-5 sm:h-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">Rush (&gt;15m)</p>
+                            <p className={`text-xl sm:text-2xl font-black leading-tight ${overdueCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-slate-300'}`}>{overdueCount}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Queue Filter Tabs & View Controls */}
+                <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 sm:gap-4 pt-1 sm:pt-2">
+                    
+                    {/* Status Tabs (horizontal scroll on mobile) */}
+                    <div className="flex items-center overflow-x-auto no-scrollbar bg-slate-100 dark:bg-slate-950/80 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800/90 gap-1 w-full lg:w-auto -mx-0.5 px-0.5 touch-pan-x">
+                        {[
+                            { id: 'All', label: 'All Orders', count: totalLive },
+                            { id: 'Incoming', label: '📥 Incoming', count: orders.filter(o => isIncomingStatus(o.status)).length },
+                            { id: 'Preparing', label: '🍳 Preparing', count: preparingCount },
+                            { id: 'Ready', label: '✨ Prepared', count: readyCount },
+                            { id: 'Completed', label: '✅ Completed', count: completedCount },
+                        ].map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`shrink-0 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer whitespace-nowrap active:scale-95 ${
+                                    activeTab === tab.id
+                                    ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-md shadow-orange-600/20'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-800/80'
+                                }`}
+                            >
+                                <span>{tab.label}</span>
+                                {tab.count > 0 && (
+                                    <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                                        activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-300'
+                                    }`}>
+                                        {tab.count}
+                                    </span>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Controls: Search, Sort & View Mode Switcher */}
+                    <div className="flex items-center gap-2 sm:gap-3 w-full lg:w-auto justify-between lg:justify-end">
+                        
+                        {/* Search Input */}
+                        <div className="relative flex-1 sm:w-64 min-w-0">
+                            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder="Search ticket #, table..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-8 sm:pl-9 pr-3 py-2 sm:py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-orange-500"
+                            />
+                        </div>
+
+                        {/* Sort Selector */}
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                            className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-300 text-xs font-bold rounded-xl px-2.5 sm:px-3 py-2 sm:py-2.5 focus:outline-none focus:border-orange-500 cursor-pointer shrink-0"
+                        >
+                            <option value="priority">🔥 Priority</option>
+                            <option value="oldest">⏱️ Oldest</option>
+                            <option value="newest">⚡ Newest</option>
+                        </select>
+
+                        {/* View Switcher Buttons */}
+                        <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-800 shrink-0">
+                            <button
+                                onClick={() => setViewMode('grid')}
+                                className={`p-1.5 sm:p-2 rounded-lg transition-colors cursor-pointer ${viewMode === 'grid' ? 'bg-orange-500 text-white shadow-xs' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                                title="Grid View"
+                            >
+                                <LayoutGrid size={15} />
+                            </button>
+                            <button
+                                onClick={() => setViewMode('kanban')}
+                                className={`p-1.5 sm:p-2 rounded-lg transition-colors cursor-pointer ${viewMode === 'kanban' ? 'bg-orange-500 text-white shadow-xs' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                                title="Kanban Queue Columns View"
+                            >
+                                <Columns size={15} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* 3. KDS Orders Display Container */}
+            {viewMode === 'grid' ? (
+                /* GRID VIEW */
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
+                    {sortedOrders.length === 0 ? (
+                        <div className="col-span-full py-20 sm:py-28 flex flex-col items-center justify-center text-slate-400 bg-white dark:bg-slate-900/40 rounded-2xl sm:rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-4 text-center">
+                            <CheckCircle size={44} className="text-slate-300 dark:text-slate-800 mb-3 sm:mb-4" />
+                            <p className="text-lg sm:text-xl font-bold text-slate-700 dark:text-slate-300">No active kitchen tickets</p>
+                            <p className="text-xs text-slate-500 mt-1">Waiting for incoming customer orders...</p>
+                        </div>
+                    ) : (
+                        sortedOrders.map((order) => {
+                            const timeDiffMinutes = Math.floor((currentTime - new Date(order.createdAt)) / 60000);
+                            const timeDiffSeconds = Math.floor((currentTime - new Date(order.createdAt)) / 1000) % 60;
+                            const isOverdue = timeDiffMinutes >= 15;
+                            const isStarred = manualPriority[order._id];
+                            const isPriority = isOverdue || isStarred;
+
+                            // Calculate Checklist progress
+                            const totalItemsCount = order.orderItems?.length || 0;
+                            const doneItemsCount = order.orderItems?.filter((_, idx) => completedItems[`${order._id}-${idx}`]).length || 0;
+                            const progressPercent = totalItemsCount > 0 ? Math.round((doneItemsCount / totalItemsCount) * 100) : 0;
+
+                            return (
+                                <div 
+                                    key={order._id} 
+                                    className={`bg-white dark:bg-slate-900/90 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl dark:shadow-2xl flex flex-col overflow-hidden border-2 transition-all duration-300 ${
+                                        isPriority ? 'border-red-500 shadow-red-500/10' : 'border-slate-200 dark:border-slate-800/90'
+                                    }`}
+                                >
+                                    {/* Ticket Top Header */}
+                                    <div className={`px-4 sm:px-5 py-3 sm:py-4 flex justify-between items-center ${
+                                        isPriority ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white' : 'bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-800'
+                                    }`}>
+                                        <div className="space-y-1 min-w-0 pr-1.5 flex-1">
+                                            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                                <span className="font-mono font-black text-base sm:text-lg text-slate-900 dark:text-white">#{order._id.substring(order._id.length - 5).toUpperCase()}</span>
+                                                {order.kotNumbers && order.kotNumbers.length > 0 && (
+                                                    <span className="font-mono font-extrabold text-[11px] bg-slate-900 dark:bg-white text-white dark:text-slate-950 px-2 py-0.5 rounded-lg shadow-xs">
+                                                        {order.kotNumbers.join(', ')}
+                                                    </span>
+                                                )}
+                                                <button 
+                                                    onClick={() => togglePriority(order._id)}
+                                                    className={`p-1 sm:p-1.5 rounded-lg transition-colors cursor-pointer ${
+                                                        isStarred ? 'text-amber-500 dark:text-amber-300 bg-amber-100 dark:bg-white/20' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                                    }`}
+                                                    title="Pin as VIP Priority"
+                                                >
+                                                    <Star size={15} fill={isStarred ? "currentColor" : "none"} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handlePrintOrderKOT(order)}
+                                                    className="p-1 sm:p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                                                    title="Print 80mm KOT Ticket"
+                                                >
+                                                    <Printer size={15} />
+                                                </button>
+                                            </div>
+
+                                            <div className="flex flex-wrap gap-1 sm:gap-1.5">
+                                                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider bg-slate-200 dark:bg-white/20 text-slate-800 dark:text-white px-2 sm:px-2.5 py-0.5 rounded-full">
+                                                    {order.orderType === 'Dine In' ? `📍 Table ${order.tableNumber || 'Any'}` : `🛵 ${order.orderType}`}
+                                                </span>
+                                                {order.serviceType && (
+                                                    <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-700 dark:text-amber-300 px-2 sm:px-2.5 py-0.5 rounded-full border border-amber-500/30">
+                                                        {order.serviceType === 'Self Dine-In (KFC Style)' ? 'Self Dine-In' : 'Table Service'}
+                                                    </span>
+                                                )}
+                                                {order.customerName && (
+                                                    <span className="text-[9px] sm:text-[10px] font-semibold text-slate-700 dark:text-slate-300 bg-white/70 dark:bg-white/10 px-2 py-0.5 rounded-full">
+                                                        👤 {order.customerName}
+                                                    </span>
+                                                )}
+                                                {isOverdue && (
+                                                    <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider bg-yellow-400 text-black px-2 py-0.5 rounded-full flex items-center gap-1">
+                                                        <Flame size={11} /> OVERDUE
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Cooking Timer Stopwatch */}
+                                        <div className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl font-mono font-black text-[11px] sm:text-xs border flex items-center gap-1 sm:gap-1.5 shadow-xs shrink-0 ${getTimerColorClass(timeDiffMinutes)}`}>
+                                            <Timer size={13} className={isOverdue ? 'animate-spin' : ''} />
+                                            <span>{timeDiffMinutes.toString().padStart(2, '0')}:{timeDiffSeconds.toString().padStart(2, '0')}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Prep Checklist Progress Bar */}
+                                    <div className="w-full bg-slate-100 dark:bg-slate-950 h-1.5">
+                                        <div 
+                                            className="bg-gradient-to-r from-orange-500 to-emerald-500 h-full transition-all duration-500"
+                                            style={{ width: `${progressPercent}%` }}
+                                        />
+                                    </div>
+
+                                    {/* Ticket Items Checklist Body */}
+                                    <div className="flex-1 p-3.5 sm:p-5 space-y-3 sm:space-y-3.5">
+                                        <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pb-1 border-b border-slate-200 dark:border-slate-800">
+                                            <span>Dish Checklist ({doneItemsCount}/{totalItemsCount})</span>
+                                            <span className="text-orange-600 dark:text-orange-400 font-mono">{progressPercent}% Ready</span>
+                                        </div>
+
+                                        <div className="space-y-1.5 sm:space-y-2 max-h-72 overflow-y-auto custom-scrollbar pr-1">
+                                            {order.orderItems?.map((item, idx) => {
+                                                const isItemDone = completedItems[`${order._id}-${idx}`];
+                                                
+                                                // Check for 86 ingredient stock out match
+                                                const hasIngredientAlert = outOfStock.some(ing => 
+                                                    item.name.toLowerCase().includes(ing.toLowerCase())
+                                                );
+
+                                                return (
+                                                    <div 
+                                                        key={idx} 
+                                                        onClick={() => toggleItemDone(order._id, idx)}
+                                                        className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 sm:gap-3 active:scale-[0.99] ${
+                                                            isItemDone 
+                                                            ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-300' 
+                                                            : hasIngredientAlert
+                                                            ? 'bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-500/50 text-red-700 dark:text-red-200 animate-pulse'
+                                                            : 'bg-slate-50 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 text-slate-800 dark:text-slate-200'
+                                                        }`}
+                                                    >
+                                                        <div className="flex items-start gap-2 sm:gap-2.5 flex-1 min-w-0">
+                                                            <div className={`mt-0.5 w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
+                                                                isItemDone ? 'bg-emerald-500 border-emerald-400 text-white dark:text-slate-950' : 'border-slate-300 dark:border-slate-600'
+                                                            }`}>
+                                                                {isItemDone && <Check size={11} strokeWidth={3} />}
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <p className={`font-extrabold text-xs truncate ${isItemDone ? 'line-through text-slate-400' : 'text-slate-900 dark:text-white'}`}>
+                                                                    {item.qty}× {item.name}
+                                                                </p>
+                                                                {hasIngredientAlert && (
+                                                                    <p className="text-[9px] sm:text-[10px] font-black text-red-600 dark:text-red-400 mt-0.5 flex items-center gap-1">
+                                                                        <AlertTriangle size={10} /> 86 Alert: Check Stock
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {item.price && (
+                                                            <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 font-bold shrink-0">
+                                                                ₹{item.price}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+
+                                        {/* Notes Section */}
+                                        {order.notes && (
+                                            <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 text-xs space-y-1">
+                                                <p className="font-black flex items-center gap-1 text-[9px] sm:text-[10px] uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                                                    <MessageSquare size={11} /> Chef Notes:
+                                                </p>
+                                                <p className="font-semibold text-[11px] sm:text-xs">{order.notes}</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Action Buttons Footer */}
+                                    <div className="p-3 sm:p-4 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/60 shrink-0 space-y-2">
+                                        {(!order.status || order.status === 'Pending' || order.status === 'Accepted') && (
+                                            <button 
+                                                onClick={() => updateStatus(order._id, 'Preparing')} 
+                                                className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold py-2.5 rounded-xl sm:rounded-2xl transition-all shadow-md shadow-orange-600/20 text-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                                            >
+                                                <ChefHat size={15} />
+                                                <span>Accept &amp; Start Preparing</span>
+                                            </button>
+                                        )}
+                                        {order.status === 'Preparing' && (
+                                            <button 
+                                                onClick={() => updateStatus(order._id, isSelfOrder(order) ? 'Ready for Pickup' : 'Ready')} 
+                                                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold py-2.5 rounded-xl sm:rounded-2xl transition-all shadow-md shadow-emerald-600/20 flex justify-center items-center gap-2 text-xs cursor-pointer active:scale-95"
+                                            >
+                                                <Sparkles size={15} />
+                                                <span>{isSelfOrder(order) ? 'Transfer to Pickup Counter' : 'Mark Ticket Prepared & Transfer'}</span>
+                                            </button>
+                                        )}
+                                        {['Ready', 'Ready for Pickup'].includes(order.status) && (
+                                            <div className="text-center py-2 sm:py-2.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1.5 bg-emerald-500/10 dark:bg-emerald-950/30 rounded-xl sm:rounded-2xl border border-emerald-500/20">
+                                                <CheckCircle size={14} className="text-emerald-500" /> Transferred to Waiter Section
+                                            </div>
+                                        )}
+                                        {['Completed', 'Served', 'Delivered', 'Picked Up'].includes(order.status) && (
+                                            <div className="text-center py-2 text-xs font-bold text-slate-500 flex items-center justify-center gap-1.5">
+                                                <CheckCircle size={14} className="text-emerald-500" /> Served &amp; Completed
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+            ) : (
+                /* KANBAN QUEUE COLUMNS VIEW */
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
+                    {[
+                        { title: '📥 Incoming Queue', keys: ['Pending', 'Accepted'], accent: 'from-amber-600 to-orange-600', key: 'Incoming' },
+                        { title: '🍳 Preparing', keys: ['Preparing'], accent: 'from-blue-600 to-indigo-600', key: 'Preparing' },
+                        { title: '✨ Plated & Prepared', keys: ['Ready', 'Ready for Pickup'], accent: 'from-emerald-600 to-teal-600', key: 'Prepared' },
+                        { title: '✅ Served / Done', keys: ['Completed', 'Served', 'Picked Up', 'Delivered'], accent: 'from-slate-700 to-slate-900', key: 'Completed' }
+                    ].map(column => {
+                        // Filter orders for this column using station & search criteria
+                        const colOrders = orders.filter(o => {
+                            if (column.key === 'Incoming') {
+                                if (o.status && !['Pending', 'Accepted'].includes(o.status)) return false;
+                            } else if (column.key === 'Completed') {
+                                if (!isDoneStatus(o.status)) return false;
+                            } else {
+                                if (!column.keys.includes(o.status)) return false;
+                            }
+
+                            if (searchQuery.trim()) {
+                                const q = searchQuery.toLowerCase();
+                                const idMatch = o._id.toLowerCase().includes(q);
+                                const tableMatch = String(o.tableNumber || '').toLowerCase().includes(q);
+                                const itemMatch = o.orderItems?.some(i => i.name.toLowerCase().includes(q));
+                                if (!idMatch && !tableMatch && !itemMatch) return false;
+                            }
+                            if (selectedStation !== 'All') {
+                                const hasStationItem = o.orderItems?.some(item => isItemInStation(item, selectedStation));
+                                if (!hasStationItem) return false;
+                            }
+                            return true;
+                        }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                        return (
+                            <div key={column.key} className="bg-white dark:bg-slate-900/70 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800/90 flex flex-col min-h-[400px] sm:min-h-[600px] overflow-hidden shadow-lg">
+                                {/* Column Header */}
+                                <div className={`p-3.5 sm:p-4 bg-gradient-to-r ${column.accent} text-white font-extrabold flex justify-between items-center shadow-md`}>
+                                    <h3 className="text-xs sm:text-sm tracking-wide">{column.title}</h3>
+                                    <span className="bg-white/20 px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-mono font-bold">{colOrders.length}</span>
+                                </div>
+
+                                {/* Column Cards */}
+                                <div className="p-3 sm:p-4 space-y-3 sm:space-y-4 flex-1 overflow-y-auto custom-scrollbar">
+                                    {colOrders.length === 0 ? (
+                                        <div className="py-12 sm:py-16 text-center text-slate-400 text-xs font-bold border border-dashed border-slate-200 dark:border-slate-800 rounded-xl sm:rounded-2xl">
+                                            No {column.key.toLowerCase()} orders
+                                        </div>
+                                    ) : (
+                                        colOrders.map(order => {
+                                            const timeDiffMinutes = Math.floor((currentTime - new Date(order.createdAt)) / 60000);
+                                            const isSelf = order.orderType === 'Self-Pickup' || order.orderType === 'Self Pickup';
+                                            return (
+                                                <div key={order._id} className="bg-slate-50 dark:bg-slate-950/80 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200 dark:border-slate-800 space-y-2.5 sm:space-y-3 shadow-sm">
+                                                    <div className="flex justify-between items-center gap-1.5">
+                                                        <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+                                                            <span className="font-mono font-black text-xs sm:text-sm text-slate-900 dark:text-white">#{order._id.substring(order._id.length - 5).toUpperCase()}</span>
+                                                            {order.kotNumbers && order.kotNumbers.length > 0 && (
+                                                                <span className="font-mono font-extrabold text-[10px] bg-slate-900 dark:bg-white text-white dark:text-slate-950 px-1.5 py-0.5 rounded shadow-xs">
+                                                                    {order.kotNumbers[0]}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex items-center gap-1 shrink-0">
+                                                            <button
+                                                                onClick={() => handlePrintOrderKOT(order)}
+                                                                className="p-1 rounded text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer"
+                                                                title="Print KOT Ticket"
+                                                            >
+                                                                <Printer size={13} />
+                                                            </button>
+                                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${getTimerColorClass(timeDiffMinutes)}`}>
+                                                                {timeDiffMinutes}m
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div className="space-y-1 min-w-0 pr-1 flex-1">
+                                                        {order.orderItems?.slice(0, 4).map((it, idx) => (
+                                                            <p key={idx} className="text-xs text-slate-800 dark:text-slate-300 font-bold truncate">
+                                                                {it.qty}× {it.name}
+                                                            </p>
+                                                        ))}
+                                                        {order.orderItems?.length > 4 && (
+                                                            <p className="text-[10px] text-slate-500 font-bold">+{order.orderItems.length - 4} more items...</p>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="pt-2 border-t border-slate-200 dark:border-slate-800/80">
+                                                        {(!order.status || order.status === 'Pending' || order.status === 'Accepted') && (
+                                                            <button onClick={() => updateStatus(order._id, 'Preparing')} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded-xl text-xs cursor-pointer active:scale-95 transition-all">
+                                                                Accept &amp; Start Preparing
+                                                            </button>
+                                                        )}
+                                                        {order.status === 'Preparing' && (
+                                                            <button onClick={() => updateStatus(order._id, isSelf ? 'Ready for Pickup' : 'Ready')} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs cursor-pointer active:scale-95 transition-all">
+                                                                {isSelf ? 'Transfer to Pickup' : 'Mark Ticket Prepared'}
+                                                            </button>
+                                                        )}
+                                                        {['Ready', 'Ready for Pickup'].includes(order.status) && (
+                                                            <div className="text-center text-[10px] sm:text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 py-1.5 rounded-xl flex items-center justify-center gap-1 border border-emerald-500/20">
+                                                                <CheckCircle size={13} className="text-emerald-500" /> Transferred to Waiter
+                                                            </div>
+                                                        )}
+                                                        {['Completed', 'Served', 'Picked Up', 'Delivered'].includes(order.status) && (
+                                                            <div className="text-center text-[10px] sm:text-[11px] font-bold text-slate-500 flex items-center justify-center gap-1 py-1">
+                                                                <CheckCircle size={13} className="text-emerald-500" /> Done
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+
+            {/* 4. New Ticket Popup Modal */}
+            {newTicketModalOrder && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-slate-900 border-2 border-orange-500 rounded-2xl sm:rounded-3xl p-4 sm:p-6 max-w-md w-full shadow-2xl space-y-4 sm:space-y-5 text-white animate-in zoom-in-95 duration-200">
+                        <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-3">
+                                <div className="p-3 bg-orange-500/20 text-orange-400 rounded-2xl border border-orange-500/30">
+                                    <Flame className="animate-bounce" size={28} />
+                                </div>
+                                <div>
+                                    <h3 className="font-black text-xl text-orange-400 tracking-tight">NEW TICKET ARRIVED!</h3>
+                                    <p className="text-xs text-slate-400 font-mono font-bold">Ticket #{newTicketModalOrder._id?.substring(newTicketModalOrder._id.length - 5).toUpperCase()}</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setNewTicketModalOrder(null)} className="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
+                        </div>
+                        
+                        <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2 text-xs">
+                            <p className="font-bold text-slate-300">Type: <span className="text-amber-400 font-mono">{newTicketModalOrder.orderType}</span> {newTicketModalOrder.tableNumber ? `(Table ${newTicketModalOrder.tableNumber})` : ''}</p>
+                            <div className="space-y-1.5 pt-2 border-t border-slate-800">
+                                {newTicketModalOrder.orderItems?.map((it, idx) => (
+                                    <p key={idx} className="font-extrabold text-slate-200 text-xs">
+                                        {it.qty}× {it.name}
+                                    </p>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 pt-2">
+                            <button 
+                                onClick={() => {
+                                    updateStatus(newTicketModalOrder._id, 'Preparing');
+                                    setNewTicketModalOrder(null);
+                                }}
+                                className="flex-1 bg-orange-600 hover:bg-orange-500 text-white font-black py-3 rounded-2xl text-xs transition-all shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                            >
+                                <ChefHat size={16} /> Accept &amp; Start Preparing
+                            </button>
+                            <button 
+                                onClick={() => setNewTicketModalOrder(null)}
+                                className="px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-2xl text-xs cursor-pointer active:scale-95 transition-all"
+                            >
+                                View Queue
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 5. Manage 86 List (Out-of-Stock Ingredients) Modal */}
+            {isAlertModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+                    <div className="absolute inset-0 bg-black/60 dark:bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setIsAlertModalOpen(false)}></div>
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-lg relative z-10 overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 max-h-[90vh]">
+                        <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950/80">
+                            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 pr-2">
+                                <div className="p-2 sm:p-2.5 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-xl border border-red-200 dark:border-red-500/30 shrink-0">
+                                    <Sliders size={18} />
+                                </div>
+                                <div className="min-w-0">
+                                    <h3 className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base truncate">86-List Management</h3>
+                                    <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium truncate">Flag out-of-stock kitchen ingredients</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setIsAlertModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white p-1.5 sm:p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0">
+                                ✕
+                            </button>
+                        </div>
+                        
+                        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto">
+                            {/* Add Item form */}
+                            <form onSubmit={handleAddIngredient} className="flex gap-2">
+                                <input 
+                                    type="text" 
+                                    placeholder="Enter ingredient name..." 
+                                    value={newIngredient}
+                                    onChange={(e) => setNewIngredient(e.target.value)}
+                                    className="flex-1 min-w-0 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl sm:rounded-2xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-red-500"
+                                />
+                                <button type="submit" className="bg-red-600 hover:bg-red-500 text-white font-extrabold rounded-xl sm:rounded-2xl px-4 sm:px-5 flex items-center justify-center transition-colors shadow-md shadow-red-600/30 cursor-pointer text-xs shrink-0">
+                                    <Plus size={16} /> Add
+                                </button>
+                            </form>
+
+                            {/* List of currently stockout ingredients */}
+                            <div className="space-y-2 sm:space-y-2.5 max-h-56 sm:max-h-64 overflow-y-auto custom-scrollbar pr-1">
+                                <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Active Flagged Ingredients</p>
+                                {outOfStock.length === 0 ? (
+                                    <div className="py-6 sm:py-8 text-center text-slate-500 text-xs font-semibold bg-slate-50 dark:bg-slate-950/50 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800/80">
+                                        All ingredients are currently in stock!
+                                    </div>
+                                ) : (
+                                    outOfStock.map((ing) => (
+                                        <div key={ing} className="flex justify-between items-center p-2.5 sm:p-3.5 bg-slate-50 dark:bg-slate-950/60 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 text-xs">
+                                            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 pr-2">
+                                                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
+                                                <span className="font-extrabold text-slate-800 dark:text-slate-200 truncate">{ing}</span>
+                                            </div>
+                                            <button 
+                                                onClick={() => handleRemoveIngredient(ing)}
+                                                className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-red-500/20 text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 rounded-lg sm:rounded-xl transition-all font-bold text-[10px] sm:text-[11px] flex items-center gap-1 cursor-pointer shrink-0"
+                                                title="Mark Restored In-Stock"
+                                            >
+                                                <Trash2 size={12} /> Restored
+                                            </button>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="p-3.5 sm:p-6 bg-slate-50 dark:bg-slate-950/80 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+                            <button 
+                                onClick={() => setIsAlertModalOpen(false)}
+                                className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white font-extrabold text-xs px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl transition-all cursor-pointer text-center"
+                            >
+                                Done &amp; Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 6. Thermal KOT Print Preview Modal */}
+            <KOTPrintModal
+                isOpen={!!printModalKOT}
+                onClose={() => setPrintModalKOT(null)}
+                kot={printModalKOT}
+            />
+        </div>
+    );
+};
+
+export default ChefDashboard;

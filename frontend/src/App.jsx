@@ -1,6 +1,6 @@
+import { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
-import CustomerProtectedRoute from './components/CustomerProtectedRoute';
 import DashboardLayout from './layouts/DashboardLayout';
 import DashboardHome from './pages/admin/DashboardHome';
 import BranchesManagement from './pages/admin/BranchesManagement';
@@ -64,7 +64,6 @@ import ManagerReports from './pages/staff/ManagerReports';
 import ManagerAnalytics from './pages/staff/ManagerAnalytics';
 import ManagerSettings from './pages/staff/ManagerSettings';
 import ManagerExpenses from './pages/staff/ManagerExpenses';
-import CustomerLayout from './layouts/CustomerLayout';
 import ManagerLayout from './layouts/ManagerLayout';
 import ChefLayout from './layouts/ChefLayout';
 import WaiterLayout from './layouts/WaiterLayout';
@@ -84,19 +83,7 @@ import CashierHistory from './pages/staff/CashierHistory';
 import Home from './pages/customer/Home';
 import ThreeDemoShowcase from './pages/customer/ThreeDemoShowcase';
 import ChaiTheoryShowcase from './pages/customer/ChaiTheoryShowcase';
-import Explore from './pages/customer/Explore';
-import Menu from './pages/customer/Menu';
-import RestaurantDetails from './pages/customer/RestaurantDetails';
-import CustomerDashboard from './pages/customer/CustomerDashboard';
-import Checkout from './pages/customer/Checkout';
-import Reservations from './pages/customer/Reservations';
-import OrderTracking from './pages/customer/OrderTracking';
-import OrderHistory from './pages/customer/OrderHistory';
-import ReservationHistory from './pages/customer/ReservationHistory';
-import CustomerAuthPage from './pages/CustomerAuthPage';
 import StaffAuthPage from './pages/StaffAuthPage';
-import { CustomerAuthProvider } from './context/CustomerAuthContext';
-import { CartProvider } from './context/CartContext';
 import SuperAdminLayout from './layouts/SuperAdminLayout';
 import SuperAdminDashboard from './pages/superadmin/SuperAdminDashboard';
 import PlatformRestaurants from './pages/superadmin/PlatformRestaurants';
@@ -115,12 +102,13 @@ import BillingDemoRequestsManagement from './pages/superadmin/BillingDemoRequest
 
 import PublicLayout from './layouts/PublicLayout';
 import TablesManagement from './pages/admin/TablesManagement';
-import CustomerMenu from './pages/customer/CustomerMenu';
-import CustomerOrderTracking from './pages/customer/CustomerOrderTracking';
 import DeliveryManagement from './pages/admin/DeliveryManagement';
 import DeliveryPartnerLogin from './pages/customer/DeliveryPartnerLogin';
 import DeliveryPartnerDashboard from './pages/customer/DeliveryPartnerDashboard';
 import Contact from './pages/customer/Contact';
+import About from './pages/customer/About';
+import MyTestimonial from './pages/admin/MyTestimonial';
+import TestimonialsManagement from './pages/superadmin/TestimonialsManagement';
 import ManagementFeatures from './pages/ManagementFeatures';
 import ModuleDetails from './pages/ModuleDetails';
 import PosModuleLandingPage from './pages/customer/PosModuleLandingPage';
@@ -130,6 +118,27 @@ import FloatingVideoWidget from './components/FloatingVideoWidget';
 
 import { Toaster } from 'react-hot-toast';
 
+// Forwarding handler for customer routes that direct visitors to the Customer Website
+const CustomerRedirect = ({ path }) => {
+  const customerBaseUrl = import.meta.env.VITE_CUSTOMER_URL || 'http://localhost:5174';
+  useEffect(() => {
+    const fullTarget = path 
+      ? `${customerBaseUrl}${path}`
+      : `${customerBaseUrl}${window.location.pathname}${window.location.search}${window.location.hash}`;
+    window.location.href = fullTarget;
+  }, [customerBaseUrl, path]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-700">
+      <div className="text-center p-8 bg-white rounded-2xl shadow-sm border border-slate-100 max-w-sm">
+        <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="font-bold text-slate-900">Redirecting to Customer App...</p>
+        <p className="text-xs text-slate-500 mt-1">Taking you to our customer ordering portal</p>
+      </div>
+    </div>
+  );
+};
+
 function App() {
 
   return (
@@ -138,10 +147,10 @@ function App() {
       <FloatingVideoWidget />
 
       <Routes>
-        {/* Customer Facing Application */}
-        <Route path="/" element={<CustomerAuthProvider><CartProvider><PublicLayout /></CartProvider></CustomerAuthProvider>}>
+        {/* Public Restaurant Software Landing Page & Showcase */}
+        <Route path="/" element={<PublicLayout />}>
           <Route index element={<Home />} />
-          <Route path="explore" element={<Explore />} />
+          <Route path="about" element={<About />} />
           <Route path="contact" element={<Contact />} />
           <Route path="features/management" element={<ManagementFeatures />} />
           <Route path="features/details" element={<ModuleDetails />} />
@@ -163,22 +172,10 @@ function App() {
           <Route path="outlet-types/cloud-kitchens" element={<OutletTypeLandingPage type="cloud-kitchens" />} />
           <Route path="outlet-types/multi-outlet-chains" element={<OutletTypeLandingPage type="multi-outlet-chains" />} />
         </Route>
-        <Route path="/" element={<CustomerAuthProvider><CartProvider><CustomerLayout /></CartProvider></CustomerAuthProvider>}>
-          <Route path="menu" element={<Menu />} />
-          <Route path="restaurant/:id" element={<RestaurantDetails />} />
-          <Route path="profile" element={<CustomerProtectedRoute><CustomerDashboard /></CustomerProtectedRoute>} />
-          <Route path="profile/orders" element={<CustomerProtectedRoute><OrderHistory /></CustomerProtectedRoute>} />
-          <Route path="profile/reservations" element={<CustomerProtectedRoute><ReservationHistory /></CustomerProtectedRoute>} />
-          <Route path="checkout" element={<CustomerProtectedRoute><Checkout /></CustomerProtectedRoute>} />
-          <Route path="track/:id" element={<CustomerProtectedRoute><OrderTracking /></CustomerProtectedRoute>} />
-          <Route path="reservations" element={<CustomerProtectedRoute><Reservations /></CustomerProtectedRoute>} />
-        </Route>
         
-        {/* Unified Auth Portal */}
+        {/* Unified Auth Portal for Staff, Admins, and Super Admin */}
         <Route path="/login" element={<StaffAuthPage />} />
         <Route path="/register" element={<StaffAuthPage />} />
-        <Route path="/customer/login" element={<CustomerAuthProvider><CustomerAuthPage /></CustomerAuthProvider>} />
-        <Route path="/customer/register" element={<CustomerAuthProvider><CustomerAuthPage /></CustomerAuthProvider>} />
         <Route path="/staff/login" element={<Navigate to="/login" replace />} />
         <Route path="/staff/register" element={<Navigate to="/register" replace />} />
 
@@ -186,9 +183,23 @@ function App() {
         <Route path="/3d-demo" element={<ThreeDemoShowcase />} />
         <Route path="/chai-theory" element={<ChaiTheoryShowcase />} />
 
-        {/* Public QR ordering flow */}
-        <Route path="/customer/menu" element={<CustomerMenu />} />
-        <Route path="/customer/track/:orderId" element={<CustomerOrderTracking />} />
+        {/* Delivery Staff App */}
+        <Route path="/delivery/login" element={<DeliveryPartnerLogin />} />
+        <Route path="/delivery/dashboard" element={<ProtectedRoute allowedRoles={['DeliveryPartner']}><DeliveryPartnerDashboard /></ProtectedRoute>} />
+
+        {/* Customer Route Forwarding to Dedicated Customer Website */}
+        <Route path="/explore" element={<CustomerRedirect path="/explore" />} />
+        <Route path="/menu" element={<CustomerRedirect path="/menu" />} />
+        <Route path="/restaurant/:id" element={<CustomerRedirect />} />
+        <Route path="/checkout" element={<CustomerRedirect path="/checkout" />} />
+        <Route path="/track/:id" element={<CustomerRedirect />} />
+        <Route path="/reservations" element={<CustomerRedirect path="/reservations" />} />
+        <Route path="/profile" element={<CustomerRedirect path="/profile" />} />
+        <Route path="/profile/*" element={<CustomerRedirect />} />
+        <Route path="/customer/login" element={<CustomerRedirect path="/login" />} />
+        <Route path="/customer/register" element={<CustomerRedirect path="/register" />} />
+        <Route path="/customer/menu" element={<CustomerRedirect />} />
+        <Route path="/customer/track/:orderId" element={<CustomerRedirect />} />
 
         {/* Alias for super admin mistypes */}
         <Route path="/superadmin" element={<Navigate to="/super-admin" replace />} />
@@ -208,6 +219,7 @@ function App() {
           <Route path="reports" element={<GlobalReports />} />
           <Route path="notifications" element={<NotificationManagement />} />
           <Route path="verifications" element={<VerificationManagement />} />
+          <Route path="testimonials" element={<TestimonialsManagement />} />
           <Route path="support" element={<SuperAdminSupportConsole />} />
           <Route path="support/tickets/:id" element={<TicketDetails />} />
         </Route>
@@ -259,6 +271,7 @@ function App() {
           
           {/* System & Configuration */}
           <Route path="settings" element={<Settings />} />
+          <Route path="my-testimonial" element={<MyTestimonial />} />
           <Route path="setup-wizard" element={<RestaurantSetupWizard />} />
           <Route path="tips" element={<TipManagement />} />
           <Route path="billing" element={<SubscriptionPortal />} />

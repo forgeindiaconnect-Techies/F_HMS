@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FoodNest - Good Food, Better Mood | Order Online</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+      (function() {
+        var theme = localStorage.getItem('theme');
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
+    <style>
+      /* Critical Instant Loader for 0ms visual feedback */
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #FAFAF8;
+        color: #0f172a;
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      }
+      html.dark body {
+        background-color: #0f172a;
+        color: #ffffff;
+      }
+      .instant-splash {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: #FAFAF8;
+        text-align: center;
+      }
+      html.dark .instant-splash {
+        background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+      }
+      .instant-splash-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      .instant-splash-icon {
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, #FF2D55 0%, #FF6A00 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 20px rgba(255, 45, 85, 0.35);
+      }
+      .instant-splash-title {
+        font-size: 26px;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.5px;
+      }
+      html.dark .instant-splash-title {
+        color: #ffffff;
+      }
+      .instant-splash-spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid rgba(255, 45, 85, 0.2);
+        border-top-color: #FF2D55;
+        border-radius: 50%;
+        animation: instant-spin 0.7s linear infinite;
+        margin-bottom: 12px;
+      }
+      @keyframes instant-spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div class="instant-splash">
+        <div class="instant-splash-brand">
+          <div class="instant-splash-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8Z"/>
+              <path d="M15 15 3.3 3.3a2.1 2.1 0 1 0-3 3L12 18"/>
+              <path d="m2.2 21.8 7-7"/>
+              <path d="M21 15.5V22"/>
+              <path d="M18 18h6"/>
+            </svg>
+          </div>
+          <span class="instant-splash-title">FoodNest</span>
+        </div>
+        <div class="instant-splash-spinner"></div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

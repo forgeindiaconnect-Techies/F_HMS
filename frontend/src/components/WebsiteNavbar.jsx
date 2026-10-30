@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
-    Utensils, ChevronDown, ChevronRight, X, Menu as MenuIcon, ShoppingBag,
+    UtensilsCrossed, Utensils, ChevronDown, ChevronRight, X, Menu as MenuIcon, ShoppingBag,
     Receipt, Package, ShoppingCart, BarChart3, BookOpen, Users, Truck, Monitor,
-    ChefHat, QrCode, Store, Boxes, LineChart, Building2, Flame, Clock, Sparkles
+    ChefHat, QrCode, Store, Boxes, LineChart, Building2, Flame, Clock, Sparkles, ArrowRight
 } from 'lucide-react';
 
 const POS_MENU_ITEMS = [
@@ -216,9 +216,9 @@ const WebsiteNavbar = () => {
 
     return (
         <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 py-3 sm:py-4 px-4 sm:px-8 shadow-sm transition-all">
-            <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-12 flex items-center justify-between">
                 
-                {/* Brand Logo */}
+                {/* Brand Logo matching FoodNest Restaurant Landing Page */}
                 <Link 
                     to="/" 
                     onClick={() => {
@@ -227,262 +227,83 @@ const WebsiteNavbar = () => {
                     }} 
                     className="flex items-center gap-2.5 sm:gap-3 group cursor-pointer shrink-0"
                 >
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-tr from-[#FF2D55] to-[#FF6A00] rounded-xl flex items-center justify-center shadow-lg shadow-[#FF2D55]/25 text-white group-hover:scale-105 transition-transform shrink-0">
-                        <Utensils size={18} className="sm:w-5 sm:h-5" />
+                    <div className="w-10 h-10 rounded-xl bg-[#FF5A1F] text-white flex items-center justify-center shadow-md shadow-orange-500/20 group-hover:scale-105 transition-transform shrink-0">
+                        <UtensilsCrossed size={22} strokeWidth={2.2} />
                     </div>
-                    <h1 className="text-lg sm:text-2xl font-black tracking-tight text-slate-900 group-hover:text-[#FF2D55] transition-colors">
-                        Restaurant<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF2D55] to-[#FF6A00]">Hub</span>
-                    </h1>
+                    <div className="flex flex-col text-left">
+                        <span className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight leading-none">
+                            Food<span className="text-[#FF5A1F]">Nest</span>
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-medium tracking-wide mt-0.5">
+                            Restaurant Management System
+                        </span>
+                    </div>
                 </Link>
 
-                {/* Desktop Navigation Bar */}
-                <nav className="hidden md:flex items-center gap-1 lg:gap-2 font-bold text-sm text-slate-700">
-                    
-                    {/* 1. POS ▼ Dropdown */}
-                    <div className="relative" ref={posRef}>
-                        <button
-                            type="button"
-                            aria-expanded={isPosOpen}
-                            aria-haspopup="true"
-                            onClick={() => {
-                                setIsPosOpen(prev => !prev);
-                                setIsAddonsOpen(false);
-                                setIsOutletsOpen(false);
-                            }}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                    e.preventDefault();
-                                    setIsPosOpen(prev => !prev);
-                                }
-                            }}
-                            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer select-none ${
-                                isPosOpen 
-                                    ? 'text-[#FF2D55] bg-[#FFF1F1]' 
-                                    : 'text-slate-800 hover:text-slate-950 hover:bg-slate-100/80'
-                            }`}
-                        >
-                            <span>POS</span>
-                            <ChevronDown 
-                                size={14} 
-                                className={`transition-transform duration-200 ${isPosOpen ? 'rotate-180 text-[#FF2D55]' : 'text-slate-500'}`} 
-                            />
-                        </button>
-
-                        {/* POS Dropdown Menu (Strictly Matching Specification) */}
-                        {isPosOpen && (
-                            <div 
-                                role="menu"
-                                aria-label="POS Navigation Menu"
-                                className="absolute top-full left-0 mt-2 w-[380px] bg-white rounded-2xl shadow-2xl shadow-slate-900/15 border border-slate-200/90 p-2.5 z-[100] animate-in fade-in zoom-in-95 duration-150"
-                            >
-                                <div className="px-3 pt-1.5 pb-2 border-b border-slate-100 flex items-center justify-between">
-                                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
-                                        POS Modules
-                                    </span>
-                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-[#FF2D55] border border-rose-100">
-                                        8 Core Solutions
-                                    </span>
-                                </div>
-                                <div className="py-1 space-y-0.5 max-h-[calc(100vh-140px)] overflow-y-auto">
-                                    {POS_MENU_ITEMS.map((item) => (
-                                        <Link
-                                            key={item.name}
-                                            to={item.path}
-                                            role="menuitem"
-                                            tabIndex={0}
-                                            onClick={() => setIsPosOpen(false)}
-                                            className="group flex items-center justify-between px-3 h-[60px] rounded-xl text-[#0A192F] hover:bg-[#FFF1F1] transition-all duration-150 cursor-pointer"
-                                        >
-                                            <div className="flex items-center gap-3.5 min-w-0">
-                                                <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-700 group-hover:bg-white group-hover:text-[#FF2D55] group-hover:border-[#FF2D55]/30 group-hover:scale-105 transition-all shrink-0 shadow-xs">
-                                                    <item.icon size={20} strokeWidth={2.2} />
-                                                </div>
-                                                <div className="truncate text-left">
-                                                    <span className="text-[15px] font-bold block leading-tight tracking-tight text-[#0A192F] group-hover:text-[#FF2D55] transition-colors">
-                                                        {item.name}
-                                                    </span>
-                                                    <span className="text-[11px] font-medium text-slate-500 group-hover:text-slate-600 block truncate">
-                                                        {item.desc}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <ChevronRight 
-                                                size={16} 
-                                                className="text-slate-300 group-hover:text-[#FF2D55] group-hover:translate-x-1 transition-all shrink-0 ml-2" 
-                                            />
-                                        </Link>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* 2. Add-ons ▼ Dropdown */}
-                    <div className="relative" ref={addonsRef}>
-                        <button
-                            type="button"
-                            aria-expanded={isAddonsOpen}
-                            aria-haspopup="true"
-                            onClick={() => {
-                                setIsAddonsOpen(prev => !prev);
-                                setIsPosOpen(false);
-                                setIsOutletsOpen(false);
-                            }}
-                            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer select-none ${
-                                isAddonsOpen 
-                                    ? 'text-[#FF2D55] bg-[#FFF1F1]' 
-                                    : 'text-slate-800 hover:text-slate-950 hover:bg-slate-100/80'
-                            }`}
-                        >
-                            <span>Add-ons</span>
-                            <ChevronDown 
-                                size={14} 
-                                className={`transition-transform duration-200 ${isAddonsOpen ? 'rotate-180 text-[#FF2D55]' : 'text-slate-500'}`} 
-                            />
-                        </button>
-
-                        {isAddonsOpen && (
-                            <div 
-                                role="menu"
-                                aria-label="Add-ons Navigation Menu"
-                                className="absolute top-full left-0 mt-2 w-[360px] bg-white rounded-2xl shadow-2xl shadow-slate-900/15 border border-slate-200/90 p-2.5 z-[100] animate-in fade-in zoom-in-95 duration-150"
-                            >
-                                <div className="px-3 pt-1.5 pb-2 border-b border-slate-100 flex items-center justify-between">
-                                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
-                                        Operational Add-ons
-                                    </span>
-                                </div>
-                                <div className="py-1 space-y-0.5 max-h-[calc(100vh-140px)] overflow-y-auto">
-                                    {ADDONS_MENU_ITEMS.map((item) => (
-                                        <Link
-                                            key={item.name}
-                                            to={item.path}
-                                            role="menuitem"
-                                            tabIndex={0}
-                                            onClick={() => setIsAddonsOpen(false)}
-                                            className="group flex items-center justify-between px-3 h-[58px] rounded-xl text-[#0A192F] hover:bg-[#FFF1F1] transition-all duration-150 cursor-pointer"
-                                        >
-                                            <div className="flex items-center gap-3.5 min-w-0">
-                                                <div className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-700 group-hover:bg-white group-hover:text-[#FF2D55] group-hover:border-[#FF2D55]/30 group-hover:scale-105 transition-all shrink-0">
-                                                    <item.icon size={18} strokeWidth={2.2} />
-                                                </div>
-                                                <div className="truncate text-left">
-                                                    <span className="text-[14px] font-bold block leading-tight text-[#0A192F] group-hover:text-[#FF2D55] transition-colors">
-                                                        {item.name}
-                                                    </span>
-                                                    <span className="text-[11px] font-medium text-slate-500 group-hover:text-slate-600 block truncate">
-                                                        {item.desc}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <ChevronRight size={16} className="text-slate-300 group-hover:text-[#FF2D55] group-hover:translate-x-1 transition-all shrink-0 ml-2" />
-                                        </Link>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* 3. Outlet Types ▼ Dropdown */}
-                    <div className="relative" ref={outletsRef}>
-                        <button
-                            type="button"
-                            aria-expanded={isOutletsOpen}
-                            aria-haspopup="true"
-                            onClick={() => {
-                                setIsOutletsOpen(prev => !prev);
-                                setIsPosOpen(false);
-                                setIsAddonsOpen(false);
-                            }}
-                            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer select-none ${
-                                isOutletsOpen 
-                                    ? 'text-[#FF2D55] bg-[#FFF1F1]' 
-                                    : 'text-slate-800 hover:text-slate-950 hover:bg-slate-100/80'
-                            }`}
-                        >
-                            <span>Outlet Types</span>
-                            <ChevronDown 
-                                size={14} 
-                                className={`transition-transform duration-200 ${isOutletsOpen ? 'rotate-180 text-[#FF2D55]' : 'text-slate-500'}`} 
-                            />
-                        </button>
-
-                        {isOutletsOpen && (
-                            <div 
-                                role="menu"
-                                aria-label="Outlet Types Navigation Menu"
-                                className="absolute top-full left-0 mt-2 w-[360px] bg-white rounded-2xl shadow-2xl shadow-slate-900/15 border border-slate-200/90 p-2.5 z-[100] animate-in fade-in zoom-in-95 duration-150"
-                            >
-                                <div className="px-3 pt-1.5 pb-2 border-b border-slate-100 flex items-center justify-between">
-                                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
-                                        Restaurant Formats
-                                    </span>
-                                </div>
-                                <div className="py-1 space-y-0.5 max-h-[calc(100vh-140px)] overflow-y-auto">
-                                    {OUTLET_TYPES_ITEMS.map((item) => (
-                                        <Link
-                                            key={item.name}
-                                            to={item.path}
-                                            role="menuitem"
-                                            tabIndex={0}
-                                            onClick={() => setIsOutletsOpen(false)}
-                                            className="group flex items-center justify-between px-3 h-[58px] rounded-xl text-[#0A192F] hover:bg-[#FFF1F1] transition-all duration-150 cursor-pointer"
-                                        >
-                                            <div className="flex items-center gap-3.5 min-w-0">
-                                                <div className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-700 group-hover:bg-white group-hover:text-[#FF2D55] group-hover:border-[#FF2D55]/30 group-hover:scale-105 transition-all shrink-0">
-                                                    <item.icon size={18} strokeWidth={2.2} />
-                                                </div>
-                                                <div className="truncate text-left">
-                                                    <span className="text-[14px] font-bold block leading-tight text-[#0A192F] group-hover:text-[#FF2D55] transition-colors">
-                                                        {item.name}
-                                                    </span>
-                                                    <span className="text-[11px] font-medium text-slate-500 group-hover:text-slate-600 block truncate">
-                                                        {item.desc}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <ChevronRight size={16} className="text-slate-300 group-hover:text-[#FF2D55] group-hover:translate-x-1 transition-all shrink-0 ml-2" />
-                                        </Link>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* 4. Pricing Link */}
+                {/* Desktop Navigation Links matching Restaurant Landing Page exactly */}
+                <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+                    <Link 
+                        to="/"
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                        className="text-slate-600 hover:text-slate-900 transition-colors"
+                    >
+                        Home
+                    </Link>
                     <a 
-                        href="#pricing"
-                        onClick={handlePricingClick}
-                        className="px-3 py-2 rounded-xl text-slate-800 hover:text-slate-950 hover:bg-slate-100/80 transition-colors cursor-pointer"
+                        href="/#features"
+                        onClick={(e) => {
+                            if (location.pathname === '/') {
+                                e.preventDefault();
+                                document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+                            }
+                        }}
+                        className="text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                    >
+                        Features
+                    </a>
+                    <a 
+                        href="/#pricing"
+                        onClick={(e) => {
+                            if (location.pathname === '/') {
+                                e.preventDefault();
+                                document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+                            }
+                        }}
+                        className="text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
                     >
                         Pricing
                     </a>
-
+                    <Link 
+                        to="/about"
+                        className="text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                    >
+                        About
+                    </Link>
+                    <Link 
+                        to="/contact"
+                        className="text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                    >
+                        Contact
+                    </Link>
                 </nav>
 
-                {/* Right CTA Actions & Mobile Toggle */}
-                <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm font-bold shrink-0">
-                    <Link 
-                        to="/menu" 
-                        className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm hover:scale-[1.02] active:scale-95"
-                    >
-                        <ShoppingBag size={16} className="sm:w-4 sm:h-4" />
-                        <span>Order Now</span>
-                    </Link>
-
-                    <Link 
-                        to="/staff/login" 
-                        className="hidden xs:inline-block text-slate-700 hover:text-slate-950 transition-colors px-2.5 py-1.5 sm:px-3 rounded-xl hover:bg-slate-100"
-                    >
-                        Log In
-                    </Link>
-
-                    <Link 
-                        to="/staff/register" 
-                        className="hidden lg:flex bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] text-white font-extrabold px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl shadow-lg shadow-[#FF2D55]/25 transition-all focus:outline-none hover:scale-[1.02] active:scale-95"
-                    >
-                        Get Started Free
-                    </Link>
+                {/* Right Action Buttons matching Restaurant Landing Page exactly */}
+                <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="hidden sm:flex items-center gap-3">
+                        <Link
+                            to="/login"
+                            className="px-5 py-2.5 text-sm font-bold text-slate-700 hover:text-slate-950 rounded-xl transition-colors"
+                        >
+                            Login
+                        </Link>
+                        <Link
+                            to="/register"
+                            className="px-5 py-2.5 text-sm font-bold bg-[#FF5A1F] hover:bg-[#E04812] text-white rounded-xl shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/30 transition-all flex items-center gap-2 group"
+                        >
+                            <span>Get Started</span>
+                            <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                        </Link>
+                    </div>
 
                     {/* Mobile Hamburger Menu Toggle Button */}
                     <button
@@ -497,149 +318,61 @@ const WebsiteNavbar = () => {
                 </div>
             </div>
 
-            {/* Mobile Navigation Menu Accordion */}
+            {/* Mobile Navigation Menu */}
             {mobileMenuOpen && (
                 <div className="md:hidden mt-3 pt-3 border-t border-slate-200/80 space-y-2 bg-white rounded-2xl p-4 shadow-2xl max-h-[calc(100vh-90px)] overflow-y-auto">
-                    
-                    {/* Mobile POS Accordion */}
-                    <div className="rounded-xl border border-slate-100 bg-slate-50/50 overflow-hidden">
-                        <button
-                            type="button"
-                            onClick={() => setMobilePosOpen(prev => !prev)}
-                            className="w-full flex items-center justify-between p-3 text-slate-900 font-extrabold text-sm hover:bg-slate-100/70 transition-colors cursor-pointer"
-                        >
-                            <span className="flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-[#FF2D55]"></span>
-                                <span>POS Modules</span>
-                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-rose-100 text-[#FF2D55]">8</span>
-                            </span>
-                            <ChevronDown size={16} className={`text-[#FF2D55] transition-transform duration-200 ${mobilePosOpen ? 'rotate-180' : ''}`} />
-                        </button>
-
-                        {mobilePosOpen && (
-                            <div className="p-2 space-y-1 bg-white border-t border-slate-100">
-                                {POS_MENU_ITEMS.map((item) => (
-                                    <Link 
-                                        key={item.name}
-                                        to={item.path}
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="flex items-center justify-between p-2.5 rounded-xl text-slate-800 hover:text-[#FF2D55] hover:bg-[#FFF1F1] transition-colors"
-                                    >
-                                        <div className="flex items-center gap-3 min-w-0">
-                                            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
-                                                <item.icon size={16} />
-                                            </div>
-                                            <div className="truncate">
-                                                <span className="font-bold text-xs block text-[#0A192F]">{item.name}</span>
-                                                <span className="text-[10px] text-slate-500 block truncate">{item.desc}</span>
-                                            </div>
-                                        </div>
-                                        <ChevronRight size={14} className="text-slate-400 shrink-0 ml-1" />
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Mobile Add-ons Accordion */}
-                    <div className="rounded-xl border border-slate-100 bg-slate-50/50 overflow-hidden">
-                        <button
-                            type="button"
-                            onClick={() => setMobileAddonsOpen(prev => !prev)}
-                            className="w-full flex items-center justify-between p-3 text-slate-900 font-extrabold text-sm hover:bg-slate-100/70 transition-colors cursor-pointer"
-                        >
-                            <span className="flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-orange-500"></span>
-                                <span>Add-ons</span>
-                            </span>
-                            <ChevronDown size={16} className={`text-orange-500 transition-transform duration-200 ${mobileAddonsOpen ? 'rotate-180' : ''}`} />
-                        </button>
-
-                        {mobileAddonsOpen && (
-                            <div className="p-2 space-y-1 bg-white border-t border-slate-100">
-                                {ADDONS_MENU_ITEMS.map((item) => (
-                                    <Link 
-                                        key={item.name}
-                                        to={item.path}
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="flex items-center justify-between p-2.5 rounded-xl text-slate-800 hover:text-[#FF2D55] hover:bg-[#FFF1F1] transition-colors"
-                                    >
-                                        <div className="flex items-center gap-3 min-w-0">
-                                            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
-                                                <item.icon size={16} />
-                                            </div>
-                                            <span className="font-bold text-xs text-[#0A192F] truncate">{item.name}</span>
-                                        </div>
-                                        <ChevronRight size={14} className="text-slate-400 shrink-0 ml-1" />
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Mobile Outlet Types Accordion */}
-                    <div className="rounded-xl border border-slate-100 bg-slate-50/50 overflow-hidden">
-                        <button
-                            type="button"
-                            onClick={() => setMobileOutletsOpen(prev => !prev)}
-                            className="w-full flex items-center justify-between p-3 text-slate-900 font-extrabold text-sm hover:bg-slate-100/70 transition-colors cursor-pointer"
-                        >
-                            <span className="flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
-                                <span>Outlet Types</span>
-                            </span>
-                            <ChevronDown size={16} className={`text-indigo-500 transition-transform duration-200 ${mobileOutletsOpen ? 'rotate-180' : ''}`} />
-                        </button>
-
-                        {mobileOutletsOpen && (
-                            <div className="p-2 space-y-1 bg-white border-t border-slate-100">
-                                {OUTLET_TYPES_ITEMS.map((item) => (
-                                    <Link 
-                                        key={item.name}
-                                        to={item.path}
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="flex items-center justify-between p-2.5 rounded-xl text-slate-800 hover:text-[#FF2D55] hover:bg-[#FFF1F1] transition-colors"
-                                    >
-                                        <div className="flex items-center gap-3 min-w-0">
-                                            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
-                                                <item.icon size={16} />
-                                            </div>
-                                            <span className="font-bold text-xs text-[#0A192F] truncate">{item.name}</span>
-                                        </div>
-                                        <ChevronRight size={14} className="text-slate-400 shrink-0 ml-1" />
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Mobile Pricing Link */}
-                    <a 
-                        href="#pricing"
-                        onClick={handlePricingClick}
-                        className="block px-3 py-2.5 rounded-xl text-slate-800 font-extrabold text-sm hover:bg-slate-100 transition-colors"
+                    <Link
+                        to="/"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block px-3 py-2 text-sm font-bold text-slate-800 hover:text-[#FF5A1F] hover:bg-orange-50 rounded-xl transition-colors"
                     >
-                        Pricing Plans
+                        Home
+                    </Link>
+                    <a
+                        href="/#features"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block px-3 py-2 text-sm font-bold text-slate-800 hover:text-[#FF5A1F] hover:bg-orange-50 rounded-xl transition-colors"
+                    >
+                        Features
                     </a>
+                    <a
+                        href="/#pricing"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block px-3 py-2 text-sm font-bold text-slate-800 hover:text-[#FF5A1F] hover:bg-orange-50 rounded-xl transition-colors"
+                    >
+                        Pricing
+                    </a>
+                    <Link
+                        to="/about"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block px-3 py-2 text-sm font-bold text-slate-800 hover:text-[#FF5A1F] hover:bg-orange-50 rounded-xl transition-colors"
+                    >
+                        About
+                    </Link>
+                    <Link
+                        to="/contact"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block px-3 py-2 text-sm font-bold text-slate-800 hover:text-[#FF5A1F] hover:bg-orange-50 rounded-xl transition-colors"
+                    >
+                        Contact
+                    </Link>
 
-                    {/* Mobile Auth CTAs */}
                     <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
-                        <Link 
-                            to="/staff/login"
+                        <Link
+                            to="/login"
                             onClick={() => setMobileMenuOpen(false)}
                             className="w-full py-2.5 text-center font-bold text-sm text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors"
                         >
-                            Log In to Dashboard
+                            Login
                         </Link>
-                        <Link 
-                            to="/staff/register"
+                        <Link
+                            to="/register"
                             onClick={() => setMobileMenuOpen(false)}
-                            className="w-full py-2.5 text-center font-bold text-sm text-white bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] rounded-xl shadow-md transition-all"
+                            className="w-full py-2.5 text-center font-bold text-sm text-white bg-[#FF5A1F] hover:bg-[#E04812] rounded-xl shadow-md transition-all"
                         >
-                            Get Started Free
+                            Get Started
                         </Link>
                     </div>
-
                 </div>
             )}
         </header>

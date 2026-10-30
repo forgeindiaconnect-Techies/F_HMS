@@ -470,7 +470,7 @@ const Settings = () => {
             {/* Header */}
             <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-800" style={{ fontFamily: 'Poppins, sans-serif' }}>System Settings</h2>
-                <p className="text-gray-500 text-sm mt-1">Manage global preferences and configurations for RestoSys.</p>
+                <p className="text-gray-500 text-sm mt-1">Manage global preferences and configurations for FoodNest.</p>
             </div>
 
             <div className="flex flex-col md:flex-row gap-8">

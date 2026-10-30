@@ -94,14 +94,18 @@ const StaffAuthPage = () => {
         setLoading(false);
         
         if (result.success) {
-            const role = result.data.role.toLowerCase();
+            const role = (result.data?.role || '').toLowerCase();
             let route = '/admin';
-            if (role.includes('superadmin')) route = '/super-admin';
+            if (role.includes('superadmin') || role.includes('supportagent')) route = '/super-admin';
             else if (role.includes('manager')) route = '/manager';
             else if (role.includes('chef')) route = '/chef';
             else if (role.includes('waiter')) route = '/waiter';
             else if (role.includes('cashier')) route = '/cashier';
-            else if (role.includes('customer')) route = '/profile';
+            else if (role.includes('delivery')) route = '/delivery/dashboard';
+            else if (role.includes('customer')) {
+                window.location.href = `${import.meta.env.VITE_CUSTOMER_URL || 'http://localhost:5174'}/profile`;
+                return;
+            }
             navigate(route);
         } else {
             setAuthError(result.message);
@@ -824,7 +828,7 @@ const StaffAuthPage = () => {
                         <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
                             <UtensilsCrossed size={28} className="text-white" />
                         </div>
-                        <span className="text-3xl font-bold text-white tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>RestoSys</span>
+                        <span className="text-3xl font-extrabold text-white tracking-tight">FoodNest</span>
                     </Link>
                     <p className="text-green-50 text-xs font-semibold relative z-10 opacity-95">
                         {mode === 'login' ? 'Sign in to manage POS billing, KDS, inventory & staff' : 'Register your restaurant & choose a plan'}

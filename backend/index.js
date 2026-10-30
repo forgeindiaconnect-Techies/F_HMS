@@ -40,6 +40,8 @@ import inquiryRoutes from './routes/inquiryRoutes.js';
 import billingDemoRoutes from './routes/billingDemoRoutes.js';
 import kotRoutes from './routes/kotRoutes.js';
 import tipRoutes from './routes/tipRoutes.js';
+import testimonialRoutes from './routes/testimonialRoutes.js';
+import customerReviewRoutes from './routes/customerReviewRoutes.js';
 import Plan from './models/Plan.js';
 
 // Load env vars
@@ -120,6 +122,8 @@ app.use('/api/billing-demos', billingDemoRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/kot', kotRoutes);
 app.use('/api/tips', tipRoutes);
+app.use('/api/testimonials', testimonialRoutes);
+app.use('/api/customer-reviews', customerReviewRoutes);
 
 const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();

@@ -116,7 +116,7 @@ export const OwnerWhatsAppNotificationDrawer = () => {
         },
         {
             label: 'Order Dispatched 🛵',
-            text: 'Your fresh order is prepared and on its way with our delivery rider! ETA: ~15 minutes. Track live status here: https://restosys.app/track'
+            text: 'Your fresh order is prepared and on its way with our delivery rider! ETA: ~15 minutes. Track live status here: https://foodnest.app/track'
         },
         {
             label: 'Delay Apology + 20% Voucher 🎁',
@@ -124,7 +124,7 @@ export const OwnerWhatsAppNotificationDrawer = () => {
         },
         {
             label: 'Digital Bill Receipt 🧾',
-            text: 'Thank you for dining with us! Here is your digital tax invoice receipt: https://restosys.app/invoice/INV-2026-8492. Have a wonderful evening!'
+            text: 'Thank you for dining with us! Here is your digital tax invoice receipt: https://foodnest.app/invoice/INV-2026-8492. Have a wonderful evening!'
         },
         {
             label: 'Chef Stock Reorder 📦',
@@ -651,7 +651,7 @@ export const OwnerWhatsAppNotificationDrawer = () => {
                 <div className="p-3.5 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-5 shrink-0">
                     <span className="font-semibold flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                        RestoSys Cloud WhatsApp Gateway v3.4
+                        FoodNest Cloud WhatsApp Gateway v3.4
                     </span>
                     <button
                         onClick={() => setIsDrawerOpen(false)}

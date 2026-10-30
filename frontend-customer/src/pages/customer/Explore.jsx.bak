@@ -1,0 +1,1034 @@
+import { useRef, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { 
+  ArrowRight, ShoppingBag, Flame, Star, Clock, Check, 
+  UtensilsCrossed, ChevronDown, Sparkles, Shield, Heart,
+  Search, MapPin, Calendar, Award
+} from 'lucide-react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useCart } from '../../context/CartContext';
+import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import toast from 'react-hot-toast';
+
+gsap.registerPlugin(ScrollTrigger);
+
+// ============================================================================
+// 1. SIGNATURE DISHES FOR SCROLL SHOWCASE (RECREATING REFERENCE VIDEO SEQUENCE)
+// ============================================================================
+export const FEATURED_DISHES = [
+  {
+    id: 'biryani-01',
+    number: '01',
+    total: '08',
+    tag: 'SIGNATURE DISH',
+    title: 'Chicken Dum Biryani',
+    watermark: 'Biriyani',
+    description: 'Bone-in chicken and saffron basmati, sealed under dough in a heavy brass handi and slow-cooked for ninety minutes. Served with mirchi ka salan and burani raita.',
+    price: 360,
+    originalPrice: 420,
+    prepTime: '25 min',
+    rating: '4.95',
+    heroImage: '/assets/images/dish-biryani-hero.jpg',
+    spicesImage: '/assets/images/dish-biryani-spices.jpg',
+    badgeText: 'AUTHENTIC DUM COOKING • SLOW FIRE • ROYAL HYDERABADI RECIPE •',
+    ingredients: ['Star Anise', 'Green Cardamom', 'Cinnamon Bark', 'Saffron Strands', 'Fried Crispy Onions', 'Fresh Mint Sprigs', 'Kashmiri Chili'],
+    accentColor: '#F59E0B',
+    accentGlow: 'rgba(245, 158, 11, 0.40)',
+    category: 'Biryani'
+  },
+  {
+    id: 'makhani-02',
+    number: '02',
+    total: '08',
+    tag: 'MOST ORDERED',
+    title: 'Butter Chicken (Murgh Makhani)',
+    watermark: 'Makhani',
+    description: 'Tandoor-charred chicken folded into a velvet tomato-makhani gravy, slow-simmered with cashews and finished with a generous cube of white farm butter and kasuri methi.',
+    price: 380,
+    originalPrice: 440,
+    prepTime: '20 min',
+    rating: '4.92',
+    heroImage: '/assets/images/dish-makhani-hero.jpg',
+    spicesImage: '/assets/images/dish-makhani-spices.jpg',
+    badgeText: 'RICH TOMATO GRAVY • WHITE FARM BUTTER • HAND-CRUSHED KASURI METHI •',
+    ingredients: ['Vine Tomatoes', 'White Farm Butter', 'Fresh Cream Swirl', 'Kasuri Methi', 'Ginger Juliennes', 'Green Chilies', 'Bay Leaves'],
+    accentColor: '#EF4444',
+    accentGlow: 'rgba(239, 68, 68, 0.40)',
+    category: 'Curry'
+  },
+  {
+    id: 'tandoori-03',
+    number: '03',
+    total: '08',
+    tag: "CHEF'S SPECIAL",
+    title: 'Tandoori Chicken Platter',
+    watermark: 'Tandoori',
+    description: 'Whole chicken leg quarters steeped in hung curd, degi mirch, and cold-pressed mustard oil, blistered over flaming charcoal embers in authentic clay pit ovens.',
+    price: 420,
+    originalPrice: 480,
+    prepTime: '30 min',
+    rating: '4.98',
+    heroImage: '/assets/images/dish-tandoori-hero.jpg',
+    spicesImage: '/assets/images/dish-tandoori-spices.jpg',
+    badgeText: 'CLAY OVEN ROASTED • CHARCOAL SMOKED • KASHMIRI DEGI MIRCH •',
+    ingredients: ['Charred Lemon', 'Pickled Onions', 'Mint Chutney', 'Charcoal Smoke', 'Paprika Puffs', 'Cracked Pepper'],
+    accentColor: '#F97316',
+    accentGlow: 'rgba(249, 115, 22, 0.40)',
+    category: 'Tandoor'
+  },
+  {
+    id: 'seekh-04',
+    number: '04',
+    total: '08',
+    tag: 'ROYAL AWADHI',
+    title: 'Smoked Lamb Seekh Kebab',
+    watermark: 'Seekh',
+    description: 'Finely minced mutton infused with browned onions, raw papaya, smoked fat, and roasted coriander, wrapped around skewers and grilled over hot coals.',
+    price: 460,
+    originalPrice: 520,
+    prepTime: '20 min',
+    rating: '4.91',
+    heroImage: 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?q=80&w=800&auto=format&fit=crop',
+    spicesImage: '/assets/images/dish-tandoori-spices.jpg',
+    badgeText: 'MINCED MUTTON • CHARCOAL SKEWERS • CORIANDER & MACE •',
+    ingredients: ['Crushed Coriander', 'Mace', 'Green Chilies', 'Raw Papaya', 'Mint Chutney', 'Lachha Onions'],
+    accentColor: '#D97706',
+    accentGlow: 'rgba(217, 119, 6, 0.40)',
+    category: 'Tandoor'
+  },
+  {
+    id: 'tikka-05',
+    number: '05',
+    total: '08',
+    tag: 'ROYAL VEGETARIAN',
+    title: 'Paneer Tikka Angara',
+    watermark: 'Tikka',
+    description: 'Fresh farm cottage cheese cubes marinated in saffron yogurt, roasted cumin, and carom seeds, skewered with bell peppers and smoked over charcoal.',
+    price: 320,
+    originalPrice: 380,
+    prepTime: '15 min',
+    rating: '4.88',
+    heroImage: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?q=80&w=800&auto=format&fit=crop',
+    spicesImage: '/assets/images/dish-makhani-spices.jpg',
+    badgeText: 'MALAI PANEER • CHARRED PEPPERS • CAROM SEEDS •',
+    ingredients: ['Ajwain', 'Kashmiri Chili', 'Hung Curd', 'Bell Peppers', 'Lemon Zest', 'Chaat Masala'],
+    accentColor: '#EAB308',
+    accentGlow: 'rgba(234, 179, 8, 0.40)',
+    category: 'Tandoor'
+  },
+  {
+    id: 'dal-06',
+    number: '06',
+    total: '08',
+    tag: 'SLOW SIMMERED',
+    title: 'Dal Bukhara Velvet Makhani',
+    watermark: 'Dal',
+    description: 'Whole black urad lentils slow-simmered for forty-eight hours over wood embers with ripe plum tomatoes and churned white butter.',
+    price: 290,
+    originalPrice: 340,
+    prepTime: '15 min',
+    rating: '4.93',
+    heroImage: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?q=80&w=800&auto=format&fit=crop',
+    spicesImage: '/assets/images/dish-makhani-spices.jpg',
+    badgeText: '48-HR WOOD SIMMERED • WHITE BUTTER • PLUM TOMATOES •',
+    ingredients: ['Black Urad', 'Kasuri Methi', 'Fresh Ginger', 'Farm Butter', 'Cream Swirl', 'Garlic Paste'],
+    accentColor: '#B45309',
+    accentGlow: 'rgba(180, 83, 9, 0.40)',
+    category: 'Curry'
+  },
+  {
+    id: 'naan-07',
+    number: '07',
+    total: '08',
+    tag: 'ARTISAN TANDOOR',
+    title: 'Garlic Butter Chutney Naan',
+    watermark: 'Naan',
+    description: 'Clay-oven blistered sourdough flatbread brushed liberally with golden garlic butter, toasted nigella seeds, and fresh chopped coriander.',
+    price: 95,
+    originalPrice: 120,
+    prepTime: '10 min',
+    rating: '4.96',
+    heroImage: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?q=80&w=800&auto=format&fit=crop',
+    spicesImage: '/assets/images/dish-biryani-spices.jpg',
+    badgeText: '480° CLAY TANDOOR • ROASTED GARLIC • FRESH GHEE •',
+    ingredients: ['Roasted Garlic', 'Cow Ghee', 'Nigella Seeds', 'Sea Salt', 'Coriander Leaves'],
+    accentColor: '#CA8A04',
+    accentGlow: 'rgba(202, 138, 4, 0.35)',
+    category: 'Bread'
+  },
+  {
+    id: 'lassi-08',
+    number: '08',
+    total: '08',
+    tag: 'HERITAGE REFRESHMENT',
+    title: 'Royal Kesar Mango Lassi',
+    watermark: 'Lassi',
+    description: 'Thick churned creamy yogurt whipped with sweet Alphonso mango pulp, steeped saffron threads, cardamom powder, and silvered pistachio slivers.',
+    price: 160,
+    originalPrice: 190,
+    prepTime: '8 min',
+    rating: '4.97',
+    heroImage: 'https://images.unsplash.com/photo-1553787499-6f9133860278?q=80&w=800&auto=format&fit=crop',
+    spicesImage: '/assets/images/dish-makhani-spices.jpg',
+    badgeText: 'ALPHONSO MANGO • CHURNED YOGURT • PISTACHIO SLIVERS •',
+    ingredients: ['Kesar Mango', 'Hung Yogurt', 'Saffron Strands', 'Green Cardamom', 'Pistachios'],
+    accentColor: '#F59E0B',
+    accentGlow: 'rgba(245, 158, 11, 0.40)',
+    category: 'Drinks'
+  }
+];
+
+// ============================================================================
+// 2. THE ELEVEN SPICES CATALOG (FROM REFERENCE VIDEO 00:17)
+// ============================================================================
+const ELEVEN_SPICES = [
+  { name: 'Kashmiri Saffron', origin: 'Pampore, Kashmir', note: 'Hand-picked crimson stigmas for royal golden hue and floral fragrance.' },
+  { name: 'Star Anise', origin: 'Lạng Sơn', note: 'Eight-pointed seed star releasing intense sweet licorice perfume.' },
+  { name: 'Green Cardamom', origin: 'Idukki Hills', note: 'Crushed pods with cool menthol eucalyptus and citrus sweetness.' },
+  { name: 'Black Cardamom', origin: 'Sikkim', note: 'Wood-smoked over charcoal fires for deep rustic barbecue aroma.' },
+  { name: 'Cinnamon Bark', origin: 'Malabar Coast', note: 'Delicate sweet woody quill bark ground into fine garam masala.' },
+  { name: 'Mace (Javitri)', origin: 'Kerala', note: 'Lace-like crimson aril wrapping the nutmeg, intensely aromatic.' },
+  { name: 'Bay Leaf (Tejpatta)', origin: 'Meghalaya', note: 'Sun-dried wild mountain laurel offering herbal and tea-like notes.' },
+  { name: 'Shahi Jeera', origin: 'Kashmir Valley', note: 'Dark wild caraway with nutty fragrance toasted in pure desi ghee.' },
+  { name: 'Cloves (Laung)', origin: 'Zanzibar / Kerala', note: 'High essential oil buds imparting warm sweet heat.' },
+  { name: 'Stone Flower (Dagad Phool)', origin: 'Western Ghats', note: 'Wild dried lichen unlocking the iconic signature Hyderabadi umami.' },
+  { name: 'Kewra Essence', origin: 'Ganjam Coast', note: 'Distilled pandanus screwpine petals defining royal Awadhi dum vapor.' }
+];
+
+export default function Explore() {
+  const containerRef = useRef(null);
+  const stickyRef = useRef(null);
+  const progressLineRef = useRef(null);
+
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [activeDishIndex, setActiveDishIndex] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [activeSpiceIndex, setActiveSpiceIndex] = useState(0);
+  const [addedDishId, setAddedDishId] = useState(null);
+
+  const { addToCart } = useCart();
+  const { user } = useCustomerAuth();
+
+  // Preload dish images for zero flicker
+  useEffect(() => {
+    FEATURED_DISHES.forEach(dish => {
+      const img = new Image();
+      img.src = dish.heroImage;
+      if (dish.spicesImage) {
+        const sImg = new Image();
+        sImg.src = dish.spicesImage;
+      }
+    });
+  }, []);
+
+  // GSAP ScrollTrigger Viewport Pinning & Scrub
+  useEffect(() => {
+    const container = containerRef.current;
+    const stickyEl = stickyRef.current;
+    if (!container || !stickyEl) return;
+
+    const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: container,
+        start: 'top top',
+        end: 'bottom bottom',
+        pin: stickyEl,
+        pinSpacing: true,
+        scrub: 0.8,
+        anticipatePin: 1,
+        onUpdate: (self) => {
+          const p = Math.max(0, Math.min(1, self.progress));
+          setScrollProgress(p);
+
+          const idx = Math.min(
+            FEATURED_DISHES.length - 1,
+            Math.floor(p * FEATURED_DISHES.length)
+          );
+          setActiveDishIndex(idx);
+
+          if (progressLineRef.current) {
+            progressLineRef.current.style.width = `${p * 100}%`;
+          }
+        }
+      });
+    }, container);
+
+    return () => ctx.revert();
+  }, []);
+
+  const handleAddDish = (dish) => {
+    try {
+      addToCart({
+        id: dish.id,
+        _id: dish.id,
+        name: dish.title,
+        price: dish.price,
+        image: dish.heroImage,
+        category: dish.category
+      });
+      setAddedDishId(dish.id);
+      toast.success(`Added ${dish.title} to your bag!`);
+      setTimeout(() => setAddedDishId(null), 1800);
+    } catch {
+      toast.success(`Selected ${dish.title}!`);
+    }
+  };
+
+  const scrollToDish = (index) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const scrollTop = window.scrollY || window.pageYOffset;
+    const containerTop = rect.top + scrollTop;
+    const totalHeight = containerRef.current.offsetHeight - window.innerHeight;
+    const targetScroll = containerTop + (index / (FEATURED_DISHES.length - 1)) * totalHeight * 0.95;
+    window.scrollTo({ top: targetScroll, behavior: 'smooth' });
+  };
+
+  // Seamless Multi-Dish Continuous Morphing Algorithm (No Black Out)
+  const getDishMetrics = (idx) => {
+    const total = FEATURED_DISHES.length;
+    const slice = 1 / total;
+    const center = (idx + 0.5) * slice;
+    const dist = Math.abs(scrollProgress - center);
+
+    // Visibility range around dish center
+    if (dist > slice * 1.05) {
+      return { opacity: 0, heroScale: 0.9, heroY: 60, spicesOpacity: 0, textOpacity: 0, watermarkOpacity: 0 };
+    }
+
+    // Normalized progress: 1 at exact center, drops off towards edge
+    const proximity = 1 - Math.min(1, dist / (slice * 0.95));
+
+    // Smooth sinusoidal ease
+    const easeVal = Math.sin(proximity * (Math.PI / 2));
+    const opacity = easeVal;
+    const isPast = scrollProgress > center;
+
+    const heroY = isPast ? -60 * (1 - easeVal) : 60 * (1 - easeVal);
+    const heroScale = 0.95 + 0.08 * easeVal;
+    
+    // Spices bloom when close to center
+    const spicesOpacity = Math.max(0, (proximity - 0.25) / 0.75);
+    const spicesScale = 0.9 + 0.25 * proximity;
+    const spicesRotate = (scrollProgress - center) * 120;
+
+    // Crisp text crossfade: active dish text is solid while centered and cleanly fades out before next dish arrives
+    const textNormalized = Math.max(0, (proximity - 0.38) / 0.62);
+    const textOpacity = Math.pow(textNormalized, 1.6);
+    const textY = isPast ? -35 * (1 - easeVal) : 35 * (1 - easeVal);
+
+    const watermarkNormalized = Math.max(0, (proximity - 0.25) / 0.75);
+    const watermarkOpacity = 0.38 * Math.pow(watermarkNormalized, 1.4);
+    const watermarkY = isPast ? -25 * (1 - easeVal) : 25 * (1 - easeVal);
+
+    return {
+      opacity,
+      heroScale,
+      heroY,
+      spicesOpacity,
+      spicesScale,
+      spicesRotate,
+      textOpacity,
+      textY,
+      watermarkOpacity,
+      watermarkY
+    };
+  };
+
+  const currentDish = FEATURED_DISHES[activeDishIndex] || FEATURED_DISHES[0];
+
+  const filteredDishes = selectedCategory === 'All'
+    ? FEATURED_DISHES
+    : FEATURED_DISHES.filter(d => d.category.toLowerCase().includes(selectedCategory.toLowerCase()));
+
+  return (
+    <div className="w-full bg-[#070605] text-stone-100 font-sans selection:bg-amber-500 selection:text-stone-950 overflow-x-hidden">
+
+      {/* ========================================================================= */}
+      {/* 1. TOP LUXURY NAVBAR (EXACT REPLICATION FROM REFERENCE VIDEO) */}
+      {/* ========================================================================= */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#070605]/85 backdrop-blur-md border-b border-stone-800/80 px-4 sm:px-8 py-4 transition-all">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          
+          {/* Brand Logo & Royal Title */}
+          <Link to="/explore" className="flex items-center gap-3 group cursor-pointer">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center text-stone-950 shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
+              <UtensilsCrossed size={20} className="stroke-[2.5]" />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-serif text-lg sm:text-xl font-black tracking-wider text-amber-200 group-hover:text-amber-400 transition-colors">
+                MR. BIRYANIWALA
+              </span>
+              <span className="text-[9px] font-mono tracking-[0.25em] text-stone-400 uppercase">
+                Royal Awadhi &amp; Hyderabadi Dum
+              </span>
+            </div>
+          </Link>
+
+          {/* Center Navigation Links (Matching Video Frame 00:00) */}
+          <div className="hidden md:flex items-center gap-8 font-mono text-xs tracking-widest uppercase text-stone-300">
+            <a href="#showcase" className="hover:text-amber-400 transition-colors">THE DUM</a>
+            <a href="#spices" className="hover:text-amber-400 transition-colors">SPICES</a>
+            <a href="#menu-table" className="hover:text-amber-400 transition-colors">MENU</a>
+            <a href="#craft" className="hover:text-amber-400 transition-colors">CRAFT</a>
+            <Link to="/reservations" className="hover:text-amber-400 transition-colors">BOOK TABLE</Link>
+          </div>
+
+          {/* Right Action CTA */}
+          <div className="flex items-center gap-4">
+            <a 
+              href="#menu-table"
+              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-black text-xs px-5 py-2.5 rounded-full shadow-lg shadow-amber-500/20 transition-all hover:scale-105 active:scale-95"
+            >
+              ORDER NOW
+            </a>
+          </div>
+        </div>
+      </nav>
+
+
+      {/* ========================================================================= */}
+      {/* 2. PINNED SCROLL-DRIVEN FOOD SHOWCASE (8 DISHES SEQUENCE) */}
+      {/* ========================================================================= */}
+      <section 
+        id="showcase" 
+        ref={containerRef} 
+        className="relative w-full bg-[#070605] text-stone-100 select-none pt-20"
+        style={{ height: `${FEATURED_DISHES.length * 115}vh` }}
+      >
+        {/* Pinned Stage Container Managed by GSAP Pin */}
+        <div 
+          ref={stickyRef} 
+          className="h-screen w-full flex flex-col justify-between overflow-hidden px-4 sm:px-8 md:px-14 py-6 md:py-8 z-20 relative"
+        >
+          {/* Dynamic Ambient Background Glow */}
+          <div 
+            className="absolute inset-0 pointer-events-none transition-colors duration-700 ease-out"
+            style={{
+              background: `radial-gradient(circle at 50% 50%, ${currentDish.accentGlow} 0%, rgba(14, 11, 9, 0.96) 55%, #050403 100%)`
+            }}
+          />
+
+          {/* Center Warm Spotlight */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-amber-500/12 rounded-full blur-[140px] pointer-events-none" />
+
+          {/* Stage Top Bar: Heritage Tag + Rotating Badge + Table Menu */}
+          <header className="relative z-30 flex items-center justify-between w-full pt-1 shrink-0">
+            <div className="flex items-center gap-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
+              <div className="flex flex-col">
+                <span className="text-[11px] sm:text-xs font-black tracking-[0.25em] uppercase text-amber-300 font-mono">
+                  ROYAL DUM CULINARY SHOWCASE
+                </span>
+                <span className="text-[10px] text-stone-400 font-medium tracking-wider">
+                  Scroll down &amp; up to serve each course
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-6 sm:gap-10">
+              {/* THE TABLE Navigation List (Frame 00:00 - 00:12) */}
+              <nav className="hidden lg:flex flex-col text-right font-mono text-[10px] tracking-widest space-y-1 border-r border-stone-800 pr-6 max-h-48 overflow-y-auto custom-scrollbar">
+                <span className="text-stone-500 font-bold uppercase text-[9px] tracking-[0.3em] pb-1">
+                  THE TABLE
+                </span>
+                {FEATURED_DISHES.map((dish, idx) => (
+                  <button
+                    key={dish.id}
+                    onClick={() => scrollToDish(idx)}
+                    className={`transition-all duration-300 flex items-center justify-end gap-2 text-left cursor-pointer ${
+                      activeDishIndex === idx
+                        ? 'text-amber-300 font-black scale-105'
+                        : 'text-stone-500 hover:text-stone-300 font-medium'
+                    }`}
+                  >
+                    <span className="text-[9px] opacity-70">{dish.number}</span>
+                    <span>{dish.watermark.toUpperCase()}</span>
+                    {activeDishIndex === idx && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b]" />
+                    )}
+                  </button>
+                ))}
+              </nav>
+
+              {/* Rotating Circular Stamp */}
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0 flex items-center justify-center">
+                <div className="absolute inset-0 animate-[spin_18s_linear_infinite] rounded-full border border-dashed border-amber-500/30" />
+                <svg className="w-full h-full animate-[spin_24s_linear_infinite]" viewBox="0 0 100 100">
+                  <path
+                    id="circlePathHero"
+                    d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0"
+                    fill="none"
+                  />
+                  <text className="text-[7.5px] uppercase tracking-[0.2em] fill-amber-200/70 font-mono font-bold">
+                    <textPath href="#circlePathHero">
+                      AUTHENTIC DUM COOKING • SLOW FIRE • FRESH SPICES •
+                    </textPath>
+                  </text>
+                </svg>
+                <UtensilsCrossed size={16} className="text-amber-400 absolute" />
+              </div>
+            </div>
+          </header>
+
+          {/* Centerpiece Stage: Giant Typography + Exploded Ingredients + Hero Dishes */}
+          <div className="relative flex-1 flex items-center justify-center w-full my-auto">
+            
+            {/* Giant Background Typography: "Biriyani" / "Makhani" / "Tandoori" ... */}
+            {FEATURED_DISHES.map((dish, idx) => {
+              const m = getDishMetrics(idx);
+              if (m.watermarkOpacity <= 0.01) return null;
+
+              return (
+                <div
+                  key={`wm-${dish.id}`}
+                  className="absolute inset-x-0 bottom-4 sm:bottom-8 md:bottom-10 flex justify-center items-center pointer-events-none transition-all duration-75"
+                  style={{
+                    opacity: m.watermarkOpacity,
+                    transform: `translate3d(0, ${m.watermarkY}px, 0)`,
+                  }}
+                >
+                  <span 
+                    className="text-6xl sm:text-8xl md:text-[13vw] lg:text-[15vw] font-serif font-black tracking-tight leading-none text-transparent select-none"
+                    style={{
+                      WebkitTextStroke: '1px rgba(245, 158, 11, 0.40)',
+                      background: 'linear-gradient(180deg, rgba(254, 243, 199, 0.90) 0%, rgba(217, 119, 6, 0.50) 85%, transparent 100%)',
+                      WebkitBackgroundClip: 'text',
+                      filter: 'drop-shadow(0 15px 40px rgba(0, 0, 0, 0.95))'
+                    }}
+                  >
+                    {dish.watermark}
+                  </span>
+                </div>
+              );
+            })}
+
+            {/* Dishes & Exploded Layers */}
+            {FEATURED_DISHES.map((dish, idx) => {
+              const m = getDishMetrics(idx);
+              if (m.opacity <= 0.005) return null;
+
+              return (
+                <div 
+                  key={`stage-${dish.id}`}
+                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  style={{ opacity: m.opacity }}
+                >
+                  {/* Exploded Spices Orbit Layer */}
+                  {dish.spicesImage && (
+                    <div
+                      className="absolute w-[340px] h-[340px] xs:w-[420px] xs:h-[420px] sm:w-[540px] sm:h-[540px] md:w-[680px] md:h-[680px] lg:w-[760px] lg:h-[760px] rounded-full pointer-events-none transition-transform duration-75"
+                      style={{
+                        opacity: m.spicesOpacity,
+                        transform: `scale(${m.spicesScale}) rotate(${m.spicesRotate}deg)`,
+                        mixBlendMode: 'screen',
+                        filter: 'drop-shadow(0 0 25px rgba(245, 158, 11, 0.4))'
+                      }}
+                    >
+                      <img
+                        src={dish.spicesImage}
+                        alt={`${dish.title} ingredients explosion`}
+                        className="w-full h-full object-contain pointer-events-none select-none"
+                        style={{
+                          maskImage: 'radial-gradient(circle at center, black 65%, transparent 95%)',
+                          WebkitMaskImage: 'radial-gradient(circle at center, black 65%, transparent 95%)'
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Hero Dish Centerpiece */}
+                  <div
+                    className="relative z-20 w-[240px] h-[240px] xs:w-[290px] xs:h-[290px] sm:w-[380px] sm:h-[380px] md:w-[460px] md:h-[460px] lg:w-[520px] lg:h-[520px] rounded-full flex items-center justify-center transition-transform duration-75 pointer-events-auto group cursor-pointer"
+                    style={{
+                      transform: `translate3d(0, ${m.heroY}px, 0) scale(${m.heroScale})`,
+                    }}
+                    onClick={() => scrollToDish(idx)}
+                  >
+                    <div 
+                      className="absolute inset-4 rounded-full blur-2xl -z-10"
+                      style={{
+                        backgroundColor: dish.accentColor,
+                        opacity: 0.35
+                      }}
+                    />
+
+                    <div className="relative w-full h-full rounded-full overflow-hidden shadow-2xl border border-amber-500/25 backdrop-blur-sm">
+                      <img
+                        src={dish.heroImage}
+                        alt={dish.title}
+                        className="w-full h-full object-cover rounded-full select-none transition-transform duration-700 group-hover:scale-105"
+                        loading="eager"
+                      />
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-black/40 via-transparent to-white/15 pointer-events-none" />
+                    </div>
+
+                    <div className="absolute -bottom-2 sm:bottom-4 bg-stone-900/90 border border-amber-500/30 text-amber-300 px-3.5 py-1.5 rounded-full text-[11px] font-mono font-bold tracking-wider backdrop-blur-md shadow-xl flex items-center gap-1.5 pointer-events-none">
+                      <Flame size={12} className="text-amber-400 fill-amber-400 animate-pulse" />
+                      <span>{dish.tag}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Left Column Information Panel */}
+            {FEATURED_DISHES.map((dish, idx) => {
+              const m = getDishMetrics(idx);
+              if (m.textOpacity <= 0.01) return null;
+
+              return (
+                <div
+                  key={`info-${dish.id}`}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl z-30 pointer-events-auto space-y-4 sm:space-y-5 text-left transition-all duration-75"
+                  style={{
+                    opacity: m.textOpacity,
+                    transform: `translate3d(0, ${m.textY}px, 0)`
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="font-serif text-3xl sm:text-5xl font-extrabold text-amber-400 tracking-tight leading-none drop-shadow-[0_2px_10px_rgba(245,158,11,0.5)]">
+                      {dish.number}
+                    </span>
+                    <span className="text-stone-500 font-mono text-sm sm:text-base font-bold">
+                      / {dish.total}
+                    </span>
+                    <span className="h-4 w-[1px] bg-stone-700 mx-1" />
+                    <span className="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono text-[10px] sm:text-xs font-black uppercase tracking-widest">
+                      {dish.tag}
+                    </span>
+                  </div>
+
+                  <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-black text-white tracking-tight leading-[1.05] drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
+                    {dish.title}
+                  </h2>
+
+                  <p className="text-stone-300 text-xs sm:text-sm md:text-base font-medium leading-relaxed drop-shadow-md max-w-md">
+                    {dish.description}
+                  </p>
+
+                  <div className="hidden sm:flex flex-wrap gap-1.5 pt-1">
+                    {dish.ingredients.slice(0, 5).map((ing, i) => (
+                      <span 
+                        key={i}
+                        className="text-[10px] font-mono px-2.5 py-0.5 rounded-md bg-stone-900/80 border border-stone-800 text-stone-300 tracking-wide"
+                      >
+                        • {ing}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center gap-4 sm:gap-6 pt-2">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl sm:text-3xl font-serif font-black text-amber-400">
+                        ₹{dish.price}
+                      </span>
+                      <span className="text-xs sm:text-sm text-stone-500 line-through font-mono">
+                        ₹{dish.originalPrice}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => handleAddDish(dish)}
+                      className="group flex items-center gap-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-black text-xs sm:text-sm px-6 py-3 rounded-full shadow-lg shadow-amber-500/25 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+                    >
+                      {addedDishId === dish.id ? (
+                        <>
+                          <Check size={16} />
+                          <span>ADDED TO BAG</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingBag size={15} />
+                          <span>ADD TO ORDER</span>
+                          <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Bottom Bar: Progress Track & Jump Navigation */}
+          <footer className="relative z-30 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-stone-800/80 pt-3 shrink-0">
+            <div className="flex items-center gap-2.5 text-stone-400 font-mono text-[11px] font-bold tracking-widest uppercase">
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+              <span>SCROLL TO SERVE THE NEXT DISH</span>
+              <ChevronDown size={15} className="text-amber-400 animate-bounce" />
+            </div>
+
+            <div className="flex items-center gap-4 w-full sm:w-80">
+              <span className="text-[10px] font-mono text-stone-500 font-bold shrink-0">
+                01
+              </span>
+              <div className="relative flex-1 h-1.5 bg-stone-900 rounded-full overflow-hidden border border-stone-800">
+                <div 
+                  ref={progressLineRef}
+                  className="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-400 rounded-full transition-all duration-75"
+                  style={{ width: `${scrollProgress * 100}%` }}
+                />
+              </div>
+              <span className="text-[10px] font-mono text-amber-400 font-bold shrink-0">
+                08
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5 font-mono text-xs">
+              {FEATURED_DISHES.map((dish, idx) => (
+                <button
+                  key={`btn-nav-${dish.id}`}
+                  onClick={() => scrollToDish(idx)}
+                  className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-[10px] transition-all cursor-pointer ${
+                    activeDishIndex === idx
+                      ? 'bg-amber-400 text-stone-950 font-black scale-110 shadow-[0_0_10px_rgba(245,158,11,0.5)]'
+                      : 'bg-stone-900 text-stone-400 hover:text-white border border-stone-800'
+                  }`}
+                >
+                  {dish.number}
+                </button>
+              ))}
+            </div>
+          </footer>
+        </div>
+      </section>
+
+
+      {/* ========================================================================= */}
+      {/* 3. CONTINUOUS GOLDEN MARQUEE TICKER (FROM VIDEO 00:13) */}
+      {/* ========================================================================= */}
+      <div className="w-full bg-amber-500 text-stone-950 py-3.5 overflow-hidden whitespace-nowrap shadow-xl border-y border-amber-400/40 font-mono text-xs sm:text-sm font-black tracking-[0.25em] uppercase">
+        <div className="inline-flex animate-[marquee_25s_linear_infinite] gap-8">
+          <span>DUM PUKHT ✦ SAFFRON ✦ SLOW-COOKED FOR 90 MINS ✦ PURE COW GHEE ✦ KEWRA WATER ✦ CLAY PIT OVEN ✦ DEGI MIRCH ✦ HAND-SEALED HANDI ✦ CHARCOAL EMBERS</span>
+          <span>DUM PUKHT ✦ SAFFRON ✦ SLOW-COOKED FOR 90 MINS ✦ PURE COW GHEE ✦ KEWRA WATER ✦ CLAY PIT OVEN ✦ DEGI MIRCH ✦ HAND-SEALED HANDI ✦ CHARCOAL EMBERS</span>
+        </div>
+      </div>
+
+
+      {/* ========================================================================= */}
+      {/* 4. CRAFT OF DUM SECTION: "NINETY MINUTES YOU WILL NEVER SEE US SKIP" */}
+      {/* ========================================================================= */}
+      <section id="craft" className="py-24 px-4 sm:px-8 max-w-7xl mx-auto space-y-16">
+        <div className="text-center space-y-4 max-w-3xl mx-auto">
+          <span className="text-xs font-mono font-bold tracking-[0.3em] uppercase text-amber-400">
+            THE ANCIENT RITUAL
+          </span>
+          <h2 className="text-3xl sm:text-5xl md:text-6xl font-serif font-black text-white tracking-tight leading-tight">
+            Ninety minutes you will never see us skip.
+          </h2>
+          <p className="text-stone-400 text-sm sm:text-base leading-relaxed">
+            True Dum cooking cannot be rushed. Sealed with whole wheat dough to lock in every drop of vapor, saffron, and slow-rendered juices.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Card 1: The Layer */}
+          <div className="bg-[#100d0b] border border-stone-800 rounded-3xl p-6 sm:p-8 space-y-5 hover:border-amber-500/40 transition-all duration-300 group">
+            <span className="font-mono text-xs font-black text-amber-400">01 / THE LAYER</span>
+            <div className="h-56 rounded-2xl overflow-hidden bg-stone-900 border border-stone-800">
+              <img 
+                src="/assets/images/dish-biryani-hero.jpg" 
+                alt="Layering basmati and meat" 
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+              />
+            </div>
+            <h3 className="text-xl font-serif font-black text-white group-hover:text-amber-300 transition-colors">
+              Aged Basmati &amp; Rich Marinade
+            </h3>
+            <p className="text-xs sm:text-sm text-stone-400 leading-relaxed">
+              Basmati grains aged for 24 months, par-cooked in whole spice broth, alternating with meat marinated overnight in hung curd and cold-pressed mustard oil.
+            </p>
+          </div>
+
+          {/* Card 2: The Seal */}
+          <div className="bg-[#100d0b] border border-stone-800 rounded-3xl p-6 sm:p-8 space-y-5 hover:border-amber-500/40 transition-all duration-300 group">
+            <span className="font-mono text-xs font-black text-amber-400">02 / THE DOUGH SEAL</span>
+            <div className="h-56 rounded-2xl overflow-hidden bg-stone-900 border border-stone-800">
+              <img 
+                src="https://images.unsplash.com/photo-1589302168068-964664d93dc0?q=80&w=800&auto=format&fit=crop" 
+                alt="Dough seal on handi" 
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+              />
+            </div>
+            <h3 className="text-xl font-serif font-black text-white group-hover:text-amber-300 transition-colors">
+              Purdah Wheat Dough Hermetic Seal
+            </h3>
+            <p className="text-xs sm:text-sm text-stone-400 leading-relaxed">
+              A thick ribbon of whole-wheat dough hand-crimped around the heavy brass lid. No steam escapes; flavors circulate continuously through the grains.
+            </p>
+          </div>
+
+          {/* Card 3: The Simmer */}
+          <div className="bg-[#100d0b] border border-stone-800 rounded-3xl p-6 sm:p-8 space-y-5 hover:border-amber-500/40 transition-all duration-300 group">
+            <span className="font-mono text-xs font-black text-amber-400">03 / THE CHARCOAL EMBERS</span>
+            <div className="h-56 rounded-2xl overflow-hidden bg-stone-900 border border-stone-800">
+              <img 
+                src="/assets/images/dish-tandoori-hero.jpg" 
+                alt="Charcoal embers slow heat" 
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+              />
+            </div>
+            <h3 className="text-xl font-serif font-black text-white group-hover:text-amber-300 transition-colors">
+              Smoldering Top &amp; Base Embers
+            </h3>
+            <p className="text-xs sm:text-sm text-stone-400 leading-relaxed">
+              The handi is placed over gentle embers while live coals rest on the lid, creating radiant heat that cooks each grain in its own steam without burning.
+            </p>
+          </div>
+        </div>
+      </section>
+
+
+      {/* ========================================================================= */}
+      {/* 5. ELEVEN SPICES CATALOG (FROM VIDEO 00:17) */}
+      {/* ========================================================================= */}
+      <section id="spices" className="py-24 px-4 sm:px-8 bg-[#0a0807] border-y border-stone-800/80">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          {/* Left: Exploded Spices Visual */}
+          <div className="lg:col-span-6 relative flex items-center justify-center">
+            <div className="relative w-full max-w-lg aspect-square rounded-full overflow-hidden border border-amber-500/20 bg-stone-950 shadow-2xl p-6 group">
+              <div className="absolute inset-0 bg-radial from-amber-500/10 via-transparent to-transparent pointer-events-none" />
+              <img 
+                src="/assets/images/dish-biryani-spices.jpg" 
+                alt="Eleven Spices Exploded View" 
+                className="w-full h-full object-contain filter drop-shadow-[0_0_30px_rgba(245,158,11,0.35)] group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-stone-900/90 border border-amber-500/40 text-amber-300 px-4 py-1.5 rounded-full text-xs font-mono font-bold tracking-widest backdrop-blur-md">
+                STONE GROUND • TOASTED DAILY
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Spices List with Tasting Notes */}
+          <div className="lg:col-span-6 space-y-8">
+            <div className="space-y-3">
+              <span className="text-xs font-mono font-bold tracking-[0.3em] uppercase text-amber-400">
+                OUR ALCHEMY
+              </span>
+              <h2 className="text-3xl sm:text-5xl font-serif font-black text-white tracking-tight leading-tight">
+                Eleven spices. Toasted every morning.
+              </h2>
+              <p className="text-stone-400 text-sm leading-relaxed">
+                We toast our whole spices on low-temperature cast iron griddles before crushing them on stone sill-battas. Click any spice to inspect its profile:
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+              {ELEVEN_SPICES.map((spice, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => setActiveSpiceIndex(idx)}
+                  className={`p-4 rounded-2xl border transition-all cursor-pointer space-y-1 ${
+                    activeSpiceIndex === idx
+                      ? 'bg-amber-500/10 border-amber-500/80 shadow-lg shadow-amber-500/10'
+                      : 'bg-stone-900/50 border-stone-800 hover:border-stone-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-serif font-black text-sm text-white">{spice.name}</span>
+                    <span className="text-[10px] font-mono text-amber-400">{spice.origin}</span>
+                  </div>
+                  <p className="text-[11px] text-stone-400 leading-relaxed font-medium">
+                    {spice.note}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      {/* ========================================================================= */}
+      {/* 6. MADE FOR THE WHOLE TABLE: CURATED DINING MENU TABLE (FROM VIDEO 00:20) */}
+      {/* ========================================================================= */}
+      <section id="menu-table" className="py-24 px-4 sm:px-8 max-w-7xl mx-auto space-y-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-stone-800 pb-8">
+          <div className="space-y-3 max-w-2xl">
+            <span className="text-xs font-mono font-bold tracking-[0.3em] uppercase text-amber-400">
+              ROYAL TASTING MENU
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-serif font-black text-white tracking-tight">
+              Made for the whole table.
+            </h2>
+            <p className="text-stone-400 text-sm">
+              Each dish is cooked fresh to order. Add items straight to your bag for dine-in or takeaway.
+            </p>
+          </div>
+
+          {/* Category Filter Pills */}
+          <div className="flex flex-wrap gap-2">
+            {['All', 'Biryani', 'Curry', 'Tandoor', 'Bread', 'Drinks'].map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-4 py-2 rounded-full font-mono text-xs font-bold transition-all cursor-pointer ${
+                  selectedCategory === cat
+                    ? 'bg-amber-500 text-stone-950 font-black shadow-md shadow-amber-500/20 scale-105'
+                    : 'bg-stone-900 text-stone-400 hover:text-white border border-stone-800'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Menu Grid Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {filteredDishes.map((dish) => (
+            <div 
+              key={dish.id} 
+              className="bg-[#100d0b] border border-stone-800 hover:border-amber-500/40 rounded-3xl overflow-hidden flex flex-col justify-between group transition-all duration-300 shadow-xl"
+            >
+              <div className="relative h-48 w-full overflow-hidden bg-stone-900">
+                <img 
+                  src={dish.heroImage} 
+                  alt={dish.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                />
+                <div className="absolute top-3 left-3 bg-stone-950/80 backdrop-blur-md border border-stone-800 text-amber-300 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full">
+                  {dish.tag}
+                </div>
+                <div className="absolute bottom-3 right-3 bg-stone-950/80 backdrop-blur-md text-stone-200 text-[10px] font-mono font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
+                  <Star size={11} className="text-amber-400 fill-amber-400" />
+                  <span>{dish.rating}</span>
+                </div>
+              </div>
+
+              <div className="p-5 space-y-4 flex-1 flex flex-col justify-between">
+                <div className="space-y-1.5">
+                  <h3 className="font-serif font-black text-lg text-white group-hover:text-amber-300 transition-colors leading-snug">
+                    {dish.title}
+                  </h3>
+                  <p className="text-xs text-stone-400 line-clamp-2 leading-relaxed">
+                    {dish.description}
+                  </p>
+                </div>
+
+                <div className="pt-3 border-t border-stone-800 flex items-center justify-between">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="font-serif font-black text-xl text-amber-400">₹{dish.price}</span>
+                    <span className="text-xs text-stone-500 line-through font-mono">₹{dish.originalPrice}</span>
+                  </div>
+
+                  <button
+                    onClick={() => handleAddDish(dish)}
+                    className="flex items-center gap-1.5 bg-amber-500/15 hover:bg-amber-500 hover:text-stone-950 text-amber-300 font-bold text-xs px-3.5 py-2 rounded-xl border border-amber-500/30 transition-all cursor-pointer"
+                  >
+                    {addedDishId === dish.id ? (
+                      <>
+                        <Check size={14} />
+                        <span>Added</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingBag size={14} />
+                        <span>Add</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+
+      {/* ========================================================================= */}
+      {/* 7. FIRE DOES THE TALKING: 480° CHARCOAL PIT TANDOOR (FROM VIDEO 00:23) */}
+      {/* ========================================================================= */}
+      <section className="py-20 px-4 sm:px-8 bg-gradient-to-b from-[#0a0807] to-[#070605] border-t border-stone-800/80">
+        <div className="max-w-5xl mx-auto rounded-3xl p-8 sm:p-14 bg-gradient-to-br from-stone-900 to-black border border-amber-500/30 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-10">
+          <div className="absolute -right-24 -top-24 w-80 h-80 bg-orange-600/15 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="space-y-4 max-w-xl relative z-10">
+            <span className="text-xs font-mono font-bold tracking-[0.3em] uppercase text-orange-400 flex items-center gap-2">
+              <Flame size={16} className="text-orange-500 fill-orange-500 animate-pulse" />
+              LIVE CHARCOAL FLAME
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-serif font-black text-white tracking-tight">
+              Fire does the talking. 480° Charcoal Pit.
+            </h2>
+            <p className="text-stone-300 text-sm leading-relaxed">
+              Our traditional clay tandoors burn red-hot on tamarind wood and lump charcoal, blistering our naans in 45 seconds and infusing every skewer with unforgettable woodsmoke.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 relative z-10 shrink-0">
+            <Link
+              to="/reservations"
+              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-black text-sm px-8 py-4 rounded-full shadow-xl shadow-amber-500/25 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+            >
+              <Calendar size={16} />
+              <span>Book Table for Tonight</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+
+      {/* ========================================================================= */}
+      {/* 8. LUXURY FOOTER (MATCHING REFERENCE AESTHETIC) */}
+      {/* ========================================================================= */}
+      <footer className="border-t border-stone-800/80 bg-[#050403] text-stone-400 py-16 px-4 sm:px-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 text-sm">
+          
+          {/* Brand & Address */}
+          <div className="space-y-4 md:col-span-2">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-amber-500 flex items-center justify-center text-stone-950 font-black">
+                <UtensilsCrossed size={18} />
+              </div>
+              <span className="font-serif text-xl font-black text-white tracking-wider">
+                MR. BIRYANIWALA
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-stone-400 max-w-md leading-relaxed">
+              Preserving three centuries of royal Nizami dum pukht traditions. Every pot sealed with whole wheat purdah and slow-simmered over live charcoal embers.
+            </p>
+            <div className="text-xs text-stone-500 font-mono space-y-1">
+              <p>📍 124 Nizam Heritage Lane, Culinary Boulevard</p>
+              <p>⏰ Tuesday – Sunday: 12:00 PM – 11:30 PM (Mondays Closed for Spice Sourcing)</p>
+            </div>
+          </div>
+
+          {/* Quick Dining Links */}
+          <div className="space-y-3">
+            <h4 className="font-mono text-xs font-black uppercase tracking-widest text-white">
+              DINING &amp; ORDERS
+            </h4>
+            <ul className="space-y-2 text-xs">
+              <li><a href="#showcase" className="hover:text-amber-400 transition-colors">Featured Dum Showcase</a></li>
+              <li><a href="#menu-table" className="hover:text-amber-400 transition-colors">A La Carte Menu</a></li>
+              <li><Link to="/reservations" className="hover:text-amber-400 transition-colors">Table Reservations</Link></li>
+              <li><Link to="/profile/orders" className="hover:text-amber-400 transition-colors">Live Order Tracking</Link></li>
+            </ul>
+          </div>
+
+          {/* Account & Portals */}
+          <div className="space-y-3">
+            <h4 className="font-mono text-xs font-black uppercase tracking-widest text-white">
+              PORTAL ACCESS
+            </h4>
+            <ul className="space-y-2 text-xs">
+              <li><Link to="/login" className="hover:text-amber-400 transition-colors">Customer Sign In</Link></li>
+              <li><Link to="/register" className="hover:text-amber-400 transition-colors">Create Account</Link></li>
+              <li><a href="http://localhost:5173/login" className="hover:text-amber-400 transition-colors">Staff &amp; POS Dashboard</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto pt-10 mt-10 border-t border-stone-900 flex flex-col sm:flex-row items-center justify-between text-xs text-stone-600 gap-4">
+          <p>© 2026 Mr. Biryaniwala • RestoSys Hospitality. All rights reserved.</p>
+          <p className="font-mono text-[11px] text-stone-500">Crafted with authentic Dum &amp; Charcoal smoke.</p>
+        </div>
+      </footer>
+
+    </div>
+  );
+}

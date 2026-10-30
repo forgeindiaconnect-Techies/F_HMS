@@ -1,0 +1,532 @@
+import { useState, useEffect } from 'react';
+import { Outlet, useLocation, Link, useNavigate } from 'react-router-dom';
+import Sidebar from '../components/Sidebar';
+import Topbar from '../components/Topbar';
+import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-hot-toast';
+
+import VerificationBlockedOverlay from '../components/VerificationBlockedOverlay';
+import SubscriptionFreezeOverlay from '../components/SubscriptionFreezeOverlay';
+import { OwnerWhatsAppNotificationDrawer, OwnerWhatsAppFloatingToast } from '../components/OwnerWhatsAppNotificationDrawer';
+import { Sparkles, ArrowRight, X, CheckCircle, ShieldCheck, Zap, Lock } from 'lucide-react';
+
+// ─── Custom Billing Walkthrough Module Map ────────────────────────────────────
+const ROUTE_BILLING_MODULE_MAP = [
+    { path: '/admin/billing-management', moduleKey: 'posBilling', name: 'POS Billing' },
+    { path: '/admin/menu', moduleKey: 'menuManagement', name: 'Menu Management' },
+    { path: '/admin/categories', moduleKey: 'menuManagement', name: 'Menu Management' },
+    { path: '/admin/tables', moduleKey: 'tableManagement', name: 'Table Management' },
+    { path: '/admin/orders', moduleKey: 'dineInTakeawayOrders', name: 'Dine-In & Takeaway Orders' },
+    { path: '/admin/offers', moduleKey: 'discounts', name: 'Discounts & Promotions' },
+    { path: '/admin/customers', moduleKey: 'customerManagement', name: 'Customer Management' },
+    { path: '/admin/inventory', moduleKey: 'inventoryManagement', name: 'Inventory Management' },
+    { path: '/admin/suppliers', moduleKey: 'inventoryManagement', name: 'Inventory Management' },
+    { path: '/admin/reports', moduleKey: 'salesReports', name: 'Sales Reports' },
+    { path: '/admin/analytics', moduleKey: 'salesReports', name: 'Sales Analytics' },
+    { path: '/admin/expenses', moduleKey: 'salesReports', name: 'Expense Summary' },
+    { path: '/admin/staff', moduleKey: 'staffManagement', name: 'Staff Management' },
+    { path: '/admin/users', moduleKey: 'staffManagement', name: 'User Management' },
+    { path: '/admin/roles', moduleKey: 'staffManagement', name: 'Role Management' },
+];
+
+// ─── Route → Feature Key Mapping ──────────────────────────────────────────────
+// Maps each gated route path to the exact feature key string stored in
+// Plan.features in MongoDB (as set by SuperAdmin in FeatureManagement).
+// fallbackMinPlan is used ONLY while DB plans are still loading.
+const ROUTE_FEATURE_MAP = [
+    // Pro-tier features
+    { path: '/admin/analytics',    featureKey: 'Sales Reports',                 fallbackMinPlan: 'Pro' },
+    { path: '/admin/inventory',    featureKey: 'Stock Levels',                   fallbackMinPlan: 'Pro' },
+    { path: '/admin/suppliers',    featureKey: 'Vendor Management',              fallbackMinPlan: 'Pro' },
+    { path: '/admin/reservations', featureKey: 'Advanced Table Management',      fallbackMinPlan: 'Pro' },
+    { path: '/admin/offers',       featureKey: 'Customer Segmentation',          fallbackMinPlan: 'Pro' },
+    { path: '/admin/delivery',     featureKey: 'Delivery Partner Management',    fallbackMinPlan: 'Pro' },
+
+    // Enterprise-tier features
+    { path: '/admin/franchise',        featureKey: 'Multi-Branch Management',   fallbackMinPlan: 'Enterprise' },
+    { path: '/admin/central-kitchen',  featureKey: 'Stock Transfer',            fallbackMinPlan: 'Enterprise' },
+    { path: '/admin/developer-config', featureKey: 'Advanced AI Insights',      fallbackMinPlan: 'Enterprise' },
+    { path: '/admin/audit-logs',       featureKey: 'Business Health Score',     fallbackMinPlan: 'Enterprise' },
+    { path: '/admin/bi',               featureKey: 'Sales Prediction',          fallbackMinPlan: 'Enterprise' },
+    { path: '/admin/support',          featureKey: 'Live Chat / Priority Support', fallbackMinPlan: 'Enterprise' },
+];
+
+// Fallback static hierarchy used only when DB plans haven't loaded yet
+const PLAN_ORDER_FALLBACK = { Basic: 0, Starter: 0, Pro: 1, Professional: 1, Enterprise: 2 };
+
+const DashboardLayout = () => {
+    const { user, restaurant, api, fetchRestaurant } = useAuth();
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    const [showPlansModal, setShowPlansModal] = useState(false);
+    const [plans, setPlans] = useState([]);
+    const [plansLoading, setPlansLoading] = useState(false);
+    const [billingCycle, setBillingCycle] = useState('monthly');
+
+    // Checkout / QR payment states
+    const [selectedPlanToBuy, setSelectedPlanToBuy] = useState(null);
+    const [paymentStatus, setPaymentStatus] = useState('idle'); // 'idle' | 'scanning' | 'processing' | 'success' | 'failed'
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // ── Dynamic plan feature data loaded from DB ────────────────────────────────
+    // `allPlans` holds the live plan objects (including .features arrays) from MongoDB.
+    // This is the source of truth for feature gating — SuperAdmin changes here
+    // are immediately reflected on next render after this fetch completes.
+    const [allPlans, setAllPlans] = useState([]);
+    const [plansDataLoaded, setPlansDataLoaded] = useState(false);
+
+    // Load plan feature configs from DB once on mount
+    useEffect(() => {
+        api.get('/plans')
+            .then(res => { setAllPlans(res.data || []); setPlansDataLoaded(true); })
+            .catch(() => { setPlansDataLoaded(true); /* use fallback gating */ });
+    }, [api]);
+
+    // ── Dynamic feature gating check ───────────────────────────────────────────
+    // Returns true if the restaurant's current plan grants access to a given feature.
+    //
+    // Priority order:
+    // 1. If DB plan has SaaS feature keys configured (by SuperAdmin) → use them
+    // 2. If DB plan exists but has NO SaaS feature keys (only display text like
+    //    "1 Branch", "Basic POS Billing") → fall back to static plan hierarchy
+    // 3. If plan not found in DB or plans haven't loaded yet → fall back to hierarchy
+    //
+    // This ensures upgrades always unlock content even when SuperAdmin hasn't
+    // explicitly configured plan feature keys in the Feature Management matrix.
+    const SAAS_FEATURE_KEYS = [
+        'Sales Reports', 'Stock Levels', 'Vendor Management', 'Advanced Table Management',
+        'Customer Segmentation', 'Delivery Partner Management', 'Multi-Branch Management',
+        'Stock Transfer', 'Advanced AI Insights', 'Business Health Score', 'Sales Prediction',
+        'Live Chat / Priority Support', 'Profit & Loss', 'Inventory Reports', 'Raw Materials',
+        'Low Stock Alerts', 'Expiry Tracking', 'Purchase Orders', 'Waste Management',
+        'Staff Performance', 'Customer Analytics', 'Order Analytics', 'Tax Reports',
+        'PDF Export', 'Excel Export', 'Advanced Customer Analytics', 'Customer Segmentation',
+        'Upgrade/Downgrade', 'Billing History', 'Payment History', 'Renewal', 'Feature Access',
+        'Advanced AI Insights', 'Sales Prediction', 'Inventory Forecast', 'Demand Forecast',
+        'Menu Recommendations', 'Business Health Score', 'QR Digital Menu', 'Order Management',
+        'Advanced Staff Management', 'Advanced Order Analytics',
+    ];
+    const planHasFeature = (planName, featureKey, fallbackMinPlan) => {
+        if (plansDataLoaded && allPlans.length > 0) {
+            const planObj = allPlans.find(
+                p => p.name && planName && p.name.toLowerCase() === planName.toLowerCase()
+            );
+            if (planObj && Array.isArray(planObj.features) && planObj.features.length > 0) {
+                // Check if this plan has ANY recognised SaaS feature key configured.
+                // If it does, the SuperAdmin has set up feature gating — use it.
+                const hasSaasKeys = planObj.features.some(f => SAAS_FEATURE_KEYS.includes(f));
+                if (hasSaasKeys) {
+                    // SuperAdmin has configured feature keys — use DB-driven check
+                    return planObj.features.includes(featureKey);
+                }
+                // Plan exists but only has display text features ("1 Branch" etc.) —
+                // SuperAdmin hasn't set up feature gating yet. Fall through to hierarchy.
+            }
+        }
+        // Fallback: static plan hierarchy (plan not found, empty, or unconfigured)
+        return (PLAN_ORDER_FALLBACK[planName] ?? 0) >= (PLAN_ORDER_FALLBACK[fallbackMinPlan] ?? 99);
+    };
+
+    const isUnverified = user?.role !== 'SuperAdmin' && (!restaurant || restaurant.approvalStatus !== 'Approved');
+    const isVerificationPage = location.pathname === '/admin/verification';
+
+    const plan = restaurant?.subscription?.plan || 'Basic';
+    // Default to 'Active' so features aren't locked if subscription status isn't set yet
+    const status = restaurant?.subscription?.status || 'Active';
+
+    // 1-Day Trial Expiration / Frozen Check
+    const isTrialExpired = restaurant?.subscription?.trialActive && 
+        restaurant?.subscription?.expiryDate && 
+        (new Date() > new Date(restaurant.subscription.expiryDate));
+        
+    const isFrozen = user?.role !== 'SuperAdmin' && (
+        status === 'Frozen' || 
+        status === 'Expired' || 
+        isTrialExpired
+    );
+
+    // Custom Billing Configuration check
+    const isCustomBilling = restaurant?.billingConfig?.isCustomBillingActive === true;
+    const customModules = restaurant?.billingConfig?.modules || {};
+    const matchedBillingModule = ROUTE_BILLING_MODULE_MAP.find(r => location.pathname.startsWith(r.path));
+    const isCustomModuleBlocked = user?.role !== 'SuperAdmin' && isCustomBilling && matchedBillingModule && customModules[matchedBillingModule.moduleKey] === false;
+
+    // Find the first matching route in our feature map for the current path
+    const routeBlock = ROUTE_FEATURE_MAP.find(r => location.pathname.startsWith(r.path));
+
+    // isPathBlocked is true when:
+    // 1. Subscription is not Active, OR
+    // 2. The restaurant's plan does NOT have the required feature (checked against live DB)
+    const isPathBlocked = user?.role !== 'SuperAdmin' && (routeBlock
+        ? (status !== 'Active' || !planHasFeature(plan, routeBlock.featureKey, routeBlock.fallbackMinPlan))
+        : false);
+
+    // Human-readable display: show the featureKey as the locked feature name
+    const blockedFeature = routeBlock?.featureKey || '';
+    // For display purposes, determine what plan tier unlocks this feature
+    const requiredPlan = (() => {
+        if (!routeBlock) return 'Pro';
+        if (plansDataLoaded && allPlans.length > 0) {
+            // Find the lowest-tier plan that has this feature
+            const sorted = [...allPlans].sort(
+                (a, b) => (a.monthlyPrice || 0) - (b.monthlyPrice || 0)
+            );
+            const lowestUnlockingPlan = sorted.find(
+                p => Array.isArray(p.features) && p.features.includes(routeBlock.featureKey)
+            );
+            return lowestUnlockingPlan?.name || routeBlock.fallbackMinPlan;
+        }
+        return routeBlock.fallbackMinPlan;
+    })();
+
+    const handleOpenPlans = () => {
+        if (plans.length === 0) {
+            setPlansLoading(true);
+            api.get('/plans')
+                .then(res => { setPlans(res.data || []); setPlansLoading(false); })
+                .catch(() => setPlansLoading(false));
+        }
+        setShowPlansModal(true);
+    };
+
+    const handleSelectPlanToUpgrade = (p) => {
+        setSelectedPlanToBuy(p);
+        setPaymentStatus('idle');
+    };
+
+    const handleConfirmPayment = async () => {
+        if (!selectedPlanToBuy) return;
+        setIsSubmitting(true);
+        setPaymentStatus('processing');
+
+        try {
+            await api.post('/restaurants/mine/upgrade', {
+                planName: selectedPlanToBuy.name,
+                billingCycle: billingCycle
+            });
+
+            setPaymentStatus('success');
+            toast.success(`🎉 Subscription Activated! Upgraded to ${selectedPlanToBuy.name} Plan.`);
+
+            try {
+                const [, freshPlans] = await Promise.all([
+                    fetchRestaurant(),
+                    api.get('/plans')
+                ]);
+                if (freshPlans?.data) {
+                    setAllPlans(freshPlans.data);
+                    setPlans(freshPlans.data);
+                }
+            } catch (_) {}
+
+            setTimeout(() => {
+                setShowPlansModal(false);
+                window.location.reload();
+            }, 1000);
+        } catch (error) {
+            console.error("Upgrade payment error", error);
+            setPaymentStatus('failed');
+            toast.error(error.response?.data?.message || "Failed to activate subscription.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="flex h-screen bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden font-sans">
+            <Sidebar />
+            
+            <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
+                <Topbar />
+                
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-2.5 sm:p-4 md:p-6 lg:p-8 relative custom-scrollbar">
+                    {isFrozen ? (
+                        <SubscriptionFreezeOverlay onUnfrozen={() => fetchRestaurant()} />
+                    ) : isUnverified && !isVerificationPage ? (
+                       <VerificationBlockedOverlay />
+                    ) : (
+                       <div className="relative w-full h-full min-h-[60vh]">
+                           {isCustomModuleBlocked && (
+                               <div className="absolute inset-0 z-40 flex items-center justify-center bg-slate-900/10 dark:bg-slate-950/40 backdrop-blur-[5px] rounded-3xl p-6">
+                                   <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-[2.5rem] p-8 shadow-2xl border border-white/50 dark:border-slate-800 max-w-md w-full text-center flex flex-col items-center gap-5 transform animate-in zoom-in-95 duration-300">
+                                       <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-100 dark:border-amber-900/50 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                                           <Lock size={28} />
+                                       </div>
+                                       <div className="space-y-1">
+                                           <h3 className="text-xl font-black text-slate-900 dark:text-slate-100">
+                                               {matchedBillingModule?.name || 'Module'} Deactivated
+                                           </h3>
+                                           <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+                                               This module is not included in your restaurant's custom billing walkthrough setup ({restaurant?.billingConfig?.outletFormat || 'Custom Outlet'}).
+                                           </p>
+                                       </div>
+                                       <div className="px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                                           Contact Super Admin to modify enabled modules
+                                       </div>
+                                       <button
+                                           onClick={() => navigate('/admin')}
+                                           className="w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-sm rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                                       >
+                                           Back to Business Overview
+                                       </button>
+                                   </div>
+                               </div>
+                           )}
+                           {isPathBlocked && !isCustomModuleBlocked && (
+                               <div className="absolute inset-0 z-40 flex items-center justify-center bg-slate-900/10 dark:bg-slate-950/40 backdrop-blur-[5px] rounded-3xl p-6">
+                                   <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-[2.5rem] p-8 shadow-2xl border border-white/50 dark:border-slate-800 max-w-md w-full text-center flex flex-col items-center gap-5 transform animate-in zoom-in-95 duration-300">
+                                       <div className="w-16 h-16 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 animate-pulse">
+                                           <Sparkles size={28} />
+                                       </div>
+                                       <div className="space-y-1">
+                                           <h3 className="text-xl font-black text-slate-900 dark:text-slate-100">Upgrade Plan to Access</h3>
+                                           <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+                                               The module <strong>{blockedFeature}</strong> is gated and requires a premium subscription.
+                                           </p>
+                                       </div>
+                                       <div className="flex flex-wrap gap-2 justify-center py-2">
+                                           <span className="text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                                               Current: {plan}
+                                           </span>
+                                           <span className="text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50">
+                                               Required: {requiredPlan}
+                                           </span>
+                                       </div>
+                                       <button
+                                           onClick={handleOpenPlans}
+                                           className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                                       >
+                                           Upgrade Subscription <ArrowRight size={16} />
+                                       </button>
+                                   </div>
+                               </div>
+                           )}
+                           <div className={(isPathBlocked || isCustomModuleBlocked) ? 'blur-[8px] pointer-events-none select-none transition-all duration-300' : 'transition-all duration-300'}>
+                               <Outlet />
+                           </div>
+                       </div>
+                    )}
+                </main>
+            </div>
+
+            {/* Owner WhatsApp Notification Hub Drawer & Floating Alert Toast */}
+            <OwnerWhatsAppFloatingToast />
+            <OwnerWhatsAppNotificationDrawer />
+
+            {/* Plans Selection Overlay Modal */}
+            {showPlansModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-md p-4 animate-in fade-in">
+                    <div className="bg-white dark:bg-slate-900 w-full max-w-4xl rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95">
+                        {/* Header */}
+                        <div className="p-6 md:p-8 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between shrink-0">
+                            <div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">SUBSCRIPTION PLANS</span>
+                                <h3 className="text-2xl font-black mt-0.5">Upgrade Your Restaurant Plan</h3>
+                                <p className="text-xs text-slate-300 font-medium mt-1">Select a plan tier below to unlock gated enterprise modules and features.</p>
+                            </div>
+                            <button 
+                                onClick={() => setShowPlansModal(false)}
+                                className="p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-colors shrink-0"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Toggle Billing Cycle */}
+                        <div className="flex items-center justify-between px-8 py-4 bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800 shrink-0">
+                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Choose Billing Period:</span>
+                            <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 p-1 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                                <button
+                                    onClick={() => setBillingCycle('monthly')}
+                                    className={`px-4 py-1.5 rounded-xl text-xs font-black transition-all ${
+                                        billingCycle === 'monthly' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                                    }`}
+                                >
+                                    Monthly
+                                </button>
+                                <button
+                                    onClick={() => setBillingCycle('yearly')}
+                                    className={`px-4 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1 ${
+                                        billingCycle === 'yearly' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                                    }`}
+                                >
+                                    Yearly
+                                    <span className="text-[9px] bg-green-500/20 text-green-600 dark:text-green-400 px-1.5 py-0.5 rounded-full font-black">SAVE 15%</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Modal Body: Either Plans Grid OR QR Code Checkout */}
+                        {selectedPlanToBuy ? (
+                            /* Real-time Razorpay Payment Checkout Screen */
+                            <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1 flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in zoom-in-95">
+                                <button 
+                                    onClick={() => setSelectedPlanToBuy(null)} 
+                                    className="text-xs font-bold text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 self-start inline-flex items-center gap-1"
+                                >
+                                    &larr; Back to Plans
+                                </button>
+
+                                <div className="space-y-1">
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-3.5 py-1 rounded-full border border-indigo-100 dark:border-indigo-900/50">
+                                        Official Razorpay API Payment
+                                    </span>
+                                    <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-2">
+                                        {selectedPlanToBuy.name} Plan ({billingCycle})
+                                    </h3>
+                                    <p className="text-sm font-bold text-slate-500 dark:text-slate-400">
+                                        Total Amount Payable: <span className="text-indigo-600 dark:text-indigo-400 font-black text-2xl">₹{((billingCycle === 'yearly' ? (selectedPlanToBuy.yearlyPrice || selectedPlanToBuy.monthlyPrice) : selectedPlanToBuy.monthlyPrice) || 0).toLocaleString('en-IN')}</span>
+                                    </p>
+                                </div>
+
+                                {paymentStatus === 'idle' && (
+                                    <div className="flex flex-col items-center gap-4">
+                                        <div 
+                                            onClick={handleConfirmPayment}
+                                            className="relative w-52 h-52 bg-white p-4 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 flex items-center justify-center cursor-pointer group hover:scale-105 transition-transform"
+                                            title="Click QR Code to Simulate Payment & Activate"
+                                        >
+                                            <img 
+                                                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi%3A%2F%2Fpay%3Fpa%3Dresto%40upi%26pn%3DFoodNest%26am%3D${billingCycle === 'yearly' ? (selectedPlanToBuy.yearlyPrice || selectedPlanToBuy.monthlyPrice) : selectedPlanToBuy.monthlyPrice}%26cu%3DINR&bgcolor=ffffff&color=1e1b4b`}
+                                                alt="Subscription QR Code" 
+                                                className="w-44 h-44 object-contain"
+                                            />
+                                            <div className="absolute inset-0 bg-indigo-600/20 group-hover:opacity-100 opacity-0 transition-opacity rounded-3xl flex items-center justify-center font-black text-indigo-900 text-xs bg-white/90 p-2 text-center">
+                                                Click QR to Simulate Payment →
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2 max-w-sm">
+                                            <div className="flex items-center justify-center gap-1.5 text-slate-400 dark:text-slate-500 text-xs font-semibold">
+                                                <ShieldCheck size={14} className="text-emerald-500" />
+                                                <span>Scan via GPay, PhonePe, Paytm, or click button below</span>
+                                            </div>
+                                            <button 
+                                                onClick={handleConfirmPayment}
+                                                disabled={isSubmitting}
+                                                className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 active:scale-98 text-white font-black text-sm rounded-2xl shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
+                                            >
+                                                Confirm Payment & Upgrade <ArrowRight size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {paymentStatus === 'processing' && (
+                                    <div className="flex flex-col items-center justify-center py-10 space-y-4">
+                                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 border-t-transparent"></div>
+                                        <p className="text-sm font-bold text-slate-700 dark:text-slate-300">Processing subscription payment and updating permissions...</p>
+                                    </div>
+                                )}
+
+                                {paymentStatus === 'success' && (
+                                    <div className="flex flex-col items-center justify-center py-8 space-y-3 animate-in zoom-in-95">
+                                        <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center">
+                                            <CheckCircle size={36} />
+                                        </div>
+                                        <h3 className="text-xl font-black text-slate-900 dark:text-white">Subscription Upgraded!</h3>
+                                        <p className="text-xs font-bold text-slate-500 dark:text-slate-400">Unlocking enterprise modules now...</p>
+                                    </div>
+                                )}
+
+                                {paymentStatus === 'failed' && (
+                                    <div className="flex flex-col items-center justify-center py-8 space-y-4">
+                                        <p className="text-sm font-bold text-red-500">Payment transaction failed. Please try again.</p>
+                                        <button 
+                                            onClick={() => setPaymentStatus('idle')}
+                                            className="px-6 py-2.5 bg-slate-900 text-white font-bold text-xs rounded-xl hover:bg-black"
+                                        >
+                                            Retry Payment
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            /* Plans Grid */
+                            <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1">
+                                {plansLoading ? (
+                                    <div className="flex justify-center py-16">
+                                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        {plans.map((p) => {
+                                            const price = billingCycle === 'yearly' ? (p.yearlyPrice || p.monthlyPrice) : p.monthlyPrice;
+                                            const isCurrent = plan === p.name;
+                                            const isEnterprise = p.name === 'Enterprise';
+
+                                            return (
+                                                <div 
+                                                    key={p._id || p.name} 
+                                                    className={`rounded-3xl border-2 p-6 flex flex-col justify-between relative transition-all ${
+                                                        isCurrent 
+                                                        ? 'border-indigo-600 bg-indigo-50/20 dark:bg-indigo-950/20 shadow-md' 
+                                                        : isEnterprise 
+                                                        ? 'border-indigo-400 dark:border-indigo-800 bg-white dark:bg-slate-900 shadow-sm'
+                                                        : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900'
+                                                    }`}
+                                                >
+                                                    {isEnterprise && (
+                                                        <div className="absolute -top-3 right-6 bg-indigo-600 text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                                                            Recommended
+                                                        </div>
+                                                    )}
+
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <h4 className="font-black text-slate-900 dark:text-slate-100 text-xl">{p.name}</h4>
+                                                            <div className="flex items-baseline gap-1 mt-2">
+                                                                <span className="text-3xl font-black text-slate-900 dark:text-white">₹{(price || 0).toLocaleString('en-IN')}</span>
+                                                                <span className="text-xs text-slate-400 font-extrabold">/{billingCycle === 'yearly' ? 'yr' : 'mo'}</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <ul className="space-y-2.5 pt-4 border-t border-slate-100 dark:border-slate-800">
+                                                            {(p.features || []).map((feat, idx) => (
+                                                                <li key={idx} className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                                                                    <CheckCircle size={14} className="text-emerald-500 shrink-0" />
+                                                                    <span>{feat}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+
+                                                    <button
+                                                        onClick={() => handleSelectPlanToUpgrade(p)}
+                                                        disabled={isCurrent}
+                                                        className={`w-full py-3.5 rounded-2xl font-black text-xs transition-all mt-6 shadow-sm flex items-center justify-center gap-1.5 cursor-pointer ${
+                                                            isCurrent
+                                                            ? 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-default'
+                                                            : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200 dark:shadow-none'
+                                                        }`}
+                                                    >
+                                                        {isCurrent ? 'Current Active Plan' : 'Select & Proceed →'}
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Footer */}
+                        <div className="p-4 bg-slate-50 dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 text-center shrink-0 flex items-center justify-between px-8">
+                            <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">Need custom enterprise features or multi-branch setup?</span>
+                            <Link 
+                                to="/admin/billing" 
+                                onClick={() => setShowPlansModal(false)}
+                                className="text-xs font-black text-indigo-600 dark:text-indigo-400 hover:underline"
+                            >
+                                Go to Full Billing Portal &rarr;
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default DashboardLayout;

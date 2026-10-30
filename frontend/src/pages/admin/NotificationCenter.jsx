@@ -72,7 +72,7 @@ const NotificationCenter = () => {
         },
         {
             _id: 'dummy-3',
-            title: 'Scheduled System Maintenance: RESTOSYS-v3.2',
+            title: 'Scheduled System Maintenance: FOODNEST-v3.2',
             desc: 'System maintenance scheduled tonight from 02:00 AM to 04:00 AM EST. POS offline mode remains functional.',
             type: 'Broadcast',
             read: true,

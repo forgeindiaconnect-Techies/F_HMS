@@ -1,0 +1,377 @@
+import { useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import ProtectedRoute from './components/ProtectedRoute';
+import DashboardLayout from './layouts/DashboardLayout';
+import DashboardHome from './pages/admin/DashboardHome';
+import BranchesManagement from './pages/admin/BranchesManagement';
+import MenuManagement from './pages/admin/MenuManagement';
+import UsersManagement from './pages/admin/UsersManagement';
+import StaffManagement from './pages/admin/StaffManagement';
+import RoleManagement from './pages/admin/RoleManagement';
+import CategoryManagement from './pages/admin/CategoryManagement';
+import InventoryManagement from './pages/admin/InventoryManagement';
+import SupplierManagement from './pages/admin/SupplierManagement';
+import CustomerManagement from './pages/admin/CustomerManagement';
+import ReservationManagement from './pages/admin/ReservationManagement';
+import OrderManagement from './pages/admin/OrderManagement';
+import PaymentManagement from './pages/admin/PaymentManagement';
+import BillingManagement from './pages/admin/BillingManagement';
+import OfferManagement from './pages/admin/OfferManagement';
+import TaxManagement from './pages/admin/TaxManagement';
+import Reports from './pages/admin/Reports';
+import Analytics from './pages/admin/Analytics';
+import NotificationCenter from './pages/admin/NotificationCenter';
+import ActivityLogs from './pages/admin/ActivityLogs';
+import Settings from './pages/admin/Settings';
+import RestaurantSetupWizard from './pages/admin/RestaurantSetupWizard';
+import TipManagement from './pages/admin/TipManagement';
+import SubscriptionPortal from './pages/admin/SubscriptionPortal';
+import RestaurantVerification from './pages/admin/RestaurantVerification';
+import FranchiseManagement from './pages/admin/FranchiseManagement';
+import CentralKitchen from './pages/admin/CentralKitchen';
+import DeveloperConfig from './pages/admin/DeveloperConfig';
+import AuditLogs from './pages/admin/AuditLogs';
+import BusinessIntelligence from './pages/admin/BusinessIntelligence';
+import ExpenseSummaryAdmin from './pages/admin/ExpenseSummaryAdmin';
+import ProfitAndLoss from './pages/admin/ProfitAndLoss';
+import DailyEarnings from './pages/admin/DailyEarnings';
+import VerificationManagement from './pages/superadmin/VerificationManagement';
+import CustomerCareDashboard from './pages/admin/CustomerCareDashboard';
+import CreateTicket from './pages/admin/CreateTicket';
+import TicketList from './pages/admin/TicketList';
+import TicketDetails from './pages/admin/TicketDetails';
+import SupportKnowledgeBase from './pages/admin/SupportKnowledgeBase';
+import SupportAnnouncements from './pages/admin/SupportAnnouncements';
+import WaiterDashboard from './pages/staff/WaiterDashboard';
+import WaiterSettings from './pages/staff/WaiterSettings';
+import ChefDashboard from './pages/staff/ChefDashboard';
+import ChefPrepList from './pages/staff/ChefPrepList';
+import ChefRecipes from './pages/staff/ChefRecipes';
+import ChefInventory from './pages/staff/ChefInventory';
+import ChefKOTManagement from './pages/staff/ChefKOTManagement';
+import StaffMyLeave from './components/staff/StaffMyLeave';
+import StaffMyPayroll from './components/staff/StaffMyPayroll';
+
+import ManagerDashboard from './pages/staff/ManagerDashboard';
+import ManagerOrderMonitoring from './pages/staff/ManagerOrderMonitoring';
+import ManagerStaff from './pages/staff/ManagerStaff';
+import ManagerKitchenStatus from './pages/staff/ManagerKitchenStatus';
+import ManagerInventory from './pages/staff/ManagerInventory';
+import ManagerReservations from './pages/staff/ManagerReservations';
+import ManagerFeedback from './pages/staff/ManagerFeedback';
+import ManagerSales from './pages/staff/ManagerSales';
+import ManagerReports from './pages/staff/ManagerReports';
+import ManagerAnalytics from './pages/staff/ManagerAnalytics';
+import ManagerSettings from './pages/staff/ManagerSettings';
+import ManagerExpenses from './pages/staff/ManagerExpenses';
+import ManagerLayout from './layouts/ManagerLayout';
+import ChefLayout from './layouts/ChefLayout';
+import WaiterLayout from './layouts/WaiterLayout';
+import WaiterActiveOrders from './pages/staff/WaiterActiveOrders';
+import WaiterPendingServes from './pages/staff/WaiterPendingServes';
+import WaiterCompleted from './pages/staff/WaiterCompleted';
+import WaiterPriorityActions from './pages/staff/WaiterPriorityActions';
+import WaiterFloorPlan from './pages/staff/WaiterFloorPlan';
+import WaiterKitchenTracker from './pages/staff/WaiterKitchenTracker';
+import WaiterTasks from './pages/staff/WaiterTasks';
+import WaiterPerformance from './pages/staff/WaiterPerformance';
+import WaiterShiftStatus from './pages/staff/WaiterShiftStatus';
+import CashierLayout from './layouts/CashierLayout';
+import CashierOverview from './pages/staff/CashierOverview';
+import CashierDashboard from './pages/staff/CashierDashboard';
+import CashierHistory from './pages/staff/CashierHistory';
+import Home from './pages/customer/Home';
+import ThreeDemoShowcase from './pages/customer/ThreeDemoShowcase';
+import ChaiTheoryShowcase from './pages/customer/ChaiTheoryShowcase';
+import StaffAuthPage from './pages/StaffAuthPage';
+import SuperAdminLayout from './layouts/SuperAdminLayout';
+import SuperAdminDashboard from './pages/superadmin/SuperAdminDashboard';
+import PlatformRestaurants from './pages/superadmin/PlatformRestaurants';
+import PlanManagement from './pages/superadmin/PlanManagement';
+import SupportTickets from './pages/superadmin/SupportTickets';
+import GlobalReports from './pages/superadmin/GlobalReports';
+import SuperAdminSupportConsole from './pages/superadmin/SuperAdminSupportConsole';
+import CommissionManagement from './pages/superadmin/CommissionManagement';
+import RevenueAnalytics from './pages/superadmin/RevenueAnalytics';
+import UserManagement from './pages/superadmin/UserManagement';
+import FeatureManagement from './pages/superadmin/FeatureManagement';
+import SystemSettings from './pages/superadmin/SystemSettings';
+import NotificationManagement from './pages/superadmin/NotificationManagement';
+import InquiriesManagement from './pages/superadmin/InquiriesManagement';
+import BillingDemoRequestsManagement from './pages/superadmin/BillingDemoRequestsManagement';
+
+import PublicLayout from './layouts/PublicLayout';
+import TablesManagement from './pages/admin/TablesManagement';
+import DeliveryManagement from './pages/admin/DeliveryManagement';
+import DeliveryPartnerLogin from './pages/customer/DeliveryPartnerLogin';
+import DeliveryPartnerDashboard from './pages/customer/DeliveryPartnerDashboard';
+import Contact from './pages/customer/Contact';
+import About from './pages/customer/About';
+import MyTestimonial from './pages/admin/MyTestimonial';
+import TestimonialsManagement from './pages/superadmin/TestimonialsManagement';
+import ManagementFeatures from './pages/ManagementFeatures';
+import ModuleDetails from './pages/ModuleDetails';
+import PosModuleLandingPage from './pages/customer/PosModuleLandingPage';
+import OutletTypeLandingPage from './pages/customer/OutletTypeLandingPage';
+import ThemeToggle from './components/ThemeToggle';
+import FloatingVideoWidget from './components/FloatingVideoWidget';
+
+import { Toaster } from 'react-hot-toast';
+
+// Forwarding handler for customer routes that direct visitors to the Customer Website
+const CustomerRedirect = ({ path }) => {
+  const customerBaseUrl = import.meta.env.VITE_CUSTOMER_URL || 'http://localhost:5174';
+  useEffect(() => {
+    const fullTarget = path 
+      ? `${customerBaseUrl}${path}`
+      : `${customerBaseUrl}${window.location.pathname}${window.location.search}${window.location.hash}`;
+    window.location.href = fullTarget;
+  }, [customerBaseUrl, path]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-700">
+      <div className="text-center p-8 bg-white rounded-2xl shadow-sm border border-slate-100 max-w-sm">
+        <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="font-bold text-slate-900">Redirecting to Customer App...</p>
+        <p className="text-xs text-slate-500 mt-1">Taking you to our customer ordering portal</p>
+      </div>
+    </div>
+  );
+};
+
+function App() {
+
+  return (
+    <>
+      <Toaster position="top-right" />
+      <FloatingVideoWidget />
+
+      <Routes>
+        {/* Public Restaurant Software Landing Page & Showcase */}
+        <Route path="/" element={<PublicLayout />}>
+          <Route index element={<Home />} />
+          <Route path="about" element={<About />} />
+          <Route path="contact" element={<Contact />} />
+          <Route path="features/management" element={<ManagementFeatures />} />
+          <Route path="features/details" element={<ModuleDetails />} />
+          <Route path="pos/:moduleSlug" element={<PosModuleLandingPage />} />
+          <Route path="pos/billing" element={<PosModuleLandingPage module="billing" />} />
+          <Route path="pos/inventory" element={<PosModuleLandingPage module="inventory" />} />
+          <Route path="pos/online-ordering" element={<PosModuleLandingPage module="online-ordering" />} />
+          <Route path="pos/reporting" element={<PosModuleLandingPage module="reporting" />} />
+          <Route path="pos/menu" element={<PosModuleLandingPage module="menu" />} />
+          <Route path="pos/crm" element={<PosModuleLandingPage module="crm" />} />
+          <Route path="pos/purchase-manager" element={<PosModuleLandingPage module="purchase-manager" />} />
+          <Route path="pos/offline-pos" element={<PosModuleLandingPage module="offline-pos" />} />
+
+          {/* Dedicated Restaurant Formats (Outlet Types) Landing Pages */}
+          <Route path="outlet-types/:formatSlug" element={<OutletTypeLandingPage />} />
+          <Route path="outlet-types/fine-dining" element={<OutletTypeLandingPage type="fine-dining" />} />
+          <Route path="outlet-types/quick-service" element={<OutletTypeLandingPage type="quick-service" />} />
+          <Route path="outlet-types/cafes-bakeries" element={<OutletTypeLandingPage type="cafes-bakeries" />} />
+          <Route path="outlet-types/cloud-kitchens" element={<OutletTypeLandingPage type="cloud-kitchens" />} />
+          <Route path="outlet-types/multi-outlet-chains" element={<OutletTypeLandingPage type="multi-outlet-chains" />} />
+        </Route>
+        
+        {/* Unified Auth Portal for Staff, Admins, and Super Admin */}
+        <Route path="/login" element={<StaffAuthPage />} />
+        <Route path="/register" element={<StaffAuthPage />} />
+        <Route path="/staff/login" element={<Navigate to="/login" replace />} />
+        <Route path="/staff/register" element={<Navigate to="/register" replace />} />
+
+        {/* Standalone 3D Interactive Showcase Page */}
+        <Route path="/3d-demo" element={<ThreeDemoShowcase />} />
+        <Route path="/chai-theory" element={<ChaiTheoryShowcase />} />
+
+        {/* Delivery Staff App */}
+        <Route path="/delivery/login" element={<DeliveryPartnerLogin />} />
+        <Route path="/delivery/dashboard" element={<ProtectedRoute allowedRoles={['DeliveryPartner']}><DeliveryPartnerDashboard /></ProtectedRoute>} />
+
+        {/* Customer Route Forwarding to Dedicated Customer Website */}
+        <Route path="/explore" element={<CustomerRedirect path="/explore" />} />
+        <Route path="/menu" element={<CustomerRedirect path="/menu" />} />
+        <Route path="/restaurant/:id" element={<CustomerRedirect />} />
+        <Route path="/checkout" element={<CustomerRedirect path="/checkout" />} />
+        <Route path="/track/:id" element={<CustomerRedirect />} />
+        <Route path="/reservations" element={<CustomerRedirect path="/reservations" />} />
+        <Route path="/profile" element={<CustomerRedirect path="/profile" />} />
+        <Route path="/profile/*" element={<CustomerRedirect />} />
+        <Route path="/customer/login" element={<CustomerRedirect path="/login" />} />
+        <Route path="/customer/register" element={<CustomerRedirect path="/register" />} />
+        <Route path="/customer/menu" element={<CustomerRedirect />} />
+        <Route path="/customer/track/:orderId" element={<CustomerRedirect />} />
+
+        {/* Alias for super admin mistypes */}
+        <Route path="/superadmin" element={<Navigate to="/super-admin" replace />} />
+
+        {/* Super Admin Routes */}
+        <Route path="/super-admin" element={<ProtectedRoute allowedRoles={['SuperAdmin', 'SupportAgent']}><SuperAdminLayout /></ProtectedRoute>}>
+          <Route index element={<SuperAdminDashboard />} />
+          <Route path="inquiries" element={<InquiriesManagement />} />
+          <Route path="billing-demos" element={<BillingDemoRequestsManagement />} />
+          <Route path="restaurants" element={<PlatformRestaurants />} />
+          <Route path="plans" element={<PlanManagement />} />
+          <Route path="commissions" element={<CommissionManagement />} />
+          <Route path="revenue" element={<RevenueAnalytics />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="features" element={<FeatureManagement />} />
+          <Route path="settings" element={<SystemSettings />} />
+          <Route path="reports" element={<GlobalReports />} />
+          <Route path="notifications" element={<NotificationManagement />} />
+          <Route path="verifications" element={<VerificationManagement />} />
+          <Route path="testimonials" element={<TestimonialsManagement />} />
+          <Route path="support" element={<SuperAdminSupportConsole />} />
+          <Route path="support/tickets/:id" element={<TicketDetails />} />
+        </Route>
+
+        {/* Admin Dashboard Routes */}
+        <Route path="/admin" element={<ProtectedRoute allowedRoles={['SuperAdmin', 'RestaurantAdmin', 'Admin']}><DashboardLayout /></ProtectedRoute>}>
+          <Route index element={<DashboardHome />} />
+          <Route path="activity" element={<ActivityLogs />} />
+          <Route path="verification" element={<RestaurantVerification />} />
+          
+          {/* Organization */}
+          <Route path="branches" element={<BranchesManagement />} />
+          <Route path="tables" element={<TablesManagement />} />
+          
+          {/* People */}
+          <Route path="customers" element={<CustomerManagement />} />
+          <Route path="staff" element={<StaffManagement />} />
+          <Route path="users" element={<UsersManagement />} />
+          <Route path="roles" element={<RoleManagement />} />
+          
+          {/* Operations */}
+          <Route path="reservations" element={<ReservationManagement />} />
+          <Route path="orders" element={<OrderManagement />} />
+          <Route path="delivery" element={<DeliveryManagement />} />
+          
+          {/* Kitchen & Catalog */}
+          <Route path="menu" element={<MenuManagement />} />
+          <Route path="categories" element={<CategoryManagement />} />
+          <Route path="inventory" element={<InventoryManagement />} />
+          <Route path="suppliers" element={<SupplierManagement />} />
+          
+          {/* Finance & Marketing */}
+          <Route path="billing-management" element={<BillingManagement />} />
+          <Route path="payments" element={<BillingManagement />} />
+          <Route path="offers" element={<OfferManagement />} />
+          <Route path="taxes" element={<TaxManagement />} />
+          
+          {/* Insights & Financial Management */}
+          <Route path="daily-earnings" element={<DailyEarnings />} />
+          <Route path="profit-loss" element={<ProfitAndLoss />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="analytics" element={<Analytics />} />
+          <Route path="expenses" element={<ExpenseSummaryAdmin />} />
+          <Route path="bills" element={<Navigate to="/admin/expenses?tab=bills" replace />} />
+          <Route path="attendance" element={<Navigate to="/admin/staff?tab=attendance" replace />} />
+          <Route path="payroll" element={<Navigate to="/admin/staff?tab=payroll" replace />} />
+          <Route path="leaves" element={<Navigate to="/admin/staff?tab=leaves" replace />} />
+          <Route path="payroll-reports" element={<Navigate to="/admin/staff?tab=reports" replace />} />
+          
+          {/* System & Configuration */}
+          <Route path="settings" element={<Settings />} />
+          <Route path="my-testimonial" element={<MyTestimonial />} />
+          <Route path="setup-wizard" element={<RestaurantSetupWizard />} />
+          <Route path="tips" element={<TipManagement />} />
+          <Route path="billing" element={<SubscriptionPortal />} />
+          <Route path="notifications" element={<NotificationCenter />} />
+
+          {/* Enterprise Modules */}
+          <Route path="franchise" element={<FranchiseManagement />} />
+          <Route path="central-kitchen" element={<CentralKitchen />} />
+          <Route path="developer-config" element={<DeveloperConfig />} />
+          <Route path="audit-logs" element={<AuditLogs />} />
+          <Route path="bi" element={<BusinessIntelligence />} />
+
+          {/* Customer Care */}
+          <Route path="support" element={<CustomerCareDashboard />} />
+          <Route path="support/tickets" element={<TicketList />} />
+          <Route path="support/tickets/create" element={<CreateTicket />} />
+          <Route path="support/tickets/:id" element={<TicketDetails />} />
+          <Route path="support/knowledge-base" element={<SupportKnowledgeBase />} />
+          <Route path="support/announcements" element={<SupportAnnouncements />} />
+        </Route>
+        
+        <Route path="/manager" element={<ProtectedRoute allowedRoles={['SuperAdmin', 'BranchManager', 'RestaurantAdmin']}><ManagerLayout /></ProtectedRoute>}>
+          <Route index element={<ManagerDashboard />} />
+          <Route path="orders" element={<ManagerOrderMonitoring />} />
+          <Route path="staff" element={<ManagerStaff />} />
+          <Route path="leaves" element={<Navigate to="/manager/staff?tab=leaves" replace />} />
+          <Route path="payroll" element={<Navigate to="/manager/staff?tab=payroll" replace />} />
+          <Route path="kitchen" element={<ManagerKitchenStatus />} />
+          <Route path="inventory" element={<ManagerInventory />} />
+          <Route path="tables" element={<TablesManagement />} />
+          <Route path="reservations" element={<ManagerReservations />} />
+          <Route path="feedback" element={<ManagerFeedback />} />
+          <Route path="expenses" element={<ManagerExpenses />} />
+          <Route path="sales" element={<ManagerSales />} />
+          <Route path="reports" element={<ManagerReports />} />
+          <Route path="analytics" element={<ManagerAnalytics />} />
+          <Route path="settings" element={<ManagerSettings />} />
+          <Route path="notifications" element={<NotificationCenter />} />
+          <Route path="delivery" element={<DeliveryManagement />} />
+          <Route path="billing-management" element={<BillingManagement />} />
+        </Route>
+        
+        {/* Staff Dashboards */}
+        <Route path="/waiter" element={<ProtectedRoute allowedRoles={['SuperAdmin', 'Waiter', 'RestaurantAdmin', 'BranchManager']}><WaiterLayout /></ProtectedRoute>}>
+          <Route index element={<WaiterDashboard />} />
+          <Route path="priority-actions" element={<WaiterPriorityActions />} />
+          <Route path="floor-plan" element={<WaiterFloorPlan />} />
+          <Route path="orders" element={<WaiterActiveOrders />} />
+          <Route path="kitchen-tracker" element={<WaiterKitchenTracker />} />
+          <Route path="pending" element={<WaiterPendingServes />} />
+          <Route path="completed" element={<WaiterCompleted />} />
+          <Route path="tasks" element={<WaiterTasks />} />
+          <Route path="performance" element={<WaiterPerformance />} />
+          <Route path="shift-status" element={<WaiterShiftStatus />} />
+          <Route path="leave" element={<StaffMyLeave />} />
+          <Route path="payroll" element={<StaffMyPayroll />} />
+          <Route path="settings" element={<WaiterSettings />} />
+        </Route>
+        
+        <Route path="/chef" element={<ProtectedRoute allowedRoles={['SuperAdmin', 'Chef', 'RestaurantAdmin', 'BranchManager']}><ChefLayout /></ProtectedRoute>}>
+          <Route index element={<ChefDashboard />} />
+          <Route path="kot" element={<ChefKOTManagement />} />
+          <Route path="prep" element={<ChefPrepList />} />
+          <Route path="recipes" element={<ChefRecipes />} />
+          <Route path="inventory" element={<ChefInventory />} />
+          <Route path="leave" element={<StaffMyLeave />} />
+          <Route path="payroll" element={<StaffMyPayroll />} />
+        </Route>
+        
+        <Route path="/cashier" element={<ProtectedRoute allowedRoles={['SuperAdmin', 'Cashier', 'RestaurantAdmin', 'BranchManager']}><CashierLayout /></ProtectedRoute>}>
+          <Route index element={<Navigate to="/cashier/billing" replace />} />
+          <Route path="billing" element={<CashierDashboard />} />
+          <Route path="invoices" element={<CashierDashboard />} />
+          <Route path="split" element={<CashierDashboard />} />
+          <Route path="merge" element={<CashierDashboard />} />
+          <Route path="discounts" element={<CashierDashboard />} />
+          <Route path="collection" element={<CashierDashboard />} />
+          <Route path="refunds" element={<CashierDashboard />} />
+          <Route path="summary" element={<CashierDashboard />} />
+          <Route path="history" element={<CashierDashboard />} />
+          <Route path="leave" element={<StaffMyLeave />} />
+          <Route path="payroll" element={<StaffMyPayroll />} />
+          <Route path="settings" element={<CashierDashboard />} />
+        </Route>
+
+        {/* Delivery Staff App */}
+        <Route path="/delivery/login" element={<DeliveryPartnerLogin />} />
+        <Route path="/delivery/dashboard" element={<ProtectedRoute allowedRoles={['DeliveryPartner']}><DeliveryPartnerDashboard /></ProtectedRoute>} />
+
+        {/* 404 Fallback */}
+        <Route path="*" element={
+          <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+            <h1 className="text-6xl font-black text-gray-900 mb-4">404</h1>
+            <p className="text-xl font-medium text-gray-500 mb-8">Page not found</p>
+            <a href="/" className="px-6 py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-colors">Go Home</a>
+          </div>
+        } />
+      </Routes>
+    </>
+  );
+}
+
+export default App;

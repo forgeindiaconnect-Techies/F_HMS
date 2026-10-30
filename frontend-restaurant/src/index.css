@@ -1,0 +1,487 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --color-primary: #16A34A;
+  --color-primary-dark: #15803D;
+  --color-secondary: #F97316;
+  --color-background: #F3F4F6;
+  --color-surface: #FFFFFF;
+  --color-text: #1F2937;
+  --color-text-muted: #6B7280;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background-color: #ffffff;
+  color: #0f172a;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+html.dark {
+  background-color: #0b0f19 !important;
+  color: #f8fafc !important;
+}
+
+body {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background-color: inherit;
+  color: inherit;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6, button, input, select, textarea, table, th, td {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #E5E7EB;
+  border-radius: 10px;
+}
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background-color: #D1D5DB;
+}
+
+/* Globally optimize modal cards and forms for responsiveness and internal scrolling on mobile */
+.fixed.inset-0.z-50 {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.fixed.inset-0.z-50.flex {
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 100vh !important;
+}
+
+.fixed.inset-0.z-50.flex > div:not(.absolute) {
+  margin-top: auto !important;
+  margin-bottom: auto !important;
+  max-height: calc(100vh - 2rem) !important;
+  overflow-y: auto !important;
+}
+
+/* Ensure native scrollbar works cleanly in long dashboard tables */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Ensure glassmorphism cards do not obscure input fields on small screens */
+@media (max-height: 700px) {
+  .fixed.inset-0.z-50.flex > div:not(.absolute) {
+    max-height: calc(100vh - 1rem) !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+}
+
+/* Standardized responsive layout container for admin pages */
+.admin-page-container {
+  width: 100%;
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1.5rem;
+}
+
+/* Form input standardization across admin modules */
+.admin-input {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background-color: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #111827;
+  transition: all 0.15s ease-in-out;
+}
+
+.admin-input:focus {
+  outline: none;
+  background-color: #FFFFFF;
+  border-color: #16A34A;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+}
+
+.dark .admin-input {
+  background-color: #0f172a;
+  border-color: #1e293b;
+  color: #f8fafc;
+}
+
+.dark .admin-input:focus {
+  background-color: #020617;
+  border-color: #16A34A;
+}
+
+/* Status Badges */
+.badge-active {
+  background-color: #DCFCE7;
+  color: #15803D;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-inactive {
+  background-color: #FEE2E2;
+  color: #B91C1C;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-pending {
+  background-color: #FEF3C7;
+  color: #B45309;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Clean up card transitions */
+.dashboard-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.dark .dashboard-card {
+  background-color: #0f172a;
+  border-color: #1e293b;
+  color: #f8fafc;
+}
+
+/* Animation utilities for smooth state transitions */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom Scrollbar for Dark Mode */
+html.dark ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+html.dark ::-webkit-scrollbar-track {
+  background: #0f172a !important;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: #1e293b !important;
+  border-radius: 9999px;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155 !important;
+}
+
+/* Remove top and bottom separator lines from all sidebars */
+aside > div:first-child,
+aside > header,
+aside > div:last-child {
+  border-bottom-width: 0px !important;
+  border-top-width: 0px !important;
+}
+
+/* About Section Landing Page Styling */
+#about {
+  background: linear-gradient(to bottom right, #fef2f2, rgba(255, 247, 237, 0.2));
+  border-color: rgba(254, 226, 226, 0.5);
+}
+
+html.dark #about {
+  background: linear-gradient(to bottom right, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.3)) !important;
+  border-color: #1e293b !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   COMPREHENSIVE DARK MODE GLOBAL OVERRIDES
+   Applies to all dashboard pages, sections, tables, modals, cards
+   and form elements automatically when html.dark is active.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Page header text ─────────────────────────────────────────────── */
+html.dark .text-gray-900 {
+  color: #f1f5f9 !important;
+}
+
+html.dark .text-gray-800 {
+  color: #e2e8f0 !important;
+}
+
+html.dark .text-gray-700 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-gray-600 {
+  color: #94a3b8 !important;
+}
+
+html.dark .text-gray-500 {
+  color: #64748b !important;
+}
+
+/* ── Global Dark Mode System Palette (#050816, #0A0F1F, #0E152B) ── */
+html.dark, html.dark body, html.dark #root {
+  background-color: #050816 !important;
+  color: #f8fafc !important;
+}
+
+html.dark main {
+  background-color: #050816 !important;
+}
+
+/* Text Colors */
+html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6,
+html.dark .text-gray-900, html.dark .text-slate-800, html.dark .text-gray-800 {
+  color: #ffffff !important;
+}
+
+html.dark .text-gray-700, html.dark .text-slate-700, html.dark .text-gray-600 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-gray-500, html.dark .text-slate-500, html.dark .text-gray-400 {
+  color: #94a3b8 !important;
+}
+
+
+
+
+/* Borders */
+html.dark .border-gray-100,
+html.dark .border-gray-200,
+html.dark .border-gray-300,
+html.dark .border-slate-800,
+html.dark .border-slate-700 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Tables */
+html.dark thead, html.dark th {
+  background-color: #050816 !important;
+  color: #94a3b8 !important;
+}
+
+html.dark td {
+  color: #e2e8f0 !important;
+}
+
+html.dark tbody tr:hover {
+  background-color: #0E152B !important;
+}
+
+html.dark .divide-y > * + *,
+html.dark .divide-gray-100 > * + * {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Form inputs, textareas, selects */
+html.dark input[type="text"]:not(.auth-input),
+html.dark input[type="email"]:not(.auth-input),
+html.dark input[type="password"]:not(.auth-input),
+html.dark input[type="number"]:not(.auth-input),
+html.dark input[type="url"]:not(.auth-input),
+html.dark input[type="tel"]:not(.auth-input),
+html.dark input[type="date"]:not(.auth-input),
+html.dark input[type="time"]:not(.auth-input),
+html.dark input[type="search"]:not(.auth-input),
+html.dark textarea:not(.auth-input),
+html.dark select:not(.auth-input) {
+  background-color: #0A0F1F !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHT THEME AUTH FORMS (STRICTLY LIGHT THEME FOR ALL LOGIN & REGISTER PAGES)
+   ═══════════════════════════════════════════════════════════════════ */
+/* Text & Headings inside Auth Card */
+html.dark .auth-page h1,
+html.dark .auth-page h2,
+html.dark .auth-page h3,
+html.dark .auth-page h4,
+html.dark .auth-page h5,
+html.dark .auth-page h6,
+html.dark .auth-page .text-gray-900,
+html.dark .auth-page .text-gray-800,
+html.dark .auth-page .text-gray-700,
+html.dark .auth-form-container h1,
+html.dark .auth-form-container h2,
+html.dark .auth-form-container h3,
+html.dark .auth-form-container h4,
+html.dark .auth-form-container h5,
+html.dark .auth-form-container h6,
+html.dark .auth-form-container .text-gray-900,
+html.dark .auth-form-container .text-gray-800,
+html.dark .auth-form-container .text-gray-700 {
+  color: #0f172a !important;
+}
+
+html.dark .auth-page .text-gray-600,
+html.dark .auth-page .text-gray-500,
+html.dark .auth-form-container .text-gray-600,
+html.dark .auth-form-container .text-gray-500 {
+  color: #64748b !important;
+}
+
+/* Inputs, Textareas, Selects inside Auth Card */
+.auth-page input,
+.auth-page select,
+.auth-page textarea,
+.auth-form-container input,
+.auth-form-container select,
+.auth-form-container textarea,
+.auth-input,
+html.dark .auth-page input,
+html.dark .auth-page select,
+html.dark .auth-page textarea,
+html.dark .auth-form-container input,
+html.dark .auth-form-container select,
+html.dark .auth-form-container textarea,
+html.dark .auth-input {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+.auth-page input::placeholder,
+.auth-form-container input::placeholder,
+.auth-input::placeholder,
+html.dark .auth-page input::placeholder,
+html.dark .auth-form-container input::placeholder,
+html.dark .auth-input::placeholder {
+  color: #94a3b8 !important;
+  -webkit-text-fill-color: #94a3b8 !important;
+}
+
+.auth-page input:focus,
+.auth-form-container input:focus,
+.auth-input:focus,
+html.dark .auth-page input:focus,
+html.dark .auth-form-container input:focus,
+html.dark .auth-input:focus {
+  background-color: #ffffff !important;
+  border-color: #16a34a !important;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+html.dark input:focus,
+html.dark textarea:focus,
+html.dark select:focus {
+  background-color: #0E152B !important;
+  border-color: #ff3b3b !important;
+}
+
+html.dark select option {
+  background-color: #0A0F1F !important;
+  color: #ffffff !important;
+}
+
+/* Labels */
+html.dark label {
+  color: #cbd5e1 !important;
+}
+
+/* Modal container backgrounds */
+html.dark .bg-white.rounded-2xl,
+html.dark .bg-white.rounded-3xl,
+html.dark .bg-white.rounded-xl,
+html.dark .bg-white.rounded-lg,
+html.dark [role="dialog"],
+html.dark [role="menu"] {
+  background-color: #0A0F1F !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Buttons */
+html.dark button.border.border-gray-200,
+html.dark button.border.border-gray-300 {
+  background-color: #0E152B !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+
+html.dark button.border.border-gray-200:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Hover utility overrides */
+html.dark .hover\:bg-gray-50\/50:hover,
+html.dark .hover\:bg-gray-50:hover,
+html.dark .hover\:bg-gray-100:hover {
+  background-color: #0E152B !important;
+}
+
+/* ========================================================
+   GLOBAL MOBILE DASHBOARD EDGE ALIGNMENT & PADDING FIX
+   Removes excessive horizontal gap/gutters on phone screens
+   ======================================================== */
+@media (max-width: 768px) {
+  /* Eliminate heavy padding from layout mains */
+  main.overflow-y-auto,
+  main {
+    padding-left: 0.625rem !important;
+    padding-right: 0.625rem !important;
+    padding-top: 0.75rem !important;
+  }
+
+  /* Reset inner page wrappers that have extra p-8/p-6 gutters */
+  main > div,
+  main.overflow-y-auto > div,
+  main.overflow-y-auto > div > div:first-child:not(.fixed):not(.absolute) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Standardized responsive layout container */
+  .admin-page-container {
+    padding-left: 0.25rem !important;
+    padding-right: 0.25rem !important;
+  }
+}
+

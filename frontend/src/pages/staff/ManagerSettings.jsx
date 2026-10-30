@@ -58,7 +58,7 @@ const ManagerSettings = () => {
                                     
                                     <div className="space-y-1.5">
                                         <label className="text-sm font-bold text-gray-700">Email Address</label>
-                                        <input type="email" defaultValue="sarah.j@restosys.com" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 focus:bg-white transition-colors" />
+                                        <input type="email" defaultValue="sarah.j@foodnest.com" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 focus:bg-white transition-colors" />
                                     </div>
                                     
                                     <div className="space-y-1.5">

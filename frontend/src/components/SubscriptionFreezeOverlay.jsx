@@ -254,7 +254,7 @@ const SubscriptionFreezeOverlay = ({ onUnfrozen }) => {
                                 >
                                     <div className="w-44 h-44 bg-white p-2 rounded-xl shadow-md border border-slate-200 flex items-center justify-center relative">
                                         <img 
-                                            src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=RestaurantHubSubscriptionPayment" 
+                                            src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=FoodNestSubscriptionPayment" 
                                             alt="Payment QR" 
                                             className="w-full h-full object-contain"
                                         />

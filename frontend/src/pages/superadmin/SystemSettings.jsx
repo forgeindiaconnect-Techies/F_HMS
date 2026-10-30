@@ -6,8 +6,8 @@ import { ThemeSettingCard } from '../../components/ThemeToggle';
 const SystemSettings = () => {
     const [saving, setSaving] = useState(false);
     const [settings, setSettings] = useState({
-        platformName: 'RestaurantHub SaaS',
-        contactEmail: 'support@restauranthub.com',
+        platformName: 'FoodNest SaaS',
+        contactEmail: 'support@foodnest.com',
         defaultCommissionRate: 5,
         defaultTaxRate: 18,
         maintenanceMode: false,
@@ -17,7 +17,7 @@ const SystemSettings = () => {
         maxBranchesBasic: 1,
         maxBranchesPro: 3,
         maxBranchesEnterprise: 10,
-        supportEmail: 'support@restauranthub.com',
+        supportEmail: 'support@foodnest.com',
         billingCurrency: 'INR',
         sessionTimeout: 60,
         maxLoginAttempts: 5,

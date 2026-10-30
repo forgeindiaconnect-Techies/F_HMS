@@ -521,7 +521,7 @@ const Interactive3DRestaurantExperience = ({ height = "h-[85vh]", isStandalone =
         buildingGroup.add(doorRight);
         threeRef.current.doorsRight = doorRight;
 
-        // Glowing 3D Signboard ("RESTAURANTHUB GOURMET")
+        // Glowing 3D Signboard ("FOODNEST GOURMET")
         const signBoardGeo = new THREE.BoxGeometry(8, 1.4, 0.4);
         const signBoardMesh = new THREE.Mesh(signBoardGeo, wallMat);
         signBoardMesh.position.set(0, 7.5, 2.4);

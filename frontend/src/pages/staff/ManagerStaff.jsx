@@ -516,7 +516,7 @@ const ManagerStaff = () => {
             doc.setFont('Helvetica', 'bold');
             doc.setFontSize(22);
             doc.setTextColor(22, 163, 74);
-            doc.text('RestoSys - Weekly Staff Schedule', 20, 20);
+            doc.text('FoodNest - Weekly Staff Schedule', 20, 20);
             doc.setFont('Helvetica', 'normal');
             doc.setFontSize(12);
             doc.setTextColor(100, 100, 100);

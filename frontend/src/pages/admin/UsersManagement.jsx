@@ -236,7 +236,7 @@ const UsersManagement = () => {
                                     value={formData.email}
                                     onChange={(e) => setFormData({...formData, email: e.target.value})}
                                     className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
-                                    placeholder="john@restosys.com"
+                                    placeholder="john@foodnest.com"
                                 />
                             </div>
                             

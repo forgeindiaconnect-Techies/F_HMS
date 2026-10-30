@@ -182,7 +182,7 @@ const CashierHistory = () => {
                         <div className="p-6 bg-gray-50">
                             <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
                                 <div className="text-center pb-4 border-b border-gray-100 uppercase tracking-widest text-xs font-bold text-gray-500">
-                                    <p className="text-gray-900 font-sans text-xl tracking-normal mb-1">RestoSys</p>
+                                    <p className="text-gray-900 font-sans text-xl tracking-normal mb-1">FoodNest</p>
                                     Bill #{activeReceipt._id.substring(activeReceipt._id.length - 6).toUpperCase()}<br/>
                                     {activeReceipt.orderType === 'Dine In' ? `Table ${activeReceipt.tableNumber || 'Any'}` : activeReceipt.orderType}
                                 </div>

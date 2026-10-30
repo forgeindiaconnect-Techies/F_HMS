@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { 
     Receipt, Package, ShoppingCart, BarChart3, BookOpen, Users, Truck, Monitor,
-    CheckCircle2, ArrowRight, Star, ChevronDown, ChevronRight, ShieldCheck, 
+    CheckCircle2, ArrowRight, ArrowLeft, Star, ChevronDown, ChevronRight, ShieldCheck, 
     Clock, Sparkles, Printer, Smartphone, Laptop, Zap, Check, HelpCircle, 
     DollarSign, Flame, Utensils, Boxes, LineChart, Building2, Store, CreditCard,
     QrCode, FileText, Split, AlertCircle, TrendingUp, Calendar, Phone, ArrowUpRight,
@@ -20,7 +20,7 @@ const POS_MODULE_CONFIGS = {
         headline: 'Smart Billing. Faster Checkout.',
         tagline: 'Lightning-fast POS billing, itemized split bills, automated GST tax invoices, and multi-tender digital payments.',
         badge: 'Core POS Module',
-        accentColor: '#FF2D55',
+        accentColor: '#FF5A1F',
         icon: Receipt,
         sandboxLabel: 'Explore Live Billing Terminal ↓',
         previewImage: 'https://images.unsplash.com/photo-1556742049-0a67c5574f73?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80',
@@ -94,9 +94,9 @@ const POS_MODULE_CONFIGS = {
             { title: '1-Click CSV & Tally Export', desc: 'Accountants love the instant tax reports, invoice logs, and refund ledgers.' }
         ],
         faqs: [
-            { q: 'Can I print bills on standard thermal printers?', a: 'Yes! RestoSys supports all standard 2-inch and 3-inch USB, Bluetooth, Ethernet, and Wi-Fi thermal printers including Epson, TVS, Rugtek, and Citizen.' },
+            { q: 'Can I print bills on standard thermal printers?', a: 'Yes! FoodNest supports all standard 2-inch and 3-inch USB, Bluetooth, Ethernet, and Wi-Fi thermal printers including Epson, TVS, Rugtek, and Citizen.' },
             { q: 'Does it calculate GST automatically?', a: 'Yes. It automatically calculates 2.5% CGST and 2.5% SGST (or 5% composite tax) on all food and beverages with your restaurant GSTIN clearly printed.' },
-            { q: 'Can multiple cashiers use the billing terminal simultaneously?', a: 'Yes. RestoSys supports multi-cashier shift management with individual login pins and separate cash register drawer reconciliations.' },
+            { q: 'Can multiple cashiers use the billing terminal simultaneously?', a: 'Yes. FoodNest supports multi-cashier shift management with individual login pins and separate cash register drawer reconciliations.' },
             { q: 'What happens if a customer wants to split payment between Cash and UPI?', a: 'Our split payment mode allows any order to be split across multiple payment tenders with individual verification receipts.' }
         ]
     },
@@ -135,7 +135,7 @@ const POS_MODULE_CONFIGS = {
         features: [
             {
                 title: 'Recipe-Level Ingredient Auto-Depletion',
-                description: 'Every time a dish is ordered and billed, RestoSys automatically deducts the exact recipe ingredients—such as 200g chicken, 50ml cream, and 30g butter—from your live stock ledger.',
+                description: 'Every time a dish is ordered and billed, FoodNest automatically deducts the exact recipe ingredients—such as 200g chicken, 50ml cream, and 30g butter—from your live stock ledger.',
                 points: ['Sub-recipe and batch production support', 'Accurate cost per plate analytics', 'Eliminates manual daily ingredient logbooks'],
                 icon: Boxes,
                 bgColor: 'bg-orange-50/60',
@@ -182,8 +182,8 @@ const POS_MODULE_CONFIGS = {
         ],
         faqs: [
             { q: 'How does automatic recipe deduction work?', a: 'You input the master recipe once (e.g., 1 Margherita Pizza = 180g Dough + 90g Mozzarella + 40g Sauce). When the order is completed, those quantities deduct automatically.' },
-            { q: 'Can I track raw materials across multiple branches?', a: 'Yes! RestoSys manages central warehouse inventory and lets you track multi-branch store indents, dispatches, and inter-branch transfers.' },
-            { q: 'Does it support unit conversions (e.g., purchasing in 50Kg bags, using in grams)?', a: 'Yes. RestoSys has built-in unit conversion matrices so you purchase in bulk bags, crates, or liters and consume in grams or milliliters.' }
+            { q: 'Can I track raw materials across multiple branches?', a: 'Yes! FoodNest manages central warehouse inventory and lets you track multi-branch store indents, dispatches, and inter-branch transfers.' },
+            { q: 'Does it support unit conversions (e.g., purchasing in 50Kg bags, using in grams)?', a: 'Yes. FoodNest has built-in unit conversion matrices so you purchase in bulk bags, crates, or liters and consume in grams or milliliters.' }
         ]
     },
 
@@ -245,7 +245,7 @@ const POS_MODULE_CONFIGS = {
             },
             {
                 title: '100% Own Customer Data & Re-marketing',
-                description: 'Unlike food delivery apps that mask phone numbers, RestoSys gives you full ownership of your customer names, mobile numbers, and ordering history for direct marketing.',
+                description: 'Unlike food delivery apps that mask phone numbers, FoodNest gives you full ownership of your customer names, mobile numbers, and ordering history for direct marketing.',
                 points: ['Direct WhatsApp marketing integration', 'Custom promo codes and flash discount campaigns', 'Repeat customer loyalty cashback rewards'],
                 icon: Users,
                 bgColor: 'bg-rose-50/60',
@@ -267,7 +267,7 @@ const POS_MODULE_CONFIGS = {
             { title: 'Full Delivery Fleet Control', desc: 'Assign your own delivery boys or connect with Dunzo/Shadowfax fleets.' }
         ],
         faqs: [
-            { q: 'Do customers need to download a mobile app to order?', a: 'No! RestoSys Online Ordering works as a high-speed progressive web app directly in any phone browser. Customers order in seconds.' },
+            { q: 'Do customers need to download a mobile app to order?', a: 'No! FoodNest Online Ordering works as a high-speed progressive web app directly in any phone browser. Customers order in seconds.' },
             { q: 'How does payment settlement work?', a: 'Payments via UPI, Credit/Debit cards, or NetBanking go directly into your verified bank account with zero middleman deductions.' },
             { q: 'Can I offer coupons and discount codes?', a: 'Yes. You can configure flat discounts, percentage off, minimum order rules, and first-time customer coupon codes.' }
         ]
@@ -331,7 +331,7 @@ const POS_MODULE_CONFIGS = {
             },
             {
                 title: 'Automated Nightly Executive Email & WhatsApp',
-                description: 'Never chase managers for closing numbers. RestoSys automatically sends a clean, encrypted executive summary to the owner’s WhatsApp and email at closing time.',
+                description: 'Never chase managers for closing numbers. FoodNest automatically sends a clean, encrypted executive summary to the owner’s WhatsApp and email at closing time.',
                 points: ['Nightly automated closing statement', 'Total revenue, gross profit, and refunds list', 'Multi-outlet consolidated owner view'],
                 icon: Phone,
                 bgColor: 'bg-amber-50/60',
@@ -354,7 +354,7 @@ const POS_MODULE_CONFIGS = {
         ],
         faqs: [
             { q: 'Can I export reports to Excel or Tally?', a: 'Yes! All sales, inventory, tax, and billing reports can be exported to Excel, CSV, or PDF with one click.' },
-            { q: 'Can I view reports from my phone when I am travelling?', a: 'Absolutely. RestoSys reporting works on any mobile browser or tablet so owners have real-time visibility from anywhere in the world.' },
+            { q: 'Can I view reports from my phone when I am travelling?', a: 'Absolutely. FoodNest reporting works on any mobile browser or tablet so owners have real-time visibility from anywhere in the world.' },
             { q: 'Are cancelled orders and discounts tracked?', a: 'Yes. Every discount, voided bill, and cancelled KOT is logged with the responsible staff member ID and reason.' }
         ]
     },
@@ -440,7 +440,7 @@ const POS_MODULE_CONFIGS = {
         ],
         faqs: [
             { q: 'How quickly do menu updates show up on customer phones?', a: 'Instantly! As soon as you click Save in the admin menu editor, all digital QR menus and online ordering links update in real-time.' },
-            { q: 'Can I set different menu prices for different branches?', a: 'Yes. RestoSys allows central multi-branch menu management with location-specific price overrides and tax adjustments.' },
+            { q: 'Can I set different menu prices for different branches?', a: 'Yes. FoodNest allows central multi-branch menu management with location-specific price overrides and tax adjustments.' },
             { q: 'Can I upload photos for each dish?', a: 'Yes! You can upload high-resolution photos for each item to make your digital menu visually irresistible.' }
         ]
     },
@@ -526,7 +526,7 @@ const POS_MODULE_CONFIGS = {
         ],
         faqs: [
             { q: 'How does the loyalty program work for diners?', a: 'Customers earn points automatically whenever their phone number is entered on a bill. They can redeem points on future visits directly at checkout.' },
-            { q: 'Can I send promotional messages via WhatsApp?', a: 'Yes! RestoSys integrates with verified WhatsApp Business APIs to send personalized messages with high open rates.' },
+            { q: 'Can I send promotional messages via WhatsApp?', a: 'Yes! FoodNest integrates with verified WhatsApp Business APIs to send personalized messages with high open rates.' },
             { q: 'Is customer data kept private and secure?', a: 'Yes. Your customer data belongs 100% to your restaurant brand and is encrypted with strict security controls.' }
         ]
     },
@@ -565,7 +565,7 @@ const POS_MODULE_CONFIGS = {
         features: [
             {
                 title: '1-Click Automated Purchase Orders',
-                description: 'Never write purchase orders by hand. When inventory drops below minimum safety stock, RestoSys automatically drafts ready-to-send POs for your designated suppliers.',
+                description: 'Never write purchase orders by hand. When inventory drops below minimum safety stock, FoodNest automatically drafts ready-to-send POs for your designated suppliers.',
                 points: ['Auto-generates POs based on par levels and consumption', 'Pre-fills vendor contact info and agreed rates', 'Send directly via PDF email or WhatsApp in seconds'],
                 icon: FileText,
                 bgColor: 'bg-sky-50/60',
@@ -581,7 +581,7 @@ const POS_MODULE_CONFIGS = {
             },
             {
                 title: 'Vendor Rate Contract Enforcement',
-                description: 'Lock in negotiated supplier prices for meat, vegetables, dairy, and packaging. RestoSys alerts managers if a vendor tries to invoice above the agreed contract price.',
+                description: 'Lock in negotiated supplier prices for meat, vegetables, dairy, and packaging. FoodNest alerts managers if a vendor tries to invoice above the agreed contract price.',
                 points: ['Contract price caps prevent price creep', 'Rate history comparison across different suppliers', 'Multiple vendor bids comparison for big procurements'],
                 icon: DollarSign,
                 bgColor: 'bg-amber-50/60',
@@ -621,7 +621,7 @@ const POS_MODULE_CONFIGS = {
         id: 'offline-pos',
         title: 'Offline POS',
         headline: 'Keep Billing Moving, Even Offline.',
-        tagline: 'Never let internet outages shut down your restaurant. RestoSys POS processes bills, prints thermal KOTs, and saves settlements locally, syncing automatically once reconnected.',
+        tagline: 'Never let internet outages shut down your restaurant. FoodNest POS processes bills, prints thermal KOTs, and saves settlements locally, syncing automatically once reconnected.',
         badge: 'Zero-Downtime Guarantee',
         accentColor: '#6366F1',
         icon: Monitor,
@@ -651,7 +651,7 @@ const POS_MODULE_CONFIGS = {
         features: [
             {
                 title: 'Uninterrupted Local Billing & Settlements',
-                description: 'When your Wi-Fi or broadband drops, RestoSys automatically switches to local offline mode without showing a loading spinner. Cashiers continue punching orders and billing customers as normal.',
+                description: 'When your Wi-Fi or broadband drops, FoodNest automatically switches to local offline mode without showing a loading spinner. Cashiers continue punching orders and billing customers as normal.',
                 points: ['Zero lag or freezes when internet goes down', 'Punch orders, split bills, and tender payments locally', 'High-speed local IndexedDB caching technology'],
                 icon: Zap,
                 bgColor: 'bg-indigo-50/60',
@@ -659,7 +659,7 @@ const POS_MODULE_CONFIGS = {
             },
             {
                 title: 'LAN-Based Kitchen KOT Printing',
-                description: 'Kitchen printers keep working! RestoSys communicates directly over your local area network (LAN) or Bluetooth to dispatch KOTs to kitchen prep stations without routing through external servers.',
+                description: 'Kitchen printers keep working! FoodNest communicates directly over your local area network (LAN) or Bluetooth to dispatch KOTs to kitchen prep stations without routing through external servers.',
                 points: ['Direct hardware socket communication', 'KOTs print immediately at cook stations', 'Prevents food prep delays during internet blackouts'],
                 icon: Printer,
                 bgColor: 'bg-emerald-50/60',
@@ -667,7 +667,7 @@ const POS_MODULE_CONFIGS = {
             },
             {
                 title: 'Automatic Silent Cloud Synchronization',
-                description: 'The moment internet connectivity restores, RestoSys silently synchronizes all offline invoices, inventory deductions, and payments back to the central cloud database without duplicating bill numbers.',
+                description: 'The moment internet connectivity restores, FoodNest silently synchronizes all offline invoices, inventory deductions, and payments back to the central cloud database without duplicating bill numbers.',
                 points: ['Zero data collisions or duplicated bill numbers', 'Background sync requires zero manual intervention', 'Cloud executive dashboard reflects accurate end-of-day sales'],
                 icon: ShieldCheck,
                 bgColor: 'bg-blue-50/60',
@@ -788,7 +788,7 @@ const PosModuleLandingPage = ({ module: moduleProp }) => {
         const todayStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
         const dateStamp = new Date().toISOString().slice(0, 10);
         const csvContent = [
-            ["RestoSys Cloud POS - Executive Daily P&L & GST Sales Audit Statement"],
+            ["FoodNest Cloud POS - Executive Daily P&L & GST Sales Audit Statement"],
             ["Generated Date", todayStr],
             ["Branch", "Downtown Gourmet Bistro (Store #102)"],
             ["GSTIN", "07AAAAA0000A1Z5"],
@@ -822,14 +822,14 @@ const PosModuleLandingPage = ({ module: moduleProp }) => {
             ["Virgin Mojito Coolers", "89", "14240.00", "11.4%"],
             ["Hyderabadi Dum Biryani", "55", "19250.00", "15.4%"],
             [],
-            ["RestoSys POS v3.4.1 - Confidential Restaurant Owner Report", "Automated Daily End-of-Day Ledger", "Hash: RST-99482-EXEC"]
+            ["FoodNest POS v3.4.1 - Confidential Restaurant Owner Report", "Automated Daily End-of-Day Ledger", "Hash: RST-99482-EXEC"]
         ].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\r\n");
 
         const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.setAttribute('download', `RestoSys_Executive_PnL_Report_${dateStamp}.csv`);
+        link.setAttribute('download', `FoodNest_Executive_PnL_Report_${dateStamp}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -842,7 +842,7 @@ const PosModuleLandingPage = ({ module: moduleProp }) => {
         const todayStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
         if (type === 'reporting') {
             const msg = 
-`📊 *RESTOSYS DAILY EXECUTIVE CLOSING SUMMARY*
+`📊 *FOODNEST DAILY EXECUTIVE CLOSING SUMMARY*
 🗓️ Date: ${todayStr}
 📍 Store: Downtown Gourmet Bistro #102
 
@@ -866,7 +866,7 @@ const PosModuleLandingPage = ({ module: moduleProp }) => {
 
 ✅ *AUDIT STATUS*: All 6 KOTs settled. Cash drawer reconciled. Staff shift closed.
 
-_Generated automatically by RestoSys Cloud POS at 11:45 PM_`;
+_Generated automatically by FoodNest Cloud POS at 11:45 PM_`;
 
             setWhatsAppModalContent({
                 title: 'Nightly Executive Closing Summary',
@@ -881,11 +881,11 @@ Dear *Amit Sharma*,
 
 Happy 3rd Anniversary from the team at *Downtown Gourmet Bistro*! 🥂
 
-As a valued *VIP Gold Diner* (1,240 RestoSys Coins earned), we would love to celebrate your special milestone with you:
+As a valued *VIP Gold Diner* (1,240 FoodNest Coins earned), we would love to celebrate your special milestone with you:
 🎁 Enjoy a *Complimentary Dessert Platter + 20% Off* on your dinner reservation this week!
 
 Use Code: *VIPCELEBRATE*
-Reserve your preferred table here: https://restosys.app/r/bistro-gold
+Reserve your preferred table here: https://foodnest.app/r/bistro-gold
 
 Looking forward to hosting you and your family! ✨`;
 
@@ -897,7 +897,7 @@ Looking forward to hosting you and your family! ✨`;
             setShowWhatsAppModal(true);
         } else if (type === 'purchase-manager') {
             const msg =
-`📦 *RESTOSYS PURCHASE ORDER #PO-2026-418*
+`📦 *FOODNEST PURCHASE ORDER #PO-2026-418*
 To: *Fresh Farms Wholesale Suppliers*
 From: Downtown Gourmet Bistro Store #102
 GSTIN: 07AAAAA0000A1Z5
@@ -939,7 +939,7 @@ Kindly confirm delivery acknowledgement.`;
         const todayStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
         const indentContent = 
 `=======================================================
- RESTOSYS AUTOMATED PURCHASE REORDER INDENT
+ FOODNEST AUTOMATED PURCHASE REORDER INDENT
  Generated by AI Inventory Forecasting Module
 =======================================================
 Purchase Order No: PO-941
@@ -970,7 +970,7 @@ Delivery Gate: Receiving Bay 1 (Walk-in Cold Storage)
 Temperature Control Requirement: Maintain < 4°C at delivery
 Expected Arrival: Tomorrow 08:30 AM
 
-Authorized by: RestoSys Intelligent Stock Engine
+Authorized by: FoodNest Intelligent Stock Engine
 Digital Verification Hash: SHA-IND-9418-DAIRY
 =======================================================`;
 
@@ -978,7 +978,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.setAttribute('download', 'RestoSys_Purchase_Indent_PO-941.txt');
+        link.setAttribute('download', 'FoodNest_Purchase_Indent_PO-941.txt');
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -1040,48 +1040,67 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
     };
 
     return (
-        <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-[#FFF1F1] selection:text-[#FF2D55] transition-colors">
+        <div className="min-h-screen bg-[#FFFDF9] text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white transition-colors relative overflow-x-hidden">
             {/* Top Navigation Bar with POS Dropdown */}
             <WebsiteNavbar />
 
             <main className="pt-20 sm:pt-24 overflow-x-hidden">
                 
                 {/* ========================================================================= */}
-                {/* 1. HERO SECTION (Clean SaaS, Headline, Supporting Copy, Dual CTA) */}
+                {/* 1. HERO SECTION (Warm FoodNest Theme, Headline, Supporting Copy, Dual CTA) */}
                 {/* ========================================================================= */}
-                <section className="relative px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 pb-16 sm:pb-24 max-w-7xl mx-auto">
-                    {/* Background Subtle Ambient Glow */}
+                <section className="relative px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 pb-16 sm:pb-24 max-w-7xl mx-auto">
+                    {/* Background Subtle Warm Ambient Glow matching FoodNest */}
                     <div 
-                        className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-rose-100/50 via-orange-50/30 to-transparent blur-3xl pointer-events-none -z-10" 
+                        className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-orange-100/40 via-amber-50/30 to-transparent blur-3xl pointer-events-none -z-10" 
                     />
 
-                    <div className="text-center max-w-4xl mx-auto space-y-6">
-                        {/* Module Badge */}
-                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FFF1F1] border border-rose-200/80 text-[#FF2D55] font-black text-xs uppercase tracking-wider shadow-xs animate-in fade-in duration-300">
-                            <config.icon size={15} className="shrink-0" />
-                            <span>{config.badge}</span>
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#FF2D55]"></span>
-                            <span>{config.title}</span>
+                    {/* Back Navigation Bar */}
+                    <div className="max-w-4xl mx-auto mb-6 flex items-center justify-between">
+                        <Link 
+                            to="/#features" 
+                            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-orange-200 text-slate-600 hover:text-[#FF5A1F] font-bold text-xs shadow-xs transition-all group cursor-pointer"
+                        >
+                            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform text-[#FF5A1F]" />
+                            <span>Back to Features</span>
+                        </Link>
+                        <span className="text-[11px] font-bold text-slate-400 hidden sm:inline">
+                            FoodNest Feature Suite • {config.title}
+                        </span>
+                    </div>
+
+                    <div className="text-center max-w-4xl mx-auto space-y-4 sm:space-y-5">
+                        {/* Orange handwritten-style accent tag & Category pill matching Home.jsx */}
+                        <div className="flex flex-col items-center gap-1.5">
+                            <p className="text-sm sm:text-[15px] font-serif italic font-bold text-[#FF5A0A] tracking-wide">
+                                FoodNest Feature Suite
+                            </p>
+                            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-50 border border-orange-100 text-[#FF5A1F] font-bold text-xs uppercase tracking-wider shadow-xs">
+                                <config.icon size={14} className="shrink-0" />
+                                <span>{config.badge}</span>
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#FF5A1F]"></span>
+                                <span>{config.title}</span>
+                            </div>
                         </div>
 
-                        {/* Exact Required Headline */}
-                        <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#0A192F] tracking-tight leading-[1.12]">
+                        {/* Large bold dark navy headline matching Home.jsx */}
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[52px] font-black text-[#142B45] tracking-tight leading-[1.14] max-w-3xl mx-auto">
                             {config.headline}
                         </h1>
 
-                        {/* Supporting Description */}
-                        <p className="text-base sm:text-xl text-slate-600 font-medium leading-relaxed max-w-3xl mx-auto">
+                        {/* Supporting description matching Home.jsx text size, weight & leading */}
+                        <p className="text-sm sm:text-base text-slate-500 font-medium leading-relaxed max-w-2xl mx-auto">
                             {config.tagline}
                         </p>
 
-                        {/* CTA Buttons */}
-                        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+                        {/* Dual CTA Buttons matching Home.jsx style, shadows & padding */}
+                        <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
                             <Link
-                                to="/staff/register"
-                                className="w-full sm:w-auto px-7 py-3.5 rounded-xl font-extrabold text-sm sm:text-base text-white bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] shadow-xl shadow-[#FF2D55]/25 hover:shadow-2xl transition-all hover:scale-[1.02] active:scale-95 text-center flex items-center justify-center gap-2"
+                                to="/register"
+                                className="px-6 sm:px-7 py-3 bg-[#FF5A0A] hover:bg-[#E04F08] text-white font-bold rounded-xl shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 hover:-translate-y-0.5 transition-all text-xs sm:text-sm flex items-center gap-2 group"
                             >
                                 <span>Get Started Free</span>
-                                <ArrowRight size={18} />
+                                <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
                             </Link>
 
                             <button
@@ -1090,16 +1109,16 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                     const el = document.getElementById('live-terminal-sandbox');
                                     if (el) el.scrollIntoView({ behavior: 'smooth' });
                                 }}
-                                className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-extrabold text-sm sm:text-base text-slate-800 bg-white hover:bg-slate-50 border border-slate-200 shadow-sm transition-all hover:border-slate-300 flex items-center justify-center gap-2 text-center cursor-pointer group"
+                                className="px-5 sm:px-6 py-3 bg-white hover:bg-orange-50/50 border border-orange-200 text-[#142B45] hover:text-[#FF5A0A] font-bold rounded-xl transition-all text-xs sm:text-sm flex items-center gap-2 shadow-2xs cursor-pointer group"
                             >
                                 <span>{config.sandboxLabel || `Explore Live ${config.title} Terminal ↓`}</span>
-                                <ArrowDown size={16} className="text-[#FF2D55] group-hover:translate-y-0.5 transition-transform" />
+                                <ArrowDown size={14} className="text-[#FF5A0A] group-hover:translate-y-0.5 transition-transform" />
                             </button>
 
                             <button
                                 type="button"
                                 onClick={scrollToForm}
-                                className="w-full sm:w-auto px-5 py-3.5 rounded-xl font-bold text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                                className="px-4 py-3 text-xs sm:text-sm font-bold text-slate-600 hover:text-[#FF5A0A] transition-colors cursor-pointer"
                             >
                                 Book Free Demo ↓
                             </button>
@@ -1107,17 +1126,17 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                     </div>
 
                     {/* ========================================================================= */}
-                    {/* 2. DASHBOARD PREVIEW / PRODUCT ILLUSTRATION (Matching Reference Mockup) */}
+                    {/* 2. DASHBOARD PREVIEW / PRODUCT ILLUSTRATION (Matching FoodNest Theme) */}
                     {/* ========================================================================= */}
                     <div id="live-terminal-sandbox" className="mt-12 sm:mt-16 max-w-5xl mx-auto scroll-mt-24">
-                        <div className="bg-[#FFF5F2] border border-rose-100/90 rounded-3xl p-4 sm:p-8 shadow-2xl shadow-rose-950/5 relative overflow-hidden">
+                        <div className="bg-[#FFFDF9] border border-orange-100 rounded-3xl p-4 sm:p-8 shadow-2xl shadow-orange-950/5 relative overflow-hidden">
                             {/* Decorative Header Bar */}
                             <div className="flex items-center justify-between pb-4 sm:pb-6 border-b border-rose-200/50">
                                 <div className="flex items-center gap-2.5">
                                     <div className="w-3.5 h-3.5 rounded-full bg-red-400"></div>
                                     <div className="w-3.5 h-3.5 rounded-full bg-amber-400"></div>
                                     <div className="w-3.5 h-3.5 rounded-full bg-emerald-400"></div>
-                                    <span className="ml-2 text-xs font-bold text-slate-500 hidden sm:inline">RestoSys POS Engine • {config.title} Live Interactive Terminal</span>
+                                    <span className="ml-2 text-xs font-bold text-slate-500 hidden sm:inline">FoodNest POS Engine • {config.title} Live Interactive Terminal</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
@@ -1133,7 +1152,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                     <div className="flex items-center gap-2.5">
                                         <Volume2 size={20} className="animate-pulse shrink-0" />
                                         <span className="font-black text-xs sm:text-sm">
-                                            RestoSys Dynamic Soundbox: Received ₹{currentGrandTotal.toLocaleString('en-IN')} successfully via PhonePe UPI!
+                                            FoodNest Dynamic Soundbox: Received ₹{currentGrandTotal.toLocaleString('en-IN')} successfully via PhonePe UPI!
                                         </span>
                                     </div>
                                     <button 
@@ -1153,8 +1172,8 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                     <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                                         <div>
                                             <div className="flex items-center gap-2">
-                                                <h3 className="font-black text-sm text-[#0A192F]">{config.heroMockup.title}</h3>
-                                                <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-rose-50 text-[#FF2D55] border border-rose-100">Live Demo</span>
+                                                <h3 className="font-black text-sm text-[#142B45]">{config.heroMockup.title}</h3>
+                                                <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-rose-50 text-[#FF5A1F] border border-rose-100">Live Demo</span>
                                             </div>
                                             <p className="text-[11px] font-medium text-slate-400">{config.heroMockup.table}</p>
                                         </div>
@@ -1175,9 +1194,9 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                                         key={i}
                                                         type="button"
                                                         onClick={() => handleQuickAdd(dish)}
-                                                        className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-white hover:bg-rose-50 hover:text-[#FF2D55] text-slate-700 border border-slate-200 hover:border-rose-200 transition-colors flex items-center gap-1 shadow-2xs cursor-pointer"
+                                                        className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-white hover:bg-rose-50 hover:text-[#FF5A1F] text-slate-700 border border-slate-200 hover:border-rose-200 transition-colors flex items-center gap-1 shadow-2xs cursor-pointer"
                                                     >
-                                                        <Plus size={12} className="text-[#FF2D55]" />
+                                                        <Plus size={12} className="text-[#FF5A1F]" />
                                                         <span>{dish.name}</span>
                                                         <span className="text-slate-400 font-medium">₹{dish.price}</span>
                                                     </button>
@@ -1252,9 +1271,9 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                                     <span>CGST (2.5%) + SGST (2.5%)</span>
                                                     <span className="font-bold">₹{currentTax.toLocaleString('en-IN')}</span>
                                                 </div>
-                                                <div className="flex justify-between text-base font-black text-[#0A192F] pt-1">
+                                                <div className="flex justify-between text-base font-black text-[#142B45] pt-1">
                                                     <span>Net Total</span>
-                                                    <span className="text-[#FF2D55] text-lg font-black tracking-tight">₹{currentGrandTotal.toLocaleString('en-IN')}</span>
+                                                    <span className="text-[#FF5A1F] text-lg font-black tracking-tight">₹{currentGrandTotal.toLocaleString('en-IN')}</span>
                                                 </div>
                                             </div>
 
@@ -1279,7 +1298,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                                             }}
                                                             className={`py-2 px-1 text-center rounded-xl text-xs font-black transition-all cursor-pointer border ${
                                                                 selectedPaymentMode === mode
-                                                                    ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-md shadow-[#FF2D55]/20 scale-[1.02]'
+                                                                    ? 'bg-[#FF5A1F] text-white border-[#FF5A1F] shadow-md shadow-[#FF5A1F]/20 scale-[1.02]'
                                                                     : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
                                                             }`}
                                                         >
@@ -1293,7 +1312,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                                     <div className="p-3 bg-rose-50/50 rounded-xl border border-rose-100 flex items-center justify-between gap-3">
                                                         <div className="flex items-center gap-2.5">
                                                             <div className="w-10 h-10 rounded-lg bg-white border border-rose-200 flex items-center justify-center shrink-0">
-                                                                <QrCode size={22} className="text-[#FF2D55]" />
+                                                                <QrCode size={22} className="text-[#FF5A1F]" />
                                                             </div>
                                                             <div>
                                                                 <span className="text-xs font-extrabold text-slate-800 block">Dynamic UPI QR Ready</span>
@@ -1449,7 +1468,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                                         <button
                                                             type="button"
                                                             onClick={handleExportExcelReport}
-                                                            className="flex-1 py-2.5 px-4 rounded-xl bg-[#0A192F] hover:bg-slate-900 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
+                                                            className="flex-1 py-2.5 px-4 rounded-xl bg-[#142B45] hover:bg-slate-900 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
                                                         >
                                                             <FileText size={15} />
                                                             <span>Export Executive P&L Report (Excel)</span>
@@ -1620,7 +1639,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                 {/* Right Side Highlights & Callout */}
                                 <div className="md:col-span-5 space-y-4">
                                     <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-3">
-                                        <div className="w-10 h-10 rounded-xl bg-[#FFF1F1] text-[#FF2D55] flex items-center justify-center font-bold">
+                                        <div className="w-10 h-10 rounded-xl bg-[#FFF1F1] text-[#FF5A1F] flex items-center justify-center font-bold">
                                             <config.icon size={22} />
                                         </div>
                                         <h4 className="font-black text-slate-900 text-base leading-snug">
@@ -1631,7 +1650,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                         </p>
                                     </div>
 
-                                    <div className="bg-gradient-to-tr from-[#0A192F] to-slate-900 text-white rounded-2xl p-5 shadow-lg space-y-2">
+                                    <div className="bg-gradient-to-tr from-[#142B45] to-slate-900 text-white rounded-2xl p-5 shadow-lg space-y-2">
                                         <span className="text-[10px] font-bold uppercase tracking-wider text-rose-300">Operational Guarantee</span>
                                         <p className="text-sm font-bold leading-snug">
                                             100% Zero Revenue Leakage with Manager PIN Overrides
@@ -1643,14 +1662,14 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
 
                                     {/* Demo Walkthrough Prompt */}
                                     <div className="bg-white rounded-2xl p-4 border border-rose-100 space-y-2">
-                                        <span className="text-xs font-black text-[#0A192F] block">Want a full walkthrough with your menu?</span>
+                                        <span className="text-xs font-black text-[#142B45] block">Want a full walkthrough with your menu?</span>
                                         <p className="text-[11px] text-slate-500">
                                             Our specialist will demo live on video using your actual restaurant items, table layout, and tax rules.
                                         </p>
                                         <button
                                             type="button"
                                             onClick={scrollToForm}
-                                            className="w-full py-2 px-3 rounded-lg bg-[#FFF1F1] text-[#FF2D55] hover:bg-rose-100 font-extrabold text-xs transition-colors text-center cursor-pointer block"
+                                            className="w-full py-2 px-3 rounded-lg bg-[#FFF1F1] text-[#FF5A1F] hover:bg-rose-100 font-extrabold text-xs transition-colors text-center cursor-pointer block"
                                         >
                                             Schedule Free Walkthrough ↓
                                         </button>
@@ -1675,7 +1694,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                 {/* Thermal Slip Representation */}
                                 <div className="font-mono text-[11px] bg-slate-50 p-4 rounded-xl border border-dashed border-slate-300 text-slate-800 space-y-2 shadow-inner">
                                     <div className="text-center space-y-0.5 pb-2 border-b border-dashed border-slate-300">
-                                        <h4 className="font-black text-xs tracking-wider">RESTOSYS EXPRESS BISTRO</h4>
+                                        <h4 className="font-black text-xs tracking-wider">FOODNEST EXPRESS BISTRO</h4>
                                         <p className="text-[10px] text-slate-500">Connaught Place, New Delhi</p>
                                         <p className="text-[9px] text-slate-400">GSTIN: 07AAAAA0000A1Z5 • FSSAI: 10020011000123</p>
                                     </div>
@@ -1723,7 +1742,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                     </div>
 
                                     <div className="pt-3 text-center space-y-1 border-t border-dashed border-slate-300 text-[10px] text-slate-500">
-                                        <p className="font-bold">*** RESTOSYS POS DEMO RECEIPT ***</p>
+                                        <p className="font-bold">*** FOODNEST POS DEMO RECEIPT ***</p>
                                         <p>Thank You For Dining With Us!</p>
                                         <div className="h-6 w-36 mx-auto bg-slate-300 rounded flex items-center justify-center text-[8px] tracking-widest text-slate-600 font-bold">
                                             |||| | ||||| || ||||
@@ -1753,7 +1772,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                             RS
                                         </div>
                                         <div>
-                                            <h4 className="font-bold text-sm leading-tight">RestoSys Executive Bot</h4>
+                                            <h4 className="font-bold text-sm leading-tight">FoodNest Executive Bot</h4>
                                             <p className="text-[10px] text-emerald-200">Online • End-to-end encrypted</p>
                                         </div>
                                     </div>
@@ -1783,7 +1802,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                     {/* Security pill */}
                                     <div className="flex justify-center">
                                         <span className="bg-[#FFF9C4] text-[#795548] text-[9.5px] px-2.5 py-1 rounded-md shadow-2xs font-medium text-center max-w-[90%] border border-[#FFF59D]">
-                                            🔒 Messages are end-to-end encrypted. Real-time closing sync powered by RestoSys Cloud.
+                                            🔒 Messages are end-to-end encrypted. Real-time closing sync powered by FoodNest Cloud.
                                         </span>
                                     </div>
 
@@ -1835,7 +1854,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                     <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
                         {config.stats.map((stat, i) => (
                             <div key={i} className="bg-slate-50/80 border border-slate-100 rounded-2xl p-4 sm:p-5 text-center">
-                                <span className="text-2xl sm:text-3xl font-black text-[#0A192F] block tracking-tight">
+                                <span className="text-2xl sm:text-3xl font-black text-[#142B45] block tracking-tight">
                                     {stat.value}
                                 </span>
                                 <span className="text-xs font-bold text-slate-800 block mt-1">
@@ -1867,10 +1886,10 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                 { name: 'UPI Soundboxes', sub: 'Real-time Audio Alert', icon: Zap }
                             ].map((hw, idx) => (
                                 <div key={idx} className="bg-white rounded-xl p-3 sm:p-4 border border-slate-200/60 shadow-xs flex flex-col items-center text-center space-y-1.5 hover:shadow-md transition-shadow">
-                                    <div className="w-10 h-10 rounded-lg bg-[#FFF1F1] text-[#FF2D55] flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-lg bg-[#FFF1F1] text-[#FF5A1F] flex items-center justify-center">
                                         <hw.icon size={20} />
                                     </div>
-                                    <span className="text-xs font-black text-[#0A192F] block leading-tight">{hw.name}</span>
+                                    <span className="text-xs font-black text-[#142B45] block leading-tight">{hw.name}</span>
                                     <span className="text-[10px] text-slate-400 block leading-tight">{hw.sub}</span>
                                 </div>
                             ))}
@@ -1883,8 +1902,8 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                 {/* ========================================================================= */}
                 <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-16 sm:space-y-24">
                     <div className="text-center max-w-3xl mx-auto space-y-3">
-                        <span className="text-xs font-black uppercase tracking-wider text-[#FF2D55]">Features That Deliver Impact</span>
-                        <h2 className="text-3xl sm:text-4xl font-black text-[#0A192F] tracking-tight">
+                        <span className="text-xs font-black uppercase tracking-wider text-[#FF5A1F]">Features That Deliver Impact</span>
+                        <h2 className="text-3xl sm:text-4xl font-black text-[#142B45] tracking-tight">
                             Built Specifically for High-Volume Restaurant Workflows
                         </h2>
                         <p className="text-slate-600 font-medium text-sm sm:text-base">
@@ -1902,11 +1921,11 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                 >
                                     {/* Text Column */}
                                     <div className="flex-1 space-y-4">
-                                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#FFF1F1] text-[#FF2D55] text-xs font-bold border border-rose-100">
+                                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#FFF1F1] text-[#FF5A1F] text-xs font-bold border border-rose-100">
                                             <feature.icon size={15} />
                                             <span>Feature {idx + 1}</span>
                                         </div>
-                                        <h3 className="text-2xl sm:text-3xl font-black text-[#0A192F] tracking-tight">
+                                        <h3 className="text-2xl sm:text-3xl font-black text-[#142B45] tracking-tight">
                                             {feature.title}
                                         </h3>
                                         <p className="text-slate-600 font-medium text-sm sm:text-base leading-relaxed">
@@ -1915,7 +1934,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                         <ul className="space-y-2.5 pt-2">
                                             {feature.points.map((pt, pIdx) => (
                                                 <li key={pIdx} className="flex items-start gap-2.5 text-xs sm:text-sm font-bold text-slate-800">
-                                                    <CheckCircle2 size={18} className="text-[#FF2D55] shrink-0 mt-0.5" />
+                                                    <CheckCircle2 size={18} className="text-[#FF5A1F] shrink-0 mt-0.5" />
                                                     <span>{pt}</span>
                                                 </li>
                                             ))}
@@ -1936,7 +1955,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                             <div className="space-y-3">
                                                 <div className="bg-white rounded-xl p-4 border border-black/5 shadow-xs flex items-center justify-between">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-lg bg-[#FFF1F1] text-[#FF2D55] flex items-center justify-center font-bold">
+                                                        <div className="w-8 h-8 rounded-lg bg-[#FFF1F1] text-[#FF5A1F] flex items-center justify-center font-bold">
                                                             <feature.icon size={16} />
                                                         </div>
                                                         <div>
@@ -1966,8 +1985,8 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                 <section className="bg-slate-50 py-16 sm:py-24 px-4 sm:px-6 lg:px-8 border-y border-slate-200/80">
                     <div className="max-w-7xl mx-auto space-y-12">
                         <div className="text-center max-w-2xl mx-auto space-y-2">
-                            <span className="text-xs font-black uppercase tracking-wider text-[#FF2D55]">Simple Implementation</span>
-                            <h2 className="text-3xl sm:text-4xl font-black text-[#0A192F] tracking-tight">
+                            <span className="text-xs font-black uppercase tracking-wider text-[#FF5A1F]">Simple Implementation</span>
+                            <h2 className="text-3xl sm:text-4xl font-black text-[#142B45] tracking-tight">
                                 How It Works in Daily Service
                             </h2>
                             <p className="text-slate-600 text-sm font-medium">
@@ -1978,10 +1997,10 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                             {config.workflowSteps.map((step, idx) => (
                                 <div key={idx} className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-3 relative">
-                                    <span className="text-3xl font-black text-[#FF2D55]/20 block font-mono">
+                                    <span className="text-3xl font-black text-[#FF5A1F]/20 block font-mono">
                                         {step.step}
                                     </span>
-                                    <h4 className="text-base font-black text-[#0A192F]">{step.title}</h4>
+                                    <h4 className="text-base font-black text-[#142B45]">{step.title}</h4>
                                     <p className="text-xs text-slate-500 font-medium leading-relaxed">{step.desc}</p>
                                 </div>
                             ))}
@@ -1994,8 +2013,8 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                 {/* ========================================================================= */}
                 <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12">
                     <div className="text-center max-w-2xl mx-auto space-y-2">
-                        <span className="text-xs font-black uppercase tracking-wider text-[#FF2D55]">The Business Advantage</span>
-                        <h2 className="text-3xl sm:text-4xl font-black text-[#0A192F] tracking-tight">
+                        <span className="text-xs font-black uppercase tracking-wider text-[#FF5A1F]">The Business Advantage</span>
+                        <h2 className="text-3xl sm:text-4xl font-black text-[#142B45] tracking-tight">
                             Why Restaurant Owners Rely on {config.title}
                         </h2>
                     </div>
@@ -2003,10 +2022,10 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {config.benefits.map((benefit, idx) => (
                             <div key={idx} className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-xs hover:border-rose-200 hover:shadow-md transition-all space-y-2.5">
-                                <div className="w-9 h-9 rounded-xl bg-[#FFF1F1] text-[#FF2D55] flex items-center justify-center font-bold">
+                                <div className="w-9 h-9 rounded-xl bg-[#FFF1F1] text-[#FF5A1F] flex items-center justify-center font-bold">
                                     <Check size={18} />
                                 </div>
-                                <h4 className="text-base font-black text-[#0A192F]">{benefit.title}</h4>
+                                <h4 className="text-base font-black text-[#142B45]">{benefit.title}</h4>
                                 <p className="text-xs text-slate-600 font-medium leading-relaxed">{benefit.desc}</p>
                             </div>
                         ))}
@@ -2047,10 +2066,10 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                 <section id="demo-request-form" className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
                     <div className="bg-[#FFF5F2] border border-rose-200/90 rounded-3xl p-6 sm:p-10 shadow-xl space-y-6">
                         <div className="text-center space-y-2">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white text-[#FF2D55] text-xs font-bold shadow-xs">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white text-[#FF5A1F] text-xs font-bold shadow-xs">
                                 <span>Free Guided Demo</span>
                             </div>
-                            <h3 className="text-2xl sm:text-3xl font-black text-[#0A192F]">
+                            <h3 className="text-2xl sm:text-3xl font-black text-[#142B45]">
                                 See {config.title} in Action for Your Restaurant
                             </h3>
                             <p className="text-slate-600 text-xs sm:text-sm font-medium max-w-lg mx-auto">
@@ -2068,7 +2087,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                         value={formData.fullName}
                                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                                         placeholder="e.g. Ramesh Sharma"
-                                        className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm font-medium focus:outline-none focus:border-[#FF2D55] focus:ring-2 focus:ring-[#FF2D55]/20"
+                                        className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm font-medium focus:outline-none focus:border-[#FF5A1F] focus:ring-2 focus:ring-[#FF5A1F]/20"
                                     />
                                 </div>
                                 <div>
@@ -2079,7 +2098,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                         value={formData.phoneNumber}
                                         onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                                         placeholder="e.g. +91 98765 43210"
-                                        className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm font-medium focus:outline-none focus:border-[#FF2D55] focus:ring-2 focus:ring-[#FF2D55]/20"
+                                        className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm font-medium focus:outline-none focus:border-[#FF5A1F] focus:ring-2 focus:ring-[#FF5A1F]/20"
                                     />
                                 </div>
                             </div>
@@ -2093,7 +2112,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                         value={formData.restaurantName}
                                         onChange={(e) => setFormData({ ...formData, restaurantName: e.target.value })}
                                         placeholder="e.g. Spice Symphony Cafe"
-                                        className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm font-medium focus:outline-none focus:border-[#FF2D55] focus:ring-2 focus:ring-[#FF2D55]/20"
+                                        className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm font-medium focus:outline-none focus:border-[#FF5A1F] focus:ring-2 focus:ring-[#FF5A1F]/20"
                                     />
                                 </div>
                                 <div>
@@ -2103,7 +2122,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                         value={formData.city}
                                         onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                                         placeholder="e.g. Mumbai / Bengaluru"
-                                        className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm font-medium focus:outline-none focus:border-[#FF2D55] focus:ring-2 focus:ring-[#FF2D55]/20"
+                                        className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm font-medium focus:outline-none focus:border-[#FF5A1F] focus:ring-2 focus:ring-[#FF5A1F]/20"
                                     />
                                 </div>
                                 <div>
@@ -2111,7 +2130,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                     <select
                                         value={formData.outletType}
                                         onChange={(e) => setFormData({ ...formData, outletType: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm font-medium focus:outline-none focus:border-[#FF2D55] focus:ring-2 focus:ring-[#FF2D55]/20"
+                                        className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm font-medium focus:outline-none focus:border-[#FF5A1F] focus:ring-2 focus:ring-[#FF5A1F]/20"
                                     >
                                         <option value="Dine-In Restaurant">Fine Dine &amp; Resto-Bar</option>
                                         <option value="Quick Service (QSR)">Quick Service (QSR)</option>
@@ -2125,7 +2144,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                             <button
                                 type="submit"
                                 disabled={submitting}
-                                className="w-full py-4 rounded-xl font-black text-base text-white bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] shadow-lg shadow-[#FF2D55]/25 transition-all cursor-pointer active:scale-98 disabled:opacity-70"
+                                className="w-full py-4 rounded-xl font-black text-base text-white bg-gradient-to-r from-[#FF5A1F] to-[#FF6A00] hover:from-[#E04812] hover:to-[#E55F00] shadow-lg shadow-[#FF5A1F]/25 transition-all cursor-pointer active:scale-98 disabled:opacity-70"
                             >
                                 {submitting ? 'Connecting With Specialist...' : `Schedule Free ${config.title} Walkthrough`}
                             </button>
@@ -2141,8 +2160,8 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                 {/* ========================================================================= */}
                 <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-8">
                     <div className="text-center space-y-2">
-                        <span className="text-xs font-black uppercase tracking-wider text-[#FF2D55]">Got Questions?</span>
-                        <h2 className="text-3xl font-black text-[#0A192F]">Frequently Asked Questions</h2>
+                        <span className="text-xs font-black uppercase tracking-wider text-[#FF5A1F]">Got Questions?</span>
+                        <h2 className="text-3xl font-black text-[#142B45]">Frequently Asked Questions</h2>
                     </div>
 
                     <div className="space-y-3">
@@ -2153,10 +2172,10 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                     <button
                                         type="button"
                                         onClick={() => setExpandedFaq(isOpen ? null : idx)}
-                                        className="w-full flex items-center justify-between p-4 sm:p-5 text-left font-bold text-sm sm:text-base text-slate-900 hover:text-[#FF2D55] transition-colors cursor-pointer"
+                                        className="w-full flex items-center justify-between p-4 sm:p-5 text-left font-bold text-sm sm:text-base text-slate-900 hover:text-[#FF5A1F] transition-colors cursor-pointer"
                                     >
                                         <span>{faq.q}</span>
-                                        <ChevronDown size={18} className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180 text-[#FF2D55]' : ''}`} />
+                                        <ChevronDown size={18} className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180 text-[#FF5A1F]' : ''}`} />
                                     </button>
                                     {isOpen && (
                                         <div className="px-4 pb-5 sm:px-5 text-xs sm:text-sm text-slate-600 font-medium leading-relaxed border-t border-slate-100 pt-3">
@@ -2173,20 +2192,20 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                 {/* 10. FINAL BOTTOM CALL-TO-ACTION SECTION */}
                 {/* ========================================================================= */}
                 <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-                    <div className="bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] rounded-3xl p-8 sm:p-14 text-white text-center space-y-6 shadow-2xl shadow-rose-900/20 relative overflow-hidden">
+                    <div className="bg-gradient-to-r from-[#FF5A1F] to-[#FF6A00] rounded-3xl p-8 sm:p-14 text-white text-center space-y-6 shadow-2xl shadow-rose-900/20 relative overflow-hidden">
                         <div className="max-w-2xl mx-auto space-y-3">
                             <h2 className="text-3xl sm:text-5xl font-black tracking-tight">
                                 Ready to Transform Your {config.title} Operations?
                             </h2>
                             <p className="text-rose-100 text-sm sm:text-base font-medium">
-                                Join thousands of top restaurateurs who power their daily floor operations with RestoSys.
+                                Join thousands of top restaurateurs who power their daily floor operations with FoodNest.
                             </p>
                         </div>
 
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
                             <Link
                                 to="/staff/register"
-                                className="w-full sm:w-auto px-8 py-4 rounded-xl font-black text-sm sm:text-base bg-white text-[#FF2D55] hover:bg-slate-50 shadow-lg transition-transform hover:scale-105 active:scale-95"
+                                className="w-full sm:w-auto px-8 py-4 rounded-xl font-black text-sm sm:text-base bg-white text-[#FF5A1F] hover:bg-slate-50 shadow-lg transition-transform hover:scale-105 active:scale-95"
                             >
                                 Start 14-Day Free Trial
                             </Link>

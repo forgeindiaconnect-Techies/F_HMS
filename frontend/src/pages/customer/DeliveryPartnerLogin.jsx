@@ -78,7 +78,7 @@ const DeliveryPartnerLogin = () => {
                         <Truck size={32} />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-black text-gray-900 tracking-wide">RestoSys Dispatch</h2>
+                        <h2 className="text-2xl font-black text-gray-900 tracking-wide">FoodNest Dispatch</h2>
                         <p className="text-xs text-gray-500 mt-1 font-medium">Delivery Partner Login Portal</p>
                     </div>
                 </div>

@@ -31,7 +31,7 @@ const ThreeDemoShowcase = () => {
                         <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center text-white shadow-lg shadow-red-500/20">
                             <Utensils size={18} />
                         </div>
-                        <span className="text-base font-black text-white">RestaurantHub 3D Animatic</span>
+                        <span className="text-base font-black text-white">FoodNest 3D Animatic</span>
                     </div>
                 </div>
 

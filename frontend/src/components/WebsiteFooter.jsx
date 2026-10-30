@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Utensils } from 'lucide-react';
+import { UtensilsCrossed } from 'lucide-react';
 
 const WebsiteFooter = () => {
     return (
@@ -9,11 +9,11 @@ const WebsiteFooter = () => {
                 {/* Brand Column */}
                 <div className="space-y-4 md:col-span-1">
                     <Link to="/" className="flex items-center gap-2.5 group">
-                        <div className="w-9 h-9 bg-gradient-to-tr from-[#FF2D55] to-[#FF6A00] rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg">
-                            <Utensils size={18} />
+                        <div className="w-9 h-9 rounded-xl bg-[#FF5A1F] text-white flex items-center justify-center font-black text-lg shadow-md shadow-orange-500/25">
+                            <UtensilsCrossed size={20} strokeWidth={2.2} />
                         </div>
                         <span className="text-xl font-black text-white">
-                            Restaurant<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF2D55] to-[#FF6A00]">Hub</span>
+                            Food<span className="text-[#FF5A1F]">Nest</span>
                         </span>
                     </Link>
                     <p className="text-xs text-slate-400 font-medium leading-relaxed">
@@ -51,10 +51,11 @@ const WebsiteFooter = () => {
                 <div>
                     <h4 className="text-xs font-black uppercase text-slate-300 tracking-wider mb-4">Account &amp; Access</h4>
                     <ul className="space-y-2.5 text-xs text-slate-400 font-bold">
-                        <li><Link to="/staff/register" className="hover:text-white transition-colors">Register Partner Account</Link></li>
-                        <li><Link to="/customer/login" className="hover:text-white transition-colors">Customer Login</Link></li>
-                        <li><Link to="/staff/login" className="hover:text-white transition-colors">Staff &amp; POS Portal</Link></li>
-                        <li><Link to="/super-admin/login" className="hover:text-white transition-colors">Super Admin Portal</Link></li>
+                        <li><Link to="/about" className="hover:text-white transition-colors">About FoodNest</Link></li>
+                        <li><Link to="/contact" className="hover:text-white transition-colors">Contact Support &amp; Sales</Link></li>
+                        <li><Link to="/register" className="hover:text-white transition-colors">Register Partner Account</Link></li>
+                        <li><Link to="/login" className="hover:text-white transition-colors">Staff &amp; POS Portal</Link></li>
+                        <li><Link to="/login" className="hover:text-white transition-colors">Super Admin Portal</Link></li>
                     </ul>
                 </div>
 
@@ -62,7 +63,7 @@ const WebsiteFooter = () => {
 
             {/* Bottom Bar */}
             <div className="max-w-7xl mx-auto pt-8 flex flex-col sm:flex-row justify-between items-center text-xs font-bold text-slate-500 gap-4">
-                <p>© 2026 RestaurantHub — Built By Ruturaj. All Rights Reserved.</p>
+                <p>© 2026 FoodNest. All Rights Reserved.</p>
                 <div className="flex items-center gap-6">
                     <span className="hover:text-[#FF2D55] cursor-pointer">Privacy Policy</span>
                     <span className="hover:text-slate-300 cursor-pointer">Terms of Service</span>

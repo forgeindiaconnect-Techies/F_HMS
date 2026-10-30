@@ -88,7 +88,7 @@ export const generateThermalReceiptHtml = (order = {}, restaurantInfo = {}, opti
         ? order.branchId 
         : null;
 
-    const restName = rest.name || branch?.name || 'RESTOSYS DINING';
+    const restName = rest.name || branch?.name || 'FOODNEST DINING';
     const restAddress = branch?.location?.address || rest.address || 'Main Branch Highway, Downtown';
     const restPhone = branch?.contact?.phone || rest.phone || rest.contactPhone || '';
     const gstin = rest.gstin || rest.gstNumber || '';
@@ -321,7 +321,7 @@ export const generateThermalReceiptHtml = (order = {}, restaurantInfo = {}, opti
         <div class="center" style="font-size: 10px; color: #444; line-height: 1.3;">
             <div>Thank you for dining with us!</div>
             <div>Please visit again</div>
-            <div style="margin-top: 3px; font-size: 9px; color: #777;">Powered by RestoSys POS</div>
+            <div style="margin-top: 3px; font-size: 9px; color: #777;">Powered by FoodNest POS</div>
         </div>
     </body>
 </html>
@@ -342,7 +342,7 @@ export const generateThermalKOTHtml = (order = {}, restaurantInfo = {}, options 
     const rest = order.restaurantId && typeof order.restaurantId === 'object' 
         ? order.restaurantId 
         : (restaurantInfo || {});
-    const restName = rest.name || 'RESTOSYS KITCHEN';
+    const restName = rest.name || 'FOODNEST KITCHEN';
 
     const orderIdStr = String(order._id || order.id || order.orderId || 'NEW');
     const shortId = orderIdStr.slice(-6).toUpperCase();

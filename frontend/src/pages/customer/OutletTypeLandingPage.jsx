@@ -99,7 +99,7 @@ const OUTLET_TYPE_CONFIGS = {
         faqs: [
             { q: 'Can floor captains fire courses from mobile tablets?', a: 'Yes! Captains can take full multi-course orders at the table and fire subsequent courses directly from their mobile handheld or tablet.' },
             { q: 'How does seat-wise bill splitting work?', a: 'Dishes are assigned to individual seat numbers when ordering. When settling, simply tap "Split by Seat" to produce separate printed slips instantly.' },
-            { q: 'Does it manage wine cellar and bar inventory?', a: 'Yes. RestoSys supports bottle-level tracking, spirit peg measurements, and recipe deductions for high-end cocktail bars.' }
+            { q: 'Does it manage wine cellar and bar inventory?', a: 'Yes. FoodNest supports bottle-level tracking, spirit peg measurements, and recipe deductions for high-end cocktail bars.' }
         ]
     },
 
@@ -186,7 +186,7 @@ const OUTLET_TYPE_CONFIGS = {
             { title: 'Offline Counter Continuity', desc: 'Internet outage? Cash registers continue billing and printing tokens locally.' }
         ],
         faqs: [
-            { q: 'Can RestoSys display tokens on a customer-facing TV screen?', a: 'Yes! You can connect any standard smart TV or HDMI monitor to display live "Preparing" and "Ready for Pickup" token columns.' },
+            { q: 'Can FoodNest display tokens on a customer-facing TV screen?', a: 'Yes! You can connect any standard smart TV or HDMI monitor to display live "Preparing" and "Ready for Pickup" token columns.' },
             { q: 'How fast is counter order punching?', a: 'A trained cashier can punch a 3-item combo and print the receipt in under 15 seconds using touch-screen quick tiles.' },
             { q: 'Does it support combo meal modifications?', a: 'Yes. You can easily configure options like drink swaps, fry size upgrades, and flavor choices with automated price recalculations.' }
         ]
@@ -245,7 +245,7 @@ const OUTLET_TYPE_CONFIGS = {
             },
             {
                 title: 'Digital Coffee Stamp Loyalty Cards',
-                description: 'Ditch paper stamp cards that guests lose. RestoSys tracks coffee purchases automatically by customer phone number—"Buy 5 Coffees, Get the 6th Free!"',
+                description: 'Ditch paper stamp cards that guests lose. FoodNest tracks coffee purchases automatically by customer phone number—"Buy 5 Coffees, Get the 6th Free!"',
                 points: ['Digital stamp tracker sends WhatsApp confirmation', 'Automatic loyalty reward redemption at checkout', 'Drives frequent morning routine cafe visits'],
                 icon: Award,
                 bgColor: 'bg-purple-50/60',
@@ -275,7 +275,7 @@ const OUTLET_TYPE_CONFIGS = {
             { title: 'Stress-Free Pre-Order Cakes', desc: 'Track advance deposits and custom messages without messy paper order notebooks.' }
         ],
         faqs: [
-            { q: 'Can it print stickers directly onto coffee cups?', a: 'Yes! RestoSys supports 2-inch adhesive thermal cup label printers so baristas have exact custom instructions right on the cup.' },
+            { q: 'Can it print stickers directly onto coffee cups?', a: 'Yes! FoodNest supports 2-inch adhesive thermal cup label printers so baristas have exact custom instructions right on the cup.' },
             { q: 'How does the digital coffee loyalty stamp card work?', a: 'When a customer gives their phone number, the system credits a digital stamp. On their 6th visit (or custom rule), their coffee discount applies automatically.' },
             { q: 'Can we track shelf life and daily bakes for pastries?', a: 'Yes. You can inward morning batches and set automatic end-of-day markdown rules for fresh baked goods.' }
         ]
@@ -318,7 +318,7 @@ const OUTLET_TYPE_CONFIGS = {
             },
             {
                 title: '1-Click Master Menu & Stock 86 Toggle',
-                description: 'Ran out of paneer or chicken breast? Toggle the ingredient once, and RestoSys automatically marks all corresponding dishes unavailable across all virtual brand storefronts.',
+                description: 'Ran out of paneer or chicken breast? Toggle the ingredient once, and FoodNest automatically marks all corresponding dishes unavailable across all virtual brand storefronts.',
                 points: ['Ingredient-level 86 disables all dishes using that item', 'Prevents unfulfillable orders and customer cancellations', 'Auto-restores items when stock delivery arrives'],
                 icon: Zap,
                 bgColor: 'bg-rose-50/60',
@@ -364,8 +364,8 @@ const OUTLET_TYPE_CONFIGS = {
             { title: 'Own Customer Relationships', desc: 'Build direct customer loyalty lists instead of relying solely on delivery apps.' }
         ],
         faqs: [
-            { q: 'How many virtual brands can I operate from one kitchen?', a: 'Unlimited! RestoSys is built specifically for cloud kitchen multi-tenancy, allowing you to run as many virtual brands as your kitchen can handle.' },
-            { q: 'Can chefs see orders from all brands on one kitchen display?', a: 'Yes. RestoSys can route orders either by brand or by cooking station (e.g. all fry items go to the Fryer KDS regardless of brand).' },
+            { q: 'How many virtual brands can I operate from one kitchen?', a: 'Unlimited! FoodNest is built specifically for cloud kitchen multi-tenancy, allowing you to run as many virtual brands as your kitchen can handle.' },
+            { q: 'Can chefs see orders from all brands on one kitchen display?', a: 'Yes. FoodNest can route orders either by brand or by cooking station (e.g. all fry items go to the Fryer KDS regardless of brand).' },
             { q: 'Does it support direct customer online ordering for cloud kitchens?', a: 'Yes! You get direct branded ordering links with 0% commission and integrated live order dispatch tracking.' }
         ]
     },
@@ -453,9 +453,9 @@ const OUTLET_TYPE_CONFIGS = {
             { title: 'Scale Without Growing Pains', desc: 'Add new restaurant branches in 15 minutes with standardized clone configurations.' }
         ],
         faqs: [
-            { q: 'Can branch managers see other branches’ revenue data?', a: 'No. RestoSys provides strict role-based access control. Branch staff are restricted strictly to their assigned branch, while HQ admins see all stores.' },
+            { q: 'Can branch managers see other branches’ revenue data?', a: 'No. FoodNest provides strict role-based access control. Branch staff are restricted strictly to their assigned branch, while HQ admins see all stores.' },
             { q: 'How does central commissary inventory dispatch work?', a: 'Outlets raise digital stock indents. Central kitchen approves, produces in bulk batches, and generates digital Goods Dispatch Notes (GDN).' },
-            { q: 'Can we have different pricing for airport outlets vs downtown stores?', a: 'Yes. RestoSys allows central menu management with tier-based location price overrides and local tax customization.' }
+            { q: 'Can we have different pricing for airport outlets vs downtown stores?', a: 'Yes. FoodNest allows central menu management with tier-based location price overrides and local tax customization.' }
         ]
     }
 };
@@ -547,51 +547,51 @@ const OutletTypeLandingPage = ({ type: typeProp }) => {
                         className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-rose-100/40 via-orange-50/20 to-transparent blur-3xl pointer-events-none -z-10" 
                     />
 
-                    <div className="text-center max-w-4xl mx-auto space-y-6">
+                    <div className="text-center max-w-4xl mx-auto space-y-4 sm:space-y-5">
                         {/* Format Pill Badge */}
-                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FFF1F1] border border-rose-200/80 text-[#FF2D55] font-black text-xs uppercase tracking-wider shadow-xs">
-                            <config.icon size={15} className="shrink-0" />
+                        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-50 border border-orange-200/80 text-[#FF5A1F] font-bold text-xs uppercase tracking-wider shadow-xs">
+                            <config.icon size={14} className="shrink-0" />
                             <span>Outlet Type Solution</span>
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#FF2D55]"></span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#FF5A1F]"></span>
                             <span>{config.title}</span>
                         </div>
 
-                        {/* Exact Required Headline */}
-                        <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#0A192F] tracking-tight leading-[1.12]">
+                        {/* Headline matching restaurant landing page font sizes & weights */}
+                        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] xl:text-[46px] font-black text-[#142B45] tracking-tight leading-[1.12]">
                             {config.headline}
                         </h1>
 
-                        {/* Exact Required Description */}
-                        <p className="text-base sm:text-xl text-slate-600 font-medium leading-relaxed max-w-3xl mx-auto">
+                        {/* Supporting Description */}
+                        <p className="text-xs sm:text-sm md:text-base text-slate-500 font-medium leading-relaxed max-w-2xl mx-auto">
                             {config.description}
                         </p>
 
                         {/* CTA Buttons */}
-                        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+                        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
                             <button
                                 type="button"
                                 onClick={() => {
                                     const el = document.getElementById('format-preview-demo');
                                     if (el) el.scrollIntoView({ behavior: 'smooth' });
                                 }}
-                                className="w-full sm:w-auto px-7 py-3.5 rounded-xl font-extrabold text-sm sm:text-base text-white bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] shadow-xl shadow-[#FF2D55]/25 hover:shadow-2xl transition-all hover:scale-[1.02] active:scale-95 text-center flex items-center justify-center gap-2 cursor-pointer"
+                                className="w-full sm:w-auto px-6 py-2.5 sm:py-3 rounded-xl font-bold text-xs sm:text-sm text-white bg-[#FF5A1F] hover:bg-[#E04812] shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 transition-all hover:-translate-y-0.5 text-center flex items-center justify-center gap-2 cursor-pointer"
                             >
                                 <span>{config.primaryCta}</span>
-                                <ArrowDown size={18} />
+                                <ArrowDown size={15} />
                             </button>
 
                             <button
                                 type="button"
                                 onClick={scrollToForm}
-                                className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-extrabold text-sm sm:text-base text-slate-800 bg-white hover:bg-slate-50 border border-slate-200 shadow-sm transition-all hover:border-slate-300 flex items-center justify-center gap-2 text-center cursor-pointer"
+                                className="w-full sm:w-auto px-5 py-2.5 sm:py-3 rounded-xl font-bold text-xs sm:text-sm text-[#142B45] hover:text-[#FF5A1F] bg-white hover:bg-orange-50/50 border border-slate-200 shadow-xs transition-all hover:border-orange-200 flex items-center justify-center gap-2 text-center cursor-pointer"
                             >
                                 <span>Book a Demo</span>
-                                <Calendar size={16} className="text-[#FF2D55]" />
+                                <Calendar size={15} className="text-[#FF5A1F]" />
                             </button>
 
                             <Link
-                                to="/staff/register"
-                                className="w-full sm:w-auto px-5 py-3.5 rounded-xl font-bold text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-center"
+                                to="/register"
+                                className="w-full sm:w-auto px-4 py-2.5 sm:py-3 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition-colors text-center"
                             >
                                 Start 14-Day Free Trial →
                             </Link>
@@ -610,7 +610,7 @@ const OutletTypeLandingPage = ({ type: typeProp }) => {
                                     <div className="w-3.5 h-3.5 rounded-full bg-amber-400"></div>
                                     <div className="w-3.5 h-3.5 rounded-full bg-emerald-400"></div>
                                     <span className="ml-2 text-xs font-bold text-slate-500 hidden sm:inline">
-                                        RestoSys Format Console • {config.title} Live Interactive Mockup
+                                        FoodNest Format Console • {config.title} Live Interactive Mockup
                                     </span>
                                 </div>
                                 <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white text-slate-700 border border-slate-200 shadow-xs flex items-center gap-1.5">
@@ -1048,7 +1048,7 @@ const OutletTypeLandingPage = ({ type: typeProp }) => {
                                 <span>Schedule a Walkthrough</span>
                             </div>
                             <h3 className="text-2xl sm:text-3xl font-black text-[#0A192F]">
-                                Experience RestoSys for {config.title}
+                                Experience FoodNest for {config.title}
                             </h3>
                             <p className="text-slate-600 text-xs sm:text-sm font-medium max-w-lg mx-auto">
                                 Speak with an industry specialist who understands the unique operational dynamics of your food service model.
@@ -1175,7 +1175,7 @@ const OutletTypeLandingPage = ({ type: typeProp }) => {
                                 Ready to Transform Your {config.title}?
                             </h2>
                             <p className="text-rose-100 text-sm sm:text-base font-medium">
-                                Join leading hospitality operators who rely on RestoSys to power their daily service.
+                                Join leading hospitality operators who rely on FoodNest to power their daily service.
                             </p>
                         </div>
 

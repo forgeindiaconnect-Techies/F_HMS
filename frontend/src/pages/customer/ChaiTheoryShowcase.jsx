@@ -639,7 +639,7 @@ const ChaiTheoryShowcase = () => {
                             FOOD &amp; RESTAURANT OPERATING STACK
                         </span>
                         <h2 className="text-4xl sm:text-6xl font-black font-serif text-[#6B3F1D] tracking-tight">
-                            Powered By RestaurantHub Platform
+                            Powered By FoodNest Platform
                         </h2>
                         <p className="text-base text-[#2B2320]/80 font-bold max-w-2xl mx-auto">
                             From instant digital QR table ordering to real-time Kitchen KDS displays and inventory tracking.
@@ -647,21 +647,31 @@ const ChaiTheoryShowcase = () => {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <Link to="/customer/menu" className="bg-[#FAFAF8] p-6 rounded-3xl border border-[#6B3F1D]/20 shadow-md hover:-translate-y-1.5 transition-all text-left space-y-3 group">
+                        <a 
+                            href={`${import.meta.env.VITE_CUSTOMER_URL || 'http://localhost:5174'}/customer/menu`} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="bg-[#FAFAF8] p-6 rounded-3xl border border-[#6B3F1D]/20 shadow-md hover:-translate-y-1.5 transition-all text-left space-y-3 group"
+                        >
                             <div className="w-12 h-12 rounded-2xl bg-[#E38A2C]/10 text-[#E38A2C] flex items-center justify-center group-hover:scale-110 transition-transform">
                                 <QrCode size={24} />
                             </div>
                             <h4 className="font-bold text-[#6B3F1D] text-lg">Digital Table QR Menu</h4>
                             <p className="text-xs text-[#2B2320]/70 font-medium">Scan table QR codes to place orders instantly with live dish customizations.</p>
-                        </Link>
+                        </a>
 
-                        <Link to="/menu" className="bg-[#FAFAF8] p-6 rounded-3xl border border-[#6B3F1D]/20 shadow-md hover:-translate-y-1.5 transition-all text-left space-y-3 group">
+                        <a 
+                            href={`${import.meta.env.VITE_CUSTOMER_URL || 'http://localhost:5174'}/menu`} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="bg-[#FAFAF8] p-6 rounded-3xl border border-[#6B3F1D]/20 shadow-md hover:-translate-y-1.5 transition-all text-left space-y-3 group"
+                        >
                             <div className="w-12 h-12 rounded-2xl bg-[#6B3F1D]/10 text-[#6B3F1D] flex items-center justify-center group-hover:scale-110 transition-transform">
                                 <ShoppingBag size={24} />
                             </div>
                             <h4 className="font-bold text-[#6B3F1D] text-lg">Online Food Ordering</h4>
                             <p className="text-xs text-[#2B2320]/70 font-medium">Explore dishes, apply promo codes, and track real-time kitchen preparation.</p>
-                        </Link>
+                        </a>
 
                         <Link to="/features/details?module=orders" className="bg-[#FAFAF8] p-6 rounded-3xl border border-[#6B3F1D]/20 shadow-md hover:-translate-y-1.5 transition-all text-left space-y-3 group">
                             <div className="w-12 h-12 rounded-2xl bg-[#C23B22]/10 text-[#C23B22] flex items-center justify-center group-hover:scale-110 transition-transform">

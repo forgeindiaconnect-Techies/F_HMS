@@ -435,7 +435,7 @@ const BillingDemoRequestsManagement = () => {
                                                         <span>{req.phoneNumber}</span>
                                                     </a>
                                                     <a 
-                                                        href={`https://wa.me/${req.phoneNumber.replace(/\D/g, '')}?text=Hi%20${encodeURIComponent(req.fullName)},%20reaching%20out%20from%20RestoSys%20regarding%20your%20walkthrough%20for%20${encodeURIComponent(req.restaurantName)}.`}
+                                                        href={`https://wa.me/${req.phoneNumber.replace(/\D/g, '')}?text=Hi%20${encodeURIComponent(req.fullName)},%20reaching%20out%20from%20FoodNest%20regarding%20your%20walkthrough%20for%20${encodeURIComponent(req.restaurantName)}.`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="text-[10px] font-bold text-emerald-600 hover:underline inline-flex items-center gap-0.5 bg-emerald-50 dark:bg-emerald-950/30 px-1.5 py-0.5 rounded"

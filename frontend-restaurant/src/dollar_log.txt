@@ -1,0 +1,239 @@
+\components\CashierTopbar.jsx:30: await api.put(`/notifications/${id}/read`);
+\components\CashierTopbar.jsx:81: <div key={note._id} className={`p-4 border-b border-gray-100 last:border-0 ${!note.read ? 'bg-purple-50/50' : ''}`}>
+\components\ChefTopbar.jsx:37: await api.put(`/notifications/${id}/read`);
+\components\ChefTopbar.jsx:83: <div key={note._id} className={`p-4 border-b border-[#2a3040] last:border-0 ${!note.read ? 'bg-[#252b3b]' : ''}`}>
+\components\ConfirmModal.jsx:9: <div className={`bg-white shadow-2xl rounded-2xl p-5 w-80 md:w-96 border border-gray-100 ${t.visible ? 'animate-enter' : 'animate-leave'}`}>
+\components\ConfirmModal.jsx:11: <div className={`p-2.5 rounded-full shrink-0 ${isDestructive ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-500'}`}>
+\components\ConfirmModal.jsx:35: className={`flex-1 py-2.5 text-white text-sm font-bold rounded-xl shadow-sm transition-colors ${isDestructive ? 'bg-red-600 hover:bg-red-700 shadow-red-600/20' : 'bg-green-600 hover:bg-green-700 shadow-green-600/20'}`}
+\components\WaiterTopbar.jsx:30: await api.put(`/notifications/${id}/read`);
+\components\WaiterTopbar.jsx:83: <div key={note._id} className={`p-4 border-b border-gray-100 last:border-0 ${!note.read ? 'bg-blue-50/50' : ''}`}>
+\context\AuthContext.jsx:26: config.headers.set('Authorization', `Bearer ${user.token}`);
+\context\AuthContext.jsx:29: config.headers.Authorization = `Bearer ${user.token}`;
+\context\CustomerAuthContext.jsx:26: config.headers.set('Authorization', `Bearer ${user.token}`);
+\context\CustomerAuthContext.jsx:29: config.headers.Authorization = `Bearer ${user.token}`;
+\layouts\SuperAdminLayout.jsx:37: className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all ${
+\pages\admin\ActivityLogs.jsx:95: <div className={`p-2 rounded-lg ${getLogColor(log.type)}`}>
+\pages\admin\Analytics.jsx:29: const res = await api.get(`/analytics/dashboard?timeframe=${timeframe}`);
+\pages\admin\Analytics.jsx:40: const formatCurrency = (val) => `₹${Number(val).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+\pages\admin\Analytics.jsx:51: csv += `${row._id},${row.revenue},${row.orders}\n`;
+\pages\admin\Analytics.jsx:58: link.setAttribute('download', `analytics_export_${timeframe}_days.csv`);
+\pages\admin\Analytics.jsx:105: { title: 'Total Revenue', value: formatCurrency(data.overview.totalRevenue), change: `${data.overview.revenueChange > 0 ? '+' : ''}${data.overview.revenueChange.toFixed(1)}%`, isUp: data.overview.revenueChange >= 0 },
+\pages\admin\Analytics.jsx:106: { title: 'Total Orders', value: formatNumber(data.overview.totalOrders), change: `${data.overview.ordersChange > 0 ? '+' : ''}${data.overview.ordersChange.toFixed(1)}%`, isUp: data.overview.ordersChange >= 0 },
+\pages\admin\Analytics.jsx:107: { title: 'Avg Order Value', value: formatCurrency(data.overview.avgOrderValue), change: `${data.overview.avgChange > 0 ? '+' : ''}${data.overview.avgChange.toFixed(1)}%`, isUp: data.overview.avgChange >= 0 },
+\pages\admin\Analytics.jsx:108: { title: 'Active Customers', value: formatNumber(data.overview.activeCustomers), change: `${data.overview.customersChange > 0 ? '+' : ''}${data.overview.customersChange.toFixed(1)}%`, isUp: data.overview.customersChange >= 0 },
+\pages\admin\Analytics.jsx:114: <div className={`flex items-center gap-1 text-sm font-bold px-2 py-1 rounded-md ${kpi.isUp ? 'text-green-700 bg-green-50' : 'text-red-700 bg-red-50'}`}>
+\pages\admin\Analytics.jsx:142: <YAxis stroke="#9CA3AF" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value}`} />
+\pages\admin\Analytics.jsx:146: formatter={(value) => [`₹${value}`, 'Revenue']}
+\pages\admin\Analytics.jsx:147: labelFormatter={(label) => `Date: ${label}`}
+\pages\admin\BranchesManagement.jsx:76: await api.put(`/branches/${editingBranch._id}`, payload);
+\pages\admin\BranchesManagement.jsx:97: await api.delete(`/branches/${branchToDelete._id}`);
+\pages\admin\BranchesManagement.jsx:173: <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${branch.isActive ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'}`}>
+\pages\admin\BranchesManagement.jsx:178: <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${branch.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+\pages\admin\CategoryManagement.jsx:62: await api.delete(`/categories/${id}`);
+\pages\admin\CategoryManagement.jsx:199: <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase ${cat.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+\pages\admin\CustomerManagement.jsx:161: <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wide border ${getTierStyle(customer.tier)}`}>
+\pages\admin\DashboardHome.jsx:97: <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v}`} />
+\pages\admin\DashboardHome.jsx:101: formatter={(val) => [`₹${val}`, 'Revenue']}
+\pages\admin\DashboardHome.jsx:153: <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${statusStyle[order.status]}`}>
+\pages\admin\InventoryManagement.jsx:72: await api.delete(`/inventory/${id}`);
+\pages\admin\InventoryManagement.jsx:121: await api.put(`/inventory/${editingItem}`, payload);
+\pages\admin\InventoryManagement.jsx:298: <span className={`text-lg font-extrabold ${item.quantity <= item.minStockLevel ? 'text-red-600' : 'text-gray-900'}`}>
+\pages\admin\MenuManagement.jsx:63: await api.delete(`/menu/${id}`);
+\pages\admin\MenuManagement.jsx:121: await api.put(`/menu/${editingItem}`, payload);
+\pages\admin\MenuManagement.jsx:248: <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${item.isActive ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200'}`}>
+\pages\admin\NotificationCenter.jsx:34: if (diffMins < 60) return `${diffMins} mins ago`;
+\pages\admin\NotificationCenter.jsx:35: if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+\pages\admin\NotificationCenter.jsx:37: if (diffDays < 7) return `${diffDays} days ago`;
+\pages\admin\NotificationCenter.jsx:68: await api.put(`/notifications/${id}/read`);
+\pages\admin\NotificationCenter.jsx:129: className={`px-4 py-1.5 font-bold rounded-md text-sm transition-colors ${filter === 'All' ? 'bg-white text-green-700 shadow-sm' : 'hover:bg-white text-gray-600'}`}
+\pages\admin\NotificationCenter.jsx:135: className={`px-4 py-1.5 font-medium rounded-md text-sm transition-colors flex items-center gap-1.5 ${filter === 'Unread' ? 'bg-white text-green-700 shadow-sm' : 'hover:bg-white text-gray-600'}`}
+\pages\admin\NotificationCenter.jsx:142: className={`px-4 py-1.5 font-medium rounded-md text-sm transition-colors ${filter === 'Alerts' ? 'bg-white text-green-700 shadow-sm' : 'hover:bg-white text-gray-600'}`}
+\pages\admin\NotificationCenter.jsx:168: <div key={note._id} className={`p-6 flex gap-4 transition-colors group ${note.read ? 'bg-white hover:bg-gray-50' : 'bg-green-50/20 hover:bg-green-50/40'}`}>
+\pages\admin\NotificationCenter.jsx:169: <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${getBg(note.type)}`}>
+\pages\admin\NotificationCenter.jsx:175: <h3 className={`text-base font-bold ${note.read ? 'text-gray-700' : 'text-gray-900'}`}>{note.title}</h3>
+\pages\admin\OfferManagement.jsx:54: await api.delete(`/offers/${id}`);
+\pages\admin\OfferManagement.jsx:163: <div key={offer._id} className={`bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all relative group overflow-hidden ${status.label === 'Expired' || status.label === 'Depleted' || status.label === 'Inactive' ? 'opacity-75' : ''}`}>
+\pages\admin\OfferManagement.jsx:166: <div className={`absolute top-0 right-0 px-8 py-1 transform translate-x-6 translate-y-3 rotate-45 text-[10px] font-bold tracking-wider uppercase text-white shadow-sm ${status.label === 'Active' ? 'bg-green-500' : status.label === 'Depleted' ? 'bg-orange-500' : 'bg-gray-400'}`}>
+\pages\admin\OfferManagement.jsx:171: <div className={`p-3 rounded-xl shrink-0 ${status.label === 'Active' ? 'bg-orange-50 text-orange-500' : 'bg-gray-50 text-gray-400'}`}>
+\pages\admin\OfferManagement.jsx:182: {offer.type === 'Percentage' ? `${offer.discountValue}% OFF` :
+\pages\admin\OfferManagement.jsx:183: offer.type === 'Fixed Amount' ? `₹${offer.discountValue.toFixed(2)} OFF` :
+\pages\admin\OfferManagement.jsx:223: className={`h-full rounded-full ${offer.usageLimit && offer.usedCount >= offer.usageLimit ? 'bg-orange-500' : 'bg-green-500'}`}
+\pages\admin\OfferManagement.jsx:224: style={{ width: offer.usageLimit ? `${Math.min((offer.usedCount / offer.usageLimit) * 100, 100)}%` : '100%' }}
+\pages\admin\OfferManagement.jsx:281: <option value="Fixed Amount">Fixed Amount ($)</option>
+\pages\admin\OfferManagement.jsx:297: className={`w-full ${formData.type === 'Fixed Amount' ? 'pl-9' : 'pl-4'} ${formData.type === 'Percentage' ? 'pr-8' : 'pr-4'} py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all font-bold`}
+\pages\admin\OfferManagement.jsx:307: <label className="block text-sm font-bold text-gray-700 mb-1.5">Minimum Spend ($)</label>
+\pages\admin\OrderManagement.jsx:41: <button onClick={() => setView('kanban')} className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${view === 'kanban' ? 'bg-green-50 text-green-700' : 'text-gray-500 hover:bg-gray-50'}`}>Board</button>
+\pages\admin\OrderManagement.jsx:42: <button onClick={() => setView('list')} className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${view === 'list' ? 'bg-green-50 text-green-700' : 'text-gray-500 hover:bg-gray-50'}`}>List</button>
+\pages\admin\OrderManagement.jsx:126: <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${getStatusColor(order.status)}`}>
+\pages\admin\PaymentManagement.jsx:115: <span className={`inline-block px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wide border ${getStatusStyle(txn.status)}`}>
+\pages\admin\Reports.jsx:70: csv += `${row._id},${row.totalRevenue},${row.totalTax},${row.orderCount}\n`;
+\pages\admin\Reports.jsx:75: csv += `${row.name},${row.quantitySold},${row.totalRevenue}\n`;
+\pages\admin\Reports.jsx:80: csv += `${row.staffName},${row.ordersHandled},${row.totalRevenue}\n`;
+\pages\admin\Reports.jsx:85: csv += `${row._id},${row.taxableSales},${row.taxCollected}\n`;
+\pages\admin\Reports.jsx:126: downloadCSV(csvStr, `${reportName.replace(/ /g, '_')}_${new Date().getTime()}.csv`);
+\pages\admin\Reports.jsx:254: <label key={rt.id} className={`flex items-start gap-4 p-4 border rounded-xl cursor-pointer transition-all ${reportType === rt.id ? 'border-green-500 bg-green-50/50' : 'border-gray-200 hover:border-green-500 hover:bg-green-50/30'}`}>
+\pages\admin\Reports.jsx:266: <div className={`p-1.5 rounded-lg ${rt.bg} ${rt.color}`}>
+\pages\admin\ReservationManagement.jsx:85: await api.patch(`/reservations/${id}/status`, { status });
+\pages\admin\ReservationManagement.jsx:180: <span className={`inline-block px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wide border ${getStatusStyle(res.status)}`}>
+\pages\admin\ReservationManagement.jsx:184: {res.table ? `Table ${res.table.number}` : 'Unassigned'}
+\pages\admin\RoleManagement.jsx:71: await api.put(`/roles/${selectedRole.id}`, { permissions: currentPermissions });
+\pages\admin\RoleManagement.jsx:97: await api.delete(`/roles/${roleToDelete.id}`);
+\pages\admin\RoleManagement.jsx:147: className={`p-4 cursor-pointer transition-colors ${idx === selectedRoleIndex ? 'bg-green-50/50 border-l-4 border-green-500' : 'hover:bg-gray-50 border-l-4 border-transparent'}`}
+\pages\admin\RoleManagement.jsx:150: <h3 className={`font-bold text-sm ${idx === selectedRoleIndex ? 'text-green-800' : 'text-gray-900'}`}>
+\pages\admin\RoleManagement.jsx:217: className={`flex items-center justify-between p-3 ${selectedRole.isCoreRole ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`}
+\pages\admin\RoleManagement.jsx:224: <span className={`text-sm font-medium ${isChecked ? 'text-gray-900' : 'text-gray-400'}`}>{permName}</span>
+\pages\admin\RoleManagement.jsx:233: <div className={`w-10 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 peer-checked:bg-green-500 transition-all ${selectedRole.isCoreRole ? 'opacity-50' : ''}`}></div>
+\pages\admin\Settings.jsx:102: className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-sm ${activeTab === 'general' ? 'bg-green-50 text-green-700' : 'text-gray-600 hover:bg-gray-50'}`}
+\pages\admin\Settings.jsx:108: className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-sm ${activeTab === 'security' ? 'bg-green-50 text-green-700' : 'text-gray-600 hover:bg-gray-50'}`}
+\pages\admin\Settings.jsx:153: <option value="USD">USD ($)</option>
+\pages\admin\StaffManagement.jsx:72: await api.put(`/staff/${editingStaffId}`, formData);
+\pages\admin\StaffManagement.jsx:111: await api.delete(`/staff/${id}`);
+\pages\admin\SubscriptionPortal.jsx:60: <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold ${
+\pages\admin\SubscriptionPortal.jsx:74: <div key={plan} className={`border-2 rounded-2xl p-6 transition-all ${
+\pages\admin\SubscriptionPortal.jsx:99: <button className={`w-full py-2.5 rounded-xl font-bold transition-colors ${
+\pages\admin\SupplierManagement.jsx:66: await api.delete(`/suppliers/${id}`);
+\pages\admin\SupplierManagement.jsx:112: await api.put(`/suppliers/${editingSupplier}`, formData);
+\pages\admin\SupplierManagement.jsx:174: <span className={`px-2 py-1 rounded text-[10px] font-bold tracking-wide uppercase ${supplier.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+\pages\admin\TaxManagement.jsx:53: await api.delete(`/taxes/${id}`);
+\pages\admin\TaxManagement.jsx:67: await api.put(`/taxes/${tax._id}`, { isActive: !tax.isActive });
+\pages\admin\TaxManagement.jsx:104: await api.put(`/taxes/${editingTax}`, payload);
+\pages\admin\TaxManagement.jsx:182: {tax.type === 'Percentage' ? `${tax.rate}%` : `₹${tax.rate.toFixed(2)}`}
+\pages\admin\TaxManagement.jsx:200: className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${tax.isActive ? 'translate-x-6' : 'translate-x-1'}`}
+\pages\admin\TaxManagement.jsx:264: <option value="Fixed Amount">Fixed Amount ($)</option>
+\pages\admin\TaxManagement.jsx:278: className={`w-full ${formData.type === 'Fixed Amount' ? 'pl-9' : 'pl-4'} ${formData.type === 'Percentage' ? 'pr-8' : 'pr-4'} py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all font-bold`}
+\pages\admin\UsersManagement.jsx:85: await api.delete(`/users/${id}`);
+\pages\admin\UsersManagement.jsx:180: <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider mt-1 inline-block ${roleColors[u.role] || 'bg-gray-100 text-gray-700'}`}>
+\pages\customer\Explore.jsx:51: const res = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+\pages\customer\Explore.jsx:58: let newLoc = city ? `${city}, ${state || country}` : country;
+\pages\customer\Explore.jsx:84: const res = await axios.get(`${API_URL}/restaurants`);
+\pages\customer\Explore.jsx:143: className={`px-4 py-2 text-sm cursor-pointer hover:bg-red-50 hover:text-red-600 transition-colors ${location === loc ? 'font-bold text-red-500 bg-red-50/50' : 'text-gray-700'}`}
+\pages\customer\Explore.jsx:226: <Link to={`/restaurant/${restaurant._id}`} key={restaurant._id} className="group cursor-pointer block hover:scale-[0.98] transition-transform duration-200">
+\pages\customer\Home.jsx:37: const res = await axios.get(`${API_URL}/restaurants`);
+\pages\customer\Home.jsx:159: <div className={`w-20 h-20 rounded-2xl ${feature.bg} flex items-center justify-center ${feature.color} transform group-hover:-translate-y-2 group-hover:shadow-lg transition-all duration-300`}>
+\pages\customer\Home.jsx:348: <span className={`font-bold ${!isYearly ? 'text-gray-900' : 'text-gray-400'}`}>Monthly</span>
+\pages\customer\Home.jsx:353: <div className={`w-6 h-6 bg-white rounded-full absolute top-1 transition-transform duration-300 shadow-sm ${isYearly ? 'left-7' : 'left-1'}`}></div>
+\pages\customer\Home.jsx:355: <span className={`font-bold flex items-center gap-2 ${isYearly ? 'text-gray-900' : 'text-gray-400'}`}>
+\pages\customer\Home.jsx:366: <Link to={`/staff/register?plan=Starter&billing=${isYearly ? 'yearly' : 'monthly'}`} className="w-full py-3 rounded-xl border-2 border-gray-200 font-bold text-gray-700 hover:border-gray-900 transition-colors mb-8 flex justify-center items-center">Start Free Trial</Link>
+\pages\customer\Home.jsx:379: <Link to={`/staff/register?plan=Professional&billing=${isYearly ? 'yearly' : 'monthly'}`} className="w-full py-3 rounded-xl bg-white text-gray-900 font-bold hover:bg-gray-100 transition-colors mb-8 shadow-lg shadow-white/10 flex justify-center items-center">Choose Plan</Link>
+\pages\customer\Menu.jsx:88: className={`px-6 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all shadow-sm ${
+\pages\customer\Menu.jsx:150: className={`absolute top-4 right-4 p-2.5 rounded-full backdrop-blur-md transition-all shadow-sm ${
+\pages\customer\OrderHistory.jsx:29: alert(`Review submitted for order ${id}! Thank you for your feedback.`);
+\pages\customer\OrderHistory.jsx:67: <Link to={`/track/${order._id}`} className="text-sm font-bold text-orange-600 hover:text-orange-700 flex items-center gap-1">
+\pages\customer\OrderHistory.jsx:76: <p className="font-medium text-gray-900">{order.orderItems.map(i => `${i.name} (${i.qty})`).join(', ')}</p>
+\pages\customer\OrderTracking.jsx:15: const { data } = await api.get(`/orders/${id}`);
+\pages\customer\OrderTracking.jsx:90: style={{ height: `${(progress - 1) * 33}%` }}
+\pages\customer\OrderTracking.jsx:100: <div key={idx} className={`relative flex gap-6 ${isCompleted ? 'opacity-100' : 'opacity-40'}`}>
+\pages\customer\OrderTracking.jsx:101: <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative z-10 transition-colors duration-500 ${
+\pages\customer\OrderTracking.jsx:107: <h3 className={`text-lg font-bold font-sans ${isCurrent ? 'text-orange-600' : 'text-gray-900'}`}>
+\pages\customer\RestaurantDetails.jsx:25: const branchRes = await axios.get(`${API_URL}/restaurants/${id}/branches`);
+\pages\customer\RestaurantDetails.jsx:34: const menuRes = await axios.get(`${API_URL}/menu`);
+\pages\customer\RestaurantDetails.jsx:38: const restRes = await axios.get(`${API_URL}/restaurants`);
+\pages\customer\RestaurantDetails.jsx:106: className={`px-6 py-3 rounded-xl font-medium border-2 transition-all ${
+\pages\customer\RestaurantDetails.jsx:209: className={`px-8 py-3.5 font-bold rounded-xl transition-all shadow-lg flex items-center gap-2 ${
+\pages\CustomerAuthPage.jsx:88: className={`absolute inset-y-1.5 w-[calc(50%-6px)] bg-white rounded-xl shadow-sm transition-all duration-300 ease-out ${mode === 'login' ? 'left-1.5' : 'left-[calc(50%+3px)]'}`}
+\pages\CustomerAuthPage.jsx:93: className={`flex-1 py-2.5 text-sm font-bold relative z-10 transition-colors ${mode === 'login' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+\pages\CustomerAuthPage.jsx:100: className={`flex-1 py-2.5 text-sm font-bold relative z-10 transition-colors ${mode === 'register' ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+\pages\CustomerAuthPage.jsx:125: className={`w-full pl-11 pr-4 py-3.5 bg-gray-50 border rounded-xl text-sm outline-none transition-all ${errors.name ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-gray-200 hover:border-gray-300 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-100'}`}
+\pages\CustomerAuthPage.jsx:142: className={`w-full pl-11 pr-4 py-3.5 bg-gray-50 border rounded-xl text-sm outline-none transition-all ${errors.email ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-gray-200 hover:border-gray-300 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-100'}`}
+\pages\CustomerAuthPage.jsx:160: className={`w-full pl-11 pr-11 py-3.5 bg-gray-50 border rounded-xl text-sm outline-none transition-all ${errors.password ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-gray-200 hover:border-gray-300 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-100'}`}
+\pages\CustomerAuthPage.jsx:187: className={`w-full pl-11 pr-11 py-3.5 bg-gray-50 border rounded-xl text-sm outline-none transition-all ${errors.confirmPassword ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-gray-200 hover:border-gray-300 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-100'}`}
+\pages\staff\CashierDashboard.jsx:61: await api.put(`/orders/${activeBill._id}/pay`, {
+\pages\staff\CashierDashboard.jsx:86: className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'Pending' ? 'bg-white shadow-sm text-purple-700' : 'text-gray-500 hover:text-gray-700'}`}
+\pages\staff\CashierDashboard.jsx:92: className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'Paid' ? 'bg-white shadow-sm text-purple-700' : 'text-gray-500 hover:text-gray-700'}`}
+\pages\staff\CashierDashboard.jsx:107: className={`w-full text-left p-4 rounded-xl border-2 transition-all flex justify-between items-center ${
+\pages\staff\CashierDashboard.jsx:114: <p className="font-bold text-gray-900 font-sans text-lg">{bill.orderType === 'Dine In' ? `Table ${bill.tableNumber || 'Any'}` : bill.orderType}</p>
+\pages\staff\CashierDashboard.jsx:119: <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
+\pages\staff\CashierDashboard.jsx:135: className={`w-full text-left p-4 rounded-xl border-2 transition-all flex justify-between items-center ${
+\pages\staff\CashierDashboard.jsx:142: <p className="font-bold text-gray-900 font-sans text-lg">{bill.orderType === 'Dine In' ? `Table ${bill.tableNumber || 'Any'}` : bill.orderType}</p>
+\pages\staff\CashierDashboard.jsx:184: <h2 className="text-3xl font-bold text-gray-900 font-sans">{activeBill.orderType === 'Dine In' ? `Table ${activeBill.tableNumber || 'Any'}` : activeBill.orderType}</h2>
+\pages\staff\CashierDashboard.jsx:259: className={`w-full p-4 rounded-xl border-2 flex items-center gap-3 transition-all ${
+\pages\staff\CashierDashboard.jsx:272: className={`w-full p-4 rounded-xl border-2 flex items-center gap-3 transition-all ${
+\pages\staff\CashierHistory.jsx:12: return `${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ${dayStr}`;
+\pages\staff\CashierHistory.jsx:55: txn.orderType === 'Dine In' ? `Table ${txn.tableNumber || 'Any'}` : txn.orderType,
+\pages\staff\CashierHistory.jsx:61: csvRows.push(row.map(cell => `"${cell}"`).join(','));
+\pages\staff\CashierHistory.jsx:69: link.setAttribute('download', `payment_history_${new Date().toISOString().split('T')[0]}.csv`);
+\pages\staff\CashierHistory.jsx:132: <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
+\pages\staff\CashierHistory.jsx:178: {activeReceipt.orderType === 'Dine In' ? `Table ${activeReceipt.tableNumber || 'Any'}` : activeReceipt.orderType}
+\pages\staff\CashierOverview.jsx:148: <p className="font-bold text-gray-900">{order.orderType === 'Dine In' ? `Table ${order.tableNumber || 'Any'}` : order.orderType}</p>
+\pages\staff\ChefDashboard.jsx:29: await api.put(`/orders/${id}/status`, { status: newStatus });
+\pages\staff\ChefDashboard.jsx:71: className={`px-5 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${
+\pages\staff\ChefDashboard.jsx:79: <span className={`px-2 py-0.5 rounded-full text-[10px] ${
+\pages\staff\ChefDashboard.jsx:106: <div key={order._id} className={`bg-[#1e2330] rounded-2xl shadow-xl flex flex-col overflow-hidden border ${
+\pages\staff\ChefDashboard.jsx:111: <div className={`px-5 py-3 flex justify-between items-center ${
+\pages\staff\ChefDashboard.jsx:118: {order.orderType === 'Dine In' ? `Table ${order.tableNumber || 'Any'}` : order.orderType}
+\pages\staff\ChefDashboard.jsx:140: <div className={`flex items-center gap-1.5 text-sm font-bold ${isLate ? 'text-white' : 'text-gray-300'}`}>
+\pages\staff\ChefDashboard.jsx:150: <div key={idx} className={`rounded-xl p-3 flex justify-between gap-4 items-start border transition-colors ${
+\pages\staff\ChefDashboard.jsx:156: <p className={`font-bold ${activeTab === 'Completed' ? 'text-gray-400 line-through' : 'text-gray-100'}`}>{item.qty}× {item.name}</p>
+\pages\staff\ChefPrepList.jsx:35: <div key={i} className={`p-4 flex items-center justify-between hover:bg-[#252b3b] transition-colors ${task.completed ? 'opacity-50' : ''}`}>
+\pages\staff\ChefPrepList.jsx:41: <h4 className={`font-bold text-lg ${task.completed ? 'text-gray-500 line-through' : 'text-gray-200'}`}>{task.name}</h4>
+\pages\staff\ManagerDashboard.jsx:182: <div className={`w-2.5 h-2.5 rounded-full ${staff.status === 'Working' ? 'bg-green-500' : 'bg-orange-500'}`} title={staff.status}></div>
+\pages\staff\ManagerFeedback.jsx:35: <button key={i} onClick={() => toast.success(`Filtering by ${filter}...`)} className="px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">
+\pages\staff\ManagerFeedback.jsx:44: <div key={i} className={`bg-white rounded-2xl p-6 border shadow-sm flex flex-col md:flex-row gap-6 relative overflow-hidden ${fb.type === 'Negative' ? 'border-red-200' : 'border-gray-100'}`}>
+\pages\staff\ManagerFeedback.jsx:146: className={`px-5 py-2.5 text-sm font-bold text-white rounded-xl transition-colors ${
+\pages\staff\ManagerInventory.jsx:89: <td className={`px-6 py-4 font-extrabold text-sm ${item.status === 'Critical' ? 'text-red-600' : item.status === 'Low Stock' ? 'text-orange-600' : 'text-gray-900'}`}>
+\pages\staff\ManagerInventory.jsx:94: <span className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
+\pages\staff\ManagerInventory.jsx:224: <button onClick={() => { setShowReorderModal(false); toast.success(actionType === 'reorder' ? 'Reorder submitted successfully!' : 'Stock adjusted successfully!'); }} className={`px-5 py-2.5 text-sm font-bold text-white rounded-xl transition-colors ${actionType === 'reorder' ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-600 hover:bg-orange-700'}`}>
+\pages\staff\ManagerKitchenStatus.jsx:43: <div key={i} className={`bg-white rounded-2xl p-5 border shadow-sm relative overflow-hidden ${station.delay ? 'border-red-200' : 'border-gray-100'}`}>
+\pages\staff\ManagerKitchenStatus.jsx:47: <div className={`p-2.5 rounded-lg ${station.delay ? 'bg-red-50 text-red-600' : 'bg-orange-50 text-orange-600'}`}>
+\pages\staff\ManagerKitchenStatus.jsx:63: <div className={`h-1.5 rounded-full ${station.load === 'High' ? 'bg-red-500 w-[90%]' : station.load === 'Normal' ? 'bg-green-500 w-[50%]' : 'bg-blue-500 w-[20%]'}`}></div>
+\pages\staff\ManagerKitchenStatus.jsx:68: <span className={`font-bold ${station.delay ? 'text-red-600' : 'text-gray-900'}`}>{station.avgTime}</span>
+\pages\staff\ManagerOrderMonitoring.jsx:55: await api.put(`/orders/${id}/status`, { status: newStatus });
+\pages\staff\ManagerOrderMonitoring.jsx:78: displayTime: `${diffMins} mins ago`,
+\pages\staff\ManagerOrderMonitoring.jsx:110: <span className={`flex items-center gap-2 text-sm font-bold px-3 py-1.5 rounded-lg border ${delayedCount > 0 ? 'text-red-600 bg-red-50 border-red-200' : 'text-gray-500 bg-gray-50 border-gray-200'}`}>
+\pages\staff\ManagerOrderMonitoring.jsx:125: className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-colors ${filterStatus === filter ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+\pages\staff\ManagerOrderMonitoring.jsx:144: <div key={order._id} className={`rounded-2xl border p-5 shadow-sm relative overflow-hidden group ${getStatusColor(order.status, order.isDelayed)}`}>
+\pages\staff\ManagerOrderMonitoring.jsx:160: {order.table && ` • Table ${order.table.number || order.table}`}
+\pages\staff\ManagerOrderMonitoring.jsx:169: <span className={`w-2.5 h-2.5 rounded-full ${order.status === 'Pending' ? 'bg-blue-500' : order.status === 'Preparing' ? 'bg-orange-500' : order.status === 'Ready' ? 'bg-green-500' : 'bg-purple-500'}`}></span>
+\pages\staff\ManagerOrderMonitoring.jsx:214: className={`py-3 rounded-xl font-bold text-sm transition-all border ${
+\pages\staff\ManagerReports.jsx:169: className={`px-5 py-2.5 text-sm font-bold text-white rounded-xl transition-colors ${
+\pages\staff\ManagerReservations.jsx:44: <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${res.type === 'VIP' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}`}>{res.type}</span>
+\pages\staff\ManagerReservations.jsx:82: <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${res.type === 'Event' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>{res.type}</span>
+\pages\staff\ManagerReservations.jsx:166: className={`px-5 py-2.5 text-sm font-bold text-white rounded-xl transition-colors ${
+\pages\staff\ManagerSales.jsx:70: <div className="bg-blue-500 w-full rounded-t-lg transition-all" style={{ height: `${h}%` }}></div>
+\pages\staff\ManagerSales.jsx:93: <div className={`${cat.color} h-2 rounded-full`} style={{ width: cat.value }}></div>
+\pages\staff\ManagerSettings.jsx:29: <button key={i} onClick={() => setActiveTab(item.name)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-bold text-sm ${activeTab === item.name ? 'bg-green-50 text-green-700' : 'bg-white text-gray-600 hover:bg-gray-50 border border-transparent hover:border-gray-200'}`}>
+\pages\staff\ManagerSettings.jsx:125: <div className={`w-11 h-6 rounded-full flex items-center px-1 cursor-pointer transition-colors ${pref.enabled ? 'bg-green-500' : 'bg-gray-300'}`}>
+\pages\staff\ManagerSettings.jsx:126: <div className={`w-4 h-4 bg-white rounded-full shadow-sm transform transition-transform ${pref.enabled ? 'translate-x-5' : 'translate-x-0'}`}></div>
+\pages\staff\ManagerStaff.jsx:84: <tr key={i} className={`hover:bg-gray-50 transition-colors ${staff.alert ? 'bg-red-50/10' : ''}`}>
+\pages\staff\ManagerStaff.jsx:100: <span className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
+\pages\staff\ManagerStaff.jsx:248: <button onClick={() => { setSelectedStaffForManage(null); toast.success(`Updated schedule for ${selectedStaffForManage.name}`); }} className="px-5 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors">Save Changes</button>
+\pages\staff\ManagerStaff.jsx:270: <button onClick={() => { setSelectedStaffForMessage(null); toast.success(`Message sent to ${selectedStaffForMessage.name}`); }} className="px-5 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-2">Send Message</button>
+\pages\staff\WaiterActiveOrders.jsx:30: await api.put(`/orders/${orderId}/status`, { status: 'Served' });
+\pages\staff\WaiterActiveOrders.jsx:62: <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+\pages\staff\WaiterDashboard.jsx:111: await api.put(`/orders/${activeTable.orders._id}/items`, orderData);
+\pages\staff\WaiterDashboard.jsx:121: await api.put(`/tables/${activeTable.dbId}/status`, { status: 'Occupied', customers: partySize });
+\pages\staff\WaiterDashboard.jsx:132: alert(`Failed to send order: ${errorMsg}`);
+\pages\staff\WaiterDashboard.jsx:138: await api.put(`/orders/${orderId}/status`, { status });
+\pages\staff\WaiterDashboard.jsx:169: className={`px-3 py-1 rounded-full text-xs font-bold border transition-colors ${statusFilter === 'All' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
+\pages\staff\WaiterDashboard.jsx:177: className={`px-3 py-1 rounded-full text-xs font-bold border transition-colors ${statusFilter === status ? getStatusColor(status) : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'}`}
+\pages\staff\WaiterDashboard.jsx:190: className={`p-4 rounded-2xl border-2 transition-all hover:scale-[1.02] active:scale-95 flex flex-col items-center justify-center gap-2 h-32 ${getStatusColor(table.status)} ${table.status === 'Occupied' ? 'shadow-md shadow-orange-500/10' : ''}`}
+\pages\staff\WaiterDashboard.jsx:222: {table.orders.orderItems.map(i => `${i.qty}x ${i.name}`).join(', ')}
+\pages\staff\WaiterDashboard.jsx:225: <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+\pages\staff\WaiterDashboard.jsx:246: if (table.dbId) await api.put(`/tables/${table.dbId}/status`, { status: 'Billing' });
+\pages\staff\WaiterDashboard.jsx:270: <div className={`fixed inset-y-0 right-0 w-full md:w-[500px] bg-white shadow-2xl border-l border-gray-100 transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${panelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+\pages\staff\WaiterDashboard.jsx:374: className={`w-full font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all ${
+\pages\staff\WaiterPendingServes.jsx:30: await api.put(`/orders/${orderId}/status`, { status: 'Served' });
+\pages\StaffAuthPage.jsx:172: className={`w-full pl-11 pr-4 py-3.5 bg-gray-50 border rounded-xl text-sm outline-none transition-all ${errors.email ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-gray-200 hover:border-gray-300 focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100'}`}
+\pages\StaffAuthPage.jsx:185: className={`w-full pl-11 pr-11 py-3.5 bg-gray-50 border rounded-xl text-sm outline-none transition-all ${errors.password ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-gray-200 hover:border-gray-300 focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100'}`}
+\pages\StaffAuthPage.jsx:235: pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' }
+\pages\StaffAuthPage.jsx:317: <button type="button" onClick={() => trigger().then(() => register('billingCycle').onChange({ target: { name: 'billingCycle', value: 'monthly' } }))} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${!isYearly ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>Monthly</button>
+\pages\StaffAuthPage.jsx:318: <button type="button" onClick={() => trigger().then(() => register('billingCycle').onChange({ target: { name: 'billingCycle', value: 'yearly' } }))} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${isYearly ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>Yearly (Save 20%)</button>
+\pages\StaffAuthPage.jsx:323: <label key={plan} className={`relative p-4 border-2 rounded-xl cursor-pointer transition-all ${selectedPlan === plan ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-200'}`}>
+\pages\StaffAuthPage.jsx:363: <div className={`transition-all duration-1000 flex flex-col items-center justify-center ${scanActive ? 'scale-110 opacity-30 blur-sm' : ''}`}>
+\pages\StaffAuthPage.jsx:364: <img src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi%3A%2F%2Fpay%3Fpa%3Ddemo%40upi%26pn%3DRestoSys%26am%3D${getPlanAmount()}%26cu%3DINR&bgcolor=ffffff&color=1a73e8`} alt="QR Code" className="w-40 h-40" />
+\pages\StaffAuthPage.jsx:470: className={`flex-1 py-2 text-sm font-bold rounded-xl transition-all ${mode === 'login' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+\pages\StaffAuthPage.jsx:477: className={`flex-1 py-2 text-sm font-bold rounded-xl transition-all ${mode === 'register' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+\pages\superadmin\PlanManagement.jsx:94: await api.put(`/super-admin/plans/${editingPlan._id}`, payload);
+\pages\superadmin\PlanManagement.jsx:111: await api.delete(`/super-admin/plans/${id}`);
+\pages\superadmin\PlatformRestaurants.jsx:26: await api.put(`/super-admin/restaurants/${id}/approval`, { approvalStatus: status });
+\pages\superadmin\PlatformRestaurants.jsx:38: await api.put(`/super-admin/restaurants/${id}/subscription`, { status: newStatus });
+\pages\superadmin\PlatformRestaurants.jsx:97: <span className={`px-3 py-1 text-xs font-bold rounded-full ${
+\pages\superadmin\PlatformRestaurants.jsx:117: className={`p-2 rounded-lg transition-colors ${
+\pages\superadmin\SuperAdminDashboard.jsx:39: await api.put(`/super-admin/restaurants/${id}/subscription`, { status: newStatus });
+\pages\superadmin\SuperAdminDashboard.jsx:63: <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${stat.bg} ${stat.color} shrink-0`}>
+\pages\superadmin\SuperAdminDashboard.jsx:122: <span className={`px-3 py-1.5 text-xs font-bold rounded-lg border ${
+\pages\superadmin\SuperAdminDashboard.jsx:133: className={`px-4 py-2 rounded-xl text-sm font-bold transition-colors ${
+\pages\superadmin\SupportTickets.jsx:26: await api.put(`/super-admin/tickets/${id}`, { status });
+\pages\superadmin\SupportTickets.jsx:64: <span className={`px-3 py-1 text-xs font-bold rounded-full ${
+\pages\superadmin\SupportTickets.jsx:71: <span className={`px-3 py-1 text-xs font-bold rounded-full ${
+\utils\axiosInstance.js:17: //     config.headers.Authorization = `Bearer ${token}`;

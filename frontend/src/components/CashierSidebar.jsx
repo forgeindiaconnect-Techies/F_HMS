@@ -94,7 +94,7 @@ const CashierSidebar = () => {
                     )}
                     <div>
                         <h1 className="text-lg font-bold text-gray-900 dark:text-slate-100 tracking-tight leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                            {restaurant && restaurant.name ? restaurant.name : 'RestoSys'}
+                            {restaurant && restaurant.name ? restaurant.name : 'FoodNest'}
                         </h1>
                         <p className="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest mt-1">Billing</p>
                     </div>

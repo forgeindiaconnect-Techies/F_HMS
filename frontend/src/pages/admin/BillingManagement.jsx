@@ -1458,7 +1458,7 @@ const BillingManagement = () => {
                             {/* Restaurant Letterhead */}
                             <div className="text-center space-y-1 border-b-2 border-dashed border-gray-300 dark:border-slate-700 pb-4">
                                 <h2 className="text-lg font-black tracking-tight text-gray-900 dark:text-white font-sans uppercase">
-                                    {restaurant?.name || 'RestaurantHub'}
+                                    {restaurant?.name || 'FoodNest'}
                                 </h2>
                                 <p className="text-[11px] text-gray-500 dark:text-slate-400">
                                     {restaurant?.address || 'Main Branch Highway, Downtown'}

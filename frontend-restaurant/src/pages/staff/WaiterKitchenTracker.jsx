@@ -1,0 +1,203 @@
+import { useState, useEffect } from 'react';
+import { ChefHat, CheckCircle2, Clock, Flame, RefreshCw, Layers } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
+
+const WaiterKitchenTracker = () => {
+    const { api } = useAuth();
+    const [orders, setOrders] = useState([]);
+    const [stageFilter, setStageFilter] = useState('All');
+    const [loading, setLoading] = useState(true);
+
+    const fetchOrders = async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('/orders');
+            setOrders(res.data.filter(o => !['Completed', 'Served', 'Delivered'].includes(o.status)));
+        } catch (error) {
+            console.error('Failed to fetch kitchen tracker orders', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchOrders();
+        const interval = setInterval(fetchOrders, 3000);
+        return () => clearInterval(interval);
+    }, [api]);
+
+    const isSelfOrder = (o) => {
+        if (!o) return false;
+        const type = String(o.orderType || '').toLowerCase();
+        return type.includes('pickup') || type.includes('takeaway') || type.includes('takeout') || type.includes('self') || (!o.tableNumber && type !== 'dine in' && type !== 'dine-in');
+    };
+
+    const getStageStep = (status) => {
+        switch (status) {
+            case 'Order Received': case 'Pending': case 'Accepted': return 1;
+            case 'Preparing': case 'In Kitchen': return 2;
+            case 'Ready': case 'Ready for Pickup': return 3;
+            case 'Picked Up': return 4;
+            case 'Served': case 'Delivered': case 'Completed': return 5;
+            default: return 2;
+        }
+    };
+
+    const handleUpdateStatus = async (orderId, newStatus) => {
+        try {
+            await api.put(`/orders/${orderId}/status`, { status: newStatus });
+            toast.success(`Order marked as ${newStatus}`);
+            fetchOrders();
+        } catch (error) {
+            toast.error('Failed to update order status');
+        }
+    };
+
+    const displayOrders = orders;
+
+    const filteredOrders = stageFilter === 'All'
+        ? displayOrders
+        : displayOrders.filter(o => o.status === stageFilter);
+
+    return (
+        <div className="w-full max-w-[1600px] mx-auto space-y-4 sm:space-y-6 pb-12">
+            
+            {/* Banner */}
+            <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white shrink-0">
+                        <ChefHat size={26} className="sm:hidden" />
+                        <ChefHat size={30} className="hidden sm:block" />
+                    </div>
+                    <div>
+                        <h1 className="text-xl sm:text-2xl font-black tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            Kitchen Live Tracker
+                        </h1>
+                        <p className="text-xs sm:text-sm font-medium text-emerald-100 mt-0.5">
+                            Real-time order preparation status & stage progression
+                        </p>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                    <button onClick={fetchOrders} className="px-3.5 sm:px-4 py-2 sm:py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 sm:gap-2 border border-white/20 cursor-pointer">
+                        <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh Sync
+                    </button>
+                    <div className="px-3.5 sm:px-4 py-2 sm:py-2.5 bg-white text-emerald-700 font-extrabold rounded-xl text-xs shadow-md">
+                        {displayOrders.length} Active Tickets
+                    </div>
+                </div>
+            </div>
+
+            {/* Stage Filter */}
+            <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar -mx-2 px-2 pb-1">
+                {['All', 'Pending', 'Preparing', 'Ready', 'Ready for Pickup'].map((st) => (
+                    <button
+                        key={st}
+                        onClick={() => setStageFilter(st)}
+                        className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer border whitespace-nowrap shrink-0 ${
+                            stageFilter === st
+                            ? 'bg-slate-900 text-white border-slate-900 shadow-md'
+                            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                        }`}
+                    >
+                        {st === 'Ready' ? 'Prepared' : st}
+                    </button>
+                ))}
+            </div>
+
+            {/* Kitchen Tickets List */}
+            <div className="space-y-3 sm:space-y-4">
+                {filteredOrders.map((order) => {
+                    const step = getStageStep(order.status);
+                    const hasTable = order.tableNumber && order.tableNumber !== 'Any' && order.tableNumber !== 'Takeout';
+                    const tableText = hasTable ? (order.tableNumber.startsWith('Table') ? order.tableNumber : `Table ${order.tableNumber}`) : null;
+                    const isSelf = isSelfOrder(order);
+
+                    return (
+                        <div key={order._id} className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 p-4 sm:p-6 shadow-xs space-y-3 sm:space-y-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                                    <h3 className="text-xl font-black text-slate-900">{tableText || '📦 Self-Pickup Counter'}</h3>
+                                    {hasTable && (
+                                        <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-extrabold border ${
+                                            order.serviceType === 'Self Dine-In (KFC Style)'
+                                                ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                                : 'bg-blue-50 text-blue-700 border-blue-200'
+                                        }`}>
+                                            {order.serviceType === 'Self Dine-In (KFC Style)' ? 'Self Dine-In' : 'Waiter Service'}
+                                        </span>
+                                    )}
+                                    <span className="text-xs font-bold text-slate-400">#{order._id.substring(order._id.length - 6).toUpperCase()}</span>
+                                    {order.kotNumbers && order.kotNumbers.length > 0 && (
+                                        <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-slate-900 text-white shadow-xs">
+                                            {order.kotNumbers.join(', ')}
+                                        </span>
+                                    )}
+                                    {order.customerName && (
+                                        <span className="text-xs font-semibold text-slate-700">
+                                            👤 {order.customerName}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className={`px-3 py-1 rounded-xl text-xs font-extrabold uppercase ${
+                                        (order.status === 'Ready' || order.status === 'Ready for Pickup') ? 'bg-emerald-100 text-emerald-800' :
+                                        order.status === 'Preparing' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700'
+                                    }`}>
+                                        {order.status}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Item Summary */}
+                            <p className="text-xs font-bold text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                {order.orderItems?.map(i => `${i.qty}x ${i.name}`).join(' • ')}
+                            </p>
+
+                            {/* 5-Stage Step Bar */}
+                            <div>
+                                <div className="flex justify-between text-[9px] sm:text-[11px] font-extrabold text-slate-400 mb-2">
+                                    <span className={step >= 1 ? 'text-emerald-700' : ''}>1. Received</span>
+                                    <span className={step >= 2 ? 'text-emerald-700' : ''}>2. Preparing</span>
+                                    <span className={step >= 3 ? 'text-emerald-700 font-black' : ''}>3. Ready</span>
+                                    <span className={step >= 4 ? 'text-emerald-700' : ''}>4. Picked Up</span>
+                                    <span className={step >= 5 ? 'text-emerald-700' : ''}>5. Served</span>
+                                </div>
+                                <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                                    <div className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500" style={{ width: `${(step / 5) * 100}%` }} />
+                                </div>
+                            </div>
+
+                            {/* Serve / Transfer Button */}
+                            {(order.status === 'Ready' || order.status === 'Ready for Pickup') && (
+                                <div className="flex justify-end pt-2 gap-2 flex-wrap">
+                                    {hasTable ? (
+                                        <>
+                                            <button onClick={() => handleUpdateStatus(order._id, 'Served')} className="px-5 py-2.5 text-white font-extrabold rounded-xl text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer bg-emerald-600 hover:bg-emerald-700">
+                                                <CheckCircle2 size={16} /> Serve to {tableText}
+                                            </button>
+                                            {order.serviceType === 'Self Dine-In (KFC Style)' && (
+                                                <button onClick={() => handleUpdateStatus(order._id, 'Picked Up')} className="px-4 py-2.5 text-amber-800 font-extrabold rounded-xl text-xs border border-amber-300 transition-all flex items-center gap-1.5 cursor-pointer bg-amber-50 hover:bg-amber-100">
+                                                    Customer Picked Up
+                                                </button>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <button onClick={() => handleUpdateStatus(order._id, 'Picked Up')} className="px-5 py-2.5 text-white font-extrabold rounded-xl text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer bg-blue-600 hover:bg-blue-700">
+                                            <CheckCircle2 size={16} /> Collect &amp; Transfer to Cashier Counter
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+
+        </div>
+    );
+};
+
+export default WaiterKitchenTracker;

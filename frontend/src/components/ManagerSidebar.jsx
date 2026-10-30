@@ -113,8 +113,8 @@ const ManagerSidebar = () => {
                         </div>
                     )}
                     <div className="min-w-0">
-                        <h1 className="text-base sm:text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-400 leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                            {restaurant && restaurant.name ? restaurant.name : 'RestoSys'}
+                        <h1 className="text-base sm:text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-[#FF5A1F] leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            {restaurant && restaurant.name ? restaurant.name : 'FoodNest'}
                         </h1>
                         <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block mt-0.5">Manager</span>
                     </div>

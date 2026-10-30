@@ -315,7 +315,7 @@ const RestaurantSetupWizard = ({ onComplete }) => {
                                     <Users className="text-indigo-500" size={22} /> Section 2: Staff & Roles Configuration
                                 </h2>
                                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                                    RestoSys provides specialized role-based operational dashboards for every member of your team.
+                                    FoodNest provides specialized role-based operational dashboards for every member of your team.
                                 </p>
                             </div>
 

@@ -1,7 +1,8 @@
-// Updated Business Intelligence illustration asset
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Utensils, ArrowRight, CheckCircle2, ChevronRight, ArrowLeft, Sparkles, Zap, Check } from 'lucide-react';
+import WebsiteNavbar from '../components/WebsiteNavbar';
+import WebsiteFooter from '../components/WebsiteFooter';
 
 const ModuleDetails = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -14,8 +15,8 @@ const ModuleDetails = () => {
         intelligence: {
             title: "Business Intelligence & Executive Analytics",
             tag: "Restaurant Owner",
-            tagColor: "text-[#FF2D55] bg-[#FF2D55]/10 border-[#FF2D55]/20",
-            checkColor: "text-[#FF2D55]",
+            tagColor: "text-[#FF5A1F] bg-[#FF5A1F]/10 border-[#FF5A1F]/20",
+            checkColor: "text-[#FF5A1F]",
             icon: "📊",
             image: "/business-intelligence-dashboard.png",
             pills: ["📈 Total Revenue (₹24,85,000)", "💰 Total Profit (₹8,45,000)", "🛒 Total Orders (1,245)", "🍕 Top Dish: Margherita Pizza", "📊 Dine-In Sales (45%)", "⚡ Growth (+18.5%)"],
@@ -483,41 +484,33 @@ const ModuleDetails = () => {
     // ── 1. DEDICATED FULL-SCREEN FEATURE DETAIL PAGE VIEW ──────────────────────────────────
     if (selectedFeature) {
         return (
-            <div className="min-h-screen bg-white dark:bg-[#050816] text-gray-900 dark:text-white font-sans transition-colors duration-300">
+            <div className="min-h-screen bg-[#FFFDF9] text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white transition-colors relative overflow-x-hidden">
                 
-                {/* Ambient Glow Background */}
-                <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-[#FF2D55]/10 via-[#FF6A00]/5 to-transparent blur-[160px] pointer-events-none z-0 hidden dark:block" />
+                {/* Global FoodNest Navbar */}
+                <WebsiteNavbar />
 
-                {/* Header */}
-                <header className="sticky top-0 z-50 bg-white/90 dark:bg-[#050816]/80 backdrop-blur-xl border-b border-gray-100 dark:border-white/[0.08] py-3 sm:py-4 px-3 sm:px-6 shadow-sm transition-colors">
-                    <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 sm:gap-4">
-                        <Link to="/" className="flex items-center gap-2 group">
-                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-tr from-[#FF2D55] to-[#FF6A00] rounded-xl flex items-center justify-center text-white shadow-lg shadow-red-500/20 group-hover:scale-105 transition-transform shrink-0">
-                                <Utensils size={18} className="sm:w-5 sm:h-5" />
-                            </div>
-                            <h1 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">
-                                Restaurant<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF2D55] to-[#FF6A00]">Hub</span>
-                            </h1>
-                        </Link>
-                        <div className="flex items-center gap-2 sm:gap-4">
-                            <button 
-                                onClick={closeFeatureModal}
-                                className="text-gray-600 dark:text-[#94A3B8] hover:text-gray-900 dark:hover:text-white font-bold text-xs sm:text-sm transition-colors flex items-center gap-1 cursor-pointer bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-xl whitespace-nowrap"
-                            >
-                                <ArrowLeft size={14} className="sm:w-4 sm:h-4" /> <span className="hidden xs:inline">Back to</span> {current.tag} Overview
-                            </button>
-                            <Link
-                                to="/staff/register"
-                                className="bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] text-white font-extrabold px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-xl shadow-lg shadow-[#FF2D55]/25 hover:scale-[1.03] active:scale-95 transition-all text-xs sm:text-sm whitespace-nowrap"
-                            >
-                                Get Started Free
-                            </Link>
-                        </div>
-                    </div>
-                </header>
+                {/* Ambient Glow Background */}
+                <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-orange-100/40 via-amber-50/20 to-transparent blur-3xl pointer-events-none z-0" />
 
                 {/* Main Content Split Layout: Content on Left, Image on Right */}
-                <main className="w-full max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-10 space-y-8 sm:space-y-12 relative z-10">
+                <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-16 sm:pb-24 space-y-8 sm:space-y-12 relative z-10">
+
+                    {/* Back Navigation Bar */}
+                    <div className="flex items-center justify-between">
+                        <button 
+                            onClick={closeFeatureModal}
+                            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-orange-200 text-slate-600 hover:text-[#FF5A1F] font-bold text-xs shadow-xs transition-all group cursor-pointer"
+                        >
+                            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform text-[#FF5A1F]" />
+                            <span>Back to {current.tag} Overview</span>
+                        </button>
+                        <Link
+                            to="/#features"
+                            className="text-[11px] font-bold text-slate-400 hover:text-[#FF5A1F] transition-colors hidden sm:inline"
+                        >
+                            ← Back to Main Features
+                        </Link>
+                    </div>
 
                     {/* Side-by-Side Grid Section */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-start">
@@ -667,10 +660,10 @@ const ModuleDetails = () => {
                     </div>
 
                     {/* Bottom CTA Banner */}
-                    <div className="bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] rounded-2xl sm:rounded-3xl p-6 sm:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-[#FF2D55]/20">
+                    <div className="bg-gradient-to-r from-[#FF5A1F] to-[#FF8A00] rounded-2xl sm:rounded-3xl p-6 sm:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-orange-500/20">
                         <div className="space-y-2 text-center md:text-left">
                             <h2 className="text-2xl sm:text-3xl font-black">Ready to deploy {selectedFeature.name}?</h2>
-                            <p className="text-red-100 font-medium text-xs sm:text-sm">Get started with our 7-Day Free Trial and transform your restaurant operations.</p>
+                            <p className="text-orange-100 font-medium text-xs sm:text-sm">Get started with our 14-Day Free Trial and transform your restaurant operations.</p>
                         </div>
                         <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
                             <button
@@ -679,62 +672,63 @@ const ModuleDetails = () => {
                             >
                                 Back to Module Overview
                             </button>
-                            <Link to="/staff/register" className="w-full sm:w-auto text-center bg-white dark:bg-[#050816] text-gray-900 dark:text-white font-bold px-6 py-3 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-colors shadow-lg whitespace-nowrap border border-transparent dark:border-white/[0.12] text-xs sm:text-sm">
+                            <Link to="/register" className="w-full sm:w-auto text-center bg-white text-[#FF5A1F] hover:bg-orange-50 font-black px-6 py-3 rounded-xl transition-all shadow-lg whitespace-nowrap text-xs sm:text-sm">
                                 Get Started Free
                             </Link>
                         </div>
                     </div>
 
                 </main>
+
+                {/* Global FoodNest Footer */}
+                <WebsiteFooter />
             </div>
         );
     }
 
     // ── 2. MODULE OVERVIEW PAGE VIEW (NO FEATURE SELECTED) ──────────────────────────────────
     return (
-        <div className="min-h-screen bg-white dark:bg-[#050816] text-gray-900 dark:text-white font-sans transition-colors duration-300">
+        <div className="min-h-screen bg-[#FFFDF9] text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white transition-colors relative overflow-x-hidden">
 
-            {/* Ambient dark glow */}
-            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-[#FF2D55]/10 via-[#FF6A00]/5 to-transparent blur-[160px] pointer-events-none z-0 hidden dark:block" />
+            {/* Global FoodNest Navbar */}
+            <WebsiteNavbar />
 
-            {/* Header */}
-            <header className="sticky top-0 z-50 bg-white/90 dark:bg-[#050816]/80 backdrop-blur-xl border-b border-gray-100 dark:border-white/[0.08] py-4 px-6 shadow-sm dark:shadow-none transition-colors">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-2 group">
-                        <div className="w-10 h-10 bg-gradient-to-tr from-[#FF2D55] to-[#FF6A00] rounded-xl flex items-center justify-center text-white shadow-lg shadow-red-500/20 group-hover:scale-105 transition-transform">
-                            <Utensils size={22} />
-                        </div>
-                        <h1 className="text-2xl font-black text-gray-900 dark:text-white">
-                            Restaurant<span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF2D55] to-[#FF6A00]">Hub</span>
-                        </h1>
-                    </Link>
-                    <div className="flex items-center gap-4">
-                        <Link to="/features/management" className="text-gray-500 dark:text-[#94A3B8] hover:text-gray-900 dark:hover:text-white font-semibold text-sm transition-colors flex items-center gap-1">
-                            <ArrowLeft size={16} /> Back to Overview
-                        </Link>
-                        <Link
-                            to="/staff/register"
-                            className="bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] hover:from-[#E0264A] hover:to-[#E55F00] text-white font-extrabold px-5 py-2.5 rounded-xl shadow-lg shadow-[#FF2D55]/25 hover:scale-[1.03] active:scale-95 transition-all text-sm"
-                        >
-                            Get Started Free
-                        </Link>
-                    </div>
-                </div>
-            </header>
+            {/* Ambient Warm Glow */}
+            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-orange-100/40 via-amber-50/20 to-transparent blur-3xl pointer-events-none z-0" />
 
             {/* Content Container */}
-            <main className="w-full px-4 sm:px-6 py-16 space-y-16 relative z-10">
+            <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-16 sm:pb-24 space-y-12 relative z-10">
+
+                {/* Back Navigation Bar */}
+                <div className="flex items-center justify-between">
+                    <Link 
+                        to="/features/management" 
+                        className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-orange-200 text-slate-600 hover:text-[#FF5A1F] font-bold text-xs shadow-xs transition-all group cursor-pointer"
+                    >
+                        <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform text-[#FF5A1F]" />
+                        <span>Back to Management Overview</span>
+                    </Link>
+                    <Link
+                        to="/#features"
+                        className="text-[11px] font-bold text-slate-400 hover:text-[#FF5A1F] transition-colors hidden sm:inline"
+                    >
+                        ← Back to Features
+                    </Link>
+                </div>
 
                 {/* Header Banner */}
-                <div className="space-y-4 text-center max-w-3xl mx-auto">
-                    <div className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full border font-bold text-xs uppercase tracking-wider ${current.tagColor}`}>
+                <div className="space-y-3 sm:space-y-4 text-center max-w-3xl mx-auto">
+                    <p className="text-sm sm:text-[15px] font-serif italic font-bold text-[#FF5A0A] tracking-wide">
+                        FoodNest Module Specification
+                    </p>
+                    <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-50 border border-orange-100 text-[#FF5A1F] font-bold text-xs uppercase tracking-wider shadow-xs">
                         <span>{current.tag}</span>
-                        <ChevronRight size={14} />
+                        <ChevronRight size={13} />
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#142B45] tracking-tight leading-[1.14]">
                         {current.title}
                     </h1>
-                    <p className="text-gray-500 dark:text-[#94A3B8] font-medium text-lg leading-relaxed">
+                    <p className="text-sm sm:text-base text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed">
                         Click on any feature card below to open its dedicated full-screen specification page.
                     </p>
                 </div>
@@ -779,13 +773,13 @@ const ModuleDetails = () => {
                             <div 
                                 key={idx} 
                                 onClick={() => openFeatureModal(feat, idx)}
-                                className="bg-white dark:bg-white/[0.03] rounded-3xl p-8 border border-gray-200 dark:border-white/[0.08] shadow-sm dark:shadow-none hover:shadow-xl hover:border-[#FF2D55]/50 dark:hover:border-[#FF2D55]/40 hover:-translate-y-1 transition-all duration-300 cursor-pointer space-y-4 group relative overflow-hidden"
+                                className="bg-white dark:bg-white/[0.03] rounded-3xl p-8 border border-gray-200 dark:border-white/[0.08] shadow-sm dark:shadow-none hover:shadow-xl hover:border-[#FF5A1F]/50 dark:hover:border-[#FF5A1F]/40 hover:-translate-y-1 transition-all duration-300 cursor-pointer space-y-4 group relative overflow-hidden"
                             >
                                 {/* Glow Accent on Hover */}
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-rose-500/10 to-transparent rounded-full blur-xl group-hover:opacity-100 opacity-0 transition-opacity" />
 
                                 <div className="flex items-center justify-between">
-                                    <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-[#FF2D55]/10 flex items-center justify-center text-[#FF2D55] font-black text-lg border border-red-100 dark:border-[#FF2D55]/20 group-hover:scale-110 transition-transform">
+                                    <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-[#FF5A1F]/10 flex items-center justify-center text-[#FF5A1F] font-black text-lg border border-red-100 dark:border-[#FF5A1F]/20 group-hover:scale-110 transition-transform">
                                         {idx + 1}
                                     </div>
                                     <span className="text-xs font-bold text-rose-500 dark:text-rose-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
@@ -818,17 +812,20 @@ const ModuleDetails = () => {
                 </div>
 
                 {/* Call to Action Card */}
-                <div className="max-w-5xl mx-auto bg-gradient-to-r from-[#FF2D55] to-[#FF6A00] rounded-3xl p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-[#FF2D55]/20">
+                <div className="max-w-5xl mx-auto bg-gradient-to-r from-[#FF5A1F] to-[#FF8A00] rounded-3xl p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-orange-500/20">
                     <div className="space-y-2 text-center md:text-left">
                         <h2 className="text-3xl font-black">Ready to optimize your restaurant?</h2>
-                        <p className="text-red-100 font-medium text-sm">Experience the full power of our restaurant management suite today.</p>
+                        <p className="text-orange-100 font-medium text-sm">Experience the full power of the FoodNest restaurant management suite today.</p>
                     </div>
-                    <Link to="/staff/register" className="bg-white dark:bg-[#050816] text-gray-900 dark:text-white font-bold px-8 py-3.5 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-colors shadow-lg whitespace-nowrap border border-transparent dark:border-white/[0.12]">
+                    <Link to="/register" className="bg-white text-[#FF5A1F] hover:bg-orange-50 font-black px-8 py-3.5 rounded-xl transition-all shadow-lg whitespace-nowrap">
                         Get Started Free
                     </Link>
                 </div>
 
             </main>
+
+            {/* Global FoodNest Footer */}
+            <WebsiteFooter />
         </div>
     );
 };

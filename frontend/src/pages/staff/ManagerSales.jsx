@@ -21,7 +21,7 @@ const ManagerSales = () => {
                 doc.setFont('Helvetica', 'bold');
                 doc.setFontSize(22);
                 doc.setTextColor(22, 163, 74); // green-600
-                doc.text('RestoSys Sales Report', 14, 20);
+                doc.text('FoodNest Sales Report', 14, 20);
 
                 doc.setFont('Helvetica', 'normal');
                 doc.setFontSize(10);

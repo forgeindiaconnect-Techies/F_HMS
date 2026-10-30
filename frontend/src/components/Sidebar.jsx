@@ -6,7 +6,7 @@ import {
     CalendarCheck, ShoppingBag, CreditCard, Tag, FileText, PieChart, 
     Bell, ReceiptText, Lock, QrCode, MessageSquare, HelpCircle, Volume2, LifeBuoy,
     Network, ChefHat, Receipt, TrendingUp, DollarSign, Clock, Sparkles, Sliders,
-    CalendarDays, FileSpreadsheet
+    CalendarDays, FileSpreadsheet, MessageSquareQuote
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../context/AuthContext';
@@ -154,6 +154,7 @@ const Sidebar = () => {
             title: 'Reports & Config',
             items: [
                 { name: 'Setup Wizard', path: '/admin/setup-wizard', icon: Sparkles },
+                { name: 'My Testimonial', path: '/admin/my-testimonial', icon: MessageSquareQuote },
                 { name: 'Restaurant Settings', path: '/admin/settings?tab=operations', icon: Sliders },
                 { name: 'General Settings', path: '/admin/settings', icon: Settings },
                 { name: 'Reports', path: '/admin/reports', icon: FileText, moduleKey: 'salesReports' },
@@ -202,8 +203,8 @@ const Sidebar = () => {
                     </div>
                 )}
                 <div className="flex flex-col truncate">
-                    <h1 className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-400 truncate max-w-[150px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                        {restaurant && restaurant.name ? restaurant.name : 'RestoSys'}
+                    <h1 className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-[#FF5A1F] truncate max-w-[150px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        {restaurant && restaurant.name ? restaurant.name : 'FoodNest'}
                     </h1>
                     {isCustomBilling && (
                         <span className="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/60 w-fit mt-0.5 truncate max-w-[140px]">

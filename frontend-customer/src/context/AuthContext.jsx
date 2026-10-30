@@ -1,0 +1,208 @@
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
+import { getApiUrl } from '../utils/axiosInstance';
+
+const AuthContext = createContext();
+
+export const useAuth = () => useContext(AuthContext);
+
+const api = axios.create({
+    baseURL: getApiUrl(),
+    withCredentials: true,
+});
+
+api.interceptors.request.use((config) => {
+    let user = null;
+    try {
+        user = JSON.parse(localStorage.getItem('restosys_staff_user'));
+    } catch (e) {
+        localStorage.removeItem('restosys_staff_user');
+    }
+    if (user && user.token) {
+        if (config.headers && typeof config.headers.set === 'function') {
+            config.headers.set('Authorization', `Bearer ${user.token}`);
+        } else {
+            config.headers = config.headers || {};
+            config.headers.Authorization = `Bearer ${user.token}`;
+        }
+    }
+    return config;
+});
+
+api.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const config = error.config;
+        const status = error.response ? error.response.status : 0;
+        const isNetworkDown = !error.response || error.code === 'ERR_NETWORK';
+        const isColdStart = status === 502 || status === 503 || status === 504 || isNetworkDown;
+
+        // Fallback to live Render backend ONLY if local port 5000 is completely down/unreachable, NEVER on 401/400/404
+        if (config && isNetworkDown && config.baseURL && config.baseURL.includes('localhost:5000')) {
+            config.baseURL = 'https://f-hms-1.onrender.com/api';
+            return api.request(config);
+        }
+        if (config && isColdStart && (!config._retryCount || config._retryCount < 5)) {
+            config._retryCount = (config._retryCount || 0) + 1;
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            return api.request(config);
+        }
+        if (error.response && error.response.status === 401) {
+            const path = window.location.pathname;
+            const isLoginRoute = path === '/login' || path === '/register' || path === '/delivery/login' || path === '/customer/login' || path === '/staff/login';
+            const isAuthEndpoint = config && config.url && (config.url.includes('/auth/login') || config.url.includes('/auth/verify-otp') || config.url.includes('/auth/send-otp'));
+            
+            if (!isLoginRoute && !isAuthEndpoint) {
+                localStorage.removeItem('restosys_staff_user');
+                if (path.startsWith('/delivery')) {
+                    window.location.href = '/delivery/login';
+                } else {
+                    window.location.href = '/login';
+                }
+            }
+        }
+        if (error.response && error.response.status === 402) {
+            console.warn('[Subscription Over] Action blocked by server: Subscription expired or frozen.');
+        }
+        return Promise.reject(error);
+    }
+);
+
+export const AuthProvider = ({ children }) => {
+    const [user, setUser] = useState(null);
+    const [restaurant, setRestaurant] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    const fetchRestaurant = useCallback(async (currentUser = user) => {
+        const path = typeof window !== 'undefined' ? window.location.pathname : '';
+        const isStaffRoute = path.startsWith('/admin') || path.startsWith('/staff') || path.startsWith('/kitchen') || path.startsWith('/pos') || path.startsWith('/owner') || path.startsWith('/waiter') || path.startsWith('/chef') || path.startsWith('/cashier') || path.startsWith('/manager');
+        
+        if (!isStaffRoute || !currentUser || currentUser.role === 'Customer' || currentUser.role === 'SuperAdmin' || currentUser.role === 'DeliveryPartner') {
+            setRestaurant(null);
+            return null;
+        }
+        try {
+            const res = await api.get('/restaurants/mine');
+            if (res.data) {
+                setRestaurant(res.data);
+                if (currentUser && !currentUser.restaurantId && res.data._id) {
+                    const updatedUser = { ...currentUser, restaurantId: res.data._id, branchId: currentUser.branchId || res.data.mainBranchId };
+                    setUser(updatedUser);
+                    localStorage.setItem('restosys_staff_user', JSON.stringify(updatedUser));
+                }
+            } else {
+                setRestaurant(null);
+            }
+            return res.data;
+        } catch (error) {
+            if (error.response && error.response.status === 403 && error.response.data.requiresVerification) {
+                const partialRest = { verificationStatus: error.response.data.verificationStatus };
+                setRestaurant(partialRest);
+                return partialRest;
+            }
+            console.error('Failed to fetch restaurant in context:', error);
+            return null;
+        }
+    }, [user]);
+
+    useEffect(() => {
+        const initializeAuth = async () => {
+            const storedUser = localStorage.getItem('restosys_staff_user');
+            if (storedUser) {
+                try {
+                    const parsedUser = JSON.parse(storedUser);
+                    setUser(parsedUser);
+                    await fetchRestaurant(parsedUser);
+                } catch (e) {
+                    localStorage.removeItem('restosys_staff_user');
+                }
+            }
+            setLoading(false);
+        };
+        initializeAuth();
+    }, []);
+
+    // Auto-refresh restaurant subscription data every 30s and on window focus (Staff/Admin only on staff pages)
+    useEffect(() => {
+        const path = typeof window !== 'undefined' ? window.location.pathname : '';
+        const isStaffRoute = path.startsWith('/admin') || path.startsWith('/staff') || path.startsWith('/kitchen') || path.startsWith('/pos') || path.startsWith('/owner') || path.startsWith('/waiter') || path.startsWith('/chef') || path.startsWith('/cashier') || path.startsWith('/manager');
+
+        if (!isStaffRoute || !user || user.role === 'Customer' || user.role === 'SuperAdmin' || user.role === 'DeliveryPartner') return;
+
+        const refresh = () => fetchRestaurant(user);
+        window.addEventListener('focus', refresh);
+        const interval = setInterval(refresh, 30000);
+
+        return () => {
+            window.removeEventListener('focus', refresh);
+            clearInterval(interval);
+        };
+    }, [user, fetchRestaurant]);
+
+    const clearAllStaleState = () => {
+        setUser(null);
+        setRestaurant(null);
+        localStorage.removeItem('restosys_staff_user');
+        localStorage.removeItem('token');
+        // Clear all cached local data keys to prevent cross-restaurant data leakage
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('restosys_') || key.startsWith('cart_') || key.startsWith('table_')) {
+                localStorage.removeItem(key);
+            }
+        });
+        sessionStorage.clear();
+    };
+
+    const login = async (email, password) => {
+        try {
+            clearAllStaleState();
+            const { data } = await api.post('/auth/login', { email, password, loginType: 'staff' });
+            setUser(data);
+            localStorage.setItem('restosys_staff_user', JSON.stringify(data));
+            if (data?.token) {
+                localStorage.setItem('token', data.token);
+            }
+            await fetchRestaurant(data);
+            return { success: true, data };
+        } catch (error) {
+            const errorMsg = error.response?.data?.message || 'Login failed';
+            if (!error.response || error.response.status !== 401) {
+                console.error('Login error:', errorMsg);
+            }
+            return { success: false, message: errorMsg };
+        }
+    };
+
+    const register = async (name, email, password, phoneNumber, roleName, loginType = 'staff', restaurantName, plan, billingCycle) => {
+        try {
+            clearAllStaleState();
+            const { data } = await api.post('/auth/register', { 
+                name, email, password, phoneNumber, roleName, loginType, restaurantName, plan, billingCycle 
+            });
+            setUser(data);
+            localStorage.setItem('restosys_staff_user', JSON.stringify(data));
+            await fetchRestaurant(data);
+            return { success: true, data };
+        } catch (error) {
+            console.error('Register error:', error.response?.data || error.message);
+            return { success: false, message: error.response?.data?.message || 'Registration failed' };
+        }
+    };
+
+    const logout = async () => {
+        const isDelivery = user?.role === 'DeliveryPartner' || window.location.pathname.startsWith('/delivery');
+        try {
+            await api.post('/auth/logout');
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+        clearAllStaleState();
+        window.location.href = isDelivery ? '/delivery/login' : '/staff/login';
+    };
+
+    return (
+        <AuthContext.Provider value={{ user, setUser, restaurant, fetchRestaurant, login, register, logout, loading, api }}>
+            {!loading && children}
+        </AuthContext.Provider>
+    );
+};

@@ -1,0 +1,273 @@
+import { useState, useEffect } from 'react';
+import { Search, Clock, CheckCircle2, ChevronRight, ShoppingBag, Truck, Utensils, AlertCircle, X, MapPin } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
+import LiveOrderMap from '../../components/LiveOrderMap';
+
+const getTypeIcon = (type) => {
+    switch (type) {
+        case 'Dine-in': return <Utensils size={16} />;
+        case 'Delivery': return <Truck size={16} />;
+        default: return <ShoppingBag size={16} />; // Takeaway
+    }
+};
+
+const getStatusColor = (status, isDelayed) => {
+    if (isDelayed) return 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/60';
+    switch (status) {
+        case 'Pending':
+        case 'New': return 'bg-blue-50/70 dark:bg-slate-900 border-blue-200 dark:border-slate-800';
+        case 'Preparing': return 'bg-orange-50/70 dark:bg-slate-900 border-orange-200 dark:border-slate-800';
+        case 'Ready': return 'bg-green-50/70 dark:bg-slate-900 border-green-200 dark:border-slate-800';
+        case 'Dispatched': return 'bg-purple-50/70 dark:bg-slate-900 border-purple-200 dark:border-slate-800';
+        default: return 'bg-gray-50 dark:bg-slate-900 border-gray-200 dark:border-slate-800';
+    }
+};
+
+const ManagerOrderMonitoring = () => {
+    const { api, user } = useAuth();
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [filterStatus, setFilterStatus] = useState('All');
+    
+    const [selectedOrder, setSelectedOrder] = useState(null);
+
+    const fetchOrders = async () => {
+        try {
+            // Fetch active orders for current user
+            const { data } = await api.get('/orders');
+            setOrders(Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error('Failed to fetch live orders', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchOrders();
+        // Optional: Polling every 30 seconds
+        const interval = setInterval(fetchOrders, 30000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const handleStatusUpdate = async (id, newStatus) => {
+        try {
+            await api.put(`/orders/${id}/status`, { status: newStatus });
+            fetchOrders();
+            setSelectedOrder(null);
+        } catch (error) {
+            console.error('Failed to update status', error);
+            toast.success('Failed to update order status');
+        }
+    };
+
+    // Filter orders strictly for current logged in user's restaurant & branch
+    const userRestId = user?.restaurantId?._id || user?.restaurantId;
+    const userBranchId = user?.branchId?._id || user?.branchId;
+
+    const tenantOrders = orders.filter(order => {
+        const orderRestId = order.restaurantId?._id || order.restaurantId;
+        const orderBranchId = order.branchId?._id || order.branchId;
+
+        if (userRestId && orderRestId && String(orderRestId) !== String(userRestId)) {
+            return false;
+        }
+        if (userBranchId && orderBranchId && String(orderBranchId) !== String(userBranchId)) {
+            return false;
+        }
+        return true;
+    });
+
+    // Calculate derived data
+    const activeOrders = tenantOrders.filter(o => o.status !== 'Completed' && o.status !== 'Cancelled');
+    const completedTodayCount = tenantOrders.filter(o => o.status === 'Completed').length;
+
+    // Enhance active orders with "delayed" calculation and formatted time
+    const enhancedOrders = activeOrders.map(order => {
+        const orderTime = new Date(order.createdAt);
+        const diffMins = Math.floor((new Date() - orderTime) / 60000);
+        const isDelayed = diffMins > 20 && ['Pending', 'Preparing'].includes(order.status);
+        
+        return {
+            ...order,
+            diffMins,
+            isDelayed,
+            displayTime: `${diffMins} mins ago`,
+            itemsCount: (order.orderItems || order.items) 
+                ? (order.orderItems || order.items).reduce((acc, item) => acc + (item.quantity || item.qty || 1), 0) 
+                : 0
+        };
+    });
+
+    const delayedCount = enhancedOrders.filter(o => o.isDelayed).length;
+
+    // Filtering
+    const filteredOrders = enhancedOrders.filter(o => {
+        if (filterStatus === 'All') return true;
+        if (filterStatus === 'Delayed') return o.isDelayed;
+        return o.status === filterStatus || (filterStatus === 'New' && o.status === 'Pending');
+    });
+
+    // Counts for tabs
+    const counts = {
+        All: enhancedOrders.length,
+        New: enhancedOrders.filter(o => o.status === 'Pending' || o.status === 'New').length,
+        Preparing: enhancedOrders.filter(o => o.status === 'Preparing').length,
+        Ready: enhancedOrders.filter(o => o.status === 'Ready').length,
+        Dispatched: enhancedOrders.filter(o => o.status === 'Dispatched').length,
+        Delayed: delayedCount
+    };
+
+    return (
+        <div className="w-full max-w-[1600px] mx-auto space-y-4 sm:space-y-6 pb-12 font-sans relative">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6">
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>Live Order Monitoring</h2>
+                    <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Real-time view of all branch orders and fulfillment bottlenecks.</p>
+                </div>
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
+                    <span className={`flex items-center gap-2 text-sm font-bold px-3 py-1.5 rounded-lg border ${delayedCount > 0 ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800' : 'text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-900 border-gray-200 dark:border-slate-800'}`}>
+                        <AlertCircle size={16} /> {delayedCount} Delayed Order{delayedCount !== 1 ? 's' : ''}
+                    </span>
+                    <span className="flex items-center gap-2 text-sm font-bold text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950/40 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-800">
+                        <CheckCircle2 size={16} /> {completedTodayCount} Completed Today
+                    </span>
+                </div>
+            </div>
+
+            {/* Quick Filters */}
+            <div className="flex gap-2 mb-6 overflow-x-auto pb-2 custom-scrollbar">
+                {['All', 'New', 'Preparing', 'Ready', 'Dispatched', 'Delayed'].map((filter, i) => (
+                    <button 
+                        key={filter} 
+                        onClick={() => setFilterStatus(filter)}
+                        className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-colors ${filterStatus === filter ? 'bg-gray-900 dark:bg-green-600 text-white' : 'bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
+                    >
+                        {filter === 'All' ? 'All Active' : filter} ({counts[filter] || 0})
+                    </button>
+                ))}
+            </div>
+
+            {/* Active Orders Grid */}
+            {loading ? (
+                <div className="flex justify-center p-20">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+                </div>
+            ) : filteredOrders.length === 0 ? (
+                <div className="text-center p-20 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800">
+                    <p className="text-gray-500 dark:text-slate-400 font-medium">No live orders matching this filter.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {filteredOrders.map((order) => (
+                        <div key={order._id} className={`rounded-2xl border p-5 shadow-sm relative overflow-hidden group ${getStatusColor(order.status, order.isDelayed)}`}>
+                            {order.isDelayed && (
+                                <div className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-xl">
+                                    Delayed
+                                </div>
+                            )}
+                            
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                                    <div className="p-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm text-gray-700 dark:text-slate-200 border border-gray-100 dark:border-slate-700">
+                                        {getTypeIcon(order.orderType)}
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-900 dark:text-white text-lg">#{order._id.substring(order._id.length - 6).toUpperCase()}</h3>
+                                        <p className="text-[10px] sm:text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide block leading-tight break-words">
+                                            {order.orderType || 'Dine-in'} 
+                                            {order.table && ` • Table ${order.table.number || order.table}`}
+                                        </p>
+                                    </div>
+                                </div>
+                                <h3 className="font-bold text-gray-900 dark:text-white text-lg">₹{(order.totalPrice || 0).toFixed(2)}</h3>
+                            </div>
+
+                            <div className="flex items-center justify-between mb-4 bg-white/70 dark:bg-slate-800/80 rounded-xl p-3 border border-white/50 dark:border-slate-700/60">
+                                <div className="flex items-center gap-2">
+                                    <span className={`w-2.5 h-2.5 rounded-full ${order.status === 'Pending' ? 'bg-blue-500' : order.status === 'Preparing' ? 'bg-orange-500' : order.status === 'Ready' ? 'bg-green-500' : 'bg-purple-500'}`}></span>
+                                    <span className="text-sm font-bold text-gray-700 dark:text-slate-200">{order.status}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 text-sm font-medium text-gray-600 dark:text-slate-300">
+                                    <Clock size={14} className={order.isDelayed ? 'text-red-500' : 'text-gray-400 dark:text-slate-400'} /> {order.displayTime}
+                                </div>
+                            </div>
+
+                            <div className="flex justify-between items-center pt-2">
+                                <p className="text-sm font-medium text-gray-600 dark:text-slate-300">{order.itemsCount} Items</p>
+                                <button 
+                                    onClick={() => setSelectedOrder(order)}
+                                    className="text-sm font-bold text-gray-900 dark:text-white bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-sm flex items-center gap-1 cursor-pointer"
+                                >
+                                    Action <ChevronRight size={14} />
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Action Modal */}
+            {selectedOrder && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={() => setSelectedOrder(null)}></div>
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md relative z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                            <div>
+                                <h3 className="font-bold text-gray-900 text-lg">Order #{selectedOrder._id.substring(selectedOrder._id.length - 6).toUpperCase()}</h3>
+                                <p className="text-sm text-gray-500">{selectedOrder.orderType}</p>
+                            </div>
+                            <button onClick={() => setSelectedOrder(null)} className="text-gray-400 hover:text-gray-600">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        
+                        <div className="p-6 space-y-4">
+                            {selectedOrder.orderType === 'Delivery' && (
+                                <div className="space-y-2 min-w-0 pr-1.5 flex-1">
+                                    <h4 className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5 block leading-tight break-words">
+                                        <MapPin size={14} className="text-emerald-500" /> Live Delivery OSRM Tracking
+                                    </h4>
+                                    <LiveOrderMap
+                                        customerLocation={selectedOrder.customerLocation}
+                                        restaurantLocation={selectedOrder.restaurantLocation}
+                                        deliveryPartnerLocation={selectedOrder.deliveryPartnerLocation}
+                                        orderStatus={selectedOrder.status}
+                                        deliveryStatus={selectedOrder.deliveryStatus}
+                                        deliveryPartnerName={selectedOrder.deliveryPartner?.name || 'Rider'}
+                                        height="240px"
+                                    />
+                                </div>
+                            )}
+
+                            <div>
+                                <h4 className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block leading-tight break-words">Update Status</h4>
+                                <div className="grid grid-cols-2 gap-2.5">
+                                    {['Pending', 'Preparing', 'Ready', 'Dispatched', 'Completed', 'Cancelled'].map(status => (
+                                        <button
+                                            key={status}
+                                            onClick={() => handleStatusUpdate(selectedOrder._id, status)}
+                                            disabled={selectedOrder.status === status}
+                                            className={`py-2.5 rounded-xl font-bold text-xs transition-all border ${
+                                                selectedOrder.status === status 
+                                                    ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' 
+                                                    : status === 'Cancelled'
+                                                        ? 'bg-white text-red-600 border-red-200 hover:bg-red-50'
+                                                        : 'bg-white text-gray-700 border-gray-200 hover:border-gray-900 shadow-sm hover:shadow'
+                                            }`}
+                                        >
+                                            Mark {status}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default ManagerOrderMonitoring;

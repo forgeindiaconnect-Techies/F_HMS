@@ -110,12 +110,12 @@ const TablesManagement = () => {
 
     const getQrUrl = (table) => {
         if (!table) return '';
-        let origin = window.location.origin;
+        let origin = import.meta.env.VITE_CUSTOMER_URL || window.location.origin;
         if (localIp) {
             origin = origin.replace(/localhost|127\.0\.0\.1/, localIp);
         }
         if (origin.includes('192.168.') || origin.includes('localhost') || origin.includes('127.0.0.1')) {
-            origin = origin.replace(/:\d+$/, ':5173');
+            origin = origin.replace(/:\d+$/, ':5174');
         }
         const bId = table.branchId?._id || table.branchId || '';
         const rId = table.restaurantId?._id || table.restaurantId || '';
@@ -437,7 +437,7 @@ const TablesManagement = () => {
 
                         <div className="bg-green-50 border border-green-100 rounded-2xl p-6 mt-4 mb-4">
                             <h3 className="text-2xl font-black text-emerald-800 tracking-wider">TABLE {selectedTable.tableNumber}</h3>
-                            <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest mt-0.5">RestoSys QR Ordering</p>
+                            <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest mt-0.5">FoodNest QR Ordering</p>
                             
                             <div className="bg-white p-4 rounded-xl border border-gray-150 mt-4 shadow-sm">
                                 <img 

@@ -19,7 +19,7 @@ const DEFAULT_ALERTS = [
         id: 'wa-alert-2',
         type: 'closing',
         title: 'Daily Executive Sales & GST Statement',
-        message: '📊 *RESTOSYS DAILY EXECUTIVE CLOSING SUMMARY*\n🗓️ Date: Today\n📍 Store: Downtown Gourmet Bistro #102\n\n• Gross Revenue: *₹1,24,917.00*\n• Net Bank Settlement: *₹1,14,461.15*\n• Total GST Collected (5%): *₹6,245.85*\n• Total Dining Orders: *342 Orders* | AOV: *₹365.00*\n• Food Cost (CoGS): 31.6% (Optimal)\n• Cash Drawer Balance: ₹19,976 (Zero variance)\n\n✅ Shift certified by Store Manager.',
+        message: '📊 *FOODNEST DAILY EXECUTIVE CLOSING SUMMARY*\n🗓️ Date: Today\n📍 Store: Downtown Gourmet Bistro #102\n\n• Gross Revenue: *₹1,24,917.00*\n• Net Bank Settlement: *₹1,14,461.15*\n• Total GST Collected (5%): *₹6,245.85*\n• Total Dining Orders: *342 Orders* | AOV: *₹365.00*\n• Food Cost (CoGS): 31.6% (Optimal)\n• Cash Drawer Balance: ₹19,976 (Zero variance)\n\n✅ Shift certified by Store Manager.',
         recipient: 'Owner WhatsApp (+91 98765 43210)',
         time: '18 mins ago',
         timestamp: Date.now() - 1000 * 60 * 18,
@@ -41,7 +41,7 @@ const DEFAULT_ALERTS = [
         id: 'wa-alert-4',
         type: 'customer',
         title: 'VIP Guest Anniversary Reservation',
-        message: '🎉 *VIP GOLD DINER ARRIVAL NOTIFICATION*\nGuest: *Amit Sharma* (1,240 RestoSys Coins)\n• Reservation: Table 02 (Corner Window)\n• Occasion: 3rd Wedding Anniversary\n• Note: Complimentary dessert platter pre-assigned to order.',
+        message: '🎉 *VIP GOLD DINER ARRIVAL NOTIFICATION*\nGuest: *Amit Sharma* (1,240 FoodNest Coins)\n• Reservation: Table 02 (Corner Window)\n• Occasion: 3rd Wedding Anniversary\n• Note: Complimentary dessert platter pre-assigned to order.',
         recipient: 'Owner WhatsApp (+91 98765 43210)',
         time: '1 hour ago',
         timestamp: Date.now() - 1000 * 60 * 65,
@@ -193,7 +193,7 @@ export const WhatsAppNotificationProvider = ({ children }) => {
         const net = customData.net || 114461;
 
         const msg = 
-`📊 *RESTOSYS DAILY EXECUTIVE CLOSING SUMMARY*
+`📊 *FOODNEST DAILY EXECUTIVE CLOSING SUMMARY*
 🗓️ Date: ${dateStr}
 📍 Store: Downtown Gourmet Bistro #102
 
@@ -205,7 +205,7 @@ export const WhatsAppNotificationProvider = ({ children }) => {
 • Food Cost (CoGS): 31.6% (Within Budget)
 • Cash Counter Reconciled: ₹19,976.00 (Zero Variance)
 
-✅ All shifts closed and reconciled. Daily audit certified by RestoSys Cloud.`;
+✅ All shifts closed and reconciled. Daily audit certified by FoodNest Cloud.`;
 
         triggerAlert({
             title: 'Daily Closing P&L Dispatched',

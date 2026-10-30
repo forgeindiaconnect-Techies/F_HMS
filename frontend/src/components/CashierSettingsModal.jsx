@@ -481,7 +481,7 @@ const CashierSettingsModal = ({
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                                 <div className="space-y-1">
                                     <span className="text-gray-400 dark:text-slate-500 font-bold">Restaurant Name</span>
-                                    <p className="font-black text-gray-900 dark:text-white">{restaurant?.name || 'RestoSys Dining'}</p>
+                                    <p className="font-black text-gray-900 dark:text-white">{restaurant?.name || 'FoodNest Dining'}</p>
                                 </div>
                                 <div className="space-y-1">
                                     <span className="text-gray-400 dark:text-slate-500 font-bold">POS Terminal</span>
