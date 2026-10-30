@@ -51,7 +51,7 @@ const WaiterSidebar = () => {
             title: 'Floor Operations',
             items: [
                 { name: 'Waiter Desk Overview', path: '/waiter', icon: LayoutGrid },
-                { name: 'Priority Action Center', path: '/waiter/priority-actions', icon: Flame, badge: 'Urgent', badgeColor: 'bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300' },
+                { name: 'Priority Action Center', path: '/waiter/priority-actions', icon: Flame, badge: 'Urgent', badgeColor: 'bg-rose-500/20 text-rose-300 border border-rose-500/30' },
                 { name: 'Interactive Floor Plan', path: '/waiter/floor-plan', icon: Utensils },
                 { name: 'Active Orders', path: '/waiter/orders', icon: ClipboardList },
             ]
@@ -59,8 +59,8 @@ const WaiterSidebar = () => {
         {
             title: 'Kitchen & Service',
             items: [
-                { name: 'Kitchen Live Tracker', path: '/waiter/kitchen-tracker', icon: ChefHat, badge: 'Live', badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300' },
-                { name: 'Food Ready / Pending', path: '/waiter/pending', icon: Clock, badge: 'Hot', badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300' },
+                { name: 'Kitchen Live Tracker', path: '/waiter/kitchen-tracker', icon: ChefHat, badge: 'Live', badgeColor: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' },
+                { name: 'Food Ready / Pending', path: '/waiter/pending', icon: Clock, badge: 'Hot', badgeColor: 'bg-amber-500/20 text-amber-300 border border-amber-500/30' },
                 { name: 'Completed Serves', path: '/waiter/completed', icon: CheckSquare },
             ]
         },
@@ -97,41 +97,43 @@ const WaiterSidebar = () => {
             />
         )}
         <aside className={clsx(
-            "w-64 bg-white dark:bg-slate-900 shadow-[2px_0_15px_-3px_rgba(0,0,0,0.05)] h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-transform duration-300 z-40 border-r border-gray-100 dark:border-slate-800",
+            "w-64 bg-[#061e1c] text-white border-r border-[#0d3632] shadow-2xl h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-transform duration-300 z-40",
             isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}>
             {/* Header */}
-            <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex items-center gap-3 shrink-0">
-                {logoSrc && !logoError ? (
-                    <div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 flex items-center justify-center shrink-0">
-                        <img 
-                            src={logoSrc} 
-                            alt="Logo" 
-                            onError={() => setLogoError(true)}
-                            className="w-full h-full object-cover" 
-                        />
+            <div className="h-16 flex items-center px-5 border-b border-[#0d3632] shrink-0">
+                <div className="flex items-center gap-3">
+                    {logoSrc && !logoError ? (
+                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-[#144743] bg-[#0c2e2b] flex items-center justify-center shrink-0">
+                            <img 
+                                src={logoSrc} 
+                                alt="Logo" 
+                                onError={() => setLogoError(true)}
+                                className="w-full h-full object-cover" 
+                            />
+                        </div>
+                    ) : (
+                        <div className="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-teal-950 shrink-0">
+                            <Utensils className="text-white" size={22} strokeWidth={2.5} />
+                        </div>
+                    )}
+                    <div>
+                        <h1 className="text-base font-bold text-white tracking-tight leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            {restaurant && restaurant.name ? restaurant.name : 'FoodNest'}
+                        </h1>
+                        <span className="text-[10px] font-bold text-teal-400 uppercase tracking-widest block mt-1">Floor Desk</span>
                     </div>
-                ) : (
-                    <div className="bg-emerald-600 text-white p-2 rounded-xl shadow-sm shrink-0">
-                        <Utensils size={24} />
-                    </div>
-                )}
-                <div>
-                    <h1 className="text-lg font-bold text-gray-900 dark:text-slate-100 leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                        {restaurant && restaurant.name ? restaurant.name : 'FoodNest'}
-                    </h1>
-                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block mt-0.5">Floor Desk</span>
                 </div>
             </div>
             
             {/* Navigation */}
-            <nav className="flex-1 px-4 py-6 overflow-y-auto custom-scrollbar">
+            <nav className="flex-1 px-3 py-5 overflow-y-auto space-y-5 custom-scrollbar" style={{ scrollbarWidth: 'none' }}>
                 {navGroups.map((group, index) => (
-                    <div key={index} className="mb-6">
-                        <h3 className="px-3 mb-2 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                    <div key={index}>
+                        <h2 className="px-3 mb-2 text-[10px] font-bold text-teal-300/60 uppercase tracking-widest">
                             {group.title}
-                        </h3>
-                        <div className="space-y-1">
+                        </h2>
+                        <ul className="space-y-0.5">
                             {group.items.map((item) => {
                                 const Icon = item.icon;
                                 const isActive = item.path === '/waiter' 
@@ -139,41 +141,49 @@ const WaiterSidebar = () => {
                                     : location.pathname === item.path;
 
                                 return (
-                                    <NavLink
-                                        key={item.name}
-                                        to={item.path}
-                                        end={item.path === '/waiter'}
-                                        className={clsx(
-                                            "relative flex items-center justify-between px-3 py-2.5 rounded-xl font-medium transition-all text-sm group",
-                                            isActive 
-                                            ? "bg-teal-600 text-white shadow-lg shadow-teal-900/30 font-semibold" 
-                                            : "text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-100"
-                                        )}
-                                    >
-                                        <div className="flex items-center gap-3 truncate">
-                                            <Icon size={17} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-white" : "text-gray-400 dark:text-slate-500")} />
-                                            <span className="truncate">{item.name}</span>
-                                        </div>
-                                        <div className="flex items-center gap-1.5 shrink-0 ml-1">
-                                            {item.badge && (
-                                                <span className={clsx("text-[10px] font-black uppercase px-2 py-0.5 rounded-md shrink-0", isActive ? "bg-white/20 text-white" : item.badgeColor)}>
-                                                    {item.badge}
-                                                </span>
+                                    <li key={item.name}>
+                                        <NavLink
+                                            to={item.path}
+                                            end={item.path === '/waiter'}
+                                            className={clsx(
+                                                "relative flex items-center justify-between px-3 py-2.5 rounded-xl font-medium transition-all text-sm group",
+                                                isActive 
+                                                ? "bg-teal-600 text-white shadow-lg shadow-teal-950/50 font-semibold" 
+                                                : "text-teal-200/70 hover:bg-[#0c2e2b] hover:text-white"
                                             )}
-                                            {isActive && <ChevronRight size={14} className="opacity-80" />}
-                                        </div>
-                                    </NavLink>
+                                        >
+                                            <div className="flex items-center gap-3 truncate">
+                                                <Icon size={17} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-white" : "text-teal-300/60 group-hover:text-teal-200")} />
+                                                <span className="truncate">{item.name}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 shrink-0 ml-1">
+                                                {item.badge && (
+                                                    <span className={clsx("text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md shrink-0", isActive ? "bg-white/20 text-white" : item.badgeColor)}>
+                                                        {item.badge}
+                                                    </span>
+                                                )}
+                                                {isActive && <ChevronRight size={14} className="opacity-80" />}
+                                            </div>
+                                        </NavLink>
+                                    </li>
                                 );
                             })}
-                        </div>
+                        </ul>
                     </div>
                 ))}
             </nav>
 
-            {/* Footer Logout */}
-            <div className="p-4 border-t border-gray-100 dark:border-slate-800 shrink-0 bg-gray-50/50 dark:bg-slate-900/50">
-                <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2.5 w-full rounded-xl text-gray-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-400 transition-colors text-sm font-bold">
-                    <LogOut size={18} />
+            {/* Footer Profile & Logout */}
+            <div className="p-3 border-t border-[#0d3632] shrink-0 bg-[#041514]">
+                <div className="px-3 py-2 mb-2 rounded-xl bg-[#0c2e2b]/80 border border-[#144743]/60">
+                    <p className="text-xs font-bold text-white truncate">{restaurant?.name || 'Floor Staff'}</p>
+                    <p className="text-[10px] text-teal-400 font-medium">Service & Order Desk</p>
+                </div>
+                <button 
+                    onClick={handleLogout} 
+                    className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl font-medium text-teal-200/70 hover:bg-red-500/10 hover:text-red-400 transition-all text-sm cursor-pointer"
+                >
+                    <LogOut size={17} />
                     <span>End Shift</span>
                 </button>
             </div>
@@ -183,4 +193,3 @@ const WaiterSidebar = () => {
 };
 
 export default WaiterSidebar;
-

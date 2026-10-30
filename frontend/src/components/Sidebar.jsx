@@ -183,13 +183,13 @@ const Sidebar = () => {
             />
         )}
         <aside className={clsx(
-            "w-64 bg-white dark:bg-slate-900 shadow-xl h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-transform duration-300 z-40 border-r border-gray-100 dark:border-slate-800",
+            "w-64 bg-[#062419] text-white shadow-2xl h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-transform duration-300 z-40 border-r border-[#0d3b2b]",
             isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}>
             {/* Header */}
-            <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex items-center gap-3 shrink-0">
+            <div className="p-5 border-b border-[#0d3b2b] flex items-center gap-3 shrink-0">
                 {logoSrc && !logoError ? (
-                    <div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-xl overflow-hidden border border-[#144d38] bg-[#093323] flex items-center justify-center shrink-0">
                         <img 
                             src={logoSrc} 
                             alt="Logo" 
@@ -198,30 +198,32 @@ const Sidebar = () => {
                         />
                     </div>
                 ) : (
-                    <div className="bg-green-500 text-white p-2 rounded-lg shrink-0">
-                        <UtensilsCrossed size={24} />
+                    <div className="bg-emerald-500 text-white p-2 rounded-xl shrink-0 shadow-md shadow-emerald-950">
+                        <UtensilsCrossed size={22} />
                     </div>
                 )}
                 <div className="flex flex-col truncate">
-                    <h1 className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-600 to-[#FF5A1F] truncate max-w-[150px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                        {restaurant && restaurant.name ? restaurant.name : 'FoodNest'}
+                    <h1 className="text-lg font-bold text-white tracking-tight truncate max-w-[150px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        {restaurant && restaurant.name ? restaurant.name : 'FoodNest'}<span className="text-emerald-400">Hub</span>
                     </h1>
-                    {isCustomBilling && (
-                        <span className="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/60 w-fit mt-0.5 truncate max-w-[140px]">
+                    {isCustomBilling ? (
+                        <span className="text-[9px] font-black uppercase tracking-wider text-emerald-300 bg-[#0c402e] px-1.5 py-0.5 rounded border border-[#175c43] w-fit mt-0.5 truncate max-w-[140px]">
                             Custom • {restaurant?.billingConfig?.outletFormat || 'Setup'}
                         </span>
+                    ) : (
+                        <span className="text-[10px] font-bold text-emerald-400/80 uppercase tracking-wider">Restaurant Admin</span>
                     )}
                 </div>
             </div>
             
             {/* Scrollable Navigation */}
-            <nav className="flex-1 px-4 py-4 overflow-y-auto custom-scrollbar">
+            <nav className="flex-1 px-3 py-4 overflow-y-auto custom-scrollbar" style={{ scrollbarWidth: 'none' }}>
                 {navGroups.map((group, index) => (
-                    <div key={index} className="mb-6">
-                        <h3 className="px-3 mb-2 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                    <div key={index} className="mb-5">
+                        <h3 className="px-3 mb-2 text-[10px] font-bold text-emerald-300/60 uppercase tracking-widest" style={{ fontFamily: 'Poppins, sans-serif' }}>
                             {group.title}
                         </h3>
-                        <div className="space-y-1">
+                        <div className="space-y-0.5">
                             {group.items.map((item) => {
                                 const Icon = item.icon;
                                 
@@ -236,14 +238,14 @@ const Sidebar = () => {
                                                 toast.error(`${lock.feature} requires the ${lock.minPlan} Plan or above. Please upgrade your subscription.`);
                                                 navigate('/admin/billing');
                                             }}
-                                            className="flex items-center justify-between w-full px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm text-gray-400 dark:text-slate-500 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-600 dark:hover:text-slate-300 font-medium"
+                                            className="flex items-center justify-between w-full px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm text-emerald-200/40 hover:bg-[#0b3827] hover:text-emerald-100 font-medium cursor-pointer"
                                             title={`Requires ${lock.minPlan} Plan`}
                                         >
                                             <div className="flex items-center gap-3">
-                                                <Icon size={18} className="shrink-0 opacity-70" />
+                                                <Icon size={17} className="shrink-0 opacity-60" />
                                                 <span>{item.name}</span>
                                             </div>
-                                            <Lock size={14} className="text-gray-400 dark:text-slate-500 shrink-0" />
+                                            <Lock size={14} className="text-emerald-400/50 shrink-0" />
                                         </button>
                                     );
                                 }
@@ -288,11 +290,11 @@ const Sidebar = () => {
                                         className={clsx(
                                             "relative flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm group",
                                             isActive 
-                                            ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/30 font-semibold" 
-                                            : "text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-100"
+                                            ? "bg-emerald-500 text-white shadow-lg shadow-emerald-950/40 font-semibold" 
+                                            : "text-emerald-100/70 hover:bg-[#0b3827] hover:text-white"
                                         )}
                                     >
-                                        <Icon size={17} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-white" : "text-gray-400 dark:text-slate-500 group-hover:text-gray-700 dark:group-hover:text-slate-200")} />
+                                        <Icon size={17} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-white" : "text-emerald-300/60 group-hover:text-emerald-200")} />
                                         <span className="truncate">{item.name}</span>
                                         {isActive && <ChevronRight size={14} className="ml-auto shrink-0 opacity-80" />}
                                     </NavLink>
@@ -303,13 +305,17 @@ const Sidebar = () => {
                 ))}
             </nav>
 
-            {/* Footer Logout */}
-            <div className="p-4 border-t border-gray-100 dark:border-slate-800 shrink-0 bg-gray-50/50 dark:bg-slate-900/50">
+            {/* Sidebar Footer */}
+            <div className="p-3 border-t border-[#0d3b2b] shrink-0 bg-[#041a12]">
+                <div className="px-3 py-2 mb-2 rounded-xl bg-[#093323]/80 border border-[#124532]/60">
+                    <p className="text-xs font-bold text-white truncate">{restaurant?.name || 'Restaurant Admin'}</p>
+                    <p className="text-[10px] text-emerald-400 font-medium">Platform Restaurant</p>
+                </div>
                 <button 
                     onClick={logout}
-                    className="flex items-center gap-3 px-4 py-2.5 w-full rounded-xl text-gray-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-400 transition-colors text-sm font-bold"
+                    className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl font-medium text-emerald-200/70 hover:bg-red-500/10 hover:text-red-400 transition-all text-sm cursor-pointer"
                 >
-                    <LogOut size={18} />
+                    <LogOut size={17} />
                     <span>Logout</span>
                 </button>
             </div>

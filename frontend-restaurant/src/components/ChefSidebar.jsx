@@ -88,70 +88,84 @@ const ChefSidebar = () => {
             />
         )}
         <aside className={clsx(
-            "w-64 bg-white dark:bg-[#1e2330] shadow-xl h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-transform duration-300 z-40 border-r border-gray-100 dark:border-[#2a3040]",
+            "w-64 bg-[#1c130c] text-white border-r border-[#331f12] shadow-2xl h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-transform duration-300 z-40",
             isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}>
             {/* Header */}
-            <div className="p-6 border-b border-gray-100 dark:border-[#2a3040] flex items-center gap-3 shrink-0">
-                {logoSrc && !logoError ? (
-                    <div className="w-10 h-10 rounded-xl overflow-hidden border border-gray-100 dark:border-[#2a3040] bg-gray-50 dark:bg-gray-900 flex items-center justify-center shrink-0">
-                        <img 
-                            src={logoSrc} 
-                            alt="Logo" 
-                            onError={() => setLogoError(true)}
-                            className="w-full h-full object-cover" 
-                        />
+            <div className="h-16 flex items-center px-5 border-b border-[#331f12] shrink-0">
+                <div className="flex items-center gap-3">
+                    {logoSrc && !logoError ? (
+                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-[#4a2e1b] bg-[#29170c] flex items-center justify-center shrink-0">
+                            <img 
+                                src={logoSrc} 
+                                alt="Logo" 
+                                onError={() => setLogoError(true)}
+                                className="w-full h-full object-cover" 
+                            />
+                        </div>
+                    ) : (
+                        <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-950 shrink-0">
+                            <ChefHat className="text-white" size={22} strokeWidth={2.5} />
+                        </div>
+                    )}
+                    <div>
+                        <h1 className="text-base font-bold text-white tracking-tight leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            {restaurant && restaurant.name ? restaurant.name : 'FoodNest'}
+                        </h1>
+                        <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest block mt-1">Kitchen Station</span>
                     </div>
-                ) : (
-                    <div className="bg-orange-500 text-white p-2 rounded-lg shrink-0">
-                        <ChefHat size={24} />
-                    </div>
-                )}
-                <div>
-                    <h1 className="text-lg font-bold text-gray-900 dark:text-white leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                        {restaurant && restaurant.name ? restaurant.name : 'FoodNest'}
-                    </h1>
-                    <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider block mt-0.5">Kitchen</span>
                 </div>
             </div>
             
             {/* Navigation */}
-            <nav className="flex-1 px-4 py-4 overflow-y-auto custom-scrollbar">
+            <nav className="flex-1 px-3 py-5 overflow-y-auto space-y-5 custom-scrollbar" style={{ scrollbarWidth: 'none' }}>
                 {navGroups.map((group, index) => (
-                    <div key={index} className="mb-6">
-                        <h3 className="px-3 mb-2 text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                    <div key={index}>
+                        <h2 className="px-3 mb-2 text-[10px] font-bold text-orange-300/60 uppercase tracking-widest">
                             {group.title}
-                        </h3>
-                        <div className="space-y-1">
+                        </h2>
+                        <ul className="space-y-0.5">
                             {group.items.map((item) => {
                                 const Icon = item.icon;
                                 return (
-                                    <NavLink
-                                        key={item.name}
-                                        to={item.path}
-                                        end={item.path === '/chef'}
-                                        className={({ isActive }) => clsx(
-                                            "relative flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm group",
-                                            isActive 
-                                            ? "bg-orange-500 text-white shadow-lg shadow-orange-900/30 font-semibold" 
-                                            : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#2a3040] hover:text-gray-900 dark:hover:text-white"
-                                        )}
-                                    >
-                                        <Icon size={17} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-white" : "text-gray-400 group-hover:text-gray-700")} />
-                                        <span className="truncate">{item.name}</span>
-                                        {isActive && <ChevronRight size={14} className="ml-auto shrink-0 opacity-80" />}
-                                    </NavLink>
+                                    <li key={item.name}>
+                                        <NavLink
+                                            to={item.path}
+                                            end={item.path === '/chef'}
+                                            className={({ isActive }) => clsx(
+                                                "relative flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm group",
+                                                isActive 
+                                                ? "bg-orange-500 text-white shadow-lg shadow-orange-950/50 font-semibold" 
+                                                : "text-orange-200/70 hover:bg-[#291a10] hover:text-white"
+                                            )}
+                                        >
+                                            {({ isActive }) => (
+                                                <>
+                                                    <Icon size={17} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-white" : "text-orange-300/60 group-hover:text-orange-200")} />
+                                                    <span className="truncate">{item.name}</span>
+                                                    {isActive && <ChevronRight size={14} className="ml-auto shrink-0 opacity-80" />}
+                                                </>
+                                            )}
+                                        </NavLink>
+                                    </li>
                                 );
                             })}
-                        </div>
+                        </ul>
                     </div>
                 ))}
             </nav>
 
-            {/* Footer Logout */}
-            <div className="p-4 border-t border-gray-100 dark:border-[#2a3040] shrink-0 bg-gray-50 dark:bg-[#1a1e2a]">
-                <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2.5 w-full rounded-xl text-gray-500 dark:text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-colors text-sm font-bold">
-                    <LogOut size={18} />
+            {/* Footer Profile & Logout */}
+            <div className="p-3 border-t border-[#331f12] shrink-0 bg-[#140c07]">
+                <div className="px-3 py-2 mb-2 rounded-xl bg-[#26160d]/80 border border-[#3d2417]/60">
+                    <p className="text-xs font-bold text-white truncate">{restaurant?.name || 'Kitchen Staff'}</p>
+                    <p className="text-[10px] text-orange-400 font-medium">Head Chef Station</p>
+                </div>
+                <button 
+                    onClick={handleLogout} 
+                    className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl font-medium text-orange-200/70 hover:bg-red-500/10 hover:text-red-400 transition-all text-sm cursor-pointer"
+                >
+                    <LogOut size={17} />
                     <span>Exit Kitchen</span>
                 </button>
             </div>
