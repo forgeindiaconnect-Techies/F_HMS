@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">FoodNest</string>
+    <string name="title_activity_main">FoodNest</string>
+    <string name="package_name">com.restosys.hms</string>
+    <string name="custom_url_scheme">com.restosys.hms</string>
+</resources>
