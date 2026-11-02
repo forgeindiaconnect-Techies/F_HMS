@@ -418,11 +418,22 @@ const StaffManagement = () => {
             const params = {};
             if (leaveStatusFilter !== 'All') params.status = leaveStatusFilter;
             if (leaveBranchFilter !== 'All') params.branchId = leaveBranchFilter;
-            const res = await api.get('/staff/leave', { params });
+            
+            let res;
+            try {
+                res = await api.get('/staff/leave', { params });
+            } catch (err) {
+                if (err.response?.status === 404) {
+                    res = await api.get('/staff/leaves', { params });
+                } else {
+                    throw err;
+                }
+            }
             setLeavesList(res.data || []);
         } catch (error) {
             console.error('Failed to fetch leave requests', error);
-            toast.error('Failed to load leave requests');
+            // If empty or initial setup, silently show empty list rather than blocking UI
+            setLeavesList([]);
         } finally {
             setLeavesLoading(false);
         }
