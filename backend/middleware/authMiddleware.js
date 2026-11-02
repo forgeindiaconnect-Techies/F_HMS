@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import Role from '../models/Role.js';
 import Restaurant from '../models/Restaurant.js';
+import Branch from '../models/Branch.js';
 import Plan from '../models/Plan.js';
 import { sendSubscriptionExpiredEmail } from '../utils/emailService.js';
 
@@ -95,9 +96,19 @@ export const checkSubscription = async (req, res, next) => {
     }
 
     try {
-        const restaurant = await Restaurant.findById(req.user.restaurantId);
+        let rId = req.user.restaurantId || req.user.restaurant;
+        if (!rId && req.user.branchId) {
+            const branchDoc = await Branch.findById(req.user.branchId);
+            if (branchDoc) rId = branchDoc.restaurantId;
+        }
+
+        if (!rId) {
+            return next();
+        }
+
+        const restaurant = await Restaurant.findById(rId);
         if (!restaurant) {
-            return res.status(404).json({ message: 'Restaurant not found' });
+            return next();
         }
 
         const now = new Date();
@@ -149,9 +160,19 @@ export const checkVerification = async (req, res, next) => {
     }
 
     try {
-        const restaurant = await Restaurant.findById(req.user.restaurantId);
+        let rId = req.user.restaurantId || req.user.restaurant;
+        if (!rId && req.user.branchId) {
+            const branchDoc = await Branch.findById(req.user.branchId);
+            if (branchDoc) rId = branchDoc.restaurantId;
+        }
+
+        if (!rId) {
+            return next();
+        }
+
+        const restaurant = await Restaurant.findById(rId);
         if (!restaurant) {
-            return res.status(404).json({ message: 'Restaurant not found' });
+            return next();
         }
 
         if (restaurant.verificationStatus !== 'Verified') {
