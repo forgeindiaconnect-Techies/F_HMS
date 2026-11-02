@@ -15347,11 +15347,11 @@ var require_mime_types = __commonJS({
       }
       return exts[0];
     }
-    function lookup(path6) {
-      if (!path6 || typeof path6 !== "string") {
+    function lookup(path7) {
+      if (!path7 || typeof path7 !== "string") {
         return false;
       }
-      var extension2 = extname("x." + path6).toLowerCase().slice(1);
+      var extension2 = extname("x." + path7).toLowerCase().slice(1);
       if (!extension2) {
         return false;
       }
@@ -18899,13 +18899,13 @@ var require_view = __commonJS({
   "node_modules/express/lib/view.js"(exports2, module2) {
     "use strict";
     var debug = require_src()("express:view");
-    var path6 = require("node:path");
-    var fs6 = require("node:fs");
-    var dirname = path6.dirname;
-    var basename = path6.basename;
-    var extname = path6.extname;
-    var join = path6.join;
-    var resolve = path6.resolve;
+    var path7 = require("node:path");
+    var fs7 = require("node:fs");
+    var dirname = path7.dirname;
+    var basename = path7.basename;
+    var extname = path7.extname;
+    var join = path7.join;
+    var resolve = path7.resolve;
     module2.exports = View;
     function View(name, options) {
       var opts = options || {};
@@ -18934,17 +18934,17 @@ var require_view = __commonJS({
       this.path = this.lookup(fileName);
     }
     View.prototype.lookup = function lookup(name) {
-      var path7;
+      var path8;
       var roots = [].concat(this.root);
       debug('lookup "%s"', name);
-      for (var i = 0; i < roots.length && !path7; i++) {
+      for (var i = 0; i < roots.length && !path8; i++) {
         var root = roots[i];
         var loc = resolve(root, name);
         var dir = dirname(loc);
         var file = basename(loc);
-        path7 = this.resolve(dir, file);
+        path8 = this.resolve(dir, file);
       }
-      return path7;
+      return path8;
     };
     View.prototype.render = function render(options, callback) {
       var sync = true;
@@ -18966,21 +18966,21 @@ var require_view = __commonJS({
     };
     View.prototype.resolve = function resolve2(dir, file) {
       var ext = this.ext;
-      var path7 = join(dir, file);
-      var stat = tryStat(path7);
+      var path8 = join(dir, file);
+      var stat = tryStat(path8);
       if (stat && stat.isFile()) {
-        return path7;
+        return path8;
       }
-      path7 = join(dir, basename(file, ext), "index" + ext);
-      stat = tryStat(path7);
+      path8 = join(dir, basename(file, ext), "index" + ext);
+      stat = tryStat(path8);
       if (stat && stat.isFile()) {
-        return path7;
+        return path8;
       }
     };
-    function tryStat(path7) {
-      debug('stat "%s"', path7);
+    function tryStat(path8) {
+      debug('stat "%s"', path8);
       try {
-        return fs6.statSync(path7);
+        return fs7.statSync(path8);
       } catch (e) {
         return void 0;
       }
@@ -28590,11 +28590,11 @@ var require_mime_types2 = __commonJS({
       }
       return exts[0];
     }
-    function lookup(path6) {
-      if (!path6 || typeof path6 !== "string") {
+    function lookup(path7) {
+      if (!path7 || typeof path7 !== "string") {
         return false;
       }
-      var extension2 = extname("x." + path6).toLowerCase().slice(1);
+      var extension2 = extname("x." + path7).toLowerCase().slice(1);
       if (!extension2) {
         return false;
       }
@@ -29741,15 +29741,15 @@ var require_dist2 = __commonJS({
       let index = 0;
       function consumeUntil(end) {
         const output = [];
-        let path6 = "";
+        let path7 = "";
         function writePath() {
-          if (!path6)
+          if (!path7)
             return;
           output.push({
             type: "text",
-            value: encodePath(path6)
+            value: encodePath(path7)
           });
-          path6 = "";
+          path7 = "";
         }
         while (index < chars.length) {
           const value = chars[index++];
@@ -29761,7 +29761,7 @@ var require_dist2 = __commonJS({
             if (index === chars.length) {
               throw new PathError(`Unexpected end after \\ at index ${index}`, str);
             }
-            path6 += chars[index++];
+            path7 += chars[index++];
             continue;
           }
           if (value === ":" || value === "*") {
@@ -29805,7 +29805,7 @@ var require_dist2 = __commonJS({
           if (value === "}" || value === "(" || value === ")" || value === "[" || value === "]" || value === "+" || value === "?" || value === "!") {
             throw new PathError(`Unexpected ${value} at index ${index - 1}`, str);
           }
-          path6 += value;
+          path7 += value;
         }
         if (end) {
           throw new PathError(`Unexpected end at index ${index}, expected ${end}`, str);
@@ -29815,17 +29815,17 @@ var require_dist2 = __commonJS({
       }
       return new TokenData(consumeUntil(""), str);
     }
-    function compile(path6, options = {}) {
+    function compile(path7, options = {}) {
       const { encode = encodeURIComponent, delimiter = DEFAULT_DELIMITER } = options;
-      const data = typeof path6 === "object" ? path6 : parse(path6, options);
+      const data = typeof path7 === "object" ? path7 : parse(path7, options);
       const fn = tokensToFunction(data.tokens, delimiter, encode);
-      return function path7(params = {}) {
+      return function path8(params = {}) {
         const missing = [];
-        const path8 = fn(params, missing);
+        const path9 = fn(params, missing);
         if (missing.length) {
           throw new TypeError(`Missing parameters: ${missing.join(", ")}`);
         }
-        return path8;
+        return path9;
       };
     }
     function tokensToFunction(tokens, delimiter, encode) {
@@ -29887,9 +29887,9 @@ var require_dist2 = __commonJS({
         return encodeValue(value);
       };
     }
-    function match(path6, options = {}) {
+    function match(path7, options = {}) {
       const { decode = decodeURIComponent, delimiter = DEFAULT_DELIMITER } = options;
-      const { regexp, keys } = pathToRegexp(path6, options);
+      const { regexp, keys } = pathToRegexp(path7, options);
       const decoders = keys.map((key) => {
         if (decode === false)
           return NOOP_VALUE;
@@ -29901,7 +29901,7 @@ var require_dist2 = __commonJS({
         const m = regexp.exec(input);
         if (!m)
           return false;
-        const path7 = m[0];
+        const path8 = m[0];
         const params = /* @__PURE__ */ Object.create(null);
         for (let i = 1; i < m.length; i++) {
           if (m[i] === void 0)
@@ -29910,21 +29910,21 @@ var require_dist2 = __commonJS({
           const decoder = decoders[i - 1];
           params[key.name] = decoder(m[i]);
         }
-        return { path: path7, params };
+        return { path: path8, params };
       };
     }
-    function pathToRegexp(path6, options = {}) {
+    function pathToRegexp(path7, options = {}) {
       const { delimiter = DEFAULT_DELIMITER, end = true, sensitive = false, trailing = true } = options;
       const keys = [];
       let source = "";
       let combinations = 0;
-      function process2(path7) {
-        if (Array.isArray(path7)) {
-          for (const p of path7)
+      function process2(path8) {
+        if (Array.isArray(path8)) {
+          for (const p of path8)
             process2(p);
           return;
         }
-        const data = typeof path7 === "object" ? path7 : parse(path7, options);
+        const data = typeof path8 === "object" ? path8 : parse(path8, options);
         flatten(data.tokens, 0, [], (tokens) => {
           if (combinations >= 256) {
             throw new PathError("Too many path combinations", data.originalPath);
@@ -29935,7 +29935,7 @@ var require_dist2 = __commonJS({
           combinations++;
         });
       }
-      process2(path6);
+      process2(path7);
       let pattern = `^(?:${source})`;
       if (trailing)
         pattern += "(?:" + escape2(delimiter) + "$)?";
@@ -30075,18 +30075,18 @@ var require_layer = __commonJS({
     var TRAILING_SLASH_REGEXP = /\/+$/;
     var MATCHING_GROUP_REGEXP = /\((?:\?<(.*?)>)?(?!\?)/g;
     module2.exports = Layer;
-    function Layer(path6, options, fn) {
+    function Layer(path7, options, fn) {
       if (!(this instanceof Layer)) {
-        return new Layer(path6, options, fn);
+        return new Layer(path7, options, fn);
       }
-      debug("new %o", path6);
+      debug("new %o", path7);
       const opts = options || {};
       this.handle = fn;
       this.keys = [];
       this.name = fn.name || "<anonymous>";
       this.params = void 0;
       this.path = void 0;
-      this.slash = path6 === "/" && opts.end === false;
+      this.slash = path7 === "/" && opts.end === false;
       function matcher(_path) {
         if (_path instanceof RegExp) {
           const keys = [];
@@ -30125,7 +30125,7 @@ var require_layer = __commonJS({
           decode: decodeParam
         });
       }
-      this.matchers = Array.isArray(path6) ? path6.map(matcher) : [matcher(path6)];
+      this.matchers = Array.isArray(path7) ? path7.map(matcher) : [matcher(path7)];
     }
     Layer.prototype.handleError = function handleError(error, req, res, next) {
       const fn = this.handle;
@@ -30165,9 +30165,9 @@ var require_layer = __commonJS({
         next(err);
       }
     };
-    Layer.prototype.match = function match(path6) {
+    Layer.prototype.match = function match(path7) {
       let match2;
-      if (path6 != null) {
+      if (path7 != null) {
         if (this.slash) {
           this.params = {};
           this.path = "";
@@ -30175,7 +30175,7 @@ var require_layer = __commonJS({
         }
         let i = 0;
         while (!match2 && i < this.matchers.length) {
-          match2 = this.matchers[i](path6);
+          match2 = this.matchers[i](path7);
           i++;
         }
       }
@@ -30203,13 +30203,13 @@ var require_layer = __commonJS({
         throw err;
       }
     }
-    function loosen(path6) {
-      if (path6 instanceof RegExp || path6 === "/") {
-        return path6;
+    function loosen(path7) {
+      if (path7 instanceof RegExp || path7 === "/") {
+        return path7;
       }
-      return Array.isArray(path6) ? path6.map(function(p) {
+      return Array.isArray(path7) ? path7.map(function(p) {
         return loosen(p);
-      }) : String(path6).replace(TRAILING_SLASH_REGEXP, "");
+      }) : String(path7).replace(TRAILING_SLASH_REGEXP, "");
     }
   }
 });
@@ -30225,9 +30225,9 @@ var require_route = __commonJS({
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
     module2.exports = Route;
-    function Route(path6) {
-      debug("new %o", path6);
-      this.path = path6;
+    function Route(path7) {
+      debug("new %o", path7);
+      this.path = path7;
       this.stack = [];
       this.methods = /* @__PURE__ */ Object.create(null);
     }
@@ -30355,16 +30355,16 @@ var require_router = __commonJS({
         return new Router(options);
       }
       const opts = options || {};
-      function router30(req, res, next) {
-        router30.handle(req, res, next);
+      function router32(req, res, next) {
+        router32.handle(req, res, next);
       }
-      Object.setPrototypeOf(router30, this);
-      router30.caseSensitive = opts.caseSensitive;
-      router30.mergeParams = opts.mergeParams;
-      router30.params = {};
-      router30.strict = opts.strict;
-      router30.stack = [];
-      return router30;
+      Object.setPrototypeOf(router32, this);
+      router32.caseSensitive = opts.caseSensitive;
+      router32.mergeParams = opts.mergeParams;
+      router32.params = {};
+      router32.strict = opts.strict;
+      router32.stack = [];
+      return router32;
     }
     Router.prototype = function() {
     };
@@ -30435,8 +30435,8 @@ var require_router = __commonJS({
         if (++sync > 100) {
           return setImmediate(next, err);
         }
-        const path6 = getPathname(req);
-        if (path6 == null) {
+        const path7 = getPathname(req);
+        if (path7 == null) {
           return done(layerError);
         }
         let layer;
@@ -30444,7 +30444,7 @@ var require_router = __commonJS({
         let route;
         while (match !== true && idx < stack.length) {
           layer = stack[idx++];
-          match = matchLayer(layer, path6);
+          match = matchLayer(layer, path7);
           route = layer.route;
           if (typeof match !== "boolean") {
             layerError = layerError || match;
@@ -30482,18 +30482,18 @@ var require_router = __commonJS({
           } else if (route) {
             layer.handleRequest(req, res, next);
           } else {
-            trimPrefix(layer, layerError, layerPath, path6);
+            trimPrefix(layer, layerError, layerPath, path7);
           }
           sync = 0;
         });
       }
-      function trimPrefix(layer, layerError, layerPath, path6) {
+      function trimPrefix(layer, layerError, layerPath, path7) {
         if (layerPath.length !== 0) {
-          if (layerPath !== path6.substring(0, layerPath.length)) {
+          if (layerPath !== path7.substring(0, layerPath.length)) {
             next(layerError);
             return;
           }
-          const c = path6[layerPath.length];
+          const c = path7[layerPath.length];
           if (c && c !== "/") {
             next(layerError);
             return;
@@ -30517,7 +30517,7 @@ var require_router = __commonJS({
     };
     Router.prototype.use = function use(handler) {
       let offset = 0;
-      let path6 = "/";
+      let path7 = "/";
       if (typeof handler !== "function") {
         let arg = handler;
         while (Array.isArray(arg) && arg.length !== 0) {
@@ -30525,7 +30525,7 @@ var require_router = __commonJS({
         }
         if (typeof arg !== "function") {
           offset = 1;
-          path6 = handler;
+          path7 = handler;
         }
       }
       const callbacks = flatten.call(slice.call(arguments, offset), Infinity);
@@ -30537,8 +30537,8 @@ var require_router = __commonJS({
         if (typeof fn !== "function") {
           throw new TypeError("argument handler must be a function");
         }
-        debug("use %o %s", path6, fn.name || "<anonymous>");
-        const layer = new Layer(path6, {
+        debug("use %o %s", path7, fn.name || "<anonymous>");
+        const layer = new Layer(path7, {
           sensitive: this.caseSensitive,
           strict: false,
           end: false
@@ -30548,9 +30548,9 @@ var require_router = __commonJS({
       }
       return this;
     };
-    Router.prototype.route = function route(path6) {
-      const route2 = new Route(path6);
-      const layer = new Layer(path6, {
+    Router.prototype.route = function route(path7) {
+      const route2 = new Route(path7);
+      const layer = new Layer(path7, {
         sensitive: this.caseSensitive,
         strict: this.strict,
         end: true
@@ -30563,8 +30563,8 @@ var require_router = __commonJS({
       return route2;
     };
     methods.concat("all").forEach(function(method) {
-      Router.prototype[method] = function(path6) {
-        const route = this.route(path6);
+      Router.prototype[method] = function(path7) {
+        const route = this.route(path7);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
       };
@@ -30593,9 +30593,9 @@ var require_router = __commonJS({
       const fqdnIndex = url.substring(0, pathLength).indexOf("://");
       return fqdnIndex !== -1 ? url.substring(0, url.indexOf("/", 3 + fqdnIndex)) : void 0;
     }
-    function matchLayer(layer, path6) {
+    function matchLayer(layer, path7) {
       try {
-        return layer.match(path6);
+        return layer.match(path7);
       } catch (err) {
         return err;
       }
@@ -30752,7 +30752,7 @@ var require_application = __commonJS({
     var app2 = exports2 = module2.exports = {};
     var trustProxyDefaultSymbol = "@@symbol:trust_proxy_default";
     app2.init = function init() {
-      var router30 = null;
+      var router32 = null;
       this.cache = /* @__PURE__ */ Object.create(null);
       this.engines = /* @__PURE__ */ Object.create(null);
       this.settings = /* @__PURE__ */ Object.create(null);
@@ -30761,13 +30761,13 @@ var require_application = __commonJS({
         configurable: true,
         enumerable: true,
         get: function getrouter() {
-          if (router30 === null) {
-            router30 = new Router({
+          if (router32 === null) {
+            router32 = new Router({
               caseSensitive: this.enabled("case sensitive routing"),
               strict: this.enabled("strict routing")
             });
           }
-          return router30;
+          return router32;
         }
       });
     };
@@ -30823,7 +30823,7 @@ var require_application = __commonJS({
     };
     app2.use = function use(fn) {
       var offset = 0;
-      var path6 = "/";
+      var path7 = "/";
       if (typeof fn !== "function") {
         var arg = fn;
         while (Array.isArray(arg) && arg.length !== 0) {
@@ -30831,22 +30831,22 @@ var require_application = __commonJS({
         }
         if (typeof arg !== "function") {
           offset = 1;
-          path6 = fn;
+          path7 = fn;
         }
       }
       var fns = flatten.call(slice.call(arguments, offset), Infinity);
       if (fns.length === 0) {
         throw new TypeError("app.use() requires a middleware function");
       }
-      var router30 = this.router;
+      var router32 = this.router;
       fns.forEach(function(fn2) {
         if (!fn2 || !fn2.handle || !fn2.set) {
-          return router30.use(path6, fn2);
+          return router32.use(path7, fn2);
         }
-        debug(".use app under %s", path6);
-        fn2.mountpath = path6;
+        debug(".use app under %s", path7);
+        fn2.mountpath = path7;
         fn2.parent = this;
-        router30.use(path6, function mounted_app(req, res, next) {
+        router32.use(path7, function mounted_app(req, res, next) {
           var orig = req.app;
           fn2.handle(req, res, function(err) {
             Object.setPrototypeOf(req, orig.request);
@@ -30858,8 +30858,8 @@ var require_application = __commonJS({
       }, this);
       return this;
     };
-    app2.route = function route(path6) {
-      return this.router.route(path6);
+    app2.route = function route(path7) {
+      return this.router.route(path7);
     };
     app2.engine = function engine(ext, fn) {
       if (typeof fn !== "function") {
@@ -30902,7 +30902,7 @@ var require_application = __commonJS({
       }
       return this;
     };
-    app2.path = function path6() {
+    app2.path = function path7() {
       return this.parent ? this.parent.path() + this.mountpath : "";
     };
     app2.enabled = function enabled(setting) {
@@ -30918,17 +30918,17 @@ var require_application = __commonJS({
       return this.set(setting, false);
     };
     methods.forEach(function(method) {
-      app2[method] = function(path6) {
+      app2[method] = function(path7) {
         if (method === "get" && arguments.length === 1) {
-          return this.set(path6);
+          return this.set(path7);
         }
-        var route = this.route(path6);
+        var route = this.route(path7);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
       };
     });
-    app2.all = function all(path6) {
-      var route = this.route(path6);
+    app2.all = function all(path7) {
+      var route = this.route(path7);
       var args = slice.call(arguments, 1);
       for (var i = 0; i < methods.length; i++) {
         route[methods[i]].apply(route, args);
@@ -41025,11 +41025,11 @@ var require_mime_types3 = __commonJS({
       }
       return exts[0];
     }
-    function lookup(path6) {
-      if (!path6 || typeof path6 !== "string") {
+    function lookup(path7) {
+      if (!path7 || typeof path7 !== "string") {
         return false;
       }
-      var extension2 = extname("x." + path6).toLowerCase().slice(1);
+      var extension2 = extname("x." + path7).toLowerCase().slice(1);
       if (!extension2) {
         return false;
       }
@@ -41712,7 +41712,7 @@ var require_request = __commonJS({
       var subdomains2 = !isIP(hostname) ? hostname.split(".").reverse() : [hostname];
       return subdomains2.slice(offset);
     });
-    defineGetter(req, "path", function path6() {
+    defineGetter(req, "path", function path7() {
       return parse(this).pathname;
     });
     defineGetter(req, "host", function host() {
@@ -41923,8 +41923,8 @@ var require_content_disposition = __commonJS({
       this.type = type;
       this.parameters = parameters;
     }
-    function basename(path6) {
-      const normalized = path6.replaceAll("\\", "/");
+    function basename(path7) {
+      const normalized = path7.replaceAll("\\", "/");
       let end = normalized.length;
       while (end > 0 && normalized[end - 1] === "/") {
         end--;
@@ -51611,11 +51611,11 @@ var require_mime_types4 = __commonJS({
       }
       return exts[0];
     }
-    function lookup(path6) {
-      if (!path6 || typeof path6 !== "string") {
+    function lookup(path7) {
+      if (!path7 || typeof path7 !== "string") {
         return false;
       }
-      var extension2 = extname("x." + path6).toLowerCase().slice(1);
+      var extension2 = extname("x." + path7).toLowerCase().slice(1);
       if (!extension2) {
         return false;
       }
@@ -51670,32 +51670,32 @@ var require_send = __commonJS({
     var escapeHtml = require_escape_html();
     var etag = require_etag();
     var fresh = require_fresh();
-    var fs6 = require("fs");
+    var fs7 = require("fs");
     var mime = require_mime_types4();
     var ms = require_ms();
     var onFinished = require_on_finished();
     var parseRange = require_range_parser();
-    var path6 = require("path");
+    var path7 = require("path");
     var statuses = require_statuses();
     var Stream = require("stream");
     var util = require("util");
-    var extname = path6.extname;
-    var join = path6.join;
-    var normalize = path6.normalize;
-    var resolve = path6.resolve;
-    var sep = path6.sep;
+    var extname = path7.extname;
+    var join = path7.join;
+    var normalize = path7.normalize;
+    var resolve = path7.resolve;
+    var sep = path7.sep;
     var BYTES_RANGE_REGEXP = /^ *bytes=/;
     var MAX_MAXAGE = 60 * 60 * 24 * 365 * 1e3;
     var UP_PATH_REGEXP = /(?:^|[\\/])\.\.(?:[\\/]|$)/;
     module2.exports = send;
-    function send(req, path7, options) {
-      return new SendStream(req, path7, options);
+    function send(req, path8, options) {
+      return new SendStream(req, path8, options);
     }
-    function SendStream(req, path7, options) {
+    function SendStream(req, path8, options) {
       Stream.call(this);
       var opts = options || {};
       this.options = opts;
-      this.path = path7;
+      this.path = path8;
       this.req = req;
       this._acceptRanges = opts.acceptRanges !== void 0 ? Boolean(opts.acceptRanges) : true;
       this._cacheControl = opts.cacheControl !== void 0 ? Boolean(opts.cacheControl) : true;
@@ -51809,10 +51809,10 @@ var require_send = __commonJS({
       var lastModified = this.res.getHeader("Last-Modified");
       return parseHttpDate(lastModified) <= parseHttpDate(ifRange);
     };
-    SendStream.prototype.redirect = function redirect(path7) {
+    SendStream.prototype.redirect = function redirect(path8) {
       var res = this.res;
       if (hasListeners(this, "directory")) {
-        this.emit("directory", res, path7);
+        this.emit("directory", res, path8);
         return;
       }
       if (this.hasTrailingSlash()) {
@@ -51832,38 +51832,38 @@ var require_send = __commonJS({
     SendStream.prototype.pipe = function pipe(res) {
       var root = this._root;
       this.res = res;
-      var path7 = decode(this.path);
-      if (path7 === -1) {
+      var path8 = decode(this.path);
+      if (path8 === -1) {
         this.error(400);
         return res;
       }
-      if (~path7.indexOf("\0")) {
+      if (~path8.indexOf("\0")) {
         this.error(400);
         return res;
       }
       var parts;
       if (root !== null) {
-        if (path7) {
-          path7 = normalize("." + sep + path7);
+        if (path8) {
+          path8 = normalize("." + sep + path8);
         }
-        if (UP_PATH_REGEXP.test(path7)) {
-          debug('malicious path "%s"', path7);
+        if (UP_PATH_REGEXP.test(path8)) {
+          debug('malicious path "%s"', path8);
           this.error(403);
           return res;
         }
-        parts = path7.split(sep);
-        path7 = normalize(join(root, path7));
+        parts = path8.split(sep);
+        path8 = normalize(join(root, path8));
       } else {
-        if (UP_PATH_REGEXP.test(path7)) {
-          debug('malicious path "%s"', path7);
+        if (UP_PATH_REGEXP.test(path8)) {
+          debug('malicious path "%s"', path8);
           this.error(403);
           return res;
         }
-        parts = normalize(path7).split(sep);
-        path7 = resolve(path7);
+        parts = normalize(path8).split(sep);
+        path8 = resolve(path8);
       }
       if (containsDotFile(parts)) {
-        debug('%s dotfile "%s"', this._dotfiles, path7);
+        debug('%s dotfile "%s"', this._dotfiles, path8);
         switch (this._dotfiles) {
           case "allow":
             break;
@@ -51877,13 +51877,13 @@ var require_send = __commonJS({
         }
       }
       if (this._index.length && this.hasTrailingSlash()) {
-        this.sendIndex(path7);
+        this.sendIndex(path8);
         return res;
       }
-      this.sendFile(path7);
+      this.sendFile(path8);
       return res;
     };
-    SendStream.prototype.send = function send2(path7, stat) {
+    SendStream.prototype.send = function send2(path8, stat) {
       var len = stat.size;
       var options = this.options;
       var opts = {};
@@ -51895,9 +51895,9 @@ var require_send = __commonJS({
         this.headersAlreadySent();
         return;
       }
-      debug('pipe "%s"', path7);
-      this.setHeader(path7, stat);
-      this.type(path7);
+      debug('pipe "%s"', path8);
+      this.setHeader(path8, stat);
+      this.type(path8);
       if (this.isConditionalGET()) {
         if (this.isPreconditionFailure()) {
           this.error(412);
@@ -51946,30 +51946,30 @@ var require_send = __commonJS({
         res.end();
         return;
       }
-      this.stream(path7, opts);
+      this.stream(path8, opts);
     };
-    SendStream.prototype.sendFile = function sendFile(path7) {
+    SendStream.prototype.sendFile = function sendFile(path8) {
       var i = 0;
       var self2 = this;
-      debug('stat "%s"', path7);
-      fs6.stat(path7, function onstat(err, stat) {
-        var pathEndsWithSep = path7[path7.length - 1] === sep;
-        if (err && err.code === "ENOENT" && !extname(path7) && !pathEndsWithSep) {
+      debug('stat "%s"', path8);
+      fs7.stat(path8, function onstat(err, stat) {
+        var pathEndsWithSep = path8[path8.length - 1] === sep;
+        if (err && err.code === "ENOENT" && !extname(path8) && !pathEndsWithSep) {
           return next(err);
         }
         if (err) return self2.onStatError(err);
-        if (stat.isDirectory()) return self2.redirect(path7);
+        if (stat.isDirectory()) return self2.redirect(path8);
         if (pathEndsWithSep) return self2.error(404);
-        self2.emit("file", path7, stat);
-        self2.send(path7, stat);
+        self2.emit("file", path8, stat);
+        self2.send(path8, stat);
       });
       function next(err) {
         if (self2._extensions.length <= i) {
           return err ? self2.onStatError(err) : self2.error(404);
         }
-        var p = path7 + "." + self2._extensions[i++];
+        var p = path8 + "." + self2._extensions[i++];
         debug('stat "%s"', p);
-        fs6.stat(p, function(err2, stat) {
+        fs7.stat(p, function(err2, stat) {
           if (err2) return next(err2);
           if (stat.isDirectory()) return next();
           self2.emit("file", p, stat);
@@ -51977,7 +51977,7 @@ var require_send = __commonJS({
         });
       }
     };
-    SendStream.prototype.sendIndex = function sendIndex(path7) {
+    SendStream.prototype.sendIndex = function sendIndex(path8) {
       var i = -1;
       var self2 = this;
       function next(err) {
@@ -51985,9 +51985,9 @@ var require_send = __commonJS({
           if (err) return self2.onStatError(err);
           return self2.error(404);
         }
-        var p = join(path7, self2._index[i]);
+        var p = join(path8, self2._index[i]);
         debug('stat "%s"', p);
-        fs6.stat(p, function(err2, stat) {
+        fs7.stat(p, function(err2, stat) {
           if (err2) return next(err2);
           if (stat.isDirectory()) return next();
           self2.emit("file", p, stat);
@@ -51996,10 +51996,10 @@ var require_send = __commonJS({
       }
       next();
     };
-    SendStream.prototype.stream = function stream(path7, options) {
+    SendStream.prototype.stream = function stream(path8, options) {
       var self2 = this;
       var res = this.res;
-      var stream2 = fs6.createReadStream(path7, options);
+      var stream2 = fs7.createReadStream(path8, options);
       this.emit("stream", stream2);
       stream2.pipe(res);
       function cleanup() {
@@ -52014,17 +52014,17 @@ var require_send = __commonJS({
         self2.emit("end");
       });
     };
-    SendStream.prototype.type = function type(path7) {
+    SendStream.prototype.type = function type(path8) {
       var res = this.res;
       if (res.getHeader("Content-Type")) return;
-      var ext = extname(path7);
+      var ext = extname(path8);
       var type2 = mime.contentType(ext) || "application/octet-stream";
       debug("content-type %s", type2);
       res.setHeader("Content-Type", type2);
     };
-    SendStream.prototype.setHeader = function setHeader(path7, stat) {
+    SendStream.prototype.setHeader = function setHeader(path8, stat) {
       var res = this.res;
-      this.emit("headers", res, path7, stat);
+      this.emit("headers", res, path8, stat);
       if (this._acceptRanges && !res.getHeader("Accept-Ranges")) {
         debug("accept ranges");
         res.setHeader("Accept-Ranges", "bytes");
@@ -52082,9 +52082,9 @@ var require_send = __commonJS({
       }
       return err instanceof Error ? createError(status, err, { expose: false }) : createError(status, err);
     }
-    function decode(path7) {
+    function decode(path8) {
       try {
-        return decodeURIComponent(path7);
+        return decodeURIComponent(path8);
       } catch (err) {
         return -1;
       }
@@ -52228,7 +52228,7 @@ var require_response = __commonJS({
     var http2 = require("node:http");
     var onFinished = require_on_finished();
     var mime = require_mime_types2();
-    var path6 = require("node:path");
+    var path7 = require("node:path");
     var pathIsAbsolute = require("node:path").isAbsolute;
     var statuses = require_statuses();
     var sign = require_cookie_signature().sign;
@@ -52237,8 +52237,8 @@ var require_response = __commonJS({
     var setCharset = require_utils3().setCharset;
     var cookie = require_cookie();
     var send = require_send();
-    var extname = path6.extname;
-    var resolve = path6.resolve;
+    var extname = path7.extname;
+    var resolve = path7.resolve;
     var vary = require_vary();
     var { Buffer: Buffer2 } = require("node:buffer");
     var res = Object.create(http2.ServerResponse.prototype);
@@ -52384,26 +52384,26 @@ var require_response = __commonJS({
       this.type("txt");
       return this.send(body);
     };
-    res.sendFile = function sendFile(path7, options, callback) {
+    res.sendFile = function sendFile(path8, options, callback) {
       var done = callback;
       var req = this.req;
       var res2 = this;
       var next = req.next;
       var opts = options || {};
-      if (!path7) {
+      if (!path8) {
         throw new TypeError("path argument is required to res.sendFile");
       }
-      if (typeof path7 !== "string") {
+      if (typeof path8 !== "string") {
         throw new TypeError("path must be a string to res.sendFile");
       }
       if (typeof options === "function") {
         done = options;
         opts = {};
       }
-      if (!opts.root && !pathIsAbsolute(path7)) {
+      if (!opts.root && !pathIsAbsolute(path8)) {
         throw new TypeError("path must be absolute or specify root to res.sendFile");
       }
-      var pathname = encodeURI(path7);
+      var pathname = encodeURI(path8);
       opts.etag = this.app.enabled("etag");
       var file = send(req, pathname, opts);
       sendfile(res2, file, opts, function(err) {
@@ -52414,7 +52414,7 @@ var require_response = __commonJS({
         }
       });
     };
-    res.download = function download(path7, filename, options, callback) {
+    res.download = function download(path8, filename, options, callback) {
       var done = callback;
       var name = filename;
       var opts = options || null;
@@ -52431,7 +52431,7 @@ var require_response = __commonJS({
         opts = filename;
       }
       var headers = {
-        "Content-Disposition": contentDisposition(name || path7)
+        "Content-Disposition": contentDisposition(name || path8)
       };
       if (opts && opts.headers) {
         var keys = Object.keys(opts.headers);
@@ -52444,7 +52444,7 @@ var require_response = __commonJS({
       }
       opts = Object.create(opts);
       opts.headers = headers;
-      var fullPath = !opts.root ? resolve(path7) : path7;
+      var fullPath = !opts.root ? resolve(path8) : path8;
       return this.sendFile(fullPath, opts, done);
     };
     res.contentType = res.type = function contentType(type) {
@@ -52727,11 +52727,11 @@ var require_serve_static = __commonJS({
         }
         var forwardError = !fallthrough;
         var originalUrl = parseUrl.original(req);
-        var path6 = parseUrl(req).pathname;
-        if (path6 === "/" && originalUrl.pathname.substr(-1) !== "/") {
-          path6 = "";
+        var path7 = parseUrl(req).pathname;
+        if (path7 === "/" && originalUrl.pathname.substr(-1) !== "/") {
+          path7 = "";
         }
-        var stream = send(req, path6, opts);
+        var stream = send(req, path7, opts);
         stream.on("directory", onDirectory);
         if (setHeaders) {
           stream.on("headers", setHeaders);
@@ -52909,8 +52909,8 @@ var require_package = __commonJS({
 // node_modules/dotenv/lib/main.js
 var require_main = __commonJS({
   "node_modules/dotenv/lib/main.js"(exports2, module2) {
-    var fs6 = require("fs");
-    var path6 = require("path");
+    var fs7 = require("fs");
+    var path7 = require("path");
     var os = require("os");
     var crypto2 = require("crypto");
     var packageJson = require_package();
@@ -53018,7 +53018,7 @@ var require_main = __commonJS({
       if (options && options.path && options.path.length > 0) {
         if (Array.isArray(options.path)) {
           for (const filepath of options.path) {
-            if (fs6.existsSync(filepath)) {
+            if (fs7.existsSync(filepath)) {
               possibleVaultPath = filepath.endsWith(".vault") ? filepath : `${filepath}.vault`;
             }
           }
@@ -53026,15 +53026,15 @@ var require_main = __commonJS({
           possibleVaultPath = options.path.endsWith(".vault") ? options.path : `${options.path}.vault`;
         }
       } else {
-        possibleVaultPath = path6.resolve(process.cwd(), ".env.vault");
+        possibleVaultPath = path7.resolve(process.cwd(), ".env.vault");
       }
-      if (fs6.existsSync(possibleVaultPath)) {
+      if (fs7.existsSync(possibleVaultPath)) {
         return possibleVaultPath;
       }
       return null;
     }
     function _resolveHome(envPath) {
-      return envPath[0] === "~" ? path6.join(os.homedir(), envPath.slice(1)) : envPath;
+      return envPath[0] === "~" ? path7.join(os.homedir(), envPath.slice(1)) : envPath;
     }
     function _configVault(options) {
       const debug = Boolean(options && options.debug);
@@ -53051,7 +53051,7 @@ var require_main = __commonJS({
       return { parsed };
     }
     function configDotenv(options) {
-      const dotenvPath = path6.resolve(process.cwd(), ".env");
+      const dotenvPath = path7.resolve(process.cwd(), ".env");
       let encoding = "utf8";
       const debug = Boolean(options && options.debug);
       const quiet = options && "quiet" in options ? options.quiet : true;
@@ -53075,13 +53075,13 @@ var require_main = __commonJS({
       }
       let lastError;
       const parsedAll = {};
-      for (const path7 of optionPaths) {
+      for (const path8 of optionPaths) {
         try {
-          const parsed = DotenvModule.parse(fs6.readFileSync(path7, { encoding }));
+          const parsed = DotenvModule.parse(fs7.readFileSync(path8, { encoding }));
           DotenvModule.populate(parsedAll, parsed, options);
         } catch (e) {
           if (debug) {
-            _debug(`Failed to load ${path7} ${e.message}`);
+            _debug(`Failed to load ${path8} ${e.message}`);
           }
           lastError = e;
         }
@@ -53096,7 +53096,7 @@ var require_main = __commonJS({
         const shortPaths = [];
         for (const filePath of optionPaths) {
           try {
-            const relative = path6.relative(process.cwd(), filePath);
+            const relative = path7.relative(process.cwd(), filePath);
             shortPaths.push(relative);
           } catch (e) {
             if (debug) {
@@ -57085,17 +57085,17 @@ var require_bson = __commonJS({
       index = index + size;
       return index;
     }
-    function serializeObject(buffer2, key, value, index, checkKeys, depth, serializeFunctions, ignoreUndefined, path6) {
-      if (path6.has(value)) {
+    function serializeObject(buffer2, key, value, index, checkKeys, depth, serializeFunctions, ignoreUndefined, path7) {
+      if (path7.has(value)) {
         throw new BSONError("Cannot convert circular structure to BSON");
       }
-      path6.add(value);
+      path7.add(value);
       buffer2[index++] = Array.isArray(value) ? BSON_DATA_ARRAY : BSON_DATA_OBJECT;
       const numberOfWrittenBytes = ByteUtils.encodeUTF8Into(buffer2, key, index);
       index = index + numberOfWrittenBytes;
       buffer2[index++] = 0;
-      const endIndex = serializeInto(buffer2, value, checkKeys, index, depth + 1, serializeFunctions, ignoreUndefined, path6);
-      path6.delete(value);
+      const endIndex = serializeInto(buffer2, value, checkKeys, index, depth + 1, serializeFunctions, ignoreUndefined, path7);
+      path7.delete(value);
       return endIndex;
     }
     function serializeDecimal128(buffer2, key, value, index) {
@@ -57147,7 +57147,7 @@ var require_bson = __commonJS({
       buffer2[index++] = 0;
       return index;
     }
-    function serializeCode(buffer2, key, value, index, checkKeys = false, depth = 0, serializeFunctions = false, ignoreUndefined = true, path6) {
+    function serializeCode(buffer2, key, value, index, checkKeys = false, depth = 0, serializeFunctions = false, ignoreUndefined = true, path7) {
       if (value.scope && typeof value.scope === "object") {
         buffer2[index++] = BSON_DATA_CODE_W_SCOPE;
         const numberOfWrittenBytes = ByteUtils.encodeUTF8Into(buffer2, key, index);
@@ -57160,7 +57160,7 @@ var require_bson = __commonJS({
         NumberUtils.setInt32LE(buffer2, index, codeSize);
         buffer2[index + 4 + codeSize - 1] = 0;
         index = index + codeSize + 4;
-        const endIndex = serializeInto(buffer2, value.scope, checkKeys, index, depth + 1, serializeFunctions, ignoreUndefined, path6);
+        const endIndex = serializeInto(buffer2, value.scope, checkKeys, index, depth + 1, serializeFunctions, ignoreUndefined, path7);
         index = endIndex - 1;
         const totalSize = endIndex - startIndex;
         startIndex += NumberUtils.setInt32LE(buffer2, startIndex, totalSize);
@@ -57216,7 +57216,7 @@ var require_bson = __commonJS({
       buffer2[index++] = 0;
       return index;
     }
-    function serializeDBRef(buffer2, key, value, index, depth, serializeFunctions, path6) {
+    function serializeDBRef(buffer2, key, value, index, depth, serializeFunctions, path7) {
       buffer2[index++] = BSON_DATA_OBJECT;
       const numberOfWrittenBytes = ByteUtils.encodeUTF8Into(buffer2, key, index);
       index = index + numberOfWrittenBytes;
@@ -57230,13 +57230,13 @@ var require_bson = __commonJS({
         output.$db = value.db;
       }
       output = Object.assign(output, value.fields);
-      const endIndex = serializeInto(buffer2, output, false, index, depth + 1, serializeFunctions, true, path6);
+      const endIndex = serializeInto(buffer2, output, false, index, depth + 1, serializeFunctions, true, path7);
       const size = endIndex - startIndex;
       startIndex += NumberUtils.setInt32LE(buffer2, index, size);
       return endIndex;
     }
-    function serializeInto(buffer2, object, checkKeys, startingIndex, depth, serializeFunctions, ignoreUndefined, path6) {
-      if (path6 == null) {
+    function serializeInto(buffer2, object, checkKeys, startingIndex, depth, serializeFunctions, ignoreUndefined, path7) {
+      if (path7 == null) {
         if (object == null) {
           buffer2[0] = 5;
           buffer2[1] = 0;
@@ -57255,9 +57255,9 @@ var require_bson = __commonJS({
         } else if (isDate(object) || isRegExp(object) || isUint8Array(object) || isAnyArrayBuffer(object)) {
           throw new BSONError(`date, regexp, typedarray, and arraybuffer cannot be BSON documents`);
         }
-        path6 = /* @__PURE__ */ new Set();
+        path7 = /* @__PURE__ */ new Set();
       }
-      path6.add(object);
+      path7.add(object);
       let index = startingIndex + 4;
       if (Array.isArray(object)) {
         for (let i = 0; i < object.length; i++) {
@@ -57287,7 +57287,7 @@ var require_bson = __commonJS({
             } else if (value instanceof RegExp || isRegExp(value)) {
               index = serializeRegExp(buffer2, key, value, index);
             } else {
-              index = serializeObject(buffer2, key, value, index, checkKeys, depth, serializeFunctions, ignoreUndefined, path6);
+              index = serializeObject(buffer2, key, value, index, checkKeys, depth, serializeFunctions, ignoreUndefined, path7);
             }
           } else if (type === "object") {
             if (value[BSON_VERSION_SYMBOL] !== BSON_MAJOR_VERSION) {
@@ -57301,13 +57301,13 @@ var require_bson = __commonJS({
             } else if (value._bsontype === "Double") {
               index = serializeDouble(buffer2, key, value, index);
             } else if (value._bsontype === "Code") {
-              index = serializeCode(buffer2, key, value, index, checkKeys, depth, serializeFunctions, ignoreUndefined, path6);
+              index = serializeCode(buffer2, key, value, index, checkKeys, depth, serializeFunctions, ignoreUndefined, path7);
             } else if (value._bsontype === "Binary") {
               index = serializeBinary(buffer2, key, value, index);
             } else if (value._bsontype === "BSONSymbol") {
               index = serializeSymbol(buffer2, key, value, index);
             } else if (value._bsontype === "DBRef") {
-              index = serializeDBRef(buffer2, key, value, index, depth, serializeFunctions, path6);
+              index = serializeDBRef(buffer2, key, value, index, depth, serializeFunctions, path7);
             } else if (value._bsontype === "BSONRegExp") {
               index = serializeBSONRegExp(buffer2, key, value, index);
             } else if (value._bsontype === "Int32") {
@@ -57368,7 +57368,7 @@ var require_bson = __commonJS({
             } else if (value instanceof RegExp || isRegExp(value)) {
               index = serializeRegExp(buffer2, key, value, index);
             } else {
-              index = serializeObject(buffer2, key, value, index, checkKeys, depth, serializeFunctions, ignoreUndefined, path6);
+              index = serializeObject(buffer2, key, value, index, checkKeys, depth, serializeFunctions, ignoreUndefined, path7);
             }
           } else if (type === "object") {
             if (value[BSON_VERSION_SYMBOL] !== BSON_MAJOR_VERSION) {
@@ -57382,13 +57382,13 @@ var require_bson = __commonJS({
             } else if (value._bsontype === "Double") {
               index = serializeDouble(buffer2, key, value, index);
             } else if (value._bsontype === "Code") {
-              index = serializeCode(buffer2, key, value, index, checkKeys, depth, serializeFunctions, ignoreUndefined, path6);
+              index = serializeCode(buffer2, key, value, index, checkKeys, depth, serializeFunctions, ignoreUndefined, path7);
             } else if (value._bsontype === "Binary") {
               index = serializeBinary(buffer2, key, value, index);
             } else if (value._bsontype === "BSONSymbol") {
               index = serializeSymbol(buffer2, key, value, index);
             } else if (value._bsontype === "DBRef") {
-              index = serializeDBRef(buffer2, key, value, index, depth, serializeFunctions, path6);
+              index = serializeDBRef(buffer2, key, value, index, depth, serializeFunctions, path7);
             } else if (value._bsontype === "BSONRegExp") {
               index = serializeBSONRegExp(buffer2, key, value, index);
             } else if (value._bsontype === "Int32") {
@@ -57448,7 +57448,7 @@ var require_bson = __commonJS({
             } else if (value instanceof RegExp || isRegExp(value)) {
               index = serializeRegExp(buffer2, key, value, index);
             } else {
-              index = serializeObject(buffer2, key, value, index, checkKeys, depth, serializeFunctions, ignoreUndefined, path6);
+              index = serializeObject(buffer2, key, value, index, checkKeys, depth, serializeFunctions, ignoreUndefined, path7);
             }
           } else if (type === "object") {
             if (value[BSON_VERSION_SYMBOL] !== BSON_MAJOR_VERSION) {
@@ -57462,13 +57462,13 @@ var require_bson = __commonJS({
             } else if (value._bsontype === "Double") {
               index = serializeDouble(buffer2, key, value, index);
             } else if (value._bsontype === "Code") {
-              index = serializeCode(buffer2, key, value, index, checkKeys, depth, serializeFunctions, ignoreUndefined, path6);
+              index = serializeCode(buffer2, key, value, index, checkKeys, depth, serializeFunctions, ignoreUndefined, path7);
             } else if (value._bsontype === "Binary") {
               index = serializeBinary(buffer2, key, value, index);
             } else if (value._bsontype === "BSONSymbol") {
               index = serializeSymbol(buffer2, key, value, index);
             } else if (value._bsontype === "DBRef") {
-              index = serializeDBRef(buffer2, key, value, index, depth, serializeFunctions, path6);
+              index = serializeDBRef(buffer2, key, value, index, depth, serializeFunctions, path7);
             } else if (value._bsontype === "BSONRegExp") {
               index = serializeBSONRegExp(buffer2, key, value, index);
             } else if (value._bsontype === "Int32") {
@@ -57483,7 +57483,7 @@ var require_bson = __commonJS({
           }
         }
       }
-      path6.delete(object);
+      path7.delete(object);
       buffer2[index++] = 0;
       const size = index - startingIndex;
       startingIndex += NumberUtils.setInt32LE(buffer2, startingIndex, size);
@@ -67012,14 +67012,14 @@ var require_url_state_machine = __commonJS({
       return url.replace(/\u0009|\u000A|\u000D/ug, "");
     }
     function shortenPath(url) {
-      const { path: path6 } = url;
-      if (path6.length === 0) {
+      const { path: path7 } = url;
+      if (path7.length === 0) {
         return;
       }
-      if (url.scheme === "file" && path6.length === 1 && isNormalizedWindowsDriveLetter(path6[0])) {
+      if (url.scheme === "file" && path7.length === 1 && isNormalizedWindowsDriveLetter(path7[0])) {
         return;
       }
-      path6.pop();
+      path7.pop();
     }
     function includesCredentials(url) {
       return url.username !== "" || url.password !== "";
@@ -70395,7 +70395,7 @@ var require_state_machine = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.StateMachine = void 0;
-    var fs6 = require("fs/promises");
+    var fs7 = require("fs/promises");
     var net = require("net");
     var tls = require("tls");
     var bson_1 = require_bson2();
@@ -70682,11 +70682,11 @@ var require_state_machine = __commonJS({
           options.secureContext = tlsOptions.secureContext;
         }
         if (tlsOptions.tlsCertificateKeyFile) {
-          const cert = await fs6.readFile(tlsOptions.tlsCertificateKeyFile);
+          const cert = await fs7.readFile(tlsOptions.tlsCertificateKeyFile);
           options.cert = options.key = cert;
         }
         if (tlsOptions.tlsCAFile) {
-          options.ca = await fs6.readFile(tlsOptions.tlsCAFile);
+          options.ca = await fs7.readFile(tlsOptions.tlsCAFile);
         }
         if (tlsOptions.tlsCertificateKeyFilePassword) {
           options.passphrase = tlsOptions.tlsCertificateKeyFilePassword;
@@ -78609,7 +78609,7 @@ var require_token_machine_workflow = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.callback = void 0;
-    var fs6 = require("fs");
+    var fs7 = require("fs");
     var error_1 = require_error();
     var TOKEN_MISSING_ERROR = "OIDC_TOKEN_FILE must be set in the environment.";
     var callback = async () => {
@@ -78617,7 +78617,7 @@ var require_token_machine_workflow = __commonJS({
       if (!tokenFile) {
         throw new error_1.MongoAWSError(TOKEN_MISSING_ERROR);
       }
-      const token = await fs6.promises.readFile(tokenFile, "utf8");
+      const token = await fs7.promises.readFile(tokenFile, "utf8");
       return { accessToken: token };
     };
     exports2.callback = callback;
@@ -87319,13 +87319,13 @@ var require_cast = __commonJS({
     var MongooseError = require_mongooseError();
     var util = require("util");
     var CastError = class extends MongooseError {
-      constructor(type, value, path6, reason, schemaType) {
+      constructor(type, value, path7, reason, schemaType) {
         if (arguments.length > 0) {
           const valueType = getValueType(value);
           const messageFormat = getMessageFormat(schemaType);
-          const msg = formatMessage(null, type, value, path6, messageFormat, valueType, reason);
+          const msg = formatMessage(null, type, value, path7, messageFormat, valueType, reason);
           super(msg);
-          this.init(type, value, path6, reason, schemaType);
+          this.init(type, value, path7, reason, schemaType);
         } else {
           super(formatMessage());
         }
@@ -87345,12 +87345,12 @@ var require_cast = __commonJS({
       /*!
        * ignore
        */
-      init(type, value, path6, reason, schemaType) {
+      init(type, value, path7, reason, schemaType) {
         this.stringValue = getStringValue(value);
         this.messageFormat = getMessageFormat(schemaType);
         this.kind = type;
         this.value = value;
-        this.path = path6;
+        this.path = path7;
         this.reason = reason;
         this.valueType = getValueType(value);
       }
@@ -87413,20 +87413,20 @@ var require_cast = __commonJS({
         return messageFormat;
       }
     }
-    function formatMessage(model, kind, value, path6, messageFormat, valueType, reason) {
+    function formatMessage(model, kind, value, path7, messageFormat, valueType, reason) {
       if (typeof messageFormat === "string") {
         const stringValue = getStringValue(value);
-        let ret = messageFormat.replace("{KIND}", kind).replace("{VALUE}", stringValue).replace("{PATH}", path6);
+        let ret = messageFormat.replace("{KIND}", kind).replace("{VALUE}", stringValue).replace("{PATH}", path7);
         if (model != null) {
           ret = ret.replace("{MODEL}", model.modelName);
         }
         return ret;
       } else if (typeof messageFormat === "function") {
-        return messageFormat(value, path6, model, kind);
+        return messageFormat(value, path7, model, kind);
       } else {
         const stringValue = getStringValue(value);
         const valueTypeMsg = valueType ? " (type " + valueType + ")" : "";
-        let ret = "Cast to " + kind + " failed for value " + stringValue + valueTypeMsg + ' at path "' + path6 + '"';
+        let ret = "Cast to " + kind + " failed for value " + stringValue + valueTypeMsg + ' at path "' + path7 + '"';
         if (model != null) {
           ret += ' for model "' + model.modelName + '"';
         }
@@ -87532,15 +87532,15 @@ var require_validation = __commonJS({
       * @param {String|Error} error
       * @api private
       */
-      addError(path6, error) {
+      addError(path7, error) {
         if (error instanceof _ValidationError) {
           const { errors } = error;
           for (const errorPath of Object.keys(errors)) {
-            this.addError(`${path6}.${errorPath}`, errors[errorPath]);
+            this.addError(`${path7}.${errorPath}`, errors[errorPath]);
           }
           return;
         }
-        this.errors[path6] = error;
+        this.errors[path7] = error;
         this.message = this._message + ": " + combinePathErrors(this);
       }
     };
@@ -87844,11 +87844,11 @@ var require_strict = __commonJS({
     "use strict";
     var MongooseError = require_mongooseError();
     var StrictModeError = class extends MongooseError {
-      constructor(path6, msg, immutable) {
-        msg = msg || "Field `" + path6 + "` is not in schema and strict mode is set to throw.";
+      constructor(path7, msg, immutable) {
+        msg = msg || "Field `" + path7 + "` is not in schema and strict mode is set to throw.";
         super(msg);
         this.isImmutableError = !!immutable;
-        this.path = path6;
+        this.path = path7;
       }
     };
     Object.defineProperty(StrictModeError.prototype, "name", {
@@ -87864,10 +87864,10 @@ var require_strictPopulate = __commonJS({
     "use strict";
     var MongooseError = require_mongooseError();
     var StrictPopulateError = class extends MongooseError {
-      constructor(path6, msg) {
-        msg = msg || "Cannot populate path `" + path6 + "` because it is not in your schema. Set the `strictPopulate` option to false to override.";
+      constructor(path7, msg) {
+        msg = msg || "Cannot populate path `" + path7 + "` because it is not in your schema. Set the `strictPopulate` option to false to override.";
         super(msg);
-        this.path = path6;
+        this.path = path7;
       }
     };
     Object.defineProperty(StrictPopulateError.prototype, "name", {
@@ -87951,7 +87951,7 @@ var require_boolean = __commonJS({
   "node_modules/mongoose/lib/cast/boolean.js"(exports2, module2) {
     "use strict";
     var CastError = require_cast();
-    module2.exports = function castBoolean(value, path6) {
+    module2.exports = function castBoolean(value, path7) {
       if (module2.exports.convertToTrue.has(value)) {
         return true;
       }
@@ -87961,7 +87961,7 @@ var require_boolean = __commonJS({
       if (value == null) {
         return value;
       }
-      throw new CastError("boolean", value, path6);
+      throw new CastError("boolean", value, path7);
     };
     module2.exports.convertToTrue = /* @__PURE__ */ new Set([true, "true", 1, "1", "yes"]);
     module2.exports.convertToFalse = /* @__PURE__ */ new Set([false, "false", 0, "0", "no"]);
@@ -87974,8 +87974,8 @@ var require_exists = __commonJS({
     "use strict";
     var castBoolean = require_boolean();
     module2.exports = function(val) {
-      const path6 = this != null ? this.path : null;
-      return castBoolean(val, path6);
+      const path7 = this != null ? this.path : null;
+      return castBoolean(val, path7);
     };
   }
 });
@@ -88016,7 +88016,7 @@ var require_handleImmutable = __commonJS({
         delete schematype.$immutableSetter;
       }
     };
-    function createImmutableSetter(path6, immutable) {
+    function createImmutableSetter(path7, immutable) {
       return function immutableSetter(v, _priorVal, _doc, options) {
         if (this == null || this.$__ == null) {
           return v;
@@ -88031,9 +88031,9 @@ var require_handleImmutable = __commonJS({
         if (!_immutable) {
           return v;
         }
-        const _value = this.$__.priorDoc != null ? this.$__.priorDoc.$__getValue(path6) : this.$__getValue(path6);
+        const _value = this.$__.priorDoc != null ? this.$__.priorDoc.$__getValue(path7) : this.$__getValue(path7);
         if (this.$__.strictMode === "throw" && v !== _value) {
-          throw new StrictModeError(path6, "Path `" + path6 + "` is immutable and strict mode is set to throw.", true);
+          throw new StrictModeError(path7, "Path `" + path7 + "` is immutable and strict mode is set to throw.", true);
         }
         return _value;
       };
@@ -88121,7 +88121,7 @@ var require_lib7 = __commonJS({
   "node_modules/mpath/lib/index.js"(exports2) {
     var stringToParts = require_stringToParts();
     var ignoreProperties = ["__proto__", "constructor", "prototype"];
-    exports2.get = function(path6, o, special, map) {
+    exports2.get = function(path7, o, special, map) {
       var lookup;
       if ("function" == typeof special) {
         if (special.length < 2) {
@@ -88133,7 +88133,7 @@ var require_lib7 = __commonJS({
         }
       }
       map || (map = K);
-      var parts = "string" == typeof path6 ? stringToParts(path6) : path6;
+      var parts = "string" == typeof path7 ? stringToParts(path7) : path7;
       if (!Array.isArray(parts)) {
         throw new TypeError("Invalid `path`. Must be either string or array");
       }
@@ -88159,8 +88159,8 @@ var require_lib7 = __commonJS({
       }
       return map(obj);
     };
-    exports2.has = function(path6, o) {
-      var parts = typeof path6 === "string" ? stringToParts(path6) : path6;
+    exports2.has = function(path7, o) {
+      var parts = typeof path7 === "string" ? stringToParts(path7) : path7;
       if (!Array.isArray(parts)) {
         throw new TypeError("Invalid `path`. Must be either string or array");
       }
@@ -88177,8 +88177,8 @@ var require_lib7 = __commonJS({
       }
       return true;
     };
-    exports2.unset = function(path6, o) {
-      var parts = typeof path6 === "string" ? stringToParts(path6) : path6;
+    exports2.unset = function(path7, o) {
+      var parts = typeof path7 === "string" ? stringToParts(path7) : path7;
       if (!Array.isArray(parts)) {
         throw new TypeError("Invalid `path`. Must be either string or array");
       }
@@ -88202,7 +88202,7 @@ var require_lib7 = __commonJS({
       }
       return true;
     };
-    exports2.set = function(path6, val, o, special, map, _copying) {
+    exports2.set = function(path7, val, o, special, map, _copying) {
       var lookup;
       if ("function" == typeof special) {
         if (special.length < 2) {
@@ -88214,7 +88214,7 @@ var require_lib7 = __commonJS({
         }
       }
       map || (map = K);
-      var parts = "string" == typeof path6 ? stringToParts(path6) : path6;
+      var parts = "string" == typeof path7 ? stringToParts(path7) : path7;
       if (!Array.isArray(parts)) {
         throw new TypeError("Invalid `path`. Must be either string or array");
       }
@@ -88227,7 +88227,7 @@ var require_lib7 = __commonJS({
           return;
         }
       }
-      var copy = _copying || /\$/.test(path6) && _copying !== false, obj = o, part;
+      var copy = _copying || /\$/.test(path7) && _copying !== false, obj = o, part;
       for (var i = 0, len = parts.length - 1; i < len; ++i) {
         part = parts[i];
         if ("$" == part) {
@@ -88462,22 +88462,22 @@ var require_stateMachine = __commonJS({
       ctor.prototype.constructor = ctor;
       ctor.prototype.stateNames = states;
       states.forEach(function(state) {
-        ctor.prototype[state] = function(path6) {
-          this._changeState(path6, state);
+        ctor.prototype[state] = function(path7) {
+          this._changeState(path7, state);
         };
       });
       return ctor;
     };
-    StateMachine.prototype._changeState = function _changeState(path6, nextState) {
-      const prevState = this.paths[path6];
+    StateMachine.prototype._changeState = function _changeState(path7, nextState) {
+      const prevState = this.paths[path7];
       if (prevState === nextState) {
         return;
       }
       const prevBucket = this.states[prevState];
-      if (prevBucket) delete prevBucket[path6];
-      this.paths[path6] = nextState;
+      if (prevBucket) delete prevBucket[path7];
+      this.paths[path7] = nextState;
       this.states[nextState] = this.states[nextState] || {};
-      this.states[nextState][path6] = true;
+      this.states[nextState][path7] = true;
     };
     StateMachine.prototype.clear = function clear(state) {
       if (this.states[state] == null) {
@@ -88485,20 +88485,20 @@ var require_stateMachine = __commonJS({
       }
       const keys = Object.keys(this.states[state]);
       let i = keys.length;
-      let path6;
+      let path7;
       while (i--) {
-        path6 = keys[i];
-        delete this.states[state][path6];
-        delete this.paths[path6];
+        path7 = keys[i];
+        delete this.states[state][path7];
+        delete this.paths[path7];
       }
     };
-    StateMachine.prototype.clearPath = function clearPath(path6) {
-      const state = this.paths[path6];
+    StateMachine.prototype.clearPath = function clearPath(path7) {
+      const state = this.paths[path7];
       if (!state) {
         return;
       }
-      delete this.paths[path6];
-      delete this.states[state][path6];
+      delete this.paths[path7];
+      delete this.states[state][path7];
     };
     StateMachine.prototype.getStatePaths = function getStatePaths(state) {
       if (this.states[state] != null) {
@@ -88528,8 +88528,8 @@ var require_stateMachine = __commonJS({
           }
           return paths2.concat(Object.keys(_this.states[state]));
         }, []);
-        return paths[iterMethod](function(path6, i, paths2) {
-          return callback(path6, i, paths2);
+        return paths[iterMethod](function(path7, i, paths2) {
+          return callback(path7, i, paths2);
         });
       };
     };
@@ -88602,10 +88602,10 @@ var require_buffer = __commonJS({
         val = 0;
       }
       let encoding;
-      let path6;
+      let path7;
       let doc;
       if (Array.isArray(encode)) {
-        path6 = encode[0];
+        path7 = encode[0];
         doc = encode[1];
       } else {
         encoding = encode;
@@ -88618,7 +88618,7 @@ var require_buffer = __commonJS({
       }
       utils.decorate(buf, MongooseBuffer.mixin);
       buf.isMongooseBuffer = true;
-      buf[MongooseBuffer.pathSymbol] = path6;
+      buf[MongooseBuffer.pathSymbol] = path7;
       buf[parentSymbol] = doc;
       buf._subtype = 0;
       return buf;
@@ -88787,7 +88787,7 @@ var require_mixed = __commonJS({
     var symbols = require_symbols2();
     var isObject = require_isObject();
     var utils = require_utils6();
-    function SchemaMixed(path6, options, _schemaOptions, parentSchema) {
+    function SchemaMixed(path7, options, _schemaOptions, parentSchema) {
       if (options && options.default) {
         const def = options.default;
         if (Array.isArray(def) && def.length === 0) {
@@ -88798,7 +88798,7 @@ var require_mixed = __commonJS({
           };
         }
       }
-      SchemaType.call(this, path6, options, "Mixed", parentSchema);
+      SchemaType.call(this, path7, options, "Mixed", parentSchema);
       this[symbols.schemaMixedSymbol] = true;
     }
     SchemaMixed.schemaName = "Mixed";
@@ -88844,10 +88844,10 @@ var require_objectExpected = __commonJS({
     "use strict";
     var MongooseError = require_mongooseError();
     var ObjectExpectedError = class extends MongooseError {
-      constructor(path6, val) {
+      constructor(path7, val) {
         const typeDescription = Array.isArray(val) ? "array" : "primitive value";
-        super("Tried to set nested object field `" + path6 + `\` to ${typeDescription} \`` + val + "`");
-        this.path = path6;
+        super("Tried to set nested object field `" + path7 + `\` to ${typeDescription} \`` + val + "`");
+        this.path = path7;
       }
     };
     Object.defineProperty(ObjectExpectedError.prototype, "name", {
@@ -88948,9 +88948,9 @@ var require_applyDefaults = __commonJS({
           continue;
         }
         const type = doc.$__schema.paths[p];
-        const path6 = type.splitPath();
-        const len = path6.length;
-        if (path6[len - 1] === "$*") {
+        const path7 = type.splitPath();
+        const len = path7.length;
+        if (path7[len - 1] === "$*") {
           continue;
         }
         let included = false;
@@ -88959,7 +88959,7 @@ var require_applyDefaults = __commonJS({
           if (doc_ == null) {
             break;
           }
-          const piece = path6[j];
+          const piece = path7[j];
           curPath += (!curPath.length ? "" : ".") + piece;
           if (exclude === true) {
             if (curPath in fields) {
@@ -89050,7 +89050,7 @@ var require_applyDefaults = __commonJS({
 var require_cleanModifiedSubpaths = __commonJS({
   "node_modules/mongoose/lib/helpers/document/cleanModifiedSubpaths.js"(exports2, module2) {
     "use strict";
-    module2.exports = function cleanModifiedSubpaths(doc, path6, options) {
+    module2.exports = function cleanModifiedSubpaths(doc, path7, options) {
       options = options || {};
       const skipDocArrays = options.skipDocArrays;
       let deleted = 0;
@@ -89064,7 +89064,7 @@ var require_cleanModifiedSubpaths = __commonJS({
             continue;
           }
         }
-        if (modifiedPath.startsWith(path6 + ".")) {
+        if (modifiedPath.startsWith(path7 + ".")) {
           doc.$__.activePaths.clearPath(modifiedPath);
           ++deleted;
           if (doc.$isSubdocument) {
@@ -89074,12 +89074,12 @@ var require_cleanModifiedSubpaths = __commonJS({
       }
       return deleted;
     };
-    function cleanParent(doc, path6, seen = /* @__PURE__ */ new Set()) {
+    function cleanParent(doc, path7, seen = /* @__PURE__ */ new Set()) {
       if (seen.has(doc)) {
         throw new Error("Infinite subdocument loop: subdoc with _id " + doc._id + " is a parent of itself");
       }
       const parent = doc.$parent();
-      const newPath = doc.$__pathRelativeToParent(void 0, false) + "." + path6;
+      const newPath = doc.$__pathRelativeToParent(void 0, false) + "." + path7;
       parent.$__.activePaths.clearPath(newPath);
       if (parent.$isSubdocument) {
         cleanParent(parent, newPath, seen);
@@ -89123,7 +89123,7 @@ var require_compile = __commonJS({
     }
     function defineKey({ prop, subprops, prototype, prefix, options }) {
       Document = Document || require_document2();
-      const path6 = (prefix ? prefix + "." : "") + prop;
+      const path7 = (prefix ? prefix + "." : "") + prop;
       prefix = prefix || "";
       const useGetOptions = prefix ? Object.freeze({}) : noDottedPathGetOptions;
       if (subprops) {
@@ -89135,12 +89135,12 @@ var require_compile = __commonJS({
             if (!this.$__.getters) {
               this.$__.getters = {};
             }
-            if (!this.$__.getters[path6]) {
+            if (!this.$__.getters[path7]) {
               const nested = Object.create(Document.prototype, getOwnPropertyDescriptors(this));
               if (!prefix) {
                 nested.$__[scopeSymbol] = this;
               }
-              nested.$__.nestedPath = path6;
+              nested.$__.nestedPath = path7;
               Object.defineProperty(nested, "schema", {
                 enumerable: false,
                 configurable: true,
@@ -89164,7 +89164,7 @@ var require_compile = __commonJS({
                 configurable: true,
                 writable: false,
                 value: function() {
-                  return clone(_this.get(path6, null, {
+                  return clone(_this.get(path7, null, {
                     virtuals: this && this.schema && this.schema.options && this.schema.options.toObject && this.schema.options.toObject.virtuals || null
                   }));
                 }
@@ -89174,7 +89174,7 @@ var require_compile = __commonJS({
                 configurable: true,
                 writable: false,
                 value: function() {
-                  return _this.get(path6, null, {
+                  return _this.get(path7, null, {
                     virtuals: this && this.schema && this.schema.options && this.schema.options.toObject && this.schema.options.toObject.virtuals || null
                   });
                 }
@@ -89184,7 +89184,7 @@ var require_compile = __commonJS({
                 configurable: true,
                 writable: false,
                 value: function() {
-                  return _this.get(path6, null, {
+                  return _this.get(path7, null, {
                     virtuals: this && this.schema && this.schema.options && this.schema.options.toJSON && this.schema.options.toJSON.virtuals || null
                   });
                 }
@@ -89200,7 +89200,7 @@ var require_compile = __commonJS({
                 configurable: true,
                 writable: false,
                 value: function() {
-                  return Object.keys(this.get(path6, null, _isEmptyOptions) || {}).length === 0;
+                  return Object.keys(this.get(path7, null, _isEmptyOptions) || {}).length === 0;
                 }
               });
               Object.defineProperty(nested, "$__parent", {
@@ -89209,10 +89209,10 @@ var require_compile = __commonJS({
                 writable: false,
                 value: this
               });
-              compile(subprops, nested, path6, options);
-              this.$__.getters[path6] = nested;
+              compile(subprops, nested, path7, options);
+              this.$__.getters[path7] = nested;
             }
-            return this.$__.getters[path6];
+            return this.$__.getters[path7];
           },
           set: function(v) {
             if (v != null && v.$__isNested) {
@@ -89221,7 +89221,7 @@ var require_compile = __commonJS({
               v = v.$toObject(internalToObjectOptions);
             }
             const doc = this.$__[scopeSymbol] || this;
-            doc.$set(path6, v);
+            doc.$set(path7, v);
           }
         });
       } else {
@@ -89231,13 +89231,13 @@ var require_compile = __commonJS({
           get: function() {
             return this[getSymbol].call(
               this.$__[scopeSymbol] || this,
-              path6,
+              path7,
               null,
               useGetOptions
             );
           },
           set: function(v) {
-            this.$set.call(this.$__[scopeSymbol] || this, path6, v);
+            this.$set.call(this.$__[scopeSymbol] || this, path7, v);
           }
         });
       }
@@ -89292,7 +89292,7 @@ var require_common4 = __commonJS({
     var util = require("util");
     exports2.flatten = flatten;
     exports2.modifiedPaths = modifiedPaths;
-    function flatten(update, path6, options, schema) {
+    function flatten(update, path7, options, schema) {
       let keys;
       if (update && isMongooseObject(update) && !Buffer.isBuffer(update)) {
         keys = Object.keys(update.toObject({ transform: false, virtuals: false }) || {});
@@ -89301,30 +89301,30 @@ var require_common4 = __commonJS({
       }
       const numKeys = keys.length;
       const result = {};
-      path6 = path6 ? path6 + "." : "";
+      path7 = path7 ? path7 + "." : "";
       for (let i = 0; i < numKeys; ++i) {
         const key = keys[i];
         const val = update[key];
-        result[path6 + key] = val;
-        const keySchema = schema && schema.path && schema.path(path6 + key);
-        const isNested = schema && schema.nested && schema.nested[path6 + key];
+        result[path7 + key] = val;
+        const keySchema = schema && schema.path && schema.path(path7 + key);
+        const isNested = schema && schema.nested && schema.nested[path7 + key];
         if (keySchema && keySchema.instance === "Mixed") continue;
         if (shouldFlatten(val)) {
           if (options && options.skipArrays && Array.isArray(val)) {
             continue;
           }
-          const flat = flatten(val, path6 + key, options, schema);
+          const flat = flatten(val, path7 + key, options, schema);
           for (const k in flat) {
             result[k] = flat[k];
           }
           if (Array.isArray(val)) {
-            result[path6 + key] = val;
+            result[path7 + key] = val;
           }
         }
         if (isNested) {
           const paths = Object.keys(schema.paths);
           for (const p of paths) {
-            if (p.startsWith(path6 + key + ".") && !Object.hasOwn(result, p)) {
+            if (p.startsWith(path7 + key + ".") && !Object.hasOwn(result, p)) {
               result[p] = void 0;
             }
           }
@@ -89332,13 +89332,13 @@ var require_common4 = __commonJS({
       }
       return result;
     }
-    function modifiedPaths(update, path6, result, recursion = null) {
+    function modifiedPaths(update, path7, result, recursion = null) {
       if (update == null || typeof update !== "object") {
         return;
       }
       if (recursion == null) {
         recursion = {
-          raw: { update, path: path6 },
+          raw: { update, path: path7 },
           trace: /* @__PURE__ */ new WeakSet()
         };
       }
@@ -89351,17 +89351,17 @@ updatePath: '${recursion.raw.path}'`);
       const keys = Object.keys(update || {});
       const numKeys = keys.length;
       result = result || {};
-      path6 = path6 ? path6 + "." : "";
+      path7 = path7 ? path7 + "." : "";
       for (let i = 0; i < numKeys; ++i) {
         const key = keys[i];
         let val = update[key];
-        const _path = path6 + key;
+        const _path = path7 + key;
         result[_path] = true;
         if (!Buffer.isBuffer(val) && isMongooseObject(val)) {
           val = val.toObject({ transform: false, virtuals: false });
         }
         if (shouldFlatten(val)) {
-          modifiedPaths(val, path6 + key, result, recursion);
+          modifiedPaths(val, path7 + key, result, recursion);
         }
       }
       recursion.trace.delete(update);
@@ -89377,21 +89377,21 @@ updatePath: '${recursion.raw.path}'`);
 var require_get2 = __commonJS({
   "node_modules/mongoose/lib/helpers/get.js"(exports2, module2) {
     "use strict";
-    module2.exports = function get(obj, path6, def) {
+    module2.exports = function get(obj, path7, def) {
       let parts;
       let isPathArray = false;
-      if (typeof path6 === "string") {
-        if (path6.indexOf(".") === -1) {
-          const _v = getProperty(obj, path6);
+      if (typeof path7 === "string") {
+        if (path7.indexOf(".") === -1) {
+          const _v = getProperty(obj, path7);
           if (_v == null) {
             return def;
           }
           return _v;
         }
-        parts = path6.split(".");
+        parts = path7.split(".");
       } else {
         isPathArray = true;
-        parts = path6;
+        parts = path7;
         if (parts.length === 1) {
           const _v = getProperty(obj, parts[0]);
           if (_v == null) {
@@ -89400,7 +89400,7 @@ var require_get2 = __commonJS({
           return _v;
         }
       }
-      let rest = path6;
+      let rest = path7;
       let cur = obj;
       for (const part of parts) {
         if (cur == null) {
@@ -89477,10 +89477,10 @@ var require_getEmbeddedDiscriminatorPath = __commonJS({
     "use strict";
     var get = require_get2();
     var getSchemaDiscriminatorByValue = require_getSchemaDiscriminatorByValue();
-    module2.exports = function getEmbeddedDiscriminatorPath(doc, path6, options) {
+    module2.exports = function getEmbeddedDiscriminatorPath(doc, path7, options) {
       options = options || {};
       const typeOnly = options.typeOnly;
-      const parts = Array.isArray(path6) ? path6 : path6.indexOf(".") === -1 ? [path6] : path6.split(".");
+      const parts = Array.isArray(path7) ? path7 : path7.indexOf(".") === -1 ? [path7] : path7.split(".");
       let schemaType = null;
       let type = "adhocOrUndefined";
       const schema = getSchemaDiscriminatorByValue(doc.schema, doc.get(doc.schema.options.discriminatorKey)) || doc.schema;
@@ -89515,8 +89515,8 @@ var require_getKeysInSchemaOrder = __commonJS({
   "node_modules/mongoose/lib/helpers/schema/getKeysInSchemaOrder.js"(exports2, module2) {
     "use strict";
     var get = require_get2();
-    module2.exports = function getKeysInSchemaOrder(schema, val, path6) {
-      const schemaKeys = path6 != null ? Object.keys(get(schema.tree, path6, {})) : Object.keys(schema.tree);
+    module2.exports = function getKeysInSchemaOrder(schema, val, path7) {
+      const schemaKeys = path7 != null ? Object.keys(get(schema.tree, path7, {})) : Object.keys(schema.tree);
       const valKeys = new Set(Object.keys(val));
       let keys;
       if (valKeys.size > 1) {
@@ -89647,26 +89647,26 @@ var require_isPathExcluded = __commonJS({
   "node_modules/mongoose/lib/helpers/projection/isPathExcluded.js"(exports2, module2) {
     "use strict";
     var isDefiningProjection = require_isDefiningProjection();
-    module2.exports = function isPathExcluded(projection, path6) {
+    module2.exports = function isPathExcluded(projection, path7) {
       if (projection == null) {
         return false;
       }
-      if (path6 === "_id") {
+      if (path7 === "_id") {
         return projection._id === 0;
       }
       const paths = Object.keys(projection);
       let type = null;
       for (const _path of paths) {
         if (isDefiningProjection(projection[_path])) {
-          type = projection[path6] === 1 ? "inclusive" : "exclusive";
+          type = projection[path7] === 1 ? "inclusive" : "exclusive";
           break;
         }
       }
       if (type === "inclusive") {
-        return projection[path6] !== 1;
+        return projection[path7] !== 1;
       }
       if (type === "exclusive") {
-        return projection[path6] === 0;
+        return projection[path7] === 0;
       }
       return false;
     };
@@ -89687,8 +89687,8 @@ var require_markArraySubdocsPopulated = __commonJS({
         if (item.isVirtual) {
           continue;
         }
-        const path6 = item.path;
-        const pieces = path6.split(".");
+        const path7 = item.path;
+        const pieces = path7.split(".");
         for (let i = 0; i < pieces.length - 1; ++i) {
           const subpath = pieces.slice(0, i + 1).join(".");
           const rest = pieces.slice(i + 1).join(".");
@@ -89744,11 +89744,11 @@ var require_parentPaths = __commonJS({
   "node_modules/mongoose/lib/helpers/path/parentPaths.js"(exports2, module2) {
     "use strict";
     var dotRE = /\./g;
-    module2.exports = function parentPaths(path6) {
-      if (path6.indexOf(".") === -1) {
-        return [path6];
+    module2.exports = function parentPaths(path7) {
+      if (path7.indexOf(".") === -1) {
+        return [path7];
       }
-      const pieces = path6.split(dotRE);
+      const pieces = path7.split(dotRE);
       const len = pieces.length;
       const ret = new Array(len);
       let cur = "";
@@ -89765,9 +89765,9 @@ var require_parentPaths = __commonJS({
 var require_checkEmbeddedDiscriminatorKeyProjection = __commonJS({
   "node_modules/mongoose/lib/helpers/discriminator/checkEmbeddedDiscriminatorKeyProjection.js"(exports2, module2) {
     "use strict";
-    module2.exports = function checkEmbeddedDiscriminatorKeyProjection(userProjection, path6, schema, selected, addedPaths) {
-      const userProjectedInPath = Object.keys(userProjection).reduce((cur, key) => cur || key.startsWith(path6 + "."), false);
-      const _discriminatorKey = path6 + "." + schema.options.discriminatorKey;
+    module2.exports = function checkEmbeddedDiscriminatorKeyProjection(userProjection, path7, schema, selected, addedPaths) {
+      const userProjectedInPath = Object.keys(userProjection).reduce((cur, key) => cur || key.startsWith(path7 + "."), false);
+      const _discriminatorKey = path7 + "." + schema.options.discriminatorKey;
       if (!userProjectedInPath && addedPaths.length === 1 && addedPaths[0] === _discriminatorKey) {
         selected.splice(selected.indexOf(_discriminatorKey), 1);
       }
@@ -89799,8 +89799,8 @@ var require_getDiscriminatorByValue = __commonJS({
 var require_isPathSelectedInclusive = __commonJS({
   "node_modules/mongoose/lib/helpers/projection/isPathSelectedInclusive.js"(exports2, module2) {
     "use strict";
-    module2.exports = function isPathSelectedInclusive(fields, path6) {
-      const chunks = path6.split(".");
+    module2.exports = function isPathSelectedInclusive(fields, path7) {
+      const chunks = path7.split(".");
       let cur = "";
       let j;
       let keys;
@@ -89811,7 +89811,7 @@ var require_isPathSelectedInclusive = __commonJS({
           keys = Object.keys(fields);
           numKeys = keys.length;
           for (j = 0; j < numKeys; ++j) {
-            if (keys[i].indexOf(cur + ".") === 0 && keys[i].indexOf(path6) !== 0) {
+            if (keys[i].indexOf(cur + ".") === 0 && keys[i].indexOf(path7) !== 0) {
               continue;
             }
           }
@@ -89842,13 +89842,13 @@ var require_queryHelpers = __commonJS({
       }
       const session = query && query.options && query.options.session || null;
       if (session != null) {
-        pop.forEach((path6) => {
-          if (path6.options == null) {
-            path6.options = { session };
+        pop.forEach((path7) => {
+          if (path7.options == null) {
+            path7.options = { session };
             return;
           }
-          if (!("session" in path6.options)) {
-            path6.options.session = session;
+          if (!("session" in path7.options)) {
+            path7.options.session = session;
           }
         });
       }
@@ -89940,13 +89940,13 @@ var require_queryHelpers = __commonJS({
           exclude = !field;
           break;
         }
-        for (const path6 of minusPaths) {
-          const type = schema.path(path6);
+        for (const path7 of minusPaths) {
+          const type = schema.path(path7);
           if (!type || !type.selected || exclude !== false) {
-            fields[path6] = 0;
+            fields[path7] = 0;
             exclude = true;
           } else if (type && type.selected && exclude === false) {
-            minusPathsToSkip.add(path6);
+            minusPathsToSkip.add(path7);
           }
         }
       }
@@ -89998,29 +89998,29 @@ var require_queryHelpers = __commonJS({
         }
         stack.push(schema2);
         const addedPaths = [];
-        schema2.eachPath(function(path6, type) {
-          if (prefix) path6 = prefix + "." + path6;
-          if (type.$isSchemaMap || path6.endsWith(".$*")) {
-            const plusPath = "+" + path6;
+        schema2.eachPath(function(path7, type) {
+          if (prefix) path7 = prefix + "." + path7;
+          if (type.$isSchemaMap || path7.endsWith(".$*")) {
+            const plusPath = "+" + path7;
             const hasPlusPath = fields && plusPath in fields;
             if (type.options && type.options.select === false && !hasPlusPath) {
-              excluded.push(path6);
+              excluded.push(path7);
             }
             return;
           }
-          let addedPath = analyzePath(path6, type);
+          let addedPath = analyzePath(path7, type);
           if (addedPath == null && !Array.isArray(type) && type.$isMongooseArray && !type.$isMongooseDocumentArray) {
-            addedPath = analyzePath(path6, type.caster);
+            addedPath = analyzePath(path7, type.caster);
           }
           if (addedPath != null) {
             addedPaths.push(addedPath);
           }
           if (type.schema) {
-            const _addedPaths = analyzeSchema(type.schema, path6);
+            const _addedPaths = analyzeSchema(type.schema, path7);
             if (exclude === false) {
               checkEmbeddedDiscriminatorKeyProjection(
                 fields,
-                path6,
+                path7,
                 type.schema,
                 selected,
                 _addedPaths
@@ -90031,39 +90031,39 @@ var require_queryHelpers = __commonJS({
         stack.pop();
         return addedPaths;
       }
-      function analyzePath(path6, type) {
+      function analyzePath(path7, type) {
         if (fields == null) {
           return;
         }
         if (typeof type.selected !== "boolean") {
           return;
         }
-        if (type.selected === false && fields[path6]) {
+        if (type.selected === false && fields[path7]) {
           if (sanitizeProjection) {
-            fields[path6] = 0;
+            fields[path7] = 0;
           }
           return;
         }
-        if (!exclude && type.selected && path6 === schema.options.discriminatorKey && fields[path6] != null && !fields[path6]) {
-          delete fields[path6];
+        if (!exclude && type.selected && path7 === schema.options.discriminatorKey && fields[path7] != null && !fields[path7]) {
+          delete fields[path7];
           return;
         }
-        if (exclude === false && type.selected && fields[path6] != null && !fields[path6]) {
-          delete fields[path6];
+        if (exclude === false && type.selected && fields[path7] != null && !fields[path7]) {
+          delete fields[path7];
           return;
         }
-        const plusPath = "+" + path6;
+        const plusPath = "+" + path7;
         const hasPlusPath = fields && plusPath in fields;
         if (hasPlusPath) {
           delete fields[plusPath];
-          if (exclude === false && keys.length > 1 && !~keys.indexOf(path6) && !sanitizeProjection) {
-            fields[path6] = 1;
+          if (exclude === false && keys.length > 1 && !~keys.indexOf(path7) && !sanitizeProjection) {
+            fields[path7] = 1;
           } else if (exclude == null && sanitizeProjection && type.selected === false) {
-            fields[path6] = 0;
+            fields[path7] = 0;
           }
           return;
         }
-        const pieces = path6.split(".");
+        const pieces = path7.split(".");
         let cur = "";
         for (let i = 0; i < pieces.length; ++i) {
           cur += cur.length ? "." + pieces[i] : pieces[i];
@@ -90081,8 +90081,8 @@ var require_queryHelpers = __commonJS({
             }
           }
         }
-        (type.selected ? selected : excluded).push(path6);
-        return path6;
+        (type.selected ? selected : excluded).push(path7);
+        return path7;
       }
     };
     function makeLean(val) {
@@ -90090,7 +90090,7 @@ var require_queryHelpers = __commonJS({
         option.options || (option.options = {});
         if (val != null && Array.isArray(val.virtuals)) {
           val = Object.assign({}, val);
-          val.virtuals = val.virtuals.filter((path6) => typeof path6 === "string" && path6.startsWith(option.path + ".")).map((path6) => path6.slice(option.path.length + 1));
+          val.virtuals = val.virtuals.filter((path7) => typeof path7 === "string" && path7.startsWith(option.path + ".")).map((path7) => path7.slice(option.path.length + 1));
         }
         option.options.lean = val;
       };
@@ -90204,11 +90204,11 @@ var require_subdocument = __commonJS({
         });
       });
     };
-    Subdocument.prototype.$__fullPath = function(path6) {
+    Subdocument.prototype.$__fullPath = function(path7) {
       if (!this.$__.fullPath) {
         this.ownerDocument();
       }
-      return path6 ? this.$__.fullPath + "." + path6 : this.$__.fullPath;
+      return path7 ? this.$__.fullPath + "." + path7 : this.$__.fullPath;
     };
     Subdocument.prototype.$__pathRelativeToParent = function(p) {
       if (this.$pathRelativeToParent != null) {
@@ -90225,21 +90225,21 @@ var require_subdocument = __commonJS({
     Subdocument.prototype.$__save = function(fn) {
       return immediate(() => fn(null, this));
     };
-    Subdocument.prototype.$isValid = function(path6) {
+    Subdocument.prototype.$isValid = function(path7) {
       const parent = this.$parent();
-      const fullPath = this.$__pathRelativeToParent(path6);
+      const fullPath = this.$__pathRelativeToParent(path7);
       if (parent != null && fullPath != null) {
         return parent.$isValid(fullPath);
       }
-      return Document.prototype.$isValid.call(this, path6);
+      return Document.prototype.$isValid.call(this, path7);
     };
-    Subdocument.prototype.markModified = function(path6) {
-      Document.prototype.markModified.call(this, path6);
+    Subdocument.prototype.markModified = function(path7) {
+      Document.prototype.markModified.call(this, path7);
       const parent = this.$parent();
       if (parent == null) {
         return;
       }
-      const pathToMark = this.$__pathRelativeToParent(path6);
+      const pathToMark = this.$__pathRelativeToParent(path7);
       if (pathToMark == null) {
         return;
       }
@@ -90262,18 +90262,18 @@ var require_subdocument = __commonJS({
       }
       return Document.prototype.isModified.call(this, paths, options, modifiedPaths);
     };
-    Subdocument.prototype.$markValid = function(path6) {
-      Document.prototype.$markValid.call(this, path6);
+    Subdocument.prototype.$markValid = function(path7) {
+      Document.prototype.$markValid.call(this, path7);
       const parent = this.$parent();
-      const fullPath = this.$__pathRelativeToParent(path6);
+      const fullPath = this.$__pathRelativeToParent(path7);
       if (parent != null && fullPath != null) {
         parent.$markValid(fullPath);
       }
     };
-    Subdocument.prototype.invalidate = function(path6, err, val) {
-      Document.prototype.invalidate.call(this, path6, err, val);
+    Subdocument.prototype.invalidate = function(path7, err, val) {
+      Document.prototype.invalidate.call(this, path7, err, val);
       const parent = this.$parent();
-      const fullPath = this.$__pathRelativeToParent(path6);
+      const fullPath = this.$__pathRelativeToParent(path7);
       if (parent != null && fullPath != null) {
         parent.invalidate(fullPath, err, val);
       } else if (err.kind === "cast" || err.name === "CastError" || fullPath == null) {
@@ -90281,10 +90281,10 @@ var require_subdocument = __commonJS({
       }
       return this.ownerDocument().$__.validationError;
     };
-    Subdocument.prototype.$ignore = function(path6) {
-      Document.prototype.$ignore.call(this, path6);
+    Subdocument.prototype.$ignore = function(path7) {
+      Document.prototype.$ignore.call(this, path7);
       const parent = this.$parent();
-      const fullPath = this.$__pathRelativeToParent(path6);
+      const fullPath = this.$__pathRelativeToParent(path7);
       if (parent != null && fullPath != null) {
         parent.$ignore(fullPath);
       }
@@ -90460,7 +90460,7 @@ var require_arraySubdocument = __commonJS({
       }
       this.__parentArray.pull({ _id });
     };
-    ArraySubdocument.prototype.$__fullPath = function(path6, skipIndex) {
+    ArraySubdocument.prototype.$__fullPath = function(path7, skipIndex) {
       if (this.__index == null) {
         return null;
       }
@@ -90468,21 +90468,21 @@ var require_arraySubdocument = __commonJS({
         this.ownerDocument();
       }
       if (skipIndex) {
-        return path6 ? this.$__.fullPath + "." + path6 : this.$__.fullPath;
+        return path7 ? this.$__.fullPath + "." + path7 : this.$__.fullPath;
       }
-      return path6 ? this.$__.fullPath + "." + this.__index + "." + path6 : this.$__.fullPath + "." + this.__index;
+      return path7 ? this.$__.fullPath + "." + this.__index + "." + path7 : this.$__.fullPath + "." + this.__index;
     };
-    ArraySubdocument.prototype.$__pathRelativeToParent = function(path6, skipIndex) {
+    ArraySubdocument.prototype.$__pathRelativeToParent = function(path7, skipIndex) {
       if (this.__index == null || (!this.__parentArray || !this.__parentArray.$path)) {
         return null;
       }
       if (skipIndex) {
-        return path6 == null ? this.__parentArray.$path() : this.__parentArray.$path() + "." + path6;
+        return path7 == null ? this.__parentArray.$path() : this.__parentArray.$path() + "." + path7;
       }
-      if (path6 == null) {
+      if (path7 == null) {
         return this.__parentArray.$path() + "." + this.__index;
       }
-      return this.__parentArray.$path() + "." + this.__index + "." + path6;
+      return this.__parentArray.$path() + "." + this.__index + "." + path7;
     };
     ArraySubdocument.prototype.$parent = function() {
       return this[documentArrayParent];
@@ -90815,9 +90815,9 @@ var require_methods = __commonJS({
                   if (v == null || v.$__ == null) {
                     return ret;
                   }
-                  Object.keys(v.$__.activePaths.getStatePaths("default")).forEach((path6) => {
-                    mpath.unset(path6, ret);
-                    _minimizePath(ret, path6);
+                  Object.keys(v.$__.activePaths.getStatePaths("default")).forEach((path7) => {
+                    mpath.unset(path7, ret);
+                    _minimizePath(ret, path7);
                   });
                   return ret;
                 },
@@ -91368,8 +91368,8 @@ var require_methods = __commonJS({
     function _depopulateIfNecessary(arr, docs) {
       const ref = arr == null ? null : arr[arraySchemaSymbol] && arr[arraySchemaSymbol].caster && arr[arraySchemaSymbol].caster.options && arr[arraySchemaSymbol].caster.options.ref || null;
       const parentDoc = arr[arrayParentSymbol];
-      const path6 = arr[arrayPathSymbol];
-      if (!ref || !parentDoc.populated(path6)) {
+      const path7 = arr[arrayPathSymbol];
+      if (!ref || !parentDoc.populated(path7)) {
         return;
       }
       for (const doc of docs) {
@@ -91377,7 +91377,7 @@ var require_methods = __commonJS({
           continue;
         }
         if (typeof doc !== "object" || doc instanceof String || doc instanceof Number || doc instanceof Buffer || utils.isMongooseType(doc)) {
-          parentDoc.depopulate(path6);
+          parentDoc.depopulate(path7);
           break;
         }
       }
@@ -91415,7 +91415,7 @@ var require_array = __commonJS({
     var arraySchemaSymbol = require_symbols().arraySchemaSymbol;
     var _basePush = Array.prototype.push;
     var numberRE = /^\d+$/;
-    function MongooseArray(values, path6, doc, schematype) {
+    function MongooseArray(values, path7, doc, schematype) {
       let __array;
       if (Array.isArray(values)) {
         const len = values.length;
@@ -91439,7 +91439,7 @@ var require_array = __commonJS({
       const internals = {
         [arrayAtomicsSymbol]: {},
         [arrayAtomicsBackupSymbol]: void 0,
-        [arrayPathSymbol]: path6,
+        [arrayPathSymbol]: path7,
         [arraySchemaSymbol]: schematype,
         [arrayParentSymbol]: void 0,
         isMongooseArray: true,
@@ -91451,7 +91451,7 @@ var require_array = __commonJS({
       }
       if (doc != null && doc.$__) {
         internals[arrayParentSymbol] = doc;
-        internals[arraySchemaSymbol] = schematype || doc.schema.path(path6);
+        internals[arraySchemaSymbol] = schematype || doc.schema.path(path7);
       }
       const proxy = new Proxy(__array, {
         get: function(target, prop) {
@@ -91880,12 +91880,12 @@ var require_methods2 = __commonJS({
       const parent = arr[arrayParentSymbol];
       if (!parent || parent.$__.populated == null) return;
       const populatedPaths = Object.keys(parent.$__.populated).filter((p) => p.startsWith(arr[arrayPathSymbol] + "."));
-      for (const path6 of populatedPaths) {
-        const remnant = path6.slice((arr[arrayPathSymbol] + ".").length);
-        if (!Array.isArray(parent.$__.populated[path6].value)) {
+      for (const path7 of populatedPaths) {
+        const remnant = path7.slice((arr[arrayPathSymbol] + ".").length);
+        if (!Array.isArray(parent.$__.populated[path7].value)) {
           continue;
         }
-        parent.$__.populated[path6].value = arr.map((val) => val.$populated(remnant));
+        parent.$__.populated[path7].value = arr.map((val) => val.$populated(remnant));
       }
     }
   }
@@ -91904,28 +91904,28 @@ var require_documentArray = __commonJS({
     var arraySchemaSymbol = require_symbols().arraySchemaSymbol;
     var _basePush = Array.prototype.push;
     var numberRE = /^\d+$/;
-    function MongooseDocumentArray(values, path6, doc, schematype) {
+    function MongooseDocumentArray(values, path7, doc, schematype) {
       const __array = [];
       const internals = {
         [arrayAtomicsSymbol]: {},
         [arrayAtomicsBackupSymbol]: void 0,
-        [arrayPathSymbol]: path6,
+        [arrayPathSymbol]: path7,
         [arraySchemaSymbol]: void 0,
         [arrayParentSymbol]: void 0
       };
       if (Array.isArray(values)) {
-        if (values[arrayPathSymbol] === path6 && values[arrayParentSymbol] === doc) {
+        if (values[arrayPathSymbol] === path7 && values[arrayParentSymbol] === doc) {
           internals[arrayAtomicsSymbol] = Object.assign({}, values[arrayAtomicsSymbol]);
         }
         values.forEach((v) => {
           _basePush.call(__array, v);
         });
       }
-      internals[arrayPathSymbol] = path6;
+      internals[arrayPathSymbol] = path7;
       internals.__array = __array;
       if (doc && doc.$__) {
         internals[arrayParentSymbol] = doc;
-        internals[arraySchemaSymbol] = doc.$__schema.path(path6);
+        internals[arraySchemaSymbol] = doc.$__schema.path(path7);
         while (internals[arraySchemaSymbol] != null && internals[arraySchemaSymbol].$isMongooseArray && !internals[arraySchemaSymbol].$isMongooseDocumentArray) {
           internals[arraySchemaSymbol] = internals[arraySchemaSymbol].casterConstructor;
         }
@@ -92077,8 +92077,8 @@ var require_document2 = __commonJS({
         this.$__.strictMode = schema.options.strict;
       }
       const requiredPaths = schema.requiredPaths(true);
-      for (const path6 of requiredPaths) {
-        this.$__.activePaths.require(path6);
+      for (const path7 of requiredPaths) {
+        this.$__.activePaths.require(path7);
       }
       let exclude = null;
       if (utils.isPOJO(fields) && Object.keys(fields).length > 0) {
@@ -92201,17 +92201,17 @@ var require_document2 = __commonJS({
         this.$__.op = value;
       }
     });
-    function $applyDefaultsToNested(val, path6, doc) {
+    function $applyDefaultsToNested(val, path7, doc) {
       if (val == null) {
         return;
       }
       const paths = Object.keys(doc.$__schema.paths);
       const plen = paths.length;
-      const pathPieces = path6.indexOf(".") === -1 ? [path6] : path6.split(".");
+      const pathPieces = path7.indexOf(".") === -1 ? [path7] : path7.split(".");
       for (let i = 0; i < plen; ++i) {
         let curPath = "";
         const p = paths[i];
-        if (!p.startsWith(path6 + ".")) {
+        if (!p.startsWith(path7 + ".")) {
           continue;
         }
         const type = doc.$__schema.paths[p];
@@ -92236,7 +92236,7 @@ var require_document2 = __commonJS({
                 cur[piece] = def;
               }
             } catch (err) {
-              doc.invalidate(path6 + "." + curPath, err);
+              doc.invalidate(path7 + "." + curPath, err);
               break;
             }
             break;
@@ -92262,14 +92262,14 @@ var require_document2 = __commonJS({
             continue;
           }
         }
-        const path6 = this.$__schema.paths[p].splitPath();
-        const len = path6.length;
+        const path7 = this.$__schema.paths[p].splitPath();
+        const len = path7.length;
         const last = len - 1;
         let curPath = "";
         let doc_ = doc;
         let included = false;
         for (let i = 0; i < len; ++i) {
-          const piece = path6[i];
+          const piece = path7[i];
           if (!curPath.length) {
             curPath = piece;
           } else {
@@ -92352,7 +92352,7 @@ var require_document2 = __commonJS({
       const keys = Object.keys(obj);
       const len = keys.length;
       let schemaType;
-      let path6;
+      let path7;
       let i;
       const strict = self2.$__.strictMode;
       const docSchema = self2.$__schema;
@@ -92361,9 +92361,9 @@ var require_document2 = __commonJS({
         if (specialProperties.has(i)) {
           continue;
         }
-        path6 = prefix ? prefix + i : i;
-        schemaType = docSchema.path(path6);
-        if (docSchema.$isRootDiscriminator && !self2.$__isSelected(path6)) {
+        path7 = prefix ? prefix + i : i;
+        schemaType = docSchema.path(path7);
+        if (docSchema.$isRootDiscriminator && !self2.$__isSelected(path7)) {
           continue;
         }
         const value = obj[i];
@@ -92376,7 +92376,7 @@ var require_document2 = __commonJS({
               self2[i] = doc[i];
             }
           }
-          init(self2, value, doc[i], opts, path6 + ".");
+          init(self2, value, doc[i], opts, path7 + ".");
         } else if (!schemaType) {
           doc[i] = value;
           if (!strict && !prefix) {
@@ -92414,16 +92414,16 @@ var require_document2 = __commonJS({
             } else if (schemaType && opts.hydratedPopulatedDocs) {
               doc[i] = schemaType.cast(value, self2, true, void 0, { hydratedPopulatedDocs: true });
               if (doc[i] && doc[i].$__ && doc[i].$__.wasPopulated) {
-                self2.$populated(path6, doc[i].$__.wasPopulated.value, doc[i].$__.wasPopulated.options);
+                self2.$populated(path7, doc[i].$__.wasPopulated.value, doc[i].$__.wasPopulated.options);
               } else if (Array.isArray(doc[i]) && doc[i].length && doc[i][0]?.$__?.wasPopulated) {
-                self2.$populated(path6, doc[i].map((populatedDoc) => populatedDoc?.$__?.wasPopulated?.value).filter((val) => val != null), doc[i][0].$__.wasPopulated.options);
+                self2.$populated(path7, doc[i].map((populatedDoc) => populatedDoc?.$__?.wasPopulated?.value).filter((val) => val != null), doc[i][0].$__.wasPopulated.options);
               }
             } else {
               doc[i] = value;
             }
           }
-          if (!self2.$isModified(path6)) {
-            self2.$__.activePaths.init(path6);
+          if (!self2.$isModified(path7)) {
+            self2.$__.activePaths.init(path7);
           }
         }
       }
@@ -92510,7 +92510,7 @@ var require_document2 = __commonJS({
       }
       return this;
     };
-    Document.prototype.$set = function $set(path6, val, type, options) {
+    Document.prototype.$set = function $set(path7, val, type, options) {
       if (utils.isPOJO(type)) {
         options = type;
         type = void 0;
@@ -92528,23 +92528,23 @@ var require_document2 = __commonJS({
       let strict = userSpecifiedStrict ? options.strict : this.$__.strictMode;
       if (adhoc) {
         adhocs = this.$__.adhocPaths || (this.$__.adhocPaths = {});
-        adhocs[path6] = this.$__schema.interpretAsType(path6, type, this.$__schema.options);
+        adhocs[path7] = this.$__schema.interpretAsType(path7, type, this.$__schema.options);
       }
-      if (path6 == null) {
-        [path6, val] = [val, path6];
-      } else if (typeof path6 !== "string") {
-        if (path6 instanceof Document) {
-          if (path6.$__isNested) {
-            path6 = path6.toObject();
+      if (path7 == null) {
+        [path7, val] = [val, path7];
+      } else if (typeof path7 !== "string") {
+        if (path7 instanceof Document) {
+          if (path7.$__isNested) {
+            path7 = path7.toObject();
           } else {
-            path6 = path6.$__schema === this.$__schema ? applyVirtuals(path6, { ...path6._doc }) : path6._doc;
+            path7 = path7.$__schema === this.$__schema ? applyVirtuals(path7, { ...path7._doc }) : path7._doc;
           }
         }
-        if (path6 == null) {
-          [path6, val] = [val, path6];
+        if (path7 == null) {
+          [path7, val] = [val, path7];
         }
         prefix = val ? val + "." : "";
-        keys = getKeysInSchemaOrder(this.$__schema, path6);
+        keys = getKeysInSchemaOrder(this.$__schema, path7);
         const len = keys.length;
         const _skipMinimizeTopLevel = options && options._skipMinimizeTopLevel || false;
         if (len === 0 && _skipMinimizeTopLevel) {
@@ -92559,7 +92559,7 @@ var require_document2 = __commonJS({
           key = keys[i2];
           const pathName = prefix ? prefix + key : key;
           pathtype = this.$__schema.pathType(pathName);
-          const valForKey = path6[key];
+          const valForKey = path7[key];
           if (type === true && !prefix && valForKey != null && pathtype === "nested" && this._doc[key] != null) {
             delete this._doc[key];
           }
@@ -92604,15 +92604,15 @@ var require_document2 = __commonJS({
         this._doc = Object.assign(orderedDoc, this._doc);
         return this;
       }
-      let pathType = this.$__schema.pathType(path6);
+      let pathType = this.$__schema.pathType(path7);
       let parts = null;
       if (pathType === "adhocOrUndefined") {
-        parts = path6.indexOf(".") === -1 ? [path6] : path6.split(".");
+        parts = path7.indexOf(".") === -1 ? [path7] : path7.split(".");
         pathType = getEmbeddedDiscriminatorPath(this, parts, { typeOnly: true });
       }
       if (pathType === "adhocOrUndefined" && !userSpecifiedStrict) {
         if (parts == null) {
-          parts = path6.indexOf(".") === -1 ? [path6] : path6.split(".");
+          parts = path7.indexOf(".") === -1 ? [path7] : path7.split(".");
         }
         const subdocStrict = getSubdocumentStrictValue(this.$__schema, parts);
         if (subdocStrict !== void 0) {
@@ -92622,12 +92622,12 @@ var require_document2 = __commonJS({
       val = handleSpreadDoc(val, true);
       const priorVal = (() => {
         if (this.$__.priorDoc != null) {
-          return this.$__.priorDoc.$__getValue(path6);
+          return this.$__.priorDoc.$__getValue(path7);
         }
         if (constructing) {
           return void 0;
         }
-        return this.$__getValue(path6);
+        return this.$__getValue(path7);
       })();
       if (pathType === "nested" && val) {
         if (typeof val === "object" && val != null) {
@@ -92635,43 +92635,43 @@ var require_document2 = __commonJS({
             val = val.toObject(internalToObjectOptions);
           }
           if (val == null) {
-            this.invalidate(path6, new MongooseError.CastError("Object", val, path6));
+            this.invalidate(path7, new MongooseError.CastError("Object", val, path7));
             return this;
           }
-          const wasModified = this.$isModified(path6);
-          const hasInitialVal = this.$__.savedState != null && Object.hasOwn(this.$__.savedState, path6);
-          if (this.$__.savedState != null && !this.$isNew && !Object.hasOwn(this.$__.savedState, path6)) {
-            const initialVal = this.$__getValue(path6);
-            this.$__.savedState[path6] = initialVal;
+          const wasModified = this.$isModified(path7);
+          const hasInitialVal = this.$__.savedState != null && Object.hasOwn(this.$__.savedState, path7);
+          if (this.$__.savedState != null && !this.$isNew && !Object.hasOwn(this.$__.savedState, path7)) {
+            const initialVal = this.$__getValue(path7);
+            this.$__.savedState[path7] = initialVal;
             const keys3 = Object.keys(initialVal || {});
             for (const key2 of keys3) {
-              this.$__.savedState[path6 + "." + key2] = initialVal[key2];
+              this.$__.savedState[path7 + "." + key2] = initialVal[key2];
             }
           }
           if (!merge) {
-            this.$__setValue(path6, null);
-            cleanModifiedSubpaths(this, path6);
+            this.$__setValue(path7, null);
+            cleanModifiedSubpaths(this, path7);
           } else {
-            return this.$set(val, path6, constructing, options);
+            return this.$set(val, path7, constructing, options);
           }
-          const keys2 = getKeysInSchemaOrder(this.$__schema, val, path6);
-          this.$__setValue(path6, {});
+          const keys2 = getKeysInSchemaOrder(this.$__schema, val, path7);
+          this.$__setValue(path7, {});
           for (const key2 of keys2) {
-            this.$set(path6 + "." + key2, val[key2], constructing, { ...options, _skipMarkModified: true });
+            this.$set(path7 + "." + key2, val[key2], constructing, { ...options, _skipMarkModified: true });
           }
-          if (priorVal != null && (!wasModified || hasInitialVal) && utils.deepEqual(hasInitialVal ? this.$__.savedState[path6] : priorVal, val)) {
-            this.unmarkModified(path6);
+          if (priorVal != null && (!wasModified || hasInitialVal) && utils.deepEqual(hasInitialVal ? this.$__.savedState[path7] : priorVal, val)) {
+            this.unmarkModified(path7);
           } else {
-            this.markModified(path6);
+            this.markModified(path7);
           }
           return this;
         }
-        this.invalidate(path6, new MongooseError.CastError("Object", val, path6));
+        this.invalidate(path7, new MongooseError.CastError("Object", val, path7));
         return this;
       }
       let schema;
       if (parts == null) {
-        parts = path6.indexOf(".") === -1 ? [path6] : path6.split(".");
+        parts = path7.indexOf(".") === -1 ? [path7] : path7.split(".");
       }
       if (typeof this.$__schema.aliases[parts[0]] === "string") {
         parts[0] = this.$__schema.aliases[parts[0]];
@@ -92681,7 +92681,7 @@ var require_document2 = __commonJS({
         for (i = 0; i < parts.length; ++i) {
           const subpath = parts.slice(0, i + 1).join(".");
           if (i + 1 < parts.length && this.$__schema.pathType(subpath) === "virtual") {
-            mpath.set(path6, val, this);
+            mpath.set(path7, val, this);
             return this;
           }
           schema = this.$__schema.path(subpath);
@@ -92698,20 +92698,20 @@ var require_document2 = __commonJS({
           }
         }
         if (schema == null) {
-          schema = getEmbeddedDiscriminatorPath(this, path6);
+          schema = getEmbeddedDiscriminatorPath(this, path7);
         }
         if (!mixed && !schema) {
           if (strict === "throw") {
-            throw new StrictModeError(path6);
+            throw new StrictModeError(path7);
           }
           return this;
         }
       } else if (pathType === "virtual") {
-        schema = this.$__schema.virtualpath(path6);
+        schema = this.$__schema.virtualpath(path7);
         schema.applySetters(val, this);
         return this;
       } else {
-        schema = this.$__path(path6);
+        schema = this.$__path(path7);
       }
       let cur = this._doc;
       let curPath = "";
@@ -92728,7 +92728,7 @@ var require_document2 = __commonJS({
       }
       let pathToMark;
       if (parts.length <= 1) {
-        pathToMark = path6;
+        pathToMark = path7;
       } else {
         const len = parts.length;
         for (i = 0; i < len; ++i) {
@@ -92739,18 +92739,18 @@ var require_document2 = __commonJS({
           }
         }
         if (!pathToMark) {
-          pathToMark = path6;
+          pathToMark = path7;
         }
       }
       if (!schema) {
-        this.$__set(pathToMark, path6, options, constructing, parts, schema, val, priorVal);
+        this.$__set(pathToMark, path7, options, constructing, parts, schema, val, priorVal);
         if (pathType === "nested" && val == null) {
-          cleanModifiedSubpaths(this, path6);
+          cleanModifiedSubpaths(this, path7);
         }
         return this;
       }
       if (schema.$isSingleNested || schema.$isMongooseArray) {
-        _markValidSubpaths(this, path6);
+        _markValidSubpaths(this, path7);
       }
       if (val != null && merge && schema.$isSingleNested) {
         if (val instanceof Document) {
@@ -92758,7 +92758,7 @@ var require_document2 = __commonJS({
         }
         const keys2 = Object.keys(val);
         for (const key2 of keys2) {
-          this.$set(path6 + "." + key2, val[key2], constructing, options);
+          this.$set(path7 + "." + key2, val[key2], constructing, options);
         }
         return this;
       }
@@ -92787,7 +92787,7 @@ var require_document2 = __commonJS({
         let didPopulate = false;
         if (refMatches && val instanceof Document && (!val.$__.wasPopulated || utils.deepEqual(val.$__.wasPopulated.value, val._doc._id))) {
           const unpopulatedValue = schema && schema.$isSingleNested ? schema.cast(val, this) : val._doc._id;
-          this.$populated(path6, unpopulatedValue, { [populateModelSymbol]: val.constructor });
+          this.$populated(path7, unpopulatedValue, { [populateModelSymbol]: val.constructor });
           val.$__.wasPopulated = { value: unpopulatedValue };
           didPopulate = true;
         }
@@ -92795,7 +92795,7 @@ var require_document2 = __commonJS({
         const typeKey = this.$__schema.options.typeKey;
         if (schema.options && Array.isArray(schema.options[typeKey]) && schema.options[typeKey].length && schema.options[typeKey][0] && schema.options[typeKey][0].ref && _isManuallyPopulatedArray(val, schema.options[typeKey][0].ref)) {
           popOpts = { [populateModelSymbol]: val[0].constructor };
-          this.$populated(path6, val.map(function(v) {
+          this.$populated(path7, val.map(function(v) {
             return v._doc._id;
           }), popOpts);
           for (const doc of val) {
@@ -92805,20 +92805,20 @@ var require_document2 = __commonJS({
         }
         if (!refMatches || !schema.$isSingleNested || !val.$__) {
           let setterContext = this;
-          if (this.$__schema.singleNestedPaths[path6] != null && parts.length > 1) {
+          if (this.$__schema.singleNestedPaths[path7] != null && parts.length > 1) {
             setterContext = getDeepestSubdocumentForPath(this, parts, this.schema);
           }
           if (options != null && options.overwriteImmutable) {
-            val = schema.applySetters(val, setterContext, false, priorVal, { path: path6, overwriteImmutable: true });
+            val = schema.applySetters(val, setterContext, false, priorVal, { path: path7, overwriteImmutable: true });
           } else {
-            val = schema.applySetters(val, setterContext, false, priorVal, { path: path6 });
+            val = schema.applySetters(val, setterContext, false, priorVal, { path: path7 });
           }
         }
         if (Array.isArray(val) && !Array.isArray(schema) && schema.$isMongooseDocumentArray && val.length !== 0 && val[0] != null && val[0].$__ != null && val[0].$__.populated != null) {
           const populatedPaths = Object.keys(val[0].$__.populated);
           for (const populatedPath of populatedPaths) {
             this.$populated(
-              path6 + "." + populatedPath,
+              path7 + "." + populatedPath,
               val.map((v) => v.$populated(populatedPath)),
               val[0].$__.populated[populatedPath].options
             );
@@ -92826,34 +92826,34 @@ var require_document2 = __commonJS({
           didPopulate = true;
         }
         if (!didPopulate && this.$__.populated) {
-          if (Array.isArray(val) && this.$__.populated[path6]) {
+          if (Array.isArray(val) && this.$__.populated[path7]) {
             for (let i2 = 0; i2 < val.length; ++i2) {
               if (val[i2] instanceof Document) {
                 val.set(i2, val[i2]._doc._id, true);
               }
             }
           }
-          delete this.$__.populated[path6];
+          delete this.$__.populated[path7];
         }
         if (val != null && schema.$isSingleNested) {
           _checkImmutableSubpaths(val, schema, priorVal);
         }
-        this.$markValid(path6);
+        this.$markValid(path7);
       } catch (e) {
         if (e instanceof MongooseError.StrictModeError && e.isImmutableError) {
-          this.invalidate(path6, e);
+          this.invalidate(path7, e);
         } else if (e instanceof MongooseError.CastError) {
           this.invalidate(e.path, e);
           if (e.$originalErrorPath) {
             this.invalidate(
-              path6,
-              new MongooseError.CastError(schema.instance, val, path6, e.$originalErrorPath)
+              path7,
+              new MongooseError.CastError(schema.instance, val, path7, e.$originalErrorPath)
             );
           }
         } else {
           this.invalidate(
-            path6,
-            new MongooseError.CastError(schema.instance, val, path6, e)
+            path7,
+            new MongooseError.CastError(schema.instance, val, path7, e)
           );
         }
         shouldSet = false;
@@ -92864,20 +92864,20 @@ var require_document2 = __commonJS({
         if (!constructing) {
           const doc = this.$isSubdocument ? this.ownerDocument() : this;
           savedState = doc.$__.savedState;
-          savedStatePath = this.$isSubdocument ? this.$__.fullPath + "." + path6 : path6;
+          savedStatePath = this.$isSubdocument ? this.$__.fullPath + "." + path7 : path7;
           doc.$__saveInitialState(savedStatePath);
         }
-        this.$__set(pathToMark, path6, options, constructing, parts, schema, val, priorVal);
+        this.$__set(pathToMark, path7, options, constructing, parts, schema, val, priorVal);
         const isInTransaction = !!this.$__.session?.transaction;
         const isModifiedWithinTransaction = this.$__.session && this.$__.session[sessionNewDocuments] && this.$__.session[sessionNewDocuments].has(this) && this.$__.session[sessionNewDocuments].get(this).modifiedPaths && !this.$__.session[sessionNewDocuments].get(this).modifiedPaths.has(savedStatePath);
         if (savedState != null && Object.hasOwn(savedState, savedStatePath) && (!isInTransaction || isModifiedWithinTransaction) && utils.deepEqual(val, savedState[savedStatePath])) {
-          this.unmarkModified(path6);
+          this.unmarkModified(path7);
         }
       }
-      if (schema.$isSingleNested && (this.isDirectModified(path6) || val == null)) {
-        cleanModifiedSubpaths(this, path6);
+      if (schema.$isSingleNested && (this.isDirectModified(path7) || val == null)) {
+        cleanModifiedSubpaths(this, path7);
       } else if (schema.$isSchemaMap && val == null) {
-        cleanModifiedSubpaths(this, path6);
+        cleanModifiedSubpaths(this, path7);
       }
       return this;
     };
@@ -92903,38 +92903,38 @@ var require_document2 = __commonJS({
       return true;
     }
     Document.prototype.set = Document.prototype.$set;
-    Document.prototype.$__shouldModify = function(pathToMark, path6, options, constructing, parts, schema, val, priorVal) {
+    Document.prototype.$__shouldModify = function(pathToMark, path7, options, constructing, parts, schema, val, priorVal) {
       if (options && options._skipMarkModified) {
         return false;
       }
       if (this.$isNew) {
         return true;
       }
-      if (path6 in this.$__.activePaths.getStatePaths("modify")) {
+      if (path7 in this.$__.activePaths.getStatePaths("modify")) {
         return true;
       }
-      if (val === void 0 && !this.$__isSelected(path6)) {
+      if (val === void 0 && !this.$__isSelected(path7)) {
         return true;
       }
-      if (val === void 0 && path6 in this.$__.activePaths.getStatePaths("default")) {
+      if (val === void 0 && path7 in this.$__.activePaths.getStatePaths("default")) {
         return false;
       }
-      if (this.$populated(path6) && val instanceof Document && deepEqual(val._doc._id, priorVal)) {
+      if (this.$populated(path7) && val instanceof Document && deepEqual(val._doc._id, priorVal)) {
         return false;
       }
-      if (!deepEqual(val, priorVal !== void 0 ? priorVal : utils.getValue(path6, this))) {
+      if (!deepEqual(val, priorVal !== void 0 ? priorVal : utils.getValue(path7, this))) {
         return true;
       }
-      if (!constructing && val !== null && val !== void 0 && path6 in this.$__.activePaths.getStatePaths("default") && deepEqual(val, schema.getDefault(this, constructing))) {
+      if (!constructing && val !== null && val !== void 0 && path7 in this.$__.activePaths.getStatePaths("default") && deepEqual(val, schema.getDefault(this, constructing))) {
         return true;
       }
       return false;
     };
-    Document.prototype.$__set = function(pathToMark, path6, options, constructing, parts, schema, val, priorVal) {
+    Document.prototype.$__set = function(pathToMark, path7, options, constructing, parts, schema, val, priorVal) {
       Embedded = Embedded || require_arraySubdocument();
       const shouldModify = this.$__shouldModify(
         pathToMark,
-        path6,
+        path7,
         options,
         constructing,
         parts,
@@ -92943,8 +92943,8 @@ var require_document2 = __commonJS({
         priorVal
       );
       if (shouldModify) {
-        if (this.$__.primitiveAtomics && this.$__.primitiveAtomics[path6]) {
-          delete this.$__.primitiveAtomics[path6];
+        if (this.$__.primitiveAtomics && this.$__.primitiveAtomics[path7]) {
+          delete this.$__.primitiveAtomics[path7];
           if (Object.keys(this.$__.primitiveAtomics).length === 0) {
             delete this.$__.primitiveAtomics;
           }
@@ -93022,34 +93022,34 @@ var require_document2 = __commonJS({
         }
       }
     };
-    Document.prototype.$__getValue = function(path6) {
-      if (typeof path6 !== "string" && !Array.isArray(path6)) {
+    Document.prototype.$__getValue = function(path7) {
+      if (typeof path7 !== "string" && !Array.isArray(path7)) {
         throw new TypeError(
-          `Invalid \`path\`. Must be either string or array. Got "${path6}" (type ${typeof path6})`
+          `Invalid \`path\`. Must be either string or array. Got "${path7}" (type ${typeof path7})`
         );
       }
-      return utils.getValue(path6, this._doc);
+      return utils.getValue(path7, this._doc);
     };
-    Document.prototype.$inc = function $inc(path6, val) {
+    Document.prototype.$inc = function $inc(path7, val) {
       if (val == null) {
         val = 1;
       }
-      if (Array.isArray(path6)) {
-        path6.forEach((p) => this.$inc(p, val));
+      if (Array.isArray(path7)) {
+        path7.forEach((p) => this.$inc(p, val));
         return this;
       }
-      const schemaType = this.$__path(path6);
+      const schemaType = this.$__path(path7);
       if (schemaType == null) {
         if (this.$__.strictMode === "throw") {
-          throw new StrictModeError(path6);
+          throw new StrictModeError(path7);
         } else if (this.$__.strictMode === true) {
           return this;
         }
       } else if (schemaType.instance !== "Number") {
-        this.invalidate(path6, new MongooseError.CastError(schemaType.instance, val, path6));
+        this.invalidate(path7, new MongooseError.CastError(schemaType.instance, val, path7));
         return this;
       }
-      const currentValue = this.$__getValue(path6) || 0;
+      const currentValue = this.$__getValue(path7) || 0;
       let shouldSet = false;
       let valToSet = null;
       let valToInc = val;
@@ -93059,42 +93059,42 @@ var require_document2 = __commonJS({
         valToInc = valToSet - currentValue;
         shouldSet = true;
       } catch (err) {
-        this.invalidate(path6, new MongooseError.CastError("number", val, path6, err));
+        this.invalidate(path7, new MongooseError.CastError("number", val, path7, err));
       }
       if (shouldSet) {
         this.$__.primitiveAtomics = this.$__.primitiveAtomics || {};
-        if (this.$__.primitiveAtomics[path6] == null) {
-          this.$__.primitiveAtomics[path6] = { $inc: valToInc };
+        if (this.$__.primitiveAtomics[path7] == null) {
+          this.$__.primitiveAtomics[path7] = { $inc: valToInc };
         } else {
-          this.$__.primitiveAtomics[path6].$inc += valToInc;
+          this.$__.primitiveAtomics[path7].$inc += valToInc;
         }
-        this.markModified(path6);
-        this.$__setValue(path6, valToSet);
+        this.markModified(path7);
+        this.$__setValue(path7, valToSet);
       }
       return this;
     };
-    Document.prototype.$__setValue = function(path6, val) {
-      utils.setValue(path6, val, this._doc);
+    Document.prototype.$__setValue = function(path7, val) {
+      utils.setValue(path7, val, this._doc);
       return this;
     };
-    Document.prototype.get = function(path6, type, options) {
+    Document.prototype.get = function(path7, type, options) {
       let adhoc;
       if (options == null) {
         options = {};
       }
       if (type) {
-        adhoc = this.$__schema.interpretAsType(path6, type, this.$__schema.options);
+        adhoc = this.$__schema.interpretAsType(path7, type, this.$__schema.options);
       }
       const noDottedPath = options.noDottedPath;
-      let schema = noDottedPath ? Object.hasOwn(this.$__schema.paths, path6) ? this.$__schema.paths[path6] : void 0 : this.$__path(path6);
+      let schema = noDottedPath ? Object.hasOwn(this.$__schema.paths, path7) ? this.$__schema.paths[path7] : void 0 : this.$__path(path7);
       if (schema == null) {
-        schema = this.$__schema.virtualpath(path6);
+        schema = this.$__schema.virtualpath(path7);
         if (schema != null) {
           return schema.applyGetters(void 0, this);
         }
       }
       if (noDottedPath) {
-        let obj2 = Object.hasOwn(this._doc, path6) ? this._doc[path6] : void 0;
+        let obj2 = Object.hasOwn(this._doc, path7) ? this._doc[path7] : void 0;
         if (adhoc) {
           obj2 = adhoc.cast(obj2);
         }
@@ -93104,14 +93104,14 @@ var require_document2 = __commonJS({
         return obj2;
       }
       if (schema != null && schema.instance === "Mixed") {
-        const virtual = this.$__schema.virtualpath(path6);
+        const virtual = this.$__schema.virtualpath(path7);
         if (virtual != null) {
           schema = virtual;
         }
       }
-      const hasDot = path6.indexOf(".") !== -1;
+      const hasDot = path7.indexOf(".") !== -1;
       let obj = this._doc;
-      const pieces = hasDot ? path6.split(".") : [path6];
+      const pieces = hasDot ? path7.split(".") : [path7];
       if (typeof this.$__schema.aliases[pieces[0]] === "string") {
         pieces[0] = this.$__schema.aliases[pieces[0]];
       }
@@ -93137,32 +93137,32 @@ var require_document2 = __commonJS({
       }
       if (schema != null && options.getters !== false) {
         obj = schema.applyGetters(obj, this);
-      } else if (Object.hasOwn(this.$__schema.nested, path6) && options.virtuals) {
-        return applyVirtuals(this, clone(obj) || {}, { path: path6 });
+      } else if (Object.hasOwn(this.$__schema.nested, path7) && options.virtuals) {
+        return applyVirtuals(this, clone(obj) || {}, { path: path7 });
       }
       return obj;
     };
     Document.prototype[getSymbol] = Document.prototype.get;
     Document.prototype.$get = Document.prototype.get;
-    Document.prototype.$__path = function(path6) {
+    Document.prototype.$__path = function(path7) {
       const adhocs = this.$__.adhocPaths;
-      const adhocType = adhocs && Object.hasOwn(adhocs, path6) ? adhocs[path6] : null;
+      const adhocType = adhocs && Object.hasOwn(adhocs, path7) ? adhocs[path7] : null;
       if (adhocType) {
         return adhocType;
       }
-      return this.$__schema.path(path6);
+      return this.$__schema.path(path7);
     };
-    Document.prototype.markModified = function(path6, scope) {
-      this.$__saveInitialState(path6);
-      this.$__.activePaths.modify(path6);
+    Document.prototype.markModified = function(path7, scope) {
+      this.$__saveInitialState(path7);
+      this.$__.activePaths.modify(path7);
       if (scope != null && !this.$isSubdocument) {
         this.$__.pathsToScopes = this.$__pathsToScopes || {};
-        this.$__.pathsToScopes[path6] = scope;
+        this.$__.pathsToScopes[path7] = scope;
       }
     };
-    Document.prototype.$__saveInitialState = function $__saveInitialState(path6) {
+    Document.prototype.$__saveInitialState = function $__saveInitialState(path7) {
       const savedState = this.$__.savedState;
-      const savedStatePath = path6;
+      const savedStatePath = path7;
       if (savedState != null) {
         const firstDot = savedStatePath.indexOf(".");
         const topLevelPath = firstDot === -1 ? savedStatePath : savedStatePath.slice(0, firstDot);
@@ -93171,19 +93171,19 @@ var require_document2 = __commonJS({
         }
       }
     };
-    Document.prototype.unmarkModified = function(path6) {
-      this.$__.activePaths.init(path6);
+    Document.prototype.unmarkModified = function(path7) {
+      this.$__.activePaths.init(path7);
       if (this.$__.pathsToScopes != null) {
-        delete this.$__.pathsToScopes[path6];
+        delete this.$__.pathsToScopes[path7];
       }
     };
-    Document.prototype.$ignore = function(path6) {
-      this.$__.activePaths.ignore(path6);
+    Document.prototype.$ignore = function(path7) {
+      this.$__.activePaths.ignore(path7);
     };
     Document.prototype.directModifiedPaths = function() {
       return Object.keys(this.$__.activePaths.getStatePaths("modify"));
     };
-    Document.prototype.$isEmpty = function(path6) {
+    Document.prototype.$isEmpty = function(path7) {
       const isEmptyOptions = {
         minimize: true,
         virtuals: false,
@@ -93191,7 +93191,7 @@ var require_document2 = __commonJS({
         transform: false
       };
       if (arguments.length !== 0) {
-        const v = this.$get(path6);
+        const v = this.$get(path7);
         if (v == null) {
           return true;
         }
@@ -93227,8 +93227,8 @@ var require_document2 = __commonJS({
       let j = 0;
       const len = directModifiedPaths.length;
       for (i = 0; i < len; ++i) {
-        const path6 = directModifiedPaths[i];
-        const parts = parentPaths(path6);
+        const path7 = directModifiedPaths[i];
+        const parts = parentPaths(path7);
         const pLen = parts.length;
         for (j = 0; j < pLen; ++j) {
           result.add(parts[j]);
@@ -93237,7 +93237,7 @@ var require_document2 = __commonJS({
           continue;
         }
         let ii = 0;
-        let cur = this.$get(path6);
+        let cur = this.$get(path7);
         if (typeof cur === "object" && cur !== null) {
           if (cur._doc) {
             cur = cur._doc;
@@ -93245,7 +93245,7 @@ var require_document2 = __commonJS({
           const len2 = cur.length;
           if (Array.isArray(cur)) {
             for (ii = 0; ii < len2; ++ii) {
-              const subPath = path6 + "." + ii;
+              const subPath = path7 + "." + ii;
               if (!result.has(subPath)) {
                 result.add(subPath);
                 if (cur[ii] != null && cur[ii].$__) {
@@ -93263,7 +93263,7 @@ var require_document2 = __commonJS({
             let ii2 = 0;
             const len3 = keys.length;
             for (ii2 = 0; ii2 < len3; ++ii2) {
-              result.add(path6 + "." + keys[ii2]);
+              result.add(path7 + "." + keys[ii2]);
             }
           }
         }
@@ -93281,28 +93281,28 @@ var require_document2 = __commonJS({
         if (typeof paths === "string") {
           paths = paths.indexOf(" ") === -1 ? [paths] : paths.split(" ");
         }
-        for (const path6 of paths) {
-          if (directModifiedPathsObj[path6] != null) {
+        for (const path7 of paths) {
+          if (directModifiedPathsObj[path7] != null) {
             return true;
           }
         }
         const modified = modifiedPaths || this[documentModifiedPaths]();
-        const isModifiedChild = paths.some(function(path6) {
-          return !!~modified.indexOf(path6);
+        const isModifiedChild = paths.some(function(path7) {
+          return !!~modified.indexOf(path7);
         });
         let directModifiedPaths = Object.keys(directModifiedPathsObj);
         if (ignoreAtomics) {
-          directModifiedPaths = directModifiedPaths.filter((path6) => {
-            const value = this.$__getValue(path6);
+          directModifiedPaths = directModifiedPaths.filter((path7) => {
+            const value = this.$__getValue(path7);
             if (value != null && value[arrayAtomicsSymbol] != null && value[arrayAtomicsSymbol].$set === void 0) {
               return false;
             }
             return true;
           });
         }
-        return isModifiedChild || paths.some(function(path6) {
+        return isModifiedChild || paths.some(function(path7) {
           return directModifiedPaths.some(function(mod) {
-            return mod === path6 || path6.startsWith(mod + ".");
+            return mod === path7 || path7.startsWith(mod + ".");
           });
         });
       }
@@ -93310,18 +93310,18 @@ var require_document2 = __commonJS({
     };
     Document.prototype.$isModified = Document.prototype.isModified;
     Document.prototype[documentIsModified] = Document.prototype.isModified;
-    Document.prototype.$isDefault = function(path6) {
-      if (path6 == null) {
+    Document.prototype.$isDefault = function(path7) {
+      if (path7 == null) {
         return this.$__.activePaths.some("default");
       }
-      if (typeof path6 === "string" && path6.indexOf(" ") === -1) {
-        return Object.hasOwn(this.$__.activePaths.getStatePaths("default"), path6);
+      if (typeof path7 === "string" && path7.indexOf(" ") === -1) {
+        return Object.hasOwn(this.$__.activePaths.getStatePaths("default"), path7);
       }
-      let paths = path6;
+      let paths = path7;
       if (!Array.isArray(paths)) {
         paths = paths.split(" ");
       }
-      return paths.some((path7) => Object.hasOwn(this.$__.activePaths.getStatePaths("default"), path7));
+      return paths.some((path8) => Object.hasOwn(this.$__.activePaths.getStatePaths("default"), path8));
     };
     Document.prototype.$isDeleted = function(val) {
       if (arguments.length === 0) {
@@ -93330,16 +93330,16 @@ var require_document2 = __commonJS({
       this.$__.isDeleted = !!val;
       return this;
     };
-    Document.prototype.isDirectModified = function(path6) {
-      if (path6 == null) {
+    Document.prototype.isDirectModified = function(path7) {
+      if (path7 == null) {
         return this.$__.activePaths.some("modify");
       }
-      if (typeof path6 === "string" && path6.indexOf(" ") === -1) {
-        const res = Object.hasOwn(this.$__.activePaths.getStatePaths("modify"), path6);
-        if (res || path6.indexOf(".") === -1) {
+      if (typeof path7 === "string" && path7.indexOf(" ") === -1) {
+        const res = Object.hasOwn(this.$__.activePaths.getStatePaths("modify"), path7);
+        if (res || path7.indexOf(".") === -1) {
           return res;
         }
-        const pieces = path6.split(".");
+        const pieces = path7.split(".");
         for (let i = 0; i < pieces.length - 1; ++i) {
           const subpath = pieces.slice(0, i + 1).join(".");
           const subdoc = this.$get(subpath);
@@ -93349,40 +93349,40 @@ var require_document2 = __commonJS({
         }
         return false;
       }
-      let paths = path6;
+      let paths = path7;
       if (typeof paths === "string") {
         paths = paths.split(" ");
       }
-      return paths.some((path7) => this.isDirectModified(path7));
+      return paths.some((path8) => this.isDirectModified(path8));
     };
-    Document.prototype.isInit = function(path6) {
-      if (path6 == null) {
+    Document.prototype.isInit = function(path7) {
+      if (path7 == null) {
         return this.$__.activePaths.some("init");
       }
-      if (typeof path6 === "string" && path6.indexOf(" ") === -1) {
-        return Object.hasOwn(this.$__.activePaths.getStatePaths("init"), path6);
+      if (typeof path7 === "string" && path7.indexOf(" ") === -1) {
+        return Object.hasOwn(this.$__.activePaths.getStatePaths("init"), path7);
       }
-      let paths = path6;
+      let paths = path7;
       if (!Array.isArray(paths)) {
         paths = paths.split(" ");
       }
-      return paths.some((path7) => Object.hasOwn(this.$__.activePaths.getStatePaths("init"), path7));
+      return paths.some((path8) => Object.hasOwn(this.$__.activePaths.getStatePaths("init"), path8));
     };
-    Document.prototype.isSelected = function isSelected(path6) {
+    Document.prototype.isSelected = function isSelected(path7) {
       if (this.$__.selected == null) {
         return true;
       }
-      if (!path6) {
+      if (!path7) {
         return false;
       }
-      if (path6 === "_id") {
+      if (path7 === "_id") {
         return this.$__.selected._id !== 0;
       }
-      if (path6.indexOf(" ") !== -1) {
-        path6 = path6.split(" ");
+      if (path7.indexOf(" ") !== -1) {
+        path7 = path7.split(" ");
       }
-      if (Array.isArray(path6)) {
-        return path6.some((p) => this.$__isSelected(p));
+      if (Array.isArray(path7)) {
+        return path7.some((p) => this.$__isSelected(p));
       }
       const paths = Object.keys(this.$__.selected);
       let inclusive = null;
@@ -93402,10 +93402,10 @@ var require_document2 = __commonJS({
       if (inclusive === null) {
         return true;
       }
-      if (path6 in this.$__.selected) {
+      if (path7 in this.$__.selected) {
         return inclusive;
       }
-      const pathDot = path6 + ".";
+      const pathDot = path7 + ".";
       for (const cur of paths) {
         if (cur === "_id") {
           continue;
@@ -93420,18 +93420,18 @@ var require_document2 = __commonJS({
       return !inclusive;
     };
     Document.prototype.$__isSelected = Document.prototype.isSelected;
-    Document.prototype.isDirectSelected = function isDirectSelected(path6) {
+    Document.prototype.isDirectSelected = function isDirectSelected(path7) {
       if (this.$__.selected == null) {
         return true;
       }
-      if (path6 === "_id") {
+      if (path7 === "_id") {
         return this.$__.selected._id !== 0;
       }
-      if (path6.indexOf(" ") !== -1) {
-        path6 = path6.split(" ");
+      if (path7.indexOf(" ") !== -1) {
+        path7 = path7.split(" ");
       }
-      if (Array.isArray(path6)) {
-        return path6.some((p) => this.isDirectSelected(p));
+      if (Array.isArray(path7)) {
+        return path7.some((p) => this.isDirectSelected(p));
       }
       const paths = Object.keys(this.$__.selected);
       let inclusive = null;
@@ -93451,7 +93451,7 @@ var require_document2 = __commonJS({
       if (inclusive === null) {
         return true;
       }
-      if (Object.hasOwn(this.$__.selected, path6)) {
+      if (Object.hasOwn(this.$__.selected, path7)) {
         return inclusive;
       }
       return !inclusive;
@@ -93495,14 +93495,14 @@ var require_document2 = __commonJS({
       let i = 0;
       const len = requiredFields.length;
       for (i = 0; i < len; ++i) {
-        const path6 = requiredFields[i];
-        const p = doc.$__schema.path(path6);
+        const path7 = requiredFields[i];
+        const p = doc.$__schema.path(path7);
         if (p != null && typeof p.originalRequiredValue === "function") {
           doc.$__.cachedRequired = doc.$__.cachedRequired || {};
           try {
-            doc.$__.cachedRequired[path6] = p.originalRequiredValue.call(doc, doc);
+            doc.$__.cachedRequired[path7] = p.originalRequiredValue.call(doc, doc);
           } catch (err) {
-            doc.invalidate(path6, err);
+            doc.invalidate(path7, err);
           }
         }
       }
@@ -93510,15 +93510,15 @@ var require_document2 = __commonJS({
     function _getPathsToValidate(doc, pathsToValidate, pathsToSkip, isNestedValidate) {
       const doValidateOptions = {};
       _evaluateRequiredFunctions(doc);
-      let paths = new Set(Object.keys(doc.$__.activePaths.getStatePaths("require")).filter(function(path6) {
-        if (!doc.$__isSelected(path6) && !doc.$isModified(path6)) {
+      let paths = new Set(Object.keys(doc.$__.activePaths.getStatePaths("require")).filter(function(path7) {
+        if (!doc.$__isSelected(path7) && !doc.$isModified(path7)) {
           return false;
         }
-        if (path6.endsWith(".$*")) {
+        if (path7.endsWith(".$*")) {
           return false;
         }
-        if (doc.$__.cachedRequired != null && path6 in doc.$__.cachedRequired) {
-          return doc.$__.cachedRequired[path6];
+        if (doc.$__.cachedRequired != null && path7 in doc.$__.cachedRequired) {
+          return doc.$__.cachedRequired[path7];
         }
         return true;
       }));
@@ -93533,15 +93533,15 @@ var require_document2 = __commonJS({
       }
       if (!isNestedValidate) {
         const topLevelSubdocs = [];
-        for (const path6 of Object.keys(doc.$__schema.paths)) {
-          const schemaType = doc.$__schema.path(path6);
+        for (const path7 of Object.keys(doc.$__schema.paths)) {
+          const schemaType = doc.$__schema.path(path7);
           if (schemaType.$isSingleNested) {
-            const subdoc = doc.$get(path6);
+            const subdoc = doc.$get(path7);
             if (subdoc) {
               topLevelSubdocs.push(subdoc);
             }
           } else if (schemaType.$isMongooseDocumentArray) {
-            const arr = doc.$get(path6);
+            const arr = doc.$get(path7);
             if (arr && arr.length) {
               for (const subdoc of arr) {
                 if (subdoc) {
@@ -93578,8 +93578,8 @@ var require_document2 = __commonJS({
           }
         }
       }
-      for (const path6 of paths) {
-        const _pathType = doc.$__schema.path(path6);
+      for (const path7 of paths) {
+        const _pathType = doc.$__schema.path(path7);
         if (!_pathType) {
           continue;
         }
@@ -93591,12 +93591,12 @@ var require_document2 = __commonJS({
           }
         }
         if (!_pathType.caster && _pathType.validators.length === 0 && !_pathType.$parentSchemaDocArray) {
-          paths.delete(path6);
+          paths.delete(path7);
         } else if (_pathType.$isMongooseArray && !_pathType.$isMongooseDocumentArray && // Skip document arrays...
         !_pathType.$embeddedSchemaType.$isMongooseArray && // and arrays of arrays
         _pathType.validators.length === 0 && // and arrays with top-level validators
         _pathType.$embeddedSchemaType.validators.length === 0) {
-          paths.delete(path6);
+          paths.delete(path7);
         }
       }
       if (Array.isArray(pathsToValidate)) {
@@ -93614,15 +93614,15 @@ var require_document2 = __commonJS({
           }
           const flat = flatten(_v, pathToCheck, flattenOptions, doc.$__schema);
           const singleNestedPaths = doc.$__schema.singleNestedPaths;
-          for (const path6 of Object.keys(flat)) {
-            if (!Object.hasOwn(singleNestedPaths, path6)) {
-              addToPaths(path6);
+          for (const path7 of Object.keys(flat)) {
+            if (!Object.hasOwn(singleNestedPaths, path7)) {
+              addToPaths(path7);
             }
           }
         }
       }
-      for (const path6 of paths) {
-        const _pathType = doc.$__schema.path(path6);
+      for (const path7 of paths) {
+        const _pathType = doc.$__schema.path(path7);
         if (!_pathType) {
           continue;
         }
@@ -93632,20 +93632,20 @@ var require_document2 = __commonJS({
         if (!_pathType.$isSchemaMap) {
           continue;
         }
-        const val = doc.$__getValue(path6);
+        const val = doc.$__getValue(path7);
         if (val == null) {
           continue;
         }
         for (const key of val.keys()) {
-          paths.add(path6 + "." + key);
+          paths.add(path7 + "." + key);
         }
       }
       paths = Array.from(paths);
       return [paths, doValidateOptions];
     }
     function _addArrayPathsToValidate(doc, paths) {
-      for (const path6 of paths) {
-        const _pathType = doc.$__schema.path(path6);
+      for (const path7 of paths) {
+        const _pathType = doc.$__schema.path(path7);
         if (!_pathType) {
           continue;
         }
@@ -93660,18 +93660,18 @@ var require_document2 = __commonJS({
         _pathType.$embeddedSchemaType.validators.length === 0) {
           continue;
         }
-        const val = doc.$__getValue(path6);
-        _pushNestedArrayPaths(val, paths, path6);
+        const val = doc.$__getValue(path7);
+        _pushNestedArrayPaths(val, paths, path7);
       }
     }
-    function _pushNestedArrayPaths(val, paths, path6) {
+    function _pushNestedArrayPaths(val, paths, path7) {
       if (val != null) {
         const numElements = val.length;
         for (let j = 0; j < numElements; ++j) {
           if (Array.isArray(val[j])) {
-            _pushNestedArrayPaths(val[j], paths, path6 + "." + j);
+            _pushNestedArrayPaths(val[j], paths, path7 + "." + j);
           } else {
-            paths.add(path6 + "." + j);
+            paths.add(path7 + "." + j);
           }
         }
       }
@@ -93739,22 +93739,22 @@ var require_document2 = __commonJS({
       let doValidateOptionsByPath;
       if (validateAllPaths) {
         paths = new Set(Object.keys(this.$__schema.paths));
-        for (const path6 of paths) {
-          const schemaType = this.$__schema.path(path6);
+        for (const path7 of paths) {
+          const schemaType = this.$__schema.path(path7);
           if (!schemaType || !schemaType.$isMongooseArray) {
             continue;
           }
-          const val = this.$__getValue(path6);
+          const val = this.$__getValue(path7);
           if (!val) {
             continue;
           }
-          _pushNestedArrayPaths(val, paths, path6);
+          _pushNestedArrayPaths(val, paths, path7);
         }
         paths = [...paths];
         doValidateOptionsByPath = {};
       } else {
         const pathDetails = _getPathsToValidate(this, pathsToValidate, pathsToSkip, options && options._nestedValidate);
-        paths = shouldValidateModifiedOnly ? pathDetails[0].filter((path6) => this.$isModified(path6)) : pathDetails[0];
+        paths = shouldValidateModifiedOnly ? pathDetails[0].filter((path7) => this.$isModified(path7)) : pathDetails[0];
         doValidateOptionsByPath = pathDetails[1];
       }
       if (typeof pathsToValidate === "string") {
@@ -93776,46 +93776,46 @@ var require_document2 = __commonJS({
       let pathsToSave = this.$__.saveOptions?.pathsToSave;
       if (Array.isArray(pathsToSave)) {
         pathsToSave = new Set(pathsToSave);
-        for (const path6 of paths) {
-          if (!pathsToSave.has(path6)) {
+        for (const path7 of paths) {
+          if (!pathsToSave.has(path7)) {
             continue;
           }
-          validatePath(path6);
+          validatePath(path7);
         }
       } else {
-        for (const path6 of paths) {
-          validatePath(path6);
+        for (const path7 of paths) {
+          validatePath(path7);
         }
       }
-      function validatePath(path6) {
-        if (path6 == null || validated[path6]) {
+      function validatePath(path7) {
+        if (path7 == null || validated[path7]) {
           return;
         }
-        validated[path6] = true;
+        validated[path7] = true;
         total++;
         immediate(function() {
-          const schemaType = _this.$__schema.path(path6);
+          const schemaType = _this.$__schema.path(path7);
           if (!schemaType) {
             return --total || complete();
           }
-          if (!_this.$isValid(path6)) {
+          if (!_this.$isValid(path7)) {
             --total || complete();
             return;
           }
-          if (schemaType[schemaMixedSymbol] != null && path6 !== schemaType.path) {
+          if (schemaType[schemaMixedSymbol] != null && path7 !== schemaType.path) {
             return --total || complete();
           }
-          let val = _this.$__getValue(path6);
+          let val = _this.$__getValue(path7);
           let pop;
-          if (pop = _this.$populated(path6)) {
+          if (pop = _this.$populated(path7)) {
             val = pop;
           } else if (val != null && val.$__ != null && val.$__.wasPopulated) {
             val = val._doc._id;
           }
-          const scope = _this.$__.pathsToScopes != null && path6 in _this.$__.pathsToScopes ? _this.$__.pathsToScopes[path6] : _this;
+          const scope = _this.$__.pathsToScopes != null && path7 in _this.$__.pathsToScopes ? _this.$__.pathsToScopes[path7] : _this;
           const doValidateOptions = {
-            ...doValidateOptionsByPath[path6],
-            path: path6,
+            ...doValidateOptionsByPath[path7],
+            path: path7,
             validateAllPaths,
             _nestedValidate: true
           };
@@ -93825,7 +93825,7 @@ var require_document2 = __commonJS({
               if (isSubdoc && err instanceof ValidationError) {
                 return --total || complete();
               }
-              _this.invalidate(path6, err, void 0, true);
+              _this.invalidate(path7, err, void 0, true);
             }
             --total || complete();
           }, scope, doValidateOptions);
@@ -93844,23 +93844,23 @@ var require_document2 = __commonJS({
     function _handlePathsToValidate(paths, pathsToValidate) {
       const _pathsToValidate = new Set(pathsToValidate);
       const parentPaths2 = /* @__PURE__ */ new Map([]);
-      for (const path6 of pathsToValidate) {
-        if (path6.indexOf(".") === -1) {
+      for (const path7 of pathsToValidate) {
+        if (path7.indexOf(".") === -1) {
           continue;
         }
-        const pieces = path6.split(".");
+        const pieces = path7.split(".");
         let cur = pieces[0];
         for (let i = 1; i < pieces.length; ++i) {
-          parentPaths2.set(cur, path6);
+          parentPaths2.set(cur, path7);
           cur = cur + "." + pieces[i];
         }
       }
       const ret = /* @__PURE__ */ new Set();
-      for (const path6 of paths) {
-        if (_pathsToValidate.has(path6)) {
-          ret.add(path6);
-        } else if (parentPaths2.has(path6)) {
-          ret.add(parentPaths2.get(path6));
+      for (const path7 of paths) {
+        if (_pathsToValidate.has(path7)) {
+          ret.add(path7);
+        } else if (parentPaths2.has(path7)) {
+          ret.add(parentPaths2.get(path7));
         }
       }
       return ret;
@@ -93903,42 +93903,42 @@ var require_document2 = __commonJS({
       let skipSchemaValidators;
       if (validateAllPaths) {
         paths = new Set(Object.keys(this.$__schema.paths));
-        for (const path6 of paths) {
-          const schemaType = this.$__schema.path(path6);
+        for (const path7 of paths) {
+          const schemaType = this.$__schema.path(path7);
           if (!schemaType || !schemaType.$isMongooseArray) {
             continue;
           }
-          const val = this.$__getValue(path6);
+          const val = this.$__getValue(path7);
           if (!val) {
             continue;
           }
-          _pushNestedArrayPaths(val, paths, path6);
+          _pushNestedArrayPaths(val, paths, path7);
         }
         paths = [...paths];
         skipSchemaValidators = {};
       } else {
         const pathDetails = _getPathsToValidate(this, pathsToValidate, pathsToSkip);
-        paths = shouldValidateModifiedOnly ? pathDetails[0].filter((path6) => this.$isModified(path6)) : pathDetails[0];
+        paths = shouldValidateModifiedOnly ? pathDetails[0].filter((path7) => this.$isModified(path7)) : pathDetails[0];
         skipSchemaValidators = pathDetails[1];
       }
       const validating = {};
       for (let i = 0, len = paths.length; i < len; ++i) {
-        const path6 = paths[i];
-        if (validating[path6]) {
+        const path7 = paths[i];
+        if (validating[path7]) {
           continue;
         }
-        validating[path6] = true;
-        const p = _this.$__schema.path(path6);
+        validating[path7] = true;
+        const p = _this.$__schema.path(path7);
         if (!p) {
           continue;
         }
-        if (!_this.$isValid(path6)) {
+        if (!_this.$isValid(path7)) {
           continue;
         }
-        const val = _this.$__getValue(path6);
+        const val = _this.$__getValue(path7);
         const err2 = p.doValidateSync(val, _this, {
-          skipSchemaValidators: skipSchemaValidators[path6],
-          path: path6,
+          skipSchemaValidators: skipSchemaValidators[path7],
+          path: path7,
           validateModifiedOnly: shouldValidateModifiedOnly,
           validateAllPaths
         });
@@ -93947,7 +93947,7 @@ var require_document2 = __commonJS({
           if (isSubdoc && err2 instanceof ValidationError) {
             continue;
           }
-          _this.invalidate(path6, err2, void 0, true);
+          _this.invalidate(path7, err2, void 0, true);
         }
       }
       const err = _this.$__.validationError;
@@ -93963,16 +93963,16 @@ var require_document2 = __commonJS({
       }
       return err;
     };
-    Document.prototype.invalidate = function(path6, err, val, kind) {
+    Document.prototype.invalidate = function(path7, err, val, kind) {
       if (!this.$__.validationError) {
         this.$__.validationError = new ValidationError(this);
       }
-      if (this.$__.validationError.errors[path6]) {
+      if (this.$__.validationError.errors[path7]) {
         return;
       }
       if (!err || typeof err === "string") {
         err = new ValidatorError({
-          path: path6,
+          path: path7,
           message: err,
           type: kind || "user defined",
           value: val
@@ -93981,25 +93981,25 @@ var require_document2 = __commonJS({
       if (this.$__.validationError === err) {
         return this.$__.validationError;
       }
-      this.$__.validationError.addError(path6, err);
+      this.$__.validationError.addError(path7, err);
       return this.$__.validationError;
     };
-    Document.prototype.$markValid = function(path6) {
-      if (!this.$__.validationError || !this.$__.validationError.errors[path6]) {
+    Document.prototype.$markValid = function(path7) {
+      if (!this.$__.validationError || !this.$__.validationError.errors[path7]) {
         return;
       }
-      delete this.$__.validationError.errors[path6];
+      delete this.$__.validationError.errors[path7];
       if (Object.keys(this.$__.validationError.errors).length === 0) {
         this.$__.validationError = null;
       }
     };
-    function _markValidSubpaths(doc, path6) {
+    function _markValidSubpaths(doc, path7) {
       if (!doc.$__.validationError) {
         return;
       }
       const keys = Object.keys(doc.$__.validationError.errors);
       for (const key of keys) {
-        if (key.startsWith(path6 + ".")) {
+        if (key.startsWith(path7 + ".")) {
           delete doc.$__.validationError.errors[key];
         }
       }
@@ -94013,28 +94013,28 @@ var require_document2 = __commonJS({
         return;
       }
       for (const key of Object.keys(schema.paths)) {
-        const path6 = schema.paths[key];
-        if (path6.$immutableSetter == null) {
+        const path7 = schema.paths[key];
+        if (path7.$immutableSetter == null) {
           continue;
         }
         const oldVal = priorVal == null ? void 0 : priorVal.$__getValue(key);
-        path6.$immutableSetter.call(subdoc, oldVal);
+        path7.$immutableSetter.call(subdoc, oldVal);
       }
     }
-    Document.prototype.$isValid = function(path6) {
+    Document.prototype.$isValid = function(path7) {
       if (this.$__.validationError == null || Object.keys(this.$__.validationError.errors).length === 0) {
         return true;
       }
-      if (path6 == null) {
+      if (path7 == null) {
         return false;
       }
-      if (path6.indexOf(" ") !== -1) {
-        path6 = path6.split(" ");
+      if (path7.indexOf(" ") !== -1) {
+        path7 = path7.split(" ");
       }
-      if (Array.isArray(path6)) {
-        return path6.some((p) => this.$__.validationError.errors[p] == null);
+      if (Array.isArray(path7)) {
+        return path7.some((p) => this.$__.validationError.errors[p] == null);
       }
-      return this.$__.validationError.errors[path6] == null;
+      return this.$__.validationError.errors[path7] == null;
     };
     Document.prototype.$__reset = function reset() {
       let _this = this;
@@ -94065,8 +94065,8 @@ var require_document2 = __commonJS({
       this.$__.validationError = void 0;
       this.$errors = void 0;
       _this = this;
-      this.$__schema.requiredPaths().forEach(function(path6) {
-        _this.$__.activePaths.require(path6);
+      this.$__schema.requiredPaths().forEach(function(path7) {
+        _this.$__.activePaths.require(path7);
       });
       return this;
     };
@@ -94092,21 +94092,21 @@ var require_document2 = __commonJS({
     };
     Document.prototype.$__dirty = function() {
       const _this = this;
-      let all = this.$__.activePaths.map("modify", function(path6) {
+      let all = this.$__.activePaths.map("modify", function(path7) {
         return {
-          path: path6,
-          value: _this.$__getValue(path6),
-          schema: _this.$__path(path6)
+          path: path7,
+          value: _this.$__getValue(path7),
+          schema: _this.$__path(path7)
         };
       });
-      all = all.concat(this.$__.activePaths.map("default", function(path6) {
-        if (path6 === "_id" || _this.$__getValue(path6) == null) {
+      all = all.concat(this.$__.activePaths.map("default", function(path7) {
+        if (path7 === "_id" || _this.$__getValue(path7) == null) {
           return;
         }
         return {
-          path: path6,
-          value: _this.$__getValue(path6),
-          schema: _this.$__path(path6)
+          path: path7,
+          value: _this.$__getValue(path7),
+          schema: _this.$__path(path7)
         };
       }));
       const allPaths = new Map(all.filter((el) => el != null).map((el) => [el.path, el.value]));
@@ -94260,15 +94260,15 @@ var require_document2 = __commonJS({
         ret = this.$__toObjectShallow(schemaFieldsOnly);
       } else if (schemaFieldsOnly) {
         ret = {};
-        for (const path6 of Object.keys(this.$__schema.paths)) {
-          const value = this.$__getValue(path6);
+        for (const path7 of Object.keys(this.$__schema.paths)) {
+          const value = this.$__getValue(path7);
           if (value === void 0) {
             continue;
           }
-          let pathToSet = path6;
+          let pathToSet = path7;
           let objToSet = ret;
-          if (path6.indexOf(".") !== -1) {
-            const segments = path6.split(".");
+          if (path7.indexOf(".") !== -1) {
+            const segments = path7.split(".");
             pathToSet = segments[segments.length - 1];
             for (let i = 0; i < segments.length - 1; ++i) {
               objToSet[segments[i]] = objToSet[segments[i]] ?? {};
@@ -94343,7 +94343,7 @@ var require_document2 = __commonJS({
       const paths = Object.keys(virtuals);
       let i = paths.length;
       const numPaths = i;
-      let path6;
+      let path7;
       let assignPath;
       let cur = self2._doc;
       let v;
@@ -94364,22 +94364,22 @@ var require_document2 = __commonJS({
         return json;
       }
       for (i = 0; i < numPaths; ++i) {
-        path6 = paths[i];
-        if (virtualsToApply != null && !virtualsToApply.has(path6)) {
+        path7 = paths[i];
+        if (virtualsToApply != null && !virtualsToApply.has(path7)) {
           continue;
         }
-        if (!aliases && Object.hasOwn(schema.aliases, path6)) {
+        if (!aliases && Object.hasOwn(schema.aliases, path7)) {
           continue;
         }
-        assignPath = path6;
+        assignPath = path7;
         if (options.path != null) {
-          if (!path6.startsWith(options.path + ".")) {
+          if (!path7.startsWith(options.path + ".")) {
             continue;
           }
-          assignPath = path6.substring(options.path.length + 1);
+          assignPath = path7.substring(options.path.length + 1);
         }
-        if (assignPath.indexOf(".") === -1 && assignPath === path6) {
-          v = virtuals[path6].applyGetters(void 0, self2);
+        if (assignPath.indexOf(".") === -1 && assignPath === path7) {
+          v = virtuals[path7].applyGetters(void 0, self2);
           if (v === void 0) {
             continue;
           }
@@ -94388,7 +94388,7 @@ var require_document2 = __commonJS({
           continue;
         }
         const parts = assignPath.split(".");
-        v = clone(self2.get(path6), options);
+        v = clone(self2.get(path7), options);
         if (v === void 0) {
           continue;
         }
@@ -94406,21 +94406,21 @@ var require_document2 = __commonJS({
       const schema = self2.$__schema;
       const paths = Object.keys(schema.paths);
       let i = paths.length;
-      let path6;
+      let path7;
       let cur = self2._doc;
       let v;
       if (!cur) {
         return json;
       }
       while (i--) {
-        path6 = paths[i];
-        const parts = path6.split(".");
+        path7 = paths[i];
+        const parts = path7.split(".");
         const plen = parts.length;
         const last = plen - 1;
         let branch = json;
         let part;
         cur = self2._doc;
-        if (!self2.$__isSelected(path6)) {
+        if (!self2.$__isSelected(path7)) {
           continue;
         }
         for (let ii = 0; ii < plen; ++ii) {
@@ -94429,13 +94429,13 @@ var require_document2 = __commonJS({
           if (branch != null && typeof branch !== "object") {
             break;
           } else if (ii === last) {
-            branch[part] = schema.paths[path6].applyGetters(
+            branch[part] = schema.paths[path7].applyGetters(
               branch[part],
               self2
             );
-            if (Array.isArray(branch[part]) && schema.paths[path6].$embeddedSchemaType) {
+            if (Array.isArray(branch[part]) && schema.paths[path7].$embeddedSchemaType) {
               for (let i2 = 0; i2 < branch[part].length; ++i2) {
-                branch[part][i2] = schema.paths[path6].$embeddedSchemaType.applyGetters(
+                branch[part][i2] = schema.paths[path7].$embeddedSchemaType.applyGetters(
                   branch[part][i2],
                   self2
                 );
@@ -94461,20 +94461,20 @@ var require_document2 = __commonJS({
       if (!cur) {
         return json;
       }
-      for (const path6 of paths) {
-        const schematype = schema.paths[path6];
+      for (const path7 of paths) {
+        const schematype = schema.paths[path7];
         const topLevelTransformFunction = schematype.options.transform ?? schematype.constructor?.defaultOptions?.transform;
         const embeddedSchemaTypeTransformFunction = schematype.$embeddedSchemaType?.options?.transform ?? schematype.$embeddedSchemaType?.constructor?.defaultOptions?.transform;
         if (typeof topLevelTransformFunction === "function") {
-          const val = self2.$get(path6);
+          const val = self2.$get(path7);
           if (val === void 0) {
             continue;
           }
           const transformedValue = topLevelTransformFunction.call(self2, val);
-          throwErrorIfPromise(path6, transformedValue);
-          utils.setValue(path6, transformedValue, json);
+          throwErrorIfPromise(path7, transformedValue);
+          utils.setValue(path7, transformedValue, json);
         } else if (typeof embeddedSchemaTypeTransformFunction === "function") {
-          const val = self2.$get(path6);
+          const val = self2.$get(path7);
           if (val === void 0) {
             continue;
           }
@@ -94482,16 +94482,16 @@ var require_document2 = __commonJS({
           for (let i = 0; i < vals.length; ++i) {
             const transformedValue = embeddedSchemaTypeTransformFunction.call(self2, vals[i]);
             vals[i] = transformedValue;
-            throwErrorIfPromise(path6, transformedValue);
+            throwErrorIfPromise(path7, transformedValue);
           }
-          json[path6] = vals;
+          json[path7] = vals;
         }
       }
       return json;
     }
-    function throwErrorIfPromise(path6, transformedValue) {
+    function throwErrorIfPromise(path7, transformedValue) {
       if (isPromise(transformedValue)) {
-        throw new Error("`transform` function must be synchronous, but the transform on path `" + path6 + "` returned a promise.");
+        throw new Error("`transform` function must be synchronous, but the transform on path `" + path7 + "` returned a promise.");
       }
     }
     function omitDeselectedFields(self2, json) {
@@ -94509,9 +94509,9 @@ var require_document2 = __commonJS({
       if (selected == null || Object.keys(selected).length === 0) {
         return json;
       }
-      for (const path6 of paths) {
-        if (selected[path6] != null && !selected[path6]) {
-          delete json[path6];
+      for (const path7 of paths) {
+        if (selected[path7] != null && !selected[path7]) {
+          delete json[path7];
         }
       }
       return json;
@@ -94590,13 +94590,13 @@ var require_document2 = __commonJS({
       }
       if (this.$session() != null) {
         const session = this.$session();
-        paths.forEach((path6) => {
-          if (path6.options == null) {
-            path6.options = { session };
+        paths.forEach((path7) => {
+          if (path7.options == null) {
+            path7.options = { session };
             return;
           }
-          if (!("session" in path6.options)) {
-            path6.options.session = session;
+          if (!("session" in path7.options)) {
+            path7.options.session = session;
           }
         });
       }
@@ -94621,15 +94621,15 @@ var require_document2 = __commonJS({
       }
       return result;
     };
-    Document.prototype.populated = function(path6, val, options) {
+    Document.prototype.populated = function(path7, val, options) {
       if (val == null || val === true) {
         if (!this.$__.populated) {
           return void 0;
         }
-        if (typeof path6 !== "string") {
+        if (typeof path7 !== "string") {
           return void 0;
         }
-        const _path = path6.endsWith(".$*") ? path6.replace(/\.\$\*$/, "") : path6;
+        const _path = path7.endsWith(".$*") ? path7.replace(/\.\$\*$/, "") : path7;
         const v = this.$__.populated[_path];
         if (v) {
           return val === true ? v : v.value;
@@ -94637,8 +94637,8 @@ var require_document2 = __commonJS({
         return void 0;
       }
       this.$__.populated || (this.$__.populated = {});
-      this.$__.populated[path6] = { value: val, options };
-      const pieces = path6.split(".");
+      this.$__.populated[path7] = { value: val, options };
+      const pieces = path7.split(".");
       for (let i = 0; i < pieces.length - 1; ++i) {
         const subpath = pieces.slice(0, i + 1).join(".");
         const subdoc = this.$get(subpath);
@@ -94651,22 +94651,22 @@ var require_document2 = __commonJS({
       return val;
     };
     Document.prototype.$populated = Document.prototype.populated;
-    Document.prototype.$assertPopulated = function $assertPopulated(path6, values) {
-      if (Array.isArray(path6)) {
-        path6.forEach((p) => this.$assertPopulated(p, values));
+    Document.prototype.$assertPopulated = function $assertPopulated(path7, values) {
+      if (Array.isArray(path7)) {
+        path7.forEach((p) => this.$assertPopulated(p, values));
         return this;
       }
       if (arguments.length > 1) {
         this.$set(values);
       }
-      if (!this.$populated(path6)) {
-        throw new MongooseError(`Expected path "${path6}" to be populated`);
+      if (!this.$populated(path7)) {
+        throw new MongooseError(`Expected path "${path7}" to be populated`);
       }
       return this;
     };
-    Document.prototype.depopulate = function(path6) {
-      if (typeof path6 === "string") {
-        path6 = path6.indexOf(" ") === -1 ? [path6] : path6.split(" ");
+    Document.prototype.depopulate = function(path7) {
+      if (typeof path7 === "string") {
+        path7 = path7.indexOf(" ") === -1 ? [path7] : path7.split(" ");
       }
       let populatedIds;
       const virtualKeys = this.$$populatedVirtuals ? Object.keys(this.$$populatedVirtuals) : [];
@@ -94704,7 +94704,7 @@ var require_document2 = __commonJS({
         }
         return this;
       }
-      for (const singlePath of path6) {
+      for (const singlePath of path7) {
         populatedIds = this.$populated(singlePath);
         delete populated[singlePath];
         if (virtualKeys.indexOf(singlePath) !== -1) {
@@ -94732,8 +94732,8 @@ var require_document2 = __commonJS({
       }
       return this;
     };
-    Document.prototype.$__fullPath = function(path6) {
-      return path6 || "";
+    Document.prototype.$__fullPath = function(path7) {
+      return path7 || "";
     };
     Document.prototype.getChanges = function() {
       const delta = this.$__delta();
@@ -94747,7 +94747,7 @@ var require_document2 = __commonJS({
         if (Array.isArray(optimisticConcurrency)) {
           const optCon = new Set(optimisticConcurrency);
           const modPaths = this.modifiedPaths();
-          if (modPaths.find((path6) => optCon.has(path6))) {
+          if (modPaths.find((path7) => optCon.has(path7))) {
             this.$__.version = dirty.length ? VERSION_ALL : VERSION_WHERE;
           }
         } else {
@@ -94794,7 +94794,7 @@ var require_document2 = __commonJS({
             continue;
           }
           const pathsToCheck = parentPaths(data.path);
-          if (pathsToCheck.find((path6) => isPathExcluded(this.$__.isSelected, path6))) {
+          if (pathsToCheck.find((path7) => isPathExcluded(this.$__.isSelected, path7))) {
             continue;
           }
         }
@@ -94837,10 +94837,10 @@ var require_document2 = __commonJS({
       }
       return [where, delta];
     };
-    function checkDivergentArray(doc, path6, array) {
-      const pop = doc.$populated(path6, true);
+    function checkDivergentArray(doc, path7, array) {
+      const pop = doc.$populated(path7, true);
       if (!pop && doc.$__.selected) {
-        const top = path6.split(".")[0];
+        const top = path7.split(".")[0];
         if (doc.$__.selected[top + ".$"]) {
           return top;
         }
@@ -94853,7 +94853,7 @@ var require_document2 = __commonJS({
       if (check) {
         const atomics = array[arrayAtomicsSymbol];
         if (Object.keys(atomics).length === 0 || atomics.$set || atomics.$pop) {
-          return path6;
+          return path7;
         }
       }
     }
@@ -94946,11 +94946,11 @@ var require_document2 = __commonJS({
         operand(self2, where, delta, data, val, op);
       }
     }
-    function shouldSkipVersioning(self2, path6) {
+    function shouldSkipVersioning(self2, path7) {
       const skipVersioning = self2.$__schema.options.skipVersioning;
       if (!skipVersioning) return false;
-      path6 = path6.replace(/\.\d+\./, ".");
-      return skipVersioning[path6];
+      path7 = path7.replace(/\.\d+\./, ".");
+      return skipVersioning[path7];
     }
     Document.prototype.$clone = function() {
       const Model = this.constructor;
@@ -95219,7 +95219,7 @@ var require_utils6 = __commonJS({
       }
       return val;
     };
-    exports2.merge = function merge(to, from, options, path6) {
+    exports2.merge = function merge(to, from, options, path7) {
       options = options || {};
       const keys = Object.keys(from);
       let i = 0;
@@ -95228,14 +95228,14 @@ var require_utils6 = __commonJS({
       if (from[trustedSymbol]) {
         to[trustedSymbol] = from[trustedSymbol];
       }
-      path6 = path6 || "";
+      path7 = path7 || "";
       const omitNested = options.omitNested || {};
       while (i < len) {
         key = keys[i++];
         if (options.omit && options.omit[key]) {
           continue;
         }
-        if (omitNested[path6]) {
+        if (omitNested[path7]) {
           continue;
         }
         if (specialProperties.has(key)) {
@@ -95262,7 +95262,7 @@ var require_utils6 = __commonJS({
               continue;
             }
           }
-          merge(to[key], from[key], options, path6 ? path6 + "." + key : key);
+          merge(to[key], from[key], options, path7 ? path7 + "." + key : key);
         } else if (options.overwrite) {
           to[key] = from[key];
         }
@@ -95351,33 +95351,33 @@ var require_utils6 = __commonJS({
       object.expireAfterSeconds = typeof object.expires !== "string" ? object.expires : Math.round(ms(object.expires) / 1e3);
       delete object.expires;
     };
-    exports2.populate = function populate(path6, select, model, match, options, subPopulate, justOne, count) {
+    exports2.populate = function populate(path7, select, model, match, options, subPopulate, justOne, count) {
       let obj = null;
       if (arguments.length === 1) {
-        if (path6 instanceof PopulateOptions) {
-          path6._docs = {};
-          path6._childDocs = [];
-          return [path6];
+        if (path7 instanceof PopulateOptions) {
+          path7._docs = {};
+          path7._childDocs = [];
+          return [path7];
         }
-        if (Array.isArray(path6)) {
-          const singles = makeSingles(path6);
+        if (Array.isArray(path7)) {
+          const singles = makeSingles(path7);
           return singles.map((o) => exports2.populate(o)[0]);
         }
-        if (exports2.isObject(path6)) {
-          obj = Object.assign({}, path6);
+        if (exports2.isObject(path7)) {
+          obj = Object.assign({}, path7);
         } else {
-          obj = { path: path6 };
+          obj = { path: path7 };
         }
       } else if (typeof model === "object") {
         obj = {
-          path: path6,
+          path: path7,
           select,
           match: model,
           options: match
         };
       } else {
         obj = {
-          path: path6,
+          path: path7,
           select,
           model,
           match,
@@ -95388,7 +95388,7 @@ var require_utils6 = __commonJS({
         };
       }
       if (typeof obj.path !== "string" && !(Array.isArray(obj.path) && obj.path.every((el) => typeof el === "string"))) {
-        throw new TypeError("utils.populate: invalid path. Expected string or array of strings. Got typeof `" + typeof path6 + "`");
+        throw new TypeError("utils.populate: invalid path. Expected string or array of strings. Got typeof `" + typeof path7 + "`");
       }
       return _populateObj(obj);
       function makeSingles(arr) {
@@ -95432,13 +95432,13 @@ var require_utils6 = __commonJS({
       if (obj.options != null) {
         obj.options = clone(obj.options);
       }
-      for (const path6 of paths) {
-        ret.push(new PopulateOptions(Object.assign({}, obj, { path: path6 })));
+      for (const path7 of paths) {
+        ret.push(new PopulateOptions(Object.assign({}, obj, { path: path7 })));
       }
       return ret;
     }
-    exports2.getValue = function(path6, obj, map) {
-      return mpath.get(path6, obj, getValueLookup, map);
+    exports2.getValue = function(path7, obj, map) {
+      return mpath.get(path7, obj, getValueLookup, map);
     };
     var mapGetterOptions = Object.freeze({ getters: false });
     function getValueLookup(obj, part) {
@@ -95451,8 +95451,8 @@ var require_utils6 = __commonJS({
       }
       return _from instanceof Map ? _from.get(part, mapGetterOptions) : _from[part];
     }
-    exports2.setValue = function(path6, val, obj, map, _copying) {
-      mpath.set(path6, val, obj, "_doc", map, _copying);
+    exports2.setValue = function(path7, val, obj, map, _copying) {
+      mpath.set(path7, val, obj, "_doc", map, _copying);
     };
     exports2.object = {};
     exports2.object.vals = function vals(o) {
@@ -95698,9 +95698,9 @@ var require_schemaType = __commonJS({
     var CastError = MongooseError.CastError;
     var ValidatorError = MongooseError.ValidatorError;
     var setOptionsForDefaults = { _skipMarkModified: true };
-    function SchemaType(path6, options, instance, parentSchema) {
+    function SchemaType(path7, options, instance, parentSchema) {
       this[schemaTypeSymbol] = true;
-      this.path = path6;
+      this.path = path7;
       this.instance = instance;
       this.schemaName = this.constructor.schemaName;
       this.validators = [];
@@ -96101,7 +96101,7 @@ var require_schemaType = __commonJS({
     };
     SchemaType.prototype.doValidate = function(value, fn, scope, options) {
       let err = false;
-      const path6 = this.path;
+      const path7 = this.path;
       if (typeof fn !== "function") {
         throw new TypeError(`Must pass callback function to doValidate(), got ${typeof fn}`);
       }
@@ -96118,7 +96118,7 @@ var require_schemaType = __commonJS({
         const validator = v.validator;
         let ok;
         const validatorProperties = isSimpleValidator(v) ? Object.assign({}, v) : clone(v);
-        validatorProperties.path = options && options.path ? options.path : path6;
+        validatorProperties.path = options && options.path ? options.path : path7;
         validatorProperties.fullPath = this.$fullPath;
         validatorProperties.value = value;
         if (typeof value === "string") {
@@ -96193,7 +96193,7 @@ var require_schemaType = __commonJS({
       }
     }
     SchemaType.prototype.doValidateSync = function(value, scope, options) {
-      const path6 = this.path;
+      const path7 = this.path;
       const count = this.validators.length;
       if (!count) {
         return null;
@@ -96216,7 +96216,7 @@ var require_schemaType = __commonJS({
         }
         const validator = v.validator;
         const validatorProperties = isSimpleValidator(v) ? Object.assign({}, v) : clone(v);
-        validatorProperties.path = options && options.path ? options.path : path6;
+        validatorProperties.path = options && options.path ? options.path : path7;
         validatorProperties.fullPath = this.$fullPath;
         validatorProperties.value = value;
         if (typeof value === "string") {
@@ -96256,9 +96256,9 @@ var require_schemaType = __commonJS({
     SchemaType._isRef = function(self2, value, doc, init) {
       let ref = init && self2.options && (self2.options.ref || self2.options.refPath);
       if (!ref && doc && doc.$__ != null) {
-        const path6 = doc.$__fullPath(self2.path, true);
+        const path7 = doc.$__fullPath(self2.path, true);
         const owner = doc.ownerDocument();
-        ref = path6 != null && owner.$populated(path6) || doc.$populated(self2.path);
+        ref = path7 != null && owner.$populated(path7) || doc.$populated(self2.path);
       }
       if (ref) {
         if (value == null) {
@@ -96286,11 +96286,11 @@ var require_schemaType = __commonJS({
         }
         throw new CastError(this.instance, value, this.path, null, this);
       }
-      const path6 = doc.$__fullPath(this.path, true);
+      const path7 = doc.$__fullPath(this.path, true);
       const owner = doc.ownerDocument();
-      const pop = owner.$populated(path6, true);
+      const pop = owner.$populated(path7, true);
       let ret = value;
-      if (!doc.$__.populated || !doc.$__.populated[path6] || !doc.$__.populated[path6].options || !doc.$__.populated[path6].options.options || !doc.$__.populated[path6].options.options.lean) {
+      if (!doc.$__.populated || !doc.$__.populated[path7] || !doc.$__.populated[path7].options || !doc.$__.populated[path7].options.options || !doc.$__.populated[path7].options.options.lean) {
         const PopulatedModel = pop ? pop.options[populateModelSymbol] : doc.constructor.db.model(this.options.ref);
         ret = PopulatedModel.hydrate(value, null, options);
         ret.$__.wasPopulated = { value: ret._doc._id, options: { [populateModelSymbol]: PopulatedModel } };
@@ -96423,7 +96423,7 @@ var require_virtualOptions = __commonJS({
 var require_lookupLocalFields = __commonJS({
   "node_modules/mongoose/lib/helpers/populate/lookupLocalFields.js"(exports2, module2) {
     "use strict";
-    module2.exports = function lookupLocalFields(cur, path6, val) {
+    module2.exports = function lookupLocalFields(cur, path7, val) {
       if (cur == null) {
         return cur;
       }
@@ -96438,19 +96438,19 @@ var require_lookupLocalFields = __commonJS({
           return void 0;
         }
         if (cur instanceof Map) {
-          cur.set(path6, val);
+          cur.set(path7, val);
         } else {
-          cur[path6] = val;
+          cur[path7] = val;
         }
         return val;
       }
-      if (path6 === "$*") {
+      if (path7 === "$*") {
         return cur instanceof Map ? Array.from(cur.values()) : Object.keys(cur).map((key) => cur[key]);
       }
       if (cur instanceof Map) {
-        return cur.get(path6);
+        return cur.get(path7);
       }
-      return cur[path6];
+      return cur[path7];
     };
   }
 });
@@ -96527,8 +96527,8 @@ var require_virtualType = __commonJS({
       if (this.getters.length > 0 || this.setters.length > 0) {
         return;
       }
-      const path6 = this.path;
-      const internalProperty = "$" + path6;
+      const path7 = this.path;
+      const internalProperty = "$" + path7;
       this.getters.push(function() {
         return this.$locals[internalProperty];
       });
@@ -96636,34 +96636,34 @@ var require_getIndexes = __commonJS({
         prefix = prefix || "";
         const keys = Object.keys(schema2.paths);
         for (const key of keys) {
-          const path6 = schema2.paths[key];
+          const path7 = schema2.paths[key];
           if (baseSchema != null && baseSchema.paths[key]) {
             continue;
           }
-          if (path6._duplicateKeyErrorMessage != null) {
+          if (path7._duplicateKeyErrorMessage != null) {
             schema2._duplicateKeyErrorMessagesByPath = schema2._duplicateKeyErrorMessagesByPath || {};
-            schema2._duplicateKeyErrorMessagesByPath[key] = path6._duplicateKeyErrorMessage;
+            schema2._duplicateKeyErrorMessagesByPath[key] = path7._duplicateKeyErrorMessage;
           }
-          if (path6.$isMongooseDocumentArray || path6.$isSingleNested) {
-            if (get(path6, "options.excludeIndexes") !== true && get(path6, "schemaOptions.excludeIndexes") !== true && get(path6, "schema.options.excludeIndexes") !== true) {
-              collectIndexes(path6.schema, prefix + key + ".");
+          if (path7.$isMongooseDocumentArray || path7.$isSingleNested) {
+            if (get(path7, "options.excludeIndexes") !== true && get(path7, "schemaOptions.excludeIndexes") !== true && get(path7, "schema.options.excludeIndexes") !== true) {
+              collectIndexes(path7.schema, prefix + key + ".");
             }
-            if (path6.schema.discriminators != null) {
-              const discriminators = path6.schema.discriminators;
+            if (path7.schema.discriminators != null) {
+              const discriminators = path7.schema.discriminators;
               const discriminatorKeys = Object.keys(discriminators);
               for (const discriminatorKey of discriminatorKeys) {
                 collectIndexes(
                   discriminators[discriminatorKey],
                   prefix + key + ".",
-                  path6.schema
+                  path7.schema
                 );
               }
             }
-            if (path6.$isMongooseDocumentArray) {
+            if (path7.$isMongooseDocumentArray) {
               continue;
             }
           }
-          const index = path6._index || path6.caster && path6.caster._index;
+          const index = path7._index || path7.caster && path7.caster._index;
           if (index !== false && index !== null && index !== void 0) {
             const field = {};
             const isObject = helperIsObject(index);
@@ -96845,8 +96845,8 @@ var require_setPopulatedVirtualValue = __commonJS({
 var require_cleanPositionalOperators = __commonJS({
   "node_modules/mongoose/lib/helpers/schema/cleanPositionalOperators.js"(exports2, module2) {
     "use strict";
-    module2.exports = function cleanPositionalOperators(path6) {
-      return path6.replace(/\.\$(\[[^\]]*\])?(?=\.)/g, ".0").replace(/\.\$(\[[^\]]*\])?$/g, ".0");
+    module2.exports = function cleanPositionalOperators(path7) {
+      return path7.replace(/\.\$(\[[^\]]*\])?(?=\.)/g, ".0").replace(/\.\$(\[[^\]]*\])?$/g, ".0");
     };
   }
 });
@@ -96980,8 +96980,8 @@ var require_applyTimestampsToChildren = __commonJS({
     }
     function applyTimestampsToUpdateKey(schema, key, update, now) {
       const keyToSearch = cleanPositionalOperators(key);
-      const path6 = schema.path(keyToSearch);
-      if (!path6) {
+      const path7 = schema.path(keyToSearch);
+      if (!path7) {
         return;
       }
       const parentSchemaTypes = [];
@@ -96992,10 +96992,10 @@ var require_applyTimestampsToChildren = __commonJS({
           parentSchemaTypes.push({ parentPath: key.split(".").slice(0, i).join("."), parentSchemaType: s });
         }
       }
-      if (Array.isArray(update[key]) && path6.$isMongooseDocumentArray) {
-        applyTimestampsToDocumentArray(update[key], path6, now);
-      } else if (update[key] && path6.$isSingleNested) {
-        applyTimestampsToSingleNested(update[key], path6, now);
+      if (Array.isArray(update[key]) && path7.$isMongooseDocumentArray) {
+        applyTimestampsToDocumentArray(update[key], path7, now);
+      } else if (update[key] && path7.$isSingleNested) {
+        applyTimestampsToSingleNested(update[key], path7, now);
       } else if (parentSchemaTypes.length > 0) {
         for (const item of parentSchemaTypes) {
           const parentPath = item.parentPath;
@@ -97018,8 +97018,8 @@ var require_applyTimestampsToChildren = __commonJS({
             update[parentPath + "." + childPath + "." + updatedAt] = now;
           }
         }
-      } else if (path6.schema != null && path6.schema != schema && update[key]) {
-        const timestamps = path6.schema.options.timestamps;
+      } else if (path7.schema != null && path7.schema != schema && update[key]) {
+        const timestamps = path7.schema.options.timestamps;
         const createdAt = handleTimestampOption(timestamps, "createdAt");
         const updatedAt = handleTimestampOption(timestamps, "updatedAt");
         if (!timestamps) {
@@ -97266,14 +97266,14 @@ var require_validateRef = __commonJS({
     var MongooseError = require_mongooseError();
     var util = require("util");
     module2.exports = validateRef;
-    function validateRef(ref, path6) {
+    function validateRef(ref, path7) {
       if (typeof ref === "string") {
         return;
       }
       if (typeof ref === "function") {
         return;
       }
-      throw new MongooseError('Invalid ref at path "' + path6 + '". Got ' + util.inspect(ref, { depth: 0 }));
+      throw new MongooseError('Invalid ref at path "' + path7 + '". Got ' + util.inspect(ref, { depth: 0 }));
     }
   }
 });
@@ -97460,20 +97460,20 @@ var require_map = __commonJS({
     var cleanModifiedSubpaths = require_cleanModifiedSubpaths();
     var populateModelSymbol = require_symbols().populateModelSymbol;
     var MongooseMap = class extends Map {
-      constructor(v, path6, doc, schemaType, options) {
+      constructor(v, path7, doc, schemaType, options) {
         if (getConstructorName(v) === "Object") {
           v = Object.keys(v).reduce((arr, key) => arr.concat([[key, v[key]]]), []);
         }
         super(v);
         this.$__parent = doc != null && doc.$__ != null ? doc : null;
         if (this.$__parent?.$isSingleNested && this.$__parent.$basePath) {
-          this.$__path = this.$__parent.$basePath + "." + path6;
-          this.$__pathRelativeToParent = path6;
+          this.$__path = this.$__parent.$basePath + "." + path7;
+          this.$__pathRelativeToParent = path7;
         } else if (options?.path) {
           this.$__path = options.path;
           this.$__pathRelativeToParent = null;
         } else {
-          this.$__path = path6;
+          this.$__path = path7;
           this.$__pathRelativeToParent = null;
         }
         this.$__schemaType = schemaType;
@@ -98043,12 +98043,12 @@ var require_cast_expr = __commonJS({
       }
     }
     function castIn(val, schema, strictQuery) {
-      const path6 = val[1];
-      if (!isPath(path6)) {
+      const path7 = val[1];
+      if (!isPath(path7)) {
         return val;
       }
       const search = val[0];
-      const schematype = schema.path(path6.slice(1));
+      const schematype = schema.path(path7.slice(1));
       if (schematype === null) {
         if (strictQuery === false) {
           return val;
@@ -98062,7 +98062,7 @@ var require_cast_expr = __commonJS({
       }
       return [
         schematype.$isMongooseDocumentArray ? schematype.$embeddedSchemaType.cast(search) : schematype.caster.cast(search),
-        path6
+        path7
       ];
     }
     function castArithmetic(val) {
@@ -98094,19 +98094,19 @@ var require_cast_expr = __commonJS({
       val[0] = _castExpression(val[0], schema, strictQuery);
       const lhs = val[0];
       if (isLiteral(val[1])) {
-        let path6 = null;
+        let path7 = null;
         let schematype = null;
         let caster = null;
         if (isPath(lhs)) {
-          path6 = lhs.slice(1);
-          schematype = schema.path(path6);
+          path7 = lhs.slice(1);
+          schematype = schema.path(path7);
         } else if (typeof lhs === "object" && lhs != null) {
           for (const key of Object.keys(lhs)) {
             if (dateOperators.has(key) && isPath(lhs[key])) {
-              path6 = lhs[key].slice(1) + "." + key;
+              path7 = lhs[key].slice(1) + "." + key;
               caster = castNumber;
             } else if (arrayElementOperators.has(key) && isPath(lhs[key])) {
-              path6 = lhs[key].slice(1) + "." + key;
+              path7 = lhs[key].slice(1) + "." + key;
               schematype = schema.path(lhs[key].slice(1));
               if (schematype != null) {
                 if (schematype.$isMongooseDocumentArray) {
@@ -98130,19 +98130,19 @@ var require_cast_expr = __commonJS({
             try {
               val[1] = { $literal: caster(val[1].$literal) };
             } catch (err) {
-              throw new CastError(caster.name.replace(/^cast/, ""), val[1], path6 + ".$literal");
+              throw new CastError(caster.name.replace(/^cast/, ""), val[1], path7 + ".$literal");
             }
           } else {
             try {
               val[1] = caster(val[1]);
             } catch (err) {
-              throw new CastError(caster.name.replace(/^cast/, ""), val[1], path6);
+              throw new CastError(caster.name.replace(/^cast/, ""), val[1], path7);
             }
           }
-        } else if (path6 != null && strictQuery === true) {
+        } else if (path7 != null && strictQuery === true) {
           return void 0;
-        } else if (path6 != null && strictQuery === "throw") {
-          throw new StrictModeError(path6);
+        } else if (path7 != null && strictQuery === "throw") {
+          throw new StrictModeError(path7);
         }
       } else {
         val[1] = _castExpression(val[1]);
@@ -98169,7 +98169,7 @@ var require_string = __commonJS({
   "node_modules/mongoose/lib/cast/string.js"(exports2, module2) {
     "use strict";
     var CastError = require_cast();
-    module2.exports = function castString(value, path6) {
+    module2.exports = function castString(value, path7) {
       if (value == null) {
         return value;
       }
@@ -98179,7 +98179,7 @@ var require_string = __commonJS({
       if (value.toString && value.toString !== Object.prototype.toString && !Array.isArray(value)) {
         return value.toString();
       }
-      throw new CastError("string", value, path6);
+      throw new CastError("string", value, path7);
     };
   }
 });
@@ -98191,26 +98191,26 @@ var require_text2 = __commonJS({
     var CastError = require_cast();
     var castBoolean = require_boolean();
     var castString = require_string();
-    module2.exports = function castTextSearch(val, path6) {
+    module2.exports = function castTextSearch(val, path7) {
       if (val == null || typeof val !== "object") {
-        throw new CastError("$text", val, path6);
+        throw new CastError("$text", val, path7);
       }
       if (val.$search != null) {
-        val.$search = castString(val.$search, path6 + ".$search");
+        val.$search = castString(val.$search, path7 + ".$search");
       }
       if (val.$language != null) {
-        val.$language = castString(val.$language, path6 + ".$language");
+        val.$language = castString(val.$language, path7 + ".$language");
       }
       if (val.$caseSensitive != null) {
         val.$caseSensitive = castBoolean(
           val.$caseSensitive,
-          path6 + ".$castSensitive"
+          path7 + ".$castSensitive"
         );
       }
       if (val.$diacriticSensitive != null) {
         val.$diacriticSensitive = castBoolean(
           val.$diacriticSensitive,
-          path6 + ".$diacriticSensitive"
+          path7 + ".$diacriticSensitive"
         );
       }
       return val;
@@ -98227,8 +98227,8 @@ var require_isOperator = __commonJS({
       "$id",
       "$db"
     ]);
-    module2.exports = function isOperator(path6) {
-      return path6[0] === "$" && !specialKeys.has(path6);
+    module2.exports = function isOperator(path7) {
+      return path7[0] === "$" && !specialKeys.has(path7);
     };
   }
 });
@@ -98267,20 +98267,20 @@ var require_cast2 = __commonJS({
       let any$conditionals;
       let schematype;
       let nested;
-      let path6;
+      let path7;
       let type;
       let val;
       options = options || {};
       while (i--) {
-        path6 = paths[i];
-        val = obj[path6];
-        if (path6 === "$or" || path6 === "$nor" || path6 === "$and") {
+        path7 = paths[i];
+        val = obj[path7];
+        if (path7 === "$or" || path7 === "$nor" || path7 === "$and") {
           if (!Array.isArray(val)) {
-            throw new CastError("Array", val, path6);
+            throw new CastError("Array", val, path7);
           }
           for (let k = val.length - 1; k >= 0; k--) {
             if (val[k] == null || typeof val[k] !== "object") {
-              throw new CastError("Object", val[k], path6 + "." + k);
+              throw new CastError("Object", val[k], path7 + "." + k);
             }
             const beforeCastKeysLength = Object.keys(val[k]).length;
             const discriminatorValue = val[k][schema.options.discriminatorKey];
@@ -98295,34 +98295,34 @@ var require_cast2 = __commonJS({
             }
           }
           if (val.length === 0) {
-            delete obj[path6];
+            delete obj[path7];
           }
-        } else if (path6 === "$where") {
+        } else if (path7 === "$where") {
           type = typeof val;
           if (type !== "string" && type !== "function") {
             throw new Error("Must have a string or function for $where");
           }
           if (type === "function") {
-            obj[path6] = val.toString();
+            obj[path7] = val.toString();
           }
           continue;
-        } else if (path6 === "$expr") {
+        } else if (path7 === "$expr") {
           val = cast$expr(val, schema);
           continue;
-        } else if (path6 === "$elemMatch") {
+        } else if (path7 === "$elemMatch") {
           val = cast(schema, val, options, context);
-        } else if (path6 === "$text") {
-          val = castTextSearch(val, path6);
-        } else if (path6 === "$comment" && !Object.hasOwn(schema.paths, "$comment")) {
-          val = castString(val, path6);
-          obj[path6] = val;
+        } else if (path7 === "$text") {
+          val = castTextSearch(val, path7);
+        } else if (path7 === "$comment" && !Object.hasOwn(schema.paths, "$comment")) {
+          val = castString(val, path7);
+          obj[path7] = val;
         } else {
           if (!schema) {
             continue;
           }
-          schematype = schema.path(path6);
+          schematype = schema.path(path7);
           if (!schematype) {
-            const split = path6.split(".");
+            const split = path7.split(".");
             let j = split.length;
             while (j--) {
               const pathFirstHalf = split.slice(0, j).join(".");
@@ -98341,7 +98341,7 @@ var require_cast2 = __commonJS({
             }
           }
           if (!schematype) {
-            const split = path6.split(".");
+            const split = path7.split(".");
             let j = split.length;
             let pathFirstHalf;
             let pathLastHalf;
@@ -98360,12 +98360,12 @@ var require_cast2 = __commonJS({
                 remainingConds[pathLastHalf] = val;
                 const ret = cast(schematype.caster.schema, remainingConds, options, context)[pathLastHalf];
                 if (ret === void 0) {
-                  delete obj[path6];
+                  delete obj[path7];
                 } else {
-                  obj[path6] = ret;
+                  obj[path7] = ret;
                 }
               } else {
-                obj[path6] = val;
+                obj[path7] = val;
               }
               continue;
             }
@@ -98450,28 +98450,28 @@ var require_cast2 = __commonJS({
                 continue;
               }
             }
-            if (schema.nested[path6]) {
+            if (schema.nested[path7]) {
               continue;
             }
             const strict = "strict" in options ? options.strict : schema.options.strict;
             const strictQuery = getStrictQuery(options, schema._userProvidedOptions, schema.options, context);
             if (options.upsert && strict) {
               if (strict === "throw") {
-                throw new StrictModeError(path6);
+                throw new StrictModeError(path7);
               }
-              throw new StrictModeError(path6, 'Path "' + path6 + '" is not in schema, strict mode is `true`, and upsert is `true`.');
+              throw new StrictModeError(path7, 'Path "' + path7 + '" is not in schema, strict mode is `true`, and upsert is `true`.');
             }
             if (strictQuery === "throw") {
-              throw new StrictModeError(path6, 'Path "' + path6 + `" is not in schema and strictQuery is 'throw'.`);
+              throw new StrictModeError(path7, 'Path "' + path7 + `" is not in schema and strictQuery is 'throw'.`);
             } else if (strictQuery) {
-              delete obj[path6];
+              delete obj[path7];
             }
           } else if (val == null) {
             continue;
           } else if (utils.isPOJO(val)) {
             any$conditionals = Object.keys(val).some(isOperator);
             if (!any$conditionals) {
-              obj[path6] = schematype.castForQuery(
+              obj[path7] = schematype.castForQuery(
                 null,
                 val,
                 context
@@ -98536,9 +98536,9 @@ var require_cast2 = __commonJS({
                 context
               ));
             }
-            obj[path6] = { $in: casted };
+            obj[path7] = { $in: casted };
           } else {
-            obj[path6] = schematype.castForQuery(
+            obj[path7] = schematype.castForQuery(
               null,
               val,
               context
@@ -98641,10 +98641,10 @@ var require_bitwise = __commonJS({
       }
       return _castNumber(_this.path, val);
     }
-    function _castNumber(path6, num) {
+    function _castNumber(path7, num) {
       const v = Number(num);
       if (isNaN(v)) {
-        throw new CastError("number", num, path6);
+        throw new CastError("number", num, path7);
       }
       return v;
     }
@@ -99023,11 +99023,11 @@ var require_array2 = __commonJS({
           this.casterConstructor[isNestedArraySymbol] = true;
         }
         if (typeof caster === "function" && !caster.$isArraySubdocument && !caster.$isSchemaMap) {
-          const path6 = this.caster instanceof EmbeddedDoc ? null : key;
+          const path7 = this.caster instanceof EmbeddedDoc ? null : key;
           if (caster === SchemaArray) {
-            this.caster = new caster(path6, castOptions, schemaOptions, null, parentSchema);
+            this.caster = new caster(path7, castOptions, schemaOptions, null, parentSchema);
           } else {
-            this.caster = new caster(path6, castOptions, schemaOptions, parentSchema);
+            this.caster = new caster(path7, castOptions, schemaOptions, parentSchema);
           }
         } else {
           this.caster = caster;
@@ -99145,11 +99145,11 @@ var require_array2 = __commonJS({
         }
         options = options || emptyOpts;
         let rawValue = utils.isMongooseArray(value) ? value.__array : value;
-        let path6 = options.path || this.path;
+        let path7 = options.path || this.path;
         if (options.arrayPathIndex != null) {
-          path6 += "." + options.arrayPathIndex;
+          path7 += "." + options.arrayPathIndex;
         }
-        value = MongooseArray(rawValue, path6, doc, this);
+        value = MongooseArray(rawValue, path7, doc, this);
         rawValue = value.__array;
         if (init && doc != null && doc.$__ != null && doc.$populated(this.path)) {
           return value;
@@ -99427,8 +99427,8 @@ var require_bigint2 = __commonJS({
     var SchemaType = require_schemaType();
     var castBigInt = require_bigint();
     var createJSONSchemaTypeDefinition = require_createJSONSchemaTypeDefinition();
-    function SchemaBigInt(path6, options, _schemaOptions, parentSchema) {
-      SchemaType.call(this, path6, options, "BigInt", parentSchema);
+    function SchemaBigInt(path7, options, _schemaOptions, parentSchema) {
+      SchemaType.call(this, path7, options, "BigInt", parentSchema);
     }
     SchemaBigInt.schemaName = "BigInt";
     SchemaBigInt.defaultOptions = {};
@@ -99529,8 +99529,8 @@ var require_boolean2 = __commonJS({
     var SchemaType = require_schemaType();
     var castBoolean = require_boolean();
     var createJSONSchemaTypeDefinition = require_createJSONSchemaTypeDefinition();
-    function SchemaBoolean(path6, options, _schemaOptions, parentSchema) {
-      SchemaType.call(this, path6, options, "Boolean", parentSchema);
+    function SchemaBoolean(path7, options, _schemaOptions, parentSchema) {
+      SchemaType.call(this, path7, options, "Boolean", parentSchema);
     }
     SchemaBoolean.schemaName = "Boolean";
     SchemaBoolean.defaultOptions = {};
@@ -100381,20 +100381,20 @@ var require_trackTransaction = __commonJS({
       const pathToAtomics = /* @__PURE__ */ new Map();
       previous = previous || /* @__PURE__ */ new Map();
       const pathsToCheck = Object.keys(doc.$__.activePaths.init).concat(Object.keys(doc.$__.activePaths.modify));
-      for (const path6 of pathsToCheck) {
-        const val = doc.$__getValue(path6);
+      for (const path7 of pathsToCheck) {
+        const val = doc.$__getValue(path7);
         if (val != null && Array.isArray(val) && utils.isMongooseDocumentArray(val) && val.length && val[arrayAtomicsSymbol] != null && Object.keys(val[arrayAtomicsSymbol]).length !== 0) {
-          const existing = previous.get(path6) || {};
-          pathToAtomics.set(path6, mergeAtomics(existing, val[arrayAtomicsSymbol]));
+          const existing = previous.get(path7) || {};
+          pathToAtomics.set(path7, mergeAtomics(existing, val[arrayAtomicsSymbol]));
         }
       }
       const dirty = doc.$__dirty();
       for (const dirt of dirty) {
-        const path6 = dirt.path;
+        const path7 = dirt.path;
         const val = dirt.value;
         if (val != null && val[arrayAtomicsSymbol] != null && Object.keys(val[arrayAtomicsSymbol]).length !== 0) {
-          const existing = previous.get(path6) || {};
-          pathToAtomics.set(path6, mergeAtomics(existing, val[arrayAtomicsSymbol]));
+          const existing = previous.get(path7) || {};
+          pathToAtomics.set(path7, mergeAtomics(existing, val[arrayAtomicsSymbol]));
         }
       }
       return pathToAtomics;
@@ -100495,12 +100495,12 @@ var require_mergeDiscriminatorSchema = __commonJS({
     var ObjectId2 = require_objectid();
     var SchemaType = require_schemaType();
     var isObject = require_isObject();
-    module2.exports = function mergeDiscriminatorSchema(to, from, path6, seen) {
+    module2.exports = function mergeDiscriminatorSchema(to, from, path7, seen) {
       const keys = Object.keys(from);
       let i = 0;
       const len = keys.length;
       let key;
-      path6 = path6 || "";
+      path7 = path7 || "";
       seen = seen || /* @__PURE__ */ new WeakSet();
       if (seen.has(from)) {
         return;
@@ -100508,12 +100508,12 @@ var require_mergeDiscriminatorSchema = __commonJS({
       seen.add(from);
       while (i < len) {
         key = keys[i++];
-        if (!path6) {
+        if (!path7) {
           if (key === "discriminators" || key === "base" || key === "_applyDiscriminators" || key === "_userProvidedOptions" || key === "options" || key === "tree") {
             continue;
           }
         }
-        if (path6 === "tree" && from != null && from.instanceOfSchema) {
+        if (path7 === "tree" && from != null && from.instanceOfSchema) {
           continue;
         }
         if (specialProperties.has(key)) {
@@ -100547,7 +100547,7 @@ var require_mergeDiscriminatorSchema = __commonJS({
               }
             }
           }
-          mergeDiscriminatorSchema(to[key], from[key], path6 ? path6 + "." + key : key, seen);
+          mergeDiscriminatorSchema(to[key], from[key], path7 ? path7 + "." + key : key, seen);
         }
       }
       if (from != null && from.instanceOfSchema) {
@@ -100583,12 +100583,12 @@ var require_discriminator = __commonJS({
         allNestedPaths(parentSchema),
         allNestedPaths(childSchema)
       );
-      for (const path6 of allSharedNestedPaths) {
-        if (parentSchema._hasEncryptedField(path6) && childSchema._hasEncryptedField(path6)) {
-          throw new Error(`encrypted fields cannot be declared on both the base schema and the child schema in a discriminator. path=${path6}`);
+      for (const path7 of allSharedNestedPaths) {
+        if (parentSchema._hasEncryptedField(path7) && childSchema._hasEncryptedField(path7)) {
+          throw new Error(`encrypted fields cannot be declared on both the base schema and the child schema in a discriminator. path=${path7}`);
         }
-        if (parentSchema._hasEncryptedField(path6) || childSchema._hasEncryptedField(path6)) {
-          throw new Error(`encrypted fields cannot have the same path as a non-encrypted field for discriminators. path=${path6}`);
+        if (parentSchema._hasEncryptedField(path7) || childSchema._hasEncryptedField(path7)) {
+          throw new Error(`encrypted fields cannot have the same path as a non-encrypted field for discriminators. path=${path7}`);
         }
       }
       function allNestedPaths(schema) {
@@ -100660,20 +100660,20 @@ var require_discriminator = __commonJS({
         }
         const baseSchemaPaths = Object.keys(baseSchema.paths);
         const conflictingPaths = [];
-        for (const path6 of baseSchemaPaths) {
-          if (schema2.nested[path6]) {
-            conflictingPaths.push(path6);
+        for (const path7 of baseSchemaPaths) {
+          if (schema2.nested[path7]) {
+            conflictingPaths.push(path7);
             continue;
           }
-          if (path6.indexOf(".") === -1) {
+          if (path7.indexOf(".") === -1) {
             continue;
           }
-          const sp = path6.split(".").slice(0, -1);
+          const sp = path7.split(".").slice(0, -1);
           let cur = "";
           for (const piece of sp) {
             cur += (cur.length ? "." : "") + piece;
             if (schema2.paths[cur] instanceof Mixed || schema2.singleNestedPaths[cur] instanceof Mixed) {
-              conflictingPaths.push(path6);
+              conflictingPaths.push(path7);
             }
           }
         }
@@ -100845,9 +100845,9 @@ var require_subdocument2 = __commonJS({
     var InvalidSchemaOptionError = require_invalidSchemaOption();
     var SubdocumentType;
     module2.exports = SchemaSubdocument;
-    function SchemaSubdocument(schema, path6, options, parentSchema) {
+    function SchemaSubdocument(schema, path7, options, parentSchema) {
       if (schema.options.timeseries) {
-        throw new InvalidSchemaOptionError(path6, "timeseries");
+        throw new InvalidSchemaOptionError(path7, "timeseries");
       }
       const schemaTypeIdOption = SchemaSubdocument.defaultOptions && SchemaSubdocument.defaultOptions._id;
       if (schemaTypeIdOption != null) {
@@ -100856,19 +100856,19 @@ var require_subdocument2 = __commonJS({
       }
       schema = handleIdOption(schema, options);
       this.caster = _createConstructor(schema, null, options);
-      this.caster.path = path6;
-      this.caster.prototype.$basePath = path6;
+      this.caster.path = path7;
+      this.caster.prototype.$basePath = path7;
       this.schema = schema;
       this.$isSingleNested = true;
       this.base = schema.base;
-      SchemaType.call(this, path6, options, "Embedded", parentSchema);
+      SchemaType.call(this, path7, options, "Embedded", parentSchema);
     }
     SchemaSubdocument.prototype = Object.create(SchemaType.prototype);
     SchemaSubdocument.prototype.constructor = SchemaSubdocument;
     SchemaSubdocument.prototype.OptionsConstructor = SchemaSubdocumentOptions;
     function _createConstructor(schema, baseClass, options) {
       SubdocumentType || (SubdocumentType = require_subdocument());
-      const _embedded = function SingleNested(value, path6, parent) {
+      const _embedded = function SingleNested(value, path7, parent) {
         this.$__parent = parent;
         SubdocumentType.apply(this, arguments);
         if (parent == null) {
@@ -100927,11 +100927,11 @@ var require_subdocument2 = __commonJS({
       const Constructor = getConstructor(this.caster, val, defaultDiscriminatorValue);
       let subdoc;
       const parentSelected = doc && doc.$__ && doc.$__.selected;
-      const path6 = this.path;
+      const path7 = this.path;
       const selected = parentSelected == null ? null : Object.keys(parentSelected).reduce((obj, key) => {
-        if (key.startsWith(path6 + ".")) {
+        if (key.startsWith(path7 + ".")) {
           obj = obj || {};
-          obj[key.substring(path6.length + 1)] = parentSelected[key];
+          obj[key.substring(path7.length + 1)] = parentSelected[key];
         }
         return obj;
       }, null);
@@ -101068,13 +101068,13 @@ var require_documentArrayElement = __commonJS({
     var SchemaType = require_schemaType();
     var SchemaSubdocument = require_subdocument2();
     var getConstructor = require_getConstructor();
-    function SchemaDocumentArrayElement(path6, options, _schemaOptions, parentSchema) {
+    function SchemaDocumentArrayElement(path7, options, _schemaOptions, parentSchema) {
       this.$parentSchemaType = options && options.$parentSchemaType;
       if (!this.$parentSchemaType) {
         throw new MongooseError("Cannot create DocumentArrayElement schematype without a parent");
       }
       delete options.$parentSchemaType;
-      SchemaType.call(this, path6, options, "DocumentArrayElement", parentSchema);
+      SchemaType.call(this, path7, options, "DocumentArrayElement", parentSchema);
       this.$isMongooseDocumentArrayElement = true;
     }
     SchemaDocumentArrayElement.schemaName = "DocumentArrayElement";
@@ -101363,24 +101363,24 @@ var require_documentArray2 = __commonJS({
       let selected;
       let subdoc;
       options = options || {};
-      const path6 = options.path || this.path;
+      const path7 = options.path || this.path;
       if (!Array.isArray(value)) {
         if (!init && !SchemaDocumentArray.options.castNonArrays) {
           throw new CastError("DocumentArray", value, this.path, null, this);
         }
         if (!!doc && init) {
-          doc.markModified(path6);
+          doc.markModified(path7);
         }
         return this.cast([value], doc, init, prev, options);
       }
       if (!options.skipDocumentArrayCast || utils.isMongooseDocumentArray(value)) {
-        value = new MongooseDocumentArray(value, path6, doc, this);
+        value = new MongooseDocumentArray(value, path7, doc, this);
       }
       if (prev != null) {
         value[arrayAtomicsSymbol] = prev[arrayAtomicsSymbol] || {};
       }
       if (options.arrayPathIndex != null) {
-        value[arrayPathSymbol] = path6 + "." + options.arrayPathIndex;
+        value[arrayPathSymbol] = path7 + "." + options.arrayPathIndex;
       }
       const rawArray = utils.isMongooseDocumentArray(value) ? value.__array : value;
       const len = rawArray.length;
@@ -101474,7 +101474,7 @@ var require_documentArray2 = __commonJS({
       if (!(init && fields)) {
         return void 0;
       }
-      const path6 = array.path + ".";
+      const path7 = array.path + ".";
       const keys = Object.keys(fields);
       let i = keys.length;
       const selected = {};
@@ -101483,8 +101483,8 @@ var require_documentArray2 = __commonJS({
       let sub;
       while (i--) {
         key = keys[i];
-        if (key.startsWith(path6)) {
-          sub = key.substring(path6.length);
+        if (key.startsWith(path7)) {
+          sub = key.substring(path7.length);
           if (sub === "$") {
             continue;
           }
@@ -101581,8 +101581,8 @@ var require_double3 = __commonJS({
     var SchemaType = require_schemaType();
     var castDouble = require_double2();
     var createJSONSchemaTypeDefinition = require_createJSONSchemaTypeDefinition();
-    function SchemaDouble(path6, options, _schemaOptions, parentSchema) {
-      SchemaType.call(this, path6, options, "Double", parentSchema);
+    function SchemaDouble(path7, options, _schemaOptions, parentSchema) {
+      SchemaType.call(this, path7, options, "Double", parentSchema);
     }
     SchemaDouble.schemaName = "Double";
     SchemaDouble.defaultOptions = {};
@@ -101688,8 +101688,8 @@ var require_int322 = __commonJS({
     var castInt32 = require_int32();
     var createJSONSchemaTypeDefinition = require_createJSONSchemaTypeDefinition();
     var handleBitwiseOperator = require_bitwise();
-    function SchemaInt32(path6, options, _schemaOptions, parentSchema) {
-      SchemaType.call(this, path6, options, "Int32", parentSchema);
+    function SchemaInt32(path7, options, _schemaOptions, parentSchema) {
+      SchemaType.call(this, path7, options, "Int32", parentSchema);
     }
     SchemaInt32.schemaName = "Int32";
     SchemaInt32.defaultOptions = {};
@@ -101849,9 +101849,9 @@ var require_map2 = __commonJS({
         if (val instanceof MongooseMap) {
           return val;
         }
-        const path6 = this.path;
+        const path7 = this.path;
         if (init) {
-          const map = new MongooseMap({}, path6, doc, this.$__schemaType, options);
+          const map = new MongooseMap({}, path7, doc, this.$__schemaType, options);
           const mapPath = map.$__pathRelativeToParent != null ? map.$__pathRelativeToParent : map.$__path;
           if (val instanceof global.Map) {
             for (const key of val.keys()) {
@@ -101876,7 +101876,7 @@ var require_map2 = __commonJS({
           }
           return map;
         }
-        return new MongooseMap(val, path6, doc, this.$__schemaType, options);
+        return new MongooseMap(val, path7, doc, this.$__schemaType, options);
       }
       /**
        * Creates a copy of this map schema type.
@@ -101925,8 +101925,8 @@ var require_map2 = __commonJS({
     SchemaMap.schemaName = "Map";
     SchemaMap.prototype.OptionsConstructor = SchemaMapOptions;
     SchemaMap.defaultOptions = {};
-    SchemaMap.prototype._createNestedSchemaType = function _createNestedSchemaType(schema, path6, obj, options) {
-      const mapPath = path6 + ".$*";
+    SchemaMap.prototype._createNestedSchemaType = function _createNestedSchemaType(schema, path7, obj, options) {
+      const mapPath = path7 + ".$*";
       let _mapType = { type: {} };
       if (utils.hasUserDefinedProperty(obj, "of")) {
         const isInlineSchema = utils.isPOJO(obj.of) && Object.keys(obj.of).length > 0 && !utils.hasUserDefinedProperty(obj.of, schema.options.typeKey);
@@ -101941,7 +101941,7 @@ var require_map2 = __commonJS({
           const subdocumentSchema = _mapType[schema.options.typeKey];
           subdocumentSchema.eachPath((subpath, type) => {
             if (type.options.select === true || type.options.select === false) {
-              throw new MongooseError('Cannot use schema-level projections (`select: true` or `select: false`) within maps at path "' + path6 + "." + subpath + '"');
+              throw new MongooseError('Cannot use schema-level projections (`select: true` or `select: false`) within maps at path "' + path7 + "." + subpath + '"');
             }
           });
         }
@@ -102852,12 +102852,12 @@ var require_schema2 = __commonJS({
       this.setupTimestamp(this.options.timestamps);
     }
     function aliasFields(schema, paths) {
-      for (const path6 of Object.keys(paths)) {
+      for (const path7 of Object.keys(paths)) {
         let alias = null;
-        if (paths[path6] != null) {
-          alias = paths[path6];
+        if (paths[path7] != null) {
+          alias = paths[path7];
         } else {
-          const options = get(schema.paths[path6], "options");
+          const options = get(schema.paths[path7], "options");
           if (options == null) {
             continue;
           }
@@ -102866,7 +102866,7 @@ var require_schema2 = __commonJS({
         if (!alias) {
           continue;
         }
-        const prop = schema.paths[path6].path;
+        const prop = schema.paths[path7].path;
         if (Array.isArray(alias)) {
           for (const a of alias) {
             if (typeof a !== "string") {
@@ -102957,18 +102957,18 @@ var require_schema2 = __commonJS({
       s.subpaths = clone(this.subpaths);
       for (const schemaType of Object.values(s.paths)) {
         if (schemaType.$isSingleNested) {
-          const path6 = schemaType.path;
+          const path7 = schemaType.path;
           for (const key of Object.keys(schemaType.schema.paths)) {
-            s.singleNestedPaths[path6 + "." + key] = schemaType.schema.paths[key];
+            s.singleNestedPaths[path7 + "." + key] = schemaType.schema.paths[key];
           }
           for (const key of Object.keys(schemaType.schema.singleNestedPaths)) {
-            s.singleNestedPaths[path6 + "." + key] = schemaType.schema.singleNestedPaths[key];
+            s.singleNestedPaths[path7 + "." + key] = schemaType.schema.singleNestedPaths[key];
           }
           for (const key of Object.keys(schemaType.schema.subpaths)) {
-            s.singleNestedPaths[path6 + "." + key] = schemaType.schema.subpaths[key];
+            s.singleNestedPaths[path7 + "." + key] = schemaType.schema.subpaths[key];
           }
           for (const key of Object.keys(schemaType.schema.nested)) {
-            s.singleNestedPaths[path6 + "." + key] = "nested";
+            s.singleNestedPaths[path7 + "." + key] = "nested";
           }
         }
       }
@@ -102998,24 +102998,24 @@ var require_schema2 = __commonJS({
       if (!Array.isArray(paths)) {
         throw new MongooseError('Schema#pick() only accepts an array argument, got "' + typeof paths + '"');
       }
-      for (const path6 of paths) {
-        if (this._hasEncryptedField(path6)) {
-          const encrypt = this.encryptedFields[path6];
-          const schemaType = this.path(path6);
+      for (const path7 of paths) {
+        if (this._hasEncryptedField(path7)) {
+          const encrypt = this.encryptedFields[path7];
+          const schemaType = this.path(path7);
           newSchema.add({
-            [path6]: {
+            [path7]: {
               encrypt,
               [this.options.typeKey]: schemaType
             }
           });
-        } else if (this.nested[path6]) {
-          newSchema.add({ [path6]: get(this.tree, path6) });
+        } else if (this.nested[path7]) {
+          newSchema.add({ [path7]: get(this.tree, path7) });
         } else {
-          const schematype = this.path(path6);
+          const schematype = this.path(path7);
           if (schematype == null) {
-            throw new MongooseError("Path `" + path6 + "` is not in the schema");
+            throw new MongooseError("Path `" + path7 + "` is not in the schema");
           }
-          newSchema.add({ [path6]: schematype });
+          newSchema.add({ [path7]: schematype });
         }
       }
       if (!this._hasEncryptedFields()) {
@@ -103087,15 +103087,15 @@ var require_schema2 = __commonJS({
       return this;
     };
     Schema.prototype._defaultToObjectOptions = function(json) {
-      const path6 = json ? "toJSON" : "toObject";
-      if (this._defaultToObjectOptionsMap && this._defaultToObjectOptionsMap[path6]) {
-        return this._defaultToObjectOptionsMap[path6];
+      const path7 = json ? "toJSON" : "toObject";
+      if (this._defaultToObjectOptionsMap && this._defaultToObjectOptionsMap[path7]) {
+        return this._defaultToObjectOptionsMap[path7];
       }
-      const baseOptions = this.base && this.base.options && this.base.options[path6] || {};
-      const schemaOptions = this.options[path6] || {};
+      const baseOptions = this.base && this.base.options && this.base.options[path7] || {};
+      const schemaOptions = this.options[path7] || {};
       const defaultOptions = Object.assign({}, baseOptions, schemaOptions);
       this._defaultToObjectOptionsMap = this._defaultToObjectOptionsMap || {};
-      this._defaultToObjectOptionsMap[path6] = defaultOptions;
+      this._defaultToObjectOptionsMap[path7] = defaultOptions;
       return defaultOptions;
     };
     Schema.prototype.encryptionType = function encryptionType(encryptionType) {
@@ -103209,8 +103209,8 @@ var require_schema2 = __commonJS({
             throw new Error("encryptionType of a nested schema must match the encryption type of the parent schema.");
           }
           for (const [encryptedField, encryptedFieldConfig] of Object.entries(val.encryptedFields)) {
-            const path6 = fullPath + "." + encryptedField;
-            this._addEncryptedField(path6, encryptedFieldConfig);
+            const path7 = fullPath + "." + encryptedField;
+            this._addEncryptedField(path7, encryptedFieldConfig);
           }
         } else if (typeof val === "object" && "encrypt" in val) {
           const { encrypt } = val;
@@ -103228,35 +103228,35 @@ var require_schema2 = __commonJS({
       aliasFields(this, aliasObj);
       return this;
     };
-    Schema.prototype._addEncryptedField = function _addEncryptedField(path6, fieldConfig) {
-      const type = this.path(path6).autoEncryptionType();
+    Schema.prototype._addEncryptedField = function _addEncryptedField(path7, fieldConfig) {
+      const type = this.path(path7).autoEncryptionType();
       if (type == null) {
-        throw new Error(`Invalid BSON type for FLE field: '${path6}'`);
+        throw new Error(`Invalid BSON type for FLE field: '${path7}'`);
       }
-      this.encryptedFields[path6] = clone(fieldConfig);
+      this.encryptedFields[path7] = clone(fieldConfig);
     };
-    Schema.prototype._removeEncryptedField = function _removeEncryptedField(path6) {
-      delete this.encryptedFields[path6];
+    Schema.prototype._removeEncryptedField = function _removeEncryptedField(path7) {
+      delete this.encryptedFields[path7];
     };
     Schema.prototype._hasEncryptedFields = function _hasEncryptedFields() {
       return Object.keys(this.encryptedFields).length > 0;
     };
-    Schema.prototype._hasEncryptedField = function _hasEncryptedField(path6) {
-      return path6 in this.encryptedFields;
+    Schema.prototype._hasEncryptedField = function _hasEncryptedField(path7) {
+      return path7 in this.encryptedFields;
     };
     Schema.prototype._buildEncryptedFields = function() {
       const fields = Object.entries(this.encryptedFields).map(
-        ([path6, config]) => {
-          const bsonType = this.path(path6).autoEncryptionType();
-          return { path: path6, bsonType, ...config };
+        ([path7, config]) => {
+          const bsonType = this.path(path7).autoEncryptionType();
+          return { path: path7, bsonType, ...config };
         }
       );
       return { fields };
     };
     Schema.prototype._buildSchemaMap = function() {
-      function buildNestedPath(path6, object, value) {
-        let i = 0, component = path6[i];
-        for (; i < path6.length - 1; ++i, component = path6[i]) {
+      function buildNestedPath(path7, object, value) {
+        let i = 0, component = path7[i];
+        for (; i < path7.length - 1; ++i, component = path7[i]) {
           object[component] = object[component] == null ? {
             bsonType: "object",
             properties: {}
@@ -103265,9 +103265,9 @@ var require_schema2 = __commonJS({
         }
         object[component] = value;
       }
-      const schemaMapPropertyReducer = (accum, [path6, propertyConfig]) => {
-        const bsonType = this.path(path6).autoEncryptionType();
-        const pathComponents = path6.split(".");
+      const schemaMapPropertyReducer = (accum, [path7, propertyConfig]) => {
+        const bsonType = this.path(path7).autoEncryptionType();
+        const pathComponents = path7.split(".");
         const configuration = { encrypt: { ...propertyConfig, bsonType } };
         buildNestedPath(pathComponents, accum, configuration);
         return accum;
@@ -103281,8 +103281,8 @@ var require_schema2 = __commonJS({
         properties
       };
     };
-    Schema.prototype.alias = function alias(path6, alias) {
-      aliasFields(this, { [path6]: alias });
+    Schema.prototype.alias = function alias(path7, alias) {
+      aliasFields(this, { [path7]: alias });
       return this;
     };
     Schema.prototype.removeIndex = function removeIndex(index) {
@@ -103322,17 +103322,17 @@ var require_schema2 = __commonJS({
     reserved.emit = reserved.listeners = reserved.removeListener = // document properties and functions
     reserved.collection = reserved.errors = reserved.get = reserved.init = reserved.isModified = reserved.isNew = reserved.populated = reserved.remove = reserved.save = reserved.toObject = reserved.validate = 1;
     reserved.collection = 1;
-    Schema.prototype.path = function(path6, obj) {
+    Schema.prototype.path = function(path7, obj) {
       if (obj === void 0) {
-        if (Object.hasOwn(this.paths, path6)) {
-          return this.paths[path6];
+        if (Object.hasOwn(this.paths, path7)) {
+          return this.paths[path7];
         }
-        const cleanPath = _pathToPositionalSyntax(path6);
-        let schematype = _getPath(this, path6, cleanPath);
+        const cleanPath = _pathToPositionalSyntax(path7);
+        let schematype = _getPath(this, path7, cleanPath);
         if (schematype != null) {
           return schematype;
         }
-        const mapPath = getMapPath(this, path6);
+        const mapPath = getMapPath(this, path7);
         if (mapPath != null) {
           return mapPath;
         }
@@ -103340,9 +103340,9 @@ var require_schema2 = __commonJS({
         if (schematype != null) {
           return schematype;
         }
-        return hasNumericSubpathRegex.test(path6) ? getPositionalPath(this, path6, cleanPath) : void 0;
+        return hasNumericSubpathRegex.test(path7) ? getPositionalPath(this, path7, cleanPath) : void 0;
       }
-      const subpaths = path6.indexOf(".") === -1 ? [path6] : path6.split(".");
+      const subpaths = path7.indexOf(".") === -1 ? [path7] : path7.split(".");
       const last = subpaths.pop();
       if (utils.specialProperties.has(last)) {
         throw new Error("Cannot set special property `" + last + "` on a schema");
@@ -103353,7 +103353,7 @@ var require_schema2 = __commonJS({
         utils.warn(errorMessage);
       }
       if (typeof obj === "object" && utils.hasUserDefinedProperty(obj, "ref")) {
-        validateRef(obj.ref, path6);
+        validateRef(obj.ref, path7);
       }
       let branch = this.tree;
       let fullPath = "";
@@ -103367,39 +103367,39 @@ var require_schema2 = __commonJS({
           branch[sub] = {};
         }
         if (typeof branch[sub] !== "object") {
-          const msg = "Cannot set nested path `" + path6 + "`. Parent path `" + fullPath + "` already set to type " + branch[sub].name + ".";
+          const msg = "Cannot set nested path `" + path7 + "`. Parent path `" + fullPath + "` already set to type " + branch[sub].name + ".";
           throw new Error(msg);
         }
         branch = branch[sub];
       }
       branch[last] = clone(obj);
-      this.paths[path6] = this.interpretAsType(path6, obj, this.options);
-      const schemaType = this.paths[path6];
-      this.childSchemas = this.childSchemas.filter((childSchema) => childSchema.path !== path6);
+      this.paths[path7] = this.interpretAsType(path7, obj, this.options);
+      const schemaType = this.paths[path7];
+      this.childSchemas = this.childSchemas.filter((childSchema) => childSchema.path !== path7);
       if (schemaType.$isSchemaMap) {
-        const mapPath = path6 + ".$*";
+        const mapPath = path7 + ".$*";
         this.paths[mapPath] = schemaType.$__schemaType;
         this.mapPaths.push(this.paths[mapPath]);
         if (schemaType.$__schemaType.$isSingleNested) {
           this.childSchemas.push({
             schema: schemaType.$__schemaType.schema,
             model: schemaType.$__schemaType.caster,
-            path: path6
+            path: path7
           });
         }
       }
       if (schemaType.$isSingleNested) {
         for (const key of Object.keys(schemaType.schema.paths)) {
-          this.singleNestedPaths[path6 + "." + key] = schemaType.schema.paths[key];
+          this.singleNestedPaths[path7 + "." + key] = schemaType.schema.paths[key];
         }
         for (const key of Object.keys(schemaType.schema.singleNestedPaths)) {
-          this.singleNestedPaths[path6 + "." + key] = schemaType.schema.singleNestedPaths[key];
+          this.singleNestedPaths[path7 + "." + key] = schemaType.schema.singleNestedPaths[key];
         }
         for (const key of Object.keys(schemaType.schema.subpaths)) {
-          this.singleNestedPaths[path6 + "." + key] = schemaType.schema.subpaths[key];
+          this.singleNestedPaths[path7 + "." + key] = schemaType.schema.subpaths[key];
         }
         for (const key of Object.keys(schemaType.schema.nested)) {
-          this.singleNestedPaths[path6 + "." + key] = "nested";
+          this.singleNestedPaths[path7 + "." + key] = "nested";
         }
         Object.defineProperty(schemaType.schema, "base", {
           configurable: true,
@@ -103411,7 +103411,7 @@ var require_schema2 = __commonJS({
         this.childSchemas.push({
           schema: schemaType.schema,
           model: schemaType.caster,
-          path: path6
+          path: path7
         });
       } else if (schemaType.$isMongooseDocumentArray) {
         Object.defineProperty(schemaType.schema, "base", {
@@ -103424,22 +103424,22 @@ var require_schema2 = __commonJS({
         this.childSchemas.push({
           schema: schemaType.schema,
           model: schemaType.casterConstructor,
-          path: path6
+          path: path7
         });
       }
       if (schemaType.$isMongooseArray && schemaType.caster instanceof SchemaType) {
-        let arrayPath = path6;
+        let arrayPath = path7;
         let _schemaType = schemaType;
         const toAdd = [];
         while (_schemaType.$isMongooseArray) {
           arrayPath = arrayPath + ".$";
           if (_schemaType.$isMongooseDocumentArray) {
             _schemaType.$embeddedSchemaType._arrayPath = arrayPath;
-            _schemaType.$embeddedSchemaType._arrayParentPath = path6;
+            _schemaType.$embeddedSchemaType._arrayParentPath = path7;
             _schemaType = _schemaType.$embeddedSchemaType;
           } else {
             _schemaType.caster._arrayPath = arrayPath;
-            _schemaType.caster._arrayParentPath = path6;
+            _schemaType.caster._arrayParentPath = path7;
             _schemaType = _schemaType.caster;
           }
           this.subpaths[arrayPath] = _schemaType;
@@ -103451,21 +103451,21 @@ var require_schema2 = __commonJS({
       if (schemaType.$isMongooseDocumentArray) {
         for (const key of Object.keys(schemaType.schema.paths)) {
           const _schemaType = schemaType.schema.paths[key];
-          this.subpaths[path6 + "." + key] = _schemaType;
+          this.subpaths[path7 + "." + key] = _schemaType;
           if (typeof _schemaType === "object" && _schemaType != null && _schemaType.$parentSchemaDocArray == null) {
             _schemaType.$parentSchemaDocArray = schemaType;
           }
         }
         for (const key of Object.keys(schemaType.schema.subpaths)) {
           const _schemaType = schemaType.schema.subpaths[key];
-          this.subpaths[path6 + "." + key] = _schemaType;
+          this.subpaths[path7 + "." + key] = _schemaType;
           if (typeof _schemaType === "object" && _schemaType != null && _schemaType.$parentSchemaDocArray == null) {
             _schemaType.$parentSchemaDocArray = schemaType;
           }
         }
         for (const key of Object.keys(schemaType.schema.singleNestedPaths)) {
           const _schemaType = schemaType.schema.singleNestedPaths[key];
-          this.subpaths[path6 + "." + key] = _schemaType;
+          this.subpaths[path7 + "." + key] = _schemaType;
           if (typeof _schemaType === "object" && _schemaType != null && _schemaType.$parentSchemaDocArray == null) {
             _schemaType.$parentSchemaDocArray = schemaType;
           }
@@ -103475,31 +103475,31 @@ var require_schema2 = __commonJS({
     };
     Schema.prototype._gatherChildSchemas = function _gatherChildSchemas() {
       const childSchemas = [];
-      for (const path6 of Object.keys(this.paths)) {
-        if (typeof path6 !== "string") {
+      for (const path7 of Object.keys(this.paths)) {
+        if (typeof path7 !== "string") {
           continue;
         }
-        const schematype = this.paths[path6];
+        const schematype = this.paths[path7];
         if (schematype.$isMongooseDocumentArray || schematype.$isSingleNested) {
           childSchemas.push({
             schema: schematype.schema,
             model: schematype.caster,
-            path: path6
+            path: path7
           });
         } else if (schematype.$isSchemaMap && schematype.$__schemaType.$isSingleNested) {
           childSchemas.push({
             schema: schematype.$__schemaType.schema,
             model: schematype.$__schemaType.caster,
-            path: path6
+            path: path7
           });
         }
       }
       this.childSchemas = childSchemas;
       return childSchemas;
     };
-    function _getPath(schema, path6, cleanPath) {
-      if (Object.hasOwn(schema.paths, path6)) {
-        return schema.paths[path6];
+    function _getPath(schema, path7, cleanPath) {
+      if (Object.hasOwn(schema.paths, path7)) {
+        return schema.paths[path7];
       }
       if (Object.hasOwn(schema.subpaths, cleanPath)) {
         const subpath = schema.subpaths[cleanPath];
@@ -103517,26 +103517,26 @@ var require_schema2 = __commonJS({
       }
       return null;
     }
-    function _pathToPositionalSyntax(path6) {
-      if (!/\.\d+/.test(path6)) {
-        return path6;
+    function _pathToPositionalSyntax(path7) {
+      if (!/\.\d+/.test(path7)) {
+        return path7;
       }
-      return path6.replace(/\.\d+\./g, ".$.").replace(/\.\d+$/, ".$");
+      return path7.replace(/\.\d+\./g, ".$.").replace(/\.\d+$/, ".$");
     }
-    function getMapPath(schema, path6) {
+    function getMapPath(schema, path7) {
       if (schema.mapPaths.length === 0) {
         return null;
       }
       for (const val of schema.mapPaths) {
         const cleanPath = val.path.replace(/\.\$\*/g, "");
-        if (path6 === cleanPath || path6.startsWith(cleanPath + ".") && path6.slice(cleanPath.length + 1).indexOf(".") === -1) {
+        if (path7 === cleanPath || path7.startsWith(cleanPath + ".") && path7.slice(cleanPath.length + 1).indexOf(".") === -1) {
           return val;
-        } else if (val.schema && path6.startsWith(cleanPath + ".")) {
-          let remnant = path6.slice(cleanPath.length + 1);
+        } else if (val.schema && path7.startsWith(cleanPath + ".")) {
+          let remnant = path7.slice(cleanPath.length + 1);
           remnant = remnant.slice(remnant.indexOf(".") + 1);
           return val.schema.path(remnant);
-        } else if (val.$isSchemaMap && path6.startsWith(cleanPath + ".")) {
-          let remnant = path6.slice(cleanPath.length + 1);
+        } else if (val.$isSchemaMap && path7.startsWith(cleanPath + ".")) {
+          let remnant = path7.slice(cleanPath.length + 1);
           remnant = remnant.slice(remnant.indexOf(".") + 1);
           const presplitPath = val.$__schemaType._presplitPath;
           if (remnant.indexOf(".") === -1 && presplitPath[presplitPath.length - 1] === "$*") {
@@ -103554,13 +103554,13 @@ var require_schema2 = __commonJS({
       writable: true,
       value: null
     });
-    Schema.prototype.interpretAsType = function(path6, obj, options) {
+    Schema.prototype.interpretAsType = function(path7, obj, options) {
       if (obj instanceof SchemaType) {
-        if (obj.path === path6) {
+        if (obj.path === path7) {
           return obj;
         }
         const clone2 = obj.clone();
-        clone2.path = path6;
+        clone2.path = path7;
         return clone2;
       }
       const MongooseTypes2 = this.base != null ? this.base.Schema.Types : Schema.Types;
@@ -103575,16 +103575,16 @@ var require_schema2 = __commonJS({
       }
       let type = obj[options.typeKey] && (obj[options.typeKey] instanceof Function || options.typeKey !== "type" || !obj.type.type) ? obj[options.typeKey] : {};
       if (type instanceof SchemaType) {
-        if (type.path === path6) {
+        if (type.path === path7) {
           return type;
         }
         const clone2 = type.clone();
-        clone2.path = path6;
+        clone2.path = path7;
         return clone2;
       }
       let name;
       if (utils.isPOJO(type) || type === "mixed") {
-        return new MongooseTypes2.Mixed(path6, obj, null, this);
+        return new MongooseTypes2.Mixed(path7, obj, null, this);
       }
       if (Array.isArray(type) || type === Array || type === "array" || type === MongooseTypes2.Array) {
         let cast = type === Array || type === "array" ? obj.cast || obj.of : type[0];
@@ -103593,27 +103593,27 @@ var require_schema2 = __commonJS({
             if (this.options._isMerging) {
               cast = new Schema(cast);
             } else {
-              throw new TypeError("Schema for array path `" + path6 + `\` is from a different copy of the Mongoose module. Please make sure you're using the same version of Mongoose everywhere with \`npm list mongoose\`. If you are still getting this error, please add \`new Schema()\` around the path: ${path6}: new Schema(...)`);
+              throw new TypeError("Schema for array path `" + path7 + `\` is from a different copy of the Mongoose module. Please make sure you're using the same version of Mongoose everywhere with \`npm list mongoose\`. If you are still getting this error, please add \`new Schema()\` around the path: ${path7}: new Schema(...)`);
             }
           }
-          return new MongooseTypes2.DocumentArray(path6, cast, obj, null, this);
+          return new MongooseTypes2.DocumentArray(path7, cast, obj, null, this);
         }
         if (cast && cast[options.typeKey] && cast[options.typeKey].instanceOfSchema) {
           if (!(cast[options.typeKey] instanceof Schema)) {
             if (this.options._isMerging) {
               cast[options.typeKey] = new Schema(cast[options.typeKey]);
             } else {
-              throw new TypeError("Schema for array path `" + path6 + `\` is from a different copy of the Mongoose module. Please make sure you're using the same version of Mongoose everywhere with \`npm list mongoose\`. If you are still getting this error, please add \`new Schema()\` around the path: ${path6}: new Schema(...)`);
+              throw new TypeError("Schema for array path `" + path7 + `\` is from a different copy of the Mongoose module. Please make sure you're using the same version of Mongoose everywhere with \`npm list mongoose\`. If you are still getting this error, please add \`new Schema()\` around the path: ${path7}: new Schema(...)`);
             }
           }
-          return new MongooseTypes2.DocumentArray(path6, cast[options.typeKey], obj, cast, this);
+          return new MongooseTypes2.DocumentArray(path7, cast[options.typeKey], obj, cast, this);
         }
         if (typeof cast !== "undefined") {
           if (Array.isArray(cast) || cast.type === Array || cast.type == "Array") {
             if (cast && cast.type == "Array") {
               cast.type = Array;
             }
-            return new MongooseTypes2.Array(path6, this.interpretAsType(path6, cast, options), obj, null, this);
+            return new MongooseTypes2.Array(path7, this.interpretAsType(path7, cast, options), obj, null, this);
           }
         }
         const castFromTypeKey = cast != null && cast[options.typeKey] && (options.typeKey !== "type" || !cast.type.type) ? cast[options.typeKey] : cast;
@@ -103644,34 +103644,34 @@ var require_schema2 = __commonJS({
             }
             const childSchema = new Schema(castFromTypeKey, childSchemaOptions);
             childSchema.$implicitlyCreated = true;
-            return new MongooseTypes2.DocumentArray(path6, childSchema, obj, null, this);
+            return new MongooseTypes2.DocumentArray(path7, childSchema, obj, null, this);
           } else {
-            return new MongooseTypes2.Array(path6, MongooseTypes2.Mixed, obj, null, this);
+            return new MongooseTypes2.Array(path7, MongooseTypes2.Mixed, obj, null, this);
           }
         }
         if (cast) {
           type = cast[options.typeKey] && (options.typeKey !== "type" || !cast.type.type) ? cast[options.typeKey] : cast;
           if (Array.isArray(type)) {
-            return new MongooseTypes2.Array(path6, this.interpretAsType(path6, type, options), obj, null, this);
+            return new MongooseTypes2.Array(path7, this.interpretAsType(path7, type, options), obj, null, this);
           }
           name = typeof type === "string" ? type : type.schemaName || utils.getFunctionName(type);
           if (name === "ClockDate") {
             name = "Date";
           }
           if (name === void 0) {
-            throw new TypeError(`Invalid schema configuration: Could not determine the embedded type for array \`${path6}\`. See https://mongoosejs.com/docs/guide.html#definition for more info on supported schema syntaxes.`);
+            throw new TypeError(`Invalid schema configuration: Could not determine the embedded type for array \`${path7}\`. See https://mongoosejs.com/docs/guide.html#definition for more info on supported schema syntaxes.`);
           }
           if (!Object.hasOwn(MongooseTypes2, name)) {
-            throw new TypeError(`Invalid schema configuration: \`${name}\` is not a valid type within the array \`${path6}\`.See https://bit.ly/mongoose-schematypes for a list of valid schema types.`);
+            throw new TypeError(`Invalid schema configuration: \`${name}\` is not a valid type within the array \`${path7}\`.See https://bit.ly/mongoose-schematypes for a list of valid schema types.`);
           }
           if (name === "Union" && typeof cast === "object") {
             cast.parentSchema = this;
           }
         }
-        return new MongooseTypes2.Array(path6, cast || MongooseTypes2.Mixed, obj, options, this);
+        return new MongooseTypes2.Array(path7, cast || MongooseTypes2.Mixed, obj, options, this);
       }
       if (type && type.instanceOfSchema) {
-        return new MongooseTypes2.Subdocument(type, path6, obj, this);
+        return new MongooseTypes2.Subdocument(type, path7, obj, this);
       }
       if (Buffer.isBuffer(type)) {
         name = "Buffer";
@@ -103694,12 +103694,12 @@ var require_schema2 = __commonJS({
         name = "Date";
       }
       if (name === void 0) {
-        throw new TypeError(`Invalid schema configuration: \`${path6}\` schematype definition is invalid. See https://mongoosejs.com/docs/guide.html#definition for more info on supported schema syntaxes.`);
+        throw new TypeError(`Invalid schema configuration: \`${path7}\` schematype definition is invalid. See https://mongoosejs.com/docs/guide.html#definition for more info on supported schema syntaxes.`);
       }
       if (MongooseTypes2[name] == null) {
-        throw new TypeError(`Invalid schema configuration: \`${name}\` is not a valid type at path \`${path6}\`. See https://bit.ly/mongoose-schematypes for a list of valid schema types.`);
+        throw new TypeError(`Invalid schema configuration: \`${name}\` is not a valid type at path \`${path7}\`. See https://bit.ly/mongoose-schematypes for a list of valid schema types.`);
       }
-      const schemaType = new MongooseTypes2[name](path6, obj, options, this);
+      const schemaType = new MongooseTypes2[name](path7, obj, options, this);
       return schemaType;
     };
     Schema.prototype.eachPath = function(fn) {
@@ -103718,9 +103718,9 @@ var require_schema2 = __commonJS({
       let i = paths.length;
       const ret = [];
       while (i--) {
-        const path6 = paths[i];
-        if (this.paths[path6].isRequired) {
-          ret.push(path6);
+        const path7 = paths[i];
+        if (this.paths[path7].isRequired) {
+          ret.push(path7);
         }
       }
       this._requiredpaths = ret;
@@ -103733,40 +103733,40 @@ var require_schema2 = __commonJS({
       this._indexedpaths = this.indexes();
       return this._indexedpaths;
     };
-    Schema.prototype.pathType = function(path6) {
-      if (Object.hasOwn(this.paths, path6)) {
+    Schema.prototype.pathType = function(path7) {
+      if (Object.hasOwn(this.paths, path7)) {
         return "real";
       }
-      if (Object.hasOwn(this.virtuals, path6)) {
+      if (Object.hasOwn(this.virtuals, path7)) {
         return "virtual";
       }
-      if (Object.hasOwn(this.nested, path6)) {
+      if (Object.hasOwn(this.nested, path7)) {
         return "nested";
       }
-      const cleanPath = _pathToPositionalSyntax(path6);
-      if (Object.hasOwn(this.subpaths, cleanPath) || Object.hasOwn(this.subpaths, path6)) {
+      const cleanPath = _pathToPositionalSyntax(path7);
+      if (Object.hasOwn(this.subpaths, cleanPath) || Object.hasOwn(this.subpaths, path7)) {
         return "real";
       }
-      const singleNestedPath = Object.hasOwn(this.singleNestedPaths, cleanPath) || Object.hasOwn(this.singleNestedPaths, path6);
+      const singleNestedPath = Object.hasOwn(this.singleNestedPaths, cleanPath) || Object.hasOwn(this.singleNestedPaths, path7);
       if (singleNestedPath) {
         return singleNestedPath === "nested" ? "nested" : "real";
       }
-      const mapPath = getMapPath(this, path6);
+      const mapPath = getMapPath(this, path7);
       if (mapPath != null) {
         return "real";
       }
-      if (/\.\d+\.|\.\d+$/.test(path6)) {
-        return getPositionalPathType(this, path6, cleanPath);
+      if (/\.\d+\.|\.\d+$/.test(path7)) {
+        return getPositionalPathType(this, path7, cleanPath);
       }
       return "adhocOrUndefined";
     };
-    Schema.prototype.hasMixedParent = function(path6) {
-      const subpaths = path6.split(/\./g);
-      path6 = "";
+    Schema.prototype.hasMixedParent = function(path7) {
+      const subpaths = path7.split(/\./g);
+      path7 = "";
       for (let i = 0; i < subpaths.length; ++i) {
-        path6 = i > 0 ? path6 + "." + subpaths[i] : subpaths[i];
-        if (Object.hasOwn(this.paths, path6) && this.paths[path6] instanceof MongooseTypes.Mixed) {
-          return this.paths[path6];
+        path7 = i > 0 ? path7 + "." + subpaths[i] : subpaths[i];
+        if (Object.hasOwn(this.paths, path7) && this.paths[path7] instanceof MongooseTypes.Mixed) {
+          return this.paths[path7];
         }
       }
       return null;
@@ -103774,8 +103774,8 @@ var require_schema2 = __commonJS({
     Schema.prototype.setupTimestamp = function(timestamps) {
       return setupTimestamps(this, timestamps);
     };
-    function getPositionalPathType(self2, path6, cleanPath) {
-      const subpaths = path6.split(/\.(\d+)\.|\.(\d+)$/).filter(Boolean);
+    function getPositionalPathType(self2, path7, cleanPath) {
+      const subpaths = path7.split(/\.(\d+)\.|\.(\d+)$/).filter(Boolean);
       if (subpaths.length < 2) {
         return Object.hasOwn(self2.paths, subpaths[0]) ? self2.paths[subpaths[0]] : "adhocOrUndefined";
       }
@@ -103821,8 +103821,8 @@ var require_schema2 = __commonJS({
       }
       return "adhocOrUndefined";
     }
-    function getPositionalPath(self2, path6, cleanPath) {
-      getPositionalPathType(self2, path6, cleanPath);
+    function getPositionalPath(self2, path7, cleanPath) {
+      getPositionalPathType(self2, path7, cleanPath);
       return self2.subpaths[cleanPath];
     }
     Schema.prototype.queue = function(name, args) {
@@ -104103,11 +104103,11 @@ var require_schema2 = __commonJS({
         return mem[part];
       }, this.tree);
       if (options && options.applyToArray && parts.length > 1) {
-        const path6 = this.path(parts.slice(0, -1).join("."));
-        if (path6 && path6.$isMongooseArray) {
-          return path6.virtual(parts[parts.length - 1], options);
+        const path7 = this.path(parts.slice(0, -1).join("."));
+        if (path7 && path7.$isMongooseArray) {
+          return path7.virtual(parts[parts.length - 1], options);
         } else {
-          throw new MongooseError(`Path "${path6}" is not an array`);
+          throw new MongooseError(`Path "${path7}" is not an array`);
         }
       }
       return virtuals[name];
@@ -104115,22 +104115,22 @@ var require_schema2 = __commonJS({
     Schema.prototype.virtualpath = function(name) {
       return Object.hasOwn(this.virtuals, name) ? this.virtuals[name] : null;
     };
-    Schema.prototype.remove = function(path6) {
-      if (typeof path6 === "string") {
-        path6 = [path6];
+    Schema.prototype.remove = function(path7) {
+      if (typeof path7 === "string") {
+        path7 = [path7];
       }
-      if (Array.isArray(path6)) {
-        path6.forEach(function(name) {
+      if (Array.isArray(path7)) {
+        path7.forEach(function(name) {
           if (this.path(name) == null && !this.nested[name]) {
             return;
           }
           if (this.nested[name]) {
             const allKeys = Object.keys(this.paths).concat(Object.keys(this.nested));
-            for (const path7 of allKeys) {
-              if (path7.startsWith(name + ".")) {
-                delete this.paths[path7];
-                delete this.nested[path7];
-                _deletePath(this, path7);
+            for (const path8 of allKeys) {
+              if (path8.startsWith(name + ".")) {
+                delete this.paths[path8];
+                delete this.nested[path8];
+                _deletePath(this, path8);
               }
             }
             delete this.nested[name];
@@ -104153,17 +104153,17 @@ var require_schema2 = __commonJS({
       }
       delete branch[last];
     }
-    Schema.prototype.removeVirtual = function(path6) {
-      if (typeof path6 === "string") {
-        path6 = [path6];
+    Schema.prototype.removeVirtual = function(path7) {
+      if (typeof path7 === "string") {
+        path7 = [path7];
       }
-      if (Array.isArray(path6)) {
-        for (const virtual of path6) {
+      if (Array.isArray(path7)) {
+        for (const virtual of path7) {
           if (this.virtuals[virtual] == null) {
             throw new MongooseError(`Attempting to remove virtual "${virtual}" that does not exist.`);
           }
         }
-        for (const virtual of path6) {
+        for (const virtual of path7) {
           delete this.paths[virtual];
           delete this.virtuals[virtual];
           if (virtual.indexOf(".") !== -1) {
@@ -104216,12 +104216,12 @@ var require_schema2 = __commonJS({
       }, this);
       return this;
     };
-    Schema.prototype._getSchema = function(path6) {
+    Schema.prototype._getSchema = function(path7) {
       const _this = this;
-      const pathschema = _this.path(path6);
+      const pathschema = _this.path(path7);
       const resultPath = [];
       if (pathschema) {
-        pathschema.$fullPath = path6;
+        pathschema.$fullPath = path7;
         return pathschema;
       }
       function search(parts2, schema) {
@@ -104281,7 +104281,7 @@ var require_schema2 = __commonJS({
           }
         }
       }
-      const parts = path6.split(".");
+      const parts = path7.split(".");
       for (let i = 0; i < parts.length; ++i) {
         if (parts[i] === "$" || isArrayFilter(parts[i])) {
           parts[i] = "0";
@@ -104292,9 +104292,9 @@ var require_schema2 = __commonJS({
       }
       return search(parts, _this);
     };
-    Schema.prototype._getPathType = function(path6) {
+    Schema.prototype._getPathType = function(path7) {
       const _this = this;
-      const pathschema = _this.path(path6);
+      const pathschema = _this.path(path7);
       if (pathschema) {
         return "real";
       }
@@ -104329,7 +104329,7 @@ var require_schema2 = __commonJS({
         }
         return { schema: foundschema || schema, pathType: "undefined" };
       }
-      return search(path6.split("."), _this);
+      return search(path7.split("."), _this);
     };
     Schema.prototype._transformDuplicateKeyError = function _transformDuplicateKeyError(error) {
       if (!this._duplicateKeyErrorMessagesByPath) {
@@ -104361,8 +104361,8 @@ var require_schema2 = __commonJS({
     Schema.prototype.toJSONSchema = function toJSONSchema(options) {
       const useBsonType = options?.useBsonType ?? false;
       const result = useBsonType ? { required: [], properties: {} } : { type: "object", required: [], properties: {} };
-      for (const path6 of Object.keys(this.paths)) {
-        const schemaType = this.paths[path6];
+      for (const path7 of Object.keys(this.paths)) {
+        const schemaType = this.paths[path7];
         if (schemaType._presplitPath.indexOf("$*") !== -1) {
           continue;
         }
@@ -104385,7 +104385,7 @@ var require_schema2 = __commonJS({
         }
         const lastSubpath = schemaType._presplitPath[schemaType._presplitPath.length - 1];
         let isRequired = false;
-        if (path6 === "_id") {
+        if (path7 === "_id") {
           if (!jsonSchemaForPath.required) {
             jsonSchemaForPath.required = [];
           }
@@ -104484,8 +104484,8 @@ var require_applyPlugins = __commonJS({
       options = Object.assign({}, options);
       delete options.skipTopLevel;
       if (options.applyPluginsToChildSchemas !== false) {
-        for (const path6 of Object.keys(schema.paths)) {
-          const type = schema.paths[path6];
+        for (const path7 of Object.keys(schema.paths)) {
+          const type = schema.paths[path7];
           if (type.schema != null) {
             applyPlugins(type.schema, plugins, options, cacheKey);
             type.caster.prototype.$__setSchema(type.schema);
@@ -104597,17 +104597,17 @@ var require_updatedPathsByArrayFilter = __commonJS({
         return {};
       }
       const updatedPaths = modifiedPaths(update);
-      return Object.keys(updatedPaths).reduce((cur, path6) => {
-        const matches = path6.match(/\$\[[^\]]+\]/g);
+      return Object.keys(updatedPaths).reduce((cur, path7) => {
+        const matches = path7.match(/\$\[[^\]]+\]/g);
         if (matches == null) {
           return cur;
         }
         for (const match of matches) {
-          const firstMatch = path6.indexOf(match);
-          if (firstMatch !== path6.lastIndexOf(match)) {
-            throw new Error(`Path '${path6}' contains the same array filter multiple times`);
+          const firstMatch = path7.indexOf(match);
+          if (firstMatch !== path7.lastIndexOf(match)) {
+            throw new Error(`Path '${path7}' contains the same array filter multiple times`);
           }
-          cur[match.substring(2, match.length - 1)] = path6.substring(0, firstMatch - 1).replace(/\$\[[^\]]+\]/g, "0");
+          cur[match.substring(2, match.length - 1)] = path7.substring(0, firstMatch - 1).replace(/\$\[[^\]]+\]/g, "0");
         }
         return cur;
       }, {});
@@ -104623,8 +104623,8 @@ var require_getEmbeddedDiscriminatorPath2 = __commonJS({
     var get = require_get2();
     var getDiscriminatorByValue = require_getDiscriminatorByValue();
     var updatedPathsByArrayFilter = require_updatedPathsByArrayFilter();
-    module2.exports = function getEmbeddedDiscriminatorPath(schema, update, filter, path6, options) {
-      const parts = path6.indexOf(".") === -1 ? [path6] : path6.split(".");
+    module2.exports = function getEmbeddedDiscriminatorPath(schema, update, filter, path7, options) {
+      const parts = path7.indexOf(".") === -1 ? [path7] : path7.split(".");
       let schematype = null;
       let type = "adhocOrUndefined";
       filter = filter || {};
@@ -104743,16 +104743,16 @@ var require_moveImmutableProperties = __commonJS({
         const isDollarKey = key.startsWith("$");
         if (key === "$set") {
           const updatedPaths = Object.keys(update[key]);
-          for (const path6 of updatedPaths) {
-            _walkUpdatePath(schema, update[key], path6, update, ctx);
+          for (const path7 of updatedPaths) {
+            _walkUpdatePath(schema, update[key], path7, update, ctx);
           }
         } else if (!isDollarKey) {
           _walkUpdatePath(schema, update, key, update, ctx);
         }
       }
     };
-    function _walkUpdatePath(schema, op, path6, update, ctx) {
-      const schematype = schema.path(path6);
+    function _walkUpdatePath(schema, op, path7, update, ctx) {
+      const schematype = schema.path(path7);
       if (schematype == null) {
         return;
       }
@@ -104767,8 +104767,8 @@ var require_moveImmutableProperties = __commonJS({
         return;
       }
       update.$setOnInsert = update.$setOnInsert || {};
-      update.$setOnInsert[path6] = op[path6];
-      delete op[path6];
+      update.$setOnInsert[path7] = op[path7];
+      delete op[path7];
     }
   }
 });
@@ -104778,15 +104778,15 @@ var require_setDottedPath = __commonJS({
   "node_modules/mongoose/lib/helpers/path/setDottedPath.js"(exports2, module2) {
     "use strict";
     var specialProperties = require_specialProperties();
-    module2.exports = function setDottedPath(obj, path6, val) {
-      if (path6.indexOf(".") === -1) {
-        if (specialProperties.has(path6)) {
+    module2.exports = function setDottedPath(obj, path7, val) {
+      if (path7.indexOf(".") === -1) {
+        if (specialProperties.has(path7)) {
           return;
         }
-        obj[path6] = val;
+        obj[path7] = val;
         return;
       }
-      const parts = path6.split(".");
+      const parts = path7.split(".");
       const last = parts.pop();
       let cur = obj;
       for (const part of parts) {
@@ -105171,13 +105171,13 @@ var require_castUpdate = __commonJS({
       $set: 1,
       $setOnInsert: 1
     };
-    function castUpdateVal(schema, val, op, $conditional, context, path6) {
+    function castUpdateVal(schema, val, op, $conditional, context, path7) {
       if (!schema) {
         if (op in numberOps) {
           try {
             return castNumber(val);
           } catch (err) {
-            throw new CastError("number", val, path6);
+            throw new CastError("number", val, path7);
           }
         }
         return val;
@@ -105310,8 +105310,8 @@ var require_setDefaultsOnInsert = __commonJS({
       const paths = Object.keys(filter);
       const numPaths = paths.length;
       for (let i = 0; i < numPaths; ++i) {
-        const path6 = paths[i];
-        const condition = filter[path6];
+        const path7 = paths[i];
+        const condition = filter[path7];
         if (condition && typeof condition === "object") {
           const conditionKeys = Object.keys(condition);
           const numConditionKeys = conditionKeys.length;
@@ -105326,14 +105326,14 @@ var require_setDefaultsOnInsert = __commonJS({
             continue;
           }
         }
-        updatedKeys[path6] = true;
-        if (path6.indexOf(".") === -1) {
+        updatedKeys[path7] = true;
+        if (path7.indexOf(".") === -1) {
           continue;
         }
-        const pieces = schema.paths[path6] ? (
+        const pieces = schema.paths[path7] ? (
           // If the SchemaType already split for us, use that to avoid the extra overhead
-          schema.paths[path6].splitPath()
-        ) : path6.split(".");
+          schema.paths[path7].splitPath()
+        ) : path7.split(".");
         let cur = pieces[0];
         for (let j = 1; j < pieces.length; ++j) {
           updatedKeys[cur] = true;
@@ -105343,7 +105343,7 @@ var require_setDefaultsOnInsert = __commonJS({
       if (options && options.overwrite && !hasDollarUpdate) {
         return castedDoc;
       }
-      schema.eachPath(function(path6, schemaType) {
+      schema.eachPath(function(path7, schemaType) {
         if (schemaType.path === "_id" && schemaType.options.auto) {
           return;
         }
@@ -105355,20 +105355,20 @@ var require_setDefaultsOnInsert = __commonJS({
         if (pathPieces.includes("$*")) {
           return;
         }
-        if (isModified(castedDoc, updatedKeys, path6, pathPieces, hasDollarUpdate)) {
+        if (isModified(castedDoc, updatedKeys, path7, pathPieces, hasDollarUpdate)) {
           return;
         }
         castedDoc = castedDoc || {};
         castedDoc.$setOnInsert = castedDoc.$setOnInsert || {};
-        if (get(castedDoc, path6) == null) {
-          castedDoc.$setOnInsert[path6] = def;
+        if (get(castedDoc, path7) == null) {
+          castedDoc.$setOnInsert[path7] = def;
         }
-        updatedValues[path6] = def;
+        updatedValues[path7] = def;
       });
       return castedDoc;
     };
-    function isModified(castedDoc, updatedKeys, path6, pathPieces, hasDollarUpdate) {
-      if (updatedKeys[path6]) {
+    function isModified(castedDoc, updatedKeys, path7, pathPieces, hasDollarUpdate) {
+      if (updatedKeys[path7]) {
         return true;
       }
       let cur = pathPieces[0];
@@ -105381,13 +105381,13 @@ var require_setDefaultsOnInsert = __commonJS({
       if (hasDollarUpdate) {
         for (const key in castedDoc) {
           if (key.charAt(0) === "$") {
-            if (pathExistsInUpdate(castedDoc[key], path6, pathPieces)) {
+            if (pathExistsInUpdate(castedDoc[key], path7, pathPieces)) {
               return true;
             }
           }
         }
       } else {
-        if (pathExistsInUpdate(castedDoc, path6, pathPieces)) {
+        if (pathExistsInUpdate(castedDoc, path7, pathPieces)) {
           return true;
         }
       }
@@ -106010,10 +106010,10 @@ var require_connection2 = __commonJS({
         });
       });
     };
-    async function _wrapUserTransaction(fn, session, mongoose53) {
+    async function _wrapUserTransaction(fn, session, mongoose56) {
       try {
-        const res = mongoose53.transactionAsyncLocalStorage == null ? await fn(session) : await new Promise((resolve) => {
-          mongoose53.transactionAsyncLocalStorage.run(
+        const res = mongoose56.transactionAsyncLocalStorage == null ? await fn(session) : await new Promise((resolve) => {
+          mongoose56.transactionAsyncLocalStorage.run(
             { session },
             () => resolve(fn(session))
           );
@@ -106036,20 +106036,20 @@ var require_connection2 = __commonJS({
         if (state.modifiedPaths.length > 0 && doc.$__.activePaths.states.modify == null) {
           doc.$__.activePaths.states.modify = {};
         }
-        for (const path6 of state.modifiedPaths) {
-          const currentState = doc.$__.activePaths.paths[path6];
+        for (const path7 of state.modifiedPaths) {
+          const currentState = doc.$__.activePaths.paths[path7];
           if (currentState != null) {
-            delete doc.$__.activePaths[currentState][path6];
+            delete doc.$__.activePaths[currentState][path7];
           }
-          doc.$__.activePaths.paths[path6] = "modify";
-          doc.$__.activePaths.states.modify[path6] = true;
+          doc.$__.activePaths.paths[path7] = "modify";
+          doc.$__.activePaths.states.modify[path7] = true;
         }
-        for (const path6 of state.atomics.keys()) {
-          const val = doc.$__getValue(path6);
+        for (const path7 of state.atomics.keys()) {
+          const val = doc.$__getValue(path7);
           if (val == null) {
             continue;
           }
-          val[arrayAtomicsSymbol] = state.atomics.get(path6);
+          val[arrayAtomicsSymbol] = state.atomics.get(path7);
         }
       }
     }
@@ -107783,12 +107783,12 @@ var require_getPath = __commonJS({
   "node_modules/mongoose/lib/helpers/schema/getPath.js"(exports2, module2) {
     "use strict";
     var numberRE = /^\d+$/;
-    module2.exports = function getPath(schema, path6, discriminatorValueMap) {
-      let schematype = schema.path(path6);
+    module2.exports = function getPath(schema, path7, discriminatorValueMap) {
+      let schematype = schema.path(path7);
       if (schematype != null) {
         return schematype;
       }
-      const pieces = path6.split(".");
+      const pieces = path7.split(".");
       let cur = "";
       let isArray = false;
       for (const piece of pieces) {
@@ -108425,14 +108425,14 @@ var require_mquery = __commonJS({
     };
     Query.prototype.equals = function equals(val) {
       this._ensurePath("equals");
-      const path6 = this._path;
-      this._conditions[path6] = val;
+      const path7 = this._path;
+      this._conditions[path7] = val;
       return this;
     };
     Query.prototype.eq = function eq(val) {
       this._ensurePath("eq");
-      const path6 = this._path;
-      this._conditions[path6] = val;
+      const path7 = this._path;
+      this._conditions[path7] = val;
       return this;
     };
     Query.prototype.or = function or(array) {
@@ -108455,81 +108455,81 @@ var require_mquery = __commonJS({
     };
     "gt gte lt lte ne in nin all regex size maxDistance minDistance".split(" ").forEach(function($conditional) {
       Query.prototype[$conditional] = function() {
-        let path6, val;
+        let path7, val;
         if (1 === arguments.length) {
           this._ensurePath($conditional);
           val = arguments[0];
-          path6 = this._path;
+          path7 = this._path;
         } else {
           val = arguments[1];
-          path6 = arguments[0];
+          path7 = arguments[0];
         }
-        const conds = this._conditions[path6] === null || typeof this._conditions[path6] === "object" ? this._conditions[path6] : this._conditions[path6] = {};
+        const conds = this._conditions[path7] === null || typeof this._conditions[path7] === "object" ? this._conditions[path7] : this._conditions[path7] = {};
         conds["$" + $conditional] = val;
         return this;
       };
     });
     Query.prototype.mod = function() {
-      let val, path6;
+      let val, path7;
       if (1 === arguments.length) {
         this._ensurePath("mod");
         val = arguments[0];
-        path6 = this._path;
+        path7 = this._path;
       } else if (2 === arguments.length && !Array.isArray(arguments[1])) {
         this._ensurePath("mod");
         val = [arguments[0], arguments[1]];
-        path6 = this._path;
+        path7 = this._path;
       } else if (3 === arguments.length) {
         val = [arguments[1], arguments[2]];
-        path6 = arguments[0];
+        path7 = arguments[0];
       } else {
         val = arguments[1];
-        path6 = arguments[0];
+        path7 = arguments[0];
       }
-      const conds = this._conditions[path6] || (this._conditions[path6] = {});
+      const conds = this._conditions[path7] || (this._conditions[path7] = {});
       conds.$mod = val;
       return this;
     };
     Query.prototype.exists = function() {
-      let path6, val;
+      let path7, val;
       if (0 === arguments.length) {
         this._ensurePath("exists");
-        path6 = this._path;
+        path7 = this._path;
         val = true;
       } else if (1 === arguments.length) {
         if ("boolean" === typeof arguments[0]) {
           this._ensurePath("exists");
-          path6 = this._path;
+          path7 = this._path;
           val = arguments[0];
         } else {
-          path6 = arguments[0];
+          path7 = arguments[0];
           val = true;
         }
       } else if (2 === arguments.length) {
-        path6 = arguments[0];
+        path7 = arguments[0];
         val = arguments[1];
       }
-      const conds = this._conditions[path6] || (this._conditions[path6] = {});
+      const conds = this._conditions[path7] || (this._conditions[path7] = {});
       conds.$exists = val;
       return this;
     };
     Query.prototype.elemMatch = function() {
       if (null == arguments[0])
         throw new TypeError("Invalid argument");
-      let fn, path6, criteria;
+      let fn, path7, criteria;
       if ("function" === typeof arguments[0]) {
         this._ensurePath("elemMatch");
-        path6 = this._path;
+        path7 = this._path;
         fn = arguments[0];
       } else if (utils.isObject(arguments[0])) {
         this._ensurePath("elemMatch");
-        path6 = this._path;
+        path7 = this._path;
         criteria = arguments[0];
       } else if ("function" === typeof arguments[1]) {
-        path6 = arguments[0];
+        path7 = arguments[0];
         fn = arguments[1];
       } else if (arguments[1] && utils.isObject(arguments[1])) {
-        path6 = arguments[0];
+        path7 = arguments[0];
         criteria = arguments[1];
       } else {
         throw new TypeError("Invalid argument");
@@ -108539,7 +108539,7 @@ var require_mquery = __commonJS({
         fn(criteria);
         criteria = criteria._conditions;
       }
-      const conds = this._conditions[path6] || (this._conditions[path6] = {});
+      const conds = this._conditions[path7] || (this._conditions[path7] = {});
       conds.$elemMatch = criteria;
       return this;
     };
@@ -108568,50 +108568,50 @@ var require_mquery = __commonJS({
       throw new TypeError("Invalid argument");
     };
     Query.prototype.box = function() {
-      let path6, box;
+      let path7, box;
       if (3 === arguments.length) {
-        path6 = arguments[0];
+        path7 = arguments[0];
         box = [arguments[1], arguments[2]];
       } else if (2 === arguments.length) {
         this._ensurePath("box");
-        path6 = this._path;
+        path7 = this._path;
         box = [arguments[0], arguments[1]];
       } else {
         throw new TypeError("Invalid argument");
       }
-      const conds = this._conditions[path6] || (this._conditions[path6] = {});
+      const conds = this._conditions[path7] || (this._conditions[path7] = {});
       conds[this._geoComparison || $withinCmd] = { $box: box };
       return this;
     };
     Query.prototype.polygon = function() {
-      let val, path6;
+      let val, path7;
       if ("string" == typeof arguments[0]) {
         val = Array.from(arguments);
-        path6 = val.shift();
+        path7 = val.shift();
       } else {
         this._ensurePath("polygon");
-        path6 = this._path;
+        path7 = this._path;
         val = Array.from(arguments);
       }
-      const conds = this._conditions[path6] || (this._conditions[path6] = {});
+      const conds = this._conditions[path7] || (this._conditions[path7] = {});
       conds[this._geoComparison || $withinCmd] = { $polygon: val };
       return this;
     };
     Query.prototype.circle = function() {
-      let path6, val;
+      let path7, val;
       if (1 === arguments.length) {
         this._ensurePath("circle");
-        path6 = this._path;
+        path7 = this._path;
         val = arguments[0];
       } else if (2 === arguments.length) {
-        path6 = arguments[0];
+        path7 = arguments[0];
         val = arguments[1];
       } else {
         throw new TypeError("Invalid argument");
       }
       if (!("radius" in val && val.center))
         throw new Error("center and radius are required");
-      const conds = this._conditions[path6] || (this._conditions[path6] = {});
+      const conds = this._conditions[path7] || (this._conditions[path7] = {});
       const type = val.spherical ? "$centerSphere" : "$center";
       const wKey = this._geoComparison || $withinCmd;
       conds[wKey] = {};
@@ -108621,16 +108621,16 @@ var require_mquery = __commonJS({
       return this;
     };
     Query.prototype.near = function near() {
-      let path6, val;
+      let path7, val;
       this._geoComparison = "$near";
       if (0 === arguments.length) {
         return this;
       } else if (1 === arguments.length) {
         this._ensurePath("near");
-        path6 = this._path;
+        path7 = this._path;
         val = arguments[0];
       } else if (2 === arguments.length) {
-        path6 = arguments[0];
+        path7 = arguments[0];
         val = arguments[1];
       } else {
         throw new TypeError("Invalid argument");
@@ -108638,7 +108638,7 @@ var require_mquery = __commonJS({
       if (!val.center) {
         throw new Error("center is required");
       }
-      const conds = this._conditions[path6] || (this._conditions[path6] = {});
+      const conds = this._conditions[path7] || (this._conditions[path7] = {});
       const type = val.spherical ? "$nearSphere" : "$near";
       if (Array.isArray(val.center)) {
         conds[type] = val.center;
@@ -108678,10 +108678,10 @@ var require_mquery = __commonJS({
       if (!("$within" == this._geoComparison || "$geoWithin" == this._geoComparison || "$near" == this._geoComparison || "$geoIntersects" == this._geoComparison)) {
         throw new Error("geometry() must come after `within()`, `intersects()`, or `near()");
       }
-      let val, path6;
+      let val, path7;
       if (1 === arguments.length) {
         this._ensurePath("geometry");
-        path6 = this._path;
+        path7 = this._path;
         val = arguments[0];
       } else {
         throw new TypeError("Invalid argument");
@@ -108689,7 +108689,7 @@ var require_mquery = __commonJS({
       if (!(val.type && Array.isArray(val.coordinates))) {
         throw new TypeError("Invalid argument");
       }
-      const conds = this._conditions[path6] || (this._conditions[path6] = {});
+      const conds = this._conditions[path7] || (this._conditions[path7] = {});
       conds[this._geoComparison] = { $geometry: val };
       return this;
     };
@@ -108728,7 +108728,7 @@ var require_mquery = __commonJS({
       if (0 === arguments.length)
         return this;
       this._validate("slice");
-      let path6, val;
+      let path7, val;
       if (1 === arguments.length) {
         const arg = arguments[0];
         if (typeof arg === "object" && !Array.isArray(arg)) {
@@ -108740,23 +108740,23 @@ var require_mquery = __commonJS({
           return this;
         }
         this._ensurePath("slice");
-        path6 = this._path;
+        path7 = this._path;
         val = arguments[0];
       } else if (2 === arguments.length) {
         if ("number" === typeof arguments[0]) {
           this._ensurePath("slice");
-          path6 = this._path;
+          path7 = this._path;
           val = [arguments[0], arguments[1]];
         } else {
-          path6 = arguments[0];
+          path7 = arguments[0];
           val = arguments[1];
         }
       } else if (3 === arguments.length) {
-        path6 = arguments[0];
+        path7 = arguments[0];
         val = [arguments[1], arguments[2]];
       }
       const myFields = this._fields || (this._fields = {});
-      myFields[path6] = { $slice: val };
+      myFields[path7] = { $slice: val };
       return this;
     };
     Query.prototype.sort = function(arg) {
@@ -109440,13 +109440,13 @@ var require_selectPopulatedFields = __commonJS({
       const paths = Object.keys(populateOptions);
       userProvidedFields = userProvidedFields || {};
       if (isInclusive(fields)) {
-        for (const path6 of paths) {
-          if (!isPathInFields(userProvidedFields, path6)) {
-            fields[path6] = 1;
-          } else if (userProvidedFields[path6] === 0) {
-            delete fields[path6];
+        for (const path7 of paths) {
+          if (!isPathInFields(userProvidedFields, path7)) {
+            fields[path7] = 1;
+          } else if (userProvidedFields[path7] === 0) {
+            delete fields[path7];
           }
-          const refPath = populateOptions[path6]?.refPath;
+          const refPath = populateOptions[path7]?.refPath;
           if (typeof refPath === "string") {
             if (!isPathInFields(userProvidedFields, refPath)) {
               fields[refPath] = 1;
@@ -109456,19 +109456,19 @@ var require_selectPopulatedFields = __commonJS({
           }
         }
       } else if (isExclusive(fields)) {
-        for (const path6 of paths) {
-          if (userProvidedFields[path6] == null) {
-            delete fields[path6];
+        for (const path7 of paths) {
+          if (userProvidedFields[path7] == null) {
+            delete fields[path7];
           }
-          const refPath = populateOptions[path6]?.refPath;
+          const refPath = populateOptions[path7]?.refPath;
           if (typeof refPath === "string" && userProvidedFields[refPath] == null) {
             delete fields[refPath];
           }
         }
       }
     };
-    function isPathInFields(userProvidedFields, path6) {
-      const pieces = path6.split(".");
+    function isPathInFields(userProvidedFields, path7) {
+      const pieces = path7.split(".");
       const len = pieces.length;
       let cur = pieces[0];
       for (let i = 1; i < len; ++i) {
@@ -109594,8 +109594,8 @@ var require_updateValidators = __commonJS({
             });
           } else {
             validatorsToExecute.push(function(callback2) {
-              for (const path6 of alreadyValidated) {
-                if (updates[i2].startsWith(path6 + ".")) {
+              for (const path7 of alreadyValidated) {
+                if (updates[i2].startsWith(path7 + ".")) {
                   return callback2(null);
                 }
               }
@@ -109898,7 +109898,7 @@ var require_query = __commonJS({
         return this;
       }
       this._validate("slice");
-      let path6;
+      let path7;
       let val;
       if (arguments.length === 1) {
         const arg = arguments[0];
@@ -109911,23 +109911,23 @@ var require_query = __commonJS({
           return this;
         }
         this._ensurePath("slice");
-        path6 = this._path;
+        path7 = this._path;
         val = arguments[0];
       } else if (arguments.length === 2) {
         if ("number" === typeof arguments[0]) {
           this._ensurePath("slice");
-          path6 = this._path;
+          path7 = this._path;
           val = [arguments[0], arguments[1]];
         } else {
-          path6 = arguments[0];
+          path7 = arguments[0];
           val = arguments[1];
         }
       } else if (arguments.length === 3) {
-        path6 = arguments[0];
+        path7 = arguments[0];
         val = [arguments[1], arguments[2]];
       }
       const p = {};
-      p[path6] = { $slice: val };
+      p[path7] = { $slice: val };
       this.select(p);
       return this;
     };
@@ -109939,23 +109939,23 @@ var require_query = __commonJS({
     };
     Query.prototype.mod = function() {
       let val;
-      let path6;
+      let path7;
       if (arguments.length === 1) {
         this._ensurePath("mod");
         val = arguments[0];
-        path6 = this._path;
+        path7 = this._path;
       } else if (arguments.length === 2 && !Array.isArray(arguments[1])) {
         this._ensurePath("mod");
         val = [arguments[0], arguments[1]];
-        path6 = this._path;
+        path7 = this._path;
       } else if (arguments.length === 3) {
         val = [arguments[1], arguments[2]];
-        path6 = arguments[0];
+        path7 = arguments[0];
       } else {
         val = arguments[1];
-        path6 = arguments[0];
+        path7 = arguments[0];
       }
-      const conds = this._conditions[path6] || (this._conditions[path6] = {});
+      const conds = this._conditions[path7] || (this._conditions[path7] = {});
       conds.$mod = val;
       return this;
     };
@@ -110377,36 +110377,36 @@ var require_query = __commonJS({
       this._mongooseOptions.lean = arguments.length ? v : true;
       return this;
     };
-    Query.prototype.set = function(path6, val) {
-      if (typeof path6 === "object") {
-        const keys = Object.keys(path6);
+    Query.prototype.set = function(path7, val) {
+      if (typeof path7 === "object") {
+        const keys = Object.keys(path7);
         for (const key of keys) {
-          this.set(key, path6[key]);
+          this.set(key, path7[key]);
         }
         return this;
       }
       this._update = this._update || {};
-      if (path6 in this._update) {
-        delete this._update[path6];
+      if (path7 in this._update) {
+        delete this._update[path7];
       }
       this._update.$set = this._update.$set || {};
-      this._update.$set[path6] = val;
+      this._update.$set[path7] = val;
       return this;
     };
-    Query.prototype.get = function get(path6) {
+    Query.prototype.get = function get(path7) {
       const update = this._update;
       if (update == null) {
         return void 0;
       }
       const $set = update.$set;
       if ($set == null) {
-        return update[path6];
+        return update[path7];
       }
-      if (utils.hasUserDefinedProperty(update, path6)) {
-        return update[path6];
+      if (utils.hasUserDefinedProperty(update, path7)) {
+        return update[path7];
       }
-      if (utils.hasUserDefinedProperty($set, path6)) {
-        return $set[path6];
+      if (utils.hasUserDefinedProperty($set, path7)) {
+        return $set[path7];
       }
       return void 0;
     };
@@ -111190,11 +111190,11 @@ var require_query = __commonJS({
       }
       return def;
     }
-    function _completeOneLean(schema, doc, path6, res, opts, callback) {
+    function _completeOneLean(schema, doc, path7, res, opts, callback) {
       if (opts.lean && typeof opts.lean.transform === "function") {
         opts.lean.transform(doc);
         for (let i = 0; i < schema.childSchemas.length; i++) {
-          const childPath = path6 ? path6 + "." + schema.childSchemas[i].model.path : schema.childSchemas[i].model.path;
+          const childPath = path7 ? path7 + "." + schema.childSchemas[i].model.path : schema.childSchemas[i].model.path;
           const _schema = schema.childSchemas[i].schema;
           const obj = mpath.get(childPath, doc);
           if (obj == null) {
@@ -111220,13 +111220,13 @@ var require_query = __commonJS({
       }
       return callback(null, doc);
     }
-    function _completeManyLean(schema, docs, path6, opts) {
+    function _completeManyLean(schema, docs, path7, opts) {
       if (opts.lean && typeof opts.lean.transform === "function") {
         for (const doc of docs) {
           opts.lean.transform(doc);
         }
         for (let i = 0; i < schema.childSchemas.length; i++) {
-          const childPath = path6 ? path6 + "." + schema.childSchemas[i].model.path : schema.childSchemas[i].model.path;
+          const childPath = path7 ? path7 + "." + schema.childSchemas[i].model.path : schema.childSchemas[i].model.path;
           const _schema = schema.childSchemas[i].schema;
           let doc = mpath.get(childPath, docs);
           if (doc == null) {
@@ -111482,8 +111482,8 @@ var require_query = __commonJS({
       }
       return err;
     }
-    Query.prototype.isPathSelectedInclusive = function(path6) {
-      return isPathSelectedInclusive(this._fields, path6);
+    Query.prototype.isPathSelectedInclusive = function(path7) {
+      return isPathSelectedInclusive(this._fields, path7);
     };
     Query.prototype.exec = async function exec(op) {
       if (typeof op === "function" || arguments.length >= 2 && typeof arguments[1] === "function") {
@@ -111663,9 +111663,9 @@ var require_query = __commonJS({
       }
       const pop = opts.populate;
       for (const populateOptions of res) {
-        const path6 = populateOptions.path;
-        if (pop[path6] && pop[path6].populate && populateOptions.populate) {
-          populateOptions.populate = pop[path6].populate.concat(populateOptions.populate);
+        const path7 = populateOptions.path;
+        if (pop[path7] && pop[path7].populate && populateOptions.populate) {
+          populateOptions.populate = pop[path7].populate.concat(populateOptions.populate);
         }
         pop[populateOptions.path] = populateOptions;
       }
@@ -111674,12 +111674,12 @@ var require_query = __commonJS({
     Query.prototype.getPopulatedPaths = function getPopulatedPaths() {
       const obj = this._mongooseOptions.populate || {};
       const ret = Object.keys(obj);
-      for (const path6 of Object.keys(obj)) {
-        const pop = obj[path6];
+      for (const path7 of Object.keys(obj)) {
+        const pop = obj[path7];
         if (!Array.isArray(pop.populate)) {
           continue;
         }
-        _getPopulatedPaths(ret, pop.populate, path6 + ".");
+        _getPopulatedPaths(ret, pop.populate, path7 + ".");
       }
       return ret;
     };
@@ -112660,14 +112660,14 @@ var require_applyDefaultsToPOJO = __commonJS({
         let curPath = "";
         const p = paths[i];
         const type = schema.paths[p];
-        const path6 = type.splitPath();
-        const len = path6.length;
+        const path7 = type.splitPath();
+        const len = path7.length;
         let doc_ = doc;
         for (let j = 0; j < len; ++j) {
           if (doc_ == null) {
             break;
           }
-          const piece = path6[j];
+          const piece = path7[j];
           curPath += (!curPath.length ? "" : ".") + piece;
           if (j === len - 1) {
             if (typeof doc_[piece] !== "undefined") {
@@ -112709,8 +112709,8 @@ var require_applyEmbeddedDiscriminators = __commonJS({
         return;
       }
       seen.add(schema);
-      for (const path6 of Object.keys(schema.paths)) {
-        const schemaType = schema.paths[path6];
+      for (const path7 of Object.keys(schema.paths)) {
+        const schemaType = schema.paths[path7];
         if (!schemaType.schema) {
           continue;
         }
@@ -114547,8 +114547,8 @@ var require_getSchemaTypes = __commonJS({
     var leanPopulateMap = require_leanPopulateMap();
     var mpath = require_mpath();
     var populateModelSymbol = require_symbols().populateModelSymbol;
-    module2.exports = function getSchemaTypes(model, schema, doc, path6) {
-      const pathschema = schema.path(path6);
+    module2.exports = function getSchemaTypes(model, schema, doc, path7) {
+      const pathschema = schema.path(path7);
       const topLevelDoc = doc;
       if (pathschema) {
         return pathschema;
@@ -114561,7 +114561,7 @@ var require_getSchemaTypes = __commonJS({
         } else if (model.discriminators != null) {
           return Object.keys(model.discriminators).reduce((arr, name) => {
             const disc = model.discriminators[name];
-            return arr.concat(getSchemaTypes(disc, disc.schema, null, path6));
+            return arr.concat(getSchemaTypes(disc, disc.schema, null, path7));
           }, []);
         }
       }
@@ -114703,7 +114703,7 @@ var require_getSchemaTypes = __commonJS({
           return foundschema;
         }
       }
-      const parts = path6.split(".");
+      const parts = path7.split(".");
       for (let i = 0; i < parts.length; ++i) {
         if (parts[i] === "$") {
           parts[i] = "0";
@@ -115512,15 +115512,15 @@ var require_parallelLimit = __commonJS({
 var require_pushNestedArrayPaths = __commonJS({
   "node_modules/mongoose/lib/helpers/model/pushNestedArrayPaths.js"(exports2, module2) {
     "use strict";
-    module2.exports = function pushNestedArrayPaths(paths, nestedArray, path6) {
+    module2.exports = function pushNestedArrayPaths(paths, nestedArray, path7) {
       if (nestedArray == null) {
         return;
       }
       for (let i = 0; i < nestedArray.length; ++i) {
         if (Array.isArray(nestedArray[i])) {
-          pushNestedArrayPaths(paths, nestedArray[i], path6 + "." + i);
+          pushNestedArrayPaths(paths, nestedArray[i], path7 + "." + i);
         } else {
-          paths.push(path6 + "." + i);
+          paths.push(path7 + "." + i);
         }
       }
     };
@@ -116657,7 +116657,7 @@ var require_model = __commonJS({
       }
       return mq.distinct(field, conditions);
     };
-    Model.where = function where(path6, val) {
+    Model.where = function where(path7, val) {
       _checkContext(this, "where");
       void val;
       const mq = new this.Query({}, {}, this, this.$__collection).find({});
@@ -117377,25 +117377,25 @@ var require_model = __commonJS({
         schema = getSchemaDiscriminatorByValue(schema, obj[discriminatorKey]) || schema;
       }
       const paths = Object.keys(schema.paths);
-      for (const path6 of paths) {
-        const schemaType = schema.path(path6);
+      for (const path7 of paths) {
+        const schemaType = schema.path(path7);
         if (!schemaType || !schemaType.$isMongooseArray) {
           continue;
         }
-        const val = get(obj, path6);
-        pushNestedArrayPaths(paths, val, path6);
+        const val = get(obj, path7);
+        pushNestedArrayPaths(paths, val, path7);
       }
       let error = null;
-      for (const path6 of paths) {
-        const schemaType = schema.path(path6);
+      for (const path7 of paths) {
+        const schemaType = schema.path(path7);
         if (schemaType == null) {
           continue;
         }
-        let val = get(obj, path6, void 0);
+        let val = get(obj, path7, void 0);
         if (val == null) {
           continue;
         }
-        const pieces = path6.indexOf(".") === -1 ? [path6] : path6.split(".");
+        const pieces = path7.indexOf(".") === -1 ? [path7] : path7.split(".");
         let cur = ret;
         for (let i = 0; i < pieces.length - 1; ++i) {
           if (cur[pieces[i]] == null) {
@@ -117409,7 +117409,7 @@ var require_model = __commonJS({
             if (!castNonArraysOption) {
               if (!options.ignoreCastErrors) {
                 error = error || new ValidationError();
-                error.addError(path6, new ObjectExpectedError(path6, val));
+                error.addError(path7, new ObjectExpectedError(path7, val));
               }
             } else {
               cur[pieces[pieces.length - 1]] = [
@@ -117425,7 +117425,7 @@ var require_model = __commonJS({
           } catch (err) {
             if (!options.ignoreCastErrors) {
               error = error || new ValidationError();
-              error.addError(path6, err);
+              error.addError(path7, err);
             }
             continue;
           }
@@ -117438,7 +117438,7 @@ var require_model = __commonJS({
         } catch (err) {
           if (!options.ignoreCastErrors) {
             error = error || new ValidationError();
-            error.addError(path6, err);
+            error.addError(path7, err);
           }
           continue;
         }
@@ -117596,13 +117596,13 @@ var require_model = __commonJS({
           return _pathsToValidate.has(p);
         });
       }
-      for (const path6 of paths) {
-        const schemaType = schema.path(path6);
+      for (const path7 of paths) {
+        const schemaType = schema.path(path7);
         if (!schemaType || !schemaType.$isMongooseArray || schemaType.$isMongooseDocumentArray) {
           continue;
         }
-        const val = get(obj, path6);
-        pushNestedArrayPaths(paths, val, path6);
+        const val = get(obj, path7);
+        pushNestedArrayPaths(paths, val, path7);
       }
       let error = null;
       paths = new Set(paths);
@@ -117619,25 +117619,25 @@ var require_model = __commonJS({
         if (remaining === 0) {
           return settle();
         }
-        for (const path6 of paths) {
-          const schemaType = schema.path(path6);
+        for (const path7 of paths) {
+          const schemaType = schema.path(path7);
           if (schemaType == null) {
             _checkDone();
             continue;
           }
-          const pieces = path6.indexOf(".") === -1 ? [path6] : path6.split(".");
+          const pieces = path7.indexOf(".") === -1 ? [path7] : path7.split(".");
           let cur = obj;
           for (let i = 0; i < pieces.length - 1; ++i) {
             cur = cur[pieces[i]];
           }
-          const val = get(obj, path6, void 0);
+          const val = get(obj, path7, void 0);
           schemaType.doValidate(val, (err) => {
             if (err) {
               error = error || new ValidationError();
-              error.addError(path6, err);
+              error.addError(path7, err);
             }
             _checkDone();
-          }, context, { path: path6 });
+          }, context, { path: path7 });
         }
         function settle() {
           if (error) {
@@ -117663,13 +117663,13 @@ var require_model = __commonJS({
         return docs;
       }
       if (paths.find((p) => p.ordered)) {
-        for (const path6 of paths) {
-          await _populatePath(this, docs, path6);
+        for (const path7 of paths) {
+          await _populatePath(this, docs, path7);
         }
       } else {
         const promises = [];
-        for (const path6 of paths) {
-          promises.push(_populatePath(this, docs, path6));
+        for (const path7 of paths) {
+          promises.push(_populatePath(this, docs, path7));
         }
         await Promise.all(promises);
       }
@@ -118500,7 +118500,7 @@ var require_mongoose = __commonJS({
     Mongoose.prototype.ConnectionStates = STATES;
     Mongoose.prototype.driver = driver;
     Mongoose.prototype.setDriver = function setDriver(driver2) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose53;
+      const _mongoose = this instanceof Mongoose ? this : mongoose56;
       if (_mongoose.__driver === driver2) {
         return _mongoose;
       }
@@ -118518,7 +118518,7 @@ var require_mongoose = __commonJS({
         }
       }
       if (driver2.SchemaTypes != null) {
-        Object.assign(mongoose53.Schema.Types, driver2.SchemaTypes);
+        Object.assign(mongoose56.Schema.Types, driver2.SchemaTypes);
       }
       const Connection = driver2.Connection;
       const oldDefaultConnection = _mongoose.connections[0];
@@ -118536,7 +118536,7 @@ var require_mongoose = __commonJS({
       return _mongoose;
     };
     Mongoose.prototype.set = function getsetOptions(key, value) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose53;
+      const _mongoose = this instanceof Mongoose ? this : mongoose56;
       if (arguments.length === 1 && typeof key !== "object") {
         if (VALID_OPTIONS.indexOf(key) === -1) {
           const error2 = new SetOptionError();
@@ -118597,7 +118597,7 @@ var require_mongoose = __commonJS({
     };
     Mongoose.prototype.get = Mongoose.prototype.set;
     Mongoose.prototype.createConnection = function createConnection(uri, options) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose53;
+      const _mongoose = this instanceof Mongoose ? this : mongoose56;
       const Connection = _mongoose.__driver.Connection;
       const conn = new Connection(_mongoose);
       _mongoose.connections.push(conn);
@@ -118612,7 +118612,7 @@ var require_mongoose = __commonJS({
       if (typeof options === "function" || arguments.length >= 3 && typeof arguments[2] === "function") {
         throw new MongooseError("Mongoose.prototype.connect() no longer accepts a callback");
       }
-      const _mongoose = this instanceof Mongoose ? this : mongoose53;
+      const _mongoose = this instanceof Mongoose ? this : mongoose56;
       if (_mongoose.connection == null) {
         _createDefaultConnection(_mongoose);
       }
@@ -118623,7 +118623,7 @@ var require_mongoose = __commonJS({
       if (arguments.length >= 1 && typeof arguments[0] === "function") {
         throw new MongooseError("Mongoose.prototype.disconnect() no longer accepts a callback");
       }
-      const _mongoose = this instanceof Mongoose ? this : mongoose53;
+      const _mongoose = this instanceof Mongoose ? this : mongoose56;
       const remaining = _mongoose.connections.length;
       if (remaining <= 0) {
         return;
@@ -118631,18 +118631,18 @@ var require_mongoose = __commonJS({
       await Promise.all(_mongoose.connections.map((conn) => conn.close()));
     };
     Mongoose.prototype.startSession = function startSession() {
-      const _mongoose = this instanceof Mongoose ? this : mongoose53;
+      const _mongoose = this instanceof Mongoose ? this : mongoose56;
       return _mongoose.connection.startSession.apply(_mongoose.connection, arguments);
     };
     Mongoose.prototype.pluralize = function pluralize(fn) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose53;
+      const _mongoose = this instanceof Mongoose ? this : mongoose56;
       if (arguments.length > 0) {
         _mongoose._pluralize = fn;
       }
       return _mongoose._pluralize;
     };
     Mongoose.prototype.model = function model(name, schema, collection, options) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose53;
+      const _mongoose = this instanceof Mongoose ? this : mongoose56;
       if (typeof schema === "string") {
         collection = schema;
         schema = false;
@@ -118690,7 +118690,7 @@ var require_mongoose = __commonJS({
       return model2;
     };
     Mongoose.prototype._model = function _model(name, schema, collection, options) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose53;
+      const _mongoose = this instanceof Mongoose ? this : mongoose56;
       let model;
       if (typeof name === "function") {
         model = name;
@@ -118729,25 +118729,25 @@ var require_mongoose = __commonJS({
       return model;
     };
     Mongoose.prototype.deleteModel = function deleteModel(name) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose53;
+      const _mongoose = this instanceof Mongoose ? this : mongoose56;
       _mongoose.connection.deleteModel(name);
       delete _mongoose.models[name];
       return _mongoose;
     };
     Mongoose.prototype.modelNames = function modelNames() {
-      const _mongoose = this instanceof Mongoose ? this : mongoose53;
+      const _mongoose = this instanceof Mongoose ? this : mongoose56;
       const names = Object.keys(_mongoose.models);
       return names;
     };
     Mongoose.prototype._applyPlugins = function _applyPlugins(schema, options) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose53;
+      const _mongoose = this instanceof Mongoose ? this : mongoose56;
       options = options || {};
       options.applyPluginsToDiscriminators = _mongoose.options && _mongoose.options.applyPluginsToDiscriminators || false;
       options.applyPluginsToChildSchemas = typeof (_mongoose.options && _mongoose.options.applyPluginsToChildSchemas) === "boolean" ? _mongoose.options.applyPluginsToChildSchemas : true;
       applyPlugins(schema, _mongoose.plugins, options, "$globalPluginsApplied");
     };
     Mongoose.prototype.plugin = function plugin(fn, opts) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose53;
+      const _mongoose = this instanceof Mongoose ? this : mongoose56;
       _mongoose.plugins.push([fn, opts]);
       return _mongoose;
     };
@@ -118797,14 +118797,14 @@ var require_mongoose = __commonJS({
     Mongoose.prototype.DocumentProvider = require_documentProvider();
     Mongoose.prototype.ObjectId = SchemaTypes.ObjectId;
     Mongoose.prototype.isValidObjectId = function isValidObjectId(v) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose53;
+      const _mongoose = this instanceof Mongoose ? this : mongoose56;
       return _mongoose.Types.ObjectId.isValid(v);
     };
     Mongoose.prototype.isObjectIdOrHexString = function isObjectIdOrHexString(v) {
       return isBsonType(v, "ObjectId") || typeof v === "string" && objectIdHexRegexp.test(v);
     };
     Mongoose.prototype.syncIndexes = function syncIndexes(options) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose53;
+      const _mongoose = this instanceof Mongoose ? this : mongoose56;
       return _mongoose.connection.syncIndexes(options);
     };
     Mongoose.prototype.Decimal128 = SchemaTypes.Decimal128;
@@ -118824,15 +118824,15 @@ var require_mongoose = __commonJS({
     Mongoose.prototype.skipMiddlewareFunction = Kareem.skipWrappedFunction;
     Mongoose.prototype.overwriteMiddlewareResult = Kareem.overwriteResult;
     Mongoose.prototype.omitUndefined = require_omitUndefined();
-    function _createDefaultConnection(mongoose54) {
-      if (mongoose54.connection) {
+    function _createDefaultConnection(mongoose57) {
+      if (mongoose57.connection) {
         return;
       }
-      const conn = mongoose54.createConnection();
+      const conn = mongoose57.createConnection();
       conn[defaultConnectionSymbol] = true;
-      conn.models = mongoose54.models;
+      conn.models = mongoose57.models;
     }
-    var mongoose53 = module2.exports = exports2 = new Mongoose({
+    var mongoose56 = module2.exports = exports2 = new Mongoose({
       [defaultMongooseSymbol]: true
     });
   }
@@ -118844,10 +118844,10 @@ var require_lib9 = __commonJS({
     "use strict";
     var mongodbDriver = require_node_mongodb_native();
     require_driver().set(mongodbDriver);
-    var mongoose53 = require_mongoose();
-    mongoose53.setDriver(mongodbDriver);
-    mongoose53.Mongoose.prototype.mongo = require_lib6();
-    module2.exports = mongoose53;
+    var mongoose56 = require_mongoose();
+    mongoose56.setDriver(mongodbDriver);
+    mongoose56.Mongoose.prototype.mongo = require_lib6();
+    module2.exports = mongoose56;
   }
 });
 
@@ -118855,55 +118855,55 @@ var require_lib9 = __commonJS({
 var require_mongoose2 = __commonJS({
   "node_modules/mongoose/index.js"(exports2, module2) {
     "use strict";
-    var mongoose53 = require_lib9();
-    module2.exports = mongoose53;
-    module2.exports.default = mongoose53;
-    module2.exports.mongoose = mongoose53;
-    module2.exports.cast = mongoose53.cast;
-    module2.exports.STATES = mongoose53.STATES;
-    module2.exports.setDriver = mongoose53.setDriver;
-    module2.exports.set = mongoose53.set;
-    module2.exports.get = mongoose53.get;
-    module2.exports.createConnection = mongoose53.createConnection;
-    module2.exports.connect = mongoose53.connect;
-    module2.exports.disconnect = mongoose53.disconnect;
-    module2.exports.startSession = mongoose53.startSession;
-    module2.exports.pluralize = mongoose53.pluralize;
-    module2.exports.model = mongoose53.model;
-    module2.exports.deleteModel = mongoose53.deleteModel;
-    module2.exports.modelNames = mongoose53.modelNames;
-    module2.exports.plugin = mongoose53.plugin;
-    module2.exports.connections = mongoose53.connections;
-    module2.exports.version = mongoose53.version;
-    module2.exports.Aggregate = mongoose53.Aggregate;
-    module2.exports.Mongoose = mongoose53.Mongoose;
-    module2.exports.Schema = mongoose53.Schema;
-    module2.exports.SchemaType = mongoose53.SchemaType;
-    module2.exports.SchemaTypes = mongoose53.SchemaTypes;
-    module2.exports.VirtualType = mongoose53.VirtualType;
-    module2.exports.Types = mongoose53.Types;
-    module2.exports.Query = mongoose53.Query;
-    module2.exports.Model = mongoose53.Model;
-    module2.exports.Document = mongoose53.Document;
-    module2.exports.ObjectId = mongoose53.ObjectId;
-    module2.exports.isValidObjectId = mongoose53.isValidObjectId;
-    module2.exports.isObjectIdOrHexString = mongoose53.isObjectIdOrHexString;
-    module2.exports.syncIndexes = mongoose53.syncIndexes;
-    module2.exports.Decimal128 = mongoose53.Decimal128;
-    module2.exports.Mixed = mongoose53.Mixed;
-    module2.exports.Date = mongoose53.Date;
-    module2.exports.Number = mongoose53.Number;
-    module2.exports.Error = mongoose53.Error;
-    module2.exports.MongooseError = mongoose53.MongooseError;
-    module2.exports.now = mongoose53.now;
-    module2.exports.CastError = mongoose53.CastError;
-    module2.exports.SchemaTypeOptions = mongoose53.SchemaTypeOptions;
-    module2.exports.mongo = mongoose53.mongo;
-    module2.exports.mquery = mongoose53.mquery;
-    module2.exports.sanitizeFilter = mongoose53.sanitizeFilter;
-    module2.exports.trusted = mongoose53.trusted;
-    module2.exports.skipMiddlewareFunction = mongoose53.skipMiddlewareFunction;
-    module2.exports.overwriteMiddlewareResult = mongoose53.overwriteMiddlewareResult;
+    var mongoose56 = require_lib9();
+    module2.exports = mongoose56;
+    module2.exports.default = mongoose56;
+    module2.exports.mongoose = mongoose56;
+    module2.exports.cast = mongoose56.cast;
+    module2.exports.STATES = mongoose56.STATES;
+    module2.exports.setDriver = mongoose56.setDriver;
+    module2.exports.set = mongoose56.set;
+    module2.exports.get = mongoose56.get;
+    module2.exports.createConnection = mongoose56.createConnection;
+    module2.exports.connect = mongoose56.connect;
+    module2.exports.disconnect = mongoose56.disconnect;
+    module2.exports.startSession = mongoose56.startSession;
+    module2.exports.pluralize = mongoose56.pluralize;
+    module2.exports.model = mongoose56.model;
+    module2.exports.deleteModel = mongoose56.deleteModel;
+    module2.exports.modelNames = mongoose56.modelNames;
+    module2.exports.plugin = mongoose56.plugin;
+    module2.exports.connections = mongoose56.connections;
+    module2.exports.version = mongoose56.version;
+    module2.exports.Aggregate = mongoose56.Aggregate;
+    module2.exports.Mongoose = mongoose56.Mongoose;
+    module2.exports.Schema = mongoose56.Schema;
+    module2.exports.SchemaType = mongoose56.SchemaType;
+    module2.exports.SchemaTypes = mongoose56.SchemaTypes;
+    module2.exports.VirtualType = mongoose56.VirtualType;
+    module2.exports.Types = mongoose56.Types;
+    module2.exports.Query = mongoose56.Query;
+    module2.exports.Model = mongoose56.Model;
+    module2.exports.Document = mongoose56.Document;
+    module2.exports.ObjectId = mongoose56.ObjectId;
+    module2.exports.isValidObjectId = mongoose56.isValidObjectId;
+    module2.exports.isObjectIdOrHexString = mongoose56.isObjectIdOrHexString;
+    module2.exports.syncIndexes = mongoose56.syncIndexes;
+    module2.exports.Decimal128 = mongoose56.Decimal128;
+    module2.exports.Mixed = mongoose56.Mixed;
+    module2.exports.Date = mongoose56.Date;
+    module2.exports.Number = mongoose56.Number;
+    module2.exports.Error = mongoose56.Error;
+    module2.exports.MongooseError = mongoose56.MongooseError;
+    module2.exports.now = mongoose56.now;
+    module2.exports.CastError = mongoose56.CastError;
+    module2.exports.SchemaTypeOptions = mongoose56.SchemaTypeOptions;
+    module2.exports.mongo = mongoose56.mongo;
+    module2.exports.mquery = mongoose56.mquery;
+    module2.exports.sanitizeFilter = mongoose56.sanitizeFilter;
+    module2.exports.trusted = mongoose56.trusted;
+    module2.exports.skipMiddlewareFunction = mongoose56.skipMiddlewareFunction;
+    module2.exports.overwriteMiddlewareResult = mongoose56.overwriteMiddlewareResult;
   }
 });
 
@@ -118957,7 +118957,7 @@ var init_Order = __esm({
       },
       serviceType: {
         type: String,
-        enum: ["Self Dine-In (KFC Style)", "Waiter Table Service", "Delivery", "Takeaway", ""],
+        enum: ["Self Dine-In (KFC Style)", "Waiter Table Service", "Delivery", "Takeaway", "Self-Pickup", ""],
         default: "Waiter Table Service"
       },
       customerName: {
@@ -119027,8 +119027,13 @@ var init_Order = __esm({
       status: {
         type: String,
         required: true,
-        enum: ["Pending", "Accepted", "Preparing", "Ready", "Ready for Pickup", "Picked Up", "Served", "Billing Requested", "Out for Delivery", "Delivered", "Cancelled", "Completed"],
+        enum: ["Pending", "Accepted", "Preparing", "Ready", "Ready for Pickup", "Picked Up", "Ready for Dispatch", "Served", "Billing Requested", "Out for Delivery", "Delivered", "Cancelled", "Completed"],
         default: "Pending"
+      },
+      kitchenMode: {
+        type: String,
+        enum: ["KDS", "KOT_ONLY"],
+        default: "KDS"
       },
       statusHistory: [
         {
@@ -124822,6 +124827,14 @@ var init_User = __esm({
       },
       refreshToken: {
         type: String
+      },
+      activationToken: {
+        type: String,
+        default: null
+      },
+      activationExpires: {
+        type: Date,
+        default: null
       }
     }, { timestamps: true });
     userSchema.pre("save", async function() {
@@ -124846,47 +124859,6 @@ var init_User = __esm({
     };
     User2 = import_mongoose3.default.model("User", userSchema);
     User_default = User2;
-  }
-});
-
-// models/Role.js
-var Role_exports = {};
-__export(Role_exports, {
-  default: () => Role_default
-});
-var import_mongoose4, roleSchema, Role, Role_default;
-var init_Role = __esm({
-  "models/Role.js"() {
-    import_mongoose4 = __toESM(require_mongoose2(), 1);
-    roleSchema = new import_mongoose4.default.Schema({
-      name: {
-        type: String,
-        required: true
-      },
-      restaurantId: {
-        type: import_mongoose4.default.Schema.Types.ObjectId,
-        ref: "Restaurant",
-        required: function() {
-          return !this.isCoreRole;
-        }
-      },
-      description: {
-        type: String,
-        default: ""
-      },
-      isCoreRole: {
-        type: Boolean,
-        default: false
-      },
-      permissions: {
-        type: Map,
-        of: [Boolean],
-        // Array of 4 booleans for [View Data, Create Records, Edit Records, Delete Records]
-        default: {}
-      }
-    }, { timestamps: true });
-    Role = import_mongoose4.default.model("Role", roleSchema);
-    Role_default = Role;
   }
 });
 
@@ -124995,9 +124967,36 @@ var init_Restaurant = __esm({
           longitude: { type: Number, default: 80.209 }
         }
       },
+      status: {
+        type: String,
+        enum: ["Active", "Inactive", "Suspended", "Deleted"],
+        default: "Active"
+      },
+      isDeleted: {
+        type: Boolean,
+        default: false
+      },
+      deletedAt: {
+        type: Date,
+        default: null
+      },
+      deletedBy: {
+        type: import_mongoose5.default.Schema.Types.ObjectId,
+        ref: "User",
+        default: null
+      },
+      gstin: {
+        type: String,
+        default: ""
+      },
       isActive: {
         type: Boolean,
         default: true
+      },
+      kitchenMode: {
+        type: String,
+        enum: ["KDS", "KOT_ONLY"],
+        default: "KDS"
       },
       posConfig: {
         outletFormat: { type: String, default: "Fine Dine & Resto-Bar" },
@@ -125018,18 +125017,33 @@ var init_Restaurant = __esm({
         activatedAt: { type: Date, default: null },
         demoRequestId: { type: import_mongoose5.default.Schema.Types.ObjectId, ref: "BillingDemoRequest", default: null },
         outletFormat: { type: String, default: "Fine Dine & Resto-Bar" },
+        branchLimit: { type: Number, default: 1 },
+        staffLimit: { type: Number, default: 10 },
+        customPlanName: { type: String, default: "Custom Plan" },
         modules: {
           posBilling: { type: Boolean, default: true },
-          menuManagement: { type: Boolean, default: true },
-          tableManagement: { type: Boolean, default: true },
           dineInTakeawayOrders: { type: Boolean, default: true },
+          kot: { type: Boolean, default: true },
+          kds: { type: Boolean, default: true },
+          menuManagement: { type: Boolean, default: true },
+          inventoryManagement: { type: Boolean, default: true },
+          rawMaterials: { type: Boolean, default: true },
+          staffManagement: { type: Boolean, default: true },
+          attendance: { type: Boolean, default: true },
+          payroll: { type: Boolean, default: true },
+          reports: { type: Boolean, default: true },
+          salesReports: { type: Boolean, default: true },
+          expenseManagement: { type: Boolean, default: true },
+          tableManagement: { type: Boolean, default: true },
+          reservations: { type: Boolean, default: true },
+          deliveryManagement: { type: Boolean, default: true },
+          customerManagement: { type: Boolean, default: true },
+          branchManagement: { type: Boolean, default: true },
+          qrOrdering: { type: Boolean, default: true },
+          onlineOrdering: { type: Boolean, default: true },
           kitchenOrderManagement: { type: Boolean, default: true },
           gstInvoice: { type: Boolean, default: true },
-          discounts: { type: Boolean, default: true },
-          customerManagement: { type: Boolean, default: true },
-          inventoryManagement: { type: Boolean, default: true },
-          salesReports: { type: Boolean, default: true },
-          staffManagement: { type: Boolean, default: true }
+          discounts: { type: Boolean, default: true }
         },
         paymentMethods: {
           cash: { type: Boolean, default: true },
@@ -125042,6 +125056,7 @@ var init_Restaurant = __esm({
       },
       restaurantConfig: {
         orderKitchen: {
+          kitchenMode: { type: String, enum: ["KDS", "KOT_ONLY"], default: "KDS" },
           kotEnabled: { type: Boolean, default: true },
           kdsEnabled: { type: Boolean, default: true },
           kotPrintEnabled: { type: Boolean, default: true }
@@ -125062,6 +125077,19 @@ var init_Restaurant = __esm({
           upi: { type: Boolean, default: true },
           card: { type: Boolean, default: true },
           onlineGateway: { type: Boolean, default: true }
+        },
+        payrollConfig: {
+          lopCalculationPolicy: {
+            type: String,
+            enum: ["Configured_Working_Days", "Standard_26_Days", "Calendar_Days"],
+            default: "Configured_Working_Days"
+          },
+          monthlyPaidLeaveQuota: { type: Number, default: 2 },
+          unpaidLeaveDeductionType: {
+            type: String,
+            enum: ["Full_Day_Basic", "Pro_Rata_Gross"],
+            default: "Full_Day_Basic"
+          }
         },
         setupWizardCompleted: { type: Boolean, default: false },
         setupStep: { type: Number, default: 1 }
@@ -125273,126 +125301,6 @@ var init_Plan = __esm({
   }
 });
 
-// models/DeliveryPartner.js
-var DeliveryPartner_exports = {};
-__export(DeliveryPartner_exports, {
-  default: () => DeliveryPartner_default
-});
-var import_mongoose11, deliveryPartnerSchema, DeliveryPartner, DeliveryPartner_default;
-var init_DeliveryPartner = __esm({
-  "models/DeliveryPartner.js"() {
-    import_mongoose11 = __toESM(require_mongoose2(), 1);
-    deliveryPartnerSchema = new import_mongoose11.default.Schema({
-      userId: {
-        type: import_mongoose11.default.Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-        unique: true
-      },
-      restaurantId: {
-        type: import_mongoose11.default.Schema.Types.ObjectId,
-        ref: "Restaurant",
-        required: true
-      },
-      status: {
-        type: String,
-        enum: ["Online", "Offline", "Busy", "On Delivery"],
-        default: "Offline"
-      },
-      verificationStatus: {
-        type: String,
-        enum: ["Pending", "Approved", "Rejected", "Suspended"],
-        default: "Pending"
-      },
-      vehicleDetails: {
-        type: { type: String, default: "Bike" },
-        // Bike, Scooter, Car, etc.
-        model: { type: String, default: "" },
-        rcNumber: { type: String, default: "" },
-        licenseNumber: { type: String, default: "" }
-      },
-      documents: {
-        drivingLicense: { type: String, default: "" },
-        aadhaarProof: { type: String, default: "" },
-        vehicleRc: { type: String, default: "" },
-        vehicleInsurance: { type: String, default: "" },
-        profilePhoto: { type: String, default: "" }
-      },
-      walletBalance: {
-        type: Number,
-        default: 0
-      },
-      earnings: {
-        type: Number,
-        default: 0
-      },
-      currentLocation: {
-        latitude: { type: Number, default: 12.9716 },
-        // Defaults to center coordinates
-        longitude: { type: Number, default: 77.5946 }
-      }
-    }, { timestamps: true });
-    DeliveryPartner = import_mongoose11.default.model("DeliveryPartner", deliveryPartnerSchema);
-    DeliveryPartner_default = DeliveryPartner;
-  }
-});
-
-// models/SubscriptionPayment.js
-var SubscriptionPayment_exports = {};
-__export(SubscriptionPayment_exports, {
-  default: () => SubscriptionPayment_default
-});
-var import_mongoose12, subscriptionPaymentSchema, SubscriptionPayment, SubscriptionPayment_default;
-var init_SubscriptionPayment = __esm({
-  "models/SubscriptionPayment.js"() {
-    import_mongoose12 = __toESM(require_mongoose2(), 1);
-    subscriptionPaymentSchema = new import_mongoose12.default.Schema({
-      restaurantId: {
-        type: import_mongoose12.default.Schema.Types.ObjectId,
-        ref: "Restaurant",
-        required: true
-      },
-      planName: {
-        type: String,
-        required: true
-      },
-      amount: {
-        type: Number,
-        required: true
-      },
-      billingCycle: {
-        type: String,
-        enum: ["monthly", "yearly"],
-        required: true
-      },
-      paymentMethod: {
-        type: String,
-        required: true
-      },
-      transactionId: {
-        type: String,
-        required: true
-      },
-      status: {
-        type: String,
-        enum: ["Pending", "Completed", "Failed"],
-        default: "Completed"
-      },
-      effectiveDate: {
-        type: Date,
-        default: Date.now
-      },
-      expiryDate: {
-        type: Date
-      }
-    }, {
-      timestamps: true
-    });
-    SubscriptionPayment = import_mongoose12.default.model("SubscriptionPayment", subscriptionPaymentSchema);
-    SubscriptionPayment_default = SubscriptionPayment;
-  }
-});
-
 // models/MenuItem.js
 var MenuItem_exports = {};
 __export(MenuItem_exports, {
@@ -125590,288 +125498,6 @@ var init_Table = __esm({
   }
 });
 
-// models/Expense.js
-var Expense_exports = {};
-__export(Expense_exports, {
-  default: () => Expense_default
-});
-var import_mongoose19, expensePaymentSchema, expenseSchema, Expense, Expense_default;
-var init_Expense = __esm({
-  "models/Expense.js"() {
-    import_mongoose19 = __toESM(require_mongoose2(), 1);
-    expensePaymentSchema = new import_mongoose19.default.Schema({
-      amount: {
-        type: Number,
-        required: true,
-        min: 0
-      },
-      paidDate: {
-        type: Date,
-        default: Date.now,
-        required: true
-      },
-      paymentMethod: {
-        type: String,
-        enum: ["Cash", "Bank Transfer", "UPI", "Card", "Cheque", "Other"],
-        default: "Cash",
-        required: true
-      },
-      reference: {
-        type: String,
-        default: ""
-      },
-      notes: {
-        type: String,
-        default: ""
-      },
-      recordedBy: {
-        type: import_mongoose19.default.Schema.Types.ObjectId,
-        ref: "User"
-      }
-    }, { _id: true, timestamps: true });
-    expenseSchema = new import_mongoose19.default.Schema({
-      category: {
-        type: String,
-        required: true,
-        enum: [
-          "Rent",
-          "Electricity",
-          "Water",
-          "Internet",
-          "Material purchases",
-          "Staff salary",
-          "Equipment maintenance",
-          "Delivery and transport",
-          "Kitchen Supplies",
-          "Utility Bill",
-          "Maintenance",
-          "Staff Welfare",
-          "Marketing",
-          "Other operating expenses",
-          "Others"
-        ],
-        index: true
-      },
-      title: {
-        type: String,
-        default: "",
-        trim: true
-      },
-      amount: {
-        type: Number,
-        required: true,
-        min: 0
-      },
-      description: {
-        type: String,
-        default: "",
-        trim: true
-      },
-      date: {
-        type: Date,
-        required: true,
-        default: Date.now,
-        index: true
-      },
-      dueDate: {
-        type: Date
-      },
-      billingPeriod: {
-        type: String
-        // e.g., "October 2026"
-      },
-      paymentStatus: {
-        type: String,
-        enum: ["Pending", "Partially Paid", "Paid", "Overdue"],
-        default: "Paid",
-        // Default Paid for backward compatibility with existing recorded expenses
-        index: true
-      },
-      paidAmount: {
-        type: Number,
-        default: function() {
-          return this.paymentStatus === "Paid" ? this.amount : 0;
-        }
-      },
-      balanceDue: {
-        type: Number,
-        default: 0
-      },
-      paymentMethod: {
-        type: String,
-        enum: ["Cash", "Bank Transfer", "UPI", "Card", "Cheque", "Other"],
-        default: "Cash"
-      },
-      paymentDate: {
-        type: Date
-      },
-      payments: [expensePaymentSchema],
-      isRecurring: {
-        type: Boolean,
-        default: false
-      },
-      recurringFrequency: {
-        type: String,
-        enum: ["Monthly", "Quarterly", "Yearly"]
-      },
-      recurringKey: {
-        type: String,
-        // format: "category_branchId_YYYY-MM" to prevent duplicate recurring bills
-        sparse: true
-      },
-      receiptUrl: {
-        type: String,
-        default: ""
-      },
-      notes: {
-        type: String,
-        default: ""
-      },
-      source: {
-        type: String,
-        enum: ["Manual", "Material Purchase", "Payroll", "Recurring"],
-        default: "Manual"
-      },
-      sourceId: {
-        type: import_mongoose19.default.Schema.Types.ObjectId
-        // Link to MaterialPurchase or Payroll to prevent double-counting
-      },
-      staff: {
-        type: String,
-        required: true,
-        default: "Staff"
-      },
-      restaurantId: {
-        type: import_mongoose19.default.Schema.Types.ObjectId,
-        ref: "Restaurant",
-        required: true,
-        index: true
-      },
-      branchId: {
-        type: import_mongoose19.default.Schema.Types.ObjectId,
-        ref: "Branch",
-        index: true
-      },
-      createdBy: {
-        type: import_mongoose19.default.Schema.Types.ObjectId,
-        ref: "User"
-      }
-    }, { timestamps: true });
-    expenseSchema.pre("save", function(next) {
-      if (!this.title && this.description) {
-        this.title = this.description;
-      }
-      if (!this.description && this.title) {
-        this.description = this.title;
-      }
-      next();
-    });
-    expenseSchema.index({ restaurantId: 1, date: -1 });
-    expenseSchema.index({ restaurantId: 1, category: 1, date: -1 });
-    Expense = import_mongoose19.default.model("Expense", expenseSchema);
-    Expense_default = Expense;
-  }
-});
-
-// models/Ticket.js
-var Ticket_exports = {};
-__export(Ticket_exports, {
-  default: () => Ticket_default
-});
-var import_mongoose25, ticketSchema, Ticket, Ticket_default;
-var init_Ticket = __esm({
-  "models/Ticket.js"() {
-    import_mongoose25 = __toESM(require_mongoose2(), 1);
-    ticketSchema = new import_mongoose25.default.Schema({
-      ticketId: {
-        type: String,
-        required: true,
-        unique: true
-      },
-      restaurantId: {
-        type: import_mongoose25.default.Schema.Types.ObjectId,
-        ref: "Restaurant",
-        required: true
-      },
-      branchId: {
-        type: import_mongoose25.default.Schema.Types.ObjectId,
-        ref: "Branch"
-      },
-      subject: {
-        type: String,
-        required: true
-      },
-      category: {
-        type: String,
-        enum: [
-          "Billing",
-          "Subscription",
-          "Orders",
-          "Kitchen",
-          "Inventory",
-          "POS",
-          "QR Digital Menu",
-          "Delivery",
-          "Staff Management",
-          "Technical Issue",
-          "Feature Request",
-          "Other"
-        ],
-        required: true
-      },
-      priority: {
-        type: String,
-        enum: ["Low", "Medium", "High", "Critical"],
-        default: "Medium"
-      },
-      status: {
-        type: String,
-        enum: ["Open", "Assigned", "In Progress", "Waiting for Customer", "Resolved", "Closed"],
-        default: "Open"
-      },
-      description: {
-        type: String,
-        required: true
-      },
-      assignedAgentId: {
-        type: import_mongoose25.default.Schema.Types.ObjectId,
-        ref: "User"
-      },
-      attachments: [{
-        type: String
-      }],
-      resolutionTime: {
-        type: Number,
-        // in minutes
-        default: null
-      },
-      csatRating: {
-        type: Number,
-        // 1 to 5 stars
-        min: 1,
-        max: 5,
-        default: null
-      },
-      csatFeedback: {
-        type: String,
-        default: ""
-      },
-      lastUpdated: {
-        type: Date,
-        default: Date.now
-      }
-    }, {
-      timestamps: true
-    });
-    ticketSchema.pre("save", function(next) {
-      this.lastUpdated = /* @__PURE__ */ new Date();
-      next();
-    });
-    Ticket = import_mongoose25.default.model("Ticket", ticketSchema);
-    Ticket_default = Ticket;
-  }
-});
-
 // models/Category.js
 var Category_exports = {};
 __export(Category_exports, {
@@ -125907,179 +125533,13 @@ var init_Category = __esm({
   }
 });
 
-// models/Inventory.js
-var Inventory_exports = {};
-__export(Inventory_exports, {
-  default: () => Inventory_default
-});
-var import_mongoose27, inventorySchema, Inventory, Inventory_default;
-var init_Inventory = __esm({
-  "models/Inventory.js"() {
-    import_mongoose27 = __toESM(require_mongoose2(), 1);
-    inventorySchema = new import_mongoose27.default.Schema({
-      restaurantId: {
-        type: import_mongoose27.default.Schema.Types.ObjectId,
-        ref: "Restaurant",
-        index: true
-      },
-      branch: {
-        type: import_mongoose27.default.Schema.Types.ObjectId,
-        ref: "Branch",
-        required: true,
-        index: true
-      },
-      supplier: {
-        type: import_mongoose27.default.Schema.Types.ObjectId,
-        ref: "Supplier"
-      },
-      itemName: {
-        type: String,
-        required: true,
-        trim: true
-      },
-      category: {
-        type: String,
-        // e.g., 'Vegetables', 'Meat', 'Dairy', 'Packaging', 'Spices', 'Beverages'
-        default: "General"
-      },
-      quantity: {
-        type: Number,
-        required: true,
-        default: 0,
-        min: 0
-      },
-      unit: {
-        type: String,
-        // e.g., 'kg', 'g', 'ltr', 'ml', 'pcs', 'box', 'packet'
-        required: true
-      },
-      minStockLevel: {
-        type: Number,
-        default: 10
-      },
-      reorderQuantity: {
-        type: Number,
-        default: 20
-      },
-      pricePerUnit: {
-        type: Number,
-        default: 0
-      },
-      lastPurchasePrice: {
-        type: Number,
-        default: 0
-      },
-      lastPurchaseDate: {
-        type: Date
-      },
-      costingMethod: {
-        type: String,
-        enum: ["Weighted Average", "Latest Price"],
-        default: "Weighted Average"
-      },
-      description: {
-        type: String,
-        default: ""
-      }
-    }, { timestamps: true });
-    inventorySchema.virtual("valuation").get(function() {
-      return (this.quantity || 0) * (this.pricePerUnit || 0);
-    });
-    inventorySchema.set("toJSON", { virtuals: true });
-    inventorySchema.set("toObject", { virtuals: true });
-    Inventory = import_mongoose27.default.model("Inventory", inventorySchema);
-    Inventory_default = Inventory;
-  }
-});
-
-// models/ServiceRequest.js
-var ServiceRequest_exports = {};
-__export(ServiceRequest_exports, {
-  default: () => ServiceRequest_default
-});
-var import_mongoose28, serviceRequestSchema, ServiceRequest, ServiceRequest_default;
-var init_ServiceRequest = __esm({
-  "models/ServiceRequest.js"() {
-    import_mongoose28 = __toESM(require_mongoose2(), 1);
-    serviceRequestSchema = new import_mongoose28.default.Schema({
-      restaurantId: {
-        type: import_mongoose28.default.Schema.Types.ObjectId,
-        ref: "Restaurant",
-        required: true
-      },
-      branchId: {
-        type: import_mongoose28.default.Schema.Types.ObjectId,
-        ref: "Branch",
-        required: true
-      },
-      tableNumber: {
-        type: Number,
-        required: true
-      },
-      requestType: {
-        type: String,
-        enum: ["Call Waiter", "Request Water", "Request Cutlery", "Request Bill"],
-        required: true
-      },
-      status: {
-        type: String,
-        enum: ["Pending", "Completed"],
-        default: "Pending"
-      }
-    }, { timestamps: true });
-    ServiceRequest = import_mongoose28.default.model("ServiceRequest", serviceRequestSchema);
-    ServiceRequest_default = ServiceRequest;
-  }
-});
-
-// models/WastageLog.js
-var WastageLog_exports = {};
-__export(WastageLog_exports, {
-  default: () => WastageLog_default
-});
-var import_mongoose29, wastageLogSchema, WastageLog, WastageLog_default;
-var init_WastageLog = __esm({
-  "models/WastageLog.js"() {
-    import_mongoose29 = __toESM(require_mongoose2(), 1);
-    wastageLogSchema = new import_mongoose29.default.Schema({
-      ingredientName: {
-        type: String,
-        required: true
-      },
-      quantity: {
-        type: Number,
-        required: true
-      },
-      unit: {
-        type: String,
-        required: true
-      },
-      reason: {
-        type: String,
-        required: true
-      },
-      restaurantId: {
-        type: import_mongoose29.default.Schema.Types.ObjectId,
-        ref: "Restaurant",
-        required: true
-      },
-      branchId: {
-        type: import_mongoose29.default.Schema.Types.ObjectId,
-        ref: "Branch"
-      }
-    }, { timestamps: true });
-    WastageLog = import_mongoose29.default.model("WastageLog", wastageLogSchema);
-    WastageLog_default = WastageLog;
-  }
-});
-
 // index.js
-var import_express30 = __toESM(require_express2(), 1);
+var import_express32 = __toESM(require_express2(), 1);
 var import_dotenv = __toESM(require_main(), 1);
 var import_cors = __toESM(require_lib3(), 1);
 var import_cookie_parser = __toESM(require_cookie_parser(), 1);
-var import_fs5 = __toESM(require("fs"), 1);
-var import_path5 = __toESM(require("path"), 1);
+var import_fs6 = __toESM(require("fs"), 1);
+var import_path6 = __toESM(require("path"), 1);
 var import_http = __toESM(require("http"), 1);
 
 // config/db.js
@@ -126236,7 +125696,40 @@ var import_jsonwebtoken = __toESM(require_jsonwebtoken(), 1);
 var import_fs = __toESM(require("fs"), 1);
 var import_path = __toESM(require("path"), 1);
 init_User();
-init_Role();
+
+// models/Role.js
+var import_mongoose4 = __toESM(require_mongoose2(), 1);
+var roleSchema = new import_mongoose4.default.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  restaurantId: {
+    type: import_mongoose4.default.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: function() {
+      return !this.isCoreRole;
+    }
+  },
+  description: {
+    type: String,
+    default: ""
+  },
+  isCoreRole: {
+    type: Boolean,
+    default: false
+  },
+  permissions: {
+    type: Map,
+    of: [Boolean],
+    // Array of 4 booleans for [View Data, Create Records, Edit Records, Delete Records]
+    default: {}
+  }
+}, { timestamps: true });
+var Role = import_mongoose4.default.model("Role", roleSchema);
+var Role_default = Role;
+
+// controllers/authController.js
 init_Restaurant();
 init_Branch();
 init_Notification();
@@ -126956,8 +126449,8 @@ var changePassword = async (req, res) => {
 // middleware/authMiddleware.js
 var import_jsonwebtoken2 = __toESM(require_jsonwebtoken(), 1);
 init_User();
-init_Role();
 init_Restaurant();
+init_Branch();
 init_Plan();
 var protect = async (req, res, next) => {
   let token;
@@ -127025,9 +126518,17 @@ var checkSubscription = async (req, res, next) => {
     return next();
   }
   try {
-    const restaurant = await Restaurant_default.findById(req.user.restaurantId);
+    let rId = req.user.restaurantId || req.user.restaurant;
+    if (!rId && req.user.branchId) {
+      const branchDoc = await Branch_default.findById(req.user.branchId);
+      if (branchDoc) rId = branchDoc.restaurantId;
+    }
+    if (!rId) {
+      return next();
+    }
+    const restaurant = await Restaurant_default.findById(rId);
     if (!restaurant) {
-      return res.status(404).json({ message: "Restaurant not found" });
+      return next();
     }
     const now = /* @__PURE__ */ new Date();
     const expiry = restaurant.subscription?.expiryDate ? new Date(restaurant.subscription.expiryDate) : null;
@@ -127102,7 +126603,8 @@ var checkFeature = (featureName) => {
     }
   };
 };
-var checkBillingModule = (moduleName) => {
+var checkBillingModule = (moduleNames) => {
+  const modulesToCheck = Array.isArray(moduleNames) ? moduleNames : [moduleNames];
   return async (req, res, next) => {
     if (req.user?.role === "SuperAdmin") {
       return next();
@@ -127117,18 +126619,19 @@ var checkBillingModule = (moduleName) => {
       }
       if (restaurant.billingConfig?.isCustomBillingActive) {
         const modules = restaurant.billingConfig?.modules || {};
-        const isEnabled = modules[moduleName] !== false;
+        const isEnabled = modulesToCheck.some((mod) => modules[mod] !== false);
         if (!isEnabled) {
+          const primaryModule = modulesToCheck[0];
           return res.status(403).json({
-            message: `Access denied: The "${moduleName}" module is disabled for your restaurant's billing configuration. Please contact Super Admin to activate this module.`,
+            message: `Access denied: The "${primaryModule}" module is disabled for your restaurant's billing configuration. Please contact Super Admin to activate this module.`,
             moduleDisabled: true,
-            module: moduleName
+            module: primaryModule
           });
         }
       }
       next();
     } catch (error) {
-      console.error(`Error in checkBillingModule (${moduleName}):`, error);
+      console.error(`Error in checkBillingModule (${modulesToCheck.join(",")}):`, error);
       next();
     }
   };
@@ -127618,8 +127121,110 @@ var import_mongoose13 = __toESM(require_mongoose2(), 1);
 init_Restaurant();
 init_Branch();
 init_Notification();
-init_DeliveryPartner();
-init_SubscriptionPayment();
+
+// models/DeliveryPartner.js
+var import_mongoose11 = __toESM(require_mongoose2(), 1);
+var deliveryPartnerSchema = new import_mongoose11.default.Schema({
+  userId: {
+    type: import_mongoose11.default.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+    unique: true
+  },
+  restaurantId: {
+    type: import_mongoose11.default.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: true
+  },
+  status: {
+    type: String,
+    enum: ["Online", "Offline", "Busy", "On Delivery"],
+    default: "Offline"
+  },
+  verificationStatus: {
+    type: String,
+    enum: ["Pending", "Approved", "Rejected", "Suspended"],
+    default: "Pending"
+  },
+  vehicleDetails: {
+    type: { type: String, default: "Bike" },
+    // Bike, Scooter, Car, etc.
+    model: { type: String, default: "" },
+    rcNumber: { type: String, default: "" },
+    licenseNumber: { type: String, default: "" }
+  },
+  documents: {
+    drivingLicense: { type: String, default: "" },
+    aadhaarProof: { type: String, default: "" },
+    vehicleRc: { type: String, default: "" },
+    vehicleInsurance: { type: String, default: "" },
+    profilePhoto: { type: String, default: "" }
+  },
+  walletBalance: {
+    type: Number,
+    default: 0
+  },
+  earnings: {
+    type: Number,
+    default: 0
+  },
+  currentLocation: {
+    latitude: { type: Number, default: 12.9716 },
+    // Defaults to center coordinates
+    longitude: { type: Number, default: 77.5946 }
+  }
+}, { timestamps: true });
+var DeliveryPartner = import_mongoose11.default.model("DeliveryPartner", deliveryPartnerSchema);
+var DeliveryPartner_default = DeliveryPartner;
+
+// models/SubscriptionPayment.js
+var import_mongoose12 = __toESM(require_mongoose2(), 1);
+var subscriptionPaymentSchema = new import_mongoose12.default.Schema({
+  restaurantId: {
+    type: import_mongoose12.default.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: true
+  },
+  planName: {
+    type: String,
+    required: true
+  },
+  amount: {
+    type: Number,
+    required: true
+  },
+  billingCycle: {
+    type: String,
+    enum: ["monthly", "yearly"],
+    required: true
+  },
+  paymentMethod: {
+    type: String,
+    required: true
+  },
+  transactionId: {
+    type: String,
+    required: true
+  },
+  status: {
+    type: String,
+    enum: ["Pending", "Completed", "Failed"],
+    default: "Completed"
+  },
+  effectiveDate: {
+    type: Date,
+    default: Date.now
+  },
+  expiryDate: {
+    type: Date
+  }
+}, {
+  timestamps: true
+});
+var SubscriptionPayment = import_mongoose12.default.model("SubscriptionPayment", subscriptionPaymentSchema);
+var SubscriptionPayment_default = SubscriptionPayment;
+
+// controllers/restaurantController.js
 init_Plan();
 var import_multer2 = __toESM(require("multer"), 1);
 var import_path3 = __toESM(require("path"), 1);
@@ -127686,37 +127291,22 @@ var getRestaurants = async (req, res) => {
         });
       }
     }
-    let restaurants = await Restaurant_default.find({}).populate("ownerId", "name email").sort({ createdAt: -1 }).lean();
+    const filter = {
+      isDeleted: { $ne: true },
+      status: { $nin: ["Inactive", "Suspended", "Deleted"] },
+      isActive: { $ne: false },
+      approvalStatus: "Approved",
+      "subscription.status": { $nin: ["Cancelled", "Frozen", "Expired", "Suspended", "Inactive"] }
+    };
+    let restaurants = await Restaurant_default.find(filter).populate("ownerId", "name email").sort({ createdAt: -1 }).lean();
     const populatedRestaurants = await Promise.all(restaurants.map(async (rest) => {
-      let updatedNeeded = false;
-      let updatePayload = {};
       if (!rest.name || rest.name.trim() === "" || rest.name === "Unnamed") {
         const ownerName = rest.ownerId?.name || "Partner";
         rest.name = `${ownerName}'s Restaurant`;
-        updatePayload.name = rest.name;
-        updatedNeeded = true;
-      }
-      if (!rest.subscription || !rest.subscription.status || rest.subscription.status === "Inactive") {
-        if (!rest.subscription) rest.subscription = {};
-        rest.subscription.status = "Active";
-        updatePayload["subscription.status"] = "Active";
-        updatedNeeded = true;
-      }
-      if (!rest.approvalStatus) {
-        rest.approvalStatus = "Approved";
-        updatePayload.approvalStatus = "Approved";
-        updatedNeeded = true;
-      }
-      if (rest.isActive === void 0 || rest.isActive === false) {
-        rest.isActive = true;
-        updatePayload.isActive = true;
-        updatedNeeded = true;
-      }
-      if (updatedNeeded) {
         try {
-          await Restaurant_default.findByIdAndUpdate(rest._id, { $set: updatePayload });
+          await Restaurant_default.findByIdAndUpdate(rest._id, { $set: { name: rest.name } });
         } catch (err) {
-          console.error("Failed auto-repairing restaurant record:", err);
+          console.error("Failed auto-repairing restaurant name:", err);
         }
       }
       const hasPartners = await DeliveryPartner_default.exists({ restaurantId: rest._id });
@@ -127739,6 +127329,13 @@ var getRestaurants = async (req, res) => {
           rest.deliverySettings.enabled = true;
         }
       }
+      const branches = await Branch3.find({ restaurantId: rest._id, isActive: true }).lean();
+      rest.branches = branches;
+      const primaryBranch = branches[0];
+      rest.city = primaryBranch?.location?.city || "";
+      rest.state = primaryBranch?.location?.state || "";
+      rest.country = primaryBranch?.location?.country || "";
+      rest.address = rest.address || primaryBranch?.location?.address || "";
       return rest;
     }));
     res.json(populatedRestaurants);
@@ -127875,7 +127472,7 @@ var getMyRestaurant = async (req, res) => {
     }
     if (!restaurant.restaurantConfig) {
       restaurant.restaurantConfig = {
-        orderKitchen: { kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
+        orderKitchen: { kitchenMode: restaurant.kitchenMode || "KDS", kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
         waiterTips: { enabled: true, allowCustomerTips: true, tipPercentages: [5, 10, 15, 20], customTipAllowed: true },
         qrOrdering: { enabled: true, allowSelfDineIn: true, allowWaiterOrdering: true },
         paymentMethods: { cash: true, upi: true, card: true, onlineGateway: true },
@@ -127884,7 +127481,9 @@ var getMyRestaurant = async (req, res) => {
       };
     } else {
       if (!restaurant.restaurantConfig.orderKitchen) {
-        restaurant.restaurantConfig.orderKitchen = { kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true };
+        restaurant.restaurantConfig.orderKitchen = { kitchenMode: restaurant.kitchenMode || "KDS", kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true };
+      } else if (!restaurant.restaurantConfig.orderKitchen.kitchenMode) {
+        restaurant.restaurantConfig.orderKitchen.kitchenMode = restaurant.kitchenMode || "KDS";
       }
       if (!restaurant.restaurantConfig.waiterTips) {
         restaurant.restaurantConfig.waiterTips = { enabled: true, allowCustomerTips: true, tipPercentages: [5, 10, 15, 20], customTipAllowed: true };
@@ -127927,6 +127526,23 @@ var updateMyRestaurant = async (req, res) => {
           ...req.body.posConfig
         };
       }
+      if (req.body.kitchenMode) {
+        restaurant.kitchenMode = req.body.kitchenMode;
+        if (!restaurant.restaurantConfig) restaurant.restaurantConfig = {};
+        if (!restaurant.restaurantConfig.orderKitchen) restaurant.restaurantConfig.orderKitchen = {};
+        restaurant.restaurantConfig.orderKitchen.kitchenMode = req.body.kitchenMode;
+        if (req.body.kitchenMode === "KOT_ONLY") {
+          restaurant.restaurantConfig.orderKitchen.kotEnabled = true;
+          restaurant.restaurantConfig.orderKitchen.kotPrintEnabled = true;
+          restaurant.restaurantConfig.orderKitchen.kdsEnabled = false;
+          if (!restaurant.posConfig) restaurant.posConfig = {};
+          restaurant.posConfig.kdsEnabled = false;
+        } else if (req.body.kitchenMode === "KDS") {
+          restaurant.restaurantConfig.orderKitchen.kdsEnabled = true;
+          if (!restaurant.posConfig) restaurant.posConfig = {};
+          restaurant.posConfig.kdsEnabled = true;
+        }
+      }
       if (restaurantConfig) {
         if (!restaurant.restaurantConfig) restaurant.restaurantConfig = {};
         if (restaurantConfig.orderKitchen) {
@@ -127934,7 +127550,20 @@ var updateMyRestaurant = async (req, res) => {
             ...restaurant.restaurantConfig.orderKitchen || {},
             ...restaurantConfig.orderKitchen
           };
-          if (restaurantConfig.orderKitchen.kdsEnabled !== void 0) {
+          if (restaurantConfig.orderKitchen.kitchenMode) {
+            restaurant.kitchenMode = restaurantConfig.orderKitchen.kitchenMode;
+            if (restaurantConfig.orderKitchen.kitchenMode === "KOT_ONLY") {
+              restaurant.restaurantConfig.orderKitchen.kotEnabled = true;
+              restaurant.restaurantConfig.orderKitchen.kotPrintEnabled = true;
+              restaurant.restaurantConfig.orderKitchen.kdsEnabled = false;
+              if (!restaurant.posConfig) restaurant.posConfig = {};
+              restaurant.posConfig.kdsEnabled = false;
+            } else if (restaurantConfig.orderKitchen.kitchenMode === "KDS") {
+              restaurant.restaurantConfig.orderKitchen.kdsEnabled = true;
+              if (!restaurant.posConfig) restaurant.posConfig = {};
+              restaurant.posConfig.kdsEnabled = true;
+            }
+          } else if (restaurantConfig.orderKitchen.kdsEnabled !== void 0) {
             if (!restaurant.posConfig) restaurant.posConfig = {};
             restaurant.posConfig.kdsEnabled = restaurantConfig.orderKitchen.kdsEnabled;
           }
@@ -127991,9 +127620,15 @@ var getRestaurantPublicConfig = async (req, res) => {
     if (!id || !import_mongoose13.default.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid restaurant ID" });
     }
-    const restaurant = await Restaurant_default.findById(id).select("name logo restaurantConfig posConfig billingConfig");
+    const restaurant = await Restaurant_default.findById(id).select("name logo restaurantConfig posConfig billingConfig status isDeleted isActive approvalStatus");
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant not found" });
+    }
+    if (restaurant.isDeleted || restaurant.status === "Deleted") {
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
+    if (restaurant.status === "Inactive" || restaurant.status === "Suspended" || !restaurant.isActive || restaurant.approvalStatus !== "Approved") {
+      return res.status(403).json({ message: "This restaurant is currently unavailable or inactive." });
     }
     const config = restaurant.restaurantConfig || {};
     res.json({
@@ -128017,6 +127652,7 @@ var getRestaurantPublicConfig = async (req, res) => {
         customTipAllowed: config.waiterTips?.customTipAllowed ?? true
       },
       orderKitchen: {
+        kitchenMode: config.orderKitchen?.kitchenMode || targetRest.kitchenMode || "KDS",
         kotEnabled: config.orderKitchen?.kotEnabled ?? true,
         kdsEnabled: config.orderKitchen?.kdsEnabled ?? true,
         kotPrintEnabled: config.orderKitchen?.kotPrintEnabled ?? true
@@ -128041,13 +127677,16 @@ var getRestaurantConfig = async (req, res) => {
     const planDoc = await PlanModel.findOne({ name: new RegExp(`^${planName}$`, "i") });
     const planFeatures = planDoc?.features || [];
     const config = restaurant.restaurantConfig || {
-      orderKitchen: { kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
+      orderKitchen: { kitchenMode: restaurant.kitchenMode || "KDS", kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
       waiterTips: { enabled: true, allowCustomerTips: true, tipPercentages: [5, 10, 15, 20], customTipAllowed: true },
       qrOrdering: { enabled: true, allowSelfDineIn: true, allowWaiterOrdering: true },
       paymentMethods: { cash: true, upi: true, card: true, onlineGateway: true },
       setupWizardCompleted: false,
       setupStep: 1
     };
+    if (!config.orderKitchen.kitchenMode) {
+      config.orderKitchen.kitchenMode = restaurant.kitchenMode || "KDS";
+    }
     res.json({
       config,
       planName,
@@ -128068,7 +127707,7 @@ var updateRestaurantConfig = async (req, res) => {
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant not found" });
     }
-    const { orderKitchen, waiterTips, qrOrdering, paymentMethods, setupWizardCompleted, setupStep } = req.body;
+    const { orderKitchen, waiterTips, qrOrdering, paymentMethods, setupWizardCompleted, setupStep, kitchenMode } = req.body;
     const currentPm = restaurant.restaurantConfig?.paymentMethods || { cash: true, upi: true, card: true, onlineGateway: true };
     const mergedPm = paymentMethods ? { ...currentPm, ...paymentMethods } : currentPm;
     if (paymentMethods && !mergedPm.cash && !mergedPm.upi && !mergedPm.card && !mergedPm.onlineGateway) {
@@ -128086,7 +127725,7 @@ var updateRestaurantConfig = async (req, res) => {
         if (["Pro", "Enterprise"].includes(planName) && (featureKeyword === "kds" || featureKeyword === "tips")) return true;
         return planFeatures.some((f) => f.toLowerCase().includes(featureKeyword.toLowerCase()));
       };
-      if (orderKitchen?.kdsEnabled === true && !restaurant.restaurantConfig?.orderKitchen?.kdsEnabled) {
+      if ((orderKitchen?.kdsEnabled === true || orderKitchen?.kitchenMode === "KDS" || kitchenMode === "KDS") && !restaurant.restaurantConfig?.orderKitchen?.kdsEnabled && restaurant.kitchenMode !== "KDS") {
         if (!isFeatureAllowed("Kitchen Display System") && !isFeatureAllowed("KDS") && planName === "Basic") {
           return res.status(403).json({
             message: `Kitchen Display System (KDS) requires a Pro or Enterprise subscription. Your restaurant is currently on the ${planName} plan.`,
@@ -128098,7 +127737,7 @@ var updateRestaurantConfig = async (req, res) => {
     }
     if (!restaurant.restaurantConfig) {
       restaurant.restaurantConfig = {
-        orderKitchen: { kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
+        orderKitchen: { kitchenMode: restaurant.kitchenMode || "KDS", kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
         waiterTips: { enabled: true, allowCustomerTips: true, tipPercentages: [5, 10, 15, 20], customTipAllowed: true },
         qrOrdering: { enabled: true, allowSelfDineIn: true, allowWaiterOrdering: true },
         paymentMethods: { cash: true, upi: true, card: true, onlineGateway: true },
@@ -128106,12 +127745,32 @@ var updateRestaurantConfig = async (req, res) => {
         setupStep: 1
       };
     }
+    const effectiveKitchenMode = kitchenMode || orderKitchen?.kitchenMode;
+    if (effectiveKitchenMode) {
+      restaurant.kitchenMode = effectiveKitchenMode;
+      if (!restaurant.restaurantConfig.orderKitchen) restaurant.restaurantConfig.orderKitchen = {};
+      restaurant.restaurantConfig.orderKitchen.kitchenMode = effectiveKitchenMode;
+      if (effectiveKitchenMode === "KOT_ONLY") {
+        restaurant.restaurantConfig.orderKitchen.kotEnabled = true;
+        restaurant.restaurantConfig.orderKitchen.kotPrintEnabled = true;
+        restaurant.restaurantConfig.orderKitchen.kdsEnabled = false;
+        if (!restaurant.posConfig) restaurant.posConfig = {};
+        restaurant.posConfig.kdsEnabled = false;
+      } else if (effectiveKitchenMode === "KDS") {
+        restaurant.restaurantConfig.orderKitchen.kdsEnabled = true;
+        if (!restaurant.posConfig) restaurant.posConfig = {};
+        restaurant.posConfig.kdsEnabled = true;
+      }
+    }
     if (orderKitchen) {
       restaurant.restaurantConfig.orderKitchen = {
         ...restaurant.restaurantConfig.orderKitchen || {},
         ...orderKitchen
       };
-      if (orderKitchen.kdsEnabled !== void 0) {
+      if (orderKitchen.kitchenMode && !effectiveKitchenMode) {
+        restaurant.kitchenMode = orderKitchen.kitchenMode;
+      }
+      if (orderKitchen.kdsEnabled !== void 0 && !effectiveKitchenMode) {
         if (!restaurant.posConfig) restaurant.posConfig = {};
         restaurant.posConfig.kdsEnabled = orderKitchen.kdsEnabled;
       }
@@ -128189,6 +127848,15 @@ var getRestaurantById = async (req, res) => {
     const restaurant = await Restaurant_default.findById(req.params.id).lean();
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant not found" });
+    }
+    const isSuperAdminOrStaff = req.user && (req.user.role === "SuperAdmin" || String(req.user.restaurantId) === String(restaurant._id) || String(req.user._id) === String(restaurant.ownerId));
+    if (!isSuperAdminOrStaff) {
+      if (restaurant.isDeleted || restaurant.status === "Deleted") {
+        return res.status(404).json({ message: "Restaurant not found" });
+      }
+      if (restaurant.status === "Inactive" || restaurant.status === "Suspended" || !restaurant.isActive || restaurant.approvalStatus !== "Approved") {
+        return res.status(403).json({ message: "This restaurant is currently unavailable or inactive." });
+      }
     }
     const hasPartners = await DeliveryPartner_default.exists({ restaurantId: restaurant._id });
     if (hasPartners) {
@@ -129006,8 +128674,8 @@ var generateKOTsForOrder = async (order, options = {}) => {
   if (!order) return [];
   try {
     const Restaurant3 = (await Promise.resolve().then(() => (init_Restaurant(), Restaurant_exports))).default;
-    const targetRest = await Restaurant3.findById(order.restaurantId).select("restaurantConfig");
-    if (targetRest?.restaurantConfig?.orderKitchen?.kotEnabled === false) {
+    const targetRest2 = await Restaurant3.findById(order.restaurantId).select("restaurantConfig");
+    if (targetRest2?.restaurantConfig?.orderKitchen?.kotEnabled === false) {
       return [];
     }
   } catch (e) {
@@ -129216,6 +128884,15 @@ var addOrderItems = async (req, res) => {
       longitude: 80.2707
     };
     const targetRestaurant = await Restaurant_default.findById(finalRestaurantId);
+    if (!targetRestaurant) {
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
+    const isRestBlocked = targetRestaurant.isDeleted || targetRestaurant.status === "Deleted" || targetRestaurant.status === "Inactive" || targetRestaurant.status === "Suspended" || targetRestaurant.isActive === false || targetRestaurant.approvalStatus !== "Approved";
+    if (isRestBlocked) {
+      return res.status(403).json({
+        message: "This restaurant is currently inactive or suspended and cannot accept orders."
+      });
+    }
     const restDeliverySettings = targetRestaurant?.deliverySettings || {};
     const restCoords = restDeliverySettings.location || {};
     const finalRestaurantLoc = restaurantLocation && restaurantLocation.latitude && restaurantLocation.longitude ? {
@@ -129244,7 +128921,18 @@ var addOrderItems = async (req, res) => {
     }
     const deliveryOtp = orderType === "Delivery" ? Math.floor(1e3 + Math.random() * 9e3).toString() : null;
     const restConfig = targetRestaurant?.restaurantConfig || {};
-    const determinedServiceType = serviceType || (orderType === "Self-Pickup" ? "Self Dine-In (KFC Style)" : "Waiter Table Service");
+    let determinedServiceType = serviceType;
+    if (!determinedServiceType) {
+      if (orderType === "Self-Pickup" || orderType === "Takeaway") {
+        determinedServiceType = "Self-Pickup";
+      } else if (orderType === "Delivery") {
+        determinedServiceType = "Delivery";
+      } else {
+        determinedServiceType = "Waiter Table Service";
+      }
+    } else if ((orderType === "Self-Pickup" || orderType === "Takeaway") && determinedServiceType === "Self Dine-In (KFC Style)") {
+      determinedServiceType = "Self-Pickup";
+    }
     if (finalSource === "QR") {
       if (restConfig.qrOrdering?.enabled === false) {
         return res.status(400).json({ message: "QR Table Ordering is currently disabled for this restaurant." });
@@ -129278,6 +128966,10 @@ var addOrderItems = async (req, res) => {
     const defaultPrepMins = orderType === "Delivery" ? 30 : 20;
     const finalPrepMinutes = Number(req.body.estimatedPrepMinutes) || defaultPrepMins;
     const finalEstimatedReadyTime = req.body.estimatedReadyTime ? new Date(req.body.estimatedReadyTime) : new Date(Date.now() + finalPrepMinutes * 60 * 1e3);
+    const isCashMethod = ["cash on delivery", "cash", "pay at counter", "cod"].some(
+      (m) => String(paymentMethod || "").toLowerCase().includes(m)
+    );
+    const restaurantKitchenMode = targetRestaurant.kitchenMode || restConfig.orderKitchen?.kitchenMode || (restConfig.orderKitchen?.kdsEnabled === false ? "KOT_ONLY" : "KDS");
     const order = new Order_default({
       orderItems: sanitizeOrderItems(orderItems),
       user: finalUserId,
@@ -129292,8 +128984,11 @@ var addOrderItems = async (req, res) => {
       source: finalSource,
       paymentMethod,
       subscriptionPlan: subscriptionPlan || "One-time Order",
-      taxPrice,
-      totalPrice,
+      taxPrice: Number(taxPrice) || 0,
+      totalPrice: Number(totalPrice) || 0,
+      discountAmount: Number(req.body.discountAmount) || 0,
+      deliveryCharge: Number(req.body.deliveryCharge) || 0,
+      deliveryDistance: Number(req.body.deliveryDistance) || 0,
       tipAmount: finalTip,
       waiter: req.user?.role === "Waiter" ? req.user._id : void 0,
       deliveryOtp,
@@ -129302,10 +128997,11 @@ var addOrderItems = async (req, res) => {
       restaurantLocation: finalRestaurantLoc,
       status: "Pending",
       // Strictly force new order to Pending status
+      kitchenMode: restaurantKitchenMode,
       deliveryStatus: "None",
       // Strictly force None on creation until kitchen marks Ready for Pickup
-      isPaid: Boolean(isPaid),
-      paidAt: isPaid ? /* @__PURE__ */ new Date() : null,
+      isPaid: isCashMethod ? false : Boolean(isPaid),
+      paidAt: !isCashMethod && isPaid ? /* @__PURE__ */ new Date() : null,
       estimatedPrepMinutes: finalPrepMinutes,
       estimatedReadyTime: finalEstimatedReadyTime,
       statusHistory: [{
@@ -129382,9 +129078,20 @@ var addOrderItems = async (req, res) => {
     const responseOrder = createdOrder.toObject ? createdOrder.toObject() : createdOrder;
     responseOrder.kots = generatedKOTs;
     responseOrder.kotNumbers = generatedKOTs.map((k) => k.kotNumber);
+    responseOrder.kitchenMode = restaurantKitchenMode;
     responseOrder.isKdsEnabled = restConfig.orderKitchen ? restConfig.orderKitchen.kdsEnabled !== false : true;
     responseOrder.isKotEnabled = restConfig.orderKitchen ? restConfig.orderKitchen.kotEnabled !== false : true;
     responseOrder.orderWorkflow = !responseOrder.isKdsEnabled && responseOrder.isKotEnabled ? "KOT" : responseOrder.isKdsEnabled && !responseOrder.isKotEnabled ? "KDS" : "HYBRID";
+    responseOrder.restaurantId = {
+      _id: targetRestaurant._id,
+      name: targetRestaurant.name,
+      address: targetRestaurant.address,
+      phone: targetRestaurant.phone,
+      gstin: targetRestaurant.gstin,
+      kitchenMode: restaurantKitchenMode,
+      restaurantConfig: targetRestaurant.restaurantConfig,
+      logo: targetRestaurant.logo
+    };
     broadcastToRestaurant(finalRestaurantId, "new_order", responseOrder);
     return res.status(201).json(responseOrder);
   } catch (error) {
@@ -129552,7 +129259,7 @@ var getOrders = async (req, res) => {
     if (req.query.myOrders === "true" && req.user) {
       filter.user = req.user._id;
     }
-    let query = Order_default.find(filter).populate("user", "id name email").populate("deliveryPartner", "id name phoneNumber").sort({ createdAt: -1 });
+    let query = Order_default.find(filter).populate("user", "id name email").populate("deliveryPartner", "id name phoneNumber").populate("restaurantId", "name address phone restaurantConfig logo gstin kitchenMode").populate("branchId", "name location contact").sort({ createdAt: -1 });
     if (req.query.limit) {
       const limit = parseInt(req.query.limit, 10);
       if (!isNaN(limit) && limit > 0) {
@@ -129637,7 +129344,7 @@ var updateOrderStatus = async (req, res) => {
         if (["Pending", "Accepted", "Preparing"].includes(newStatus)) {
           order.deliveryStatus = "None";
           order.deliveryPartner = null;
-        } else if (["Ready", "Ready for Pickup"].includes(newStatus)) {
+        } else if (["Ready", "Ready for Pickup", "Ready for Dispatch"].includes(newStatus)) {
           order.deliveryStatus = "Pending Assignment";
         } else if (newStatus === "Out for Delivery") {
           order.deliveryStatus = "On the Way";
@@ -129661,7 +129368,7 @@ var updateOrderStatus = async (req, res) => {
             { orderId: order._id, status: { $nin: ["Served", "Cancelled"] } },
             { $set: { status: "Served", servedTime: /* @__PURE__ */ new Date() }, $push: { statusHistory: { status: "Served", timestamp: Date.now(), updatedBy: req.user?._id || null } } }
           );
-        } else if (["Ready", "Ready for Pickup"].includes(newStatus)) {
+        } else if (["Ready", "Ready for Pickup", "Ready for Dispatch"].includes(newStatus)) {
           await KOT_default.updateMany(
             { orderId: order._id, status: { $in: ["Pending", "Preparing"] } },
             { $set: { status: "Ready", prepReadyTime: /* @__PURE__ */ new Date() }, $push: { statusHistory: { status: "Ready", timestamp: Date.now(), updatedBy: req.user?._id || null } } }
@@ -129686,7 +129393,7 @@ var updateOrderStatus = async (req, res) => {
           console.error("Failed to create preparing notification", err);
         }
       }
-      if (newStatus === "Ready" || newStatus === "Ready for Pickup") {
+      if (newStatus === "Ready" || newStatus === "Ready for Pickup" || newStatus === "Ready for Dispatch") {
         try {
           const Notification2 = (await Promise.resolve().then(() => (init_Notification(), Notification_exports))).default;
           const notif = await Notification2.create({
@@ -129802,6 +129509,16 @@ var updateOrderToPaid = async (req, res) => {
   const { paymentMethod, taxPrice, totalPrice } = req.body;
   const order = await Order_default.findById(req.params.id);
   if (order) {
+    const effectiveMethod = paymentMethod || order.paymentMethod;
+    const isCashMethod = ["cash on delivery", "cash", "pay at counter", "cod"].some(
+      (m) => String(effectiveMethod || "").toLowerCase().includes(m)
+    );
+    const isStaff = req.user && ["SuperAdmin", "RestaurantAdmin", "BranchManager", "Cashier", "Waiter", "DeliveryPartner"].includes(req.user.role);
+    if (isCashMethod && !isStaff && req.body.paymentStatus !== "CASH_COLLECTED") {
+      return res.status(400).json({
+        message: "Cash on Delivery orders cannot be marked as paid online. Payment will be collected upon delivery or at the counter."
+      });
+    }
     order.isPaid = true;
     order.paidAt = Date.now();
     if (paymentMethod) order.paymentMethod = paymentMethod;
@@ -129815,8 +129532,8 @@ var updateOrderToPaid = async (req, res) => {
     };
     if (order.orderType === "Dine In") {
       try {
-        const mongoose53 = await Promise.resolve().then(() => __toESM(require_mongoose2(), 1));
-        const Table2 = mongoose53.model("Table");
+        const mongoose56 = await Promise.resolve().then(() => __toESM(require_mongoose2(), 1));
+        const Table2 = mongoose56.model("Table");
         const table = await Table2.findOne({
           tableNumber: order.tableNumber,
           restaurantId: order.restaurantId,
@@ -130017,7 +129734,180 @@ var import_express5 = __toESM(require_express2(), 1);
 var import_mongoose24 = __toESM(require_mongoose2(), 1);
 init_Order();
 init_Branch();
-init_Expense();
+
+// models/Expense.js
+var import_mongoose19 = __toESM(require_mongoose2(), 1);
+var expensePaymentSchema = new import_mongoose19.default.Schema({
+  amount: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  paidDate: {
+    type: Date,
+    default: Date.now,
+    required: true
+  },
+  paymentMethod: {
+    type: String,
+    enum: ["Cash", "Bank Transfer", "UPI", "Card", "Cheque", "Other"],
+    default: "Cash",
+    required: true
+  },
+  reference: {
+    type: String,
+    default: ""
+  },
+  notes: {
+    type: String,
+    default: ""
+  },
+  recordedBy: {
+    type: import_mongoose19.default.Schema.Types.ObjectId,
+    ref: "User"
+  }
+}, { _id: true, timestamps: true });
+var expenseSchema = new import_mongoose19.default.Schema({
+  category: {
+    type: String,
+    required: true,
+    enum: [
+      "Rent",
+      "Electricity",
+      "Water",
+      "Internet",
+      "Material purchases",
+      "Staff salary",
+      "Equipment maintenance",
+      "Delivery and transport",
+      "Kitchen Supplies",
+      "Utility Bill",
+      "Maintenance",
+      "Staff Welfare",
+      "Marketing",
+      "Other operating expenses",
+      "Others"
+    ],
+    index: true
+  },
+  title: {
+    type: String,
+    default: "",
+    trim: true
+  },
+  amount: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  description: {
+    type: String,
+    default: "",
+    trim: true
+  },
+  date: {
+    type: Date,
+    required: true,
+    default: Date.now,
+    index: true
+  },
+  dueDate: {
+    type: Date
+  },
+  billingPeriod: {
+    type: String
+    // e.g., "October 2026"
+  },
+  paymentStatus: {
+    type: String,
+    enum: ["Pending", "Partially Paid", "Paid", "Overdue"],
+    default: "Paid",
+    // Default Paid for backward compatibility with existing recorded expenses
+    index: true
+  },
+  paidAmount: {
+    type: Number,
+    default: function() {
+      return this.paymentStatus === "Paid" ? this.amount : 0;
+    }
+  },
+  balanceDue: {
+    type: Number,
+    default: 0
+  },
+  paymentMethod: {
+    type: String,
+    enum: ["Cash", "Bank Transfer", "UPI", "Card", "Cheque", "Other"],
+    default: "Cash"
+  },
+  paymentDate: {
+    type: Date
+  },
+  payments: [expensePaymentSchema],
+  isRecurring: {
+    type: Boolean,
+    default: false
+  },
+  recurringFrequency: {
+    type: String,
+    enum: ["Monthly", "Quarterly", "Yearly"]
+  },
+  recurringKey: {
+    type: String,
+    // format: "category_branchId_YYYY-MM" to prevent duplicate recurring bills
+    sparse: true
+  },
+  receiptUrl: {
+    type: String,
+    default: ""
+  },
+  notes: {
+    type: String,
+    default: ""
+  },
+  source: {
+    type: String,
+    enum: ["Manual", "Material Purchase", "Payroll", "Recurring"],
+    default: "Manual"
+  },
+  sourceId: {
+    type: import_mongoose19.default.Schema.Types.ObjectId
+    // Link to MaterialPurchase or Payroll to prevent double-counting
+  },
+  staff: {
+    type: String,
+    required: true,
+    default: "Staff"
+  },
+  restaurantId: {
+    type: import_mongoose19.default.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: true,
+    index: true
+  },
+  branchId: {
+    type: import_mongoose19.default.Schema.Types.ObjectId,
+    ref: "Branch",
+    index: true
+  },
+  createdBy: {
+    type: import_mongoose19.default.Schema.Types.ObjectId,
+    ref: "User"
+  }
+}, { timestamps: true });
+expenseSchema.pre("save", function(next) {
+  if (!this.title && this.description) {
+    this.title = this.description;
+  }
+  if (!this.description && this.title) {
+    this.description = this.title;
+  }
+  next();
+});
+expenseSchema.index({ restaurantId: 1, date: -1 });
+expenseSchema.index({ restaurantId: 1, category: 1, date: -1 });
+var Expense = import_mongoose19.default.model("Expense", expenseSchema);
+var Expense_default = Expense;
 
 // models/MaterialPurchase.js
 var import_mongoose20 = __toESM(require_mongoose2(), 1);
@@ -130334,6 +130224,9 @@ var payrollSchema = new import_mongoose22.default.Schema({
     presentDays: { type: Number, default: 0 },
     absentDays: { type: Number, default: 0 },
     leaveDays: { type: Number, default: 0 },
+    paidLeaveDays: { type: Number, default: 0 },
+    unpaidLeaveDays: { type: Number, default: 0 },
+    lopDays: { type: Number, default: 0 },
     halfDays: { type: Number, default: 0 },
     holidays: { type: Number, default: 0 },
     overtimeHours: { type: Number, default: 0 },
@@ -130341,6 +130234,7 @@ var payrollSchema = new import_mongoose22.default.Schema({
   },
   calculations: {
     earnedBasic: { type: Number, default: 0 },
+    lopDeduction: { type: Number, default: 0 },
     overtimePay: { type: Number, default: 0 },
     bonuses: { type: Number, default: 0 },
     allowances: { type: Number, default: 0 },
@@ -130365,8 +130259,8 @@ var payrollSchema = new import_mongoose22.default.Schema({
   payments: [payrollPaymentSchema],
   status: {
     type: String,
-    enum: ["Draft", "Approved", "Processed"],
-    default: "Draft"
+    enum: ["Draft", "Generated", "Approved", "Finalized", "Processed"],
+    default: "Generated"
   },
   approvedBy: {
     type: import_mongoose22.default.Schema.Types.ObjectId,
@@ -130378,7 +130272,17 @@ var payrollSchema = new import_mongoose22.default.Schema({
   notes: {
     type: String,
     default: ""
-  }
+  },
+  auditHistory: [
+    {
+      action: { type: String, required: true },
+      performedBy: { type: import_mongoose22.default.Schema.Types.ObjectId, ref: "User" },
+      performedByName: { type: String, default: "" },
+      timestamp: { type: Date, default: Date.now },
+      notes: { type: String, default: "" },
+      changes: { type: import_mongoose22.default.Schema.Types.Mixed }
+    }
+  ]
 }, { timestamps: true });
 payrollSchema.index({ restaurantId: 1, employee: 1, month: 1, year: 1 }, { unique: true });
 var Payroll = import_mongoose22.default.model("Payroll", payrollSchema);
@@ -130430,12 +130334,13 @@ var getUserRestaurantId = async (user, query = {}) => {
     const branchDoc = await Branch_default.findById(user.branchId);
     if (branchDoc) rId = branchDoc.restaurantId;
   }
-  if (!rId && query?.restaurantId) {
-    rId = query.restaurantId;
-  }
-  if (!rId && user?.role === "SuperAdmin") {
-    const firstRest = await Restaurant_default.findOne().select("_id");
-    if (firstRest) rId = firstRest._id;
+  if (user?.role === "SuperAdmin") {
+    if (query?.restaurantId) {
+      rId = query.restaurantId;
+    } else if (!rId) {
+      const firstRest = await Restaurant_default.findOne().select("_id");
+      if (firstRest) rId = firstRest._id;
+    }
   }
   return rId;
 };
@@ -130455,11 +130360,11 @@ var parseDateFilter = (period, startDate, endDate) => {
     end.setHours(23, 59, 59, 999);
   } else if (period === "last7days" || period === "weekly") {
     start = /* @__PURE__ */ new Date();
-    start.setDate(now.getDate() - 7);
+    start.setDate(now.getDate() - 6);
     start.setHours(0, 0, 0, 0);
   } else if (period === "last30days") {
     start = /* @__PURE__ */ new Date();
-    start.setDate(now.getDate() - 30);
+    start.setDate(now.getDate() - 29);
     start.setHours(0, 0, 0, 0);
   } else if (period === "thismonth" || period === "monthly") {
     start = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -130470,12 +130375,25 @@ var parseDateFilter = (period, startDate, endDate) => {
     end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
   } else if (startDate || endDate) {
     if (startDate) {
-      start = new Date(startDate);
-      start.setHours(0, 0, 0, 0);
+      const sParts = String(startDate).split("-");
+      if (sParts.length === 3) {
+        start = new Date(parseInt(sParts[0], 10), parseInt(sParts[1], 10) - 1, parseInt(sParts[2], 10), 0, 0, 0, 0);
+      } else {
+        start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+      }
     }
     if (endDate) {
-      end = new Date(endDate);
-      end.setHours(23, 59, 59, 999);
+      const eParts = String(endDate).split("-");
+      if (eParts.length === 3) {
+        end = new Date(parseInt(eParts[0], 10), parseInt(eParts[1], 10) - 1, parseInt(eParts[2], 10), 23, 59, 59, 999);
+      } else {
+        end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+      }
+    }
+    if (!start && end) {
+      start = new Date(end.getFullYear(), end.getMonth(), 1, 0, 0, 0, 0);
     }
   } else {
     start = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -130616,8 +130534,7 @@ var getDashboardAnalytics = async (req, res) => {
           { $project: { duration: { $divide: [{ $subtract: ["$updatedAt", "$createdAt"] }, 6e4] } } },
           { $group: { _id: null, avgDuration: { $avg: "$duration" } } }
         ]);
-        avgPrepTime = prepTimeAvg.length > 0 ? Math.round(prepTimeAvg[0].avgDuration || 0) : 15;
-        if (avgPrepTime < 1) avgPrepTime = 12;
+        avgPrepTime = prepTimeAvg.length > 0 ? Math.round(prepTimeAvg[0].avgDuration || 0) : 0;
       } catch (qrErr) {
         console.error("Failed to aggregate QR stats", qrErr);
       }
@@ -130659,6 +130576,14 @@ var getDashboardAnalytics = async (req, res) => {
         console.error("Failed to aggregate delivery stats", delErr);
       }
     }
+    let activeCustomers = 0;
+    if (restIdObj && curOrders > 0) {
+      const distinctPhones = await Order_default.distinct("customerPhone", {
+        ...currentPeriodMatch,
+        customerPhone: { $exists: true, $ne: "" }
+      });
+      activeCustomers = distinctPhones.length > 0 ? distinctPhones.length : curOrders;
+    }
     res.json({
       overview: {
         totalRevenue: curRevenue,
@@ -130667,7 +130592,7 @@ var getDashboardAnalytics = async (req, res) => {
         ordersChange,
         avgOrderValue: curAvg,
         avgChange,
-        activeCustomers: curOrders > 0 ? Math.floor(curOrders * 0.8) : 0,
+        activeCustomers,
         customersChange: ordersChange
       },
       revenueTrend,
@@ -130700,6 +130625,7 @@ var getProfitAndLoss = async (req, res) => {
     const restaurantId = await getUserRestaurantId(req.user, req.query);
     if (!restaurantId) return res.status(400).json({ message: "Restaurant ID required" });
     const restObjId = new import_mongoose24.default.Types.ObjectId(restaurantId);
+    const restaurantDoc = await Restaurant_default.findById(restaurantId).select("name currency logo");
     const { start, end } = parseDateFilter(req.query.period, req.query.startDate, req.query.endDate);
     const orderMatch = {
       restaurantId: restObjId,
@@ -130720,7 +130646,7 @@ var getProfitAndLoss = async (req, res) => {
     let grossSales = 0;
     let discounts = 0;
     let refunds = 0;
-    let netSales = 0;
+    let taxesCollected = 0;
     let amountCollected = 0;
     let outstandingCustomerPayments = 0;
     let totalOrdersCount = orders.length;
@@ -130736,11 +130662,13 @@ var getProfitAndLoss = async (req, res) => {
     for (const ord of orders) {
       const tot = Number(ord.totalPrice) || 0;
       const disc = Number(ord.discountAmount || ord.discount) || 0;
+      const tax = Number(ord.taxPrice) || 0;
       if (ord.status === "Cancelled") {
         cancelledOrdersCount++;
         refunds += tot;
         continue;
       }
+      taxesCollected += tax;
       if (ord.isPaid) {
         grossSales += tot + disc;
         discounts += disc;
@@ -130753,15 +130681,49 @@ var getProfitAndLoss = async (req, res) => {
         else if (method.includes("Online")) paymentMethodBreakdown.Online += tot;
         else paymentMethodBreakdown.Other += tot;
       } else {
+        grossSales += tot + disc;
+        discounts += disc;
         outstandingCustomerPayments += tot;
       }
     }
-    netSales = Math.max(0, grossSales - discounts - refunds);
+    const netSales = Math.max(0, grossSales - discounts - refunds);
+    const purchaseMatch = {
+      restaurantId: restObjId,
+      purchaseDate: { $gte: start, $lte: end }
+    };
+    if (orderMatch.branchId) purchaseMatch.branchId = orderMatch.branchId;
+    const materialPurchases = await MaterialPurchase_default.find(purchaseMatch).lean();
+    const accountedPurchaseIds = /* @__PURE__ */ new Set();
+    const payrollPeriods = [];
+    let currMonth = new Date(start.getFullYear(), start.getMonth(), 1);
+    const lastMonth = new Date(end.getFullYear(), end.getMonth(), 1);
+    while (currMonth <= lastMonth) {
+      payrollPeriods.push({ month: currMonth.getMonth() + 1, year: currMonth.getFullYear() });
+      currMonth.setMonth(currMonth.getMonth() + 1);
+    }
+    const payrollQuery = {
+      restaurantId: restObjId,
+      $or: payrollPeriods.length > 0 ? payrollPeriods.map((p) => ({ month: p.month, year: p.year })) : [{ month: -1 }],
+      status: { $ne: "Draft" }
+    };
+    if (orderMatch.branchId) payrollQuery.branchId = orderMatch.branchId;
+    const payrollRecords = await Payroll_default.find(payrollQuery).lean();
+    let payrollSalaryIncurred = 0;
+    let payrollSalaryPaid = 0;
+    let payrollSalaryDue = 0;
+    for (const pr of payrollRecords) {
+      const net = Number(pr.calculations?.netSalaryPayable ?? pr.netPayable) || 0;
+      const paid = Number(pr.paidAmount) || 0;
+      const due = Number(pr.balanceDue ?? Math.max(0, net - paid)) || 0;
+      payrollSalaryIncurred += net;
+      payrollSalaryPaid += paid;
+      payrollSalaryDue += due;
+    }
     const expenses = await Expense_default.find(expenseMatch).lean();
     let materialPurchasesIncurred = 0;
     let materialPurchasesPaid = 0;
-    let staffSalariesIncurred = 0;
-    let staffSalariesPaid = 0;
+    let manualSalaryIncurred = 0;
+    let manualSalaryPaid = 0;
     let rentIncurred = 0;
     let rentPaid = 0;
     let electricityIncurred = 0;
@@ -130774,16 +130736,34 @@ var getProfitAndLoss = async (req, res) => {
     let deliveryTransportPaid = 0;
     let otherExpensesIncurred = 0;
     let otherExpensesPaid = 0;
+    let paidBillsCount = 0;
+    let pendingBillsCount = 0;
+    let overdueBillsCount = 0;
+    let overdueBillsAmount = 0;
+    const now = /* @__PURE__ */ new Date();
     for (const exp of expenses) {
       const amt = Number(exp.amount) || 0;
       const paid = Number(exp.paidAmount) || 0;
+      const due = Math.max(0, amt - paid);
       const cat = exp.category;
+      if (due === 0 && amt > 0) paidBillsCount++;
+      else if (due > 0) {
+        pendingBillsCount++;
+        if (exp.dueDate && new Date(exp.dueDate) < now) {
+          overdueBillsCount++;
+          overdueBillsAmount += due;
+        }
+      }
       if (cat === "Material purchases" || cat === "Kitchen Supplies") {
         materialPurchasesIncurred += amt;
         materialPurchasesPaid += paid;
+        if (exp.sourceId) accountedPurchaseIds.add(exp.sourceId.toString());
       } else if (cat === "Staff salary" || cat === "Staff Welfare") {
-        staffSalariesIncurred += amt;
-        staffSalariesPaid += paid;
+        if (exp.source === "Payroll") {
+        } else {
+          manualSalaryIncurred += amt;
+          manualSalaryPaid += paid;
+        }
       } else if (cat === "Rent") {
         rentIncurred += amt;
         rentPaid += paid;
@@ -130804,6 +130784,17 @@ var getProfitAndLoss = async (req, res) => {
         otherExpensesPaid += paid;
       }
     }
+    for (const mp of materialPurchases) {
+      if (!accountedPurchaseIds.has(mp._id.toString())) {
+        const mpTot = Number(mp.totalAmount) || 0;
+        const mpPaid = Number(mp.paidAmount) || 0;
+        materialPurchasesIncurred += mpTot;
+        materialPurchasesPaid += mpPaid;
+      }
+    }
+    const staffSalariesIncurred = Math.round((payrollSalaryIncurred + manualSalaryIncurred) * 100) / 100;
+    const staffSalariesPaid = Math.round((payrollSalaryPaid + manualSalaryPaid) * 100) / 100;
+    const staffSalariesOutstanding = Math.round((payrollSalaryDue + Math.max(0, manualSalaryIncurred - manualSalaryPaid)) * 100) / 100;
     const movementMatch = {
       restaurantId: restObjId,
       date: { $gte: start, $lte: end },
@@ -130814,7 +130805,7 @@ var getProfitAndLoss = async (req, res) => {
       { $match: movementMatch },
       { $group: { _id: null, totalConsumed: { $sum: "$totalValue" } } }
     ]);
-    const actualStockConsumed = consumedAgg.length > 0 ? consumedAgg[0].totalConsumed : 0;
+    const actualStockConsumed = consumedAgg.length > 0 ? Math.round(consumedAgg[0].totalConsumed * 100) / 100 : 0;
     const cogsFoodCost = materialPurchasesIncurred > 0 ? materialPurchasesIncurred : actualStockConsumed;
     const grossProfit = Math.round((netSales - cogsFoodCost) * 100) / 100;
     const grossProfitMargin = netSales > 0 ? Math.round(grossProfit / netSales * 1e3) / 10 : 0;
@@ -130822,14 +130813,16 @@ var getProfitAndLoss = async (req, res) => {
     const totalOperatingExpensesPaid = Math.round((staffSalariesPaid + rentPaid + electricityPaid + waterInternetPaid + maintenancePaid + deliveryTransportPaid + otherExpensesPaid) * 100) / 100;
     const netOperatingProfit = Math.round((grossProfit - totalOperatingExpensesIncurred) * 100) / 100;
     const netProfitMargin = netSales > 0 ? Math.round(netOperatingProfit / netSales * 1e3) / 10 : 0;
-    const actualCashOutflows = materialPurchasesPaid + totalOperatingExpensesPaid;
+    const actualCashOutflows = Math.round((materialPurchasesPaid + totalOperatingExpensesPaid) * 100) / 100;
     const netCashFlow = Math.round((amountCollected - actualCashOutflows) * 100) / 100;
     const totalOutstandingLiabilities = Math.round((materialPurchasesIncurred - materialPurchasesPaid + (totalOperatingExpensesIncurred - totalOperatingExpensesPaid)) * 100) / 100;
+    const isEmpty = totalOrdersCount === 0 && expenses.length === 0 && payrollRecords.length === 0 && materialPurchases.length === 0;
     const formattedSales = {
       grossSales: Math.round(grossSales * 100) / 100,
       discounts: Math.round(discounts * 100) / 100,
       refunds: Math.round(refunds * 100) / 100,
       netSales: Math.round(netSales * 100) / 100,
+      taxesCollected: Math.round(taxesCollected * 100) / 100,
       amountCollected: Math.round(amountCollected * 100) / 100,
       outstandingCustomerPayments: Math.round(outstandingCustomerPayments * 100) / 100,
       paymentMethods: paymentMethodBreakdown,
@@ -130842,15 +130835,28 @@ var getProfitAndLoss = async (req, res) => {
       materialPurchasesIncurred: Math.round(materialPurchasesIncurred * 100) / 100,
       materialPurchasesPaid: Math.round(materialPurchasesPaid * 100) / 100,
       actualStockConsumed: Math.round(actualStockConsumed * 100) / 100,
-      staffSalaryExpenses: Math.round(staffSalariesIncurred * 100) / 100,
+      staffSalaryExpenses: staffSalariesIncurred,
+      staffSalaryPaid: staffSalariesPaid,
+      staffSalaryDue: staffSalariesOutstanding,
       rent: Math.round(rentIncurred * 100) / 100,
+      rentPaid: Math.round(rentPaid * 100) / 100,
       electricity: Math.round(electricityIncurred * 100) / 100,
+      electricityPaid: Math.round(electricityPaid * 100) / 100,
       waterAndInternet: Math.round(waterInternetIncurred * 100) / 100,
+      waterAndInternetPaid: Math.round(waterInternetPaid * 100) / 100,
       maintenance: Math.round(maintenanceIncurred * 100) / 100,
+      maintenancePaid: Math.round(maintenancePaid * 100) / 100,
+      deliveryTransport: Math.round(deliveryTransportIncurred * 100) / 100,
       otherOperatingExpenses: Math.round((deliveryTransportIncurred + otherExpensesIncurred) * 100) / 100,
       totalExpensesIncurred: totalOperatingExpensesIncurred,
       totalExpensesPaid: totalOperatingExpensesPaid,
-      outstandingExpensesLiability: totalOutstandingLiabilities
+      outstandingExpensesLiability: totalOutstandingLiabilities,
+      billsStatus: {
+        paidBillsCount,
+        pendingBillsCount,
+        overdueBillsCount,
+        overdueBillsAmount: Math.round(overdueBillsAmount * 100) / 100
+      }
     };
     const formattedProfitability = {
       grossProfit,
@@ -130858,7 +130864,8 @@ var getProfitAndLoss = async (req, res) => {
       netOperatingProfitLoss: netOperatingProfit,
       netProfitMarginPercent: netProfitMargin,
       netCashFlow,
-      outstandingLiabilities: totalOutstandingLiabilities
+      outstandingLiabilities: totalOutstandingLiabilities,
+      outstandingCustomerReceivables: Math.round(outstandingCustomerPayments * 100) / 100
     };
     const formattedCashFlow = {
       actualCashCollected: Math.round(amountCollected * 100) / 100,
@@ -130866,6 +130873,12 @@ var getProfitAndLoss = async (req, res) => {
       netCashFlow
     };
     res.json({
+      isEmpty,
+      restaurant: {
+        id: restaurantId,
+        name: restaurantDoc?.name || "Restaurant",
+        currency: restaurantDoc?.currency || "INR"
+      },
       period: {
         startDate: start,
         endDate: end,
@@ -130888,7 +130901,7 @@ var getProfitAndLoss = async (req, res) => {
         methodology: materialPurchasesIncurred > 0 ? "Based on actual supplier material purchases in period" : "Based on recorded kitchen stock consumption and wastage"
       },
       operatingExpenses: {
-        staffSalaries: { incurred: Math.round(staffSalariesIncurred * 100) / 100, paid: Math.round(staffSalariesPaid * 100) / 100 },
+        staffSalaries: { incurred: staffSalariesIncurred, paid: staffSalariesPaid, due: staffSalariesOutstanding },
         rent: { incurred: Math.round(rentIncurred * 100) / 100, paid: Math.round(rentPaid * 100) / 100 },
         electricity: { incurred: Math.round(electricityIncurred * 100) / 100, paid: Math.round(electricityPaid * 100) / 100 },
         waterAndInternet: { incurred: Math.round(waterInternetIncurred * 100) / 100, paid: Math.round(waterInternetPaid * 100) / 100 },
@@ -130900,10 +130913,12 @@ var getProfitAndLoss = async (req, res) => {
       },
       profitMetrics: formattedProfitability,
       calculationBreakdown: {
+        accountingStandard: "Accrual-basis Income Statement with Cash Flow Reconciliation",
         netSalesFormula: "Gross Sales minus Discounts minus Cancelled Orders",
-        grossProfitFormula: "Net Sales minus Material and Food Costs",
-        netOperatingProfitLossFormula: "Gross Profit minus Total Operating Overhead",
-        antiDoubleCountingRule: "Material purchases linked to expenses are reconciled without duplication"
+        grossProfitFormula: "Net Realized Sales minus Cost of Goods Sold",
+        netOperatingProfitLossFormula: "Gross Profit minus Total Incurred Operating Expenses",
+        cashFlowFormula: "Actual Cash Collected minus Actual Cash Outflows Disbursed",
+        antiDoubleCountingRule: "Payroll salary disbursements and material purchase payments linked to expense ledgers are reconciled without duplication"
       }
     });
   } catch (error) {
@@ -131094,11 +131109,13 @@ var getMenuItems = async (req, res) => {
         ];
       }
     }
-    const items = await MenuItem_default.find(filter).populate("restaurantId", "name approvalStatus logo subscription isActive");
+    const items = await MenuItem_default.find(filter).populate("restaurantId", "name approvalStatus logo subscription isActive isDeleted status");
     const validItems = items.filter((item) => {
       if (!item.restaurantId) return false;
       if (typeof item.restaurantId === "object") {
-        if (item.restaurantId.approvalStatus === "Rejected") return false;
+        if (item.restaurantId.isDeleted) return false;
+        if (item.restaurantId.status && item.restaurantId.status !== "Active") return false;
+        if (item.restaurantId.approvalStatus !== "Approved") return false;
         if (item.restaurantId.isActive === false) return false;
         const subStatus = item.restaurantId.subscription?.status;
         if (subStatus && ["Frozen", "Cancelled", "Inactive", "Expired", "Suspended"].includes(subStatus)) {
@@ -131167,9 +131184,99 @@ init_Restaurant();
 init_User();
 init_Order();
 init_Plan();
-init_Ticket();
+
+// models/Ticket.js
+var import_mongoose25 = __toESM(require_mongoose2(), 1);
+var ticketSchema = new import_mongoose25.default.Schema({
+  ticketId: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  restaurantId: {
+    type: import_mongoose25.default.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: true
+  },
+  branchId: {
+    type: import_mongoose25.default.Schema.Types.ObjectId,
+    ref: "Branch"
+  },
+  subject: {
+    type: String,
+    required: true
+  },
+  category: {
+    type: String,
+    enum: [
+      "Billing",
+      "Subscription",
+      "Orders",
+      "Kitchen",
+      "Inventory",
+      "POS",
+      "QR Digital Menu",
+      "Delivery",
+      "Staff Management",
+      "Technical Issue",
+      "Feature Request",
+      "Other"
+    ],
+    required: true
+  },
+  priority: {
+    type: String,
+    enum: ["Low", "Medium", "High", "Critical"],
+    default: "Medium"
+  },
+  status: {
+    type: String,
+    enum: ["Open", "Assigned", "In Progress", "Waiting for Customer", "Resolved", "Closed"],
+    default: "Open"
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  assignedAgentId: {
+    type: import_mongoose25.default.Schema.Types.ObjectId,
+    ref: "User"
+  },
+  attachments: [{
+    type: String
+  }],
+  resolutionTime: {
+    type: Number,
+    // in minutes
+    default: null
+  },
+  csatRating: {
+    type: Number,
+    // 1 to 5 stars
+    min: 1,
+    max: 5,
+    default: null
+  },
+  csatFeedback: {
+    type: String,
+    default: ""
+  },
+  lastUpdated: {
+    type: Date,
+    default: Date.now
+  }
+}, {
+  timestamps: true
+});
+ticketSchema.pre("save", function(next) {
+  this.lastUpdated = /* @__PURE__ */ new Date();
+  next();
+});
+var Ticket = import_mongoose25.default.model("Ticket", ticketSchema);
+var Ticket_default = Ticket;
+
+// controllers/superAdminController.js
 init_Notification();
-init_SubscriptionPayment();
 var getStats = async (req, res) => {
   try {
     const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
@@ -131204,10 +131311,15 @@ var getStats = async (req, res) => {
         });
       }
     }
-    const totalRestaurants = await Restaurant_default.countDocuments();
-    const activeRestaurants = await Restaurant_default.countDocuments({ approvalStatus: { $ne: "Rejected" }, "subscription.status": { $ne: "Cancelled" } });
-    const pendingRestaurants = await Restaurant_default.countDocuments({ approvalStatus: "Pending" });
-    const frozenRestaurants = await Restaurant_default.countDocuments({ "subscription.status": "Frozen" });
+    const totalRestaurants = await Restaurant_default.countDocuments({ isDeleted: { $ne: true } });
+    const activeRestaurants = await Restaurant_default.countDocuments({
+      isDeleted: { $ne: true },
+      status: "Active",
+      approvalStatus: "Approved",
+      "subscription.status": { $nin: ["Cancelled", "Frozen", "Expired", "Suspended", "Inactive"] }
+    });
+    const pendingRestaurants = await Restaurant_default.countDocuments({ isDeleted: { $ne: true }, approvalStatus: "Pending" });
+    const frozenRestaurants = await Restaurant_default.countDocuments({ isDeleted: { $ne: true }, "subscription.status": "Frozen" });
     const totalUsers = await User_default.countDocuments();
     const totalOrders = await Order_default.countDocuments();
     const activeSubscribedRestaurants = await Restaurant_default.find({
@@ -131343,55 +131455,113 @@ var updateSubscription2 = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+var updateRestaurantVisibilityStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const validStatuses = ["Active", "Inactive", "Suspended", "Deleted"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        message: `Invalid status. Must be one of: ${validStatuses.join(", ")}`
+      });
+    }
+    const restaurant = await Restaurant_default.findById(id);
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
+    restaurant.status = status;
+    if (status === "Active") {
+      restaurant.isActive = true;
+      restaurant.isDeleted = false;
+      restaurant.deletedAt = null;
+      restaurant.deletedBy = null;
+      if (restaurant.subscription && (restaurant.subscription.status === "Suspended" || restaurant.subscription.status === "Frozen")) {
+        restaurant.subscription.status = "Active";
+      }
+    } else if (status === "Inactive") {
+      restaurant.isActive = false;
+      restaurant.isDeleted = false;
+    } else if (status === "Suspended") {
+      restaurant.isActive = false;
+      restaurant.isDeleted = false;
+      if (restaurant.subscription) {
+        restaurant.subscription.status = "Suspended";
+      }
+    } else if (status === "Deleted") {
+      restaurant.isActive = false;
+      restaurant.isDeleted = true;
+      restaurant.deletedAt = /* @__PURE__ */ new Date();
+      restaurant.deletedBy = req.user._id;
+    }
+    await restaurant.save();
+    res.json({
+      message: `Restaurant status updated to ${status} successfully`,
+      restaurant
+    });
+  } catch (error) {
+    console.error("Failed to update restaurant status:", error);
+    res.status(500).json({ message: error.message || "Failed to update restaurant status" });
+  }
+};
+var restoreRestaurant = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const restaurant = await Restaurant_default.findById(id);
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
+    restaurant.status = "Active";
+    restaurant.isActive = true;
+    restaurant.isDeleted = false;
+    restaurant.deletedAt = null;
+    restaurant.deletedBy = null;
+    if (restaurant.subscription && (restaurant.subscription.status === "Suspended" || restaurant.subscription.status === "Frozen")) {
+      restaurant.subscription.status = "Active";
+    }
+    await restaurant.save();
+    res.json({
+      message: "Restaurant restored and activated successfully",
+      restaurant
+    });
+  } catch (error) {
+    console.error("Failed to restore restaurant:", error);
+    res.status(500).json({ message: error.message || "Failed to restore restaurant" });
+  }
+};
 var deleteRestaurant = async (req, res) => {
   try {
     const { id } = req.params;
-    const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
-    const RestaurantVerification2 = (await Promise.resolve().then(() => (init_RestaurantVerification(), RestaurantVerification_exports))).default;
-    const Menu = (await import("../models/Menu.js")).default;
-    const MenuItem2 = (await Promise.resolve().then(() => (init_MenuItem(), MenuItem_exports))).default;
-    const Order3 = (await Promise.resolve().then(() => (init_Order(), Order_exports))).default;
-    const Table2 = (await Promise.resolve().then(() => (init_Table(), Table_exports))).default;
-    const Category2 = (await Promise.resolve().then(() => (init_Category(), Category_exports))).default;
-    const Inventory2 = (await Promise.resolve().then(() => (init_Inventory(), Inventory_exports))).default;
-    const Expense2 = (await Promise.resolve().then(() => (init_Expense(), Expense_exports))).default;
-    const DeliveryPartner2 = (await Promise.resolve().then(() => (init_DeliveryPartner(), DeliveryPartner_exports))).default;
-    const ServiceRequest2 = (await Promise.resolve().then(() => (init_ServiceRequest(), ServiceRequest_exports))).default;
-    const Role2 = (await Promise.resolve().then(() => (init_Role(), Role_exports))).default;
-    const WastageLog2 = (await Promise.resolve().then(() => (init_WastageLog(), WastageLog_exports))).default;
-    const Ticket2 = (await Promise.resolve().then(() => (init_Ticket(), Ticket_exports))).default;
-    const Notification2 = (await Promise.resolve().then(() => (init_Notification(), Notification_exports))).default;
-    const SubscriptionPayment2 = (await Promise.resolve().then(() => (init_SubscriptionPayment(), SubscriptionPayment_exports))).default;
+    const isPermanent = req.query.permanent === "true";
     const restaurant = await Restaurant_default.findById(id);
-    if (restaurant) {
-      if (restaurant.ownerId) {
-        await User_default.findByIdAndDelete(restaurant.ownerId);
-      }
-      await User_default.deleteMany({ restaurantId: id });
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
+    if (isPermanent) {
+      const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+      const RestaurantVerification2 = (await Promise.resolve().then(() => (init_RestaurantVerification(), RestaurantVerification_exports))).default;
+      const Menu = (await import("../models/Menu.js")).default;
+      const MenuItem2 = (await Promise.resolve().then(() => (init_MenuItem(), MenuItem_exports))).default;
+      const Table2 = (await Promise.resolve().then(() => (init_Table(), Table_exports))).default;
+      const Category2 = (await Promise.resolve().then(() => (init_Category(), Category_exports))).default;
       await Branch3.deleteMany({ restaurantId: id });
       await RestaurantVerification2.deleteMany({ restaurantId: id });
       await Menu.deleteMany({ restaurantId: id });
       await MenuItem2.deleteMany({ restaurantId: id });
-      await Order3.deleteMany({ restaurantId: id });
       await Table2.deleteMany({ restaurantId: id });
       await Category2.deleteMany({ restaurantId: id });
-      await Inventory2.deleteMany({ restaurantId: id });
-      await Expense2.deleteMany({ restaurantId: id });
-      await DeliveryPartner2.deleteMany({ restaurantId: id });
-      await ServiceRequest2.deleteMany({ restaurantId: id });
-      await Role2.deleteMany({ restaurantId: id });
-      await WastageLog2.deleteMany({ restaurantId: id });
-      await Ticket2.deleteMany({ restaurantId: id });
-      await Notification2.deleteMany({ restaurantId: id });
-      await SubscriptionPayment2.deleteMany({ restaurantId: id });
       await Restaurant_default.findByIdAndDelete(id);
-    } else {
-      await User_default.deleteMany({ restaurantId: id });
-      await Branch3.deleteMany({ restaurantId: id });
-      await RestaurantVerification2.deleteMany({ restaurantId: id });
-      await Restaurant_default.findByIdAndDelete(id);
+      return res.json({ message: "Restaurant permanently removed." });
     }
-    res.json({ message: "Restaurant deleted successfully" });
+    restaurant.status = "Deleted";
+    restaurant.isDeleted = true;
+    restaurant.deletedAt = /* @__PURE__ */ new Date();
+    restaurant.deletedBy = req.user._id;
+    restaurant.isActive = false;
+    await restaurant.save();
+    res.json({
+      message: "Restaurant safely deactivated and soft-deleted. Historical orders and financial reports preserved.",
+      restaurant
+    });
   } catch (error) {
     console.error("Failed to delete restaurant:", error);
     res.status(500).json({ message: error.message || "Failed to delete restaurant" });
@@ -131665,6 +131835,57 @@ var getSubscriptionAnalytics = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+var updateRestaurantModules = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { modules, branchLimit, staffLimit, isCustomBillingActive, customPlanName } = req.body;
+    const restaurant = await Restaurant_default.findById(id);
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
+    if (!restaurant.billingConfig) {
+      restaurant.billingConfig = { modules: {}, paymentMethods: {} };
+    }
+    if (isCustomBillingActive !== void 0) {
+      restaurant.billingConfig.isCustomBillingActive = Boolean(isCustomBillingActive);
+    } else {
+      restaurant.billingConfig.isCustomBillingActive = true;
+    }
+    if (customPlanName) {
+      restaurant.billingConfig.customPlanName = customPlanName;
+    }
+    if (branchLimit !== void 0) {
+      restaurant.billingConfig.branchLimit = Number(branchLimit);
+    }
+    if (staffLimit !== void 0) {
+      restaurant.billingConfig.staffLimit = Number(staffLimit);
+    }
+    if (modules) {
+      restaurant.billingConfig.modules = {
+        ...restaurant.billingConfig.modules,
+        ...modules
+      };
+      if (!restaurant.restaurantConfig) restaurant.restaurantConfig = {};
+      if (!restaurant.restaurantConfig.orderKitchen) restaurant.restaurantConfig.orderKitchen = {};
+      if (modules.kot !== void 0) {
+        restaurant.restaurantConfig.orderKitchen.kotEnabled = modules.kot;
+      }
+      if (modules.kds !== void 0) {
+        restaurant.restaurantConfig.orderKitchen.kdsEnabled = modules.kds;
+        restaurant.restaurantConfig.orderKitchen.kitchenMode = modules.kds ? "KDS" : "KOT_ONLY";
+      }
+    }
+    await restaurant.save();
+    res.json({
+      success: true,
+      message: `Custom module permissions updated for "${restaurant.name}"!`,
+      data: restaurant.billingConfig
+    });
+  } catch (error) {
+    console.error("Error updating restaurant modules:", error);
+    res.status(500).json({ message: error.message || "Server error updating modules" });
+  }
+};
 
 // routes/superAdminRoutes.js
 var router7 = import_express7.default.Router();
@@ -131672,8 +131893,11 @@ router7.use(protect, authorize("SuperAdmin"));
 router7.route("/stats").get(getStats);
 router7.route("/restaurants").get(getRestaurants2);
 router7.route("/restaurants/:id").delete(deleteRestaurant);
+router7.route("/restaurants/:id/status").put(updateRestaurantVisibilityStatus);
+router7.route("/restaurants/:id/restore").put(restoreRestaurant);
 router7.route("/restaurants/:id/subscription").put(updateSubscription2);
 router7.route("/restaurants/:id/approval").put(updateApprovalStatus);
+router7.route("/restaurants/:id/modules").put(updateRestaurantModules);
 router7.route("/verifications/:id").delete(deleteVerification);
 router7.route("/notifications").get(getSuperAdminNotifications);
 router7.route("/notifications/broadcast").post(broadcastNotification);
@@ -131694,7 +131918,7 @@ var superAdminRoutes_default = router7;
 var import_express8 = __toESM(require_express2(), 1);
 
 // controllers/tableController.js
-var import_mongoose30 = __toESM(require_mongoose2(), 1);
+var import_mongoose27 = __toESM(require_mongoose2(), 1);
 init_Table();
 init_Order();
 var getTables = async (req, res) => {
@@ -131717,7 +131941,7 @@ var createTable = async (req, res) => {
   try {
     let finalBranchId = branchId || req.user.branchId;
     if (!finalBranchId) {
-      const Branch3 = import_mongoose30.default.model("Branch");
+      const Branch3 = import_mongoose27.default.model("Branch");
       const firstBranch = await Branch3.findOne({ restaurantId: req.user.restaurantId });
       if (firstBranch) {
         finalBranchId = firstBranch._id;
@@ -131784,7 +132008,7 @@ var tableRoutes_default = router8;
 var import_express9 = __toESM(require_express2(), 1);
 
 // controllers/customerController.js
-var import_mongoose31 = __toESM(require_mongoose2(), 1);
+var import_mongoose28 = __toESM(require_mongoose2(), 1);
 init_User();
 init_Order();
 var getCustomers = async (req, res) => {
@@ -131794,7 +132018,7 @@ var getCustomers = async (req, res) => {
       return res.json([]);
     }
     const orderCustomerIds = await Order_default.distinct("user", {
-      restaurantId: new import_mongoose31.default.Types.ObjectId(restaurantId),
+      restaurantId: new import_mongoose28.default.Types.ObjectId(restaurantId),
       user: { $exists: true, $ne: null }
     });
     const customers = await User_default.find({
@@ -131805,7 +132029,7 @@ var getCustomers = async (req, res) => {
       ]
     }).select("name email phoneNumber createdAt");
     const orderStats = await Order_default.aggregate([
-      { $match: { restaurantId: new import_mongoose31.default.Types.ObjectId(restaurantId), user: { $exists: true, $ne: null } } },
+      { $match: { restaurantId: new import_mongoose28.default.Types.ObjectId(restaurantId), user: { $exists: true, $ne: null } } },
       {
         $group: {
           _id: "$user",
@@ -131886,30 +132110,29 @@ var customerRoutes_default = router9;
 var import_express10 = __toESM(require_express2(), 1);
 
 // controllers/staffController.js
-var import_mongoose33 = __toESM(require_mongoose2(), 1);
+var import_mongoose31 = __toESM(require_mongoose2(), 1);
 init_User();
 init_Branch();
 init_Restaurant();
-init_DeliveryPartner();
 init_Plan();
 
 // models/Attendance.js
-var import_mongoose32 = __toESM(require_mongoose2(), 1);
-var attendanceSchema = new import_mongoose32.default.Schema({
+var import_mongoose29 = __toESM(require_mongoose2(), 1);
+var attendanceSchema = new import_mongoose29.default.Schema({
   restaurantId: {
-    type: import_mongoose32.default.Schema.Types.ObjectId,
+    type: import_mongoose29.default.Schema.Types.ObjectId,
     ref: "Restaurant",
     required: true,
     index: true
   },
   branchId: {
-    type: import_mongoose32.default.Schema.Types.ObjectId,
+    type: import_mongoose29.default.Schema.Types.ObjectId,
     ref: "Branch",
     required: true,
     index: true
   },
   employee: {
-    type: import_mongoose32.default.Schema.Types.ObjectId,
+    type: import_mongoose29.default.Schema.Types.ObjectId,
     ref: "User",
     required: true,
     index: true
@@ -131951,6 +132174,22 @@ var attendanceSchema = new import_mongoose32.default.Schema({
     type: String,
     default: ""
   },
+  leaveId: {
+    type: import_mongoose29.default.Schema.Types.ObjectId,
+    ref: "Leave"
+  },
+  leaveType: {
+    type: String,
+    default: ""
+  },
+  isPaidLeave: {
+    type: Boolean,
+    default: true
+  },
+  isLOP: {
+    type: Boolean,
+    default: false
+  },
   isCorrected: {
     type: Boolean,
     default: false
@@ -131964,7 +132203,7 @@ var attendanceSchema = new import_mongoose32.default.Schema({
       previousCheckOut: Date,
       newCheckOut: Date,
       correctedBy: {
-        type: import_mongoose32.default.Schema.Types.ObjectId,
+        type: import_mongoose29.default.Schema.Types.ObjectId,
         ref: "User"
       },
       reason: {
@@ -131978,23 +132217,107 @@ var attendanceSchema = new import_mongoose32.default.Schema({
     }
   ],
   createdBy: {
-    type: import_mongoose32.default.Schema.Types.ObjectId,
+    type: import_mongoose29.default.Schema.Types.ObjectId,
     ref: "User"
   }
 }, { timestamps: true });
 attendanceSchema.index({ restaurantId: 1, employee: 1, dateString: 1 }, { unique: true });
-var Attendance = import_mongoose32.default.model("Attendance", attendanceSchema);
+var Attendance = import_mongoose29.default.model("Attendance", attendanceSchema);
 var Attendance_default = Attendance;
 
+// models/Leave.js
+var import_mongoose30 = __toESM(require_mongoose2(), 1);
+var leaveSchema = new import_mongoose30.default.Schema({
+  restaurantId: {
+    type: import_mongoose30.default.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: true,
+    index: true
+  },
+  branchId: {
+    type: import_mongoose30.default.Schema.Types.ObjectId,
+    ref: "Branch",
+    required: true,
+    index: true
+  },
+  employee: {
+    type: import_mongoose30.default.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+    index: true
+  },
+  leaveType: {
+    type: String,
+    enum: ["Paid Leave", "Casual Leave", "Sick Leave", "Unpaid Leave", "Emergency Leave"],
+    required: true,
+    default: "Casual Leave"
+  },
+  isPaid: {
+    type: Boolean,
+    default: true
+  },
+  startDate: {
+    type: Date,
+    required: true
+  },
+  endDate: {
+    type: Date,
+    required: true
+  },
+  daysCount: {
+    type: Number,
+    required: true,
+    min: 0.5
+  },
+  reason: {
+    type: String,
+    required: [true, "Please provide a reason for the leave request"],
+    trim: true
+  },
+  status: {
+    type: String,
+    enum: ["Pending", "Approved", "Rejected", "Cancelled"],
+    default: "Pending",
+    index: true
+  },
+  appliedAt: {
+    type: Date,
+    default: Date.now
+  },
+  approvedBy: {
+    type: import_mongoose30.default.Schema.Types.ObjectId,
+    ref: "User"
+  },
+  approvalDate: {
+    type: Date
+  },
+  managerRemarks: {
+    type: String,
+    default: "",
+    trim: true
+  },
+  cancelledAt: {
+    type: Date
+  },
+  cancellationReason: {
+    type: String,
+    default: ""
+  }
+}, { timestamps: true });
+leaveSchema.index({ restaurantId: 1, employee: 1, status: 1 });
+leaveSchema.index({ restaurantId: 1, branchId: 1, status: 1 });
+leaveSchema.index({ restaurantId: 1, startDate: 1, endDate: 1 });
+var Leave = import_mongoose30.default.model("Leave", leaveSchema);
+var Leave_default = Leave;
+
 // controllers/staffController.js
-init_Expense();
 var getUserRestaurantId2 = async (user, queryOrBody = {}) => {
   let rId = user?.restaurantId || user?.restaurant;
   if (!rId && user?.branchId) {
     const branchDoc = await Branch_default.findById(user.branchId);
     if (branchDoc) rId = branchDoc.restaurantId;
   }
-  if (!rId && queryOrBody?.restaurantId) {
+  if (user?.role === "SuperAdmin" && queryOrBody?.restaurantId) {
     rId = queryOrBody.restaurantId;
   }
   if (!rId && user?.role === "SuperAdmin") {
@@ -132083,16 +132406,20 @@ var createStaff = async (req, res) => {
     bankDetails
   } = req.body;
   try {
+    if (!name || !email) {
+      return res.status(400).json({ message: "Name and email are required to register staff" });
+    }
+    const normalizedEmail = email.trim().toLowerCase();
     const restaurantId = await getUserRestaurantId2(req.user);
-    const userExists = await User_default.findOne({ email });
+    const userExists = await User_default.findOne({ email: { $regex: new RegExp(`^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } });
     if (userExists) {
-      return res.status(400).json({ message: "A user with this email already exists" });
+      return res.status(400).json({ message: "A user with this email address already exists. Please use a unique email." });
     }
-    const restaurant = await Restaurant_default.findById(restaurantId);
-    if (!restaurant) {
-      return res.status(404).json({ message: "Restaurant not found" });
+    let restaurant = null;
+    if (restaurantId) {
+      restaurant = await Restaurant_default.findById(restaurantId);
     }
-    const planName = restaurant.subscription?.plan || "Basic";
+    const planName = restaurant?.subscription?.plan || "Basic";
     const planDoc = await Plan_default.findOne({ name: planName });
     let staffLimit = 5;
     if (planDoc && planDoc.staffLimit !== void 0) {
@@ -132100,31 +132427,40 @@ var createStaff = async (req, res) => {
     } else if (["Pro", "Professional", "Enterprise"].includes(planName)) {
       staffLimit = Infinity;
     }
-    const currentStaffCount = await User_default.countDocuments({
-      restaurantId,
-      role: { $in: ["BranchManager", "Manager", "Chef", "Waiter", "Cashier", "DeliveryPartner", "Staff"] }
-    });
-    if (currentStaffCount >= staffLimit) {
-      return res.status(403).json({
-        message: `Your current plan (${planName}) only allows up to ${staffLimit} staff users. Please upgrade your subscription plan to add more staff.`,
-        limitExceeded: true
+    if (restaurantId) {
+      const currentStaffCount = await User_default.countDocuments({
+        restaurantId,
+        role: { $in: ["BranchManager", "Manager", "Chef", "Waiter", "Cashier", "DeliveryPartner", "Staff"] }
       });
+      if (currentStaffCount >= staffLimit) {
+        return res.status(400).json({
+          message: `Your current plan (${planName}) only allows up to ${staffLimit} staff users. Please upgrade your subscription plan to add more staff.`,
+          limitExceeded: true
+        });
+      }
     }
-    let normalizedRole = role;
+    let normalizedRole = role ? String(role).trim() : "Waiter";
     if (normalizedRole === "Manager") normalizedRole = "BranchManager";
     const validRoles = ["BranchManager", "Chef", "Waiter", "Cashier", "DeliveryPartner", "Staff"];
     if (!validRoles.includes(normalizedRole)) {
-      return res.status(400).json({ message: "Invalid staff role" });
+      return res.status(400).json({ message: `Invalid staff role "${role}". Allowed roles: ${validRoles.join(", ")}` });
     }
-    const empId = employeeId ? employeeId.trim() : `EMP-${(currentStaffCount + 1).toString().padStart(4, "0")}`;
-    const targetBranch = branchId && branchId !== "" && branchId !== "All" ? branchId : null;
+    let targetBranch = null;
+    if (branchId && branchId !== "" && branchId !== "All") {
+      const branchExists = await Branch_default.findById(branchId);
+      if (branchExists) {
+        targetBranch = branchExists._id;
+      }
+    }
+    const staffCountTotal = await User_default.countDocuments(restaurantId ? { restaurantId } : {});
+    const empId = employeeId && employeeId.trim() ? employeeId.trim() : `EMP-${(staffCountTotal + 1).toString().padStart(4, "0")}`;
     const user = await User_default.create({
-      name,
-      email,
-      phoneNumber: phone,
-      password: password || "Staff@123",
+      name: name.trim(),
+      email: normalizedEmail,
+      phoneNumber: phone ? String(phone).trim() : "",
+      password: password ? String(password).trim() : "Staff@123",
       role: normalizedRole,
-      restaurantId,
+      restaurantId: restaurantId || null,
       branchId: targetBranch,
       employeeId: empId,
       joiningDate: joiningDate ? new Date(joiningDate) : /* @__PURE__ */ new Date(),
@@ -132139,7 +132475,7 @@ var createStaff = async (req, res) => {
     if (user.role === "DeliveryPartner") {
       await DeliveryPartner_default.create({
         userId: user._id,
-        restaurantId,
+        restaurantId: restaurantId || null,
         verificationStatus: "Approved",
         vehicleDetails: { type: "Bike", model: "", rcNumber: "", licenseNumber: "" },
         documents: { profilePhoto: "", drivingLicense: "", aadhaarProof: "" }
@@ -132149,7 +132485,10 @@ var createStaff = async (req, res) => {
     res.status(201).json(populatedUser);
   } catch (error) {
     console.error("Error in createStaff:", error);
-    res.status(400).json({ message: error.message });
+    if (error.code === 11e3) {
+      return res.status(400).json({ message: "A staff user with this email or ID already exists." });
+    }
+    res.status(400).json({ message: error.message || "Failed to create staff member" });
   }
 };
 var updateStaff = async (req, res) => {
@@ -132381,11 +132720,11 @@ var getAttendanceSummary = async (req, res) => {
   try {
     const restaurantId = await getUserRestaurantId2(req.user);
     const { startDate, endDate, branchId } = req.query;
-    const matchFilter = { restaurantId: new import_mongoose33.default.Types.ObjectId(restaurantId) };
+    const matchFilter = { restaurantId: new import_mongoose31.default.Types.ObjectId(restaurantId) };
     if (branchId && branchId !== "All") {
-      matchFilter.branchId = new import_mongoose33.default.Types.ObjectId(branchId);
+      matchFilter.branchId = new import_mongoose31.default.Types.ObjectId(branchId);
     } else if (req.user.role === "BranchManager" && req.user.branchId) {
-      matchFilter.branchId = new import_mongoose33.default.Types.ObjectId(req.user.branchId);
+      matchFilter.branchId = new import_mongoose31.default.Types.ObjectId(req.user.branchId);
     }
     if (startDate || endDate) {
       matchFilter.date = {};
@@ -132409,6 +132748,36 @@ var getAttendanceSummary = async (req, res) => {
           presentDays: { $sum: { $cond: [{ $eq: ["$status", "Present"] }, 1, 0] } },
           absentDays: { $sum: { $cond: [{ $eq: ["$status", "Absent"] }, 1, 0] } },
           leaveDays: { $sum: { $cond: [{ $eq: ["$status", "Leave"] }, 1, 0] } },
+          paidLeaveDays: {
+            $sum: {
+              $cond: [
+                { $and: [{ $eq: ["$status", "Leave"] }, { $ne: ["$isPaidLeave", false] }] },
+                1,
+                0
+              ]
+            }
+          },
+          unpaidLeaveDays: {
+            $sum: {
+              $cond: [
+                { $and: [{ $eq: ["$status", "Leave"] }, { $or: [{ $eq: ["$isPaidLeave", false] }, { $eq: ["$isLOP", true] }] }] },
+                1,
+                0
+              ]
+            }
+          },
+          lopDays: {
+            $sum: {
+              $cond: [
+                { $or: [
+                  { $eq: ["$status", "Absent"] },
+                  { $and: [{ $eq: ["$status", "Leave"] }, { $or: [{ $eq: ["$isPaidLeave", false] }, { $eq: ["$isLOP", true] }] }] }
+                ] },
+                1,
+                0
+              ]
+            }
+          },
           halfDays: { $sum: { $cond: [{ $eq: ["$status", "Half-day"] }, 1, 0] } },
           holidays: { $sum: { $cond: [{ $eq: ["$status", "Holiday"] }, 1, 0] } },
           totalOvertimeHours: { $sum: "$overtimeHours" },
@@ -132436,6 +132805,9 @@ var getAttendanceSummary = async (req, res) => {
           presentDays: 1,
           absentDays: 1,
           leaveDays: 1,
+          paidLeaveDays: 1,
+          unpaidLeaveDays: 1,
+          lopDays: 1,
           halfDays: 1,
           holidays: 1,
           totalOvertimeHours: 1,
@@ -132466,10 +132838,52 @@ var parseMonthNumber = (val) => {
   const idx = months.indexOf(String(val).trim().toLowerCase());
   return idx !== -1 ? idx + 1 : null;
 };
+var parseConfigComponentTotal = (component) => {
+  if (!component) return 0;
+  if (typeof component === "number") return isNaN(component) ? 0 : component;
+  if (typeof component === "string") {
+    const n = parseFloat(component);
+    return isNaN(n) ? 0 : n;
+  }
+  if (Array.isArray(component)) {
+    return component.reduce((acc, curr) => {
+      if (typeof curr === "number") return acc + curr;
+      if (typeof curr === "string") {
+        const n = parseFloat(curr);
+        return acc + (isNaN(n) ? 0 : n);
+      }
+      if (curr && typeof curr === "object") {
+        const amt = Number(curr.amount);
+        return acc + (isNaN(amt) ? 0 : amt);
+      }
+      return acc;
+    }, 0);
+  }
+  return 0;
+};
+var enrichPayrollWithAliases = (doc) => {
+  if (!doc) return doc;
+  const r = doc?.toObject ? doc.toObject() : { ...doc };
+  const calc = r.calculations || {};
+  return {
+    ...r,
+    earnedBasicSalary: calc.earnedBasic ?? r.basicSalary ?? 0,
+    lopDeduction: calc.lopDeduction ?? 0,
+    overtimePay: calc.overtimePay ?? 0,
+    bonuses: calc.bonuses ?? 0,
+    allowances: calc.allowances ?? 0,
+    totalDeductions: calc.totalDeductions ?? (calc.deductions ?? 0) + (calc.lopDeduction ?? 0),
+    grossPayable: calc.grossSalary ?? 0,
+    netPayable: calc.netSalaryPayable ?? 0
+  };
+};
 var calculateEmployeePayrollItem = async (emp, m, y, restaurantId) => {
   const startDate = new Date(y, m - 1, 1);
   const endDate = new Date(y, m, 0, 23, 59, 59, 999);
   const daysInMonth = new Date(y, m, 0).getDate();
+  const restaurant = await Restaurant_default.findById(restaurantId).select("restaurantConfig");
+  const payrollConfig = restaurant?.restaurantConfig?.payrollConfig || {};
+  const lopPolicy = payrollConfig.lopCalculationPolicy || "Configured_Working_Days";
   const config = emp.salaryConfig || {};
   const basic = Number(config.basicSalary) || 0;
   const freq = config.salaryFrequency || "Monthly";
@@ -132484,6 +132898,8 @@ var calculateEmployeePayrollItem = async (emp, m, y, restaurantId) => {
   let presentDays = 0;
   let absentDays = 0;
   let leaveDays = 0;
+  let paidLeaveDays = 0;
+  let unpaidLeaveDays = 0;
   let halfDays = 0;
   let holidays = 0;
   let overtimeHours = 0;
@@ -132491,35 +132907,52 @@ var calculateEmployeePayrollItem = async (emp, m, y, restaurantId) => {
   for (const a of attendance) {
     if (a.status === "Present") presentDays++;
     else if (a.status === "Absent") absentDays++;
-    else if (a.status === "Leave") leaveDays++;
-    else if (a.status === "Half-day") halfDays++;
+    else if (a.status === "Leave") {
+      leaveDays++;
+      if (a.isPaidLeave === false || a.isLOP === true) {
+        unpaidLeaveDays++;
+      } else {
+        paidLeaveDays++;
+      }
+    } else if (a.status === "Half-day") halfDays++;
     else if (a.status === "Holiday") holidays++;
     overtimeHours += a.overtimeHours || 0;
     totalWorkingHours += a.workingHours || 0;
   }
-  let earnedBasic = 0;
+  let divisorDays = standardWorkDays;
+  if (lopPolicy === "Calendar_Days") {
+    divisorDays = daysInMonth;
+  } else if (lopPolicy === "Standard_26_Days") {
+    divisorDays = 26;
+  } else {
+    divisorDays = standardWorkDays > 0 ? standardWorkDays : 26;
+  }
+  const perDayRate = divisorDays > 0 ? basic / divisorDays : 0;
+  const lopDays = unpaidLeaveDays + absentDays;
+  const lopDeduction = Math.round(lopDays * perDayRate * 100) / 100;
   let calculatedOtRate = otRate;
+  if (calculatedOtRate === 0 && perDayRate > 0) {
+    calculatedOtRate = Math.round(perDayRate / dailyHours * 1.5 * 100) / 100;
+  }
+  let earnedBasic = 0;
   if (freq === "Monthly") {
-    const perDayRate = standardWorkDays > 0 ? basic / standardWorkDays : basic / daysInMonth;
-    if (calculatedOtRate === 0 && perDayRate > 0) {
-      calculatedOtRate = Math.round(perDayRate / dailyHours * 1.5 * 100) / 100;
+    if (attendance.length === 0) {
+      earnedBasic = basic;
+    } else {
+      earnedBasic = Math.max(0, Math.round((basic - lopDeduction) * 100) / 100);
     }
-    const paidDayUnits = attendance.length === 0 ? standardWorkDays : presentDays + halfDays * 0.5 + holidays;
-    earnedBasic = Math.min(basic, Math.round(perDayRate * paidDayUnits * 100) / 100);
   } else if (freq === "Daily") {
-    if (calculatedOtRate === 0 && basic > 0) {
-      calculatedOtRate = Math.round(basic / dailyHours * 1.5 * 100) / 100;
-    }
-    earnedBasic = Math.round(basic * (presentDays + halfDays * 0.5) * 100) / 100;
+    earnedBasic = Math.round(basic * (presentDays + halfDays * 0.5 + paidLeaveDays) * 100) / 100;
   } else if (freq === "Hourly") {
     calculatedOtRate = otRate || basic * 1.5;
     earnedBasic = Math.round(basic * totalWorkingHours * 100) / 100;
   }
   const overtimePay = Math.round(overtimeHours * calculatedOtRate * 100) / 100;
-  const allowancesTotal = (config.allowances || []).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
-  const deductionsTotal = (config.deductions || []).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+  const allowancesTotal = Math.round(parseConfigComponentTotal(config.allowances) * 100) / 100;
+  const otherDeductionsTotal = Math.round(parseConfigComponentTotal(config.deductions) * 100) / 100;
+  const totalDeductions = Math.round((otherDeductionsTotal + lopDeduction) * 100) / 100;
   const grossSalary = Math.round((earnedBasic + overtimePay + allowancesTotal) * 100) / 100;
-  const netSalary = Math.max(0, Math.round((grossSalary - deductionsTotal) * 100) / 100);
+  const netSalary = Math.max(0, Math.round((grossSalary - otherDeductionsTotal) * 100) / 100);
   return {
     employee: {
       _id: emp._id,
@@ -132535,29 +132968,43 @@ var calculateEmployeePayrollItem = async (emp, m, y, restaurantId) => {
     payPeriod: { startDate, endDate },
     salaryFrequency: freq,
     basicSalary: basic,
+    earnedBasicSalary: earnedBasic,
+    lopDeduction,
+    overtimePay,
+    bonuses: 0,
+    allowances: allowancesTotal,
+    otherDeductions: otherDeductionsTotal,
+    totalDeductions,
+    grossPayable: grossSalary,
+    netPayable: netSalary,
     attendanceSummary: {
       presentDays,
       absentDays,
       leaveDays,
+      paidLeaveDays,
+      unpaidLeaveDays,
+      lopDays,
       halfDays,
       holidays,
       overtimeHours,
-      totalWorkingDays: standardWorkDays
+      totalWorkingDays: divisorDays
     },
     calculations: {
       earnedBasic,
+      lopDeduction,
       overtimePay,
       bonuses: 0,
       allowances: allowancesTotal,
       grossSalary,
-      deductions: deductionsTotal,
+      deductions: otherDeductionsTotal,
+      totalDeductions,
       advances: 0,
       netSalaryPayable: netSalary
     },
     paidAmount: 0,
     balanceDue: netSalary,
     paymentStatus: "Pending",
-    status: "Draft"
+    status: "Generated"
   };
 };
 var calculatePayroll = async (req, res) => {
@@ -132672,7 +133119,7 @@ var generatePayroll = async (req, res) => {
     res.status(201).json({
       message: `Successfully processed ${savedRecords.length} payroll records for ${periodString}`,
       count: savedRecords.length,
-      records: savedRecords
+      records: savedRecords.map(enrichPayrollWithAliases)
     });
   } catch (error) {
     console.error("Error generating payroll:", error);
@@ -132702,7 +133149,7 @@ var getPayrollRecords = async (req, res) => {
       filter.paymentStatus = req.query.paymentStatus;
     }
     const records = await Payroll_default.find(filter).populate("employee", "name email role employeeId phoneNumber bankDetails").populate("branchId", "name").populate("approvedBy", "name role").populate("payments.paidBy", "name").sort({ year: -1, month: -1, "employee.name": 1 });
-    res.json(records);
+    res.json(records.map(enrichPayrollWithAliases));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -132717,7 +133164,7 @@ var getPayrollById = async (req, res) => {
     if (record.restaurantId._id.toString() !== restaurantId.toString()) {
       return res.status(403).json({ message: "Not authorized to view this record" });
     }
-    res.json(record);
+    res.json(enrichPayrollWithAliases(record));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -132753,6 +133200,15 @@ var recordPayrollPayment = async (req, res) => {
       notes: notes || "",
       paidBy: req.user._id
     });
+    if (!payroll.auditHistory) payroll.auditHistory = [];
+    payroll.auditHistory.push({
+      action: "Payment Recorded",
+      performedBy: req.user._id,
+      performedByName: req.user.name || "Admin",
+      timestamp: payDate,
+      notes: `Disbursed \u20B9${payAmount} via ${paymentMethod || "Bank Transfer"} (Ref: ${reference || "N/A"})`,
+      changes: { amount: payAmount, paymentMethod, reference }
+    });
     await payroll.save();
     await Expense_default.create({
       title: `Salary Payment - ${payroll.employee?.name || "Staff"} (${payroll.periodString})`,
@@ -132776,7 +133232,7 @@ var recordPayrollPayment = async (req, res) => {
     });
     res.json({
       message: "Salary payment recorded successfully",
-      payroll
+      payroll: enrichPayrollWithAliases(payroll)
     });
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -132789,7 +133245,396 @@ var getEmployeeSalaryHistory = async (req, res) => {
       restaurantId,
       employee: req.params.id
     }).sort({ year: -1, month: -1 });
-    res.json(records);
+    res.json(records.map(enrichPayrollWithAliases));
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var applyLeave = async (req, res) => {
+  try {
+    const { leaveType, startDate, endDate, reason } = req.body;
+    if (!startDate || !endDate || !reason) {
+      return res.status(400).json({ message: "Start date, end date, and reason are required" });
+    }
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return res.status(400).json({ message: "Invalid start or end date" });
+    }
+    if (start > end) {
+      return res.status(400).json({ message: "End date must be on or after start date" });
+    }
+    const restaurantId = await getUserRestaurantId2(req.user);
+    const userDoc = await User_default.findById(req.user._id);
+    const branchId = userDoc?.branchId || req.user.branchId;
+    if (!branchId) {
+      return res.status(400).json({ message: "No branch assigned to your staff profile" });
+    }
+    const overlappingLeave = await Leave_default.findOne({
+      restaurantId,
+      employee: req.user._id,
+      status: { $in: ["Pending", "Approved"] },
+      startDate: { $lte: end },
+      endDate: { $gte: start }
+    });
+    if (overlappingLeave) {
+      return res.status(400).json({
+        message: `You already have an active (${overlappingLeave.status}) leave request overlapping these dates (${new Date(overlappingLeave.startDate).toLocaleDateString()} to ${new Date(overlappingLeave.endDate).toLocaleDateString()})`
+      });
+    }
+    const diffMs = end.getTime() - start.getTime();
+    const daysCount = Math.max(1, Math.round(diffMs / (1e3 * 60 * 60 * 24)));
+    let isPaid = true;
+    if (leaveType === "Unpaid Leave") {
+      isPaid = false;
+    } else {
+      const restaurant = await Restaurant_default.findById(restaurantId).select("restaurantConfig");
+      const quota = restaurant?.restaurantConfig?.payrollConfig?.monthlyPaidLeaveQuota ?? 2;
+      const startMonth = start.getMonth() + 1;
+      const startYear = start.getFullYear();
+      const monthStart = new Date(startYear, startMonth - 1, 1);
+      const monthEnd = new Date(startYear, startMonth, 0, 23, 59, 59, 999);
+      const existingPaidLeaves = await Leave_default.find({
+        restaurantId,
+        employee: req.user._id,
+        status: "Approved",
+        isPaid: true,
+        startDate: { $gte: monthStart, $lte: monthEnd }
+      });
+      const usedPaidDays = existingPaidLeaves.reduce((acc, l) => acc + (l.daysCount || 0), 0);
+      if (usedPaidDays + daysCount > quota && quota > 0) {
+        isPaid = false;
+      }
+    }
+    const leave = await Leave_default.create({
+      restaurantId,
+      branchId,
+      employee: req.user._id,
+      leaveType: leaveType || "Casual Leave",
+      isPaid,
+      startDate: start,
+      endDate: end,
+      daysCount,
+      reason: reason.trim(),
+      status: "Pending",
+      appliedAt: /* @__PURE__ */ new Date()
+    });
+    const populatedLeave = await Leave_default.findById(leave._id).populate("branchId", "name").populate("employee", "name email role employeeId");
+    res.status(201).json({
+      message: "Leave request submitted successfully",
+      leave: populatedLeave
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var getMyLeaves = async (req, res) => {
+  try {
+    const restaurantId = await getUserRestaurantId2(req.user);
+    const leaves = await Leave_default.find({
+      restaurantId,
+      employee: req.user._id
+    }).populate("branchId", "name").populate("approvedBy", "name role").sort({ createdAt: -1 });
+    res.json(leaves);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var cancelMyLeave = async (req, res) => {
+  try {
+    const leave = await Leave_default.findById(req.params.id);
+    if (!leave) return res.status(404).json({ message: "Leave request not found" });
+    if (leave.employee.toString() !== req.user._id.toString() && req.user.role !== "RestaurantAdmin" && req.user.role !== "SuperAdmin") {
+      return res.status(403).json({ message: "Not authorized to cancel this leave request" });
+    }
+    if (leave.status !== "Pending") {
+      return res.status(400).json({ message: `Cannot cancel a leave request that is already ${leave.status}` });
+    }
+    leave.status = "Cancelled";
+    leave.cancelledAt = /* @__PURE__ */ new Date();
+    leave.cancellationReason = req.body?.reason || "Cancelled by employee";
+    await leave.save();
+    res.json({ message: "Leave request cancelled successfully", leave });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var getLeaveRequests = async (req, res) => {
+  try {
+    const restaurantId = await getUserRestaurantId2(req.user);
+    const filter = { restaurantId };
+    if (req.user.role === "BranchManager" && req.user.branchId) {
+      filter.branchId = req.user.branchId;
+    } else if (req.query.branchId && req.query.branchId !== "All") {
+      filter.branchId = req.query.branchId;
+    }
+    if (req.query.status && req.query.status !== "All") {
+      filter.status = req.query.status;
+    }
+    if (req.query.leaveType && req.query.leaveType !== "All") {
+      filter.leaveType = req.query.leaveType;
+    }
+    if (req.query.employeeId) {
+      filter.employee = req.query.employeeId;
+    }
+    const leaves = await Leave_default.find(filter).populate("employee", "name email role employeeId phoneNumber salaryConfig").populate("branchId", "name").populate("approvedBy", "name role").sort({ status: 1, createdAt: -1 });
+    res.json(leaves);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var updateLeaveStatus = async (req, res) => {
+  try {
+    const { status, managerRemarks, isPaid } = req.body;
+    if (!["Approved", "Rejected"].includes(status)) {
+      return res.status(400).json({ message: "Status must be either Approved or Rejected" });
+    }
+    const leave = await Leave_default.findById(req.params.id);
+    if (!leave) return res.status(404).json({ message: "Leave request not found" });
+    if (req.user.role === "BranchManager" && req.user.branchId) {
+      if (leave.branchId.toString() !== req.user.branchId.toString()) {
+        return res.status(403).json({ message: "Unauthorized: You can only approve leaves for your assigned branch" });
+      }
+    }
+    leave.status = status;
+    leave.approvedBy = req.user._id;
+    leave.approvalDate = /* @__PURE__ */ new Date();
+    leave.managerRemarks = managerRemarks || "";
+    if (isPaid !== void 0) {
+      leave.isPaid = Boolean(isPaid);
+    }
+    await leave.save();
+    if (status === "Approved") {
+      const start = new Date(leave.startDate);
+      const end = new Date(leave.endDate);
+      let curr = new Date(start);
+      while (curr <= end) {
+        const dateString = curr.toISOString().split("T")[0];
+        const dayDate = new Date(curr);
+        await Attendance_default.findOneAndUpdate(
+          {
+            restaurantId: leave.restaurantId,
+            employee: leave.employee,
+            dateString
+          },
+          {
+            $set: {
+              restaurantId: leave.restaurantId,
+              branchId: leave.branchId,
+              employee: leave.employee,
+              date: dayDate,
+              dateString,
+              status: "Leave",
+              leaveId: leave._id,
+              leaveType: leave.leaveType,
+              isPaidLeave: leave.isPaid,
+              isLOP: !leave.isPaid,
+              notes: `Approved Leave: ${leave.leaveType} (${leave.isPaid ? "Paid" : "Unpaid/LOP"})${managerRemarks ? " - " + managerRemarks : ""}`
+            }
+          },
+          { upsert: true, new: true }
+        );
+        curr.setDate(curr.getDate() + 1);
+      }
+    } else if (status === "Rejected") {
+      await Attendance_default.deleteMany({
+        restaurantId: leave.restaurantId,
+        employee: leave.employee,
+        leaveId: leave._id
+      });
+    }
+    const updatedLeave = await Leave_default.findById(leave._id).populate("employee", "name email role employeeId").populate("branchId", "name").populate("approvedBy", "name role");
+    res.json({
+      message: `Leave request ${status.toLowerCase()} successfully`,
+      leave: updatedLeave
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var getMyPayroll = async (req, res) => {
+  try {
+    const restaurantId = await getUserRestaurantId2(req.user);
+    const records = await Payroll_default.find({
+      restaurantId,
+      employee: req.user._id
+    }).populate("branchId", "name address phone").sort({ year: -1, month: -1 });
+    res.json(records.map(enrichPayrollWithAliases));
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var getMyPayrollSlip = async (req, res) => {
+  try {
+    const restaurantId = await getUserRestaurantId2(req.user);
+    const payroll = await Payroll_default.findOne({
+      _id: req.params.id,
+      restaurantId,
+      employee: req.user._id
+    }).populate("employee", "name email role employeeId phoneNumber bankDetails salaryConfig").populate("branchId", "name address phone").populate("approvedBy", "name role");
+    if (!payroll) {
+      return res.status(404).json({ message: "Salary slip not found or not authorized" });
+    }
+    const restaurant = await Restaurant_default.findById(restaurantId).select("name address phone logo gstin email");
+    res.json({
+      payroll: enrichPayrollWithAliases(payroll),
+      restaurant
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var correctPayrollRecord = async (req, res) => {
+  try {
+    const restaurantId = await getUserRestaurantId2(req.user);
+    const payroll = await Payroll_default.findOne({ _id: req.params.id, restaurantId }).populate("employee", "name employeeId role");
+    if (!payroll) return res.status(404).json({ message: "Payroll record not found" });
+    if (req.user.role === "BranchManager" && req.user.branchId) {
+      if (payroll.branchId && payroll.branchId.toString() !== req.user.branchId.toString()) {
+        return res.status(403).json({ message: "Unauthorized: You cannot modify payroll for another branch" });
+      }
+    }
+    if (payroll.paymentStatus === "Paid" && req.user.role !== "SuperAdmin" && req.user.role !== "RestaurantAdmin") {
+      return res.status(400).json({ message: "Cannot modify a finalized and fully paid payroll record" });
+    }
+    const { basicSalary, allowances, overtimePay, bonuses, deductions, advances, notes } = req.body;
+    const previousCalculations = { ...payroll.calculations?.toObject ? payroll.calculations.toObject() : payroll.calculations };
+    if (!payroll.calculations) payroll.calculations = {};
+    if (basicSalary !== void 0) payroll.basicSalary = Number(basicSalary);
+    if (allowances !== void 0) payroll.calculations.allowances = Number(allowances);
+    if (overtimePay !== void 0) payroll.calculations.overtimePay = Number(overtimePay);
+    if (bonuses !== void 0) payroll.calculations.bonuses = Number(bonuses);
+    if (deductions !== void 0) payroll.calculations.deductions = Number(deductions);
+    if (advances !== void 0) payroll.calculations.advances = Number(advances);
+    const earned = payroll.calculations.earnedBasic || payroll.basicSalary;
+    const gross = Math.round((earned + (payroll.calculations.overtimePay || 0) + (payroll.calculations.bonuses || 0) + (payroll.calculations.allowances || 0)) * 100) / 100;
+    const totalDed = Math.round(((payroll.calculations.deductions || 0) + (payroll.calculations.lopDeduction || 0) + (payroll.calculations.advances || 0)) * 100) / 100;
+    const net = Math.max(0, Math.round((gross - (payroll.calculations.deductions || 0) - (payroll.calculations.advances || 0)) * 100) / 100);
+    payroll.calculations.grossSalary = gross;
+    payroll.calculations.totalDeductions = totalDed;
+    payroll.calculations.netSalaryPayable = net;
+    payroll.balanceDue = Math.max(0, net - (payroll.paidAmount || 0));
+    payroll.paymentStatus = (payroll.paidAmount || 0) >= net ? "Paid" : (payroll.paidAmount || 0) > 0 ? "Partially Paid" : "Pending";
+    if (!payroll.auditHistory) payroll.auditHistory = [];
+    payroll.auditHistory.push({
+      action: "Payroll Correction",
+      performedBy: req.user._id,
+      performedByName: req.user.name || "Admin",
+      timestamp: /* @__PURE__ */ new Date(),
+      notes: notes || "Manual adjustment of payroll components",
+      changes: {
+        previous: previousCalculations,
+        updated: payroll.calculations
+      }
+    });
+    await payroll.save();
+    res.json({
+      message: "Payroll record corrected successfully",
+      payroll: enrichPayrollWithAliases(payroll)
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var getPayrollReports = async (req, res) => {
+  try {
+    const restaurantId = await getUserRestaurantId2(req.user);
+    const { year, month, branchId, status } = req.query;
+    const filter = {};
+    if (restaurantId) {
+      filter.restaurantId = restaurantId;
+    }
+    if (year && !isNaN(Number(year))) {
+      filter.year = Number(year);
+    }
+    if (month && month !== "All") {
+      const m = parseMonthNumber(month) || Number(month);
+      if (m && !isNaN(m)) filter.month = m;
+    }
+    if (branchId && branchId !== "All" && branchId !== "") {
+      filter.branchId = branchId;
+    } else if (req.user?.role === "BranchManager" && req.user.branchId) {
+      filter.branchId = req.user.branchId;
+    }
+    if (status && status !== "All") {
+      filter.paymentStatus = status;
+    }
+    const records = await Payroll_default.find(filter).populate("employee", "name email role employeeId").populate("branchId", "name").sort({ year: -1, month: -1 }).lean();
+    const safeRecords = Array.isArray(records) ? records : [];
+    const totalGross = safeRecords.reduce((sum, r) => sum + (Number(r?.calculations?.grossSalary) || Number(r?.grossSalary) || 0), 0);
+    const totalNet = safeRecords.reduce((sum, r) => sum + (Number(r?.calculations?.netSalaryPayable) || Number(r?.netSalaryPayable) || 0), 0);
+    const totalPaid = safeRecords.reduce((sum, r) => sum + (Number(r?.paidAmount) || 0), 0);
+    const totalDue = safeRecords.reduce((sum, r) => sum + (Number(r?.balanceDue) || 0), 0);
+    const totalLOP = safeRecords.reduce((sum, r) => sum + (Number(r?.calculations?.lopDeduction) || 0), 0);
+    const paidCount = safeRecords.filter((r) => r?.paymentStatus === "Paid").length;
+    const pendingCount = safeRecords.filter((r) => r?.paymentStatus !== "Paid").length;
+    const branchBreakdown = {};
+    for (const r of safeRecords) {
+      const bName = r.branchId?.name || (typeof r.branchId === "string" ? r.branchId : "Main Branch");
+      if (!branchBreakdown[bName]) {
+        branchBreakdown[bName] = { branchName: bName, totalEmployees: 0, gross: 0, net: 0, paid: 0, due: 0 };
+      }
+      branchBreakdown[bName].totalEmployees++;
+      branchBreakdown[bName].gross += Number(r?.calculations?.grossSalary) || Number(r?.grossSalary) || 0;
+      branchBreakdown[bName].net += Number(r?.calculations?.netSalaryPayable) || Number(r?.netSalaryPayable) || 0;
+      branchBreakdown[bName].paid += Number(r?.paidAmount) || 0;
+      branchBreakdown[bName].due += Number(r?.balanceDue) || 0;
+    }
+    res.json({
+      count: safeRecords.length,
+      totalGrossPayable: Math.round(totalGross * 100) / 100,
+      totalNetPayable: Math.round(totalNet * 100) / 100,
+      totalPaid: Math.round(totalPaid * 100) / 100,
+      totalDue: Math.round(totalDue * 100) / 100,
+      totalLOPDeductions: Math.round(totalLOP * 100) / 100,
+      paidCount,
+      pendingCount,
+      branchBreakdown: Object.values(branchBreakdown),
+      records: safeRecords.map((r) => enrichPayrollWithAliases(r))
+    });
+  } catch (error) {
+    console.error("Error in getPayrollReports:", error);
+    res.status(500).json({ message: error.message || "Failed to aggregate payroll reports" });
+  }
+};
+var getPayrollConfig = async (req, res) => {
+  try {
+    const restaurantId = await getUserRestaurantId2(req.user);
+    const restaurant = await Restaurant_default.findById(restaurantId).select("restaurantConfig.payrollConfig");
+    const config = restaurant?.restaurantConfig?.payrollConfig || {
+      lopCalculationPolicy: "Configured_Working_Days",
+      monthlyPaidLeaveQuota: 2,
+      unpaidLeaveDeductionType: "Full_Day_Basic"
+    };
+    res.json(config);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var updatePayrollConfig = async (req, res) => {
+  try {
+    const restaurantId = await getUserRestaurantId2(req.user);
+    const { lopCalculationPolicy, monthlyPaidLeaveQuota, unpaidLeaveDeductionType } = req.body;
+    const restaurant = await Restaurant_default.findById(restaurantId);
+    if (!restaurant) return res.status(404).json({ message: "Restaurant not found" });
+    if (!restaurant.restaurantConfig) restaurant.restaurantConfig = {};
+    if (!restaurant.restaurantConfig.payrollConfig) restaurant.restaurantConfig.payrollConfig = {};
+    if (lopCalculationPolicy) {
+      restaurant.restaurantConfig.payrollConfig.lopCalculationPolicy = lopCalculationPolicy;
+    }
+    if (monthlyPaidLeaveQuota !== void 0) {
+      restaurant.restaurantConfig.payrollConfig.monthlyPaidLeaveQuota = Number(monthlyPaidLeaveQuota);
+    }
+    if (unpaidLeaveDeductionType) {
+      restaurant.restaurantConfig.payrollConfig.unpaidLeaveDeductionType = unpaidLeaveDeductionType;
+    }
+    await restaurant.save();
+    res.json({
+      message: "Payroll configuration updated successfully",
+      config: restaurant.restaurantConfig.payrollConfig
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -132804,10 +133649,26 @@ router10.post("/attendance/bulk", authorize("RestaurantAdmin", "BranchManager"),
 router10.get("/attendance", authorize("RestaurantAdmin", "BranchManager"), getAttendance);
 router10.put("/attendance/:id/correct", authorize("RestaurantAdmin", "BranchManager"), correctAttendance);
 router10.get("/attendance/summary", authorize("RestaurantAdmin", "BranchManager"), getAttendanceSummary);
+router10.post("/leave", applyLeave);
+router10.post("/leaves", applyLeave);
+router10.get("/leave/my", getMyLeaves);
+router10.get("/leaves/my", getMyLeaves);
+router10.put("/leave/:id/cancel", cancelMyLeave);
+router10.put("/leaves/:id/cancel", cancelMyLeave);
+router10.get("/leave", authorize("RestaurantAdmin", "BranchManager", "SuperAdmin"), getLeaveRequests);
+router10.get("/leaves", authorize("RestaurantAdmin", "BranchManager", "SuperAdmin"), getLeaveRequests);
+router10.put("/leave/:id/status", authorize("RestaurantAdmin", "BranchManager", "SuperAdmin"), updateLeaveStatus);
+router10.put("/leaves/:id/status", authorize("RestaurantAdmin", "BranchManager", "SuperAdmin"), updateLeaveStatus);
+router10.get("/payroll/my", getMyPayroll);
+router10.get("/payroll/my/:id/slip", getMyPayrollSlip);
 router10.post("/payroll/calculate", authorize("RestaurantAdmin", "BranchManager"), calculatePayroll);
 router10.post("/payroll/generate", authorize("RestaurantAdmin"), generatePayroll);
+router10.get("/payroll/reports", authorize("RestaurantAdmin", "BranchManager"), getPayrollReports);
+router10.get("/payroll/config", authorize("RestaurantAdmin", "BranchManager"), getPayrollConfig);
+router10.put("/payroll/config", authorize("RestaurantAdmin"), updatePayrollConfig);
 router10.get("/payroll", authorize("RestaurantAdmin", "BranchManager"), getPayrollRecords);
 router10.get("/payroll/:id", authorize("RestaurantAdmin", "BranchManager"), getPayrollById);
+router10.put("/payroll/:id/correct", authorize("RestaurantAdmin", "BranchManager"), correctPayrollRecord);
 router10.post("/payroll/:id/pay", authorize("RestaurantAdmin"), recordPayrollPayment);
 router10.get("/payroll/employee/:id/history", authorize("RestaurantAdmin", "BranchManager"), getEmployeeSalaryHistory);
 router10.route("/").get(authorize("RestaurantAdmin", "BranchManager"), getStaff).post(authorize("RestaurantAdmin"), createStaff);
@@ -132890,7 +133751,6 @@ var import_express12 = __toESM(require_express2(), 1);
 
 // controllers/roleController.js
 init_User();
-init_Role();
 var DEFAULT_CORE_ROLES = [
   { name: "SuperAdmin", description: "Full platform access. Normally reserved for SaaS owners, not restaurant staff.", isCoreRole: true, permissions: { "Dashboard & Analytics": [true, true, true, true], "Order Management": [true, true, true, true], "Menu & Catalog": [true, true, true, true], "Staff Management": [true, true, true, true] } },
   { name: "RestaurantAdmin", description: "Full access to all system features and settings for this restaurant.", isCoreRole: true, permissions: { "Dashboard & Analytics": [true, true, true, true], "Order Management": [true, true, true, true], "Menu & Catalog": [true, true, true, true], "Staff Management": [true, true, true, true] } },
@@ -133026,15 +133886,15 @@ var roleRoutes_default = router12;
 var import_express13 = __toESM(require_express2(), 1);
 
 // models/Reservation.js
-var import_mongoose34 = __toESM(require_mongoose2(), 1);
-var reservationSchema = new import_mongoose34.default.Schema({
+var import_mongoose32 = __toESM(require_mongoose2(), 1);
+var reservationSchema = new import_mongoose32.default.Schema({
   branch: {
-    type: import_mongoose34.default.Schema.Types.ObjectId,
+    type: import_mongoose32.default.Schema.Types.ObjectId,
     ref: "Branch",
     required: true
   },
   customer: {
-    type: import_mongoose34.default.Schema.Types.ObjectId,
+    type: import_mongoose32.default.Schema.Types.ObjectId,
     ref: "User"
   },
   guestName: {
@@ -133059,7 +133919,7 @@ var reservationSchema = new import_mongoose34.default.Schema({
     required: true
   },
   table: {
-    type: import_mongoose34.default.Schema.Types.ObjectId,
+    type: import_mongoose32.default.Schema.Types.ObjectId,
     ref: "Table"
   },
   status: {
@@ -133071,7 +133931,7 @@ var reservationSchema = new import_mongoose34.default.Schema({
     type: String
   }
 }, { timestamps: true });
-var Reservation = import_mongoose34.default.model("Reservation", reservationSchema);
+var Reservation = import_mongoose32.default.model("Reservation", reservationSchema);
 var Reservation_default = Reservation;
 
 // controllers/reservationController.js
@@ -133227,11 +134087,118 @@ var import_express15 = __toESM(require_express2(), 1);
 
 // controllers/inventoryController.js
 var import_mongoose35 = __toESM(require_mongoose2(), 1);
-init_Inventory();
-init_WastageLog();
+
+// models/Inventory.js
+var import_mongoose33 = __toESM(require_mongoose2(), 1);
+var inventorySchema = new import_mongoose33.default.Schema({
+  restaurantId: {
+    type: import_mongoose33.default.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    index: true
+  },
+  branch: {
+    type: import_mongoose33.default.Schema.Types.ObjectId,
+    ref: "Branch",
+    required: true,
+    index: true
+  },
+  supplier: {
+    type: import_mongoose33.default.Schema.Types.ObjectId,
+    ref: "Supplier"
+  },
+  itemName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  category: {
+    type: String,
+    // e.g., 'Vegetables', 'Meat', 'Dairy', 'Packaging', 'Spices', 'Beverages'
+    default: "General"
+  },
+  quantity: {
+    type: Number,
+    required: true,
+    default: 0,
+    min: 0
+  },
+  unit: {
+    type: String,
+    // e.g., 'kg', 'g', 'ltr', 'ml', 'pcs', 'box', 'packet'
+    required: true
+  },
+  minStockLevel: {
+    type: Number,
+    default: 10
+  },
+  reorderQuantity: {
+    type: Number,
+    default: 20
+  },
+  pricePerUnit: {
+    type: Number,
+    default: 0
+  },
+  lastPurchasePrice: {
+    type: Number,
+    default: 0
+  },
+  lastPurchaseDate: {
+    type: Date
+  },
+  costingMethod: {
+    type: String,
+    enum: ["Weighted Average", "Latest Price"],
+    default: "Weighted Average"
+  },
+  description: {
+    type: String,
+    default: ""
+  }
+}, { timestamps: true });
+inventorySchema.virtual("valuation").get(function() {
+  return (this.quantity || 0) * (this.pricePerUnit || 0);
+});
+inventorySchema.set("toJSON", { virtuals: true });
+inventorySchema.set("toObject", { virtuals: true });
+var Inventory = import_mongoose33.default.model("Inventory", inventorySchema);
+var Inventory_default = Inventory;
+
+// models/WastageLog.js
+var import_mongoose34 = __toESM(require_mongoose2(), 1);
+var wastageLogSchema = new import_mongoose34.default.Schema({
+  ingredientName: {
+    type: String,
+    required: true
+  },
+  quantity: {
+    type: Number,
+    required: true
+  },
+  unit: {
+    type: String,
+    required: true
+  },
+  reason: {
+    type: String,
+    required: true
+  },
+  restaurantId: {
+    type: import_mongoose34.default.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: true
+  },
+  branchId: {
+    type: import_mongoose34.default.Schema.Types.ObjectId,
+    ref: "Branch"
+  }
+}, { timestamps: true });
+var WastageLog = import_mongoose34.default.model("WastageLog", wastageLogSchema);
+var WastageLog_default = WastageLog;
+
+// controllers/inventoryController.js
 init_Notification();
 init_Branch();
-init_Expense();
 init_Restaurant();
 var getUserRestaurantId3 = async (user, queryOrBody = {}) => {
   let rId = user?.restaurantId || user?.restaurant;
@@ -134192,7 +135159,6 @@ var import_mongoose39 = __toESM(require_mongoose2(), 1);
 init_Order();
 init_Restaurant();
 init_Plan();
-init_Expense();
 init_Branch();
 init_User();
 var getUserRestaurantId4 = async (user, queryOrBody = {}) => {
@@ -134201,7 +135167,7 @@ var getUserRestaurantId4 = async (user, queryOrBody = {}) => {
     const branchDoc = await Branch_default.findById(user.branchId);
     if (branchDoc) rId = branchDoc.restaurantId;
   }
-  if (!rId && queryOrBody?.restaurantId) {
+  if (user?.role === "SuperAdmin" && queryOrBody?.restaurantId) {
     rId = queryOrBody.restaurantId;
   }
   if (!rId && user?.role === "SuperAdmin") {
@@ -134460,10 +135426,21 @@ var generateReport = async (req, res) => {
           }
         }
       ]);
+      const orderMap = /* @__PURE__ */ new Map();
+      monthlyOrders.forEach((o) => orderMap.set(o._id, o));
       const expMap = /* @__PURE__ */ new Map();
       monthlyExpenses.forEach((e) => expMap.set(e._id, e));
-      reportData = monthlyOrders.map((mo) => {
-        const exp = expMap.get(mo._id) || {
+      const allMonths = Array.from(/* @__PURE__ */ new Set([...orderMap.keys(), ...expMap.keys()])).sort().reverse();
+      reportData = allMonths.map((monthStr) => {
+        const mo = orderMap.get(monthStr) || {
+          totalOrders: 0,
+          grossSales: 0,
+          discounts: 0,
+          refunds: 0,
+          netSales: 0,
+          amountCollected: 0
+        };
+        const exp = expMap.get(monthStr) || {
           materialCost: 0,
           salaryExpense: 0,
           rentExpense: 0,
@@ -134476,7 +135453,7 @@ var generateReport = async (req, res) => {
         const netOperatingProfit = Math.round((mo.netSales - exp.totalExpenses) * 100) / 100;
         const profitMarginPercent = mo.netSales > 0 ? Math.round(netOperatingProfit / mo.netSales * 1e4) / 100 : 0;
         return {
-          month: mo._id,
+          month: monthStr,
           grossSales: Math.round(mo.grossSales * 100) / 100,
           discounts: Math.round(mo.discounts * 100) / 100,
           refunds: Math.round(mo.refunds * 100) / 100,
@@ -134608,13 +135585,13 @@ var generateReport = async (req, res) => {
         employeeId: p.employee?.employeeId || "-",
         employeeName: p.employee?.name || "Unknown",
         role: p.employee?.role || "-",
-        basicSalary: p.salaryConfig?.basicSalary || 0,
-        earnedBasic: p.earnedBasicSalary || 0,
-        overtimePay: p.overtimePay || 0,
-        bonuses: p.bonuses || 0,
-        deductions: p.totalDeductions || 0,
-        grossPayable: p.grossPayable || 0,
-        netPayable: p.netPayable || 0,
+        basicSalary: p.basicSalary ?? p.salaryConfig?.basicSalary ?? 0,
+        earnedBasic: p.calculations?.earnedBasic ?? p.earnedBasicSalary ?? 0,
+        overtimePay: p.calculations?.overtimePay ?? p.overtimePay ?? 0,
+        bonuses: p.calculations?.bonuses ?? p.bonuses ?? 0,
+        deductions: p.calculations?.deductions ?? p.totalDeductions ?? 0,
+        grossPayable: p.calculations?.grossSalary ?? p.grossPayable ?? 0,
+        netPayable: p.calculations?.netSalaryPayable ?? p.netPayable ?? 0,
         paidAmount: p.paidAmount || 0,
         balanceDue: p.balanceDue || 0,
         paymentStatus: p.paymentStatus,
@@ -135020,15 +135997,45 @@ var planRoutes_default = router21;
 // routes/serviceRequestRoutes.js
 var import_express22 = __toESM(require_express2(), 1);
 
-// controllers/serviceRequestController.js
-init_ServiceRequest();
+// models/ServiceRequest.js
 var import_mongoose41 = __toESM(require_mongoose2(), 1);
+var serviceRequestSchema = new import_mongoose41.default.Schema({
+  restaurantId: {
+    type: import_mongoose41.default.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: true
+  },
+  branchId: {
+    type: import_mongoose41.default.Schema.Types.ObjectId,
+    ref: "Branch",
+    required: true
+  },
+  tableNumber: {
+    type: Number,
+    required: true
+  },
+  requestType: {
+    type: String,
+    enum: ["Call Waiter", "Request Water", "Request Cutlery", "Request Bill"],
+    required: true
+  },
+  status: {
+    type: String,
+    enum: ["Pending", "Completed"],
+    default: "Pending"
+  }
+}, { timestamps: true });
+var ServiceRequest = import_mongoose41.default.model("ServiceRequest", serviceRequestSchema);
+var ServiceRequest_default = ServiceRequest;
+
+// controllers/serviceRequestController.js
+var import_mongoose42 = __toESM(require_mongoose2(), 1);
 var createServiceRequest = async (req, res) => {
   const { restaurantId, branchId, tableNumber, requestType } = req.body;
   try {
     let finalBranchId = branchId;
     if (!finalBranchId) {
-      const Branch3 = import_mongoose41.default.model("Branch");
+      const Branch3 = import_mongoose42.default.model("Branch");
       const branch = await Branch3.findOne({ restaurantId });
       if (branch) finalBranchId = branch._id;
     }
@@ -135085,8 +136092,7 @@ var serviceRequestRoutes_default = router22;
 var import_express23 = __toESM(require_express2(), 1);
 
 // controllers/expenseController.js
-var import_mongoose42 = __toESM(require_mongoose2(), 1);
-init_Expense();
+var import_mongoose43 = __toESM(require_mongoose2(), 1);
 init_Branch();
 init_Restaurant();
 var getUserRestaurantId5 = async (user, queryOrBody = {}) => {
@@ -135191,11 +136197,11 @@ var getExpenses = async (req, res) => {
 var getExpenseSummary = async (req, res) => {
   try {
     const restaurantId = await getUserRestaurantId5(req.user, req.query);
-    const matchFilter = { restaurantId: new import_mongoose42.default.Types.ObjectId(restaurantId) };
+    const matchFilter = { restaurantId: new import_mongoose43.default.Types.ObjectId(restaurantId) };
     if (req.user && req.user.role === "BranchManager" && req.user.branchId) {
-      matchFilter.branchId = new import_mongoose42.default.Types.ObjectId(req.user.branchId);
+      matchFilter.branchId = new import_mongoose43.default.Types.ObjectId(req.user.branchId);
     } else if (req.query.branchId && req.query.branchId !== "All") {
-      matchFilter.branchId = new import_mongoose42.default.Types.ObjectId(req.query.branchId);
+      matchFilter.branchId = new import_mongoose43.default.Types.ObjectId(req.query.branchId);
     }
     const { start, end } = parseDateRange2(req.query.period, req.query.startDate, req.query.endDate);
     if (start || end) {
@@ -135551,6 +136557,7 @@ var router23 = import_express23.default.Router();
 router23.use(protect);
 router23.use(authorize("RestaurantAdmin", "BranchManager"));
 router23.use(checkSubscription);
+router23.use(checkBillingModule(["expenseManagement", "salesReports"]));
 router23.get("/summary", getExpenseSummary);
 router23.post("/generate-recurring", generateRecurringBills);
 router23.post("/recurring/generate", generateRecurringBills);
@@ -135562,19 +136569,16 @@ var expenseRoutes_default = router23;
 // routes/supportRoutes.js
 var import_express24 = __toESM(require_express2(), 1);
 
-// controllers/supportController.js
-init_Ticket();
-
 // models/TicketReply.js
-var import_mongoose43 = __toESM(require_mongoose2(), 1);
-var ticketReplySchema = new import_mongoose43.default.Schema({
+var import_mongoose44 = __toESM(require_mongoose2(), 1);
+var ticketReplySchema = new import_mongoose44.default.Schema({
   ticketId: {
-    type: import_mongoose43.default.Schema.Types.ObjectId,
+    type: import_mongoose44.default.Schema.Types.ObjectId,
     ref: "Ticket",
     required: true
   },
   senderId: {
-    type: import_mongoose43.default.Schema.Types.ObjectId,
+    type: import_mongoose44.default.Schema.Types.ObjectId,
     ref: "User",
     required: true
   },
@@ -135590,20 +136594,20 @@ var ticketReplySchema = new import_mongoose43.default.Schema({
     default: false
   },
   readBy: [{
-    type: import_mongoose43.default.Schema.Types.ObjectId,
+    type: import_mongoose44.default.Schema.Types.ObjectId,
     ref: "User"
   }]
 }, {
   timestamps: true
 });
-var TicketReply = import_mongoose43.default.model("TicketReply", ticketReplySchema);
+var TicketReply = import_mongoose44.default.model("TicketReply", ticketReplySchema);
 var TicketReply_default = TicketReply;
 
 // models/SupportAgent.js
-var import_mongoose44 = __toESM(require_mongoose2(), 1);
-var supportAgentSchema = new import_mongoose44.default.Schema({
+var import_mongoose45 = __toESM(require_mongoose2(), 1);
+var supportAgentSchema = new import_mongoose45.default.Schema({
   userId: {
-    type: import_mongoose44.default.Schema.Types.ObjectId,
+    type: import_mongoose45.default.Schema.Types.ObjectId,
     ref: "User",
     required: true,
     unique: true
@@ -135634,12 +136638,12 @@ var supportAgentSchema = new import_mongoose44.default.Schema({
 }, {
   timestamps: true
 });
-var SupportAgent = import_mongoose44.default.model("SupportAgent", supportAgentSchema);
+var SupportAgent = import_mongoose45.default.model("SupportAgent", supportAgentSchema);
 var SupportAgent_default = SupportAgent;
 
 // models/KnowledgeBase.js
-var import_mongoose45 = __toESM(require_mongoose2(), 1);
-var knowledgeBaseSchema = new import_mongoose45.default.Schema({
+var import_mongoose46 = __toESM(require_mongoose2(), 1);
+var knowledgeBaseSchema = new import_mongoose46.default.Schema({
   title: {
     type: String,
     required: true
@@ -135680,12 +136684,12 @@ var knowledgeBaseSchema = new import_mongoose45.default.Schema({
 }, {
   timestamps: true
 });
-var KnowledgeBase = import_mongoose45.default.model("KnowledgeBase", knowledgeBaseSchema);
+var KnowledgeBase = import_mongoose46.default.model("KnowledgeBase", knowledgeBaseSchema);
 var KnowledgeBase_default = KnowledgeBase;
 
 // models/SupportAnnouncement.js
-var import_mongoose46 = __toESM(require_mongoose2(), 1);
-var supportAnnouncementSchema = new import_mongoose46.default.Schema({
+var import_mongoose47 = __toESM(require_mongoose2(), 1);
+var supportAnnouncementSchema = new import_mongoose47.default.Schema({
   title: {
     type: String,
     required: true
@@ -135709,21 +136713,21 @@ var supportAnnouncementSchema = new import_mongoose46.default.Schema({
     default: true
   },
   createdBy: {
-    type: import_mongoose46.default.Schema.Types.ObjectId,
+    type: import_mongoose47.default.Schema.Types.ObjectId,
     ref: "User",
     required: true
   }
 }, {
   timestamps: true
 });
-var SupportAnnouncement = import_mongoose46.default.model("SupportAnnouncement", supportAnnouncementSchema);
+var SupportAnnouncement = import_mongoose47.default.model("SupportAnnouncement", supportAnnouncementSchema);
 var SupportAnnouncement_default = SupportAnnouncement;
 
 // models/TicketActivityLog.js
-var import_mongoose47 = __toESM(require_mongoose2(), 1);
-var ticketActivityLogSchema = new import_mongoose47.default.Schema({
+var import_mongoose48 = __toESM(require_mongoose2(), 1);
+var ticketActivityLogSchema = new import_mongoose48.default.Schema({
   ticketId: {
-    type: import_mongoose47.default.Schema.Types.ObjectId,
+    type: import_mongoose48.default.Schema.Types.ObjectId,
     ref: "Ticket",
     required: true
   },
@@ -135732,7 +136736,7 @@ var ticketActivityLogSchema = new import_mongoose47.default.Schema({
     required: true
   },
   performedBy: {
-    type: import_mongoose47.default.Schema.Types.ObjectId,
+    type: import_mongoose48.default.Schema.Types.ObjectId,
     ref: "User",
     required: true
   },
@@ -135747,7 +136751,7 @@ var ticketActivityLogSchema = new import_mongoose47.default.Schema({
 }, {
   timestamps: true
 });
-var TicketActivityLog = import_mongoose47.default.model("TicketActivityLog", ticketActivityLogSchema);
+var TicketActivityLog = import_mongoose48.default.model("TicketActivityLog", ticketActivityLogSchema);
 var TicketActivityLog_default = TicketActivityLog;
 
 // controllers/supportController.js
@@ -136392,13 +137396,12 @@ var import_express25 = __toESM(require_express2(), 1);
 
 // controllers/deliveryController.js
 init_User();
-init_DeliveryPartner();
 
 // models/DeliveryWithdrawal.js
-var import_mongoose48 = __toESM(require_mongoose2(), 1);
-var deliveryWithdrawalSchema = new import_mongoose48.default.Schema({
+var import_mongoose49 = __toESM(require_mongoose2(), 1);
+var deliveryWithdrawalSchema = new import_mongoose49.default.Schema({
   partnerId: {
-    type: import_mongoose48.default.Schema.Types.ObjectId,
+    type: import_mongoose49.default.Schema.Types.ObjectId,
     ref: "DeliveryPartner",
     required: true
   },
@@ -136416,7 +137419,7 @@ var deliveryWithdrawalSchema = new import_mongoose48.default.Schema({
     default: ""
   }
 }, { timestamps: true });
-var DeliveryWithdrawal = import_mongoose48.default.model("DeliveryWithdrawal", deliveryWithdrawalSchema);
+var DeliveryWithdrawal = import_mongoose49.default.model("DeliveryWithdrawal", deliveryWithdrawalSchema);
 var DeliveryWithdrawal_default = DeliveryWithdrawal;
 
 // controllers/deliveryController.js
@@ -136987,8 +137990,8 @@ var deliveryRoutes_default = router25;
 var import_express26 = __toESM(require_express2(), 1);
 
 // models/Inquiry.js
-var import_mongoose49 = __toESM(require_mongoose2(), 1);
-var inquirySchema = new import_mongoose49.default.Schema({
+var import_mongoose50 = __toESM(require_mongoose2(), 1);
+var inquirySchema = new import_mongoose50.default.Schema({
   name: {
     type: String,
     required: true
@@ -137021,7 +138024,7 @@ var inquirySchema = new import_mongoose49.default.Schema({
 }, {
   timestamps: true
 });
-var Inquiry = import_mongoose49.default.model("Inquiry", inquirySchema);
+var Inquiry = import_mongoose50.default.model("Inquiry", inquirySchema);
 var Inquiry_default = Inquiry;
 
 // controllers/inquiryController.js
@@ -137094,8 +138097,8 @@ var inquiryRoutes_default = router26;
 var import_express27 = __toESM(require_express2(), 1);
 
 // models/BillingDemoRequest.js
-var import_mongoose50 = __toESM(require_mongoose2(), 1);
-var billingDemoRequestSchema = new import_mongoose50.default.Schema({
+var import_mongoose51 = __toESM(require_mongoose2(), 1);
+var billingDemoRequestSchema = new import_mongoose51.default.Schema({
   fullName: {
     type: String,
     required: [true, "Full name is required"],
@@ -137123,7 +138126,17 @@ var billingDemoRequestSchema = new import_mongoose50.default.Schema({
   },
   status: {
     type: String,
-    enum: ["Pending", "Contacted", "Demo Scheduled", "Demo Completed", "Activated", "Rejected"],
+    enum: [
+      "Pending",
+      "Contacted",
+      "Demo Scheduled",
+      "Requirements Collected",
+      "Proposal Sent",
+      "Payment Pending",
+      "Payment Verified",
+      "Activated",
+      "Rejected"
+    ],
     default: "Pending"
   },
   notes: {
@@ -137131,23 +138144,35 @@ var billingDemoRequestSchema = new import_mongoose50.default.Schema({
     default: ""
   },
   restaurantId: {
-    type: import_mongoose50.default.Schema.Types.ObjectId,
+    type: import_mongoose51.default.Schema.Types.ObjectId,
     ref: "Restaurant",
     default: null
   },
   customBillingConfig: {
     modules: {
       posBilling: { type: Boolean, default: true },
-      menuManagement: { type: Boolean, default: true },
-      tableManagement: { type: Boolean, default: true },
       dineInTakeawayOrders: { type: Boolean, default: true },
-      kitchenOrderManagement: { type: Boolean, default: true },
-      gstInvoice: { type: Boolean, default: true },
-      discounts: { type: Boolean, default: true },
-      customerManagement: { type: Boolean, default: true },
+      kot: { type: Boolean, default: true },
+      kds: { type: Boolean, default: true },
+      menuManagement: { type: Boolean, default: true },
       inventoryManagement: { type: Boolean, default: true },
+      rawMaterials: { type: Boolean, default: true },
+      staffManagement: { type: Boolean, default: true },
+      attendance: { type: Boolean, default: true },
+      payroll: { type: Boolean, default: true },
+      reports: { type: Boolean, default: true },
       salesReports: { type: Boolean, default: true },
-      staffManagement: { type: Boolean, default: true }
+      // Alias / legacy compatibility
+      expenseManagement: { type: Boolean, default: true },
+      tableManagement: { type: Boolean, default: true },
+      reservations: { type: Boolean, default: true },
+      deliveryManagement: { type: Boolean, default: true },
+      customerManagement: { type: Boolean, default: true },
+      branchManagement: { type: Boolean, default: true },
+      qrOrdering: { type: Boolean, default: true },
+      onlineOrdering: { type: Boolean, default: true },
+      gstInvoice: { type: Boolean, default: true },
+      discounts: { type: Boolean, default: true }
     },
     paymentMethods: {
       cash: { type: Boolean, default: true },
@@ -137158,6 +138183,36 @@ var billingDemoRequestSchema = new import_mongoose50.default.Schema({
     serviceChargePercent: { type: Number, default: 5 },
     gstRatePercent: { type: Number, default: 5 }
   },
+  customPlan: {
+    planName: { type: String, default: "Custom Tailored Plan" },
+    billingCycle: { type: String, enum: ["monthly", "quarterly", "half-yearly", "yearly"], default: "yearly" },
+    durationMonths: { type: Number, default: 12 },
+    branchLimit: { type: Number, default: 1 },
+    staffLimit: { type: Number, default: 10 },
+    basePrice: { type: Number, default: 0 },
+    discountAmount: { type: Number, default: 0 },
+    finalAmount: { type: Number, default: 0 },
+    currency: { type: String, default: "INR" },
+    internalNotes: { type: String, default: "" },
+    modulePricing: { type: Map, of: Number, default: {} },
+    proposalSentAt: { type: Date, default: null }
+  },
+  paymentDetails: {
+    paymentMethod: { type: String, default: "UPI" },
+    transactionId: { type: String, default: "" },
+    amountPaid: { type: Number, default: 0 },
+    paidAt: { type: Date, default: null },
+    isVerified: { type: Boolean, default: false },
+    verifiedAt: { type: Date, default: null },
+    verifiedBy: { type: import_mongoose51.default.Schema.Types.ObjectId, ref: "User", default: null }
+  },
+  activation: {
+    token: { type: String, default: null },
+    tokenExpires: { type: Date, default: null },
+    invitationSentAt: { type: Date, default: null },
+    isActivated: { type: Boolean, default: false },
+    activatedAt: { type: Date, default: null }
+  },
   activatedAt: {
     type: Date,
     default: null
@@ -137167,7 +138222,8 @@ var billingDemoRequestSchema = new import_mongoose50.default.Schema({
 });
 billingDemoRequestSchema.index({ phoneNumber: 1, status: 1 });
 billingDemoRequestSchema.index({ createdAt: -1 });
-var BillingDemoRequest = import_mongoose50.default.model("BillingDemoRequest", billingDemoRequestSchema);
+billingDemoRequestSchema.index({ "activation.token": 1 });
+var BillingDemoRequest = import_mongoose51.default.model("BillingDemoRequest", billingDemoRequestSchema);
 var BillingDemoRequest_default = BillingDemoRequest;
 
 // controllers/billingDemoController.js
@@ -137309,7 +138365,17 @@ var getBillingDemoRequestById = async (req, res) => {
 var updateBillingDemoStatus = async (req, res) => {
   try {
     const { status, notes } = req.body;
-    const validStatuses = ["Pending", "Contacted", "Demo Scheduled", "Demo Completed", "Activated", "Rejected"];
+    const validStatuses = [
+      "Pending",
+      "Contacted",
+      "Demo Scheduled",
+      "Requirements Collected",
+      "Proposal Sent",
+      "Payment Pending",
+      "Payment Verified",
+      "Activated",
+      "Rejected"
+    ];
     if (status && !validStatuses.includes(status)) {
       return res.status(400).json({ message: `Invalid status. Must be one of: ${validStatuses.join(", ")}` });
     }
@@ -137331,13 +138397,22 @@ var updateBillingDemoStatus = async (req, res) => {
 };
 var updateBillingDemoConfig = async (req, res) => {
   try {
-    const { modules, paymentMethods, serviceChargePercent, gstRatePercent, notes } = req.body;
+    const {
+      modules,
+      paymentMethods,
+      serviceChargePercent,
+      gstRatePercent,
+      notes,
+      customPlan,
+      branchLimit,
+      staffLimit
+    } = req.body;
     const request = await BillingDemoRequest_default.findById(req.params.id);
     if (!request) {
       return res.status(404).json({ message: "Demo request not found" });
     }
     if (!request.customBillingConfig) {
-      request.customBillingConfig = {};
+      request.customBillingConfig = { modules: {}, paymentMethods: {} };
     }
     if (modules) {
       request.customBillingConfig.modules = {
@@ -137357,6 +138432,20 @@ var updateBillingDemoConfig = async (req, res) => {
     if (gstRatePercent !== void 0) {
       request.customBillingConfig.gstRatePercent = Number(gstRatePercent);
     }
+    if (customPlan) {
+      request.customPlan = {
+        ...request.customPlan,
+        ...customPlan
+      };
+    }
+    if (branchLimit !== void 0) {
+      if (!request.customPlan) request.customPlan = {};
+      request.customPlan.branchLimit = Number(branchLimit);
+    }
+    if (staffLimit !== void 0) {
+      if (!request.customPlan) request.customPlan = {};
+      request.customPlan.staffLimit = Number(staffLimit);
+    }
     if (notes !== void 0) {
       request.notes = notes;
     }
@@ -137366,17 +138455,97 @@ var updateBillingDemoConfig = async (req, res) => {
         "billingConfig.modules": request.customBillingConfig.modules,
         "billingConfig.paymentMethods": request.customBillingConfig.paymentMethods,
         "billingConfig.serviceChargePercent": request.customBillingConfig.serviceChargePercent,
-        "billingConfig.gstRatePercent": request.customBillingConfig.gstRatePercent
+        "billingConfig.gstRatePercent": request.customBillingConfig.gstRatePercent,
+        "billingConfig.branchLimit": request.customPlan?.branchLimit || 1,
+        "billingConfig.staffLimit": request.customPlan?.staffLimit || 10,
+        "billingConfig.customPlanName": request.customPlan?.planName || "Custom Plan"
       });
     }
     res.json({
       success: true,
-      message: "Custom billing configuration updated successfully",
+      message: "Custom billing & module configuration updated successfully",
       data: request
     });
   } catch (error) {
     console.error("Error updating demo config:", error);
     res.status(500).json({ message: error.message || "Server error updating config" });
+  }
+};
+var createCustomProposal = async (req, res) => {
+  try {
+    const {
+      planName,
+      billingCycle,
+      durationMonths,
+      branchLimit,
+      staffLimit,
+      basePrice,
+      discountAmount,
+      finalAmount,
+      internalNotes,
+      modulePricing
+    } = req.body;
+    const request = await BillingDemoRequest_default.findById(req.params.id);
+    if (!request) {
+      return res.status(404).json({ message: "Demo request not found" });
+    }
+    request.customPlan = {
+      planName: planName || "Custom Tailored Plan",
+      billingCycle: billingCycle || "yearly",
+      durationMonths: Number(durationMonths) || 12,
+      branchLimit: Number(branchLimit) || 1,
+      staffLimit: Number(staffLimit) || 10,
+      basePrice: Number(basePrice) || 0,
+      discountAmount: Number(discountAmount) || 0,
+      finalAmount: Number(finalAmount) || 0,
+      internalNotes: internalNotes || "",
+      modulePricing: modulePricing || {},
+      proposalSentAt: /* @__PURE__ */ new Date()
+    };
+    request.status = "Proposal Sent";
+    await request.save();
+    res.json({
+      success: true,
+      message: `Proposal "${request.customPlan.planName}" generated and marked as Proposal Sent!`,
+      data: request
+    });
+  } catch (error) {
+    console.error("Error creating custom proposal:", error);
+    res.status(500).json({ message: error.message || "Server error generating proposal" });
+  }
+};
+var verifyDemoPayment = async (req, res) => {
+  try {
+    const { paymentMethod, transactionId, amountPaid } = req.body;
+    const request = await BillingDemoRequest_default.findById(req.params.id);
+    if (!request) {
+      return res.status(404).json({ message: "Demo request not found" });
+    }
+    if (request.paymentDetails?.isVerified) {
+      return res.status(400).json({
+        message: "Payment for this request has already been verified and processed.",
+        verifiedAt: request.paymentDetails.verifiedAt
+      });
+    }
+    request.paymentDetails = {
+      paymentMethod: paymentMethod || "UPI",
+      transactionId: transactionId || `TXN_${Date.now()}`,
+      amountPaid: Number(amountPaid) || (request.customPlan?.finalAmount || 0),
+      paidAt: /* @__PURE__ */ new Date(),
+      isVerified: true,
+      verifiedAt: /* @__PURE__ */ new Date(),
+      verifiedBy: req.user?._id
+    };
+    request.status = "Payment Verified";
+    await request.save();
+    res.json({
+      success: true,
+      message: `Payment of \u20B9${request.paymentDetails.amountPaid} verified successfully! Status is now Payment Verified.`,
+      data: request
+    });
+  } catch (error) {
+    console.error("Error verifying demo payment:", error);
+    res.status(500).json({ message: error.message || "Server error verifying payment" });
   }
 };
 var activateBillingDemo = async (req, res) => {
@@ -137398,6 +138567,9 @@ var activateBillingDemo = async (req, res) => {
         ]
       });
     }
+    const cryptoModule = await import("crypto");
+    const activationToken = cryptoModule.default.randomBytes(32).toString("hex");
+    const tokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1e3);
     if (!restaurant) {
       const cleanDigits = request.phoneNumber.replace(/\D/g, "") || "9876543210";
       const ownerEmail = `owner_${cleanDigits}@restosys.com`;
@@ -137405,16 +138577,24 @@ var activateBillingDemo = async (req, res) => {
         $or: [{ email: ownerEmail }, { phoneNumber: request.phoneNumber }]
       });
       if (!ownerUser) {
+        const tempPassword = cryptoModule.default.randomBytes(24).toString("base64");
         ownerUser = await User_default.create({
           name: request.fullName,
           email: ownerEmail,
           phoneNumber: request.phoneNumber,
-          password: "password123",
-          // Default test password
+          password: tempPassword,
           role: "RestaurantAdmin",
-          isActive: true
+          isActive: true,
+          activationToken,
+          activationExpires: tokenExpires
         });
+      } else {
+        ownerUser.activationToken = activationToken;
+        ownerUser.activationExpires = tokenExpires;
+        await ownerUser.save();
       }
+      const durationMonths = request.customPlan?.durationMonths || 12;
+      const expiryDate = new Date(Date.now() + durationMonths * 30 * 24 * 60 * 60 * 1e3);
       restaurant = await Restaurant_default.create({
         name: request.restaurantName,
         phone: request.phoneNumber,
@@ -137425,11 +138605,11 @@ var activateBillingDemo = async (req, res) => {
         isActive: true,
         subscription: {
           status: "Active",
-          plan: "Pro",
-          billingCycle: "monthly",
+          plan: request.customPlan?.planName || "Custom SaaS",
+          billingCycle: request.customPlan?.billingCycle || "yearly",
           trialActive: false,
           startDate: /* @__PURE__ */ new Date(),
-          expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1e3)
+          expiryDate
         }
       });
       ownerUser.restaurantId = restaurant._id;
@@ -137443,24 +138623,43 @@ var activateBillingDemo = async (req, res) => {
       });
     } else if (restaurant.ownerId && !ownerUser) {
       ownerUser = await User_default.findById(restaurant.ownerId);
+      if (ownerUser) {
+        ownerUser.activationToken = activationToken;
+        ownerUser.activationExpires = tokenExpires;
+        await ownerUser.save();
+      }
     }
     restaurant.billingConfig = {
       isCustomBillingActive: true,
       activatedAt: /* @__PURE__ */ new Date(),
       demoRequestId: request._id,
       outletFormat: request.outletFormat || "Fine Dine & Resto-Bar",
+      branchLimit: request.customPlan?.branchLimit || 1,
+      staffLimit: request.customPlan?.staffLimit || 10,
+      customPlanName: request.customPlan?.planName || "Custom Plan",
       modules: request.customBillingConfig?.modules || {
         posBilling: true,
-        menuManagement: true,
-        tableManagement: true,
         dineInTakeawayOrders: true,
-        kitchenOrderManagement: true,
-        gstInvoice: true,
-        discounts: true,
-        customerManagement: true,
+        kot: true,
+        kds: true,
+        menuManagement: true,
         inventoryManagement: true,
+        rawMaterials: true,
+        staffManagement: true,
+        attendance: true,
+        payroll: true,
+        reports: true,
         salesReports: true,
-        staffManagement: true
+        expenseManagement: true,
+        tableManagement: true,
+        reservations: true,
+        deliveryManagement: true,
+        customerManagement: true,
+        branchManagement: true,
+        qrOrdering: true,
+        onlineOrdering: true,
+        gstInvoice: true,
+        discounts: true
       },
       paymentMethods: request.customBillingConfig?.paymentMethods || {
         cash: true,
@@ -137471,14 +138670,29 @@ var activateBillingDemo = async (req, res) => {
       serviceChargePercent: request.customBillingConfig?.serviceChargePercent ?? 5,
       gstRatePercent: request.customBillingConfig?.gstRatePercent ?? 5
     };
+    if (!restaurant.restaurantConfig) restaurant.restaurantConfig = {};
+    if (!restaurant.restaurantConfig.orderKitchen) restaurant.restaurantConfig.orderKitchen = {};
+    const isKot = restaurant.billingConfig.modules.kot !== false;
+    const isKds = restaurant.billingConfig.modules.kds !== false;
+    restaurant.restaurantConfig.orderKitchen.kotEnabled = isKot;
+    restaurant.restaurantConfig.orderKitchen.kdsEnabled = isKds;
+    restaurant.restaurantConfig.orderKitchen.kitchenMode = isKds ? "KDS" : "KOT_ONLY";
     await restaurant.save();
     request.status = "Activated";
     request.activatedAt = /* @__PURE__ */ new Date();
     request.restaurantId = restaurant._id;
+    request.activation = {
+      token: activationToken,
+      tokenExpires,
+      invitationSentAt: /* @__PURE__ */ new Date(),
+      isActivated: true,
+      activatedAt: /* @__PURE__ */ new Date()
+    };
     await request.save();
+    const activationUrl = `${req.protocol}://${req.get("host")}/activate-account?token=${activationToken}`;
     res.json({
       success: true,
-      message: `Custom billing setup activated for "${restaurant.name}"!`,
+      message: `Custom SaaS setup activated for "${restaurant.name}"! Invitation link generated.`,
       data: {
         request,
         restaurant: {
@@ -137487,15 +138701,102 @@ var activateBillingDemo = async (req, res) => {
           phone: restaurant.phone,
           billingConfig: restaurant.billingConfig
         },
-        credentials: ownerUser ? {
-          email: ownerUser.email,
-          password: "password123"
-        } : null
+        invitation: {
+          email: ownerUser ? ownerUser.email : null,
+          phoneNumber: request.phoneNumber,
+          token: activationToken,
+          expiresAt: tokenExpires,
+          activationUrl
+        }
       }
     });
   } catch (error) {
     console.error("Error activating billing demo:", error);
     res.status(500).json({ message: error.message || "Server error activating demo" });
+  }
+};
+var resendActivationInvitation = async (req, res) => {
+  try {
+    const request = await BillingDemoRequest_default.findById(req.params.id);
+    if (!request) {
+      return res.status(404).json({ message: "Demo request not found" });
+    }
+    const cryptoModule = await import("crypto");
+    const newToken = cryptoModule.default.randomBytes(32).toString("hex");
+    const tokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1e3);
+    request.activation = {
+      ...request.activation,
+      token: newToken,
+      tokenExpires,
+      invitationSentAt: /* @__PURE__ */ new Date()
+    };
+    await request.save();
+    if (request.restaurantId) {
+      const rest = await Restaurant_default.findById(request.restaurantId);
+      if (rest?.ownerId) {
+        await User_default.findByIdAndUpdate(rest.ownerId, {
+          activationToken: newToken,
+          activationExpires: tokenExpires
+        });
+      }
+    }
+    const activationUrl = `${req.protocol}://${req.get("host")}/activate-account?token=${newToken}`;
+    res.json({
+      success: true,
+      message: "A fresh single-use activation invitation has been generated.",
+      invitation: {
+        phoneNumber: request.phoneNumber,
+        token: newToken,
+        expiresAt: tokenExpires,
+        activationUrl
+      }
+    });
+  } catch (error) {
+    console.error("Error resending invitation:", error);
+    res.status(500).json({ message: error.message || "Server error resending invitation" });
+  }
+};
+var activateAccountWithToken = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token) {
+      return res.status(400).json({ message: "Activation token is required" });
+    }
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters long" });
+    }
+    let user = await User_default.findOne({
+      activationToken: token,
+      activationExpires: { $gt: /* @__PURE__ */ new Date() }
+    });
+    if (!user) {
+      const demo = await BillingDemoRequest_default.findOne({
+        "activation.token": token,
+        "activation.tokenExpires": { $gt: /* @__PURE__ */ new Date() }
+      });
+      if (demo && demo.restaurantId) {
+        const rest = await Restaurant_default.findById(demo.restaurantId);
+        if (rest?.ownerId) {
+          user = await User_default.findById(rest.ownerId);
+        }
+      }
+    }
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired activation link. Please contact Super Admin for a fresh invitation." });
+    }
+    user.password = newPassword;
+    user.activationToken = null;
+    user.activationExpires = null;
+    user.isActive = true;
+    await user.save();
+    res.json({
+      success: true,
+      message: "Your account has been successfully secured! You can now log in with your credentials.",
+      email: user.email
+    });
+  } catch (error) {
+    console.error("Error activating account with token:", error);
+    res.status(500).json({ message: error.message || "Server error activating account" });
   }
 };
 var deleteBillingDemoRequest = async (req, res) => {
@@ -137517,11 +138818,15 @@ var deleteBillingDemoRequest = async (req, res) => {
 // routes/billingDemoRoutes.js
 var router27 = import_express27.default.Router();
 router27.route("/").post(createBillingDemoRequest);
+router27.route("/activate-account").post(activateAccountWithToken);
 router27.route("/admin").get(protect, authorize("SuperAdmin"), getBillingDemoRequests);
 router27.route("/admin/:id").get(protect, authorize("SuperAdmin"), getBillingDemoRequestById).delete(protect, authorize("SuperAdmin"), deleteBillingDemoRequest);
 router27.route("/admin/:id/status").put(protect, authorize("SuperAdmin"), updateBillingDemoStatus);
 router27.route("/admin/:id/config").put(protect, authorize("SuperAdmin"), updateBillingDemoConfig);
+router27.route("/admin/:id/proposal").post(protect, authorize("SuperAdmin"), createCustomProposal);
+router27.route("/admin/:id/verify-payment").post(protect, authorize("SuperAdmin"), verifyDemoPayment);
 router27.route("/admin/:id/activate").post(protect, authorize("SuperAdmin"), activateBillingDemo);
+router27.route("/admin/:id/resend-invitation").post(protect, authorize("SuperAdmin"), resendActivationInvitation);
 var billingDemoRoutes_default = router27;
 
 // routes/kotRoutes.js
@@ -137531,7 +138836,7 @@ var import_express28 = __toESM(require_express2(), 1);
 init_Order();
 init_Restaurant();
 init_Branch();
-var import_mongoose51 = __toESM(require_mongoose2(), 1);
+var import_mongoose52 = __toESM(require_mongoose2(), 1);
 var extractId2 = (id) => {
   if (!id) return null;
   if (typeof id === "object") return String(id._id || id.id || id);
@@ -137735,7 +139040,7 @@ var manualCreateKOT = async (req, res) => {
     let restaurantId = extractId2(req.user?.restaurantId);
     let branchId = extractId2(req.user?.branchId);
     let order = null;
-    if (orderId && import_mongoose51.default.Types.ObjectId.isValid(orderId)) {
+    if (orderId && import_mongoose52.default.Types.ObjectId.isValid(orderId)) {
       order = await Order_default.findById(orderId);
       if (order) {
         restaurantId = restaurantId || extractId2(order.restaurantId);
@@ -137754,7 +139059,7 @@ var manualCreateKOT = async (req, res) => {
     const kot = new KOT_default({
       kotNumber,
       kotSequence,
-      orderId: order ? order._id : new import_mongoose51.default.Types.ObjectId(),
+      orderId: order ? order._id : new import_mongoose52.default.Types.ObjectId(),
       orderNumber: order ? `#${String(order._id).slice(-5).toUpperCase()}` : "MANUAL",
       restaurantId,
       branchId,
@@ -137768,7 +139073,7 @@ var manualCreateKOT = async (req, res) => {
         qty: Number(i.qty) || 1,
         price: Number(i.price) || 0,
         notes: i.notes || "",
-        product: i.product && import_mongoose51.default.Types.ObjectId.isValid(i.product) ? i.product : null,
+        product: i.product && import_mongoose52.default.Types.ObjectId.isValid(i.product) ? i.product : null,
         kitchenStation: station,
         status: "Pending"
       })),
@@ -137842,6 +139147,7 @@ var getKOTSummary = async (req, res) => {
 // routes/kotRoutes.js
 var router28 = import_express28.default.Router();
 router28.use(protect);
+router28.use(checkBillingModule(["kot", "kitchenOrderManagement"]));
 router28.route("/").get(getKOTs).post(manualCreateKOT);
 router28.route("/summary").get(getKOTSummary);
 router28.route("/:id").get(getKOTById);
@@ -137855,7 +139161,7 @@ var import_express29 = __toESM(require_express2(), 1);
 // controllers/tipController.js
 init_Tip();
 init_User();
-var import_mongoose52 = __toESM(require_mongoose2(), 1);
+var import_mongoose53 = __toESM(require_mongoose2(), 1);
 var getTips = async (req, res) => {
   try {
     const restaurantId = req.user.restaurantId;
@@ -137864,10 +139170,10 @@ var getTips = async (req, res) => {
     }
     const { waiterId, status, startDate, endDate, branchId } = req.query;
     const query = { restaurantId };
-    if (branchId && import_mongoose52.default.Types.ObjectId.isValid(branchId)) {
+    if (branchId && import_mongoose53.default.Types.ObjectId.isValid(branchId)) {
       query.branchId = branchId;
     }
-    if (waiterId && import_mongoose52.default.Types.ObjectId.isValid(waiterId)) {
+    if (waiterId && import_mongoose53.default.Types.ObjectId.isValid(waiterId)) {
       query.waiterId = waiterId;
     }
     if (status && ["Pending", "Settled"].includes(status)) {
@@ -137897,9 +139203,9 @@ var getTipSummary = async (req, res) => {
     if (!restaurantId) {
       return res.status(400).json({ message: "No restaurant associated with this account" });
     }
-    const matchQuery = { restaurantId: new import_mongoose52.default.Types.ObjectId(restaurantId) };
-    if (req.query.branchId && import_mongoose52.default.Types.ObjectId.isValid(req.query.branchId)) {
-      matchQuery.branchId = new import_mongoose52.default.Types.ObjectId(req.query.branchId);
+    const matchQuery = { restaurantId: new import_mongoose53.default.Types.ObjectId(restaurantId) };
+    if (req.query.branchId && import_mongoose53.default.Types.ObjectId.isValid(req.query.branchId)) {
+      matchQuery.branchId = new import_mongoose53.default.Types.ObjectId(req.query.branchId);
     }
     const totalsAgg = await Tip_default.aggregate([
       { $match: matchQuery },
@@ -138040,7 +139346,7 @@ var settleTips = async (req, res) => {
     const updateFilter = { restaurantId, status: "Pending" };
     if (Array.isArray(tipIds) && tipIds.length > 0) {
       updateFilter._id = { $in: tipIds };
-    } else if (waiterId && import_mongoose52.default.Types.ObjectId.isValid(waiterId)) {
+    } else if (waiterId && import_mongoose53.default.Types.ObjectId.isValid(waiterId)) {
       updateFilter.waiterId = waiterId;
     } else {
       return res.status(400).json({ message: "Must provide either specific tipIds or a valid waiterId to settle" });
@@ -138073,10 +139379,459 @@ router29.route("/settle").post(protect, authorize("RestaurantAdmin", "BranchMana
 router29.route("/").get(protect, authorize("RestaurantAdmin", "BranchManager", "SuperAdmin", "Admin"), getTips);
 var tipRoutes_default = router29;
 
+// routes/testimonialRoutes.js
+var import_express30 = __toESM(require_express2(), 1);
+
+// models/Testimonial.js
+var import_mongoose54 = __toESM(require_mongoose2(), 1);
+var testimonialSchema = new import_mongoose54.default.Schema({
+  userId: {
+    type: import_mongoose54.default.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+    unique: true
+    // One testimonial per restaurant owner
+  },
+  restaurantId: {
+    type: import_mongoose54.default.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: true
+  },
+  ownerName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  restaurantName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  location: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  quote: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  rating: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 5,
+    default: 5
+  },
+  avatar: {
+    type: String,
+    default: ""
+  },
+  status: {
+    type: String,
+    enum: ["Pending", "Approved", "Rejected"],
+    default: "Pending"
+  },
+  rejectionReason: {
+    type: String,
+    default: ""
+  },
+  approvedAt: {
+    type: Date
+  },
+  reviewedBy: {
+    type: import_mongoose54.default.Schema.Types.ObjectId,
+    ref: "User"
+  }
+}, {
+  timestamps: true
+});
+testimonialSchema.index({ status: 1, createdAt: -1 });
+var Testimonial = import_mongoose54.default.model("Testimonial", testimonialSchema);
+var Testimonial_default = Testimonial;
+
+// controllers/testimonialController.js
+init_Restaurant();
+var import_multer4 = __toESM(require("multer"), 1);
+var import_path5 = __toESM(require("path"), 1);
+var import_fs5 = __toESM(require("fs"), 1);
+var testimonialUploadDir = "uploads/testimonials";
+if (!import_fs5.default.existsSync(testimonialUploadDir)) {
+  import_fs5.default.mkdirSync(testimonialUploadDir, { recursive: true });
+}
+var storage3 = import_multer4.default.diskStorage({
+  destination: (req, file, cb) => cb(null, testimonialUploadDir),
+  filename: (req, file, cb) => {
+    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, "testimonial-" + unique + import_path5.default.extname(file.originalname));
+  }
+});
+var fileFilter3 = (req, file, cb) => {
+  const allowed = [".jpg", ".jpeg", ".png", ".webp"];
+  const ext = import_path5.default.extname(file.originalname).toLowerCase();
+  allowed.includes(ext) ? cb(null, true) : cb(new Error("Only JPG, JPEG, PNG, or WEBP images are allowed"), false);
+};
+var testimonialUpload = (0, import_multer4.default)({
+  storage: storage3,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  // 5MB
+  fileFilter: fileFilter3
+}).single("avatar");
+var getPublicTestimonials = async (req, res) => {
+  try {
+    const testimonials = await Testimonial_default.find({ status: "Approved" }).sort({ approvedAt: -1, createdAt: -1 }).lean();
+    res.status(200).json({
+      success: true,
+      count: testimonials.length,
+      data: testimonials
+    });
+  } catch (error) {
+    console.error("Error fetching public testimonials:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch testimonials" });
+  }
+};
+var getMyTestimonial = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const testimonial = await Testimonial_default.findOne({ userId });
+    let restaurantName = "";
+    let location = "";
+    if (req.user.restaurantId) {
+      const restaurant = await Restaurant_default.findById(req.user.restaurantId).select("name address city state");
+      if (restaurant) {
+        restaurantName = restaurant.name || "";
+        location = restaurant.address || (restaurant.city && restaurant.state ? `${restaurant.city}, ${restaurant.state}` : "");
+      }
+    }
+    res.status(200).json({
+      success: true,
+      data: testimonial || null,
+      defaults: {
+        ownerName: req.user.name || "",
+        restaurantName,
+        location
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching owner testimonial:", error);
+    res.status(500).json({ success: false, message: "Failed to retrieve testimonial" });
+  }
+};
+var saveMyTestimonial = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { ownerName, restaurantName, location, quote, rating } = req.body;
+    if (!ownerName || !restaurantName || !location || !quote) {
+      return res.status(400).json({
+        success: false,
+        message: "Owner name, restaurant name, location, and testimonial text are required."
+      });
+    }
+    const parsedRating = Number(rating) || 5;
+    if (parsedRating < 1 || parsedRating > 5) {
+      return res.status(400).json({
+        success: false,
+        message: "Rating must be between 1 and 5 stars."
+      });
+    }
+    let restaurantId = req.user.restaurantId;
+    if (!restaurantId) {
+      const ownedRestaurant = await Restaurant_default.findOne({ ownerId: userId }).select("_id");
+      if (ownedRestaurant) {
+        restaurantId = ownedRestaurant._id;
+      }
+    }
+    if (!restaurantId) {
+      return res.status(400).json({
+        success: false,
+        message: "No associated restaurant found for your account."
+      });
+    }
+    let existingTestimonial = await Testimonial_default.findOne({ userId });
+    let avatarUrl = existingTestimonial ? existingTestimonial.avatar : "";
+    if (req.body.removeAvatar === "true" || req.body.removeAvatar === true) {
+      avatarUrl = "";
+    } else if (req.file) {
+      avatarUrl = `/uploads/testimonials/${req.file.filename}`;
+    } else if (req.body.avatarUrl !== void 0) {
+      avatarUrl = req.body.avatarUrl;
+    }
+    if (existingTestimonial) {
+      existingTestimonial.ownerName = ownerName.trim();
+      existingTestimonial.restaurantName = restaurantName.trim();
+      existingTestimonial.location = location.trim();
+      existingTestimonial.quote = quote.trim();
+      existingTestimonial.rating = parsedRating;
+      existingTestimonial.avatar = avatarUrl;
+      existingTestimonial.status = "Pending";
+      existingTestimonial.rejectionReason = "";
+      await existingTestimonial.save();
+      return res.status(200).json({
+        success: true,
+        message: "Testimonial updated and submitted for approval.",
+        data: existingTestimonial
+      });
+    } else {
+      const newTestimonial = await Testimonial_default.create({
+        userId,
+        restaurantId,
+        ownerName: ownerName.trim(),
+        restaurantName: restaurantName.trim(),
+        location: location.trim(),
+        quote: quote.trim(),
+        rating: parsedRating,
+        avatar: avatarUrl,
+        status: "Pending"
+      });
+      return res.status(201).json({
+        success: true,
+        message: "Testimonial submitted successfully! It will appear on the landing page once approved.",
+        data: newTestimonial
+      });
+    }
+  } catch (error) {
+    console.error("Error saving testimonial:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to submit testimonial"
+    });
+  }
+};
+var getAdminTestimonials = async (req, res) => {
+  try {
+    const { status } = req.query;
+    const filter = {};
+    if (status && status !== "all") {
+      filter.status = status;
+    }
+    const testimonials = await Testimonial_default.find(filter).populate("userId", "name email role").populate("restaurantId", "name address").sort({ createdAt: -1 }).lean();
+    res.status(200).json({
+      success: true,
+      count: testimonials.length,
+      data: testimonials
+    });
+  } catch (error) {
+    console.error("Error fetching admin testimonials:", error);
+    res.status(500).json({ success: false, message: "Failed to retrieve testimonials" });
+  }
+};
+var updateTestimonialStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, rejectionReason } = req.body;
+    if (!["Approved", "Rejected", "Pending"].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status. Must be Pending, Approved, or Rejected."
+      });
+    }
+    const testimonial = await Testimonial_default.findById(id);
+    if (!testimonial) {
+      return res.status(404).json({
+        success: false,
+        message: "Testimonial not found."
+      });
+    }
+    testimonial.status = status;
+    if (status === "Approved") {
+      testimonial.approvedAt = /* @__PURE__ */ new Date();
+      testimonial.rejectionReason = "";
+      testimonial.reviewedBy = req.user._id;
+    } else if (status === "Rejected") {
+      testimonial.rejectionReason = rejectionReason || "Content did not meet editorial guidelines.";
+      testimonial.reviewedBy = req.user._id;
+    }
+    await testimonial.save();
+    res.status(200).json({
+      success: true,
+      message: `Testimonial successfully marked as ${status}.`,
+      data: testimonial
+    });
+  } catch (error) {
+    console.error("Error updating testimonial status:", error);
+    res.status(500).json({ success: false, message: "Failed to update testimonial status" });
+  }
+};
+var deleteTestimonial = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const testimonial = await Testimonial_default.findByIdAndDelete(id);
+    if (!testimonial) {
+      return res.status(404).json({
+        success: false,
+        message: "Testimonial not found."
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Testimonial deleted successfully."
+    });
+  } catch (error) {
+    console.error("Error deleting testimonial:", error);
+    res.status(500).json({ success: false, message: "Failed to delete testimonial" });
+  }
+};
+
+// routes/testimonialRoutes.js
+var router30 = import_express30.default.Router();
+router30.get("/public", getPublicTestimonials);
+router30.get("/mine", protect, getMyTestimonial);
+router30.post("/mine", protect, testimonialUpload, saveMyTestimonial);
+router30.get("/admin/all", protect, authorize("SuperAdmin", "RestaurantAdmin", "Admin"), getAdminTestimonials);
+router30.put("/admin/:id/status", protect, authorize("SuperAdmin", "RestaurantAdmin", "Admin"), updateTestimonialStatus);
+router30.delete("/admin/:id", protect, authorize("SuperAdmin"), deleteTestimonial);
+var testimonialRoutes_default = router30;
+
+// routes/customerReviewRoutes.js
+var import_express31 = __toESM(require_express2(), 1);
+
+// models/CustomerReview.js
+var import_mongoose55 = __toESM(require_mongoose2(), 1);
+var customerReviewSchema = new import_mongoose55.default.Schema({
+  userId: {
+    type: import_mongoose55.default.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
+  customerName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  customerEmail: {
+    type: String,
+    default: ""
+  },
+  avatar: {
+    type: String,
+    default: ""
+  },
+  rating: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 5,
+    default: 5
+  },
+  reviewText: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  orderId: {
+    type: import_mongoose55.default.Schema.Types.ObjectId,
+    ref: "Order"
+  },
+  status: {
+    type: String,
+    enum: ["Approved", "Pending", "Hidden"],
+    default: "Approved"
+    // auto-approved for instant visibility on landing page
+  }
+}, {
+  timestamps: true
+});
+customerReviewSchema.index({ status: 1, createdAt: -1 });
+var CustomerReview = import_mongoose55.default.model("CustomerReview", customerReviewSchema);
+var CustomerReview_default = CustomerReview;
+
+// controllers/customerReviewController.js
+var getPublicCustomerReviews = async (req, res) => {
+  try {
+    const reviews = await CustomerReview_default.find({ status: "Approved" }).sort({ createdAt: -1 }).limit(20).lean();
+    res.status(200).json({
+      success: true,
+      count: reviews.length,
+      data: reviews
+    });
+  } catch (error) {
+    console.error("Error fetching public customer reviews:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch customer reviews" });
+  }
+};
+var getMyCustomerReviews = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const reviews = await CustomerReview_default.find({ userId }).sort({ createdAt: -1 }).lean();
+    res.status(200).json({
+      success: true,
+      data: reviews
+    });
+  } catch (error) {
+    console.error("Error fetching user reviews:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch your reviews" });
+  }
+};
+var submitCustomerReview = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { rating, reviewText, orderId } = req.body;
+    if (!reviewText || !reviewText.trim()) {
+      return res.status(400).json({ success: false, message: "Review text is required" });
+    }
+    const numRating = Number(rating) || 5;
+    if (numRating < 1 || numRating > 5) {
+      return res.status(400).json({ success: false, message: "Rating must be between 1 and 5" });
+    }
+    const customerName = req.user.name || "Foodie Customer";
+    const customerEmail = req.user.email || "";
+    const avatar = req.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(customerName)}&background=FF5A1F&color=fff`;
+    const newReview = await CustomerReview_default.create({
+      userId,
+      customerName,
+      customerEmail,
+      avatar,
+      rating: numRating,
+      reviewText: reviewText.trim(),
+      orderId: orderId || null,
+      status: "Approved"
+    });
+    res.status(201).json({
+      success: true,
+      message: "Your review has been submitted and is now featured on the landing page!",
+      data: newReview
+    });
+  } catch (error) {
+    console.error("Error submitting customer review:", error);
+    res.status(500).json({ success: false, message: "Failed to submit review" });
+  }
+};
+var deleteCustomerReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const review = await CustomerReview_default.findById(id);
+    if (!review) {
+      return res.status(404).json({ success: false, message: "Review not found" });
+    }
+    const isOwner = review.userId.toString() === req.user._id.toString();
+    const isAdmin = ["SuperAdmin", "Admin"].includes(req.user.role);
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ success: false, message: "Not authorized to delete this review" });
+    }
+    await CustomerReview_default.findByIdAndDelete(id);
+    res.status(200).json({
+      success: true,
+      message: "Review deleted successfully"
+    });
+  } catch (error) {
+    console.error("Error deleting review:", error);
+    res.status(500).json({ success: false, message: "Failed to delete review" });
+  }
+};
+
+// routes/customerReviewRoutes.js
+var router31 = import_express31.default.Router();
+router31.get("/public", getPublicCustomerReviews);
+router31.get("/mine", protect, getMyCustomerReviews);
+router31.post("/", protect, submitCustomerReview);
+router31.delete("/:id", protect, deleteCustomerReview);
+var customerReviewRoutes_default = router31;
+
 // index.js
 init_Plan();
 import_dotenv.default.config();
-var app = (0, import_express30.default)();
+var app = (0, import_express32.default)();
 app.use((req, res, next) => {
   const origin = req.headers.origin || "*";
   res.setHeader("Access-Control-Allow-Origin", origin);
@@ -138095,8 +139850,8 @@ app.use((0, import_cors.default)({
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", "cache-control", "pragma"],
   optionsSuccessStatus: 204
 }));
-app.use(import_express30.default.json({ limit: "50mb" }));
-app.use(import_express30.default.urlencoded({ limit: "50mb", extended: true }));
+app.use(import_express32.default.json({ limit: "50mb" }));
+app.use(import_express32.default.urlencoded({ limit: "50mb", extended: true }));
 app.use((0, import_cookie_parser.default)());
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", time: (/* @__PURE__ */ new Date()).toISOString() });
@@ -138140,18 +139895,20 @@ app.use("/api/billing-demos", billingDemoRoutes_default);
 app.use("/api/expenses", expenseRoutes_default);
 app.use("/api/kot", kotRoutes_default);
 app.use("/api/tips", tipRoutes_default);
+app.use("/api/testimonials", testimonialRoutes_default);
+app.use("/api/customer-reviews", customerReviewRoutes_default);
 var PORT = process.env.PORT || 5e3;
-var __dirname = import_path5.default.resolve();
-app.use("/uploads", import_express30.default.static(import_path5.default.join(__dirname, "uploads")));
+var __dirname = import_path6.default.resolve();
+app.use("/uploads", import_express32.default.static(import_path6.default.join(__dirname, "uploads")));
 app.get("/", (req, res) => {
   res.status(200).json({ status: "ok", message: "Restaurant SaaS API is running live" });
 });
-var frontendDistPath = import_path5.default.join(__dirname, "../frontend/dist");
-if (import_fs5.default.existsSync(frontendDistPath)) {
-  app.use(import_express30.default.static(frontendDistPath));
+var frontendDistPath = import_path6.default.join(__dirname, "../frontend/dist");
+if (import_fs6.default.existsSync(frontendDistPath)) {
+  app.use(import_express32.default.static(frontendDistPath));
   app.get(/(.*)/, (req, res, next) => {
     if (req.originalUrl.startsWith("/api")) return next();
-    res.sendFile(import_path5.default.resolve(frontendDistPath, "index.html"));
+    res.sendFile(import_path6.default.resolve(frontendDistPath, "index.html"));
   });
 }
 app.use(notFound);
