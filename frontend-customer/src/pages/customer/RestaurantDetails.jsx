@@ -123,7 +123,12 @@ const RestaurantDetails = () => {
                 
                 // Fetch menu
                 const menuRes = await axios.get(`${API_URL}/menu?restaurantId=${id}`);
-                setMenu(Array.isArray(menuRes.data) ? menuRes.data.filter(m => m.restaurantId === id) : []);
+                const rawMenu = Array.isArray(menuRes.data) ? menuRes.data : [];
+                const restaurantMenu = rawMenu.filter(m => {
+                    const rId = typeof m.restaurantId === 'object' ? (m.restaurantId?._id || m.restaurantId?.id) : m.restaurantId;
+                    return !rId || String(rId) === String(id);
+                });
+                setMenu(restaurantMenu);
                 
             } catch (error) {
                 console.error("Failed to load restaurant details", error);

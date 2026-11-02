@@ -101,7 +101,7 @@ export default function Explore() {
           originalPrice: d.originalPrice || (d.price ? Math.round(d.price * 1.25) : 0),
           cuisine: d.cuisine || 'Specialty',
           category: d.category || 'Mains',
-          image: (d.image && !d.image.includes('unsplash.com') && !d.image.includes('placeholder')) ? d.image : null,
+          image: d.image || null,
           description: d.description || ''
         }));
         setDishes(backendDishes);
