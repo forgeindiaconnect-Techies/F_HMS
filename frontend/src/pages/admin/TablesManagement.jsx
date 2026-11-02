@@ -447,33 +447,17 @@ const TablesManagement = () => {
                             Scan this QR code to view the menu and place dine-in orders instantly.
                         </p>
 
-                        <div className="w-full space-y-3 mb-6 text-left">
-                            <div className="p-3 bg-gray-50 rounded-2xl border border-gray-150 text-xs">
-                                <span className="font-bold text-gray-500 block mb-1">Click to Test on Desktop:</span>
+                        <div className="w-full space-y-2 mb-6 text-left">
+                            <div className="p-3 bg-emerald-50/70 rounded-2xl border border-emerald-100 text-xs">
+                                <span className="font-bold text-emerald-800 block mb-0.5">Live Customer URL:</span>
                                 <a 
                                     href={getQrUrl(selectedTable)} 
                                     target="_blank" 
                                     rel="noreferrer" 
-                                    className="text-green-600 hover:underline font-extrabold break-all"
+                                    className="text-emerald-700 hover:underline font-bold break-all block text-[11px]"
                                 >
-                                    Open Customer Menu ↗
+                                    {getQrUrl(selectedTable)} ↗
                                 </a>
-                            </div>
-
-                            <div>
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">
-                                    Testing on mobile? Enter PC Local IP
-                                </label>
-                                <input 
-                                    type="text" 
-                                    placeholder="e.g. 192.168.1.15" 
-                                    value={localIp}
-                                    onChange={(e) => setLocalIp(e.target.value)}
-                                    className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-green-500 text-center"
-                                />
-                                <p className="text-[9px] text-gray-400 mt-1 text-center leading-normal">
-                                    Ensure your mobile phone is connected to the same Wi-Fi network.
-                                </p>
                             </div>
                         </div>
 
