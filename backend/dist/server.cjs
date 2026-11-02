@@ -126573,6 +126573,9 @@ var checkFeature = (featureName) => {
       const planName = restaurant.subscription?.plan || "Basic";
       const plan = await Plan_default.findOne({ name: planName });
       const targetNorm = normalizeFeatureName(featureName);
+      if (targetNorm.includes("support") || targetNorm.includes("customersupport")) {
+        return next();
+      }
       if (plan) {
         const hasFeature = plan.features.some((f) => normalizeFeatureName(f) === targetNorm);
         if (!hasFeature) {
@@ -137378,7 +137381,7 @@ var getSupportAnalytics = async (req, res) => {
 // routes/supportRoutes.js
 var router24 = import_express24.default.Router();
 router24.use(protect);
-router24.route("/analytics").get(checkFeature("Customer Support"), getSupportAnalytics);
+router24.route("/analytics").get(getSupportAnalytics);
 router24.route("/tickets").get(getTickets2).post(upload2.array("attachments", 5), createTicket);
 router24.route("/tickets/:id").get(getTicketById).put(updateTicket2);
 router24.route("/tickets/:id/replies").get(getTicketReplies).post(upload2.array("attachments", 5), addTicketReply);

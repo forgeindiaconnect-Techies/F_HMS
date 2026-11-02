@@ -216,6 +216,11 @@ export const checkFeature = (featureName) => {
             
             const targetNorm = normalizeFeatureName(featureName);
 
+            // Customer Support is a fundamental platform right available to all accounts
+            if (targetNorm.includes('support') || targetNorm.includes('customersupport')) {
+                return next();
+            }
+
             // If the plan exists and features are configured, verify permission
             if (plan) {
                 const hasFeature = plan.features.some(f => normalizeFeatureName(f) === targetNorm);

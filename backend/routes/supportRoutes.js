@@ -28,8 +28,8 @@ const router = express.Router();
 // Apply authentication to all endpoints
 router.use(protect);
 
-// Support Analytics route
-router.route('/analytics').get(checkFeature('Customer Support'), getSupportAnalytics);
+// Support Analytics route (Accessible to all authenticated users for their own support stats)
+router.route('/analytics').get(getSupportAnalytics);
 
 // Support Tickets endpoints
 router.route('/tickets')
