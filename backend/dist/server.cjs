@@ -124758,7 +124758,7 @@ var User_exports = {};
 __export(User_exports, {
   default: () => User_default
 });
-var import_mongoose3, import_bcryptjs, userSchema, User2, User_default;
+var import_mongoose3, import_bcryptjs, userSchema, User, User_default;
 var init_User = __esm({
   "models/User.js"() {
     import_mongoose3 = __toESM(require_mongoose2(), 1);
@@ -124857,8 +124857,8 @@ var init_User = __esm({
       }
       return this.password === cleanEntered || this.password === enteredPassword;
     };
-    User2 = import_mongoose3.default.model("User", userSchema);
-    User_default = User2;
+    User = import_mongoose3.default.model("User", userSchema);
+    User_default = User;
   }
 });
 
@@ -125958,6 +125958,67 @@ var sendLoginNotificationEmail = async ({ email, name, role }) => {
                 <div style="text-align: center; margin-top: 30px;">
                     <a href="https://f-hms.vercel.app" style="background-color: #1e293b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
                         Access Restaurant Hub
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub. All rights reserved.
+            </div>
+        </div>
+    `;
+  return await sendEmail({ to: email, toName: name, subject, html });
+};
+var sendSubscriptionSuccessEmail = async ({ email, name, restaurantName, plan, billingCycle, price, transactionId, expiryDate }) => {
+  const formattedExpiry = expiryDate ? new Date(expiryDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Next billing cycle";
+  const formattedPrice = price !== void 0 ? `\u20B9${price}` : "";
+  const subject = `Subscription Confirmed: ${plan || "Plan"} Activated for ${restaurantName || "Your Restaurant"}! \u{1F389}`;
+  const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Subscription Activated! \u{1F389}</h1>
+                <p style="margin-top: 8px; opacity: 0.9; font-size: 14px;">Your Restaurant Dashboard is Fully Active</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Restaurant Owner"},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Thank you for your payment! Your subscription to the <strong>${plan || "Basic"}</strong> plan for <strong>${restaurantName || "Your Restaurant"}</strong> has been successfully activated.
+                </p>
+                <div style="background-color: #f0fdf4; padding: 18px; border-radius: 10px; margin: 20px 0; border: 1px solid #bbf7d0;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <tr>
+                            <td style="padding: 6px 0; color: #64748b;"><strong>Plan Tier:</strong></td>
+                            <td style="padding: 6px 0; color: #0f172a; font-weight: bold; text-align: right;">${plan || "Basic"}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 0; color: #64748b;"><strong>Billing Cycle:</strong></td>
+                            <td style="padding: 6px 0; color: #0f172a; font-weight: bold; text-align: right; text-transform: capitalize;">${billingCycle || "Monthly"}</td>
+                        </tr>
+                        ${formattedPrice ? `
+                        <tr>
+                            <td style="padding: 6px 0; color: #64748b;"><strong>Amount Paid:</strong></td>
+                            <td style="padding: 6px 0; color: #059669; font-weight: bold; text-align: right;">${formattedPrice}</td>
+                        </tr>` : ""}
+                        ${transactionId ? `
+                        <tr>
+                            <td style="padding: 6px 0; color: #64748b;"><strong>Transaction ID:</strong></td>
+                            <td style="padding: 6px 0; color: #0f172a; font-family: monospace; font-size: 12px; text-align: right;">${transactionId}</td>
+                        </tr>` : ""}
+                        <tr>
+                            <td style="padding: 6px 0; color: #64748b;"><strong>Valid Until:</strong></td>
+                            <td style="padding: 6px 0; color: #0f172a; font-weight: bold; text-align: right;">${formattedExpiry}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 0; color: #64748b;"><strong>Account Status:</strong></td>
+                            <td style="padding: 6px 0; color: #10b981; font-weight: bold; text-align: right;">Active & Unlocked</td>
+                        </tr>
+                    </table>
+                </div>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    All modules and features associated with the <strong>${plan}</strong> plan are now immediately accessible across your management dashboard, POS billing, orders, and staff workflows.
+                </p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="https://f-hms.vercel.app/admin" style="background-color: #10b981; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Go to Your Dashboard
                     </a>
                 </div>
             </div>
@@ -127229,6 +127290,8 @@ var SubscriptionPayment_default = SubscriptionPayment;
 
 // controllers/restaurantController.js
 init_Plan();
+init_User();
+init_RestaurantVerification();
 var import_multer2 = __toESM(require("multer"), 1);
 var import_path3 = __toESM(require("path"), 1);
 var import_fs3 = __toESM(require("fs"), 1);
@@ -127262,8 +127325,8 @@ var getRestaurants = async (req, res) => {
       return res.json([]);
     }
     const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
-    const User3 = (await Promise.resolve().then(() => (init_User(), User_exports))).default;
-    const adminUsers = await User3.find({ role: { $in: ["RestaurantAdmin", "Admin"] } });
+    const User2 = (await Promise.resolve().then(() => (init_User(), User_exports))).default;
+    const adminUsers = await User2.find({ role: { $in: ["RestaurantAdmin", "Admin"] } });
     for (const admin of adminUsers) {
       const exists = await Restaurant_default.exists({ $or: [{ ownerId: admin._id }, { _id: admin.restaurantId }] });
       if (!exists) {
@@ -127335,10 +127398,18 @@ var getRestaurants = async (req, res) => {
       const branches = await Branch3.find({ restaurantId: rest._id, isActive: true }).lean();
       rest.branches = branches;
       const primaryBranch = branches[0];
-      rest.city = primaryBranch?.location?.city || "";
-      rest.state = primaryBranch?.location?.state || "";
-      rest.country = primaryBranch?.location?.country || "";
-      rest.address = rest.address || primaryBranch?.location?.address || "";
+      let verifAddress = "";
+      try {
+        const verif = await RestaurantVerification_default.findOne({ restaurantId: rest._id }).lean();
+        verifAddress = verif?.documents?.addressProof?.addressText || "";
+      } catch (_) {
+      }
+      const branchAddress = primaryBranch?.location?.address && primaryBranch.location.address !== "Primary Location" ? primaryBranch.location.address : "";
+      rest.address = rest.address || branchAddress || verifAddress || primaryBranch?.location?.address || "";
+      rest.city = primaryBranch?.location?.city || rest.city || (verifAddress ? verifAddress.split(",")[0].trim() : "");
+      rest.state = primaryBranch?.location?.state || rest.state || "";
+      rest.country = primaryBranch?.location?.country || rest.country || "India";
+      rest.verificationAddress = verifAddress;
       return rest;
     }));
     res.json(populatedRestaurants);
@@ -127400,6 +127471,22 @@ var selfSubscribe = async (req, res) => {
       restaurant.approvalStatus = "Approved";
     }
     const updatedRestaurant = await restaurant.save();
+    try {
+      const owner = await User_default.findById(restaurant.ownerId || req.user._id);
+      const targetEmail = owner?.email || req.user?.email;
+      if (targetEmail) {
+        sendSubscriptionSuccessEmail({
+          email: targetEmail,
+          name: owner?.name || req.user?.name,
+          restaurantName: restaurant.name,
+          plan: plan || "Basic",
+          billingCycle: billingCycle || "monthly",
+          expiryDate
+        }).catch((err) => console.error("Subscription email background error:", err.message));
+      }
+    } catch (e) {
+      console.error("Failed to send selfSubscribe email:", e.message);
+    }
     res.json(updatedRestaurant);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -127425,7 +127512,7 @@ var getMyRestaurant = async (req, res) => {
       if (ownedRestaurant) {
         restaurantId = ownedRestaurant._id;
         req.user.restaurantId = ownedRestaurant._id;
-        await User.findByIdAndUpdate(req.user._id, { restaurantId: ownedRestaurant._id });
+        await User_default.findByIdAndUpdate(req.user._id, { restaurantId: ownedRestaurant._id });
       }
     }
     if (!restaurantId) {
@@ -127959,6 +128046,24 @@ var upgradeSubscription = async (req, res) => {
       type: "System",
       restaurantId: restaurant._id
     });
+    try {
+      const owner = await User_default.findById(restaurant.ownerId || req.user._id);
+      const targetEmail = owner?.email || req.user?.email;
+      if (targetEmail) {
+        sendSubscriptionSuccessEmail({
+          email: targetEmail,
+          name: owner?.name || req.user?.name,
+          restaurantName: restaurant.name,
+          plan: planName,
+          billingCycle: billingCycle || "monthly",
+          price: chargeAmount,
+          transactionId,
+          expiryDate: newExpiry
+        }).catch((err) => console.error("Upgrade subscription email background error:", err.message));
+      }
+    } catch (e) {
+      console.error("Failed to send upgrade email:", e.message);
+    }
     res.json({
       message: `Your restaurant has been upgraded to ${planName}.`,
       restaurant,
@@ -128177,6 +128282,24 @@ var verifyRazorpaySubscriptionPayment = async (req, res) => {
       type: "System",
       restaurantId: restaurant._id
     });
+    try {
+      const owner = await User_default.findById(restaurant.ownerId || req.user._id);
+      const targetEmail = owner?.email || req.user?.email;
+      if (targetEmail) {
+        sendSubscriptionSuccessEmail({
+          email: targetEmail,
+          name: owner?.name || req.user?.name,
+          restaurantName: restaurant.name,
+          plan: planName,
+          billingCycle: billingCycle || "monthly",
+          price: targetPrice,
+          transactionId: txnId,
+          expiryDate: newExpiry
+        }).catch((err) => console.error("Razorpay subscription email background error:", err.message));
+      }
+    } catch (e) {
+      console.error("Failed to send Razorpay email:", e.message);
+    }
     res.json({
       message: `Subscription to ${planName} plan activated successfully!`,
       restaurant,
@@ -128296,6 +128419,24 @@ var confirmSubscriptionQRPayment = async (req, res) => {
       type: "System",
       restaurantId: restaurant._id
     });
+    try {
+      const owner = await User_default.findById(restaurant.ownerId || req.user._id);
+      const targetEmail = owner?.email || req.user?.email;
+      if (targetEmail) {
+        sendSubscriptionSuccessEmail({
+          email: targetEmail,
+          name: owner?.name || req.user?.name,
+          restaurantName: restaurant.name,
+          plan: planName,
+          billingCycle: billingCycle || "monthly",
+          price: targetPrice,
+          transactionId: txnId,
+          expiryDate: newExpiry
+        }).catch((err) => console.error("QR payment subscription email background error:", err.message));
+      }
+    } catch (e) {
+      console.error("Failed to send QR subscription email:", e.message);
+    }
     res.json({
       message: `Subscription to ${planName} plan activated successfully via QR Payment!`,
       restaurant,
@@ -128845,8 +128986,8 @@ var addOrderItems = async (req, res) => {
       const Branch3 = import_mongoose18.default.model("Branch");
       let demoRestaurant = await Restaurant3.findOne({ name: "Pizza Palace" }) || await Restaurant3.findOne({ isDemo: true });
       if (!demoRestaurant) {
-        const User3 = import_mongoose18.default.model("User");
-        const adminUser = await User3.findOne({ role: "SuperAdmin" }) || await User3.findOne();
+        const User2 = import_mongoose18.default.model("User");
+        const adminUser = await User2.findOne({ role: "SuperAdmin" }) || await User2.findOne();
         demoRestaurant = await Restaurant3.create({
           name: "Pizza Palace",
           isDemo: true,
@@ -128867,10 +129008,10 @@ var addOrderItems = async (req, res) => {
     }
     let finalUserId = req.user ? req.user._id : null;
     if (!finalUserId) {
-      const User3 = import_mongoose18.default.model("User");
-      let guestUser = await User3.findOne({ role: "Customer" }) || await User3.findOne();
+      const User2 = import_mongoose18.default.model("User");
+      let guestUser = await User2.findOne({ role: "Customer" }) || await User2.findOne();
       if (!guestUser) {
-        guestUser = await User3.create({
+        guestUser = await User2.create({
           name: "Guest Customer",
           email: "guest@example.com",
           password: "password123",
@@ -131367,8 +131508,8 @@ var getStats = async (req, res) => {
 var getRestaurants2 = async (req, res) => {
   try {
     const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
-    const User3 = (await Promise.resolve().then(() => (init_User(), User_exports))).default;
-    const adminUsers = await User3.find({ role: { $in: ["RestaurantAdmin", "Admin"] } });
+    const User2 = (await Promise.resolve().then(() => (init_User(), User_exports))).default;
+    const adminUsers = await User2.find({ role: { $in: ["RestaurantAdmin", "Admin"] } });
     for (const admin of adminUsers) {
       const exists = await Restaurant_default.exists({ $or: [{ ownerId: admin._id }, { _id: admin.restaurantId }] });
       if (!exists) {
@@ -131402,7 +131543,7 @@ var getRestaurants2 = async (req, res) => {
     const restaurants = await Restaurant_default.find().populate("ownerId", "name email").sort({ createdAt: -1 }).lean();
     const repairedRestaurants = await Promise.all(restaurants.map(async (r) => {
       if (!r.ownerId) {
-        const owner = await User3.findOne({ restaurantId: r._id, role: { $in: ["RestaurantAdmin", "Admin"] } }).select("name email");
+        const owner = await User2.findOne({ restaurantId: r._id, role: { $in: ["RestaurantAdmin", "Admin"] } }).select("name email");
         if (owner) {
           r.ownerId = { _id: owner._id, name: owner.name, email: owner.email };
           try {

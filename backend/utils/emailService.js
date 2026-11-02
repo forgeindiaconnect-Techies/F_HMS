@@ -267,3 +267,70 @@ export const sendLoginNotificationEmail = async ({ email, name, role }) => {
 
     return await sendEmail({ to: email, toName: name, subject, html });
 };
+
+/**
+ * 5. Send Subscription Success / Activation Email to Restaurant Owner
+ */
+export const sendSubscriptionSuccessEmail = async ({ email, name, restaurantName, plan, billingCycle, price, transactionId, expiryDate }) => {
+    const formattedExpiry = expiryDate ? new Date(expiryDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Next billing cycle';
+    const formattedPrice = price !== undefined ? `₹${price}` : '';
+    const subject = `Subscription Confirmed: ${plan || 'Plan'} Activated for ${restaurantName || 'Your Restaurant'}! 🎉`;
+    const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Subscription Activated! 🎉</h1>
+                <p style="margin-top: 8px; opacity: 0.9; font-size: 14px;">Your Restaurant Dashboard is Fully Active</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || 'Restaurant Owner'},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Thank you for your payment! Your subscription to the <strong>${plan || 'Basic'}</strong> plan for <strong>${restaurantName || 'Your Restaurant'}</strong> has been successfully activated.
+                </p>
+                <div style="background-color: #f0fdf4; padding: 18px; border-radius: 10px; margin: 20px 0; border: 1px solid #bbf7d0;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <tr>
+                            <td style="padding: 6px 0; color: #64748b;"><strong>Plan Tier:</strong></td>
+                            <td style="padding: 6px 0; color: #0f172a; font-weight: bold; text-align: right;">${plan || 'Basic'}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 0; color: #64748b;"><strong>Billing Cycle:</strong></td>
+                            <td style="padding: 6px 0; color: #0f172a; font-weight: bold; text-align: right; text-transform: capitalize;">${billingCycle || 'Monthly'}</td>
+                        </tr>
+                        ${formattedPrice ? `
+                        <tr>
+                            <td style="padding: 6px 0; color: #64748b;"><strong>Amount Paid:</strong></td>
+                            <td style="padding: 6px 0; color: #059669; font-weight: bold; text-align: right;">${formattedPrice}</td>
+                        </tr>` : ''}
+                        ${transactionId ? `
+                        <tr>
+                            <td style="padding: 6px 0; color: #64748b;"><strong>Transaction ID:</strong></td>
+                            <td style="padding: 6px 0; color: #0f172a; font-family: monospace; font-size: 12px; text-align: right;">${transactionId}</td>
+                        </tr>` : ''}
+                        <tr>
+                            <td style="padding: 6px 0; color: #64748b;"><strong>Valid Until:</strong></td>
+                            <td style="padding: 6px 0; color: #0f172a; font-weight: bold; text-align: right;">${formattedExpiry}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 0; color: #64748b;"><strong>Account Status:</strong></td>
+                            <td style="padding: 6px 0; color: #10b981; font-weight: bold; text-align: right;">Active & Unlocked</td>
+                        </tr>
+                    </table>
+                </div>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    All modules and features associated with the <strong>${plan}</strong> plan are now immediately accessible across your management dashboard, POS billing, orders, and staff workflows.
+                </p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="https://f-hms.vercel.app/admin" style="background-color: #10b981; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Go to Your Dashboard
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${new Date().getFullYear()} Restaurant Hub. All rights reserved.
+            </div>
+        </div>
+    `;
+
+    return await sendEmail({ to: email, toName: name, subject, html });
+};
+

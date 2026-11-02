@@ -5,6 +5,9 @@ import Notification from '../models/Notification.js';
 import DeliveryPartner from '../models/DeliveryPartner.js';
 import SubscriptionPayment from '../models/SubscriptionPayment.js';
 import Plan from '../models/Plan.js';
+import User from '../models/User.js';
+import RestaurantVerification from '../models/RestaurantVerification.js';
+import { sendSubscriptionSuccessEmail } from '../utils/emailService.js';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -132,10 +135,23 @@ export const getRestaurants = async (req, res) => {
             const branches = await Branch.find({ restaurantId: rest._id, isActive: true }).lean();
             rest.branches = branches;
             const primaryBranch = branches[0];
-            rest.city = primaryBranch?.location?.city || '';
-            rest.state = primaryBranch?.location?.state || '';
-            rest.country = primaryBranch?.location?.country || '';
-            rest.address = rest.address || primaryBranch?.location?.address || '';
+
+            // If restaurant address/city is unset or default, check verification documents
+            let verifAddress = '';
+            try {
+                const verif = await RestaurantVerification.findOne({ restaurantId: rest._id }).lean();
+                verifAddress = verif?.documents?.addressProof?.addressText || '';
+            } catch (_) {}
+
+            const branchAddress = primaryBranch?.location?.address && primaryBranch.location.address !== 'Primary Location' 
+                ? primaryBranch.location.address 
+                : '';
+
+            rest.address = rest.address || branchAddress || verifAddress || primaryBranch?.location?.address || '';
+            rest.city = primaryBranch?.location?.city || rest.city || (verifAddress ? verifAddress.split(',')[0].trim() : '');
+            rest.state = primaryBranch?.location?.state || rest.state || '';
+            rest.country = primaryBranch?.location?.country || rest.country || 'India';
+            rest.verificationAddress = verifAddress;
 
             return rest;
         }));
@@ -220,6 +236,25 @@ export const selfSubscribe = async (req, res) => {
         }
 
         const updatedRestaurant = await restaurant.save();
+
+        // Send Subscription Confirmation Email to Owner
+        try {
+            const owner = await User.findById(restaurant.ownerId || req.user._id);
+            const targetEmail = owner?.email || req.user?.email;
+            if (targetEmail) {
+                sendSubscriptionSuccessEmail({
+                    email: targetEmail,
+                    name: owner?.name || req.user?.name,
+                    restaurantName: restaurant.name,
+                    plan: plan || 'Basic',
+                    billingCycle: billingCycle || 'monthly',
+                    expiryDate: expiryDate
+                }).catch(err => console.error("Subscription email background error:", err.message));
+            }
+        } catch (e) {
+            console.error("Failed to send selfSubscribe email:", e.message);
+        }
+
         res.json(updatedRestaurant);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -899,6 +934,26 @@ export const upgradeSubscription = async (req, res) => {
             restaurantId: restaurant._id
         });
 
+        // Send Subscription Confirmation Email to Owner
+        try {
+            const owner = await User.findById(restaurant.ownerId || req.user._id);
+            const targetEmail = owner?.email || req.user?.email;
+            if (targetEmail) {
+                sendSubscriptionSuccessEmail({
+                    email: targetEmail,
+                    name: owner?.name || req.user?.name,
+                    restaurantName: restaurant.name,
+                    plan: planName,
+                    billingCycle: billingCycle || 'monthly',
+                    price: chargeAmount,
+                    transactionId,
+                    expiryDate: newExpiry
+                }).catch(err => console.error("Upgrade subscription email background error:", err.message));
+            }
+        } catch (e) {
+            console.error("Failed to send upgrade email:", e.message);
+        }
+
         res.json({
             message: `Your restaurant has been upgraded to ${planName}.`,
             restaurant,
@@ -1181,6 +1236,26 @@ export const verifyRazorpaySubscriptionPayment = async (req, res) => {
             restaurantId: restaurant._id
         });
 
+        // Send Subscription Confirmation Email to Owner
+        try {
+            const owner = await User.findById(restaurant.ownerId || req.user._id);
+            const targetEmail = owner?.email || req.user?.email;
+            if (targetEmail) {
+                sendSubscriptionSuccessEmail({
+                    email: targetEmail,
+                    name: owner?.name || req.user?.name,
+                    restaurantName: restaurant.name,
+                    plan: planName,
+                    billingCycle: billingCycle || 'monthly',
+                    price: targetPrice,
+                    transactionId: txnId,
+                    expiryDate: newExpiry
+                }).catch(err => console.error("Razorpay subscription email background error:", err.message));
+            }
+        } catch (e) {
+            console.error("Failed to send Razorpay email:", e.message);
+        }
+
         res.json({
             message: `Subscription to ${planName} plan activated successfully!`,
             restaurant,
@@ -1331,6 +1406,26 @@ export const confirmSubscriptionQRPayment = async (req, res) => {
             type: 'System',
             restaurantId: restaurant._id
         });
+
+        // Send Subscription Confirmation Email to Owner
+        try {
+            const owner = await User.findById(restaurant.ownerId || req.user._id);
+            const targetEmail = owner?.email || req.user?.email;
+            if (targetEmail) {
+                sendSubscriptionSuccessEmail({
+                    email: targetEmail,
+                    name: owner?.name || req.user?.name,
+                    restaurantName: restaurant.name,
+                    plan: planName,
+                    billingCycle: billingCycle || 'monthly',
+                    price: targetPrice,
+                    transactionId: txnId,
+                    expiryDate: newExpiry
+                }).catch(err => console.error("QR payment subscription email background error:", err.message));
+            }
+        } catch (e) {
+            console.error("Failed to send QR subscription email:", e.message);
+        }
 
         res.json({
             message: `Subscription to ${planName} plan activated successfully via QR Payment!`,

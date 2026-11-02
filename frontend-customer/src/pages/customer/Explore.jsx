@@ -77,6 +77,7 @@ export default function Explore() {
           state: r.state || '',
           country: r.country || '',
           address: r.address || '',
+          verificationAddress: r.verificationAddress || '',
           branches: r.branches || []
         }));
         setRestaurants(backendMapped);
@@ -492,12 +493,14 @@ export default function Explore() {
       const restCity = (r.city || '').toLowerCase();
       const restState = (r.state || '').toLowerCase();
       const restAddress = (r.address || '').toLowerCase();
+      const verifAddr = (r.verificationAddress || '').toLowerCase();
+      const restName = (r.name || '').toLowerCase();
       const branchLocations = (r.branches || []).map(b => {
         const loc = b.location || {};
         return `${loc.city || ''} ${loc.state || ''} ${loc.address || ''} ${loc.country || ''}`.toLowerCase();
       }).join(' ');
 
-      const combinedRestLocation = `${restCity} ${restState} ${restAddress} ${branchLocations}`.trim();
+      const combinedRestLocation = `${restName} ${restCity} ${restState} ${restAddress} ${verifAddr} ${branchLocations}`.trim();
 
       // If restaurant has location info, check if any token from detected location matches
       if (combinedRestLocation) {
@@ -505,10 +508,9 @@ export default function Explore() {
           if (term.length < 3) return false; // Ignore very short words like 'in', 'at'
           return combinedRestLocation.includes(term);
         });
-        return matchesLocation;
+        if (matchesLocation) return true;
       }
       
-      // When user specifies a location, keep outlets that haven't set an address as secondary or show if none match
       return false;
     }
 
