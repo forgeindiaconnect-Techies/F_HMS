@@ -376,16 +376,26 @@ export const generateThermalKOTHtml = (order = {}, restaurantInfo = {}, options 
     const sourceLabel = order.source === 'QR' ? 'QR Table Order' : (order.source || 'Website Online Order');
     const orderDate = order.createdAt ? new Date(order.createdAt) : new Date();
 
+    let totalKotAmount = 0;
     const itemsHtml = items.map((item, idx) => {
         const qty = Math.max(1, Number(item.qty || item.quantity || item.count || 1));
         const name = String(item.name || 'Menu Item').trim();
         const note = item.notes ? String(item.notes).trim() : '';
+        const unitPrice = Number(item.price || item.unitPrice || 0);
+        const lineTotal = Number(item.total || (unitPrice * qty));
+        totalKotAmount += lineTotal;
+
+        const priceText = unitPrice > 0 ? `₹${lineTotal.toFixed(2)}` : '';
+        const unitText = (qty > 1 && unitPrice > 0) ? `(@ ₹${unitPrice.toFixed(2)})` : '';
 
         return `
             <div style="padding: 5px 0; border-bottom: 1px dashed #777;">
                 <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                    <span style="font-size: 15px; font-weight: 900; margin-right: 8px;">[ ${qty}x ]</span>
-                    <span style="font-size: 14px; font-weight: 800; flex: 1;">${name}</span>
+                    <div style="display: flex; align-items: baseline; flex: 1; padding-right: 8px;">
+                        <span style="font-size: 15px; font-weight: 900; margin-right: 8px;">[ ${qty}x ]</span>
+                        <span style="font-size: 14px; font-weight: 800;">${name} <span style="font-size: 11px; font-weight: 600; opacity: 0.85;">${unitText}</span></span>
+                    </div>
+                    ${priceText ? `<span style="font-size: 14px; font-weight: 900; white-space: nowrap; font-family: monospace;">${priceText}</span>` : ''}
                 </div>
                 ${note ? `<div style="font-size: 11px; font-weight: 800; background: #eee; padding: 2px 4px; margin-top: 3px; border-left: 3px solid #000;">*** NOTE: ${note} ***</div>` : ''}
             </div>
@@ -393,6 +403,7 @@ export const generateThermalKOTHtml = (order = {}, restaurantInfo = {}, options 
     }).join('');
 
     const totalItemCount = items.reduce((sum, it) => sum + (Number(it.qty || it.quantity || 1)), 0);
+    const finalAmount = order.totalAmount || order.total || order.billAmount || totalKotAmount;
 
     return `
 <!DOCTYPE html>
@@ -464,6 +475,11 @@ export const generateThermalKOTHtml = (order = {}, restaurantInfo = {}, options 
                 <span>TOTAL ITEMS:</span>
                 <span>${totalItemCount} Items</span>
             </div>
+            ${finalAmount > 0 ? `
+            <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 14px; margin-top: 4px; font-family: monospace;">
+                <span>TOTAL AMOUNT:</span>
+                <span>₹${Number(finalAmount).toFixed(2)}</span>
+            </div>` : ''}
             ${orderNotes ? `<div style="margin-top: 5px; font-weight: 800; background: #eee; padding: 4px; border: 1px solid #ccc;"><strong>SPECIAL INSTRUCTIONS:</strong><br/>${orderNotes}</div>` : ''}
         </div>
 

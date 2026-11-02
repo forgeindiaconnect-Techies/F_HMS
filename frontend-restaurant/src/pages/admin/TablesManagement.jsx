@@ -110,13 +110,15 @@ const TablesManagement = () => {
 
     const getQrUrl = (table) => {
         if (!table) return '';
-        let origin = import.meta.env.VITE_CUSTOMER_URL || window.location.origin;
-        if (localIp) {
-            origin = origin.replace(/localhost|127\.0\.0\.1/, localIp);
+        // Always generate QR code with public deployed production customer URL so mobile phones can scan it anywhere
+        const defaultDeployUrl = 'https://f-hms.vercel.app';
+        let origin = import.meta.env.VITE_CUSTOMER_URL || defaultDeployUrl;
+        
+        // If configured as localhost or local IP, prefer deployed URL for real phone scanning
+        if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+            origin = defaultDeployUrl;
         }
-        if (origin.includes('192.168.') || origin.includes('localhost') || origin.includes('127.0.0.1')) {
-            origin = origin.replace(/:\d+$/, ':5174');
-        }
+
         const bId = table.branchId?._id || table.branchId || '';
         const rId = table.restaurantId?._id || table.restaurantId || '';
         return `${origin}/customer/menu?restaurantId=${rId}&branchId=${bId}&tableNumber=${table.tableNumber}`;
