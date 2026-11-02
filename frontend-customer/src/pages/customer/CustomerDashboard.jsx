@@ -89,14 +89,8 @@ const CustomerDashboard = () => {
         }
     }, [user]);
 
-    const dashboardFoods = [
-        { id: 'd_m1', name: 'Margherita Pizza', price: 299, category: 'Mains', restaurantName: registeredRestaurants[0]?.name || 'Grand Bistro', description: 'Classic cheese and tomato pizza with basil.', image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80&w=800' },
-        { id: 'd_m2', name: 'Pepperoni Pizza', price: 399, category: 'Mains', restaurantName: registeredRestaurants[1]?.name || 'Chai Theory Cafe', description: 'Double pepperoni and mozzarella cheese.', image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=800' },
-        { id: 'd_m4', name: 'Greek Salad', price: 199, category: 'Salads', restaurantName: registeredRestaurants[2]?.name || 'Spice Route Diner', description: 'Fresh cucumbers, tomatoes, olives, and feta cheese.', image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=800' },
-        { id: 'd_m5', name: 'Chocolate Lava Cake', price: 159, category: 'Desserts', restaurantName: registeredRestaurants[0]?.name || 'Grand Bistro', description: 'Rich chocolate cake with a molten center.', image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=800' },
-        { id: 'd_m6', name: 'Mango Smoothie', price: 129, category: 'Beverages', restaurantName: registeredRestaurants[1]?.name || 'Chai Theory Cafe', description: 'Creamy yogurt smoothie with fresh mango pulp.', image: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?q=80&w=800' },
-        { id: 'd_m7', name: 'Paneer Tikka', price: 280, category: 'Starters', restaurantName: registeredRestaurants[2]?.name || 'Spice Route Diner', description: 'Spiced cottage cheese cubes grilled to perfection.', image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=800' }
-    ];
+    const [liveMenuItems, setLiveMenuItems] = useState([]);
+    const [loadingMenuItems, setLoadingMenuItems] = useState(true);
 
     useEffect(() => {
         const fetchRegisteredRestaurants = async () => {
@@ -110,7 +104,23 @@ const CustomerDashboard = () => {
                 setRegisteredRestaurants([]);
             }
         };
+
+        const fetchLiveMenu = async () => {
+            try {
+                const { data } = await api.get('/menu');
+                if (Array.isArray(data)) {
+                    setLiveMenuItems(data);
+                }
+            } catch (err) {
+                console.error('Failed to load live menu in dashboard', err);
+                setLiveMenuItems([]);
+            } finally {
+                setLoadingMenuItems(false);
+            }
+        };
+
         fetchRegisteredRestaurants();
+        fetchLiveMenu();
     }, []);
 
     // Safe short ID helper
@@ -814,56 +824,92 @@ const CustomerDashboard = () => {
                                 </div>
 
                                 {/* Foods Grid Matching Landing Page Design */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-4 pt-1">
-                                    {dashboardFoods
-                                        .filter(food => (selectedCategory === 'All' || food.category === selectedCategory) &&
-                                                        (selectedRestaurantFilter === 'All' || food.restaurantName === selectedRestaurantFilter))
-                                        .map(food => {
-                                            return (
-                                                <div 
-                                                    key={food.id}
-                                                    className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between text-left group"
-                                                >
-                                                    <div>
-                                                        <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden bg-slate-50 mb-2.5">
-                                                            <img 
-                                                                src={getItemImage(food)} 
-                                                                onError={(e) => { e.target.onerror = null; e.target.src = getFallbackFoodImage(food.name || food.category); }}
-                                                                alt={food.name} 
-                                                                className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
-                                                            />
-                                                            <span className="absolute top-2 left-2 bg-white/95 backdrop-blur-xs text-[10px] font-bold text-slate-800 px-2 py-0.5 rounded shadow-xs uppercase tracking-wider">
-                                                                {food.category}
-                                                            </span>
-                                                        </div>
+                                 {loadingMenuItems ? (
+                                     <div className="flex justify-center items-center py-12">
+                                         <div className="w-6 h-6 border-2 border-[#FF5A1F] border-t-transparent rounded-full animate-spin" />
+                                     </div>
+                                 ) : liveMenuItems.length === 0 ? (
+                                     <div className="text-center py-10 bg-slate-50/60 rounded-2xl border border-dashed border-slate-200">
+                                         <p className="text-xs font-semibold text-slate-500">No menu items found.</p>
+                                     </div>
+                                 ) : (
+                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-4 pt-1">
+                                         {liveMenuItems
+                                             .filter(food => {
+                                                 const foodCat = (food.category || '').toLowerCase();
+                                                 const matchesCat = selectedCategory === 'All' || 
+                                                     (selectedCategory === 'Starters' && ['starters', 'starter', 'sides', 'bbq'].includes(foodCat)) ||
+                                                     (selectedCategory === 'Salads' && ['salads', 'salad'].includes(foodCat)) ||
+                                                     (selectedCategory === 'Mains' && ['mains', 'main', 'pizzas', 'pizza', 'burgers', 'burger'].includes(foodCat)) ||
+                                                     (selectedCategory === 'Desserts' && ['desserts', 'dessert', 'sweets'].includes(foodCat)) ||
+                                                     foodCat === selectedCategory.toLowerCase();
 
-                                                        <div className="space-y-1">
-                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#FF5A1F] bg-orange-50 px-2 py-0.5 rounded-md border border-orange-100">
-                                                                <Store size={11} /> {food.restaurantName || 'Chai Theory Cafe'}
-                                                            </span>
-                                                            <h4 className="font-bold text-slate-900 text-[13px] sm:text-sm line-clamp-1 group-hover:text-[#FF5A1F] transition-colors">
-                                                                {food.name}
-                                                            </h4>
-                                                            <p className="text-slate-500 text-xs line-clamp-2 leading-relaxed">
-                                                                {food.description}
-                                                            </p>
-                                                        </div>
-                                                    </div>
+                                                 const restName = food.restaurantId?.name || food.restaurantName || '';
+                                                 const matchesRest = selectedRestaurantFilter === 'All' || restName === selectedRestaurantFilter;
 
-                                                    <div className="flex justify-between items-center pt-2.5 mt-2 border-t border-slate-100">
-                                                        <span className="font-black text-slate-900 text-sm sm:text-base">₹{food.price}</span>
-                                                        <button 
-                                                            onClick={() => { addToCart(food); toast.success(`${food.name} added to cart!`); }}
-                                                            className="px-3.5 py-1.5 bg-[#FF5A1F] hover:bg-[#e04f1a] active:scale-98 text-white text-xs font-bold rounded-lg transition-colors shadow-xs cursor-pointer flex items-center gap-1"
-                                                        >
-                                                            <ShoppingBag size={12} />
-                                                            <span>Add</span>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                </div>
+                                                 return matchesCat && matchesRest;
+                                             })
+                                             .map(food => {
+                                                 const foodImg = getItemImage(food);
+                                                 const restName = food.restaurantId?.name || food.restaurantName || registeredRestaurants[0]?.name || 'Partner Outlet';
+
+                                                 return (
+                                                     <div 
+                                                         key={food._id || food.id}
+                                                         className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between text-left group"
+                                                     >
+                                                         <div>
+                                                             <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden bg-slate-50 mb-2.5 flex items-center justify-center">
+                                                                 {foodImg ? (
+                                                                     <img 
+                                                                         src={foodImg} 
+                                                                         onError={(e) => { e.target.style.display = 'none'; }}
+                                                                         alt={food.name} 
+                                                                         className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
+                                                                     />
+                                                                 ) : (
+                                                                     <div className="w-full h-full flex flex-col items-center justify-center bg-orange-50/50 text-[#FF5A1F]">
+                                                                         <ShoppingBag size={28} className="opacity-40" />
+                                                                         <span className="text-[10px] font-bold text-slate-400 mt-1">{food.category || 'Dish'}</span>
+                                                                     </div>
+                                                                 )}
+                                                                 {food.category && (
+                                                                     <span className="absolute top-2 left-2 bg-white/95 backdrop-blur-xs text-[10px] font-bold text-slate-800 px-2 py-0.5 rounded shadow-xs uppercase tracking-wider">
+                                                                         {food.category}
+                                                                     </span>
+                                                                 )}
+                                                             </div>
+
+                                                             <div className="space-y-1">
+                                                                 <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#FF5A1F] bg-orange-50 px-2 py-0.5 rounded-md border border-orange-100">
+                                                                     <Store size={11} /> {restName}
+                                                                 </span>
+                                                                 <h4 className="font-bold text-slate-900 text-[13px] sm:text-sm line-clamp-1 group-hover:text-[#FF5A1F] transition-colors">
+                                                                     {food.name}
+                                                                 </h4>
+                                                                 {food.description && (
+                                                                     <p className="text-slate-500 text-xs line-clamp-2 leading-relaxed">
+                                                                         {food.description}
+                                                                     </p>
+                                                                 )}
+                                                             </div>
+                                                         </div>
+
+                                                         <div className="flex justify-between items-center pt-2.5 mt-2 border-t border-slate-100">
+                                                             <span className="font-black text-slate-900 text-sm sm:text-base">₹{food.price}</span>
+                                                             <button 
+                                                                 onClick={() => { addToCart(food); toast.success(`${food.name} added to cart!`); }}
+                                                                 className="px-3.5 py-1.5 bg-[#FF5A1F] hover:bg-[#e04f1a] active:scale-98 text-white text-xs font-bold rounded-lg transition-colors shadow-xs cursor-pointer flex items-center gap-1"
+                                                             >
+                                                                 <ShoppingBag size={12} />
+                                                                 <span>Add</span>
+                                                             </button>
+                                                         </div>
+                                                     </div>
+                                                 );
+                                             })}
+                                     </div>
+                                 )}
                             </div>
                         </div>
                     )}
@@ -1246,9 +1292,20 @@ const CustomerDashboard = () => {
                                     {wishlist.map(item => (
                                         <div key={item._id || item.id} className="border border-gray-100 hover:border-orange-200 p-4 rounded-2xl transition-all flex items-center justify-between gap-4 bg-white shadow-sm">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-14 h-14 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shrink-0">
-                                                    <img src={getItemImage(item)} alt={item.name} className="w-full h-full object-cover" />
-                                                </div>
+                                                 <div className="w-14 h-14 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shrink-0 flex items-center justify-center">
+                                                     {getItemImage(item) ? (
+                                                         <img 
+                                                             src={getItemImage(item)} 
+                                                             alt={item.name} 
+                                                             onError={(e) => { e.target.style.display = 'none'; }}
+                                                             className="w-full h-full object-cover" 
+                                                         />
+                                                     ) : (
+                                                         <div className="w-full h-full flex items-center justify-center bg-orange-50/60 text-[#FF5A1F]">
+                                                             <ShoppingBag size={20} className="opacity-50" />
+                                                         </div>
+                                                     )}
+                                                 </div>
                                                 <div>
                                                     <h4 className="font-extrabold text-sm text-gray-900">{item.name}</h4>
                                                     <span className="font-black text-xs text-orange-600 block mt-1">₹{item.price}</span>

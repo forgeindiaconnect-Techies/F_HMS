@@ -1248,15 +1248,12 @@ export default function Explore() {
                 )}
               </div>
 
-              {/* Center Column: Burger Photo */}
+              {/* Center Column: Promo Badge Visual */}
               <div className="lg:col-span-4 flex items-center justify-center py-1 sm:py-2 lg:py-0">
-                <div className="relative w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 rounded-full overflow-hidden shadow-lg sm:shadow-xl border-3 sm:border-4 border-white shrink-0">
-                  <img
-                    src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop"
-                    alt="Flame grilled burger with crispy fries and dips"
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                    loading="lazy"
-                  />
+                <div className="relative w-28 h-28 sm:w-40 sm:h-40 lg:w-52 lg:h-52 rounded-full overflow-hidden shadow-lg sm:shadow-xl border-3 sm:border-4 border-white shrink-0 bg-gradient-to-tr from-[#FF5A1F] to-[#FF8A00] flex flex-col items-center justify-center text-white p-4 text-center">
+                  <Sparkles size={36} className="text-amber-200 animate-pulse mb-1" />
+                  <span className="text-xl sm:text-2xl font-black tracking-tight">50% OFF</span>
+                  <span className="text-[10px] sm:text-xs font-semibold text-white/90 uppercase tracking-widest mt-0.5">Special Treat</span>
                 </div>
               </div>
 
