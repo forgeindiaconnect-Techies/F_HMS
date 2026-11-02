@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { 
-    LayoutGrid, BookOpen, QrCode, ShoppingBag, 
+    LayoutGrid, BookOpen, ShoppingBag, 
     Calendar, Heart, MessageSquare, Settings, 
-    Crown, Sparkles, Plus, Trash2, CheckCircle, 
+    Crown, Sparkles, Plus, Trash2, 
     ChevronRight, LogOut, Wallet, Star, ShieldAlert,
-    MapPin, Phone, Mail, Lock, Clock, Gift, User,
-    Bike, Store, Truck, Navigation, ChefHat, BellRing
+    MapPin, Phone, Lock, Clock, Gift, User,
+    Bike, Store, BellRing, MoreVertical
 } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { Link } from 'react-router-dom';
@@ -32,6 +32,7 @@ const CustomerDashboard = () => {
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [registeredRestaurants, setRegisteredRestaurants] = useState([]);
     const [selectedRestaurantFilter, setSelectedRestaurantFilter] = useState('All');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     
     // Add Funds Modal States
     const [isAddFundsOpen, setIsAddFundsOpen] = useState(false);
@@ -43,6 +44,14 @@ const CustomerDashboard = () => {
             return parseFloat(localStorage.getItem('customerWalletBalance') || '0.00');
         } catch (e) {
             return 0.00;
+        }
+    });
+
+    const [walletTransactions, setWalletTransactions] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem('customerWalletTransactions') || '[]');
+        } catch (e) {
+            return [];
         }
     });
 
@@ -380,69 +389,69 @@ const CustomerDashboard = () => {
     ];
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 animate-in fade-in duration-300 text-slate-800">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6 animate-in fade-in duration-300 text-slate-800">
             {/* Header Welcome banner with Landing Page Warm Organic Gradient Canvas */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-white via-[#FCF9F5] to-[#F8F5EE] p-6 sm:p-8 border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-white via-[#FCF9F5] to-[#F8F5EE] p-4 sm:p-7 border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6">
                 {/* Soft ambient blur glow */}
                 <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-emerald-100/30 via-orange-100/20 to-transparent rounded-full blur-2xl pointer-events-none" />
 
-                <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-5 text-center sm:text-left relative z-10">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-tr from-[#FF5A1F] to-orange-400 rounded-2xl flex items-center justify-center text-white shadow-md shadow-[#FF5A1F]/25 shrink-0">
-                        <span className="text-2xl sm:text-3xl font-black font-sans uppercase">
+                <div className="flex flex-row items-center gap-3.5 sm:gap-5 text-left relative z-10 w-full sm:w-auto">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-tr from-[#FF5A1F] to-orange-400 rounded-xl sm:rounded-2xl flex items-center justify-center text-white shadow-md shadow-[#FF5A1F]/25 shrink-0">
+                        <span className="text-xl sm:text-2xl font-black font-sans uppercase">
                             {user?.name?.charAt(0) || 'C'}
                         </span>
                     </div>
-                    <div>
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white border border-orange-200/80 text-[#FF5A1F] text-[11px] font-bold shadow-xs mb-1">
+                    <div className="min-w-0">
+                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white border border-orange-200/80 text-[#FF5A1F] text-[10px] font-bold shadow-xs mb-0.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#FF5A1F]" />
                             <span>Customer Portal</span>
                         </div>
-                        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                        <h1 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight truncate">
                             Welcome back, {user?.name || 'Foodie'}!
                         </h1>
-                        <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">Track your orders, view loyalty scores, and reserve tables.</p>
+                        <p className="text-[11px] sm:text-xs text-slate-500 font-medium truncate">Track your orders, view loyalty scores, and reserve tables.</p>
                     </div>
                 </div>
 
-                <div className="flex gap-2.5 sm:gap-3 flex-wrap justify-center sm:justify-start relative z-10">
+                <div className="flex gap-2 w-full sm:w-auto relative z-10">
                     <button 
                         onClick={logout}
-                        className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-slate-700 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer shadow-xs"
+                        className="flex-1 sm:flex-initial px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-slate-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                     >
-                        <LogOut size={16} /> Log Out
+                        <LogOut size={14} /> Log Out
                     </button>
                     <Link 
                         to="/menu"
-                        className="px-5 py-2 sm:px-6 sm:py-2.5 rounded-xl bg-[#FF5A1F] hover:bg-[#e04f1a] text-white font-bold shadow-sm shadow-[#FF5A1F]/30 hover:shadow-md transition-all flex items-center gap-1.5 text-xs sm:text-sm cursor-pointer"
+                        className="flex-1 sm:flex-initial px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-[#FF5A1F] hover:bg-[#e04f1a] text-white font-bold shadow-sm shadow-[#FF5A1F]/30 hover:shadow-md transition-all flex items-center justify-center gap-1 text-xs cursor-pointer"
                     >
                         <span>Order Now</span>
-                        <ChevronRight size={16} />
+                        <ChevronRight size={14} />
                     </Link>
                 </div>
             </div>
 
             {/* Live Active Orders & Ready Time Overview Section */}
             {activeOrders.length > 0 && (
-                <div className="bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-white p-6 sm:p-7 rounded-3xl border border-amber-200/90 shadow-sm space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-200/50 pb-3">
-                        <div className="flex items-center gap-2.5">
-                            <span className="relative flex h-3.5 w-3.5">
+                <div className="bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-white p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-amber-200/90 shadow-sm space-y-3 sm:space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-200/50 pb-2.5">
+                        <div className="flex items-center gap-2">
+                            <span className="relative flex h-3 w-3 sm:h-3.5 sm:w-3.5">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-amber-600"></span>
+                                <span className="relative inline-flex rounded-full h-3 w-3 sm:h-3.5 sm:w-3.5 bg-amber-600"></span>
                             </span>
-                            <h2 className="text-base sm:text-lg font-black text-gray-900 font-sans">
+                            <h2 className="text-sm sm:text-base font-black text-gray-900 font-sans">
                                 Active Order in Progress ({activeOrders.length})
                             </h2>
                         </div>
                         <button 
                             onClick={() => setActiveTab('orders')}
-                            className="text-xs font-black text-amber-900 hover:text-orange-700 flex items-center gap-1 self-start sm:self-auto bg-amber-100/70 hover:bg-amber-100 px-3 py-1.5 rounded-xl transition-all"
+                            className="text-[11px] sm:text-xs font-black text-amber-900 hover:text-orange-700 flex items-center gap-1 self-start sm:self-auto bg-amber-100/70 hover:bg-amber-100 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl transition-all"
                         >
-                            View Order Details <ChevronRight size={14} />
+                            View Order Details <ChevronRight size={13} />
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                         {activeOrders.map(order => {
                             const readyInfo = getOrderReadyTimeInfo(order);
                             const isReady = readyInfo?.isReady;
@@ -451,19 +460,19 @@ const CustomerDashboard = () => {
                             return (
                                 <div 
                                     key={order._id}
-                                    className={`rounded-2xl p-5 border transition-all duration-300 shadow-sm relative overflow-hidden bg-white ${
+                                    className={`rounded-xl sm:rounded-2xl p-3.5 sm:p-5 border transition-all duration-300 shadow-xs relative overflow-hidden bg-white ${
                                         isReady 
                                             ? 'border-emerald-400 ring-2 ring-emerald-500/20 bg-gradient-to-br from-white to-emerald-50/50' 
                                             : 'border-amber-200/80 bg-white'
                                     }`}
                                 >
                                     {/* Order Meta */}
-                                    <div className="flex items-center justify-between gap-2 border-b border-gray-100 pb-2.5 mb-3">
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-mono font-black text-xs text-gray-900 bg-gray-100 px-2.5 py-0.5 rounded-md">
+                                    <div className="flex items-center justify-between gap-1.5 border-b border-gray-100 pb-2 mb-2.5">
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                            <span className="font-mono font-black text-[11px] text-gray-900 bg-gray-100 px-2 py-0.5 rounded-md shrink-0">
                                                 #{getShortId(order._id)}
                                             </span>
-                                            <span className="text-xs font-bold text-gray-800 truncate max-w-[150px]">
+                                            <span className="text-xs font-bold text-gray-800 truncate max-w-[120px] sm:max-w-[160px]">
                                                 {order.restaurantId?.name || 'Restaurant Outlet'}
                                             </span>
                                         </div>
@@ -489,7 +498,7 @@ const CustomerDashboard = () => {
                                                 : 'bg-emerald-50 text-emerald-800 border-emerald-200';
 
                                             return (
-                                                <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${badgeStyle}`}>
+                                                <span className={`text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-full border shrink-0 ${badgeStyle}`}>
                                                     {badgeText} {order.tableNumber && !isSelfPickupOrder && !isDeliveryOrder && order.tableNumber !== 'Any' ? `(T-${order.tableNumber})` : ''}
                                                 </span>
                                             );
@@ -497,30 +506,30 @@ const CustomerDashboard = () => {
                                     </div>
 
                                     {/* Items List */}
-                                    <p className="text-xs font-semibold text-gray-600 line-clamp-1 mb-3">
+                                    <p className="text-[11px] sm:text-xs font-semibold text-gray-600 line-clamp-1 mb-2.5">
                                         {order.orderItems?.map(i => `${i.qty}x ${i.name}`).join(', ') || 'Ordered Items'}
                                     </p>
 
                                     {/* Estimated Order Ready Time Highlight Box */}
-                                    <div className={`p-3.5 rounded-xl border transition-all ${
+                                    <div className={`p-2.5 sm:p-3.5 rounded-xl border transition-all ${
                                         isReady 
                                             ? 'bg-emerald-500 text-white border-emerald-600 shadow-md shadow-emerald-500/20' 
                                             : 'bg-amber-50/90 border-amber-200/90'
                                     }`}>
                                         <div className="flex items-center justify-between gap-2">
-                                            <div className="flex items-center gap-2.5">
-                                                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                                            <div className="flex items-center gap-2">
+                                                <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 ${
                                                     isReady ? 'bg-white/20 text-white' : 'bg-amber-200 text-amber-900'
                                                 }`}>
-                                                    {isReady ? <BellRing size={18} className="animate-bounce" /> : <Clock size={18} className="animate-pulse" />}
+                                                    {isReady ? <BellRing size={16} className="animate-bounce" /> : <Clock size={16} className="animate-pulse" />}
                                                 </div>
                                                 <div>
-                                                    <span className={`text-[10px] font-black uppercase tracking-wider block ${
+                                                    <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wider block ${
                                                         isReady ? 'text-emerald-100' : 'text-amber-800'
                                                     }`}>
                                                         {isReady ? 'Order Ready' : 'Estimated Ready Time'}
                                                     </span>
-                                                    <h4 className={`text-sm sm:text-base font-black ${
+                                                    <h4 className={`text-xs sm:text-sm font-black ${
                                                         isReady ? 'text-white' : 'text-amber-950'
                                                     }`}>
                                                         {readyInfo ? readyInfo.label : 'Preparing...'}
@@ -528,9 +537,9 @@ const CustomerDashboard = () => {
                                                 </div>
                                             </div>
                                             {!isReady && readyInfo?.exactReadyTime && (
-                                                <div className="text-right">
-                                                    <span className="text-[9px] text-amber-800/80 font-bold uppercase tracking-wider block">Ready By</span>
-                                                    <span className="text-xs sm:text-sm font-black text-amber-950 font-mono">
+                                                <div className="text-right shrink-0">
+                                                    <span className="text-[8px] sm:text-[9px] text-amber-800/80 font-bold uppercase tracking-wider block">Ready By</span>
+                                                    <span className="text-[11px] sm:text-xs font-black text-amber-950 font-mono">
                                                         {readyInfo.exactReadyTime}
                                                     </span>
                                                 </div>
@@ -539,14 +548,14 @@ const CustomerDashboard = () => {
 
                                         {/* Progress Bar */}
                                         {!isReady && (
-                                            <div className="mt-2.5 space-y-1">
+                                            <div className="mt-2 space-y-1">
                                                 <div className="h-1.5 w-full bg-amber-200/70 rounded-full overflow-hidden">
                                                     <div 
                                                         className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all duration-500"
                                                         style={{ width: `${readyInfo?.progressPercent || 30}%` }}
                                                     ></div>
                                                 </div>
-                                                <div className="flex justify-between items-center text-[10px] text-amber-900 font-medium px-0.5">
+                                                <div className="flex justify-between items-center text-[9px] sm:text-[10px] text-amber-900 font-medium px-0.5">
                                                     <span>Chef Preparing</span>
                                                     <span>ETA: ~{readyInfo?.prepMinutes || 20}m total</span>
                                                     <span className="font-bold text-amber-950">{readyInfo?.exactReadyTime}</span>
@@ -554,25 +563,25 @@ const CustomerDashboard = () => {
                                             </div>
                                         )}
 
-                                        <p className={`text-[11px] mt-2 font-medium leading-tight ${isReady ? 'text-white/90' : 'text-amber-800/90'}`}>
+                                        <p className={`text-[10px] sm:text-[11px] mt-1.5 font-medium leading-tight ${isReady ? 'text-white/90' : 'text-amber-800/90'}`}>
                                             {readyInfo?.pickupPrompt}
                                         </p>
                                     </div>
 
                                     {/* Action row */}
-                                    <div className="flex items-center justify-between gap-3 pt-3 mt-1">
-                                        <span className="text-xs font-black text-gray-900">
+                                    <div className="flex items-center justify-between gap-3 pt-2.5 mt-1">
+                                        <span className="text-xs sm:text-sm font-black text-gray-900">
                                             ₹{order.totalPrice ? order.totalPrice.toFixed(2) : '0.00'}
                                         </span>
                                         <Link
                                             to={trackingUrl}
-                                            className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1 shadow-sm ${
+                                            className={`px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-black transition-all flex items-center gap-1 shadow-xs ${
                                                 isReady
                                                     ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
                                                     : 'bg-orange-600 hover:bg-orange-700 text-white shadow-orange-600/15'
                                             }`}
                                         >
-                                            Track Live Order <ChevronRight size={14} />
+                                            Track Live Order <ChevronRight size={13} />
                                         </Link>
                                     </div>
                                 </div>
@@ -582,53 +591,100 @@ const CustomerDashboard = () => {
                 </div>
             )}
 
-            {/* Portal Layout Container */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+            {/* Portal Layout Container with Toggleable Sidebar */}
+            <div className={`grid grid-cols-1 ${isSidebarOpen ? 'lg:grid-cols-4' : 'lg:grid-cols-1'} gap-6 items-start transition-all duration-300`}>
                 
-                {/* Sidebar Navigation Options */}
-                <div className="bg-white rounded-2xl p-3 sm:p-4 shadow-xs border border-slate-200/80 space-y-1.5">
-                    <p className="text-[11px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest px-3 py-1.5">Customer Account</p>
-                    {tabsList.map(tab => {
-                        const isActive = activeTab === tab.id;
-                        return (
+                {/* Sidebar Navigation Options (Always Vertical) */}
+                {isSidebarOpen ? (
+                    <div className="bg-white rounded-2xl p-2.5 sm:p-4 shadow-xs border border-slate-200/80 transition-all duration-300 animate-in fade-in">
+                        <div className="flex items-center justify-between px-3 py-1.5 mb-2 border-b border-slate-100 pb-2">
+                            <p className="text-[11px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest">Customer Account</p>
                             <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm sm:text-[15px] font-bold transition-all cursor-pointer ${
-                                    isActive
-                                    ? 'bg-orange-50 text-[#FF5A1F] border border-orange-200/80 shadow-xs'
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-transparent'
-                                }`}
+                                onClick={() => setIsSidebarOpen(false)}
+                                title="Hide Sidebar Menu"
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                                aria-label="Hide Sidebar"
                             >
-                                <span className={isActive ? 'text-[#FF5A1F]' : 'text-slate-400'}>
-                                    {tab.icon}
-                                </span>
-                                <span>{tab.name}</span>
+                                <MoreVertical size={16} />
                             </button>
-                        );
-                    })}
-                </div>
+                        </div>
+                        <div className="flex flex-col gap-1.5 w-full">
+                            {tabsList.map(tab => {
+                                const isActive = activeTab === tab.id;
+                                return (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-[15px] font-bold transition-all cursor-pointer w-full text-left ${
+                                            isActive
+                                            ? 'bg-orange-50 text-[#FF5A1F] border border-orange-200/80 shadow-xs'
+                                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-transparent'
+                                        }`}
+                                    >
+                                        <span className={isActive ? 'text-[#FF5A1F]' : 'text-slate-400'}>
+                                            {tab.icon}
+                                        </span>
+                                        <span>{tab.name}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                ) : (
+                    /* Floating / Collapsed Quick Sidebar Opener Button */
+                    <div className="flex items-center justify-between bg-white rounded-2xl px-4 py-3 border border-slate-200/80 shadow-xs">
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setIsSidebarOpen(true)}
+                                className="p-2 rounded-xl bg-orange-50 text-[#FF5A1F] hover:bg-orange-100 transition-all cursor-pointer flex items-center gap-2 font-bold text-xs shadow-xs border border-orange-200/80"
+                                title="Show Navigation Menu"
+                            >
+                                <MoreVertical size={16} />
+                                <span>Show Menu</span>
+                            </button>
+                            <span className="text-xs font-bold text-slate-500 hidden sm:inline">
+                                Currently viewing: <strong className="text-slate-800">{tabsList.find(t => t.id === activeTab)?.name || 'Dashboard'}</strong>
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                            {tabsList.map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    title={tab.name}
+                                    className={`p-2 rounded-xl transition-all cursor-pointer ${
+                                        activeTab === tab.id
+                                            ? 'bg-orange-500 text-white shadow-xs'
+                                            : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+                                    }`}
+                                >
+                                    {tab.icon}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Main Dynamic Viewport Panel */}
-                <div className="lg:col-span-3">
+                <div className={`${isSidebarOpen ? 'lg:col-span-3' : 'w-full'}`}>
                     
                     {/* Tab: Overview */}
                     {activeTab === 'overview' && (
                         <div className="space-y-8 min-w-0 pr-1.5 flex-1">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6">
                                 {/* Loyalty Points Balance */}
-                                <div className="bg-gradient-to-br from-[#111] via-[#1a1a1a] to-[#0a0a0a] rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-[#d4af37]/30 group transition-all duration-300 hover:shadow-2xl hover:shadow-[#d4af37]/5 hover:border-[#d4af37]/50">
+                                <div className="bg-gradient-to-br from-[#111] via-[#1a1a1a] to-[#0a0a0a] rounded-2xl sm:rounded-3xl p-4 sm:p-7 text-white shadow-xl relative overflow-hidden border border-[#d4af37]/30 group transition-all duration-300 hover:shadow-2xl hover:shadow-[#d4af37]/5 hover:border-[#d4af37]/50">
                                     <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.04] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#d4af37]/15"></div>
                                     
-                                    <div className="relative z-10 space-y-6">
+                                    <div className="relative z-10 space-y-3.5 sm:space-y-6">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#ffe07d] to-[#f3c056] text-black flex items-center justify-center shadow-lg shrink-0">
-                                                    <Crown size={15} className="fill-black" />
+                                                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-[#ffe07d] to-[#f3c056] text-black flex items-center justify-center shadow-lg shrink-0">
+                                                    <Crown size={14} className="fill-black" />
                                                 </div>
                                                 <div>
-                                                    <span className="block font-black tracking-[0.25em] text-[10px] text-transparent bg-clip-text bg-gradient-to-r from-[#ffe07d] via-[#f5c661] to-[#ffe07d]">
+                                                    <span className="block font-black tracking-[0.2em] sm:tracking-[0.25em] text-[10px] text-transparent bg-clip-text bg-gradient-to-r from-[#ffe07d] via-[#f5c661] to-[#ffe07d]">
                                                         {tierName}
                                                     </span>
                                                     <span className="block text-[8px] text-gray-500 font-extrabold uppercase tracking-widest leading-none mt-0.5">
@@ -639,50 +695,51 @@ const CustomerDashboard = () => {
                                             <Sparkles size={14} className="text-[#ffe07d] animate-pulse" />
                                         </div>
                                         
-                                        <div className="space-y-1 min-w-0 pr-1.5 flex-1">
-                                            <span className="text-[10px] text-gray-400 font-black tracking-widest uppercase block">Points Balance</span>
-                                            <h2 className="text-5xl font-black font-sans tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-[#fff2d1] to-[#f3c056]">
+                                        <div className="space-y-0.5 sm:space-y-1 min-w-0 pr-1.5 flex-1">
+                                            <span className="text-[9px] sm:text-[10px] text-gray-400 font-black tracking-widest uppercase block">Points Balance</span>
+                                            <h2 className="text-3xl sm:text-5xl font-black font-sans tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-[#fff2d1] to-[#f3c056]">
                                                 {userPoints.toLocaleString()}
                                             </h2>
-                                            <p className="text-gray-500 text-xs font-semibold">Convert points to cash discount at checkout</p>
+                                            <p className="text-gray-400 text-[11px] sm:text-xs font-medium">Convert points to cash discount at checkout</p>
                                         </div>
                                         
-                                        <div className="h-2.5 bg-white/5 rounded-full overflow-hidden border border-[#ffe07d]/10">
+                                        <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-[#ffe07d]/10">
                                             <div className="h-full bg-gradient-to-r from-[#f3c056] via-[#ffe07d] to-[#f3c056] w-[80%] rounded-full shadow-[0_0_8px_rgba(243,192,86,0.3)]"></div>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Wallet Component */}
-                                <div className="bg-white rounded-2xl p-6 sm:p-7 shadow-xs border border-slate-200/80 flex flex-col justify-between relative overflow-hidden group">
+                                <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-xs border border-slate-200/80 flex flex-col justify-between relative overflow-hidden group">
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-orange-100/40 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-                                    <div className="relative z-10 space-y-5">
+                                    <div className="relative z-10 space-y-3.5 sm:space-y-5">
                                         <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2.5">
-                                                <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-200 text-[#FF5A1F] flex items-center justify-center shadow-xs">
-                                                    <Wallet size={19} />
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-orange-50 border border-orange-200 text-[#FF5A1F] flex items-center justify-center shadow-xs">
+                                                    <Wallet size={16} className="sm:hidden" />
+                                                    <Wallet size={19} className="hidden sm:block" />
                                                 </div>
                                                 <div>
-                                                    <h3 className="font-bold text-slate-900 text-sm">Customer Wallet</h3>
-                                                    <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Fast &amp; Secure Payments</p>
+                                                    <h3 className="font-bold text-slate-900 text-xs sm:text-sm">Customer Wallet</h3>
+                                                    <p className="text-[9px] sm:text-[10px] font-medium text-slate-400 uppercase tracking-wider">Fast &amp; Secure Payments</p>
                                                 </div>
                                             </div>
-                                            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">Active</span>
+                                            <span className="text-[9px] sm:text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">Active</span>
                                         </div>
 
                                         <div className="space-y-0.5 min-w-0 pr-1.5 flex-1">
-                                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Wallet Balance</span>
-                                            <h2 className="text-3xl sm:text-4xl font-black font-sans text-slate-900">
+                                            <span className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Wallet Balance</span>
+                                            <h2 className="text-2xl sm:text-4xl font-black font-sans text-slate-900">
                                                 ₹{walletBalance.toFixed(2)}
                                             </h2>
-                                            <p className="text-slate-500 text-xs font-medium">Skip cards &amp; settle food orders in 1-click</p>
+                                            <p className="text-slate-500 text-[11px] sm:text-xs font-medium">Skip cards &amp; settle food orders in 1-click</p>
                                         </div>
 
                                         <button 
                                             onClick={handleAddFunds}
-                                            className="w-full py-2.5 bg-[#FF5A1F] hover:bg-[#e04f1a] active:scale-98 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                                            className="w-full py-2 sm:py-2.5 bg-[#FF5A1F] hover:bg-[#e04f1a] active:scale-98 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                                         >
-                                            <Plus size={15} /> Add Funds
+                                            <Plus size={14} /> Add Funds
                                         </button>
                                     </div>
                                 </div>
@@ -813,26 +870,26 @@ const CustomerDashboard = () => {
 
                     {/* Tab: Orders & Tracking */}
                     {activeTab === 'orders' && (
-                        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
-                            <div className="flex justify-between items-center border-b border-gray-100 pb-4">
-                                <h3 className="text-lg font-bold text-gray-900">Your Order History & Tracking</h3>
-                                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
-                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-150">Delivery</span>
-                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-orange-50 text-orange-700 border border-orange-150">Self Pickup</span>
+                        <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-gray-100 space-y-4 sm:space-y-6">
+                            <div className="flex justify-between items-center border-b border-gray-100 pb-3 sm:pb-4 gap-2">
+                                <h3 className="text-sm sm:text-lg font-bold text-gray-900 truncate">Your Order History &amp; Tracking</h3>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                    <span className="text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-150">Delivery</span>
+                                    <span className="text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded bg-orange-50 text-orange-700 border border-orange-150">Pickup</span>
                                 </div>
                             </div>
 
-                            <div className="space-y-4 min-w-0 pr-1.5 flex-1">
+                            <div className="space-y-3 sm:space-y-4 min-w-0 pr-0.5 sm:pr-1.5 flex-1">
                                 {loadingOrders ? (
                                     <p className="text-center text-gray-400 py-6 text-xs">Loading orders...</p>
                                 ) : safeOrders.length === 0 ? (
                                     <p className="text-center text-gray-400 py-10 text-xs">No orders found. Settle a new order from the Menu!</p>
                                 ) : (
                                     safeOrders.map(order => (
-                                        <div key={order._id} className="border border-gray-100 hover:border-orange-150 p-5 rounded-2xl transition-all space-y-4 bg-white">
-                                            <div className="flex justify-between items-center flex-wrap gap-2 border-b border-gray-50 pb-3">
+                                        <div key={order._id} className="border border-gray-100 hover:border-orange-150 p-3.5 sm:p-5 rounded-xl sm:rounded-2xl transition-all space-y-3 sm:space-y-4 bg-white shadow-xs">
+                                            <div className="flex justify-between items-center flex-wrap gap-2 border-b border-gray-50 pb-2.5 sm:pb-3">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="font-extrabold text-sm text-gray-900 font-mono">#{getShortId(order._id)}</span>
+                                                    <span className="font-extrabold text-xs sm:text-sm text-gray-900 font-mono">#{getShortId(order._id)}</span>
                                                     {(() => {
                                                         const isSelfPickupOrder = order.orderType === 'Self-Pickup' || order.orderType === 'Takeaway' || order.source === 'Self-Pickup' || String(order.orderType || '').toLowerCase().includes('pickup');
                                                         const isSelfDineInOrder = !isSelfPickupOrder && (order.serviceType === 'Self Dine-In (KFC Style)' || String(order.serviceType || '').toLowerCase().includes('self dine-in'));
@@ -1087,51 +1144,51 @@ const CustomerDashboard = () => {
 
                     {/* Tab: Reservations */}
                     {activeTab === 'reservations' && (
-                        <div className="space-y-8 min-w-0 pr-1.5 flex-1">
+                        <div className="space-y-6 sm:space-y-8 min-w-0 pr-0.5 sm:pr-1.5 flex-1">
                             {/* Book Table Form */}
-                            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
+                            <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-gray-100 space-y-4 sm:space-y-6">
                                 <div>
-                                    <h3 className="text-lg font-bold text-gray-900">Book A Table Reservation</h3>
+                                    <h3 className="text-base sm:text-lg font-bold text-gray-900">Book A Table Reservation</h3>
                                     <p className="text-gray-500 text-xs mt-0.5">Pick table, schedule date, and book instant tables</p>
                                 </div>
 
-                                <form onSubmit={handleBookReservation} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
-                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Reservation Date</label>
+                                <form onSubmit={handleBookReservation} className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 max-w-xl">
+                                    <div className="space-y-0.5 min-w-0">
+                                        <label className="text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-wider block">Reservation Date</label>
                                         <input 
                                             type="date"
                                             value={resDate}
                                             onChange={(e) => setResDate(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-150 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                            className="w-full bg-gray-50/80 hover:bg-gray-50 border border-gray-200 rounded-lg px-2.5 sm:px-3 py-1.5 text-xs text-gray-800 focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
                                         />
                                     </div>
-                                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
-                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Time Slot</label>
+                                    <div className="space-y-0.5 min-w-0">
+                                        <label className="text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-wider block">Time Slot</label>
                                         <input 
                                             type="time"
                                             value={resTime}
                                             onChange={(e) => setResTime(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-150 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                            className="w-full bg-gray-50/80 hover:bg-gray-50 border border-gray-200 rounded-lg px-2.5 sm:px-3 py-1.5 text-xs text-gray-800 focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
                                         />
                                     </div>
-                                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
-                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Guests Count</label>
+                                    <div className="space-y-0.5 min-w-0">
+                                        <label className="text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-wider block">Guests Count</label>
                                         <select 
                                             value={resGuests}
                                             onChange={(e) => setResGuests(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-150 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                            className="w-full bg-gray-50/80 hover:bg-gray-50 border border-gray-200 rounded-lg px-2.5 sm:px-3 py-1.5 text-xs text-gray-800 focus:outline-none focus:border-orange-500 focus:bg-white transition-all cursor-pointer"
                                         >
                                             {[1, 2, 3, 4, 5, 6, 8, 10].map(n => (
                                                 <option key={n} value={n}>{n} Guests</option>
                                             ))}
                                         </select>
                                     </div>
-                                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
-                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Seating Preference</label>
+                                    <div className="space-y-0.5 min-w-0">
+                                        <label className="text-[9px] sm:text-[10px] font-bold text-gray-500 uppercase tracking-wider block">Seating Preference</label>
                                         <select 
                                             value={resType}
                                             onChange={(e) => setResType(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-150 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                            className="w-full bg-gray-50/80 hover:bg-gray-50 border border-gray-200 rounded-lg px-2.5 sm:px-3 py-1.5 text-xs text-gray-800 focus:outline-none focus:border-orange-500 focus:bg-white transition-all cursor-pointer"
                                         >
                                             <option value="Dine In">Dine-In Dining Hall</option>
                                             <option value="Rooftop">Rooftop Sky Lounge</option>
@@ -1141,27 +1198,27 @@ const CustomerDashboard = () => {
                                     </div>
                                     <button 
                                         type="submit"
-                                        className="col-span-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-orange-600/10 transition-all flex items-center justify-center gap-1.5"
+                                        className="col-span-full py-2 sm:py-2.5 bg-[#FF5A1F] hover:bg-[#e04f1a] text-white font-extrabold text-xs sm:text-sm rounded-lg shadow-sm shadow-[#FF5A1F]/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-0.5"
                                     >
-                                        <Calendar size={16} /> Confirm Reservation Table
+                                        <Calendar size={14} /> Confirm Reservation Table
                                     </button>
                                 </form>
                             </div>
 
                             {/* Reservation History List */}
-                            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-4">
-                                <h3 className="font-bold text-gray-900">Your Booking History</h3>
-                                <div className="space-y-3 min-w-0 pr-1.5 flex-1">
+                            <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-gray-100 space-y-4">
+                                <h3 className="font-bold text-base sm:text-lg text-gray-900">Your Booking History</h3>
+                                <div className="space-y-3 min-w-0">
                                     {reservations.length === 0 ? (
                                         <p className="text-center py-6 text-xs text-gray-400 bg-gray-50 rounded-2xl border border-dashed border-gray-200">No table bookings scheduled.</p>
                                     ) : (
                                         reservations.map((res, i) => (
-                                            <div key={i} className="border border-gray-100 p-4 rounded-xl flex justify-between items-center bg-gray-50/50 text-xs sm:text-sm">
-                                                <div>
-                                                    <p className="font-extrabold text-gray-900">{res.date} • {res.time}</p>
-                                                    <p className="text-[11px] text-gray-500 mt-1">Table for {res.guests} ({res.type})</p>
+                                            <div key={i} className="border border-gray-100 p-3.5 sm:p-4 rounded-xl flex flex-col xs:flex-row xs:items-center justify-between gap-2.5 bg-gray-50/50 text-xs sm:text-sm">
+                                                <div className="min-w-0">
+                                                    <p className="font-extrabold text-gray-900 text-xs sm:text-sm">{res.date} • {res.time}</p>
+                                                    <p className="text-[11px] text-gray-500 mt-0.5">Table for {res.guests} ({res.type})</p>
                                                 </div>
-                                                <span className={`px-2.5 py-0.5 rounded-lg text-xs font-bold border ${res.statusColor}`}>{res.status}</span>
+                                                <span className={`self-start xs:self-auto px-2.5 py-0.5 rounded-lg text-[10px] sm:text-xs font-bold border shrink-0 ${res.statusColor}`}>{res.status}</span>
                                             </div>
                                         ))
                                     )}
@@ -1221,53 +1278,56 @@ const CustomerDashboard = () => {
 
                     {/* Tab: Loyalty & Rewards */}
                     {activeTab === 'loyalty' && (
-                        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
+                        <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-gray-100 space-y-4 sm:space-y-6">
                             <div>
-                                <h3 className="text-xl font-bold text-gray-900 font-sans">Loyalty & Rewards Program</h3>
-                                <p className="text-gray-500 text-xs mt-0.5">Track your points, redeem rewards, and view membership tiers</p>
+                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 font-sans">Loyalty & Rewards Program</h3>
+                                <p className="text-gray-500 text-[11px] sm:text-xs mt-0.5">Track your points, redeem rewards, and view membership tiers</p>
                             </div>
 
-                            <div className="space-y-8 animate-in fade-in duration-300">
-                                <div className="bg-gradient-to-br from-[#111] via-[#1a1a1a] to-[#0a0a0a] rounded-3xl p-8 text-white shadow-xl relative overflow-hidden border border-[#d4af37]/30">
-                                    <div className="absolute top-0 right-0 w-36 h-36 bg-[#d4af37]/10 rounded-full blur-3xl"></div>
-                                    <div className="flex items-center justify-between">
+                            <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-300">
+                                {/* Loyalty Tier Card */}
+                                <div className="bg-gradient-to-br from-[#111] via-[#1a1a1a] to-[#0a0a0a] rounded-2xl sm:rounded-3xl p-4 sm:p-7 text-white shadow-xl relative overflow-hidden border border-[#d4af37]/30">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/10 rounded-full blur-3xl pointer-events-none"></div>
+                                    <div className="flex items-center justify-between relative z-10">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#ffe07d] to-[#f3c056] text-black flex items-center justify-center shadow-lg shadow-yellow-500/10">
-                                                <Crown size={18} className="fill-black" />
+                                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-[#ffe07d] to-[#f3c056] text-black flex items-center justify-center shadow-lg shadow-yellow-500/10 shrink-0">
+                                                <Crown size={15} className="fill-black" />
                                             </div>
                                             <div>
-                                                <span className="block font-black tracking-widest text-[11px] text-[#ffe07d]">{tierName}</span>
-                                                <span className="block text-[9px] text-gray-500">FoodNest Rewards</span>
+                                                <span className="block font-black tracking-widest text-[10px] sm:text-[11px] text-[#ffe07d]">{tierName}</span>
+                                                <span className="block text-[8px] sm:text-[9px] text-gray-400">FoodNest Rewards</span>
                                             </div>
                                         </div>
-                                        <Sparkles size={16} className="text-[#ffe07d] animate-pulse" />
+                                        <Sparkles size={15} className="text-[#ffe07d] animate-pulse" />
                                     </div>
 
-                                    <div className="mt-8 space-y-1">
-                                        <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider block">Available Balance</span>
-                                        <h2 className="text-5xl font-black font-sans text-transparent bg-clip-text bg-gradient-to-r from-white via-[#fff2d1] to-[#f3c056]">{userPoints.toLocaleString()} Pts</h2>
-                                        <p className="text-xs text-gray-500 font-semibold mt-1">Value: ₹{(userPoints * 0.1).toFixed(2)} (Redeemable at checkout)</p>
+                                    <div className="mt-4 sm:mt-6 space-y-0.5 sm:space-y-1 relative z-10">
+                                        <span className="text-[9px] sm:text-[10px] text-gray-400 font-extrabold uppercase tracking-wider block">Available Balance</span>
+                                        <h2 className="text-3xl sm:text-5xl font-black font-sans text-transparent bg-clip-text bg-gradient-to-r from-white via-[#fff2d1] to-[#f3c056]">
+                                            {userPoints.toLocaleString()} <span className="text-lg sm:text-2xl font-bold">Pts</span>
+                                        </h2>
+                                        <p className="text-[11px] sm:text-xs text-gray-400 font-medium">Value: ₹{(userPoints * 0.1).toFixed(2)} (Redeemable at checkout)</p>
                                     </div>
 
-                                    <div className="mt-8 pt-6 border-t border-white/5 space-y-3">
-                                        <div className="flex justify-between text-xs font-bold">
-                                            <span className="text-gray-400">Resto Platinum Tier Progress</span>
+                                    <div className="mt-4 sm:mt-6 pt-3 sm:pt-5 border-t border-white/10 space-y-2 relative z-10">
+                                        <div className="flex justify-between text-[11px] sm:text-xs font-bold">
+                                            <span className="text-gray-300">Resto Platinum Tier Progress</span>
                                             <span className="text-[#ffe07d]">80% Complete</span>
                                         </div>
-                                        <div className="h-2.5 bg-white/5 rounded-full overflow-hidden border border-[#ffe07d]/10">
-                                            <div className="h-full bg-gradient-to-r from-[#f3c056] via-[#ffe07d] to-[#f3c056] w-[80%] rounded-full shadow-[0_0_8px_rgba(243,192,86,0.2)]"></div>
+                                        <div className="h-2 bg-white/10 rounded-full overflow-hidden border border-[#ffe07d]/20">
+                                            <div className="h-full bg-gradient-to-r from-[#f3c056] via-[#ffe07d] to-[#f3c056] w-[80%] rounded-full shadow-[0_0_8px_rgba(243,192,86,0.3)]"></div>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Rewards redemption catalog */}
-                                <div className="space-y-4 min-w-0 pr-1.5 flex-1">
-                                    <h4 className="font-extrabold text-sm text-gray-900">Available Redemptions</h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="border border-gray-150 p-4 rounded-2xl flex justify-between items-center bg-gray-50/50">
-                                            <div>
-                                                <p className="font-bold text-gray-900 text-sm">₹100 Store Credit</p>
-                                                <p className="text-xs text-gray-500 mt-1">Requires 1000 points</p>
+                                <div className="space-y-3 min-w-0 pr-0.5 flex-1">
+                                    <h4 className="font-extrabold text-xs sm:text-sm text-gray-900">Available Redemptions</h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-4">
+                                        <div className="border border-gray-150 p-3 sm:p-4 rounded-xl sm:rounded-2xl flex items-center justify-between gap-3 bg-gray-50/60 hover:bg-white transition-all shadow-2xs">
+                                            <div className="min-w-0">
+                                                <p className="font-bold text-gray-900 text-xs sm:text-sm truncate">₹100 Store Credit</p>
+                                                <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">Requires 1000 pts</p>
                                             </div>
                                             <button 
                                                 onClick={() => {
@@ -1279,15 +1339,16 @@ const CustomerDashboard = () => {
                                                         toast.error('Insufficient points! You need 1000 points.');
                                                     }
                                                 }}
-                                                className="px-4 py-2 bg-orange-600 hover:bg-orange-700 active:scale-95 transition-all text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer"
+                                                className="px-3 py-1.5 sm:px-4 sm:py-2 bg-orange-600 hover:bg-orange-700 active:scale-95 transition-all text-white font-bold text-[11px] sm:text-xs rounded-lg sm:rounded-xl shadow-xs shrink-0 cursor-pointer"
                                             >
                                                 Redeem
                                             </button>
                                         </div>
-                                        <div className="border border-gray-150 p-4 rounded-2xl flex justify-between items-center bg-gray-50/50">
-                                            <div>
-                                                <p className="font-bold text-gray-900 text-sm">Free Double Cheese Pizza</p>
-                                                <p className="text-xs text-gray-500 mt-1">Requires 2000 points</p>
+
+                                        <div className="border border-gray-150 p-3 sm:p-4 rounded-xl sm:rounded-2xl flex items-center justify-between gap-3 bg-gray-50/60 hover:bg-white transition-all shadow-2xs">
+                                            <div className="min-w-0">
+                                                <p className="font-bold text-gray-900 text-xs sm:text-sm truncate">Free Cheese Pizza</p>
+                                                <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">Requires 2000 pts</p>
                                             </div>
                                             <button 
                                                 onClick={() => {
@@ -1298,7 +1359,7 @@ const CustomerDashboard = () => {
                                                         toast.error('Insufficient points! You need 2000 points.');
                                                     }
                                                 }}
-                                                className="px-4 py-2 bg-orange-600 hover:bg-orange-700 active:scale-95 transition-all text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer"
+                                                className="px-3 py-1.5 sm:px-4 sm:py-2 bg-orange-600 hover:bg-orange-700 active:scale-95 transition-all text-white font-bold text-[11px] sm:text-xs rounded-lg sm:rounded-xl shadow-xs shrink-0 cursor-pointer"
                                             >
                                                 Redeem
                                             </button>
@@ -1311,50 +1372,62 @@ const CustomerDashboard = () => {
 
                     {/* Tab: Wallet */}
                     {activeTab === 'wallet' && (
-                        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
+                        <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-gray-100 space-y-4 sm:space-y-6">
                             <div>
-                                <h3 className="text-xl font-bold text-gray-900">Customer Wallet</h3>
-                                <p className="text-gray-500 text-xs mt-0.5">Add credits, check transactions, and manage 1-click checkout options</p>
+                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 font-sans">Customer Wallet</h3>
+                                <p className="text-gray-500 text-[11px] sm:text-xs mt-0.5">Add credits, check transactions, and manage 1-click checkout options</p>
                             </div>
 
-                            <div className="space-y-8 animate-in fade-in duration-300">
-                                <div className="bg-white rounded-3xl p-8 border border-gray-150 shadow-sm relative overflow-hidden flex flex-col justify-between min-h-[200px]">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-orange-50 rounded-full blur-3xl"></div>
+                            <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-300">
+                                {/* Wallet Card */}
+                                <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-150 shadow-sm relative overflow-hidden flex flex-col justify-between">
+                                    <div className="absolute top-0 right-0 w-28 h-28 bg-orange-50 rounded-full blur-2xl pointer-events-none"></div>
                                     <div className="flex justify-between items-center relative z-10">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
-                                                <Wallet size={20} />
+                                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
+                                                <Wallet size={16} />
                                             </div>
-                                            <span className="font-extrabold text-sm text-gray-900">FoodNest Secure Wallet</span>
+                                            <span className="font-extrabold text-xs sm:text-sm text-gray-900">FoodNest Secure Wallet</span>
                                         </div>
-                                        <span className="text-[10px] font-black text-green-700 bg-green-50 border border-green-150 px-2 py-0.5 rounded-full">ACTIVE</span>
+                                        <span className="text-[9px] sm:text-[10px] font-black text-green-700 bg-green-50 border border-green-150 px-2 py-0.5 rounded-full">ACTIVE</span>
                                     </div>
 
-                                    <div className="relative z-10 space-y-1 my-6">
-                                        <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider block">Wallet Balance</span>
-                                        <h2 className="text-5xl font-black font-sans text-gray-950">₹{walletBalance.toFixed(2)}</h2>
+                                    <div className="relative z-10 space-y-0.5 sm:space-y-1 my-4 sm:my-5">
+                                        <span className="text-[9px] sm:text-[10px] text-gray-400 font-extrabold uppercase tracking-wider block">Wallet Balance</span>
+                                        <h2 className="text-3xl sm:text-5xl font-black font-sans text-gray-950">₹{walletBalance.toFixed(2)}</h2>
                                     </div>
 
-                                    <div className="flex gap-3 relative z-10">
+                                    <div className="flex gap-2 sm:gap-3 relative z-10">
                                         <button 
                                             onClick={handleAddFunds}
-                                            className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-colors flex items-center gap-1.5"
+                                            className="px-4 py-2 sm:px-6 sm:py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
                                         >
-                                            <Plus size={16} /> Add Funds
+                                            <Plus size={15} /> Add Funds
                                         </button>
                                     </div>
                                 </div>
 
-                                {/* Mock ledger records */}
-                                <div className="space-y-3 min-w-0 pr-1.5 flex-1">
-                                    <h4 className="font-extrabold text-sm text-gray-900">Recent Transactions</h4>
-                                    <div className="border border-gray-100 rounded-2xl p-4 bg-gray-50/50 flex justify-between items-center text-xs">
-                                        <div>
-                                            <p className="font-bold text-gray-900">Wallet Load (UPI transaction)</p>
-                                            <p className="text-[10px] text-gray-400 mt-0.5">Aug 07, 2026 • Ref #WLT-240</p>
+                                {/* Ledger records */}
+                                <div className="space-y-2.5 min-w-0 pr-0.5 flex-1">
+                                    <h4 className="font-extrabold text-xs sm:text-sm text-gray-900">Recent Transactions</h4>
+                                    {walletTransactions.length === 0 ? (
+                                        <div className="border border-dashed border-gray-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 bg-gray-50/50 text-center">
+                                            <p className="text-xs font-semibold text-gray-500">No wallet transactions recorded yet.</p>
+                                            <p className="text-[11px] text-gray-400 mt-0.5">Deposits and refunds will appear here in real-time.</p>
                                         </div>
-                                        <span className="font-black text-green-600">+₹500.00</span>
-                                    </div>
+                                    ) : (
+                                        walletTransactions.map(tx => (
+                                            <div key={tx.id} className="border border-gray-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 bg-gray-50/60 flex justify-between items-center text-xs">
+                                                <div>
+                                                    <p className="font-bold text-gray-900 text-xs sm:text-sm">{tx.description}</p>
+                                                    <p className="text-[10px] text-gray-400 mt-0.5">{tx.date} • Ref #{tx.ref}</p>
+                                                </div>
+                                                <span className={`font-black text-xs sm:text-sm ${tx.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
+                                                    {tx.type === 'credit' ? `+₹${tx.amount.toFixed(2)}` : `-₹${tx.amount.toFixed(2)}`}
+                                                </span>
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -1362,51 +1435,52 @@ const CustomerDashboard = () => {
 
                     {/* Tab: Offers & Coupons */}
                     {activeTab === 'offers' && (
-                        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
+                        <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-gray-100 space-y-4 sm:space-y-6">
                             <div>
-                                <h3 className="text-xl font-bold text-gray-900">Offers & Coupons</h3>
+                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 font-sans">Offers & Coupons</h3>
+                                <p className="text-gray-500 text-[11px] sm:text-xs mt-0.5">Apply coupons at checkout for discounts and complimentary delivery</p>
                             </div>
 
                             {loadingOffers ? (
-                                <div className="text-center py-10">
-                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
+                                <div className="text-center py-8">
+                                    <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-orange-600 mx-auto"></div>
                                 </div>
                             ) : liveOffers.length === 0 ? (
-                                <div className="text-center py-12 text-gray-400 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
-                                    <p className="text-sm font-bold text-gray-700">No active coupons available right now.</p>
-                                    <p className="text-xs text-gray-500 mt-1">Check back soon when new restaurant offers are released!</p>
+                                <div className="text-center py-8 sm:py-12 text-gray-400 bg-gray-50 rounded-2xl sm:rounded-3xl border border-dashed border-gray-200 p-4">
+                                    <p className="text-xs sm:text-sm font-bold text-gray-700">No active coupons available right now.</p>
+                                    <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">Check back soon when new restaurant offers are released!</p>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-300">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5 animate-in fade-in duration-300">
                                     {liveOffers.map((offer) => (
-                                        <div key={offer._id || offer.code} className="border border-orange-100 bg-orange-50/50 p-6 rounded-2xl space-y-4 border-dashed relative overflow-hidden flex flex-col justify-between shadow-sm">
-                                            <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full blur-2xl"></div>
+                                        <div key={offer._id || offer.code} className="border border-orange-200/80 bg-orange-50/40 p-3.5 sm:p-5 rounded-xl sm:rounded-2xl space-y-3 border-dashed relative overflow-hidden flex flex-col justify-between shadow-2xs">
+                                            <div className="absolute top-0 right-0 w-20 h-20 bg-orange-500/5 rounded-full blur-xl pointer-events-none"></div>
                                             <div>
-                                                <div className="flex justify-between items-center">
-                                                    <span className="bg-orange-600 text-white font-extrabold text-[9px] px-2 py-0.5 rounded tracking-wide uppercase">Active Promo</span>
+                                                <div className="flex justify-between items-center gap-2">
+                                                    <span className="bg-orange-600 text-white font-extrabold text-[8px] sm:text-[9px] px-2 py-0.5 rounded tracking-wide uppercase">Active Promo</span>
                                                     {offer.expiresAt && (
-                                                        <span className="text-[10px] font-bold text-gray-500">
-                                                            Expires: {new Date(offer.expiresAt).toLocaleDateString()}
+                                                        <span className="text-[9px] sm:text-[10px] font-bold text-gray-500">
+                                                            Exp: {new Date(offer.expiresAt).toLocaleDateString()}
                                                         </span>
                                                     )}
                                                 </div>
-                                                <h4 className="font-black text-gray-900 text-xl mt-3">{offer.code}</h4>
-                                                <p className="text-sm font-bold text-orange-600 mt-0.5">
+                                                <h4 className="font-black text-gray-900 text-base sm:text-xl mt-2 tracking-tight">{offer.code}</h4>
+                                                <p className="text-xs sm:text-sm font-bold text-orange-600 mt-0.5">
                                                     {offer.type === 'Percentage' ? `${offer.discountValue}% OFF Total Bill` : 
                                                      offer.type === 'Fixed Amount' ? `₹${offer.discountValue.toFixed(2)} Flat Discount` : 
                                                      'FREE SHIPPING ON ORDER'}
                                                 </p>
                                                 {offer.minSpend > 0 && (
-                                                    <p className="text-xs text-gray-600 mt-1 font-medium">Valid on orders above ₹{offer.minSpend}.</p>
+                                                    <p className="text-[11px] sm:text-xs text-gray-600 mt-0.5 font-medium">Valid on orders above ₹{offer.minSpend}.</p>
                                                 )}
                                             </div>
-                                            <div className="flex justify-between items-center pt-4 border-t border-orange-100/50 text-xs">
-                                                <span className="font-extrabold text-orange-950 font-mono tracking-wider bg-orange-100 px-3 py-1 rounded-lg text-sm border border-orange-200">
+                                            <div className="flex justify-between items-center pt-2.5 border-t border-orange-100 text-xs gap-2">
+                                                <span className="font-extrabold text-orange-950 font-mono tracking-wider bg-orange-100/80 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg text-xs sm:text-sm border border-orange-200">
                                                     {offer.code}
                                                 </span>
                                                 <button 
                                                     onClick={() => { navigator.clipboard.writeText(offer.code); toast.success(`Coupon code ${offer.code} copied!`); }}
-                                                    className="text-xs font-bold bg-white hover:bg-orange-100 text-orange-600 px-3 py-1.5 rounded-lg border border-orange-200 transition-colors shadow-sm"
+                                                    className="text-[11px] sm:text-xs font-bold bg-white hover:bg-orange-50 text-orange-600 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg border border-orange-200 transition-colors shadow-2xs cursor-pointer shrink-0"
                                                 >
                                                     Copy Code
                                                 </button>
@@ -1420,20 +1494,20 @@ const CustomerDashboard = () => {
 
                     {/* Tab: Feedback & Inquiries */}
                     {activeTab === 'feedback' && (
-                        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
+                        <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-gray-100 space-y-4 sm:space-y-6">
                             <div>
-                                <h3 className="text-lg font-bold text-gray-900">Feedback & Inquiries</h3>
-                                <p className="text-gray-500 text-xs mt-0.5">Submit inquiries, complaints, or restaurant feedback directly to administration</p>
+                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 font-sans">Feedback & Inquiries</h3>
+                                <p className="text-gray-500 text-[11px] sm:text-xs mt-0.5">Submit inquiries, complaints, or restaurant feedback directly to administration</p>
                             </div>
 
-                            <form onSubmit={handleSubmitFeedback} className="space-y-4 min-w-0 pr-1.5 flex-1">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
+                            <form onSubmit={handleSubmitFeedback} className="space-y-3 sm:space-y-4 min-w-0 pr-0.5 flex-1">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div className="space-y-1 min-w-0 flex-1">
                                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Submission Type</label>
                                         <select 
                                             value={feedbackType}
                                             onChange={(e) => setFeedbackType(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-150 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                            className="w-full bg-gray-50 border border-gray-150 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 text-xs focus:outline-none focus:border-orange-500"
                                         >
                                             <option value="Feedback">General Feedback & Reviews</option>
                                             <option value="Complaint">Complaint / Bug Report</option>
@@ -1441,30 +1515,30 @@ const CustomerDashboard = () => {
                                             <option value="Franchise">Franchise request</option>
                                         </select>
                                     </div>
-                                    <div className="space-y-1 min-w-0 pr-1.5 flex-1">
+                                    <div className="space-y-1 min-w-0 flex-1">
                                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Subject Summary</label>
                                         <input 
                                             type="text"
-                                            placeholder="E.g. Food quality, delivery delay, table service..."
+                                            placeholder="E.g. Food quality, delivery delay..."
                                             value={feedbackSubject}
                                             onChange={(e) => setFeedbackSubject(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-150 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                            className="w-full bg-gray-50 border border-gray-150 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 text-xs focus:outline-none focus:border-orange-500"
                                         />
                                     </div>
                                 </div>
-                                <div className="space-y-1 min-w-0 pr-1.5 flex-1">
+                                <div className="space-y-1 min-w-0 flex-1">
                                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Message Details</label>
                                     <textarea 
-                                        rows={4}
-                                        placeholder="Write your review, support question, or complaint detail here. We review every ticket within 24 hours..."
+                                        rows={3}
+                                        placeholder="Write your review, support question, or complaint detail here..."
                                         value={feedbackMessage}
                                         onChange={(e) => setFeedbackMessage(e.target.value)}
-                                        className="w-full bg-gray-50 border border-gray-150 rounded-xl p-4 text-xs focus:outline-none focus:border-orange-500 resize-none"
+                                        className="w-full bg-gray-50 border border-gray-150 rounded-xl p-3 text-xs focus:outline-none focus:border-orange-500 resize-none"
                                     />
                                 </div>
                                 <button 
                                     type="submit"
-                                    className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-orange-600/10 transition-colors"
+                                    className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
                                 >
                                     Submit Ticket
                                 </button>
@@ -1474,17 +1548,17 @@ const CustomerDashboard = () => {
 
                     {/* Tab: My Reviews & Landing Page Testimonials */}
                     {activeTab === 'reviews' && (
-                        <div className="space-y-6">
+                        <div className="space-y-4 sm:space-y-6">
                             {/* Review Submission Card */}
-                            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-4">
+                            <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-gray-100 space-y-4 sm:space-y-6">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
                                     <div>
-                                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-orange-50 text-[#FF5A1F] text-[10px] font-black uppercase tracking-wider mb-1">
-                                            <Sparkles size={12} />
+                                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-orange-50 text-[#FF5A1F] text-[9px] sm:text-[10px] font-black uppercase tracking-wider mb-1">
+                                            <Sparkles size={11} />
                                             <span>Featured On Landing Page</span>
                                         </div>
-                                        <h3 className="text-xl font-black text-gray-900 tracking-tight">Share Your FoodNest Story</h3>
-                                        <p className="text-gray-500 text-xs mt-0.5">
+                                        <h3 className="text-lg sm:text-xl font-black text-gray-900 tracking-tight font-sans">Share Your FoodNest Story</h3>
+                                        <p className="text-gray-500 text-[11px] sm:text-xs mt-0.5">
                                             Your reviews are featured live under <strong>"What Our Customers Say"</strong> on our main customer landing page!
                                         </p>
                                     </div>
@@ -1498,62 +1572,65 @@ const CustomerDashboard = () => {
                                     </Link>
                                 </div>
 
-                                <form onSubmit={handleSubmitCustomerReview} className="space-y-5">
+                                <form onSubmit={handleSubmitCustomerReview} className="space-y-3.5 sm:space-y-4">
                                     {/* Star Rating Picker */}
-                                    <div>
-                                        <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-2">
-                                            Your Overall Rating
-                                        </label>
-                                        <div className="flex items-center gap-2">
+                                    <div className="space-y-1.5">
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-[10px] sm:text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
+                                                Your Overall Rating
+                                            </label>
+                                            <span className="text-[11px] sm:text-xs font-black text-amber-950 bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded-full">
+                                                {reviewRating === 5 ? '5.0 ★ Exceptional!' : reviewRating === 4 ? '4.0 ★ Great!' : reviewRating === 3 ? '3.0 ★ Good' : reviewRating === 2 ? '2.0 ★ Fair' : '1.0 ★ Poor'}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-1">
                                             {[1, 2, 3, 4, 5].map((star) => (
                                                 <button
                                                     key={star}
                                                     type="button"
                                                     onClick={() => setReviewRating(star)}
-                                                    className="p-1.5 transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+                                                    className="p-1 -ml-1 first:ml-0 transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+                                                    aria-label={`Rate ${star} star`}
                                                 >
                                                     <Star
-                                                        size={28}
+                                                        size={24}
                                                         className={reviewRating >= star ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}
                                                     />
                                                 </button>
                                             ))}
-                                            <span className="text-sm font-extrabold text-slate-800 ml-2">
-                                                {reviewRating === 5 ? '5.0 - Exceptional! 🌟' : reviewRating === 4 ? '4.0 - Great Experience 👍' : reviewRating === 3 ? '3.0 - Good' : reviewRating === 2 ? '2.0 - Fair' : '1.0 - Needs Work'}
-                                            </span>
                                         </div>
                                     </div>
 
                                     {/* Review Text Area */}
                                     <div>
-                                        <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                                        <label className="text-[10px] sm:text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1">
                                             Your Review / Feedback
                                         </label>
                                         <textarea
-                                            rows={4}
+                                            rows={3}
                                             value={reviewText}
                                             onChange={(e) => setReviewText(e.target.value)}
-                                            placeholder="Write your experience... What dishes did you love? How was the service and delivery speed?"
+                                            placeholder="Write your experience... What dishes did you love? How was the service?"
                                             required
-                                            className="w-full bg-gray-50 border border-gray-200 focus:border-[#FF5A1F] focus:bg-white rounded-2xl p-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all resize-none"
+                                            className="w-full bg-gray-50 border border-gray-200 focus:border-[#FF5A1F] focus:bg-white rounded-xl p-3 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all resize-none"
                                         />
                                     </div>
 
-                                    <div className="flex items-center justify-between pt-2">
-                                        <p className="text-[11px] text-slate-400">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 pt-1">
+                                        <p className="text-[10px] sm:text-[11px] text-slate-400">
                                             Posting as <strong>{user?.name || 'Customer'}</strong>
                                         </p>
                                         <button
                                             type="submit"
                                             disabled={submittingReview}
-                                            className="px-6 py-3 bg-[#FF5A1F] hover:bg-[#e04f1a] text-white font-bold text-sm rounded-xl shadow-md shadow-orange-500/20 hover:shadow-lg transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                                            className="w-full sm:w-auto px-4 py-2.5 sm:px-5 sm:py-2.5 bg-[#FF5A1F] hover:bg-[#e04f1a] text-white font-bold text-xs rounded-xl shadow-xs hover:shadow-sm transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
                                         >
                                             {submittingReview ? (
                                                 <span>Submitting...</span>
                                             ) : (
                                                 <>
-                                                    <Sparkles size={16} />
-                                                    <span>Publish Review to Landing Page</span>
+                                                    <Sparkles size={14} />
+                                                    <span>Publish Review</span>
                                                 </>
                                             )}
                                         </button>
@@ -1562,43 +1639,43 @@ const CustomerDashboard = () => {
                             </div>
 
                             {/* My Previously Submitted Reviews */}
-                            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-4">
-                                <h4 className="text-base font-bold text-gray-900">Your Submitted Reviews ({myReviews.length})</h4>
+                            <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-gray-100 space-y-3 sm:space-y-4">
+                                <h4 className="text-sm sm:text-base font-bold text-gray-900">Your Submitted Reviews ({myReviews.length})</h4>
                                 {loadingMyReviews ? (
-                                    <div className="py-8 text-center text-xs text-slate-400">Loading your reviews...</div>
+                                    <div className="py-6 text-center text-xs text-slate-400">Loading your reviews...</div>
                                 ) : myReviews.length === 0 ? (
-                                    <div className="py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                                    <div className="py-6 text-center bg-slate-50 rounded-xl sm:rounded-2xl border border-dashed border-slate-200 p-4">
                                         <p className="text-xs text-slate-500 font-medium">You haven't posted any reviews yet.</p>
-                                        <p className="text-[11px] text-slate-400 mt-1">Submit your first review above and see it featured live on the front page!</p>
+                                        <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">Submit your first review above and see it featured live on the front page!</p>
                                     </div>
                                 ) : (
-                                    <div className="space-y-3">
+                                    <div className="space-y-2.5">
                                         {myReviews.map((rev) => (
-                                            <div key={rev._id} className="p-4 rounded-2xl bg-slate-50/80 border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                                <div className="space-y-1.5 flex-1">
-                                                    <div className="flex items-center gap-2">
+                                            <div key={rev._id} className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-50/80 border border-slate-100 flex items-start sm:items-center justify-between gap-3">
+                                                <div className="space-y-1 flex-1 min-w-0">
+                                                    <div className="flex items-center gap-1.5 flex-wrap">
                                                         <div className="flex items-center gap-0.5 text-amber-400">
                                                             {[...Array(Number(rev.rating) || 5)].map((_, i) => (
-                                                                <Star key={i} size={13} className="fill-amber-400" />
+                                                                <Star key={i} size={11} className="fill-amber-400" />
                                                             ))}
                                                         </div>
-                                                        <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
-                                                            Live on Landing Page
+                                                        <span className="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded-full">
+                                                            Live
                                                         </span>
-                                                        <span className="text-[10px] text-slate-400">
+                                                        <span className="text-[9px] text-slate-400">
                                                             {new Date(rev.createdAt).toLocaleDateString()}
                                                         </span>
                                                     </div>
-                                                    <p className="text-xs sm:text-sm text-slate-700 font-medium italic">
+                                                    <p className="text-xs sm:text-sm text-slate-700 font-medium italic break-words">
                                                         "{rev.reviewText}"
                                                     </p>
                                                 </div>
                                                 <button
                                                     onClick={() => handleDeleteCustomerReview(rev._id)}
-                                                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors self-end sm:self-center cursor-pointer"
+                                                    className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer shrink-0"
                                                     title="Delete Review"
                                                 >
-                                                    <Trash2 size={16} />
+                                                    <Trash2 size={15} />
                                                 </button>
                                             </div>
                                         ))}
@@ -1771,6 +1848,21 @@ const CustomerDashboard = () => {
                                     const val = parseFloat(addFundsAmount);
                                     if (val > 0) {
                                         setWalletBalance(prev => prev + val);
+                                        const newTx = {
+                                            id: `tx-${Date.now()}`,
+                                            description: 'Wallet Deposit (UPI transaction)',
+                                            date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+                                            ref: `WLT-${Math.floor(100 + Math.random() * 900)}`,
+                                            amount: val,
+                                            type: 'credit'
+                                        };
+                                        const updatedTx = [newTx, ...walletTransactions];
+                                        setWalletTransactions(updatedTx);
+                                        try {
+                                            localStorage.setItem('customerWalletTransactions', JSON.stringify(updatedTx));
+                                        } catch (e) {
+                                            console.error(e);
+                                        }
                                         toast.success(`₹${val.toFixed(2)} added to your wallet!`);
                                         setIsAddFundsOpen(false);
                                     } else {

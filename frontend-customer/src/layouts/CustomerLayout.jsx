@@ -20,26 +20,27 @@ const CustomerLayout = () => {
             
             {!isLandingPage && (
                 <header className="bg-white/95 backdrop-blur-md border-b border-slate-100 sticky top-0 z-40 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[76px] flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-2.5 shrink-0">
+                    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-[76px] flex items-center justify-between gap-2 sm:gap-4">
+                        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 min-w-0">
                             <button
                                 onClick={() => window.history.back()}
                                 className="md:hidden p-1.5 px-2 text-slate-700 hover:bg-slate-100 rounded-xl transition-colors shrink-0 flex items-center gap-1 text-xs font-bold border border-slate-200 shadow-xs"
                                 aria-label="Go Back"
                                 title="Back"
                             >
-                                <ArrowLeft size={16} />
+                                <ArrowLeft size={15} />
                                 <span className="text-[11px] font-bold">Back</span>
                             </button>
-                            <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
-                                <div className="w-10 h-10 rounded-xl bg-[#FF5A1F] text-white flex items-center justify-center shadow-md shadow-[#FF5A1F]/25 group-hover:scale-105 transition-transform">
-                                    <UtensilsCrossed size={22} className="stroke-[2.2]" />
+                            <Link to="/" className="flex items-center gap-2 shrink-0 group">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#FF5A1F] text-white flex items-center justify-center shadow-md shadow-[#FF5A1F]/25 group-hover:scale-105 transition-transform shrink-0">
+                                    <UtensilsCrossed size={18} className="sm:hidden stroke-[2.2]" />
+                                    <UtensilsCrossed size={22} className="hidden sm:block stroke-[2.2]" />
                                 </div>
                                 <div className="flex flex-col text-left">
-                                    <span className="text-[22px] font-black tracking-tight text-slate-900 leading-none">
+                                    <span className="text-lg sm:text-[22px] font-black tracking-tight text-slate-900 leading-none">
                                         Food<span className="text-[#FF5A1F]">Nest</span>
                                     </span>
-                                    <span className="text-[10px] font-medium text-slate-400 mt-1">
+                                    <span className="hidden sm:block text-[10px] font-medium text-slate-400 mt-1">
                                         Good Food, Better Mood
                                     </span>
                                 </div>
@@ -54,14 +55,15 @@ const CustomerLayout = () => {
                             <Link to="/explore#how-it-works" className="text-slate-600 hover:text-[#FF5A1F] transition-colors py-1.5">About Us</Link>
                         </nav>
 
-                        <div className="flex items-center gap-3 sm:gap-4">
-                            <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
+                            <div className="flex items-center gap-1 sm:gap-3">
                                 <button 
                                     onClick={() => setIsWishlistOpen(true)}
-                                    className="relative w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-[#FF5A1F] transition-colors cursor-pointer"
+                                    className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-[#FF5A1F] transition-colors cursor-pointer"
                                     title="Wishlist"
                                 >
-                                    <Heart size={20} />
+                                    <Heart size={18} className="sm:hidden" />
+                                    <Heart size={20} className="hidden sm:block" />
                                     {wishlist && wishlist.length > 0 && (
                                         <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-xs">
                                             {wishlist.length}
@@ -70,10 +72,11 @@ const CustomerLayout = () => {
                                 </button>
                                 <button 
                                     onClick={() => setIsCartOpen(true)}
-                                    className="relative w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-[#FF5A1F] transition-colors cursor-pointer"
+                                    className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-[#FF5A1F] transition-colors cursor-pointer"
                                     title="Cart"
                                 >
-                                    <ShoppingBag size={20} />
+                                    <ShoppingBag size={18} className="sm:hidden" />
+                                    <ShoppingBag size={20} className="hidden sm:block" />
                                     {cartCount > 0 && (
                                         <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#FF5A1F] text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-xs">
                                             {cartCount}
@@ -85,7 +88,7 @@ const CustomerLayout = () => {
                             {user ? (
                                 <Link 
                                     to="/profile" 
-                                    className="flex items-center gap-1.5 bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] px-3.5 py-1.5 rounded-full text-xs font-bold border border-orange-200 transition-colors"
+                                    className="flex items-center gap-1.5 bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs font-bold border border-orange-200 transition-colors"
                                 >
                                     <User size={14} className="shrink-0" />
                                     <span className="hidden sm:inline truncate max-w-[85px]">{user.name}</span>
@@ -93,9 +96,10 @@ const CustomerLayout = () => {
                             ) : (
                                 <Link 
                                     to="/customer/login" 
-                                    className="bg-[#FF5A1F] hover:bg-[#e04f1a] text-white px-4 py-2 rounded-xl font-bold text-xs sm:text-[13px] shadow-sm shadow-[#FF5A1F]/30 hover:shadow-md transition-all cursor-pointer"
+                                    className="bg-[#FF5A1F] hover:bg-[#e04f1a] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-[13px] shadow-sm shadow-[#FF5A1F]/30 hover:shadow-md transition-all cursor-pointer whitespace-nowrap"
                                 >
-                                    Login / Sign Up
+                                    <span className="sm:hidden">Login</span>
+                                    <span className="hidden sm:inline">Login / Sign Up</span>
                                 </Link>
                             )}
                         </div>
@@ -103,31 +107,57 @@ const CustomerLayout = () => {
                 </header>
             )}
             
-            <main className={`flex-grow ${isLandingPage ? 'pb-0' : 'pb-16 md:pb-0'}`}>
+            <main className="flex-grow pb-20 md:pb-0">
                 <Outlet />
             </main>
 
-            {/* Mobile Bottom Navigation (only on internal app views) */}
-            {!isLandingPage && (
-                <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 py-3 px-2 flex justify-around items-center z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
-                    <Link to="/explore" className="flex flex-col items-center text-slate-500 hover:text-[#FF5A1F] transition-colors">
-                        <UtensilsCrossed size={20} />
-                        <span className="text-[10px] font-bold mt-1">Explore</span>
-                    </Link>
-                    <Link to="/menu" className="flex flex-col items-center text-[#FF5A1F] transition-colors">
-                        <ShoppingBag size={20} />
-                        <span className="text-[10px] font-bold mt-1">Menu</span>
-                    </Link>
-                    <Link to="/reservations" className="flex flex-col items-center text-slate-500 hover:text-[#FF5A1F] transition-colors">
-                        <CalendarDays size={20} />
-                        <span className="text-[10px] font-bold mt-1">Booking</span>
-                    </Link>
-                    <Link to="/profile" className="flex flex-col items-center text-slate-500 hover:text-[#FF5A1F] transition-colors">
-                        <User size={20} />
-                        <span className="text-[10px] font-bold mt-1">Account</span>
-                    </Link>
-                </div>
-            )}
+            {/* Mobile Bottom Navigation (Persistent native app bar with active indicator and safe-area support) */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-2 px-3 flex justify-around items-center z-40 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+                <Link 
+                    to="/explore" 
+                    className={`flex flex-col items-center transition-colors ${
+                        location.pathname === '/' || location.pathname === '/explore' 
+                            ? 'text-[#FF5A1F]' 
+                            : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                >
+                    <UtensilsCrossed size={19} className="stroke-[2.2]" />
+                    <span className="text-[10px] font-bold mt-1">Explore</span>
+                </Link>
+                <Link 
+                    to="/menu" 
+                    className={`flex flex-col items-center transition-colors ${
+                        location.pathname.startsWith('/menu') 
+                            ? 'text-[#FF5A1F]' 
+                            : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                >
+                    <ShoppingBag size={19} className="stroke-[2.2]" />
+                    <span className="text-[10px] font-bold mt-1">Menu</span>
+                </Link>
+                <Link 
+                    to="/reservations" 
+                    className={`flex flex-col items-center transition-colors ${
+                        location.pathname.startsWith('/reservations') 
+                            ? 'text-[#FF5A1F]' 
+                            : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                >
+                    <CalendarDays size={19} className="stroke-[2.2]" />
+                    <span className="text-[10px] font-bold mt-1">Dine In</span>
+                </Link>
+                <Link 
+                    to="/profile" 
+                    className={`flex flex-col items-center transition-colors ${
+                        location.pathname.startsWith('/profile') 
+                            ? 'text-[#FF5A1F]' 
+                            : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                >
+                    <User size={19} className="stroke-[2.2]" />
+                    <span className="text-[10px] font-bold mt-1">Account</span>
+                </Link>
+            </div>
 
             {!isLandingPage && (
                 <footer className="bg-slate-950 text-slate-300 py-12 border-t border-slate-800">

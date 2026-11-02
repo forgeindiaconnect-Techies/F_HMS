@@ -48,3 +48,4 @@ frontend/scratch/
 .idea/
 .agents/
 skills-lock.json
+*.apk

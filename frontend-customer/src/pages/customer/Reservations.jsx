@@ -103,30 +103,30 @@ const Reservations = () => {
     return (
         <div className="bg-gray-50 min-h-[85vh] pb-24">
             {/* Header Banner */}
-            <div className="bg-gray-900 text-white py-16 px-4 relative overflow-hidden">
+            <div className="bg-gray-900 text-white py-8 sm:py-14 px-4 relative overflow-hidden">
                 <img 
                     src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=2000&auto=format&fit=crop" 
                     alt="Restaurant Interior" 
                     className="absolute inset-0 w-full h-full object-cover opacity-30"
                 />
                 <div className="max-w-7xl mx-auto relative z-10 text-center">
-                    <h1 className="text-4xl md:text-5xl font-bold font-sans tracking-tight mb-4">Book a Table</h1>
-                    <p className="text-gray-300 max-w-2xl mx-auto text-lg">Experience our award-winning dining environment. Reserve your perfect spot today.</p>
+                    <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold font-sans tracking-tight mb-2 sm:mb-3">Book a Table</h1>
+                    <p className="text-gray-300 max-w-xl mx-auto text-xs sm:text-base">Experience our award-winning dining environment. Reserve your perfect spot today.</p>
                 </div>
             </div>
 
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
-                <form onSubmit={handleReserve} className="bg-white rounded-3xl p-6 md:p-10 shadow-xl border border-gray-100">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+            <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 -mt-4 sm:-mt-8 relative z-20">
+                <form onSubmit={handleReserve} className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-xl border border-gray-100">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5 mb-5 sm:mb-8">
                         {/* Party Size */}
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-widest flex items-center gap-2">
-                                <Users size={16} className="text-orange-500" /> Party Size
+                            <label className="block text-[11px] sm:text-xs font-bold text-gray-700 mb-1 sm:mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
+                                <Users size={14} className="text-orange-500" /> Party Size
                             </label>
                             <select 
                                 value={guests}
                                 onChange={(e) => setGuests(e.target.value)}
-                                className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-gray-900 font-bold appearance-none cursor-pointer"
+                                className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-gray-900 font-semibold text-xs sm:text-sm cursor-pointer"
                                 required
                             >
                                 {[1,2,3,4,5,6,7,8,'9+'].map(num => (
@@ -137,28 +137,28 @@ const Reservations = () => {
 
                         {/* Date */}
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-widest flex items-center gap-2">
-                                <Calendar size={16} className="text-orange-500" /> Date
+                            <label className="block text-[11px] sm:text-xs font-bold text-gray-700 mb-1 sm:mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
+                                <Calendar size={14} className="text-orange-500" /> Date
                             </label>
                             <input 
                                 type="date"
                                 value={date}
                                 onChange={(e) => setDate(e.target.value)}
                                 min={new Date().toISOString().split('T')[0]}
-                                className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-gray-900 font-bold cursor-pointer"
+                                className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-gray-900 font-semibold text-xs sm:text-sm cursor-pointer"
                                 required
                             />
                         </div>
 
                         {/* Time */}
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-widest flex items-center gap-2">
-                                <Clock size={16} className="text-orange-500" /> Time
+                            <label className="block text-[11px] sm:text-xs font-bold text-gray-700 mb-1 sm:mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
+                                <Clock size={14} className="text-orange-500" /> Time
                             </label>
                             <select 
                                 value={time}
                                 onChange={(e) => setTime(e.target.value)}
-                                className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-gray-900 font-bold appearance-none cursor-pointer"
+                                className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-gray-900 font-semibold text-xs sm:text-sm cursor-pointer"
                                 required
                             >
                                 <option value="" disabled hidden>Select Time</option>
@@ -176,13 +176,13 @@ const Reservations = () => {
 
                         {/* Seating */}
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-widest flex items-center gap-2">
-                                <MapPin size={16} className="text-orange-500" /> Seating
+                            <label className="block text-[11px] sm:text-xs font-bold text-gray-700 mb-1 sm:mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
+                                <MapPin size={14} className="text-orange-500" /> Seating
                             </label>
                             <select 
                                 value={seating}
                                 onChange={(e) => setSeating(e.target.value)}
-                                className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-gray-900 font-bold appearance-none cursor-pointer"
+                                className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-gray-900 font-semibold text-xs sm:text-sm cursor-pointer"
                                 required
                             >
                                 <option value="indoor">Indoor Dining Room</option>
@@ -192,23 +192,23 @@ const Reservations = () => {
                         </div>
                     </div>
 
-                    <div className="border-t border-gray-100 pt-8 mb-8">
-                        <h3 className="font-bold text-gray-900 mb-6 font-sans">Contact Details</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="border-t border-gray-100 pt-4 sm:pt-6 mb-5 sm:mb-6">
+                        <h3 className="font-bold text-sm sm:text-base text-gray-900 mb-3 sm:mb-4 font-sans">Contact Details</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             <div>
-                                <input type="text" placeholder="First Name" className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-gray-900" required />
+                                <input type="text" placeholder="First Name" className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-xs sm:text-sm text-gray-900" required />
                             </div>
                             <div>
-                                <input type="text" placeholder="Last Name" className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-gray-900" required />
+                                <input type="text" placeholder="Last Name" className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-xs sm:text-sm text-gray-900" required />
                             </div>
                             <div>
-                                <input type="email" placeholder="Email Address" className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-gray-900" required />
+                                <input type="email" placeholder="Email Address" className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-xs sm:text-sm text-gray-900" required />
                             </div>
                             <div>
-                                <input type="tel" placeholder="Phone Number" className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-gray-900" required />
+                                <input type="tel" placeholder="Phone Number" className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-xs sm:text-sm text-gray-900" required />
                             </div>
-                            <div className="md:col-span-2">
-                                <textarea rows="3" placeholder="Special Requests (Allergies, Occasions, etc.)" className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-gray-900 resize-none"></textarea>
+                            <div className="sm:col-span-2">
+                                <textarea rows="2" placeholder="Special Requests (Allergies, Occasions, etc.)" className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-xs sm:text-sm text-gray-900 resize-none"></textarea>
                             </div>
                         </div>
                     </div>
@@ -216,18 +216,18 @@ const Reservations = () => {
                     <button 
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-5 rounded-xl transition-all flex justify-center items-center gap-2 shadow-lg shadow-orange-600/20 active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100 text-lg"
+                        className="w-full bg-[#FF5A1F] hover:bg-[#e04f1a] text-white font-bold py-3 sm:py-3.5 rounded-xl transition-all flex justify-center items-center gap-1.5 shadow-md shadow-[#FF5A1F]/20 active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100 text-xs sm:text-sm cursor-pointer"
                     >
                         {isSubmitting ? (
                             <>
-                                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                                 </svg>
-                                Securing Table...
+                                <span>Securing Table...</span>
                             </>
                         ) : (
-                            <>Confirm Reservation <ChevronRight size={20} /></>
+                            <><span>Confirm Reservation</span> <ChevronRight size={16} /></>
                         )}
                     </button>
                     

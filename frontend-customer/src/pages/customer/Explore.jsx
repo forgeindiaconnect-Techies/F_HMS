@@ -13,47 +13,8 @@ import { useCustomerAuth } from '../../context/CustomerAuthContext';
 // ============================================================================
 // 1. REFERENCE DATA MATCHING SCREENSHOT EXACTLY
 // ============================================================================
-
-const FEATURED_RESTAURANTS = [
-  {
-    _id: 'rest-spice-villa',
-    name: 'Spice Villa',
-    badge: 'Bestseller',
-    badgeColor: 'bg-[#FF5A1F] text-white',
-    rating: '4.5',
-    deliveryTime: '30-40 mins',
-    cuisines: 'Indian • South Indian • Chinese',
-    image: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?q=80&w=800&auto=format&fit=crop'
-  },
-  {
-    _id: 'rest-burger-hub',
-    name: 'Burger Hub',
-    badge: 'Popular',
-    badgeColor: 'bg-[#10B981] text-white',
-    rating: '4.3',
-    deliveryTime: '25-35 mins',
-    cuisines: 'Burgers • Fast Food • Beverages',
-    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop'
-  },
-  {
-    _id: 'rest-pizza-palace',
-    name: 'Pizza Palace',
-    badge: null,
-    rating: '4.7',
-    deliveryTime: '30-45 mins',
-    cuisines: 'Pizza • Italian • Fast Food',
-    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=800&auto=format&fit=crop'
-  },
-  {
-    _id: 'rest-royal-thali',
-    name: 'Royal Thali',
-    badge: null,
-    rating: '4.4',
-    deliveryTime: '35-50 mins',
-    cuisines: 'South Indian • North Indian',
-    image: 'https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?q=80&w=800&auto=format&fit=crop'
-  }
-];
+// 1. CUISINES CATEGORIES
+// ============================================================================
 
 const CUISINES_LIST = [
   { id: 'all', name: 'All', isGrid: true },
@@ -66,101 +27,15 @@ const CUISINES_LIST = [
   { id: 'desserts', name: 'Desserts', image: 'https://images.unsplash.com/photo-1587314168485-3236d6710814?q=80&w=240&auto=format&fit=crop' }
 ];
 
-const POPULAR_DISHES = [
-  {
-    _id: 'dish-chicken-biryani',
-    name: 'Chicken Biryani',
-    discount: '40% OFF',
-    rating: '4.6',
-    price: 180,
-    originalPrice: 300,
-    cuisine: 'North Indian',
-    category: 'Mains',
-    image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?q=80&w=600&auto=format&fit=crop',
-    description: 'Slow-cooked aromatic basmati rice with tender spiced chicken pieces.'
-  },
-  {
-    _id: 'dish-paneer-butter-masala',
-    name: 'Paneer Butter Masala',
-    discount: '30% OFF',
-    rating: '4.5',
-    price: 150,
-    originalPrice: 220,
-    cuisine: 'North Indian',
-    category: 'Mains',
-    image: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?q=80&w=600&auto=format&fit=crop',
-    description: 'Fresh cottage cheese simmered in a velvety rich butter and tomato cashew gravy.'
-  },
-  {
-    _id: 'dish-margherita-pizza',
-    name: 'Margherita Pizza',
-    discount: '20% OFF',
-    rating: '4.4',
-    price: 220,
-    originalPrice: 275,
-    cuisine: 'Italian',
-    category: 'Mains',
-    image: 'https://images.unsplash.com/photo-1604382355076-af4b0eb60143?q=80&w=600&auto=format&fit=crop',
-    description: 'Crisp hand-stretched crust topped with fresh mozzarella, basil, and San Marzano sauce.'
-  },
-  {
-    _id: 'dish-veg-fried-rice',
-    name: 'Veg Fried Rice',
-    discount: '25% OFF',
-    rating: '4.3',
-    price: 120,
-    originalPrice: 160,
-    cuisine: 'Chinese',
-    category: 'Mains',
-    image: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?q=80&w=600&auto=format&fit=crop',
-    description: 'Fragrant wok-tossed long-grain rice with crisp garden vegetables and light soy.'
-  },
-  {
-    _id: 'dish-chocolate-lava-cake',
-    name: 'Chocolate Lava Cake',
-    discount: '15% OFF',
-    rating: '4.7',
-    price: 90,
-    originalPrice: 105,
-    cuisine: 'Desserts',
-    category: 'Desserts',
-    image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=600&auto=format&fit=crop',
-    description: 'Warm molten chocolate cake with a rich oozing Belgian cocoa center.'
-  }
-];
-
-const CUSTOMER_REVIEWS = [
-  {
-    id: 'rev-priya',
-    name: 'Priya S.',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150&auto=format&fit=crop',
-    rating: 5,
-    text: 'Amazing food and super fast delivery! The biryani was just perfect. Highly recommended!'
-  },
-  {
-    id: 'rev-arun',
-    name: 'Arun K.',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&auto=format&fit=crop',
-    rating: 5,
-    text: 'Great variety of restaurants and easy to order. Love the offers and discounts!'
-  },
-  {
-    id: 'rev-sneha',
-    name: 'Sneha R.',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&auto=format&fit=crop',
-    rating: 5,
-    text: 'The app is so user friendly and the food arrived hot. Keep it up!'
-  }
-];
-
 export default function Explore() {
   const navigate = useNavigate();
   const { cartCount, addToCart, wishlist, toggleWishlist, setIsCartOpen } = useCart();
   const { user, api, logout } = useCustomerAuth();
 
-  // State
-  const [restaurants, setRestaurants] = useState(FEATURED_RESTAURANTS);
-  const [dishes, setDishes] = useState(POPULAR_DISHES);
+  // State (Initialized as empty for pure real-time data)
+  const [restaurants, setRestaurants] = useState([]);
+  const [dishes, setDishes] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
   const [selectedCuisine, setSelectedCuisine] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [location, setLocation] = useState(() => localStorage.getItem('userLocation') || '');
@@ -168,12 +43,10 @@ export default function Explore() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const [activeNav, setActiveNav] = useState('home');
-  const [emailInput, setEmailInput] = useState('');
-  const [subscribed, setSubscribed] = useState(() => !!localStorage.getItem('foodnest_newsletter_subscribed'));
-  const [isSubscribing, setIsSubscribing] = useState(false);
   const [copiedCoupon, setCopiedCoupon] = useState(false);
-  const [customerReviews, setCustomerReviews] = useState(CUSTOMER_REVIEWS);
-  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [activeOffer, setActiveOffer] = useState(null);
+  const [customerReviews, setCustomerReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
   const [reviewCarouselIndex, setReviewCarouselIndex] = useState(0);
 
   const containerRef = useRef(null);
@@ -181,70 +54,87 @@ export default function Explore() {
   const searchInputRef = useRef(null);
 
   // --------------------------------------------------------------------------
-  // Fetch Backend Data (Merge Real Database Records Gracefully)
+  // Fetch Real-time Backend Data Exclusively
   // --------------------------------------------------------------------------
   useEffect(() => {
     let isMounted = true;
+    setLoadingData(true);
 
     // Load Live Restaurants
     api.get('/restaurants').then(({ data }) => {
-      if (isMounted && Array.isArray(data) && data.length > 0) {
+      if (isMounted && Array.isArray(data)) {
         const approved = data.filter(r => !r.isDeleted && r.status !== 'Inactive' && r.approvalStatus === 'Approved');
-        if (approved.length > 0) {
-          const backendMapped = approved.map((r, i) => ({
-            _id: r._id,
-            name: r.name,
-            badge: i === 0 ? 'Bestseller' : (i === 1 ? 'Popular' : null),
-            badgeColor: i === 0 ? 'bg-[#FF5A1F] text-white' : 'bg-[#10B981] text-white',
-            rating: r.rating ? String(r.rating) : '4.5',
-            deliveryTime: r.deliveryTime || '30-40 mins',
-            cuisines: r.cuisineType || r.cuisine || 'Multi-Cuisine',
-            image: r.image || r.bannerImage || FEATURED_RESTAURANTS[i % FEATURED_RESTAURANTS.length].image
-          }));
-          const existingNames = new Set(backendMapped.map(r => r.name.toLowerCase()));
-          const nonDup = FEATURED_RESTAURANTS.filter(r => !existingNames.has(r.name.toLowerCase()));
-          setRestaurants([...FEATURED_RESTAURANTS, ...backendMapped.filter(b => !nonDup.some(n => n._id === b._id))]);
+        const backendMapped = approved.map((r, i) => ({
+          _id: r._id,
+          name: r.name,
+          badge: i === 0 ? 'Bestseller' : (i === 1 ? 'Popular' : null),
+          badgeColor: i === 0 ? 'bg-[#FF5A1F] text-white' : 'bg-[#10B981] text-white',
+          rating: r.rating ? String(r.rating) : '4.5',
+          deliveryTime: r.deliveryTime || '30-40 mins',
+          cuisines: r.cuisineType || r.cuisine || 'Multi-Cuisine',
+          image: r.image || r.bannerImage || r.logo || '/images/food/biryani-hero-platter.jpg',
+          city: r.city || '',
+          state: r.state || '',
+          country: r.country || '',
+          address: r.address || '',
+          branches: r.branches || []
+        }));
+        setRestaurants(backendMapped);
+      }
+    }).catch(() => {
+      if (isMounted) setRestaurants([]);
+    });
+
+    // Load Live Menu
+    api.get('/menu').then(({ data }) => {
+      if (isMounted && Array.isArray(data)) {
+        const backendDishes = data.map((d, i) => ({
+          _id: d._id,
+          name: d.name,
+          discount: d.discount ? `${d.discount}% OFF` : (i % 2 === 0 ? '20% OFF' : null),
+          rating: d.rating ? String(d.rating) : '4.5',
+          price: d.price || 0,
+          originalPrice: d.originalPrice || (d.price ? Math.round(d.price * 1.25) : 0),
+          cuisine: d.cuisine || 'Specialty',
+          category: d.category || 'Mains',
+          image: d.image || '/images/food/biryani-hero-platter.jpg',
+          description: d.description || ''
+        }));
+        setDishes(backendDishes);
+      }
+    }).catch(() => {
+      if (isMounted) setDishes([]);
+    }).finally(() => {
+      if (isMounted) setLoadingData(false);
+    });
+
+    // Load Live Active Offers / Coupons
+    api.get('/offers').then(({ data }) => {
+      if (isMounted && Array.isArray(data)) {
+        const active = data.filter(o => o.status === 'Active' || (!o.status && o.isActive !== false));
+        if (active.length > 0) {
+          setActiveOffer(active[0]);
         }
       }
     }).catch(() => {});
 
-    // Load Live Menu
-    api.get('/menu').then(({ data }) => {
-      if (isMounted && Array.isArray(data) && data.length > 0) {
-        const backendDishes = data.map((d, i) => ({
-          _id: d._id,
-          name: d.name,
-          discount: d.discount ? `${d.discount}% OFF` : (i % 2 === 0 ? '30% OFF' : '20% OFF'),
-          rating: d.rating ? String(d.rating) : '4.5',
-          price: d.price || 150,
-          originalPrice: d.originalPrice || Math.round((d.price || 150) * 1.35),
-          cuisine: d.cuisine || 'Indian',
-          category: d.category || 'Mains',
-          image: d.image || POPULAR_DISHES[i % POPULAR_DISHES.length].image,
-          description: d.description || 'Freshly prepared delicious specialty dish.'
-        }));
-        const existingNames = new Set(POPULAR_DISHES.map(d => d.name.toLowerCase()));
-        const extraBackend = backendDishes.filter(b => !existingNames.has(b.name.toLowerCase()));
-        setDishes([...POPULAR_DISHES, ...extraBackend]);
-      }
-    }).catch(() => {});
-
-    // Load Live Customer Reviews (Real-time DB synced with Customer Dashboard reviews)
+    // Load Live Customer Reviews (Real-time DB synced from Customer Reviews)
     setReviewsLoading(true);
     api.get('/customer-reviews/public').then(({ data }) => {
-      if (isMounted && data && Array.isArray(data.data) && data.data.length > 0) {
+      if (isMounted && data && Array.isArray(data.data)) {
         const liveReviews = data.data.map(r => ({
           id: r._id,
-          name: r.customerName || 'Happy Foodie',
+          name: r.customerName || 'Happy Customer',
           avatar: r.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(r.customerName || 'Customer')}&background=FF5A1F&color=fff`,
           rating: Number(r.rating) || 5,
           text: r.reviewText,
           createdAt: r.createdAt
         }));
-        // Prepend dynamic live reviews before the fallback defaults
-        setCustomerReviews([...liveReviews, ...CUSTOMER_REVIEWS]);
+        setCustomerReviews(liveReviews);
       }
-    }).catch(() => {}).finally(() => {
+    }).catch(() => {
+      if (isMounted) setCustomerReviews([]);
+    }).finally(() => {
       if (isMounted) setReviewsLoading(false);
     });
 
@@ -498,39 +388,104 @@ export default function Explore() {
 
   // Filter dishes by cuisine or search
   const displayedDishes = dishes.filter(d => {
-    const matchesCuisine = selectedCuisine === 'all' || 
-      d.cuisine?.toLowerCase().includes(selectedCuisine) ||
-      d.category?.toLowerCase().includes(selectedCuisine);
+    const qCuisine = selectedCuisine.toLowerCase().replace('-', ' ').trim();
+    const dCuisine = (d.cuisine || '').toLowerCase();
+    const dCat = (d.category || '').toLowerCase();
+    const dName = (d.name || '').toLowerCase();
+
+    let matchesCuisine = selectedCuisine === 'all';
+    if (!matchesCuisine) {
+      matchesCuisine = dCuisine.includes(qCuisine) || 
+                       dCat.includes(qCuisine) || 
+                       dName.includes(qCuisine);
+
+      // Smart cuisine mapping for common terms
+      if (!matchesCuisine) {
+        if (qCuisine.includes('south') && (dName.includes('dosa') || dName.includes('idli') || dName.includes('vada') || dName.includes('sambar') || dName.includes('coffee'))) {
+          matchesCuisine = true;
+        } else if (qCuisine.includes('italian') && (dName.includes('pizza') || dName.includes('pasta'))) {
+          matchesCuisine = true;
+        } else if (qCuisine.includes('chinese') && (dName.includes('noodle') || dName.includes('manchurian') || dName.includes('fried rice') || dName.includes('hakka'))) {
+          matchesCuisine = true;
+        } else if (qCuisine.includes('fast food') && (dName.includes('burger') || dName.includes('fries') || dName.includes('sandwich'))) {
+          matchesCuisine = true;
+        } else if (qCuisine.includes('beverage') && (dName.includes('juice') || dName.includes('smoothie') || dName.includes('tea') || dName.includes('coffee') || dName.includes('shake'))) {
+          matchesCuisine = true;
+        } else if (qCuisine.includes('dessert') && (dName.includes('cake') || dName.includes('sweet') || dName.includes('ice cream'))) {
+          matchesCuisine = true;
+        }
+      }
+    }
+
     const matchesSearch = !searchQuery || 
-      d.name.toLowerCase().includes(searchQuery.toLowerCase());
+      dName.includes(searchQuery.toLowerCase()) ||
+      dCuisine.includes(searchQuery.toLowerCase()) ||
+      dCat.includes(searchQuery.toLowerCase());
+
     return matchesCuisine && matchesSearch;
   });
 
+  // Filter restaurants by detected location and search query
   const displayedRestaurants = restaurants.filter(r => {
-    if (!searchQuery) return true;
-    return r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           r.cuisines?.toLowerCase().includes(searchQuery.toLowerCase());
+    // 1. Search Query filter
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const matchesSearch = r.name.toLowerCase().includes(q) ||
+                            r.cuisines?.toLowerCase().includes(q) ||
+                            r.city?.toLowerCase().includes(q) ||
+                            r.address?.toLowerCase().includes(q);
+      if (!matchesSearch) return false;
+    }
+
+    // 2. Strict Location Detection filter
+    if (location && location.trim()) {
+      const locTerms = location.toLowerCase().split(/[, ]+/).map(t => t.trim()).filter(Boolean);
+      
+      const restCity = (r.city || '').toLowerCase();
+      const restState = (r.state || '').toLowerCase();
+      const restAddress = (r.address || '').toLowerCase();
+      const branchLocations = (r.branches || []).map(b => {
+        const loc = b.location || {};
+        return `${loc.city || ''} ${loc.state || ''} ${loc.address || ''} ${loc.country || ''}`.toLowerCase();
+      }).join(' ');
+
+      const combinedRestLocation = `${restCity} ${restState} ${restAddress} ${branchLocations}`.trim();
+
+      // If restaurant has location info, check if any token from detected location matches
+      if (combinedRestLocation) {
+        const matchesLocation = locTerms.some(term => {
+          if (term.length < 3) return false; // Ignore very short words like 'in', 'at'
+          return combinedRestLocation.includes(term);
+        });
+        return matchesLocation;
+      }
+      
+      // When user specifies a location, keep outlets that haven't set an address as secondary or show if none match
+      return false;
+    }
+
+    return true;
   });
 
   return (
     <div ref={containerRef} className="min-h-screen bg-white text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white">
 
       {/* ======================================================================= */}
-      {/* 1. NAVBAR (COMPACT WHITE NAVBAR MATCHING SCREENSHOT)                    */}
+      {/* 1. NAVBAR (RESPONSIVE FOR MOBILE APPS & TABLETS)                        */}
       {/* ======================================================================= */}
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[76px] flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-[76px] flex items-center justify-between gap-2 sm:gap-4">
           
           {/* Logo with Utensil Icon & Tagline */}
-          <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
-            <div className="w-10 h-10 rounded-xl bg-[#FF5A1F] text-white flex items-center justify-center shadow-md shadow-[#FF5A1F]/25 group-hover:scale-105 transition-transform">
-              <UtensilsCrossed size={22} className="stroke-[2.2]" />
+          <Link to="/" className="flex items-center gap-2 shrink-0 group">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#FF5A1F] text-white flex items-center justify-center shadow-md shadow-[#FF5A1F]/25 group-hover:scale-105 transition-transform">
+              <UtensilsCrossed size={18} className="sm:w-[22px] sm:h-[22px] stroke-[2.2]" />
             </div>
             <div className="flex flex-col text-left">
-              <span className="text-[22px] font-black tracking-tight text-slate-900 leading-none">
+              <span className="text-lg sm:text-[22px] font-black tracking-tight text-slate-900 leading-none">
                 Food<span className="text-[#FF5A1F]">Nest</span>
               </span>
-              <span className="text-[10px] font-medium text-slate-400 mt-1">
+              <span className="hidden xs:inline text-[9px] sm:text-[10px] font-medium text-slate-400 mt-0.5 sm:mt-1">
                 Good Food, Better Mood
               </span>
             </div>
@@ -557,7 +512,6 @@ export default function Explore() {
                   }`}
                 >
                   <span>{item.label}</span>
-                  {/* Fixed underline bar that doesn't cause text width re-flow or jumping */}
                   <span
                     className={`absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-[#FF5A1F] transition-all duration-200 ${
                       isActive ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0'
@@ -569,13 +523,13 @@ export default function Explore() {
           </div>
 
           {/* Right Action Icons: Location, Search, Cart, Login */}
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             
-            {/* GPS Location Button (Direct browser GPS permission + reverse geocode) */}
+            {/* GPS Location Button (Hidden on very narrow screens to prevent crushing, integrated into hero/sub-bar) */}
             <button
               onClick={handleGetLocation}
               disabled={isDetectingLocation}
-              className={`flex items-center gap-1.5 text-xs font-bold transition-all px-2.5 py-1.5 rounded-xl border cursor-pointer ${
+              className={`hidden sm:flex items-center gap-1.5 text-xs font-bold transition-all px-2.5 py-1.5 rounded-xl border cursor-pointer ${
                 isDetectingLocation
                   ? 'bg-orange-50 text-[#FF5A1F] border-orange-200 animate-pulse'
                   : 'text-slate-700 hover:text-[#FF5A1F] hover:bg-orange-50/60 border-slate-200/80 hover:border-orange-200 shadow-xs'
@@ -584,7 +538,7 @@ export default function Explore() {
               aria-label="Detect GPS Location"
             >
               <MapPin size={15} className={`text-[#FF5A1F] shrink-0 ${isDetectingLocation ? 'animate-bounce' : ''}`} />
-              <span className="max-w-[110px] sm:max-w-[160px] truncate">
+              <span className="max-w-[100px] md:max-w-[150px] truncate">
                 {isDetectingLocation ? 'Detecting...' : (location || 'Detect Location')}
               </span>
             </button>
@@ -598,7 +552,7 @@ export default function Explore() {
                   setTimeout(() => searchInputRef.current?.focus(), 100);
                 }
               }}
-              className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
                 isSearchOpen ? 'bg-orange-50 text-[#FF5A1F]' : 'text-slate-600 hover:bg-slate-100 hover:text-[#FF5A1F]'
               }`}
               aria-label="Search"
@@ -610,12 +564,12 @@ export default function Explore() {
             {/* Cart Icon with Live Badge Counter */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-[#FF5A1F] transition-colors cursor-pointer"
+              className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-[#FF5A1F] transition-colors cursor-pointer"
               aria-label="Shopping Cart"
               title="View your cart"
             >
-              <ShoppingBag size={20} />
-              <span className="absolute -top-1 -right-1.5 w-4 h-4 bg-[#FF5A1F] text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-xs">
+              <ShoppingBag size={19} />
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#FF5A1F] text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-xs">
                 {cartCount > 0 ? cartCount : 2}
               </span>
             </button>
@@ -625,12 +579,12 @@ export default function Explore() {
               <div className="relative" ref={profileRef}>
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center gap-1.5 bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-bold border border-orange-200 transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs font-bold border border-orange-200 transition-colors cursor-pointer"
                   title="My Account"
                   aria-label="Account Menu"
                 >
                   <User size={14} />
-                  <span className="max-w-[85px] truncate">{user.name || 'Account'}</span>
+                  <span className="max-w-[70px] sm:max-w-[85px] truncate">{user.name || 'Account'}</span>
                   <ChevronDown size={12} className={`transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
                 </button>
 
@@ -689,18 +643,35 @@ export default function Explore() {
             ) : (
               <Link
                 to="/customer/login"
-                className="bg-[#FF5A1F] hover:bg-[#e04f1a] text-white px-4 py-2 rounded-xl font-bold text-xs sm:text-[13px] shadow-sm shadow-[#FF5A1F]/30 hover:shadow-md transition-all cursor-pointer"
+                className="bg-[#FF5A1F] hover:bg-[#e04f1a] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-[13px] shadow-sm shadow-[#FF5A1F]/30 hover:shadow-md transition-all cursor-pointer"
               >
-                Login / Sign Up
+                Login
               </Link>
             )}
 
           </div>
         </div>
 
+        {/* Mobile GPS Location Strip (Shown on mobile screens right under top bar) */}
+        <div className="sm:hidden px-3 py-1.5 bg-orange-50/70 border-t border-orange-100/60 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-1.5 text-slate-700 truncate">
+            <MapPin size={13} className="text-[#FF5A1F] shrink-0" />
+            <span className="truncate font-semibold text-[11px]">
+              {location || 'Delivering to current location'}
+            </span>
+          </div>
+          <button
+            onClick={handleGetLocation}
+            disabled={isDetectingLocation}
+            className="text-[11px] font-bold text-[#FF5A1F] hover:underline shrink-0 ml-2"
+          >
+            {isDetectingLocation ? 'Locating...' : 'Change'}
+          </button>
+        </div>
+
         {/* Live Search Input Bar */}
         {isSearchOpen && (
-          <div className="bg-slate-50 border-t border-slate-100 px-4 py-2.5 animate-in slide-in-from-top-1">
+          <div className="bg-slate-50 border-t border-slate-100 px-3 sm:px-4 py-2.5 animate-in slide-in-from-top-1">
             <form 
               onSubmit={(e) => {
                 e.preventDefault();
@@ -719,7 +690,7 @@ export default function Explore() {
                 <input
                   ref={searchInputRef}
                   type="text"
-                  placeholder="Search dishes or restaurants (e.g. Biryani, Pizza, Burger)..."
+                  placeholder="Search dishes or restaurants..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-9 pr-14 py-2 bg-white border border-slate-200 rounded-full text-xs font-medium focus:outline-none focus:border-[#FF5A1F]"
@@ -736,7 +707,7 @@ export default function Explore() {
               </div>
               <button
                 type="submit"
-                className="bg-[#FF5A1F] hover:bg-[#e04f1a] text-white px-4 py-2 rounded-full text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
+                className="bg-[#FF5A1F] hover:bg-[#e04f1a] text-white px-3 sm:px-4 py-2 rounded-full text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
               >
                 Search
               </button>
@@ -755,31 +726,39 @@ export default function Explore() {
 
 
       {/* ======================================================================= */}
-      {/* 2. HERO SECTION (SEAMLESS FULL-WIDTH NATURAL FOOD COMPOSITION - NO CARD) */}
+      {/* 2. HERO SECTION (RESPONSIVE SEAMLESS FOOD COMPOSITION)                  */}
       {/* ======================================================================= */}
-      <section id="home" className="relative w-full overflow-hidden bg-gradient-to-r from-white via-[#FCF9F5] to-[#F8F5EE]">
+      <section id="home" className="relative w-full overflow-hidden bg-[#FAF6F0]">
         
         {/* Soft Organic Background Glow (Top Left) */}
-        <div className="absolute top-0 left-0 w-72 h-72 bg-gradient-to-br from-emerald-100/40 via-orange-100/20 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 left-0 w-64 sm:w-96 h-64 sm:h-96 bg-gradient-to-br from-amber-100/60 via-orange-100/30 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/4 w-80 h-80 bg-orange-50/50 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Right Food Scene - Natural Blended Photography (NO CARDS, NO BORDERS, NO SHADOWS) */}
-        <div className="lg:absolute lg:right-0 lg:top-0 lg:bottom-0 lg:w-[54%] xl:w-[52%] w-full h-[360px] xs:h-[420px] sm:h-[480px] lg:h-full relative pointer-events-none select-none">
+        {/* Food Scene - Ambient Seamless Background on Mobile, Split Right on Desktop */}
+        <div className="absolute right-0 top-0 bottom-0 w-full lg:w-[58%] xl:w-[54%] h-full pointer-events-none select-none z-0">
           <img
             src="/images/food/biryani-hero-platter.jpg"
             alt="Delicious Chicken Dum Biryani Platter with raita and sides"
-            className="w-full h-full object-cover object-[center_right] lg:object-[left_center]"
+            className="w-full h-full object-cover object-[75%_25%] sm:object-[center_center] lg:object-[left_center] opacity-40 sm:opacity-75 lg:opacity-100"
+            style={{
+              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.3) 15%, rgba(0,0,0,0.9) 35%, black 55%), linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
+              WebkitMaskComposite: 'destination-in',
+              maskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.3) 15%, rgba(0,0,0,0.9) 35%, black 55%), linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
+              maskComposite: 'intersect'
+            }}
             loading="eager"
           />
-          {/* Subtle Seamless Left Edge Gradient Blending directly into the Hero Canvas */}
-          <div className="absolute inset-y-0 left-0 w-24 sm:w-44 lg:w-64 bg-gradient-to-r from-white sm:from-[#FCF9F5] via-[#FCF9F5]/85 to-transparent pointer-events-none" />
           
-          {/* Subtle Top & Bottom Gradient Feathering */}
-          <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-white/60 to-transparent pointer-events-none" />
-          <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-[#FCF9F5] to-transparent pointer-events-none lg:block hidden" />
+          {/* Multi-layered Feathering & Seamless Atmosphere Gradients */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#FAF6F0]/80 via-transparent to-[#FAF6F0] lg:hidden pointer-events-none" />
+          <div className="absolute inset-y-0 left-0 w-full sm:w-60 lg:w-72 bg-gradient-to-r from-[#FAF6F0] via-[#FAF6F0]/90 lg:via-[#FAF6F0]/80 to-transparent pointer-events-none" />
+          <div className="absolute inset-x-0 top-0 h-16 sm:h-24 bg-gradient-to-b from-[#FAF6F0] via-[#FAF6F0]/60 to-transparent pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-16 sm:h-24 bg-gradient-to-t from-[#FAF6F0] via-[#FAF6F0]/70 to-transparent pointer-events-none" />
+          <div className="absolute inset-y-0 right-0 w-16 sm:w-28 bg-gradient-to-l from-[#FAF6F0]/40 to-transparent pointer-events-none" />
 
           {/* Handwritten "Hot & Fresh Always!" Callout with Arrow */}
-          <div className="absolute top-6 right-6 sm:top-10 sm:right-14 z-20 flex flex-col items-end pointer-events-none select-none">
-            <span className="font-serif italic font-extrabold text-[#78350F] text-sm sm:text-base tracking-tight drop-shadow-xs">
+          <div className="absolute top-3 right-3 sm:top-8 sm:right-10 z-20 flex flex-col items-end pointer-events-none select-none bg-white/75 backdrop-blur-md px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl border border-amber-900/10 shadow-xs">
+            <span className="font-serif italic font-black text-[#78350F] text-[10px] sm:text-base tracking-tight drop-shadow-xs">
               Hot &amp; Fresh<br />Always! ↝
             </span>
           </div>
@@ -787,31 +766,31 @@ export default function Explore() {
 
         {/* Main Content Area */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center min-h-[480px] sm:min-h-[520px] lg:min-h-[560px] py-8 sm:py-10 lg:py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center py-6 sm:py-10 lg:py-14">
             
             {/* Left Content Column */}
-            <div className="lg:col-span-7 flex flex-col items-start text-left space-y-4 sm:space-y-5 lg:pr-6">
+            <div className="lg:col-span-7 flex flex-col items-start text-left space-y-3.5 sm:space-y-5 lg:pr-6">
               
               {/* Fresh & Tasty Tag */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-emerald-700 text-xs font-bold">
-                <span className="text-sm">🌿</span>
-                <span>Fresh &amp; Tasty</span>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-emerald-700 text-[11px] sm:text-xs font-bold">
+                <span className="text-xs sm:text-sm">🌿</span>
+                <span>Fresh &amp; Tasty Food</span>
               </div>
 
               {/* Main Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-black text-slate-900 tracking-tight leading-[1.12]">
+              <h1 className="text-2xl xs:text-3xl sm:text-4xl lg:text-[52px] font-black text-slate-900 tracking-tight leading-[1.18]">
                 Delicious Food<br />
                 Delivered to <span className="text-[#FF5A1F]">Your Door</span>
               </h1>
 
               {/* Subtitle */}
-              <p className="text-sm sm:text-base text-slate-500 font-medium max-w-lg leading-relaxed">
-                Explore your favourite restaurants, order online and get fresh, hot and delicious food at your doorstep.
+              <p className="text-xs sm:text-base text-slate-600 font-medium max-w-lg leading-relaxed">
+                Explore your favourite restaurants, order online and get fresh, hot and delicious food delivered at your doorstep.
               </p>
 
               {/* Location / Search Box Card */}
-              <div className="w-full max-w-lg bg-white p-2 rounded-2xl shadow-lg shadow-slate-200/60 border border-slate-100 flex flex-col sm:flex-row items-center gap-2">
-                <div className="flex items-center gap-2 w-full sm:flex-1 px-3 py-1">
+              <div className="w-full max-w-lg bg-white p-1.5 sm:p-2 rounded-2xl shadow-md sm:shadow-lg shadow-slate-200/60 border border-slate-100 flex items-center gap-1 sm:gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-1 px-2 sm:px-3 py-1 min-w-0">
                   <button
                     type="button"
                     onClick={handleGetLocation}
@@ -819,65 +798,66 @@ export default function Explore() {
                     title="Detect current location via GPS"
                     className="p-1 rounded-lg hover:bg-orange-50 text-[#FF5A1F] transition-colors cursor-pointer shrink-0"
                   >
-                    <MapPin size={18} className={isDetectingLocation ? 'animate-bounce' : ''} />
+                    <MapPin size={16} className={isDetectingLocation ? 'animate-bounce' : ''} />
                   </button>
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={location ? `Delivery in ${location}...` : "Enter your delivery location"}
-                    className="w-full text-xs sm:text-sm font-medium text-slate-700 placeholder-slate-400 bg-transparent focus:outline-none"
+                    placeholder={location ? `In ${location}...` : "Enter delivery location..."}
+                    className="w-full text-xs sm:text-sm font-medium text-slate-700 placeholder-slate-400 bg-transparent focus:outline-none min-w-0"
                   />
                   <button
                     type="button"
                     onClick={handleGetLocation}
                     disabled={isDetectingLocation}
-                    className="text-[11px] font-bold text-[#FF5A1F] hover:underline whitespace-nowrap cursor-pointer shrink-0"
+                    className="text-[10px] sm:text-[11px] font-bold text-[#FF5A1F] hover:underline whitespace-nowrap cursor-pointer shrink-0"
                   >
-                    {isDetectingLocation ? 'Locating...' : 'Use GPS'}
+                    {isDetectingLocation ? '...' : 'GPS'}
                   </button>
                 </div>
                 <button
                   onClick={handleFindRestaurants}
-                  className="w-full sm:w-auto bg-[#FF5A1F] hover:bg-[#e04f1a] text-white font-bold px-6 py-3 rounded-xl shadow-md shadow-[#FF5A1F]/30 text-xs sm:text-sm shrink-0 transition-all cursor-pointer"
+                  className="bg-[#FF5A1F] hover:bg-[#e04f1a] text-white font-bold px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-xl shadow-md shadow-[#FF5A1F]/30 text-xs sm:text-sm shrink-0 transition-all cursor-pointer whitespace-nowrap"
                 >
-                  Find Restaurants
+                  <span className="sm:hidden">Search</span>
+                  <span className="hidden sm:inline">Find Restaurants</span>
                 </button>
               </div>
 
-              {/* Trust Highlights (3 Pills) */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-lg pt-1">
+              {/* Trust Highlights (3 Horizontal Pills) */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-lg pt-1">
                 
                 {/* Fast Delivery */}
-                <div className="flex items-center gap-2.5 bg-white/90 backdrop-blur-xs p-2.5 rounded-xl border border-slate-100 shadow-xs">
-                  <div className="w-8 h-8 rounded-full bg-orange-100 text-[#FF5A1F] flex items-center justify-center shrink-0">
-                    <Clock size={16} />
+                <div className="flex items-center gap-1.5 sm:gap-2.5 bg-white/95 backdrop-blur-xs p-2 sm:p-2.5 rounded-xl border border-slate-100 shadow-xs min-w-0">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-orange-100 text-[#FF5A1F] flex items-center justify-center shrink-0">
+                    <Clock size={15} />
                   </div>
-                  <div className="flex flex-col text-left">
-                    <span className="text-xs font-bold text-slate-900 leading-tight">Fast Delivery</span>
-                    <span className="text-[10px] text-slate-400 font-medium">In time delivery</span>
+                  <div className="flex flex-col text-left min-w-0">
+                    <span className="text-[10px] sm:text-xs font-bold text-slate-900 leading-tight truncate">Fast Delivery</span>
+                    <span className="text-[8px] sm:text-[10px] text-slate-400 font-medium truncate">In time delivery</span>
                   </div>
                 </div>
 
                 {/* Safe & Secure */}
-                <div className="flex items-center gap-2.5 bg-white/90 backdrop-blur-xs p-2.5 rounded-xl border border-slate-100 shadow-xs">
-                  <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-                    <ShieldCheck size={16} />
+                <div className="flex items-center gap-1.5 sm:gap-2.5 bg-white/95 backdrop-blur-xs p-2 sm:p-2.5 rounded-xl border border-slate-100 shadow-xs min-w-0">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                    <ShieldCheck size={15} />
                   </div>
-                  <div className="flex flex-col text-left">
-                    <span className="text-xs font-bold text-slate-900 leading-tight">Safe &amp; Secure</span>
-                    <span className="text-[10px] text-slate-400 font-medium">Secure payments</span>
+                  <div className="flex flex-col text-left min-w-0">
+                    <span className="text-[10px] sm:text-xs font-bold text-slate-900 leading-tight truncate">Safe &amp; Secure</span>
+                    <span className="text-[8px] sm:text-[10px] text-slate-400 font-medium truncate">Secure payments</span>
                   </div>
                 </div>
 
                 {/* Great Offers */}
-                <div className="flex items-center gap-2.5 bg-white/90 backdrop-blur-xs p-2.5 rounded-xl border border-slate-100 shadow-xs">
-                  <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
-                    <Tag size={16} />
+                <div className="flex items-center gap-1.5 sm:gap-2.5 bg-white/95 backdrop-blur-xs p-2 sm:p-2.5 rounded-xl border border-slate-100 shadow-xs min-w-0">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+                    <Tag size={15} />
                   </div>
-                  <div className="flex flex-col text-left">
-                    <span className="text-xs font-bold text-slate-900 leading-tight">Great Offers</span>
-                    <span className="text-[10px] text-slate-400 font-medium">Save more</span>
+                  <div className="flex flex-col text-left min-w-0">
+                    <span className="text-[10px] sm:text-xs font-bold text-slate-900 leading-tight truncate">Great Offers</span>
+                    <span className="text-[8px] sm:text-[10px] text-slate-400 font-medium truncate">Save more</span>
                   </div>
                 </div>
 
@@ -898,80 +878,127 @@ export default function Explore() {
       {/* ======================================================================= */}
       {/* 3. FEATURED RESTAURANTS (EXACT PIXEL RECREATION: 4 CARDS, 16:9, COMPACT)*/}
       {/* ======================================================================= */}
-      <section id="featured-restaurants" className="py-3 sm:py-4 bg-white">
+      <section id="featured-restaurants" className="py-4 sm:py-6 bg-white relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Section Header */}
           <div className="flex items-end justify-between mb-5 sm:mb-6">
             <div className="text-left">
-              <h2 className="text-xl sm:text-[22px] font-bold text-slate-900 tracking-tight">
-                Featured Restaurants
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl sm:text-[22px] font-bold text-slate-900 tracking-tight">
+                  Featured Restaurants
+                </h2>
+                {location && (
+                  <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-orange-50 border border-orange-200/80 text-[#FF5A1F] text-[11px] font-bold">
+                    <MapPin size={11} /> {location}
+                  </span>
+                )}
+              </div>
               <p className="text-xs sm:text-[13px] font-medium text-slate-500 mt-0.5">
-                Top rated restaurants near you
+                {location ? `Restaurants serving ${location}` : 'Top rated restaurants near you'}
               </p>
             </div>
-            <Link
-              to="/menu"
-              className="text-xs sm:text-sm font-bold text-[#FF5A1F] hover:underline flex items-center gap-1 group"
-            >
-              <span>View All</span>
-              <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-            </Link>
+            <div className="flex items-center gap-3">
+              {location && (
+                <button
+                  onClick={() => {
+                    setLocation('');
+                    localStorage.removeItem('userLocation');
+                    toast('Showing all restaurants', { icon: '🍽️' });
+                  }}
+                  className="text-xs font-semibold text-slate-400 hover:text-slate-700 cursor-pointer"
+                >
+                  Clear location
+                </button>
+              )}
+              <Link
+                to="/menu"
+                className="text-xs sm:text-sm font-bold text-[#FF5A1F] hover:underline flex items-center gap-1 group"
+              >
+                <span>View All</span>
+                <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            </div>
           </div>
 
-          {/* 4 Cards Responsive Grid (Single row on desktop) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            {displayedRestaurants.slice(0, 4).map((rest, index) => (
-              <div
-                key={rest._id}
-                onClick={() => navigate(`/restaurant/${rest._id}`)}
-                className="group bg-white rounded-xl border border-slate-200/80 overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer text-left reveal-on-scroll"
-                style={{ transitionDelay: `${index * 50}ms` }}
+          {/* 4 Cards Responsive Grid or Empty State */}
+          {displayedRestaurants.length === 0 ? (
+            <div className="bg-slate-50 rounded-2xl border border-dashed border-slate-200 p-8 sm:p-12 text-center max-w-xl mx-auto space-y-3">
+              <div className="w-12 h-12 rounded-full bg-orange-100 text-[#FF5A1F] flex items-center justify-center mx-auto">
+                <MapPin size={24} />
+              </div>
+              <h3 className="text-base font-bold text-slate-900">No restaurants currently detected in "{location}"</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                We couldn't find active restaurants registered in this exact area yet. You can explore all our partner outlets or search another city.
+              </p>
+              <button
+                onClick={() => {
+                  setLocation('');
+                  localStorage.removeItem('userLocation');
+                }}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#FF5A1F] hover:bg-[#e04f1a] text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
               >
-                {/* 16:9 Cover Image with Optional Badge */}
-                <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
-                  <img
-                    src={rest.image}
-                    alt={rest.name}
-                    className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                  {rest.badge && (
-                    <div className={`absolute top-2.5 left-2.5 text-[10px] font-bold px-2 py-0.5 rounded shadow-xs ${rest.badgeColor}`}>
-                      {rest.badge}
-                    </div>
-                  )}
-                </div>
-
-                {/* Details (Compact spacing & exact typography) */}
-                <div className="p-3 space-y-1">
-                  {/* Rating & Delivery Time */}
-                  <div className="flex items-center gap-1 text-xs text-slate-500 font-semibold">
-                    <div className="flex items-center gap-1 text-slate-800 font-bold">
-                      <Star size={12} className="fill-amber-400 text-amber-400" />
-                      <span>{rest.rating}</span>
-                    </div>
-                    <span className="text-slate-300 mx-1">•</span>
-                    <div className="flex items-center gap-1 text-slate-500">
-                      <Clock size={11} className="text-slate-400" />
-                      <span className="text-[11px] font-medium">{rest.deliveryTime}</span>
-                    </div>
+                <span>Explore All Outlets</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+              {displayedRestaurants.slice(0, 4).map((rest, index) => (
+                <div
+                  key={rest._id}
+                  onClick={() => navigate(`/restaurant/${rest._id}`)}
+                  className="group bg-white rounded-xl border border-slate-200/80 overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer text-left reveal-on-scroll"
+                  style={{ transitionDelay: `${index * 50}ms` }}
+                >
+                  {/* 16:9 Cover Image with Optional Badge */}
+                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
+                    <img
+                      src={rest.image}
+                      alt={rest.name}
+                      className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                    {rest.badge && (
+                      <div className={`absolute top-2.5 left-2.5 text-[10px] font-bold px-2 py-0.5 rounded shadow-xs ${rest.badgeColor}`}>
+                        {rest.badge}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Name */}
-                  <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 group-hover:text-[#FF5A1F] transition-colors line-clamp-1">
-                    {rest.name}
-                  </h3>
+                  {/* Details (Compact spacing & exact typography) */}
+                  <div className="p-3 space-y-1">
+                    {/* Rating & Delivery Time */}
+                    <div className="flex items-center gap-1 text-xs text-slate-500 font-semibold">
+                      <div className="flex items-center gap-1 text-slate-800 font-bold">
+                        <Star size={12} className="fill-amber-400 text-amber-400" />
+                        <span>{rest.rating}</span>
+                      </div>
+                      <span className="text-slate-300 mx-1">•</span>
+                      <div className="flex items-center gap-1 text-slate-500">
+                        <Clock size={11} className="text-slate-400" />
+                        <span className="text-[11px] font-medium">{rest.deliveryTime}</span>
+                      </div>
+                    </div>
 
-                  {/* Cuisines */}
-                  <p className="text-xs text-slate-400 font-medium line-clamp-1">
-                    {rest.cuisines}
-                  </p>
+                    {/* Name */}
+                    <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 group-hover:text-[#FF5A1F] transition-colors line-clamp-1">
+                      {rest.name}
+                    </h3>
+
+                    {/* Cuisines & Location pill */}
+                    <div className="flex items-center justify-between text-xs text-slate-400 font-medium">
+                      <p className="line-clamp-1">{rest.cuisines}</p>
+                      {rest.city && (
+                        <span className="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded shrink-0 ml-1">
+                          {rest.city}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
         </div>
       </section>
@@ -1002,8 +1029,8 @@ export default function Explore() {
             </button>
           </div>
 
-          {/* 8 Compact Category Tiles (Single row on desktop) */}
-          <div className="grid grid-cols-2 xs:grid-cols-4 sm:grid-cols-8 gap-3 sm:gap-3.5">
+          {/* 8 Compact Category Tiles (Horizontal scroll on mobile, grid on desktop) */}
+          <div className="flex sm:grid sm:grid-cols-8 overflow-x-auto sm:overflow-x-visible pb-2 sm:pb-0 gap-3 sm:gap-3.5 no-scrollbar scroll-smooth">
             {CUISINES_LIST.map((c) => {
               const isActive = selectedCuisine === c.id;
 
@@ -1011,7 +1038,7 @@ export default function Explore() {
                 <button
                   key={c.id}
                   onClick={() => setSelectedCuisine(c.id)}
-                  className={`flex flex-col items-center justify-center p-3 sm:p-3.5 rounded-xl transition-all duration-200 cursor-pointer text-center group ${
+                  className={`flex flex-col items-center justify-center p-2.5 sm:p-3.5 rounded-xl transition-all duration-200 cursor-pointer text-center group shrink-0 min-w-[76px] sm:min-w-0 ${
                     isActive
                       ? 'bg-[#FF5A1F] text-white shadow-md shadow-[#FF5A1F]/20 scale-102'
                       : 'bg-white text-slate-700 border border-slate-200/80 hover:border-orange-200 hover:shadow-xs'
@@ -1075,123 +1102,145 @@ export default function Explore() {
             </Link>
           </div>
 
-          {/* 5-Column Grid (Single row on desktop) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
-            {displayedDishes.slice(0, 5).map((dish, index) => {
-              const isFav = wishlist?.some(item => (item._id || item.id) === (dish._id || dish.id));
+          {/* Responsive Grid or Empty State */}
+          {displayedDishes.length === 0 ? (
+            <div className="bg-slate-50 rounded-2xl border border-dashed border-slate-200 p-8 sm:p-10 text-center max-w-md mx-auto space-y-2">
+              <div className="w-10 h-10 rounded-full bg-orange-100 text-[#FF5A1F] flex items-center justify-center mx-auto">
+                <UtensilsCrossed size={18} />
+              </div>
+              <h3 className="text-sm font-bold text-slate-800">No dishes available right now</h3>
+              <p className="text-xs text-slate-500">
+                Menu items will appear here as soon as registered restaurants publish their live menus.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-4">
+              {displayedDishes.slice(0, 5).map((dish, index) => {
+                const isFav = wishlist?.some(item => (item._id || item.id) === (dish._id || dish.id));
 
-              return (
-                <div
-                  key={dish._id}
-                  className="bg-white rounded-xl border border-slate-200/80 p-3 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between text-left reveal-on-scroll"
-                  style={{ transitionDelay: `${index * 40}ms` }}
-                >
-                  <div>
-                    {/* Square Image with Green Discount Badge & Wishlist Heart */}
-                    <div className="relative aspect-square rounded-lg overflow-hidden bg-slate-50 mb-2.5">
-                      <img
-                        src={dish.image}
-                        alt={dish.name}
-                        className="w-full h-full object-cover hover:scale-103 transition-transform duration-300"
-                        loading="lazy"
-                      />
-                      {dish.discount && (
-                        <div className="absolute top-2 left-2 bg-[#10B981] text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-xs">
-                          {dish.discount}
-                        </div>
-                      )}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleWishlist(dish);
-                          toast(isFav ? 'Removed from favourites' : 'Added to favourites!', { icon: '❤️' });
-                        }}
-                        className={`absolute top-2 right-2 p-1.5 rounded-full backdrop-blur-xs transition-colors cursor-pointer ${
-                          isFav ? 'bg-red-500 text-white shadow-xs' : 'bg-white/90 text-slate-600 hover:text-red-500 shadow-xs'
-                        }`}
-                        aria-label="Wishlist"
-                      >
-                        <Heart size={12} className={isFav ? 'fill-white' : ''} />
-                      </button>
-                    </div>
-
-                    {/* Dish Info */}
-                    <div className="space-y-0.5">
-                      <h4 className="text-[13px] sm:text-sm font-bold text-slate-900 line-clamp-1">
-                        {dish.name}
-                      </h4>
-                      <div className="flex items-center gap-1 text-xs text-slate-600 font-semibold">
-                        <Star size={11} className="fill-amber-400 text-amber-400" />
-                        <span>{dish.rating}</span>
-                      </div>
-                      <div className="flex items-baseline gap-1.5 pt-1">
-                        <span className="text-base font-extrabold text-slate-900">
-                          ₹{dish.price}
-                        </span>
-                        {dish.originalPrice && (
-                          <span className="text-xs font-semibold text-slate-400 line-through">
-                            ₹{dish.originalPrice}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Add to Cart Button (Compact & exact orange pill) */}
-                  <button
-                    onClick={() => handleAddToCart(dish)}
-                    className="w-full mt-3 bg-[#FF5A1F] hover:bg-[#e04f1a] active:scale-98 text-white font-bold py-2 px-3 rounded-lg text-xs transition-colors shadow-xs cursor-pointer"
+                return (
+                  <div
+                    key={dish._id}
+                    className="bg-white rounded-xl border border-slate-200/80 p-3 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between text-left reveal-on-scroll"
+                    style={{ transitionDelay: `${index * 40}ms` }}
                   >
-                    Add to Cart
-                  </button>
-                </div>
-              );
-            })}
-          </div>
+                    <div>
+                      {/* Square Image with Green Discount Badge & Wishlist Heart */}
+                      <div className="relative aspect-square rounded-lg overflow-hidden bg-slate-50 mb-2.5">
+                        <img
+                          src={dish.image}
+                          alt={dish.name}
+                          className="w-full h-full object-cover hover:scale-103 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                        {dish.discount && (
+                          <div className="absolute top-2 left-2 bg-[#10B981] text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-xs">
+                            {dish.discount}
+                          </div>
+                        )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleWishlist(dish);
+                            toast(isFav ? 'Removed from favourites' : 'Added to favourites!', { icon: '❤️' });
+                          }}
+                          className={`absolute top-2 right-2 p-1.5 rounded-full backdrop-blur-xs transition-colors cursor-pointer ${
+                            isFav ? 'bg-red-500 text-white shadow-xs' : 'bg-white/90 text-slate-600 hover:text-red-500 shadow-xs'
+                          }`}
+                          aria-label="Wishlist"
+                        >
+                          <Heart size={12} className={isFav ? 'fill-white' : ''} />
+                        </button>
+                      </div>
+
+                      {/* Dish Info */}
+                      <div className="space-y-0.5">
+                        <h4 className="text-[13px] sm:text-sm font-bold text-slate-900 line-clamp-1">
+                          {dish.name}
+                        </h4>
+                        <div className="flex items-center gap-1 text-xs text-slate-600 font-semibold">
+                          <Star size={11} className="fill-amber-400 text-amber-400" />
+                          <span>{dish.rating}</span>
+                        </div>
+                        <div className="flex items-baseline gap-1.5 pt-1">
+                          <span className="text-base font-extrabold text-slate-900">
+                            ₹{dish.price}
+                          </span>
+                          {dish.originalPrice && (
+                            <span className="text-xs font-semibold text-slate-400 line-through">
+                              ₹{dish.originalPrice}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Add to Cart Button */}
+                    <button
+                      onClick={() => handleAddToCart(dish)}
+                      className="w-full mt-3 bg-[#FF5A1F] hover:bg-[#e04f1a] active:scale-98 text-white font-bold py-2 px-3 rounded-lg text-xs transition-colors shadow-xs cursor-pointer"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
         </div>
       </section>
 
 
       {/* ======================================================================= */}
-      {/* 6. PROMOTIONAL BANNER (BURGER/FRIES, FLAT 20% OFF, PERKS)               */}
+      {/* 6. PROMOTIONAL BANNER (DYNAMIC OFFER / VOUCHER)                          */}
       {/* ======================================================================= */}
-      <section id="offers" className="py-3 sm:py-4 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative rounded-3xl bg-gradient-to-r from-[#FFF5ED] via-[#FFF9F3] to-[#FFF5ED] border border-orange-200/60 p-6 sm:p-10 shadow-xs overflow-hidden">
+      <section id="offers" className="py-2.5 sm:py-5 bg-white">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="relative rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#FFF5ED] via-[#FFF9F3] to-[#FFF5ED] border border-orange-200/60 p-4 sm:p-8 lg:p-10 shadow-xs overflow-hidden">
             
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-center relative z-10">
               
-              {/* Left Column */}
-              <div className="lg:col-span-5 text-left space-y-3.5">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-orange-200 text-orange-700 text-xs font-bold shadow-xs">
+              {/* Left Column: Heading & Coupon */}
+              <div className="lg:col-span-5 text-center lg:text-left flex flex-col items-center lg:items-start space-y-2 sm:space-y-4">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white border border-orange-200 text-orange-700 text-[11px] sm:text-xs font-bold shadow-xs">
                   <span>🌿</span>
                   <span>Special Offer</span>
                 </div>
 
-                <h3 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
-                  Flat 20% OFF<br />
-                  <span className="text-slate-500 font-semibold text-xl sm:text-2xl">on your first order</span>
+                <h3 className="text-xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+                  {activeOffer ? (
+                    activeOffer.type === 'Percentage' ? `Flat ${activeOffer.discountValue}% OFF` :
+                    activeOffer.type === 'Fixed Amount' ? `Flat ₹${activeOffer.discountValue} OFF` :
+                    'Free Express Delivery'
+                  ) : (
+                    'Special Partner Offers'
+                  )}<br />
+                  <span className="text-slate-500 font-semibold text-base sm:text-xl lg:text-2xl">
+                    {activeOffer?.description || (activeOffer?.minSpend > 0 ? `on orders above ₹${activeOffer.minSpend}` : 'available on your next order')}
+                  </span>
                 </h3>
 
                 {/* Coupon Code Pill */}
-                <div className="pt-1">
-                  <div
-                    onClick={() => handleCopyCoupon('WELCOME20')}
-                    className="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-white border border-dashed border-[#FF5A1F] text-[#FF5A1F] font-mono font-bold text-xs sm:text-sm shadow-xs cursor-pointer hover:bg-orange-50/50 transition-colors group"
-                    title="Click to copy coupon code"
-                  >
-                    <span>Use Code:</span>
-                    <span className="text-slate-900 tracking-wider">WELCOME20</span>
-                    <Copy size={13} className="text-[#FF5A1F] group-hover:scale-110 transition-transform" />
-                    {copiedCoupon && <span className="text-[10px] text-emerald-600 font-bold ml-1">Copied!</span>}
+                {activeOffer?.code && (
+                  <div className="pt-0.5">
+                    <div
+                      onClick={() => handleCopyCoupon(activeOffer.code)}
+                      className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-white border border-dashed border-[#FF5A1F] text-[#FF5A1F] font-mono font-bold text-xs sm:text-sm shadow-xs cursor-pointer hover:bg-orange-50/50 transition-colors group"
+                      title="Click to copy coupon code"
+                    >
+                      <span>Use Code:</span>
+                      <span className="text-slate-900 tracking-wider">{activeOffer.code}</span>
+                      <Copy size={13} className="text-[#FF5A1F] group-hover:scale-110 transition-transform" />
+                      {copiedCoupon && <span className="text-[10px] text-emerald-600 font-bold ml-1">Copied!</span>}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
-              {/* Center Column: Mouthwatering Burger & Fries Photo */}
-              <div className="lg:col-span-4 flex items-center justify-center">
-                <div className="relative w-52 h-52 sm:w-64 sm:h-64 rounded-full overflow-hidden shadow-xl border-4 border-white">
+              {/* Center Column: Burger Photo */}
+              <div className="lg:col-span-4 flex items-center justify-center py-1 sm:py-2 lg:py-0">
+                <div className="relative w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 rounded-full overflow-hidden shadow-lg sm:shadow-xl border-3 sm:border-4 border-white shrink-0">
                   <img
                     src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop"
                     alt="Flame grilled burger with crispy fries and dips"
@@ -1201,39 +1250,39 @@ export default function Explore() {
                 </div>
               </div>
 
-              {/* Right Column: 3 Perks */}
-              <div className="lg:col-span-3 flex flex-col space-y-4 text-left">
+              {/* Right Column: 3 Perks in a balanced responsive grid */}
+              <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-2 sm:gap-4 w-full">
                 
                 {/* Free Delivery */}
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#FF5A1F] text-white flex items-center justify-center shrink-0 shadow-xs">
-                    <Truck size={17} />
+                <div className="flex items-center gap-2.5 sm:gap-3 bg-white/80 lg:bg-transparent p-2 sm:p-2.5 lg:p-0 rounded-xl sm:rounded-2xl lg:rounded-none border border-orange-100/60 lg:border-none shadow-xs lg:shadow-none text-left">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#FF5A1F] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Truck size={15} />
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs sm:text-sm font-bold text-slate-900">Free Delivery</span>
-                    <span className="text-[11px] text-slate-400 font-medium">on orders above ₹199</span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs sm:text-sm font-bold text-slate-900 truncate">Free Delivery</span>
+                    <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate">on orders above ₹199</span>
                   </div>
                 </div>
 
                 {/* Exclusive Deals */}
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
-                    <Sparkles size={17} />
+                <div className="flex items-center gap-2.5 sm:gap-3 bg-white/80 lg:bg-transparent p-2 sm:p-2.5 lg:p-0 rounded-xl sm:rounded-2xl lg:rounded-none border border-orange-100/60 lg:border-none shadow-xs lg:shadow-none text-left">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Sparkles size={15} />
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs sm:text-sm font-bold text-slate-900">Exclusive Deals</span>
-                    <span className="text-[11px] text-slate-400 font-medium">only on our app</span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs sm:text-sm font-bold text-slate-900 truncate">Exclusive Deals</span>
+                    <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate">only on our app</span>
                   </div>
                 </div>
 
                 {/* Easy Payments */}
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#10B981] text-white flex items-center justify-center shrink-0 shadow-xs">
-                    <CreditCard size={17} />
+                <div className="flex items-center gap-2.5 sm:gap-3 bg-white/80 lg:bg-transparent p-2 sm:p-2.5 lg:p-0 rounded-xl sm:rounded-2xl lg:rounded-none border border-orange-100/60 lg:border-none shadow-xs lg:shadow-none text-left">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#10B981] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <CreditCard size={15} />
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs sm:text-sm font-bold text-slate-900">Easy Payments</span>
-                    <span className="text-[11px] text-slate-400 font-medium">UPI, Cards, Wallets</span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs sm:text-sm font-bold text-slate-900 truncate">Easy Payments</span>
+                    <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate">UPI, Cards, Wallets</span>
                   </div>
                 </div>
 
@@ -1247,13 +1296,13 @@ export default function Explore() {
 
 
       {/* ======================================================================= */}
-      {/* 7. HOW IT WORKS (4 STEPS NUMBERED 1, 2, 3, 4)                           */}
+      {/* 7. HOW IT WORKS (4 STEPS BALANCED 2x2 ON MOBILE, 4-COL ON DESKTOP)      */}
       {/* ======================================================================= */}
-      <section id="how-it-works" className="py-3 sm:py-5 bg-white">
+      <section id="how-it-works" className="py-4 sm:py-6 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Header */}
-          <div className="mb-5 sm:mb-6 text-left">
+          <div className="mb-6 text-center sm:text-left">
             <h2 className="text-xl sm:text-[22px] font-bold text-slate-900 tracking-tight">
               How It Works
             </h2>
@@ -1262,70 +1311,74 @@ export default function Explore() {
             </p>
           </div>
 
-          {/* 4 Steps Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* 4 Steps: 2x2 Grid on Mobile, 4 Columns on Large Screens */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             
             {/* Step 1: Choose Restaurant */}
-            <div className="flex flex-col items-center text-center space-y-3">
+            <div className="flex flex-col items-center text-center p-3 sm:p-4 rounded-2xl bg-orange-50/30 sm:bg-transparent border border-orange-100/50 sm:border-none space-y-2.5 sm:space-y-3">
               <div className="relative">
-                <div className="w-14 h-14 rounded-full bg-orange-50 border border-orange-200 text-[#FF5A1F] flex items-center justify-center shadow-xs">
-                  <Search size={22} />
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-orange-50 border border-orange-200 text-[#FF5A1F] flex items-center justify-center shadow-xs">
+                  <Search size={20} className="sm:hidden" />
+                  <Search size={22} className="hidden sm:block" />
                 </div>
                 <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#FF5A1F] text-white text-[11px] font-black flex items-center justify-center shadow-xs">
                   1
                 </div>
               </div>
-              <h4 className="text-sm sm:text-base font-bold text-slate-900">Choose Restaurant</h4>
-              <p className="text-xs text-slate-400 font-medium max-w-[200px] leading-relaxed">
-                Browse from a variety of restaurants near you.
+              <h4 className="text-xs sm:text-base font-bold text-slate-900">Choose Restaurant</h4>
+              <p className="text-[11px] sm:text-xs text-slate-500 sm:text-slate-400 font-medium max-w-[200px] leading-relaxed">
+                Browse restaurants near you.
               </p>
             </div>
 
             {/* Step 2: Select Food */}
-            <div className="flex flex-col items-center text-center space-y-3">
+            <div className="flex flex-col items-center text-center p-3 sm:p-4 rounded-2xl bg-orange-50/30 sm:bg-transparent border border-orange-100/50 sm:border-none space-y-2.5 sm:space-y-3">
               <div className="relative">
-                <div className="w-14 h-14 rounded-full bg-orange-50 border border-orange-200 text-[#FF5A1F] flex items-center justify-center shadow-xs">
-                  <UtensilsCrossed size={22} />
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-orange-50 border border-orange-200 text-[#FF5A1F] flex items-center justify-center shadow-xs">
+                  <UtensilsCrossed size={20} className="sm:hidden" />
+                  <UtensilsCrossed size={22} className="hidden sm:block" />
                 </div>
                 <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#FF5A1F] text-white text-[11px] font-black flex items-center justify-center shadow-xs">
                   2
                 </div>
               </div>
-              <h4 className="text-sm sm:text-base font-bold text-slate-900">Select Food</h4>
-              <p className="text-xs text-slate-400 font-medium max-w-[200px] leading-relaxed">
-                Add your favourite dishes to the cart.
+              <h4 className="text-xs sm:text-base font-bold text-slate-900">Select Food</h4>
+              <p className="text-[11px] sm:text-xs text-slate-500 sm:text-slate-400 font-medium max-w-[200px] leading-relaxed">
+                Add dishes to your cart.
               </p>
             </div>
 
             {/* Step 3: Make Payment */}
-            <div className="flex flex-col items-center text-center space-y-3">
+            <div className="flex flex-col items-center text-center p-3 sm:p-4 rounded-2xl bg-orange-50/30 sm:bg-transparent border border-orange-100/50 sm:border-none space-y-2.5 sm:space-y-3">
               <div className="relative">
-                <div className="w-14 h-14 rounded-full bg-orange-50 border border-orange-200 text-[#FF5A1F] flex items-center justify-center shadow-xs">
-                  <CreditCard size={22} />
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-orange-50 border border-orange-200 text-[#FF5A1F] flex items-center justify-center shadow-xs">
+                  <CreditCard size={20} className="sm:hidden" />
+                  <CreditCard size={22} className="hidden sm:block" />
                 </div>
                 <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#FF5A1F] text-white text-[11px] font-black flex items-center justify-center shadow-xs">
                   3
                 </div>
               </div>
-              <h4 className="text-sm sm:text-base font-bold text-slate-900">Make Payment</h4>
-              <p className="text-xs text-slate-400 font-medium max-w-[200px] leading-relaxed">
-                Choose your preferred payment method.
+              <h4 className="text-xs sm:text-base font-bold text-slate-900">Make Payment</h4>
+              <p className="text-[11px] sm:text-xs text-slate-500 sm:text-slate-400 font-medium max-w-[200px] leading-relaxed">
+                Quick &amp; secure checkout.
               </p>
             </div>
 
             {/* Step 4: Enjoy Food */}
-            <div className="flex flex-col items-center text-center space-y-3">
+            <div className="flex flex-col items-center text-center p-3 sm:p-4 rounded-2xl bg-emerald-50/30 sm:bg-transparent border border-emerald-100/50 sm:border-none space-y-2.5 sm:space-y-3">
               <div className="relative">
-                <div className="w-14 h-14 rounded-full bg-emerald-50 border border-emerald-200 text-[#10B981] flex items-center justify-center shadow-xs">
-                  <Truck size={22} />
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-emerald-50 border border-emerald-200 text-[#10B981] flex items-center justify-center shadow-xs">
+                  <Truck size={20} className="sm:hidden" />
+                  <Truck size={22} className="hidden sm:block" />
                 </div>
                 <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#10B981] text-white text-[11px] font-black flex items-center justify-center shadow-xs">
                   4
                 </div>
               </div>
-              <h4 className="text-sm sm:text-base font-bold text-slate-900">Enjoy Food</h4>
-              <p className="text-xs text-slate-400 font-medium max-w-[200px] leading-relaxed">
-                Get your food delivered at your doorstep.
+              <h4 className="text-xs sm:text-base font-bold text-slate-900">Enjoy Food</h4>
+              <p className="text-[11px] sm:text-xs text-slate-500 sm:text-slate-400 font-medium max-w-[200px] leading-relaxed">
+                Delivered right to your door.
               </p>
             </div>
 
@@ -1379,121 +1432,69 @@ export default function Explore() {
             </div>
           </div>
 
-          {/* Review Cards (Shows 3 at a time or slides dynamically) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {customerReviews.slice(reviewCarouselIndex, reviewCarouselIndex + 3).map((rev) => (
-              <div
-                key={rev.id || rev._id}
-                className="bg-white p-5 rounded-2xl border border-slate-100 shadow-xs hover:shadow-md transition-all text-left flex flex-col justify-between"
+          {/* Review Cards (Shows 3 at a time or slides dynamically, or empty state) */}
+          {customerReviews.length === 0 ? (
+            <div className="bg-white p-8 sm:p-10 rounded-2xl border border-dashed border-slate-200 text-center max-w-md mx-auto space-y-3">
+              <div className="w-12 h-12 rounded-full bg-orange-50 text-[#FF5A1F] flex items-center justify-center mx-auto">
+                <Star size={20} className="fill-[#FF5A1F]" />
+              </div>
+              <h4 className="text-sm font-bold text-slate-800">No customer reviews yet</h4>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Be the first to share your dining experience! Leave your feedback directly from your customer dashboard.
+              </p>
+              <Link
+                to="/profile"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#FF5A1F] hover:bg-[#e04f1a] text-white rounded-xl text-xs font-bold transition-all shadow-xs"
               >
-                <div className="space-y-2.5">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={rev.avatar}
-                      alt={rev.name}
-                      onError={(e) => {
-                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(rev.name)}&background=FF5A1F&color=fff`;
-                      }}
-                      className="w-10 h-10 rounded-full object-cover border border-orange-100"
-                    />
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <h4 className="text-sm font-bold text-slate-900">{rev.name}</h4>
-                        {rev.createdAt && (
-                          <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded">
-                            Verified
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-0.5 text-amber-400">
-                        {[...Array(Number(rev.rating) || 5)].map((_, i) => (
-                          <Star key={i} size={11} className="fill-amber-400" />
-                        ))}
+                Share Your Review
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {customerReviews.slice(reviewCarouselIndex, reviewCarouselIndex + 3).map((rev) => (
+                <div
+                  key={rev.id || rev._id}
+                  className="bg-white p-5 rounded-2xl border border-slate-100 shadow-xs hover:shadow-md transition-all text-left flex flex-col justify-between"
+                >
+                  <div className="space-y-2.5">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={rev.avatar}
+                        alt={rev.name}
+                        onError={(e) => {
+                          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(rev.name)}&background=FF5A1F&color=fff`;
+                        }}
+                        className="w-10 h-10 rounded-full object-cover border border-orange-100"
+                      />
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="text-sm font-bold text-slate-900">{rev.name}</h4>
+                          {rev.createdAt && (
+                            <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded">
+                              Verified
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-0.5 text-amber-400">
+                          {[...Array(Number(rev.rating) || 5)].map((_, i) => (
+                            <Star key={i} size={11} className="fill-amber-400" />
+                          ))}
+                        </div>
                       </div>
                     </div>
+                    <p className="text-xs text-slate-500 font-medium leading-relaxed italic">
+                      "{rev.text}"
+                    </p>
                   </div>
-                  <p className="text-xs text-slate-500 font-medium leading-relaxed italic">
-                    "{rev.text}"
-                  </p>
                 </div>
-              </div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-
-      {/* ======================================================================= */}
-      {/* 9. NEWSLETTER SECTION (LIGHT MINT BANNER WITH EMAIL SUBSCRIBE)          */}
-      {/* ======================================================================= */}
-      <section className="py-3 sm:py-4 bg-[#FAFAF8]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-2xl bg-gradient-to-r from-[#ECFDF5] via-[#F0FDF4] to-[#ECFDF5] border border-emerald-100 p-5 sm:p-7 flex flex-col md:flex-row items-center justify-between gap-5">
-            
-            {/* Left Content */}
-            <div className="flex items-center gap-3.5 text-left">
-              <div className="w-11 h-11 rounded-xl bg-[#047857] text-white flex items-center justify-center shrink-0 shadow-xs">
-                <Smartphone size={22} />
-              </div>
-              <div>
-                <h3 className="text-sm sm:text-base font-extrabold text-slate-900">
-                  Get Exclusive Offers &amp; Updates
-                </h3>
-                <p className="text-xs text-slate-500 font-medium">
-                  Subscribe to our newsletter and never miss a deal.
-                </p>
-              </div>
+              ))}
             </div>
+          )}
 
-            {/* Form & Success State */}
-            {subscribed ? (
-              <div className="flex items-center gap-3 bg-emerald-100/70 border border-emerald-300 text-emerald-800 px-4 py-2.5 rounded-xl text-xs font-semibold">
-                <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0">
-                  <Check size={12} strokeWidth={3} />
-                </div>
-                <span>You're subscribed! Keep an eye on your inbox.</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    localStorage.removeItem('foodnest_newsletter_subscribed');
-                    setSubscribed(false);
-                  }}
-                  className="ml-2 text-emerald-700 hover:text-emerald-950 underline font-bold cursor-pointer text-[11px]"
-                >
-                  Change
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubscribe} noValidate className="w-full md:w-auto flex items-center gap-2">
-                <input
-                  type="email"
-                  placeholder="Enter your email address"
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  disabled={isSubscribing}
-                  className="w-full sm:w-64 px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#047857] disabled:opacity-60 transition-all"
-                />
-                <button
-                  type="submit"
-                  disabled={isSubscribing}
-                  className="bg-[#047857] hover:bg-[#065F46] disabled:opacity-75 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all shadow-xs cursor-pointer shrink-0 flex items-center gap-1.5"
-                >
-                  {isSubscribing ? (
-                    <>
-                      <Loader2 size={13} className="animate-spin" />
-                      <span>Subscribing...</span>
-                    </>
-                  ) : (
-                    <span>Subscribe</span>
-                  )}
-                </button>
-              </form>
-            )}
-
-          </div>
         </div>
       </section>
+
+
 
 
       {/* ======================================================================= */}

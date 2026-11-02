@@ -127,6 +127,16 @@ export const getRestaurants = async (req, res) => {
                     rest.deliverySettings.enabled = true;
                 }
             }
+
+            // Attach active branches and primary location details for customer location-based filtering
+            const branches = await Branch.find({ restaurantId: rest._id, isActive: true }).lean();
+            rest.branches = branches;
+            const primaryBranch = branches[0];
+            rest.city = primaryBranch?.location?.city || '';
+            rest.state = primaryBranch?.location?.state || '';
+            rest.country = primaryBranch?.location?.country || '';
+            rest.address = rest.address || primaryBranch?.location?.address || '';
+
             return rest;
         }));
         

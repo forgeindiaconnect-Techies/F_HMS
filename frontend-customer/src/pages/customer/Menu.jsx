@@ -7,19 +7,6 @@ import { useCustomerAuth } from '../../context/CustomerAuthContext';
 const categories = ['All', 'Starters', 'Salads', 'Mains', 'Desserts', 'Beverages'];
 
 
-const fallbackMenu = [
-    { _id: 'm1', name: 'Margherita Pizza', price: 299, category: 'Mains', description: 'Classic cheese and tomato pizza with basil.', image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80&w=800', rating: 4.8, reviews: 154, tags: ['Vegetarian', 'Popular'] },
-    { _id: 'm2', name: 'Pepperoni Pizza', price: 399, category: 'Mains', description: 'Double pepperoni and mozzarella cheese.', image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=800', rating: 4.7, reviews: 98, tags: ['Popular'] },
-    { _id: 'm4', name: 'Classic Cheeseburger', price: 199, category: 'Mains', description: 'Flame-grilled beef patty, cheddar, lettuce, tomato, pickles.', image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800', rating: 4.6, reviews: 112, tags: ['Popular'] },
-    { _id: 'm6', name: 'Crispy French Fries', price: 129, category: 'Starters', description: 'Golden, crispy potatoes served with a side of ketchup.', image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?q=80&w=800', rating: 4.4, reviews: 76, tags: ['Vegetarian'] },
-    { _id: 'm7', name: 'Greek Salad', price: 199, category: 'Salads', description: 'Fresh cucumbers, tomatoes, red onions, olives, and feta cheese.', image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=800', rating: 4.5, reviews: 45, tags: ['Vegetarian', 'Healthy'] },
-    { _id: 'm8', name: 'Caesar Salad', price: 219, category: 'Salads', description: 'Crisp romaine lettuce, parmesan cheese, and creamy caesar dressing.', image: 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?q=80&w=800', rating: 4.6, reviews: 62, tags: ['Healthy'] },
-    { _id: 'm12', name: 'Paneer Tikka', price: 280, category: 'Starters', description: 'Cottage cheese cubes marinated in spices and grilled.', image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=800', rating: 4.8, reviews: 142, tags: ['Vegetarian', 'Popular'] },
-    { _id: 'm14', name: 'Orange Juice', price: 119, category: 'Beverages', description: 'Freshly squeezed natural orange juice.', image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?q=80&w=800', rating: 4.5, reviews: 54, tags: ['Healthy'] },
-    { _id: 'm15', name: 'Mango Smoothie', price: 139, category: 'Beverages', description: 'Thick, refreshing mango and yogurt smoothie.', image: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?q=80&w=800', rating: 4.7, reviews: 83, tags: ['Vegetarian'] },
-    { _id: 'm16', name: 'Chocolate Fudge Cake', price: 169, category: 'Desserts', description: 'Decadent chocolate cake with hot chocolate syrup.', image: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=800', rating: 4.8, reviews: 120, tags: ['Vegetarian', 'Popular'] }
-];
-
 const Menu = () => {
     const { addToCart, wishlist, toggleWishlist } = useCart();
     const { api } = useCustomerAuth();
@@ -34,12 +21,10 @@ const Menu = () => {
         const fetchMenu = async () => {
             try {
                 const { data } = await api.get('/menu');
-                const apiNames = new Set(data.map(i => i.name.toLowerCase()));
-                const nonDuplicateFallbacks = fallbackMenu.filter(i => !apiNames.has(i.name.toLowerCase()));
-                setMenuItems([...data, ...nonDuplicateFallbacks]);
+                setMenuItems(Array.isArray(data) ? data : []);
             } catch (error) {
                 console.error('Failed to fetch menu', error);
-                setMenuItems(fallbackMenu);
+                setMenuItems([]);
             } finally {
                 setLoading(false);
             }
@@ -184,7 +169,7 @@ const Menu = () => {
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 sm:gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4">
                         {filteredMenu.map(item => {
                             const isFav = wishlist?.some(w => (w._id || w.id) === (item._id || item.id));
                             const discountBadge = item.discount || (item.tags?.includes('Popular') ? '20% OFF' : null);
