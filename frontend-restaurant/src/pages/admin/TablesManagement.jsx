@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Plus, Search, Trash2, Store, QrCode, X, Printer, Download, Users } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../../components/ConfirmModal';
 import { useAuth } from '../../context/AuthContext';
@@ -125,8 +126,9 @@ const TablesManagement = () => {
 
     const handlePrintQr = () => {
         const printWindow = window.open('', '_blank');
-        const qrUrl = getQrImageSrc(selectedTable);
         const codeUrl = getQrUrl(selectedTable);
+        const svgEl = document.getElementById(`table-qr-svg-${selectedTable?._id || selectedTable?.tableNumber}`);
+        const svgHtml = svgEl ? svgEl.outerHTML : '';
 
         printWindow.document.write(`
             <html>
@@ -157,10 +159,6 @@ const TablesManagement = () => {
                             color: #6b7280;
                             margin-bottom: 25px;
                         }
-                        img {
-                            width: 250px;
-                            height: 250px;
-                        }
                         .instructions {
                             margin-top: 25px;
                             font-size: 14px;
@@ -169,14 +167,23 @@ const TablesManagement = () => {
                             text-transform: uppercase;
                             letter-spacing: 0.05em;
                         }
+                        .link {
+                            margin-top: 10px;
+                            font-size: 11px;
+                            color: #6b7280;
+                            word-break: break-all;
+                        }
                     </style>
                 </head>
                 <body>
                     <div class="qr-card">
                         <h1>TABLE ${selectedTable.tableNumber}</h1>
                         <h2>Capacity: ${selectedTable.capacity} guests</h2>
-                        <img src="${qrUrl}" alt="Table ${selectedTable.tableNumber} QR" />
+                        <div style="display:flex; justify-content:center; margin: 20px 0;">
+                            ${svgHtml}
+                        </div>
                         <p class="instructions">Scan to Order Menu</p>
+                        <p class="link">${codeUrl}</p>
                     </div>
                     <script>
                         window.onload = function() {
@@ -188,6 +195,22 @@ const TablesManagement = () => {
             </html>
         `);
         printWindow.document.close();
+    };
+
+    const handleDownloadQr = () => {
+        if (!selectedTable) return;
+        const svgEl = document.getElementById(`table-qr-svg-${selectedTable?._id || selectedTable?.tableNumber}`);
+        if (!svgEl) return;
+        const svgData = new XMLSerializer().serializeToString(svgEl);
+        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        const svgUrl = URL.createObjectURL(svgBlob);
+        const downloadLink = document.createElement('a');
+        downloadLink.href = svgUrl;
+        downloadLink.download = `table_${selectedTable.tableNumber}_qr.svg`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        URL.revokeObjectURL(svgUrl);
     };
 
     const filteredTables = tables.filter(t => 
@@ -270,10 +293,11 @@ const TablesManagement = () => {
                                 <div className="bg-green-50 border border-green-100 rounded-xl p-3 w-full">
                                     <p className="text-xs font-bold text-green-600 uppercase tracking-widest">Table {table.tableNumber}</p>
                                     <div className="bg-white p-2 rounded-lg mt-2 inline-block shadow-sm">
-                                        <img
-                                            src={getQrImageSrc(table)}
-                                            alt={`Table ${table.tableNumber} QR`}
-                                            className="w-28 h-28"
+                                        <QRCodeSVG
+                                            value={getQrUrl(table)}
+                                            size={112}
+                                            level="M"
+                                            includeMargin={false}
                                         />
                                     </div>
                                 </div>
@@ -434,11 +458,13 @@ const TablesManagement = () => {
                             <h3 className="text-2xl font-black text-emerald-800 tracking-wider">TABLE {selectedTable.tableNumber}</h3>
                             <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest mt-0.5">FoodNest QR Ordering</p>
                             
-                            <div className="bg-white p-4 rounded-xl border border-gray-150 mt-4 shadow-sm">
-                                <img 
-                                    src={getQrImageSrc(selectedTable)} 
-                                    alt={`Table ${selectedTable.tableNumber} QR Code`}
-                                    className="w-48 h-48"
+                            <div className="bg-white p-4 rounded-xl border border-gray-150 mt-4 shadow-sm inline-block">
+                                <QRCodeSVG
+                                    id={`table-qr-svg-${selectedTable?._id || selectedTable?.tableNumber}`}
+                                    value={getQrUrl(selectedTable)}
+                                    size={192}
+                                    level="H"
+                                    includeMargin={false}
                                 />
                             </div>
                         </div>
@@ -468,15 +494,12 @@ const TablesManagement = () => {
                             >
                                 <Printer size={16} /> Print Card
                             </button>
-                            <a 
-                                href={getQrImageSrc(selectedTable)} 
-                                download={`table_${selectedTable.tableNumber}_qr.png`}
-                                target="_blank"
-                                rel="noreferrer"
+                            <button 
+                                onClick={handleDownloadQr}
                                 className="py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-1.5 border border-gray-200"
                             >
                                 <Download size={16} /> Download
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </div>
