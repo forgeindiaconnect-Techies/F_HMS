@@ -1,54 +1,67 @@
-import React, { useEffect } from 'react';
-import toast from 'react-hot-toast';
-import { AlertTriangle } from 'lucide-react';
+import React from 'react';
+import { AlertTriangle, X } from 'lucide-react';
 
-const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, confirmText = "Confirm", cancelText = "Cancel", isDestructive = true }) => {
-    useEffect(() => {
-        if (isOpen) {
-            toast.custom((t) => (
-                <div className={`bg-white shadow-2xl rounded-2xl p-5 w-80 md:w-96 border border-gray-100 ${t.visible ? 'animate-enter' : 'animate-leave'}`}>
-                    <div className="flex gap-4 items-start">
-                        <div className={`p-2.5 rounded-full shrink-0 ${isDestructive ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-500'}`}>
-                            <AlertTriangle size={22} />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-gray-900 text-lg">{title}</h3>
-                            <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">{message}</p>
-                        </div>
+const ConfirmModal = ({ 
+    isOpen, 
+    onClose, 
+    onConfirm, 
+    title = 'Confirm Action', 
+    message = 'Are you sure you want to proceed?', 
+    confirmText = "Confirm", 
+    cancelText = "Cancel", 
+    isDestructive = true 
+}) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+            <div 
+                className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-150 dark:border-slate-800 scale-100 animate-in zoom-in-95 duration-150 relative text-left"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <button 
+                    onClick={onClose}
+                    className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                    <X size={18} />
+                </button>
+
+                <div className="flex gap-4 items-start">
+                    <div className={`p-3 rounded-2xl shrink-0 ${isDestructive ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'}`}>
+                        <AlertTriangle size={24} />
                     </div>
-                    <div className="flex gap-3 mt-6">
-                        <button 
-                            onClick={() => {
-                                toast.dismiss(t.id);
-                                onClose();
-                            }}
-                            className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-bold rounded-xl transition-colors"
-                        >
-                            {cancelText}
-                        </button>
-                        <button 
-                            onClick={() => {
-                                toast.dismiss(t.id);
-                                onConfirm();
-                                onClose();
-                            }}
-                            className={`flex-1 py-2.5 text-white text-sm font-bold rounded-xl shadow-sm transition-colors ${isDestructive ? 'bg-red-600 hover:bg-red-700 shadow-red-600/20' : 'bg-green-600 hover:bg-green-700 shadow-green-600/20'}`}
-                        >
-                            {confirmText}
-                        </button>
+                    <div className="space-y-1.5 pr-4">
+                        <h3 className="font-bold text-slate-900 dark:text-white text-lg leading-snug">{title}</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{message}</p>
                     </div>
                 </div>
-            ), { 
-                duration: Infinity, 
-                id: 'confirm-toast',
-                position: 'top-center'
-            });
-        } else {
-            toast.dismiss('confirm-toast');
-        }
-    }, [isOpen, onClose, onConfirm, title, message, confirmText, cancelText, isDestructive]);
 
-    return null; // Render nothing in the normal DOM flow
+                <div className="flex gap-3 mt-6 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <button 
+                        type="button"
+                        onClick={onClose}
+                        className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold rounded-xl transition-colors cursor-pointer"
+                    >
+                        {cancelText}
+                    </button>
+                    <button 
+                        type="button"
+                        onClick={() => {
+                            onConfirm();
+                            onClose();
+                        }}
+                        className={`flex-1 py-2.5 px-4 text-white text-sm font-bold rounded-xl shadow-sm transition-all cursor-pointer ${
+                            isDestructive 
+                                ? 'bg-red-600 hover:bg-red-700 shadow-red-600/20 active:scale-98' 
+                                : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20 active:scale-98'
+                        }`}
+                    >
+                        {confirmText}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
 };
 
 export default ConfirmModal;

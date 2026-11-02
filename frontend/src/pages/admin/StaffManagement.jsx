@@ -642,9 +642,13 @@ const StaffManagement = () => {
         }
     };
 
+    const [isSubmittingStaff, setIsSubmittingStaff] = useState(false);
+
     // ── Staff Profiles CRUD ──────────────────────────────────────────────────
     const handleSaveStaff = async (e) => {
         e.preventDefault();
+        if (isSubmittingStaff) return;
+        setIsSubmittingStaff(true);
         try {
             const rawRole = staffForm.role === 'Manager' ? 'BranchManager' : staffForm.role;
             const targetBranch = (staffForm.branchId && staffForm.branchId !== 'All') ? staffForm.branchId : (branches[0]?._id || null);
@@ -681,6 +685,8 @@ const StaffManagement = () => {
         } catch (error) {
             console.error('Failed to save staff', error);
             toast.error(error.response?.data?.message || 'Error saving staff');
+        } finally {
+            setIsSubmittingStaff(false);
         }
     };
 
@@ -1905,9 +1911,11 @@ const StaffManagement = () => {
                                 </button>
                                 <button 
                                     type="submit"
-                                    className="px-5 py-2 text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs"
+                                    disabled={isSubmittingStaff}
+                                    className="px-5 py-2 text-sm font-bold bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer"
                                 >
-                                    {editingStaffId ? 'Save Changes' : 'Register Staff'}
+                                    {isSubmittingStaff && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+                                    <span>{editingStaffId ? 'Save Changes' : 'Register Staff'}</span>
                                 </button>
                             </div>
                         </form>
