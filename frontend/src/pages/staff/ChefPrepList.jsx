@@ -69,13 +69,13 @@ const ChefPrepList = () => {
         <div className="w-full max-w-[1600px] mx-auto font-sans space-y-6 pb-12">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6">
                 <div>
-                    <h2 className="text-2xl font-bold text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>Kitchen Prep List</h2>
-                    <p className="text-gray-400 text-sm mt-1">Consolidated dish preparations compiled from active orders.</p>
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>Kitchen Prep List</h2>
+                    <p className="text-slate-600 dark:text-gray-400 text-sm mt-1">Consolidated dish preparations compiled from active orders.</p>
                 </div>
                 <div className="flex gap-4 items-center">
                     <div className="text-right">
-                        <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">Completion</p>
-                        <p className="text-2xl font-bold text-green-400">{completionRate}%</p>
+                        <p className="text-xs text-slate-500 dark:text-gray-500 font-bold uppercase tracking-wider">Completion</p>
+                        <p className="text-2xl font-bold text-emerald-600 dark:text-green-400">{completionRate}%</p>
                     </div>
                 </div>
             </div>
@@ -85,36 +85,36 @@ const ChefPrepList = () => {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
                 </div>
             ) : (
-                <div className="bg-[#1e2330] rounded-2xl shadow-sm border border-[#2a3040] overflow-hidden">
-                    <div className="p-5 border-b border-[#2a3040] flex justify-between items-center bg-[#1a1e2a]">
-                        <h3 className="font-bold text-gray-200 text-lg" style={{ fontFamily: 'Poppins, sans-serif' }}>Active Orders Prep</h3>
-                        <button onClick={fetchTasks} className="text-sm font-bold text-orange-400 bg-orange-500/10 px-4 py-2 rounded-lg hover:bg-orange-500/20 transition-colors border border-orange-500/20">
+                <div className="bg-white dark:bg-[#1e2330] rounded-2xl shadow-sm border border-slate-200 dark:border-[#2a3040] overflow-hidden">
+                    <div className="p-5 border-b border-slate-200 dark:border-[#2a3040] flex justify-between items-center bg-slate-50 dark:bg-[#1a1e2a]">
+                        <h3 className="font-bold text-slate-800 dark:text-gray-200 text-lg" style={{ fontFamily: 'Poppins, sans-serif' }}>Active Orders Prep</h3>
+                        <button onClick={fetchTasks} className="text-sm font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 px-4 py-2 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-500/20 transition-colors border border-orange-200 dark:border-orange-500/20">
                             Refresh List
                         </button>
                     </div>
-                    <div className="divide-y divide-[#2a3040]">
+                    <div className="divide-y divide-slate-100 dark:divide-[#2a3040]">
                         {tasks.length === 0 ? (
-                            <div className="p-12 text-center text-gray-400">
+                            <div className="p-12 text-center text-slate-500 dark:text-gray-400">
                                 No active preparations. Add test orders to compile tasks.
                             </div>
                         ) : (
                             tasks.map((task, i) => (
-                                <div key={i} className={`p-4 flex items-center justify-between hover:bg-[#252b3b] transition-colors ${task.completed ? 'opacity-50' : ''}`}>
+                                <div key={i} className={`p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-[#252b3b] transition-colors ${task.completed ? 'opacity-50' : ''}`}>
                                     <div className="flex items-center gap-4">
-                                        <button onClick={() => toggleComplete(task)} className={`${task.completed ? 'text-green-500' : 'text-gray-500'} hover:text-green-400 transition-colors`}>
+                                        <button onClick={() => toggleComplete(task)} className={`${task.completed ? 'text-green-500' : 'text-slate-400 dark:text-gray-500'} hover:text-green-500 dark:hover:text-green-400 transition-colors`}>
                                             {task.completed ? <CheckSquare size={24} /> : <Square size={24} />}
                                         </button>
                                         <div>
-                                            <h4 className={`font-bold text-lg ${task.completed ? 'text-gray-500 line-through' : 'text-gray-200'}`}>{task.name}</h4>
+                                            <h4 className={`font-bold text-lg ${task.completed ? 'text-slate-400 dark:text-gray-500 line-through' : 'text-slate-800 dark:text-gray-200'}`}>{task.name}</h4>
                                             <div className="flex items-center gap-3 text-sm mt-1">
-                                                <span className="text-gray-400">Target Qty: <span className="font-bold text-white">{task.qty} servings</span></span>
-                                                <span className="flex items-center gap-1 text-gray-400"><Clock size={14} /> Received {task.time}</span>
+                                                <span className="text-slate-500 dark:text-gray-400">Target Qty: <span className="font-bold text-slate-900 dark:text-white">{task.qty} servings</span></span>
+                                                <span className="flex items-center gap-1 text-slate-500 dark:text-gray-400"><Clock size={14} /> Received {task.time}</span>
                                             </div>
                                         </div>
                                     </div>
                                     <div>
                                         {task.priority === 'High' && !task.completed && (
-                                            <span className="flex items-center gap-1 text-xs font-bold text-red-400 bg-red-500/10 px-2.5 py-1 rounded border border-red-500/20">
+                                            <span className="flex items-center gap-1 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 px-2.5 py-1 rounded border border-red-200 dark:border-red-500/20">
                                                 <Flame size={14} /> High Priority (Delivery)
                                             </span>
                                         )}
