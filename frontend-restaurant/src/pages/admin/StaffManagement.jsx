@@ -648,23 +648,36 @@ const StaffManagement = () => {
     const handleSaveStaff = async (e) => {
         e.preventDefault();
         if (isSubmittingStaff) return;
+
+        const cleanName = staffForm.name?.trim();
+        const cleanEmail = staffForm.email?.trim().toLowerCase();
+        if (!cleanName || !cleanEmail) {
+            toast.error('Name and Email are required.');
+            return;
+        }
+
         setIsSubmittingStaff(true);
         try {
             const rawRole = staffForm.role === 'Manager' ? 'BranchManager' : staffForm.role;
-            const targetBranch = (staffForm.branchId && staffForm.branchId !== 'All') ? staffForm.branchId : (branches[0]?._id || null);
+            const targetBranch = (staffForm.branchId && staffForm.branchId !== 'All' && staffForm.branchId !== '') 
+                ? staffForm.branchId 
+                : (branches[0]?._id || null);
 
             const payload = {
                 ...staffForm,
+                name: cleanName,
+                email: cleanEmail,
+                phone: staffForm.phone ? staffForm.phone.trim() : '',
                 role: rawRole,
                 branchId: targetBranch,
                 salaryConfig: {
                     ...staffForm.salaryConfig,
-                    basicSalary: Number(staffForm.salaryConfig.basicSalary) || 0,
-                    overtimeRatePerHour: Number(staffForm.salaryConfig.overtimeRatePerHour) || 0,
-                    dailyWorkHours: Number(staffForm.salaryConfig.dailyWorkHours) || 8,
-                    monthlyWorkingDays: Number(staffForm.salaryConfig.monthlyWorkingDays) || 26,
-                    allowances: Number(staffForm.salaryConfig.allowances) || 0,
-                    deductions: Number(staffForm.salaryConfig.deductions) || 0
+                    basicSalary: Number(staffForm.salaryConfig?.basicSalary) || 0,
+                    overtimeRatePerHour: Number(staffForm.salaryConfig?.overtimeRatePerHour) || 0,
+                    dailyWorkHours: Number(staffForm.salaryConfig?.dailyWorkHours) || 8,
+                    monthlyWorkingDays: Number(staffForm.salaryConfig?.monthlyWorkingDays) || 26,
+                    allowances: Number(staffForm.salaryConfig?.allowances) || 0,
+                    deductions: Number(staffForm.salaryConfig?.deductions) || 0
                 }
             };
 
@@ -684,7 +697,8 @@ const StaffManagement = () => {
             fetchBaseData();
         } catch (error) {
             console.error('Failed to save staff', error);
-            toast.error(error.response?.data?.message || 'Error saving staff');
+            const errMsg = error.response?.data?.message || error.message || 'Error saving staff';
+            toast.error(errMsg);
         } finally {
             setIsSubmittingStaff(false);
         }

@@ -124,18 +124,24 @@ export const createStaff = async (req, res) => {
     } = req.body;
 
     try {
+        if (!name || !email) {
+            return res.status(400).json({ message: 'Name and email are required to register staff' });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
         const restaurantId = await getUserRestaurantId(req.user);
-        const userExists = await User.findOne({ email });
+        
+        const userExists = await User.findOne({ email: { $regex: new RegExp(`^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } });
         if (userExists) {
-            return res.status(400).json({ message: 'A user with this email already exists' });
+            return res.status(400).json({ message: 'A user with this email address already exists. Please use a unique email.' });
         }
 
-        const restaurant = await Restaurant.findById(restaurantId);
-        if (!restaurant) {
-            return res.status(404).json({ message: 'Restaurant not found' });
+        let restaurant = null;
+        if (restaurantId) {
+            restaurant = await Restaurant.findById(restaurantId);
         }
 
-        const planName = restaurant.subscription?.plan || 'Basic';
+        const planName = restaurant?.subscription?.plan || 'Basic';
         const planDoc = await Plan.findOne({ name: planName });
         let staffLimit = 5;
         
@@ -145,37 +151,47 @@ export const createStaff = async (req, res) => {
             staffLimit = Infinity;
         }
 
-        const currentStaffCount = await User.countDocuments({
-            restaurantId,
-            role: { $in: ['BranchManager', 'Manager', 'Chef', 'Waiter', 'Cashier', 'DeliveryPartner', 'Staff'] }
-        });
-
-        if (currentStaffCount >= staffLimit) {
-            return res.status(403).json({ 
-                message: `Your current plan (${planName}) only allows up to ${staffLimit} staff users. Please upgrade your subscription plan to add more staff.`,
-                limitExceeded: true
+        if (restaurantId) {
+            const currentStaffCount = await User.countDocuments({
+                restaurantId,
+                role: { $in: ['BranchManager', 'Manager', 'Chef', 'Waiter', 'Cashier', 'DeliveryPartner', 'Staff'] }
             });
+
+            if (currentStaffCount >= staffLimit) {
+                return res.status(400).json({ 
+                    message: `Your current plan (${planName}) only allows up to ${staffLimit} staff users. Please upgrade your subscription plan to add more staff.`,
+                    limitExceeded: true
+                });
+            }
         }
         
-        let normalizedRole = role;
+        let normalizedRole = role ? String(role).trim() : 'Waiter';
         if (normalizedRole === 'Manager') normalizedRole = 'BranchManager';
         const validRoles = ['BranchManager', 'Chef', 'Waiter', 'Cashier', 'DeliveryPartner', 'Staff'];
 
         if (!validRoles.includes(normalizedRole)) {
-            return res.status(400).json({ message: 'Invalid staff role' });
+            return res.status(400).json({ message: `Invalid staff role "${role}". Allowed roles: ${validRoles.join(', ')}` });
         }
 
-        // Auto-generate employeeId if not supplied
-        const empId = employeeId ? employeeId.trim() : `EMP-${(currentStaffCount + 1).toString().padStart(4, '0')}`;
-        const targetBranch = (branchId && branchId !== '' && branchId !== 'All') ? branchId : null;
+        // Validate branch if supplied
+        let targetBranch = null;
+        if (branchId && branchId !== '' && branchId !== 'All') {
+            const branchExists = await Branch.findById(branchId);
+            if (branchExists) {
+                targetBranch = branchExists._id;
+            }
+        }
+
+        const staffCountTotal = await User.countDocuments(restaurantId ? { restaurantId } : {});
+        const empId = (employeeId && employeeId.trim()) ? employeeId.trim() : `EMP-${(staffCountTotal + 1).toString().padStart(4, '0')}`;
 
         const user = await User.create({
-            name,
-            email,
-            phoneNumber: phone,
-            password: password || 'Staff@123',
+            name: name.trim(),
+            email: normalizedEmail,
+            phoneNumber: phone ? String(phone).trim() : '',
+            password: password ? String(password).trim() : 'Staff@123',
             role: normalizedRole,
-            restaurantId,
+            restaurantId: restaurantId || null,
             branchId: targetBranch,
             employeeId: empId,
             joiningDate: joiningDate ? new Date(joiningDate) : new Date(),
@@ -194,7 +210,7 @@ export const createStaff = async (req, res) => {
         if (user.role === 'DeliveryPartner') {
             await DeliveryPartner.create({
                 userId: user._id,
-                restaurantId,
+                restaurantId: restaurantId || null,
                 verificationStatus: 'Approved',
                 vehicleDetails: { type: 'Bike', model: '', rcNumber: '', licenseNumber: '' },
                 documents: { profilePhoto: '', drivingLicense: '', aadhaarProof: '' }
@@ -205,7 +221,10 @@ export const createStaff = async (req, res) => {
         res.status(201).json(populatedUser);
     } catch (error) {
         console.error('Error in createStaff:', error);
-        res.status(400).json({ message: error.message });
+        if (error.code === 11000) {
+            return res.status(400).json({ message: 'A staff user with this email or ID already exists.' });
+        }
+        res.status(400).json({ message: error.message || 'Failed to create staff member' });
     }
 };
 
@@ -1555,41 +1574,58 @@ export const getPayrollReports = async (req, res) => {
         const restaurantId = await getUserRestaurantId(req.user);
         const { year, month, branchId, status } = req.query;
 
-        const filter = { restaurantId };
-        if (year) filter.year = Number(year);
-        if (month) filter.month = parseMonthNumber(month) || Number(month);
-        if (branchId && branchId !== 'All') filter.branchId = branchId;
-        else if (req.user.role === 'BranchManager' && req.user.branchId) filter.branchId = req.user.branchId;
-        if (status && status !== 'All') filter.paymentStatus = status;
+        const filter = {};
+        if (restaurantId) {
+            filter.restaurantId = restaurantId;
+        }
+
+        if (year && !isNaN(Number(year))) {
+            filter.year = Number(year);
+        }
+        if (month && month !== 'All') {
+            const m = parseMonthNumber(month) || Number(month);
+            if (m && !isNaN(m)) filter.month = m;
+        }
+        if (branchId && branchId !== 'All' && branchId !== '') {
+            filter.branchId = branchId;
+        } else if (req.user?.role === 'BranchManager' && req.user.branchId) {
+            filter.branchId = req.user.branchId;
+        }
+        if (status && status !== 'All') {
+            filter.paymentStatus = status;
+        }
 
         const records = await Payroll.find(filter)
             .populate('employee', 'name email role employeeId')
             .populate('branchId', 'name')
-            .sort({ year: -1, month: -1 });
+            .sort({ year: -1, month: -1 })
+            .lean();
 
-        const totalGross = records.reduce((sum, r) => sum + (r.calculations?.grossSalary || 0), 0);
-        const totalNet = records.reduce((sum, r) => sum + (r.calculations?.netSalaryPayable || 0), 0);
-        const totalPaid = records.reduce((sum, r) => sum + (r.paidAmount || 0), 0);
-        const totalDue = records.reduce((sum, r) => sum + (r.balanceDue || 0), 0);
-        const totalLOP = records.reduce((sum, r) => sum + (r.calculations?.lopDeduction || 0), 0);
-        const paidCount = records.filter(r => r.paymentStatus === 'Paid').length;
-        const pendingCount = records.filter(r => r.paymentStatus !== 'Paid').length;
+        const safeRecords = Array.isArray(records) ? records : [];
+
+        const totalGross = safeRecords.reduce((sum, r) => sum + (Number(r?.calculations?.grossSalary) || Number(r?.grossSalary) || 0), 0);
+        const totalNet = safeRecords.reduce((sum, r) => sum + (Number(r?.calculations?.netSalaryPayable) || Number(r?.netSalaryPayable) || 0), 0);
+        const totalPaid = safeRecords.reduce((sum, r) => sum + (Number(r?.paidAmount) || 0), 0);
+        const totalDue = safeRecords.reduce((sum, r) => sum + (Number(r?.balanceDue) || 0), 0);
+        const totalLOP = safeRecords.reduce((sum, r) => sum + (Number(r?.calculations?.lopDeduction) || 0), 0);
+        const paidCount = safeRecords.filter(r => r?.paymentStatus === 'Paid').length;
+        const pendingCount = safeRecords.filter(r => r?.paymentStatus !== 'Paid').length;
 
         const branchBreakdown = {};
-        for (const r of records) {
-            const bName = r.branchId?.name || 'Main Branch';
+        for (const r of safeRecords) {
+            const bName = r.branchId?.name || (typeof r.branchId === 'string' ? r.branchId : 'Main Branch');
             if (!branchBreakdown[bName]) {
                 branchBreakdown[bName] = { branchName: bName, totalEmployees: 0, gross: 0, net: 0, paid: 0, due: 0 };
             }
             branchBreakdown[bName].totalEmployees++;
-            branchBreakdown[bName].gross += (r.calculations?.grossSalary || 0);
-            branchBreakdown[bName].net += (r.calculations?.netSalaryPayable || 0);
-            branchBreakdown[bName].paid += (r.paidAmount || 0);
-            branchBreakdown[bName].due += (r.balanceDue || 0);
+            branchBreakdown[bName].gross += (Number(r?.calculations?.grossSalary) || Number(r?.grossSalary) || 0);
+            branchBreakdown[bName].net += (Number(r?.calculations?.netSalaryPayable) || Number(r?.netSalaryPayable) || 0);
+            branchBreakdown[bName].paid += (Number(r?.paidAmount) || 0);
+            branchBreakdown[bName].due += (Number(r?.balanceDue) || 0);
         }
 
         res.json({
-            count: records.length,
+            count: safeRecords.length,
             totalGrossPayable: Math.round(totalGross * 100) / 100,
             totalNetPayable: Math.round(totalNet * 100) / 100,
             totalPaid: Math.round(totalPaid * 100) / 100,
@@ -1598,10 +1634,11 @@ export const getPayrollReports = async (req, res) => {
             paidCount,
             pendingCount,
             branchBreakdown: Object.values(branchBreakdown),
-            records: records.map(enrichPayrollWithAliases)
+            records: safeRecords.map(r => enrichPayrollWithAliases(r))
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Error in getPayrollReports:', error);
+        res.status(500).json({ message: error.message || 'Failed to aggregate payroll reports' });
     }
 };
 

@@ -42,13 +42,13 @@ router.get('/attendance/summary', authorize('RestaurantAdmin', 'BranchManager'),
 
 // ── Leave Management Routes ──────────────────────────────────────────────────
 // Staff personal leave endpoints (Any authenticated staff)
-router.post('/leave', applyLeave);
-router.get('/leave/my', getMyLeaves);
-router.put('/leave/:id/cancel', cancelMyLeave);
+router.post(['/leave', '/leaves'], applyLeave);
+router.get(['/leave/my', '/leaves/my'], getMyLeaves);
+router.put(['/leave/:id/cancel', '/leaves/:id/cancel'], cancelMyLeave);
 
 // Manager / Admin leave review & approval endpoints
-router.get('/leave', authorize('RestaurantAdmin', 'BranchManager'), getLeaveRequests);
-router.put('/leave/:id/status', authorize('RestaurantAdmin', 'BranchManager'), updateLeaveStatus);
+router.get(['/leave', '/leaves'], authorize('RestaurantAdmin', 'BranchManager', 'SuperAdmin'), getLeaveRequests);
+router.put(['/leave/:id/status', '/leaves/:id/status'], authorize('RestaurantAdmin', 'BranchManager', 'SuperAdmin'), updateLeaveStatus);
 
 // ── Payroll Routes ───────────────────────────────────────────────────────────
 // Staff personal payroll endpoints (Staff can only view their own)
