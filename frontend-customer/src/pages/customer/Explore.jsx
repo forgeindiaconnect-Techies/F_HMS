@@ -245,93 +245,141 @@ export default function Explore() {
   };
 
   // --------------------------------------------------------------------------
-  // React GPS Method: Browser Geolocation + Reverse Geocoding (City, Country)
+  // React GPS Method: Robust Mobile Geolocation + IP Fallback + Reverse Geocoding
   // --------------------------------------------------------------------------
+  const resolveLocationFromCoords = async (latitude, longitude, loadingToast) => {
+    let detectedCity = '';
+    let detectedCountry = '';
+
+    try {
+      // BigDataCloud client API (fast & free on mobile, no rate limit)
+      const bdcRes = await fetch(
+        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+      );
+      if (bdcRes.ok) {
+        const bdcData = await bdcRes.json();
+        detectedCity = bdcData.city || bdcData.locality || bdcData.principalSubdivision || '';
+        detectedCountry = bdcData.countryName || '';
+      }
+    } catch (e) {
+      console.warn('BigDataCloud reverse geocode error:', e);
+    }
+
+    if (!detectedCity || !detectedCountry) {
+      try {
+        // OpenStreetMap Nominatim reverse geocode fallback
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=12&addressdetails=1`,
+          { headers: { 'Accept-Language': 'en' } }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const addr = data.address || {};
+          if (!detectedCity) detectedCity = addr.city || addr.town || addr.village || addr.suburb || addr.state_district || addr.state || '';
+          if (!detectedCountry) detectedCountry = addr.country || '';
+        }
+      } catch (e) {
+        console.warn('Nominatim reverse geocode error:', e);
+      }
+    }
+
+    // Format into City, Country
+    const formattedLocation = (detectedCity && detectedCountry)
+      ? `${detectedCity}, ${detectedCountry}`
+      : (detectedCity || detectedCountry || `${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`);
+
+    setLocation(formattedLocation);
+    localStorage.setItem('userLocation', formattedLocation);
+    localStorage.setItem('userCoordinates', JSON.stringify({ latitude, longitude }));
+
+    if (user && api) {
+      api.put('/customer/profile', { location: formattedLocation, coordinates: { latitude, longitude } }).catch(() => {});
+    }
+
+    setIsDetectingLocation(false);
+    if (loadingToast) toast.dismiss(loadingToast);
+    toast.success(`Location set to ${formattedLocation}!`, { icon: '📍' });
+  };
+
+  // Fallback to IP-based Geolocation if mobile device GPS is toggled off or unavailable
+  const fallbackIpGeolocation = async (loadingToast) => {
+    try {
+      const ipRes = await fetch('https://ipapi.co/json/');
+      if (ipRes.ok) {
+        const ipData = await ipRes.json();
+        if (ipData && (ipData.city || ipData.region)) {
+          const locStr = `${ipData.city || ipData.region}, ${ipData.country_name || ''}`.replace(/,\s*$/, '');
+          setLocation(locStr);
+          localStorage.setItem('userLocation', locStr);
+          if (ipData.latitude && ipData.longitude) {
+            localStorage.setItem('userCoordinates', JSON.stringify({ latitude: ipData.latitude, longitude: ipData.longitude }));
+          }
+          setIsDetectingLocation(false);
+          if (loadingToast) toast.dismiss(loadingToast);
+          toast.success(`Location detected: ${locStr}!`, { icon: '📍' });
+          return true;
+        }
+      }
+    } catch (e) {
+      console.warn('IP geolocation fallback failed:', e);
+    }
+    return false;
+  };
+
   const handleGetLocation = () => {
+    setIsDetectingLocation(true);
+    const loadingToast = toast.loading('Detecting location...');
+
     if (!navigator.geolocation) {
-      toast.error('Geolocation is not supported by your browser', { icon: '⚠️' });
+      fallbackIpGeolocation(loadingToast).then(ok => {
+        if (!ok) {
+          setIsDetectingLocation(false);
+          toast.dismiss(loadingToast);
+          toast.error('Geolocation is not supported by your device.');
+        }
+      });
       return;
     }
 
-    setIsDetectingLocation(true);
-    const loadingToast = toast.loading('Accessing GPS coordinates...');
-
+    // Attempt 1: High accuracy GPS
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
+      (position) => {
         const { latitude, longitude } = position.coords;
-        let detectedCity = '';
-        let detectedCountry = '';
-
-        try {
-          // OpenStreetMap Nominatim reverse geocode
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`,
-            { headers: { 'Accept-Language': 'en' } }
-          );
-          if (res.ok) {
-            const data = await res.json();
-            const addr = data.address || {};
-            detectedCity = addr.city || addr.town || addr.village || addr.suburb || addr.state_district || addr.state || '';
-            detectedCountry = addr.country || '';
-          }
-        } catch (e) {
-          console.warn('Nominatim reverse geocode error:', e);
-        }
-
-        // Secondary fallback to BigDataCloud client API
-        if (!detectedCity || !detectedCountry) {
-          try {
-            const bdcRes = await fetch(
-              `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
-            );
-            if (bdcRes.ok) {
-              const bdcData = await bdcRes.json();
-              if (!detectedCity) detectedCity = bdcData.city || bdcData.locality || bdcData.principalSubdivision || '';
-              if (!detectedCountry) detectedCountry = bdcData.countryName || '';
-            }
-          } catch (e) {
-            console.warn('BigDataCloud reverse geocode error:', e);
-          }
-        }
-
-        // Format into City, Country
-        const formattedLocation = (detectedCity && detectedCountry)
-          ? `${detectedCity}, ${detectedCountry}`
-          : (detectedCity || detectedCountry || `${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`);
-
-        // Automatically update state
-        setLocation(formattedLocation);
-
-        // Save in localStorage
-        localStorage.setItem('userLocation', formattedLocation);
-        localStorage.setItem('userCoordinates', JSON.stringify({ latitude, longitude }));
-
-        // If user logged in, persist to backend profile
-        if (user && api) {
-          api.put('/customer/profile', { location: formattedLocation, coordinates: { latitude, longitude } }).catch(() => {});
-        }
-
-        setIsDetectingLocation(false);
-        toast.dismiss(loadingToast);
-        toast.success(`Location updated to ${formattedLocation}!`, { icon: '📍' });
+        resolveLocationFromCoords(latitude, longitude, loadingToast);
       },
       (error) => {
-        setIsDetectingLocation(false);
-        toast.dismiss(loadingToast);
-        if (error.code === 1) {
-          toast.error('Location permission was denied. Please allow GPS access in your browser settings.');
-        } else if (error.code === 2) {
-          toast.error('Location unavailable. Please check your network or GPS connection.');
-        } else if (error.code === 3) {
-          toast.error('Location request timed out. Please try again.');
-        } else {
-          toast.error('Could not detect location. Please try again.');
-        }
+        console.warn('High accuracy GPS error, trying low accuracy / network...', error.code, error.message);
+        
+        // Attempt 2: Low accuracy (Wi-Fi / Cell tower triangulation)
+        navigator.geolocation.getCurrentPosition(
+          (netPos) => {
+            const { latitude, longitude } = netPos.coords;
+            resolveLocationFromCoords(latitude, longitude, loadingToast);
+          },
+          async (netError) => {
+            console.warn('Network location also failed, falling back to IP geolocation...', netError);
+            const ipSuccess = await fallbackIpGeolocation(loadingToast);
+            if (!ipSuccess) {
+              setIsDetectingLocation(false);
+              toast.dismiss(loadingToast);
+              if (error.code === 1 || netError.code === 1) {
+                toast.error('Location permission was denied. Please allow location access in your phone settings.');
+              } else {
+                toast.error('Could not detect location. Please check GPS settings or select location manually.');
+              }
+            }
+          },
+          {
+            enableHighAccuracy: false,
+            timeout: 12000,
+            maximumAge: 300000 // Accept 5 min cached coordinates
+          }
+        );
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
+        timeout: 8000,
+        maximumAge: 60000
       }
     );
   };
