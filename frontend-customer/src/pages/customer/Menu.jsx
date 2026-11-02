@@ -181,17 +181,23 @@ const Menu = () => {
                                 >
                                     <div>
                                         {/* Square Image with Badges & Heart Button */}
-                                        <div className="relative aspect-square rounded-lg overflow-hidden bg-slate-50 mb-2.5">
-                                            <img 
-                                                src={getItemImage(item)} 
-                                                alt={item.name}
-                                                onError={(e) => {
-                                                    e.target.onerror = null;
-                                                    e.target.src = getFallbackFoodImage(item.name || item.category);
-                                                }}
-                                                className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
-                                                loading="lazy"
-                                            />
+                                        <div className="relative aspect-square rounded-lg overflow-hidden bg-slate-50 mb-2.5 flex items-center justify-center">
+                                            {getItemImage(item) ? (
+                                                <img 
+                                                    src={getItemImage(item)} 
+                                                    alt={item.name}
+                                                    onError={(e) => {
+                                                        e.target.style.display = 'none';
+                                                    }}
+                                                    className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
+                                                    loading="lazy"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex flex-col items-center justify-center bg-orange-50/40 text-[#FF5A1F]">
+                                                    <ShoppingBag size={28} className="opacity-40" />
+                                                    <span className="text-[10px] font-bold text-slate-400 mt-1">{item.category || 'Dish'}</span>
+                                                </div>
+                                            )}
                                             {discountBadge && (
                                                 <div className="absolute top-2 left-2 bg-[#10B981] text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-xs">
                                                     {discountBadge}

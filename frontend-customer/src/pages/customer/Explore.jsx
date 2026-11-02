@@ -97,7 +97,7 @@ export default function Explore() {
           originalPrice: d.originalPrice || (d.price ? Math.round(d.price * 1.25) : 0),
           cuisine: d.cuisine || 'Specialty',
           category: d.category || 'Mains',
-          image: d.image || '/images/food/biryani-hero-platter.jpg',
+          image: (d.image && !d.image.includes('unsplash.com') && !d.image.includes('placeholder')) ? d.image : null,
           description: d.description || ''
         }));
         setDishes(backendDishes);
@@ -1126,13 +1126,23 @@ export default function Explore() {
                   >
                     <div>
                       {/* Square Image with Green Discount Badge & Wishlist Heart */}
-                      <div className="relative aspect-square rounded-lg overflow-hidden bg-slate-50 mb-2.5">
-                        <img
-                          src={dish.image}
-                          alt={dish.name}
-                          className="w-full h-full object-cover hover:scale-103 transition-transform duration-300"
-                          loading="lazy"
-                        />
+                      <div className="relative aspect-square rounded-lg overflow-hidden bg-slate-50 mb-2.5 flex items-center justify-center">
+                        {dish.image ? (
+                          <img
+                            src={dish.image}
+                            alt={dish.name}
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                            className="w-full h-full object-cover hover:scale-103 transition-transform duration-300"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center bg-orange-50/50 text-[#FF5A1F]">
+                            <UtensilsCrossed size={28} className="opacity-40" />
+                            <span className="text-[10px] font-bold text-slate-400 mt-1">{dish.category || 'Specialty'}</span>
+                          </div>
+                        )}
                         {dish.discount && (
                           <div className="absolute top-2 left-2 bg-[#10B981] text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-xs">
                             {dish.discount}
