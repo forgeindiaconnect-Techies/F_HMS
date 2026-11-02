@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
+import { Geolocation } from '@capacitor/geolocation';
 import { 
   Search, MapPin, ChevronDown, ShoppingBag, Heart, Star, 
   Clock, ShieldCheck, Tag, ArrowRight, Sparkles,
@@ -327,10 +329,37 @@ export default function Explore() {
     return false;
   };
 
-  const handleGetLocation = () => {
+  const handleGetLocation = async () => {
     setIsDetectingLocation(true);
     const loadingToast = toast.loading('Detecting location...');
 
+    // If running inside Capacitor Native Mobile App (Android APK / iOS)
+    if (Capacitor.isNativePlatform()) {
+      try {
+        let permStatus = await Geolocation.checkPermissions();
+        if (permStatus.location !== 'granted') {
+          permStatus = await Geolocation.requestPermissions();
+        }
+
+        if (permStatus.location === 'granted') {
+          const nativePos = await Geolocation.getCurrentPosition({
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 60000
+          });
+          if (nativePos && nativePos.coords) {
+            await resolveLocationFromCoords(nativePos.coords.latitude, nativePos.coords.longitude, loadingToast);
+            return;
+          }
+        } else {
+          console.warn('Native geolocation permission not granted:', permStatus);
+        }
+      } catch (nativeErr) {
+        console.warn('Capacitor native Geolocation error, checking fallback...', nativeErr);
+      }
+    }
+
+    // Web / WebView fallback via navigator.geolocation
     if (!navigator.geolocation) {
       fallbackIpGeolocation(loadingToast).then(ok => {
         if (!ok) {
