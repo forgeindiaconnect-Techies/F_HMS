@@ -40,7 +40,8 @@ export default function Explore() {
   const [loadingData, setLoadingData] = useState(true);
   const [selectedCuisine, setSelectedCuisine] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [location, setLocation] = useState(() => localStorage.getItem('userLocation') || '');
+  // Only set location when user explicitly clicks "Detect Location" / GPS
+  const [location, setLocation] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
@@ -342,20 +343,35 @@ export default function Explore() {
         }
 
         if (permStatus.location === 'granted') {
-          const nativePos = await Geolocation.getCurrentPosition({
-            enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 60000
-          });
-          if (nativePos && nativePos.coords) {
-            await resolveLocationFromCoords(nativePos.coords.latitude, nativePos.coords.longitude, loadingToast);
-            return;
+          try {
+            // Attempt high accuracy GPS first
+            const nativePos = await Geolocation.getCurrentPosition({
+              enableHighAccuracy: true,
+              timeout: 10000,
+              maximumAge: 30000
+            });
+            if (nativePos && nativePos.coords) {
+              await resolveLocationFromCoords(nativePos.coords.latitude, nativePos.coords.longitude, loadingToast);
+              return;
+            }
+          } catch (highAccErr) {
+            console.warn('Native high-accuracy GPS timeout/error, trying cell/wifi...', highAccErr);
+            // Attempt low accuracy (Cell / Wi-Fi network)
+            const lowPos = await Geolocation.getCurrentPosition({
+              enableHighAccuracy: false,
+              timeout: 10000,
+              maximumAge: 180000
+            });
+            if (lowPos && lowPos.coords) {
+              await resolveLocationFromCoords(lowPos.coords.latitude, lowPos.coords.longitude, loadingToast);
+              return;
+            }
           }
         } else {
           console.warn('Native geolocation permission not granted:', permStatus);
         }
       } catch (nativeErr) {
-        console.warn('Capacitor native Geolocation error, checking fallback...', nativeErr);
+        console.warn('Capacitor native Geolocation error, checking web/IP fallback...', nativeErr);
       }
     }
 
@@ -736,7 +752,7 @@ export default function Explore() {
           <div className="flex items-center gap-1.5 text-slate-700 truncate">
             <MapPin size={13} className="text-[#FF5A1F] shrink-0" />
             <span className="truncate font-semibold text-[11px]">
-              {location || 'Delivering to current location'}
+              {location || 'Tap to detect your location'}
             </span>
           </div>
           <button
@@ -744,7 +760,7 @@ export default function Explore() {
             disabled={isDetectingLocation}
             className="text-[11px] font-bold text-[#FF5A1F] hover:underline shrink-0 ml-2"
           >
-            {isDetectingLocation ? 'Locating...' : 'Change'}
+            {isDetectingLocation ? 'Locating...' : (location ? 'Change' : 'Detect GPS')}
           </button>
         </div>
 

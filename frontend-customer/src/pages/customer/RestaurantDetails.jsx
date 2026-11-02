@@ -235,15 +235,30 @@ const RestaurantDetails = () => {
                     </div>
                 </div>
 
-                {/* Menu Layout */}
-                <div className="mt-8 flex flex-col md:flex-row gap-8">
-                    {/* Sidebar Categories */}
-                    <div className="md:w-64 shrink-0 hidden md:block">
+                {/* Mobile Categories Quick Bar */}
+                {categories.length > 0 && (
+                    <div className="md:hidden mt-6 flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+                        {categories.map(cat => (
+                            <a 
+                                href={`#category-${cat}`} 
+                                key={cat} 
+                                className="px-3.5 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-full text-xs font-bold text-gray-700 dark:text-slate-300 hover:text-red-600 hover:border-red-300 whitespace-nowrap shadow-xs"
+                            >
+                                {cat}
+                            </a>
+                        ))}
+                    </div>
+                )}
+
+                {/* Main Content: Menu Items FIRST, followed by Table Booking */}
+                <div className="mt-8 flex flex-col lg:flex-row gap-8 items-start">
+                    {/* Left Categories Sidebar (Desktop) */}
+                    <div className="lg:w-56 shrink-0 hidden lg:block">
                         <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-slate-800 sticky top-24">
                             <h3 className="font-bold text-gray-900 dark:text-white mb-4 px-2">Menu</h3>
                             <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                 {categories.map(cat => (
-                                    <a href={`#category-${cat}`} key={cat} className="block px-4 py-2.5 rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-red-600 dark:hover:text-red-400 transition-colors font-medium">
+                                    <a href={`#category-${cat}`} key={cat} className="block px-4 py-2.5 rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-red-600 dark:hover:text-red-400 transition-colors font-medium text-sm">
                                         {cat}
                                     </a>
                                 ))}
@@ -251,23 +266,23 @@ const RestaurantDetails = () => {
                         </div>
                     </div>
 
-                    {/* Menu Items */}
-                    <div className="flex-1 space-y-12">
+                    {/* Menu Items (Appears First) */}
+                    <div className="flex-1 w-full space-y-10 order-1">
                         {categories.map(category => (
                             <div key={category} id={`category-${category}`} className="scroll-mt-24">
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{category}</h2>
+                                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">{category}</h2>
                                 <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden divide-y divide-gray-50 dark:divide-slate-800">
                                     {menu.filter(item => item.category === category).map(item => (
                                         <div 
                                              key={item._id} 
-                                             className="p-6 flex gap-6 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors group rounded-2xl"
+                                             className="p-4 sm:p-6 flex gap-4 sm:gap-6 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors group rounded-2xl"
                                          >
                                              <div className="flex-1">
                                                  <div className="flex items-start justify-between mb-1">
-                                                     <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">{item.name}</h3>
+                                                     <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">{item.name}</h3>
                                                  </div>
-                                                 <div className="font-extrabold text-red-600 dark:text-red-400 mb-2">₹{item.price}</div>
-                                                 <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed line-clamp-2">{item.description}</p>
+                                                 <div className="font-extrabold text-red-600 dark:text-red-400 mb-1.5">₹{item.price}</div>
+                                                 <p className="text-gray-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed line-clamp-2">{item.description}</p>
                                                  <button 
                                                      onClick={() => { addToCart(item); toast.success(`${item.name} added to cart!`); }}
                                                      className="mt-3 px-4 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
@@ -276,7 +291,7 @@ const RestaurantDetails = () => {
                                                  </button>
                                              </div>
                                              {item.image && item.image.trim() !== '' && !item.image.includes('unsplash.com') && !item.image.includes('placeholder') && (
-                                                 <div className="w-32 h-32 shrink-0 relative overflow-hidden rounded-xl bg-gray-100 dark:bg-slate-800">
+                                                 <div className="w-24 h-24 sm:w-32 sm:h-32 shrink-0 relative overflow-hidden rounded-xl bg-gray-100 dark:bg-slate-800">
                                                      <img 
                                                          src={item.image} 
                                                          alt={item.name} 
@@ -289,11 +304,11 @@ const RestaurantDetails = () => {
                                 </div>
                             </div>
                         ))}
-                        {menu.length === 0 && <div className="text-center text-gray-500 dark:text-slate-400 py-10">Menu not available for this restaurant.</div>}
+                        {menu.length === 0 && <div className="text-center text-gray-500 dark:text-slate-400 py-10 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800">Menu not available for this restaurant.</div>}
                     </div>
 
-                    {/* Table Booking Column */}
-                    <div className="md:w-80 shrink-0">
+                    {/* Table Booking Column (Positioned after the menu items) */}
+                    <div className="w-full lg:w-80 shrink-0 order-2">
                         <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-800 sticky top-24">
                             <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-4 flex items-center gap-2">
                                 <Clock size={20} className="text-red-500" /> Book a Table

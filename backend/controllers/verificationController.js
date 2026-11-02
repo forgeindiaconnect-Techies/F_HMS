@@ -204,6 +204,36 @@ export const submitVerification = async (req, res) => {
             });
         }
 
+        if (addressText && addressText.trim()) {
+            const cleanAddress = addressText.trim();
+            restaurant.address = cleanAddress;
+            const parts = cleanAddress.split(',').map(p => p.trim()).filter(Boolean);
+            if (parts.length > 0) {
+                restaurant.city = parts[0];
+            }
+            if (parts.length > 1) {
+                restaurant.state = parts[1];
+            }
+
+            // Sync with primary branch so customer location detection maps precisely
+            try {
+                const Branch = (await import('../models/Branch.js')).default;
+                const primaryBranch = await Branch.findOne({ restaurantId: restaurant._id, isActive: true });
+                if (primaryBranch) {
+                    primaryBranch.location = {
+                        ...(primaryBranch.location || {}),
+                        address: cleanAddress,
+                        city: restaurant.city || primaryBranch.location?.city || '',
+                        state: restaurant.state || primaryBranch.location?.state || '',
+                        country: primaryBranch.location?.country || 'India'
+                    };
+                    await primaryBranch.save();
+                }
+            } catch (branchSyncErr) {
+                console.error("Branch location sync error during verification submit:", branchSyncErr.message);
+            }
+        }
+
         restaurant.verificationStatus = 'Under Review';
         restaurant.approvalStatus = 'Pending';
         await restaurant.save();
@@ -434,6 +464,33 @@ export const reviewVerification = async (req, res) => {
 
             restaurant.subscription.status = 'Active';
             restaurant.subscription.expiryDate = expiry;
+
+            // Ensure verified address from addressProof is synced to restaurant address and primary branch
+            const verifiedAddr = verification.documents?.addressProof?.addressText;
+            if (verifiedAddr && verifiedAddr.trim()) {
+                const cleanAddress = verifiedAddr.trim();
+                restaurant.address = cleanAddress;
+                const parts = cleanAddress.split(',').map(p => p.trim()).filter(Boolean);
+                if (parts.length > 0) restaurant.city = parts[0];
+                if (parts.length > 1) restaurant.state = parts[1];
+
+                try {
+                    const Branch = (await import('../models/Branch.js')).default;
+                    const primaryBranch = await Branch.findOne({ restaurantId: restaurant._id, isActive: true });
+                    if (primaryBranch) {
+                        primaryBranch.location = {
+                            ...(primaryBranch.location || {}),
+                            address: cleanAddress,
+                            city: restaurant.city || primaryBranch.location?.city || '',
+                            state: restaurant.state || primaryBranch.location?.state || '',
+                            country: primaryBranch.location?.country || 'India'
+                        };
+                        await primaryBranch.save();
+                    }
+                } catch (bErr) {
+                    console.error("Branch location sync on approval error:", bErr.message);
+                }
+            }
 
             const fields = ['fssai', 'businessRegistration', 'panCard', 'aadhaarCard', 'addressProof', 'bankProof'];
             fields.forEach(f => {
