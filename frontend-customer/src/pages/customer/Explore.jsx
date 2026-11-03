@@ -102,7 +102,7 @@ export default function Explore() {
         const approved = restRes.value.data.filter(
           (r) => r.isDeleted !== true && r.status !== 'Inactive' && (r.approvalStatus === 'Approved' || !r.approvalStatus)
         );
-        const backendMapped = approved.map((r, i) => {
+        const backendMapped = approved.map((r) => {
           const fallbackImg = r.name?.toLowerCase().includes('veg')
             ? 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?q=80&w=640&auto=format&fit=crop'
             : 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=640&auto=format&fit=crop';
@@ -110,16 +110,16 @@ export default function Explore() {
           return {
             _id: r._id,
             name: r.name,
-            badge: i === 0 ? 'Bestseller' : (i === 1 ? 'Popular' : null),
-            badgeColor: i === 0 ? 'bg-[#FF5A1F] text-white' : 'bg-[#10B981] text-white',
-            rating: r.rating ? String(r.rating) : '4.8',
-            deliveryTime: r.deliveryTime || '25-35 mins',
-            cuisines: r.cuisineType || r.cuisine || (r.name?.toLowerCase().includes('veg') ? 'Pure Veg, South Indian' : 'Multi-Cuisine, Indian'),
+            badge: r.badge || null,
+            badgeColor: r.badge ? 'bg-[#FF5A1F] text-white' : null,
+            rating: r.rating ? String(r.rating) : null,
+            deliveryTime: r.deliveryTime || null,
+            cuisines: r.cuisineType || r.cuisine || '',
             image: r.image || r.bannerImage || r.logo || fallbackImg,
-            city: r.city || 'Krishnagiri',
-            state: r.state || 'Tamil Nadu',
-            country: r.country || 'India',
-            address: r.address || 'Krishnagiri, Tamil Nadu',
+            city: r.city || '',
+            state: r.state || '',
+            country: r.country || '',
+            address: r.address || '',
             verificationAddress: r.verificationAddress || '',
             branches: r.branches || []
           };
@@ -1272,18 +1272,26 @@ export default function Explore() {
 
                   {/* Details (Compact spacing & exact typography) */}
                   <div className="p-3 space-y-1">
-                    {/* Rating & Delivery Time */}
-                    <div className="flex items-center gap-1 text-xs text-slate-500 font-semibold">
-                      <div className="flex items-center gap-1 text-slate-800 font-bold">
-                        <Star size={12} className="fill-amber-400 text-amber-400" />
-                        <span>{rest.rating}</span>
+                    {/* Rating & Delivery Time (only if present in database) */}
+                    {(rest.rating || rest.deliveryTime) && (
+                      <div className="flex items-center gap-1 text-xs text-slate-500 font-semibold">
+                        {rest.rating && (
+                          <div className="flex items-center gap-1 text-slate-800 font-bold">
+                            <Star size={12} className="fill-amber-400 text-amber-400" />
+                            <span>{rest.rating}</span>
+                          </div>
+                        )}
+                        {rest.rating && rest.deliveryTime && (
+                          <span className="text-slate-300 mx-1">•</span>
+                        )}
+                        {rest.deliveryTime && (
+                          <div className="flex items-center gap-1 text-slate-500">
+                            <Clock size={11} className="text-slate-400" />
+                            <span className="text-[11px] font-medium">{rest.deliveryTime}</span>
+                          </div>
+                        )}
                       </div>
-                      <span className="text-slate-300 mx-1">•</span>
-                      <div className="flex items-center gap-1 text-slate-500">
-                        <Clock size={11} className="text-slate-400" />
-                        <span className="text-[11px] font-medium">{rest.deliveryTime}</span>
-                      </div>
-                    </div>
+                    )}
 
                     {/* Name */}
                     <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 group-hover:text-[#FF5A1F] transition-colors line-clamp-1">
@@ -1292,7 +1300,11 @@ export default function Explore() {
 
                     {/* Cuisines & Location pill */}
                     <div className="flex items-center justify-between text-xs text-slate-400 font-medium">
-                      <p className="line-clamp-1">{rest.cuisines}</p>
+                      {rest.cuisines ? (
+                        <p className="line-clamp-1">{rest.cuisines}</p>
+                      ) : (
+                        <span />
+                      )}
                       {rest.city && (
                         <span className="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded shrink-0 ml-1">
                           {rest.city}
