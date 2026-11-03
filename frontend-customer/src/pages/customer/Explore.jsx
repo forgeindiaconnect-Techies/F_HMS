@@ -103,9 +103,15 @@ export default function Explore() {
           (r) => r.isDeleted !== true && r.status !== 'Inactive' && (r.approvalStatus === 'Approved' || !r.approvalStatus)
         );
         const backendMapped = approved.map((r) => {
-          const fallbackImg = r.name?.toLowerCase().includes('veg')
-            ? 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?q=80&w=640&auto=format&fit=crop'
-            : 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=640&auto=format&fit=crop';
+          // Resolve actual uploaded image URL from DB
+          let rawImg = r.image || r.bannerImage || r.logo || null;
+          if (rawImg && typeof rawImg === 'string') {
+            const apiBase = getApiUrl();
+            const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : '';
+            if (!rawImg.startsWith('http') && !rawImg.startsWith('data:')) {
+              rawImg = `${origin}${rawImg.startsWith('/') ? '' : '/'}${rawImg}`;
+            }
+          }
 
           return {
             _id: r._id,
@@ -115,7 +121,7 @@ export default function Explore() {
             rating: r.rating ? String(r.rating) : null,
             deliveryTime: r.deliveryTime || null,
             cuisines: r.cuisineType || r.cuisine || '',
-            image: r.image || r.bannerImage || r.logo || fallbackImg,
+            image: rawImg,
             city: r.city || '',
             state: r.state || '',
             country: r.country || '',
@@ -1255,14 +1261,32 @@ export default function Explore() {
                   className="group bg-white rounded-xl border border-slate-200/80 overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer text-left reveal-on-scroll"
                   style={{ transitionDelay: `${index * 50}ms` }}
                 >
-                  {/* 16:9 Cover Image with Optional Badge */}
-                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
-                    <img
-                      src={rest.image}
-                      alt={rest.name}
-                      className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
-                      loading="lazy"
-                    />
+                  {/* 16:9 Cover Image or Clean Default Store Placeholder */}
+                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100 flex items-center justify-center">
+                    {rest.image ? (
+                      <img
+                        src={rest.image}
+                        alt={rest.name}
+                        className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          if (e.target.nextElementSibling) {
+                            e.target.nextElementSibling.style.display = 'flex';
+                          }
+                        }}
+                      />
+                    ) : null}
+                    <div
+                      className={`w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-orange-50/40 text-slate-400 group-hover:text-[#FF5A1F] transition-colors ${
+                        rest.image ? 'hidden' : 'flex'
+                      }`}
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-white shadow-xs border border-slate-200/60 flex items-center justify-center text-[#FF5A1F]">
+                        <UtensilsCrossed size={18} />
+                      </div>
+                      <span className="text-[11px] font-bold text-slate-600 mt-1.5">{rest.name}</span>
+                    </div>
                     {rest.badge && (
                       <div className={`absolute top-2.5 left-2.5 text-[10px] font-bold px-2 py-0.5 rounded shadow-xs ${rest.badgeColor}`}>
                         {rest.badge}

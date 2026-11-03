@@ -4,7 +4,7 @@ import axios from 'axios';
 import { MapPin, Star, Clock, Info, ShoppingBag, Plus, Minus, CheckCircle, Store, AlertCircle, ArrowLeft } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { getItemImage } from '../../utils/imageHelper';
-import { getApiUrl } from '../../utils/axiosInstance';
+import api, { getApiUrl } from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
 
 const RestaurantDetails = () => {
@@ -71,27 +71,30 @@ const RestaurantDetails = () => {
     useEffect(() => {
         const fetchDetails = async () => {
             try {
-                let API_URL = getApiUrl();
-
                 // Fetch restaurant profile directly to verify visibility and status
                 let fetchedRest = null;
                 try {
-                    const restRes = await axios.get(`${API_URL}/restaurants/${id}`);
+                    const restRes = await api.get(`/restaurants/${id}`);
                     fetchedRest = restRes.data;
                 } catch (rErr) {
                     // Fallback to list search
-                    const listRes = await axios.get(`${API_URL}/restaurants`);
-                    fetchedRest = listRes.data.find(r => r._id === id);
+                    try {
+                        const listRes = await api.get('/restaurants');
+                        if (Array.isArray(listRes.data)) {
+                            fetchedRest = listRes.data.find(r => String(r._id) === String(id));
+                        }
+                    } catch (lErr) {
+                        console.error("Failed to query fallback restaurants list", lErr);
+                    }
                 }
 
                 // Check if restaurant is inactive, suspended, or soft-deleted
-                if (
-                    !fetchedRest || 
-                    fetchedRest.isDeleted || 
-                    (fetchedRest.status && fetchedRest.status !== 'Active') || 
-                    fetchedRest.isActive === false || 
-                    fetchedRest.approvalStatus === 'Rejected'
-                ) {
+                const isInactiveStatus = fetchedRest?.status && fetchedRest.status.toLowerCase() === 'inactive';
+                const isSoftDeleted = fetchedRest?.isDeleted === true;
+                const isExplicitlyDisabled = fetchedRest?.isActive === false;
+                const isRejected = fetchedRest?.approvalStatus === 'Rejected';
+
+                if (!fetchedRest || isSoftDeleted || isInactiveStatus || isExplicitlyDisabled || isRejected) {
                     setRestaurant(null);
                     // Automatically clean up cart if it holds items for this unavailable restaurant
                     try {
@@ -112,7 +115,7 @@ const RestaurantDetails = () => {
 
                 // Fetch branches
                 try {
-                    const branchRes = await axios.get(`${API_URL}/restaurants/${id}/branches`);
+                    const branchRes = await api.get(`/restaurants/${id}/branches`);
                     setBranches(branchRes.data || []);
                     if (branchRes.data?.length > 0) {
                         setSelectedBranch(branchRes.data[0]._id);
@@ -122,13 +125,17 @@ const RestaurantDetails = () => {
                 }
                 
                 // Fetch menu
-                const menuRes = await axios.get(`${API_URL}/menu?restaurantId=${id}`);
-                const rawMenu = Array.isArray(menuRes.data) ? menuRes.data : [];
-                const restaurantMenu = rawMenu.filter(m => {
-                    const rId = typeof m.restaurantId === 'object' ? (m.restaurantId?._id || m.restaurantId?.id) : m.restaurantId;
-                    return !rId || String(rId) === String(id);
-                });
-                setMenu(restaurantMenu);
+                try {
+                    const menuRes = await api.get(`/menu?restaurantId=${id}`);
+                    const rawMenu = Array.isArray(menuRes.data) ? menuRes.data : [];
+                    const restaurantMenu = rawMenu.filter(m => {
+                        const rId = typeof m.restaurantId === 'object' ? (m.restaurantId?._id || m.restaurantId?.id) : m.restaurantId;
+                        return !rId || String(rId) === String(id);
+                    });
+                    setMenu(restaurantMenu);
+                } catch (mErr) {
+                    setMenu([]);
+                }
                 
             } catch (error) {
                 console.error("Failed to load restaurant details", error);
@@ -181,19 +188,32 @@ const RestaurantDetails = () => {
 
     return (
         <div className="bg-gray-50 dark:bg-slate-950 min-h-screen pb-32 transition-colors">
-            {/* Header Images */}
-            <div className="h-72 w-full bg-gray-900 dark:bg-slate-900 overflow-hidden relative">
-                <img 
-                    src={
-                        restaurant.logo 
-                            ? (restaurant.logo.startsWith('http') || restaurant.logo.startsWith('data:')
-                                ? restaurant.logo 
-                                : `${new URL(getApiUrl()).origin}${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`)
-                            : "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2000&auto=format&fit=crop"
-                    } 
-                    alt={restaurant.name}
-                    className="w-full h-full object-cover opacity-60"
-                />
+            {/* Header Images / Clean Store Banner */}
+            <div className="h-72 w-full bg-gradient-to-r from-slate-900 via-slate-800 to-orange-950 overflow-hidden relative flex items-center justify-center">
+                {(() => {
+                    const rawBanner = restaurant.bannerImage || restaurant.image || restaurant.logo;
+                    if (rawBanner && typeof rawBanner === 'string') {
+                        const apiBase = getApiUrl();
+                        const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : '';
+                        const bannerSrc = (rawBanner.startsWith('http') || rawBanner.startsWith('data:'))
+                            ? rawBanner
+                            : `${origin}${rawBanner.startsWith('/') ? '' : '/'}${rawBanner}`;
+                        return (
+                            <img 
+                                src={bannerSrc} 
+                                alt={restaurant.name}
+                                onError={(e) => { e.target.style.display = 'none'; }}
+                                className="w-full h-full object-cover opacity-60"
+                            />
+                        );
+                    }
+                    return (
+                        <div className="flex flex-col items-center justify-center text-white/40">
+                            <Store size={48} className="text-[#FF5A1F] opacity-70 mb-2" />
+                            <span className="text-sm font-semibold tracking-wider uppercase text-white/60">{restaurant.name}</span>
+                        </div>
+                    );
+                })()}
             </div>
 
             {/* Restaurant Info */}
