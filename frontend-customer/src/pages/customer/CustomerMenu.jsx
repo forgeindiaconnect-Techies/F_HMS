@@ -36,13 +36,13 @@ const CustomerMenu = () => {
     const [customerName, setCustomerName] = useState(() => localStorage.getItem('restosys_guest_name') || '');
     const [customerPhone, setCustomerPhone] = useState(() => localStorage.getItem('restosys_guest_phone') || '');
     
-    // Service Type: 'Self Dine-In (KFC Style)' | 'Waiter Table Service'
-    const [serviceType, setServiceType] = useState('Self Dine-In (KFC Style)');
+    // Service Type: 'Waiter Table Service' | 'Self Dine-In (KFC Style)'
+    const [serviceType, setServiceType] = useState('Waiter Table Service');
     
     // Payment Option:
-    // Self Dine-In: 'UPI' | 'Card' | 'Counter'
     // Waiter Service: 'WaiterCash' | 'UPI' | 'WaiterCard'
-    const [paymentOption, setPaymentOption] = useState('UPI');
+    // Self Dine-In: 'UPI' | 'Card' | 'Counter'
+    const [paymentOption, setPaymentOption] = useState('WaiterCash');
 
     // Simulated Payment Modal State
     const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -98,14 +98,15 @@ const CustomerMenu = () => {
                         setRestaurantName(configRes.data.restaurantName);
                     }
 
-                    // Auto-adjust default service mode based on active options
+                    // Auto-adjust default service mode based on active options:
+                    // Prioritize Waiter Table Service for table QR orders
                     const qrCfg = configRes.data.qrOrdering || {};
-                    if (qrCfg.allowSelfDineIn && !qrCfg.allowWaiterOrdering) {
+                    if (qrCfg.allowWaiterOrdering !== false) {
+                        setServiceType('Waiter Table Service');
+                        setPaymentOption(configRes.data.paymentMethods?.cash !== false ? 'WaiterCash' : 'UPI');
+                    } else if (qrCfg.allowSelfDineIn) {
                         setServiceType('Self Dine-In (KFC Style)');
                         setPaymentOption('UPI');
-                    } else if (!qrCfg.allowSelfDineIn && qrCfg.allowWaiterOrdering) {
-                        setServiceType('Waiter Table Service');
-                        setPaymentOption('WaiterCash');
                     }
                 }
             } catch (error) {
