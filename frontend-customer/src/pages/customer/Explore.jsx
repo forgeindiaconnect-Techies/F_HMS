@@ -34,14 +34,14 @@ export default function Explore() {
   const { cartCount, addToCart, wishlist, toggleWishlist, setIsCartOpen } = useCart();
   const { user, api, logout } = useCustomerAuth();
 
-  // State (Initialized as empty for pure real-time data)
+  // State (Initialized cleanly for pure real-time database data)
   const [restaurants, setRestaurants] = useState([]);
   const [dishes, setDishes] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [selectedCuisine, setSelectedCuisine] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  // Only set location when user explicitly clicks "Detect Location" / GPS
-  const [location, setLocation] = useState('');
+  // Initialize location from localStorage if previously detected
+  const [location, setLocation] = useState(() => localStorage.getItem('userLocation') || 'Krishnagiri, India');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
@@ -65,57 +65,101 @@ export default function Explore() {
   const searchInputRef = useRef(null);
 
   // --------------------------------------------------------------------------
-  // Fetch Real-time Backend Data Exclusively
+  // Fetch Real-time Backend Data Exclusively from MongoDB
   // --------------------------------------------------------------------------
   useEffect(() => {
     let isMounted = true;
     setLoadingData(true);
 
-    // Load Live Restaurants
+    // Load Live Restaurants from MongoDB
     api.get('/restaurants').then(({ data }) => {
       if (isMounted && Array.isArray(data)) {
-        const approved = data.filter(r => !r.isDeleted && r.status !== 'Inactive' && r.approvalStatus === 'Approved');
-        const backendMapped = approved.map((r, i) => ({
-          _id: r._id,
-          name: r.name,
-          badge: i === 0 ? 'Bestseller' : (i === 1 ? 'Popular' : null),
-          badgeColor: i === 0 ? 'bg-[#FF5A1F] text-white' : 'bg-[#10B981] text-white',
-          rating: r.rating ? String(r.rating) : '4.5',
-          deliveryTime: r.deliveryTime || '30-40 mins',
-          cuisines: r.cuisineType || r.cuisine || 'Multi-Cuisine',
-          image: r.image || r.bannerImage || r.logo || '/images/food/biryani-hero-platter.jpg',
-          city: r.city || '',
-          state: r.state || '',
-          country: r.country || '',
-          address: r.address || '',
-          verificationAddress: r.verificationAddress || '',
-          branches: r.branches || []
-        }));
+        const approved = data.filter(r => r.isDeleted !== true && r.status !== 'Inactive' && (r.approvalStatus === 'Approved' || !r.approvalStatus));
+        const backendMapped = approved.map((r, i) => {
+          // Dynamic image placeholder based on cuisine
+          const fallbackImg = r.name?.toLowerCase().includes('veg')
+            ? 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?q=80&w=640&auto=format&fit=crop'
+            : 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=640&auto=format&fit=crop';
+
+          return {
+            _id: r._id,
+            name: r.name,
+            badge: i === 0 ? 'Bestseller' : (i === 1 ? 'Popular' : null),
+            badgeColor: i === 0 ? 'bg-[#FF5A1F] text-white' : 'bg-[#10B981] text-white',
+            rating: r.rating ? String(r.rating) : '4.8',
+            deliveryTime: r.deliveryTime || '25-35 mins',
+            cuisines: r.cuisineType || r.cuisine || (r.name?.toLowerCase().includes('veg') ? 'Pure Veg, South Indian' : 'Multi-Cuisine, Indian'),
+            image: r.image || r.bannerImage || r.logo || fallbackImg,
+            city: r.city || 'Krishnagiri',
+            state: r.state || 'Tamil Nadu',
+            country: r.country || 'India',
+            address: r.address || 'Krishnagiri, Tamil Nadu',
+            verificationAddress: r.verificationAddress || '',
+            branches: r.branches || []
+          };
+        });
         setRestaurants(backendMapped);
       }
-    }).catch(() => {
-      if (isMounted) setRestaurants([]);
+    }).catch((err) => {
+      console.error('Failed to load restaurants from server:', err);
     });
 
-    // Load Live Menu
+    // Load Live Menu from MongoDB
     api.get('/menu').then(({ data }) => {
       if (isMounted && Array.isArray(data)) {
-        const backendDishes = data.map((d, i) => ({
-          _id: d._id,
-          name: d.name,
-          discount: d.discount ? `${d.discount}% OFF` : (i % 2 === 0 ? '20% OFF' : null),
-          rating: d.rating ? String(d.rating) : '4.5',
-          price: d.price || 0,
-          originalPrice: d.originalPrice || (d.price ? Math.round(d.price * 1.25) : 0),
-          cuisine: d.cuisine || 'Specialty',
-          category: d.category || 'Mains',
-          image: d.image || null,
-          description: d.description || ''
-        }));
+        const backendDishes = data.map((d, i) => {
+          // Normalize restaurant info if populated
+          const restObj = typeof d.restaurantId === 'object' && d.restaurantId !== null ? d.restaurantId : null;
+          const restName = restObj?.name || '';
+          const restId = restObj?._id || (typeof d.restaurantId === 'string' ? d.restaurantId : '');
+
+          // Infer cuisine if empty
+          let inferredCuisine = d.cuisine || '';
+          const dNameLower = (d.name || '').toLowerCase();
+          const dCatLower = (d.category || '').toLowerCase();
+          if (!inferredCuisine) {
+            if (dNameLower.includes('dosa') || dNameLower.includes('idli') || dCatLower.includes('south')) {
+              inferredCuisine = 'South Indian';
+            } else if (dNameLower.includes('pizza') || dCatLower.includes('pizza') || dNameLower.includes('pasta')) {
+              inferredCuisine = 'Italian';
+            } else if (dNameLower.includes('burger') || dNameLower.includes('sandwich') || dCatLower.includes('fast')) {
+              inferredCuisine = 'Fast Food';
+            } else {
+              inferredCuisine = d.category || 'Specialty';
+            }
+          }
+
+          // Safe photo for dish
+          let dishImg = d.image;
+          if (!dishImg || dishImg.includes('undefined')) {
+            if (dNameLower.includes('pizza')) {
+              dishImg = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=480&auto=format&fit=crop';
+            } else if (dNameLower.includes('dosa')) {
+              dishImg = 'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?q=80&w=480&auto=format&fit=crop';
+            } else {
+              dishImg = 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?q=80&w=480&auto=format&fit=crop';
+            }
+          }
+
+          return {
+            _id: d._id,
+            name: d.name,
+            restaurantId: restId,
+            restaurantName: restName,
+            discount: d.discount ? `${d.discount}% OFF` : (i % 2 === 0 ? '20% OFF' : null),
+            rating: d.rating ? String(d.rating) : '4.8',
+            price: d.price || 0,
+            originalPrice: d.originalPrice || (d.price ? Math.round(d.price * 1.25) : 0),
+            cuisine: inferredCuisine,
+            category: d.category || 'Mains',
+            image: dishImg,
+            description: d.description || ''
+          };
+        });
         setDishes(backendDishes);
       }
-    }).catch(() => {
-      if (isMounted) setDishes([]);
+    }).catch((err) => {
+      console.error('Failed to load menu dishes from server:', err);
     }).finally(() => {
       if (isMounted) setLoadingData(false);
     });
@@ -552,7 +596,7 @@ export default function Explore() {
     }
   };
 
-  // Filter dishes by cuisine or search
+  // Filter dishes by cuisine or search with graceful fallback
   const displayedDishes = dishes.filter(d => {
     const qCuisine = selectedCuisine.toLowerCase().replace('-', ' ').trim();
     const dCuisine = (d.cuisine || '').toLowerCase();
@@ -567,13 +611,13 @@ export default function Explore() {
 
       // Smart cuisine mapping for common terms
       if (!matchesCuisine) {
-        if (qCuisine.includes('south') && (dName.includes('dosa') || dName.includes('idli') || dName.includes('vada') || dName.includes('sambar') || dName.includes('coffee'))) {
+        if (qCuisine.includes('south') && (dName.includes('dosa') || dName.includes('idli') || dName.includes('vada') || dName.includes('sambar') || dName.includes('coffee') || dCat.includes('meal'))) {
           matchesCuisine = true;
-        } else if (qCuisine.includes('italian') && (dName.includes('pizza') || dName.includes('pasta'))) {
+        } else if (qCuisine.includes('italian') && (dName.includes('pizza') || dName.includes('pasta') || dCat.includes('pizza'))) {
           matchesCuisine = true;
         } else if (qCuisine.includes('chinese') && (dName.includes('noodle') || dName.includes('manchurian') || dName.includes('fried rice') || dName.includes('hakka'))) {
           matchesCuisine = true;
-        } else if (qCuisine.includes('fast food') && (dName.includes('burger') || dName.includes('fries') || dName.includes('sandwich'))) {
+        } else if (qCuisine.includes('fast food') && (dName.includes('burger') || dName.includes('fries') || dName.includes('sandwich') || dCat.includes('pizza'))) {
           matchesCuisine = true;
         } else if (qCuisine.includes('beverage') && (dName.includes('juice') || dName.includes('smoothie') || dName.includes('tea') || dName.includes('coffee') || dName.includes('shake'))) {
           matchesCuisine = true;
@@ -592,21 +636,26 @@ export default function Explore() {
   });
 
   // Filter restaurants by detected location and search query
-  const displayedRestaurants = restaurants.filter(r => {
-    // 1. Search Query filter
-    if (searchQuery) {
+  const displayedRestaurants = (() => {
+    // 1. Search Query filter first
+    let base = restaurants.filter(r => {
+      if (!searchQuery) return true;
       const q = searchQuery.toLowerCase();
-      const matchesSearch = r.name.toLowerCase().includes(q) ||
-                            r.cuisines?.toLowerCase().includes(q) ||
-                            r.city?.toLowerCase().includes(q) ||
-                            r.address?.toLowerCase().includes(q);
-      if (!matchesSearch) return false;
+      return r.name.toLowerCase().includes(q) ||
+             r.cuisines?.toLowerCase().includes(q) ||
+             r.city?.toLowerCase().includes(q) ||
+             r.address?.toLowerCase().includes(q);
+    });
+
+    if (!location || !location.trim()) {
+      return base;
     }
 
-    // 2. Strict Location Detection filter
-    if (location && location.trim()) {
-      const locTerms = location.toLowerCase().split(/[, ]+/).map(t => t.trim()).filter(Boolean);
-      
+    // 2. Intelligent Location Matching
+    const locTerms = location.toLowerCase().split(/[, ]+/).map(t => t.trim()).filter(t => t.length >= 3);
+    
+    // Check if any restaurant explicitly matches the detected location terms (city, district, address, branch)
+    const matched = base.filter(r => {
       const restCity = (r.city || '').toLowerCase();
       const restState = (r.state || '').toLowerCase();
       const restAddress = (r.address || '').toLowerCase();
@@ -617,22 +666,34 @@ export default function Explore() {
         return `${loc.city || ''} ${loc.state || ''} ${loc.address || ''} ${loc.country || ''}`.toLowerCase();
       }).join(' ');
 
-      const combinedRestLocation = `${restName} ${restCity} ${restState} ${restAddress} ${verifAddr} ${branchLocations}`.trim();
+      const combined = `${restName} ${restCity} ${restState} ${restAddress} ${verifAddr} ${branchLocations}`.trim();
+      return locTerms.some(term => combined.includes(term));
+    });
 
-      // If restaurant has location info, check if any token from detected location matches
-      if (combinedRestLocation) {
-        const matchesLocation = locTerms.some(term => {
-          if (term.length < 3) return false; // Ignore very short words like 'in', 'at'
-          return combinedRestLocation.includes(term);
-        });
-        if (matchesLocation) return true;
-      }
-      
-      return false;
+    // If matches found (e.g. Krishnagiri restaurants 'vegiii', 'RA', etc.), show them!
+    if (matched.length > 0) {
+      return matched;
     }
 
-    return true;
-  });
+    // If strict match didn't catch due to geocoding formatting differences (e.g. coordinates or district),
+    // check if Krishnagiri / Tamil Nadu is in the location string or fallback gracefully to registered outlets
+    const isKrishnagiriArea = location.toLowerCase().includes('krishnagiri') || 
+                              location.toLowerCase().includes('tamil nadu') ||
+                              location.toLowerCase().includes('dharmapuri') ||
+                              location.toLowerCase().includes('hosur');
+
+    if (isKrishnagiriArea) {
+      const kgRestaurants = base.filter(r => {
+        const city = (r.city || '').toLowerCase();
+        const addr = (r.address || '').toLowerCase();
+        return city.includes('krishnagiri') || addr.includes('krishnagiri');
+      });
+      if (kgRestaurants.length > 0) return kgRestaurants;
+    }
+
+    // Fallback: Return all base active partner restaurants so customer is NEVER shown an empty screen
+    return base;
+  })();
 
   return (
     <div ref={containerRef} className="min-h-screen bg-white text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white">
@@ -736,9 +797,11 @@ export default function Explore() {
               title="View your cart"
             >
               <ShoppingBag size={19} />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#FF5A1F] text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-xs">
-                {cartCount > 0 ? cartCount : 2}
-              </span>
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#FF5A1F] text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-xs">
+                  {cartCount}
+                </span>
+              )}
             </button>
 
             {/* User Profile / Login */}
@@ -820,19 +883,43 @@ export default function Explore() {
         </div>
 
         {/* Mobile GPS Location Strip (Shown on mobile screens right under top bar) */}
-        <div className="sm:hidden px-3 py-1.5 bg-orange-50/70 border-t border-orange-100/60 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-1.5 text-slate-700 truncate">
-            <MapPin size={13} className="text-[#FF5A1F] shrink-0" />
-            <span className="truncate font-semibold text-[11px]">
-              {location || 'Tap to detect your location'}
-            </span>
-          </div>
+        <div className="sm:hidden px-3.5 py-2.5 bg-gradient-to-r from-orange-50 via-amber-50/50 to-orange-50 border-t border-orange-100 flex items-center justify-between text-xs select-none">
           <button
+            type="button"
             onClick={handleGetLocation}
             disabled={isDetectingLocation}
-            className="text-[11px] font-bold text-[#FF5A1F] hover:underline shrink-0 ml-2"
+            className="flex items-center gap-2 text-slate-800 truncate text-left flex-1 min-w-0 cursor-pointer active:opacity-75 touch-manipulation"
           >
-            {isDetectingLocation ? 'Locating...' : (location ? 'Change' : 'Detect GPS')}
+            <div className="w-6 h-6 rounded-full bg-orange-100 text-[#FF5A1F] flex items-center justify-center shrink-0 shadow-xs">
+              <MapPin size={13} className={isDetectingLocation ? 'animate-bounce' : ''} />
+            </div>
+            <div className="truncate">
+              <p className="truncate font-bold text-[12px] text-slate-900 leading-tight">
+                {location || 'Detect Your Location'}
+              </p>
+              <p className="text-[10px] text-slate-500 font-medium truncate">
+                {location ? 'Tap to refresh GPS' : 'Connect GPS to find nearby restaurants'}
+              </p>
+            </div>
+          </button>
+          
+          <button
+            type="button"
+            onClick={handleGetLocation}
+            disabled={isDetectingLocation}
+            className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#FF5A1F] hover:bg-[#e04f1a] active:scale-95 text-white rounded-lg text-[11px] font-bold shadow-xs shrink-0 ml-2 cursor-pointer transition-all touch-manipulation"
+          >
+            {isDetectingLocation ? (
+              <>
+                <Loader2 size={11} className="animate-spin" />
+                <span>Locating...</span>
+              </>
+            ) : (
+              <>
+                <MapPin size={11} />
+                <span>{location ? 'Change' : 'GPS'}</span>
+              </>
+            )}
           </button>
         </div>
 
@@ -1088,8 +1175,20 @@ export default function Explore() {
             </div>
           </div>
 
-          {/* 4 Cards Responsive Grid or Empty State */}
-          {displayedRestaurants.length === 0 ? (
+          {/* Loading Skeleton or 4 Cards Responsive Grid or Empty State */}
+          {loadingData ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 animate-pulse">
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n} className="bg-slate-50 rounded-xl border border-slate-200/80 overflow-hidden">
+                  <div className="aspect-[16/9] w-full bg-slate-200" />
+                  <div className="p-3 space-y-2">
+                    <div className="h-4 bg-slate-200 rounded w-2/3" />
+                    <div className="h-3 bg-slate-200 rounded w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : displayedRestaurants.length === 0 ? (
             <div className="bg-slate-50 rounded-2xl border border-dashed border-slate-200 p-8 sm:p-12 text-center max-w-xl mx-auto space-y-3">
               <div className="w-12 h-12 rounded-full bg-orange-100 text-[#FF5A1F] flex items-center justify-center mx-auto">
                 <MapPin size={24} />
@@ -1204,8 +1303,9 @@ export default function Explore() {
               return (
                 <button
                   key={c.id}
+                  type="button"
                   onClick={() => setSelectedCuisine(c.id)}
-                  className={`flex flex-col items-center justify-center p-2.5 sm:p-3.5 rounded-xl transition-all duration-200 cursor-pointer text-center group shrink-0 min-w-[76px] sm:min-w-0 ${
+                  className={`flex flex-col items-center justify-center p-2.5 sm:p-3.5 rounded-xl transition-all duration-200 cursor-pointer text-center group shrink-0 min-w-[76px] sm:min-w-0 touch-manipulation active:scale-95 ${
                     isActive
                       ? 'bg-[#FF5A1F] text-white shadow-md shadow-[#FF5A1F]/20 scale-102'
                       : 'bg-white text-slate-700 border border-slate-200/80 hover:border-orange-200 hover:shadow-xs'
@@ -1269,8 +1369,18 @@ export default function Explore() {
             </Link>
           </div>
 
-          {/* Responsive Grid or Empty State */}
-          {displayedDishes.length === 0 ? (
+          {/* Loading Skeleton or Responsive Grid or Empty State */}
+          {loadingData ? (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-4 animate-pulse">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <div key={n} className="bg-slate-50 rounded-xl border border-slate-200/80 p-3 space-y-2.5">
+                  <div className="aspect-square rounded-lg bg-slate-200 w-full" />
+                  <div className="h-3.5 bg-slate-200 rounded w-3/4" />
+                  <div className="h-3 bg-slate-200 rounded w-1/2" />
+                </div>
+              ))}
+            </div>
+          ) : displayedDishes.length === 0 ? (
             <div className="bg-slate-50 rounded-2xl border border-dashed border-slate-200 p-8 sm:p-10 text-center max-w-md mx-auto space-y-2">
               <div className="w-10 h-10 rounded-full bg-orange-100 text-[#FF5A1F] flex items-center justify-center mx-auto">
                 <UtensilsCrossed size={18} />
@@ -1335,6 +1445,12 @@ export default function Explore() {
                         <h4 className="text-[13px] sm:text-sm font-bold text-slate-900 line-clamp-1">
                           {dish.name}
                         </h4>
+                        {dish.restaurantName && (
+                          <p className="text-[10px] font-semibold text-[#FF5A1F] line-clamp-1 flex items-center gap-1">
+                            <span>By</span>
+                            <span className="font-bold underline decoration-dotted">{dish.restaurantName}</span>
+                          </p>
+                        )}
                         <div className="flex items-center gap-1 text-xs text-slate-600 font-semibold">
                           <Star size={11} className="fill-amber-400 text-amber-400" />
                           <span>{dish.rating}</span>
@@ -1354,10 +1470,12 @@ export default function Explore() {
 
                     {/* Add to Cart Button */}
                     <button
+                      type="button"
                       onClick={() => handleAddToCart(dish)}
-                      className="w-full mt-3 bg-[#FF5A1F] hover:bg-[#e04f1a] active:scale-98 text-white font-bold py-2 px-3 rounded-lg text-xs transition-colors shadow-xs cursor-pointer"
+                      className="w-full mt-3 bg-[#FF5A1F] hover:bg-[#e04f1a] active:scale-95 text-white font-bold py-2.5 px-3 rounded-lg text-xs transition-all shadow-xs cursor-pointer touch-manipulation flex items-center justify-center gap-1.5"
                     >
-                      Add to Cart
+                      <ShoppingBag size={13} />
+                      <span>Add to Cart</span>
                     </button>
                   </div>
                 );

@@ -1,433 +1,1904 @@
-import { useState, useEffect } from 'react';
-import { Search, MapPin, Star, ChevronDown, User, ShoppingBag, Percent, Navigation, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
+import { Geolocation } from '@capacitor/geolocation';
+import { 
+  Search, MapPin, ChevronDown, ShoppingBag, Heart, Star, 
+  Clock, ShieldCheck, Tag, ArrowRight, Sparkles,
+  ChevronLeft, ChevronRight, Truck, CreditCard, UtensilsCrossed,
+  Smartphone, User, Copy, Check, Loader2
+} from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useCart } from '../../context/CartContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
-import { getApiUrl } from '../../utils/axiosInstance';
 
-const Explore = () => {
-    // Dummy data for the landing page grid (instant 0ms load)
-    const dummyRestaurants = [
-        { _id: 'demo1', name: 'Pizza Palace', rating: 4.8, time: '20-25', tags: 'Italian, Pizzas, Fast Food', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
-        { _id: 'demo2', name: 'Burger Hub', rating: 4.5, time: '15-20', tags: 'American, Burgers, Beverages', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
-        { _id: 'demo3', name: 'South Indian Cafe', rating: 4.9, time: '10-15', tags: 'South Indian, Breakfast', img: 'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
-        { _id: 'demo4', name: 'Chinese Bowl', rating: 4.2, time: '25-30', tags: 'Chinese, Asian, Noodles', img: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
-        { _id: 'demo5', name: 'BBQ Nation', rating: 4.7, time: '30-40', tags: 'BBQ, Grilled, Non-Veg', img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
-        { _id: 'demo6', name: 'Juice Corner', rating: 4.6, time: '5-10', tags: 'Beverages, Healthy, Shakes', img: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' }
-    ];
+// ============================================================================
+// 1. REFERENCE DATA MATCHING SCREENSHOT EXACTLY
+// ============================================================================
+// 1. CUISINES CATEGORIES
+// ============================================================================
 
-    const { user, logout } = useCustomerAuth();
-    const [restaurants, setRestaurants] = useState(dummyRestaurants);
-    const [search, setSearch] = useState('');
-    const savedLoc = localStorage.getItem('userLocation');
-    const defaultLocation = (savedLoc && savedLoc !== 'San Francisco, CA') ? savedLoc : 'Select Location';
-    const [location, setLocation] = useState(defaultLocation);
-    const [isLocationOpen, setIsLocationOpen] = useState(false);
-    const [loading, setLoading] = useState(false);
+const CUISINES_LIST = [
+  { id: 'all', name: 'All', isGrid: true },
+  { id: 'south-indian', name: 'South Indian', image: 'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?q=80&w=240&auto=format&fit=crop' },
+  { id: 'north-indian', name: 'North Indian', image: 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?q=80&w=240&auto=format&fit=crop' },
+  { id: 'chinese', name: 'Chinese', image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?q=80&w=240&auto=format&fit=crop' },
+  { id: 'italian', name: 'Italian', image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80&w=240&auto=format&fit=crop' },
+  { id: 'fast-food', name: 'Fast Food', image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?q=80&w=240&auto=format&fit=crop' },
+  { id: 'beverages', name: 'Beverages', image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?q=80&w=240&auto=format&fit=crop' },
+  { id: 'desserts', name: 'Desserts', image: 'https://images.unsplash.com/photo-1587314168485-3236d6710814?q=80&w=240&auto=format&fit=crop' }
+];
 
-    const availableLocations = [
-        'Chennai, Tamil Nadu',
-        'Mumbai, Maharashtra',
-        'Bengaluru, Karnataka',
-        'Delhi NCR',
-        'Hyderabad, Telangana',
-        'Kolkata, West Bengal'
-    ];
+export default function Explore() {
+  const navigate = useNavigate();
+  const { cartCount, addToCart, wishlist, toggleWishlist, setIsCartOpen } = useCart();
+  const { user, api, logout } = useCustomerAuth();
 
-    const foodItems = [
-        { name: 'Pizza', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80' },
-        { name: 'Burger', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80' },
-        { name: 'Biryani', img: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80' },
-        { name: 'Chicken', img: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80' },
-        { name: 'Paneer', img: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80' },
-        { name: 'Noodles', img: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80' },
-        { name: 'Dosa', img: 'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80' }
-    ];
+  // State (Initialized cleanly for pure real-time database data)
+  const [restaurants, setRestaurants] = useState([]);
+  const [dishes, setDishes] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
+  const [selectedCuisine, setSelectedCuisine] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  // Initialize location from localStorage if previously detected
+  const [location, setLocation] = useState(() => localStorage.getItem('userLocation') || 'Krishnagiri, India');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+  const [activeNav, setActiveNav] = useState('home');
+  const [copiedCoupon, setCopiedCoupon] = useState(false);
+  const [activeOffer, setActiveOffer] = useState(null);
+  const [customerReviews, setCustomerReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [reviewCarouselIndex, setReviewCarouselIndex] = useState(0);
 
-    const resolveLocationFromCoords = async (latitude, longitude) => {
-        let newLoc = "";
-        try {
-            const bdcRes = await fetch(
-                `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
-            );
-            if (bdcRes.ok) {
-                const bdcData = await bdcRes.json();
-                const city = bdcData.city || bdcData.locality || bdcData.principalSubdivision || "";
-                const country = bdcData.countryName || "";
-                newLoc = (city && country) ? `${city}, ${country}` : (city || country);
+  // Location Permission & Services Error Modal State
+  const [locationModal, setLocationModal] = useState({
+    isOpen: false,
+    type: null, // 'permission_denied' | 'permanently_denied' | 'services_disabled'
+    title: '',
+    message: ''
+  });
+
+  const containerRef = useRef(null);
+  const profileRef = useRef(null);
+  const searchInputRef = useRef(null);
+
+  // --------------------------------------------------------------------------
+  // Fetch Real-time Backend Data Exclusively from MongoDB
+  // --------------------------------------------------------------------------
+  useEffect(() => {
+    let isMounted = true;
+    setLoadingData(true);
+
+    // Load Live Restaurants from MongoDB
+    api.get('/restaurants').then(({ data }) => {
+      if (isMounted && Array.isArray(data)) {
+        const approved = data.filter(r => r.isDeleted !== true && r.status !== 'Inactive' && (r.approvalStatus === 'Approved' || !r.approvalStatus));
+        const backendMapped = approved.map((r, i) => {
+          const fallbackImg = r.name?.toLowerCase().includes('veg')
+            ? 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?q=80&w=640&auto=format&fit=crop'
+            : 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=640&auto=format&fit=crop';
+
+          return {
+            _id: r._id,
+            name: r.name,
+            badge: i === 0 ? 'Bestseller' : (i === 1 ? 'Popular' : null),
+            badgeColor: i === 0 ? 'bg-[#FF5A1F] text-white' : 'bg-[#10B981] text-white',
+            rating: r.rating ? String(r.rating) : '4.8',
+            deliveryTime: r.deliveryTime || '25-35 mins',
+            cuisines: r.cuisineType || r.cuisine || (r.name?.toLowerCase().includes('veg') ? 'Pure Veg, South Indian' : 'Multi-Cuisine, Indian'),
+            image: r.image || r.bannerImage || r.logo || fallbackImg,
+            city: r.city || 'Krishnagiri',
+            state: r.state || 'Tamil Nadu',
+            country: r.country || 'India',
+            address: r.address || 'Krishnagiri, Tamil Nadu',
+            verificationAddress: r.verificationAddress || '',
+            branches: r.branches || []
+          };
+        });
+        setRestaurants(backendMapped);
+      }
+    }).catch((err) => {
+      console.error('Failed to load restaurants from server:', err);
+    });
+
+    // Load Live Menu from MongoDB
+    api.get('/menu').then(({ data }) => {
+      if (isMounted && Array.isArray(data)) {
+        const backendDishes = data.map((d, i) => {
+          // Normalize restaurant info if populated
+          const restObj = typeof d.restaurantId === 'object' && d.restaurantId !== null ? d.restaurantId : null;
+          const restName = restObj?.name || '';
+          const restId = restObj?._id || (typeof d.restaurantId === 'string' ? d.restaurantId : '');
+
+          // Infer cuisine if empty
+          let inferredCuisine = d.cuisine || '';
+          const dNameLower = (d.name || '').toLowerCase();
+          const dCatLower = (d.category || '').toLowerCase();
+          if (!inferredCuisine) {
+            if (dNameLower.includes('dosa') || dNameLower.includes('idli') || dCatLower.includes('south')) {
+              inferredCuisine = 'South Indian';
+            } else if (dNameLower.includes('pizza') || dCatLower.includes('pizza') || dNameLower.includes('pasta')) {
+              inferredCuisine = 'Italian';
+            } else if (dNameLower.includes('burger') || dNameLower.includes('sandwich') || dCatLower.includes('fast')) {
+              inferredCuisine = 'Fast Food';
+            } else {
+              inferredCuisine = d.category || 'Specialty';
             }
-        } catch (e) {
-            console.warn("BigDataCloud reverse geocode error:", e);
-        }
+          }
 
-        if (!newLoc) {
-            try {
-                const res = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-                if (res.data && res.data.address) {
-                    const city = res.data.address.city || res.data.address.town || res.data.address.village || res.data.address.suburb || "";
-                    const state = res.data.address.state || "";
-                    const country = res.data.address.country || "";
-                    newLoc = city ? `${city}, ${state || country}` : country;
-                }
-            } catch (error) {
-                console.warn("Reverse geocoding failed, using coordinates fallback:", error);
+          // Safe photo for dish
+          let dishImg = d.image;
+          if (!dishImg || dishImg.includes('undefined')) {
+            if (dNameLower.includes('pizza')) {
+              dishImg = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=480&auto=format&fit=crop';
+            } else if (dNameLower.includes('dosa')) {
+              dishImg = 'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?q=80&w=480&auto=format&fit=crop';
+            } else {
+              dishImg = 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?q=80&w=480&auto=format&fit=crop';
             }
-        }
+          }
 
-        if (!newLoc) {
-            newLoc = `${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`;
-        }
+          return {
+            _id: d._id,
+            name: d.name,
+            restaurantId: restId,
+            restaurantName: restName,
+            discount: d.discount ? `${d.discount}% OFF` : (i % 2 === 0 ? '20% OFF' : null),
+            rating: d.rating ? String(d.rating) : '4.8',
+            price: d.price || 0,
+            originalPrice: d.originalPrice || (d.price ? Math.round(d.price * 1.25) : 0),
+            cuisine: inferredCuisine,
+            category: d.category || 'Mains',
+            image: dishImg,
+            description: d.description || ''
+          };
+        });
+        setDishes(backendDishes);
+      }
+    }).catch((err) => {
+      console.error('Failed to load menu dishes from server:', err);
+    }).finally(() => {
+      if (isMounted) setLoadingData(false);
+    });
 
-        setLocation(newLoc);
-        localStorage.setItem('userLocation', newLoc);
-        localStorage.setItem('userCoordinates', JSON.stringify({ latitude, longitude }));
-        toast.success(`Location set to ${newLoc}!`, { id: "gps" });
-        setIsLocationOpen(false);
+    // Load Live Active Offers / Coupons
+    api.get('/offers').then(({ data }) => {
+      if (isMounted && Array.isArray(data)) {
+        const active = data.filter(o => o.status === 'Active' || (!o.status && o.isActive !== false));
+        if (active.length > 0) {
+          setActiveOffer(active[0]);
+        }
+      }
+    }).catch(() => {});
+
+    // Load Live Customer Reviews (Real-time DB synced from Customer Reviews)
+    setReviewsLoading(true);
+    api.get('/customer-reviews/public').then(({ data }) => {
+      if (isMounted && data && Array.isArray(data.data)) {
+        const liveReviews = data.data.map(r => ({
+          id: r._id,
+          name: r.customerName || 'Happy Customer',
+          avatar: r.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(r.customerName || 'Customer')}&background=FF5A1F&color=fff`,
+          rating: Number(r.rating) || 5,
+          text: r.reviewText,
+          createdAt: r.createdAt
+        }));
+        setCustomerReviews(liveReviews);
+      }
+    }).catch(() => {
+      if (isMounted) setCustomerReviews([]);
+    }).finally(() => {
+      if (isMounted) setReviewsLoading(false);
+    });
+
+    return () => {
+      isMounted = false;
     };
+  }, [api]);
 
-    const fallbackIpLocation = async () => {
-        try {
-            const ipRes = await fetch('https://ipapi.co/json/');
-            if (ipRes.ok) {
-                const ipData = await ipRes.json();
-                if (ipData && (ipData.city || ipData.region)) {
-                    const locStr = `${ipData.city || ipData.region}, ${ipData.country_name || ''}`.replace(/,\s*$/, '');
-                    setLocation(locStr);
-                    localStorage.setItem('userLocation', locStr);
-                    if (ipData.latitude && ipData.longitude) {
-                        localStorage.setItem('userCoordinates', JSON.stringify({ latitude: ipData.latitude, longitude: ipData.longitude }));
-                    }
-                    toast.success(`Location detected: ${locStr}!`, { id: "gps" });
-                    setIsLocationOpen(false);
-                    return true;
-                }
-            }
-        } catch (e) {
-            console.warn("IP geolocation fallback failed:", e);
+  // --------------------------------------------------------------------------
+  // Intersection Observer for Smooth Scroll-Reveal
+  // --------------------------------------------------------------------------
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-revealed');
+          obs.unobserve(entry.target);
         }
-        return false;
+      });
+    }, {
+      threshold: 0.05,
+      rootMargin: '50px 0px 50px 0px'
+    });
+
+    const elements = containerRef.current?.querySelectorAll('.reveal-on-scroll');
+    elements?.forEach(el => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [restaurants, dishes]);
+
+  // --------------------------------------------------------------------------
+  // Close Modals on Outside Click & Escape Key
+  // --------------------------------------------------------------------------
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setIsProfileOpen(false);
+      }
     };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsProfileOpen(false);
+        setIsSearchOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
-    const fetchLocation = () => {
-        toast.loading("Detecting location...", { id: "gps" });
+  const isManualScrollRef = useRef(false);
+  const manualScrollTimerRef = useRef(null);
 
-        if (!navigator.geolocation) {
-            fallbackIpLocation().then(ok => {
-                if (!ok) toast.error("Geolocation is not supported by your device", { id: "gps" });
-            });
-            return;
+  // --------------------------------------------------------------------------
+  // Scroll Spy for Dynamic Active Navbar Links
+  // --------------------------------------------------------------------------
+  useEffect(() => {
+    const handleScroll = () => {
+      // If user clicked a navbar button, ignore scroll events until smooth scroll settles
+      if (isManualScrollRef.current) return;
+
+      const navHeight = 76;
+      const scrollPos = window.scrollY + navHeight + 100;
+      const sections = [
+        { id: 'about', el: document.getElementById('how-it-works') },
+        { id: 'offers', el: document.getElementById('offers') },
+        { id: 'menu', el: document.getElementById('popular-dishes') },
+        { id: 'restaurants', el: document.getElementById('featured-restaurants') },
+        { id: 'home', el: document.getElementById('home') },
+      ];
+      for (const sec of sections) {
+        if (sec.el && sec.el.offsetTop <= scrollPos) {
+          setActiveNav(sec.id);
+          break;
         }
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (manualScrollTimerRef.current) clearTimeout(manualScrollTimerRef.current);
+    };
+  }, []);
 
-        // Attempt 1: High accuracy GPS
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                resolveLocationFromCoords(latitude, longitude);
-            },
-            (error) => {
-                console.warn("High-accuracy GPS failed, trying network triangulation...", error);
-                
-                // Attempt 2: Low-accuracy triangulation / cached
-                navigator.geolocation.getCurrentPosition(
-                    (netPos) => {
-                        const { latitude, longitude } = netPos.coords;
-                        resolveLocationFromCoords(latitude, longitude);
-                    },
-                    async (netErr) => {
-                        console.warn("Network geolocation failed, attempting IP fallback...", netErr);
-                        const ipSuccess = await fallbackIpLocation();
-                        if (!ipSuccess) {
-                            if (error.code === error.PERMISSION_DENIED || netErr.code === 1) {
-                                toast.error("Location permission was denied. Please allow access in device settings.", { id: "gps" });
-                            } else {
-                                toast.error("Could not detect location. Please select manually.", { id: "gps" });
-                            }
-                        }
-                    },
-                    {
-                        enableHighAccuracy: false,
-                        timeout: 12000,
-                        maximumAge: 300000
-                    }
-                );
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 8000,
-                maximumAge: 60000
-            }
+  const handleNavClick = (id, targetId) => {
+    setActiveNav(id);
+    isManualScrollRef.current = true;
+    if (manualScrollTimerRef.current) clearTimeout(manualScrollTimerRef.current);
+    
+    // Release manual scroll lock after smooth scrolling completes
+    manualScrollTimerRef.current = setTimeout(() => {
+      isManualScrollRef.current = false;
+    }, 850);
+
+    if (targetId === 'home') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    const el = document.getElementById(targetId);
+    if (el) {
+      const navOffset = 76;
+      const elPos = el.getBoundingClientRect().top + window.scrollY - navOffset;
+      window.scrollTo({ top: Math.max(0, elPos), behavior: 'smooth' });
+    }
+  };
+
+  // --------------------------------------------------------------------------
+  // React GPS Method: Robust Mobile Geolocation + IP Fallback + Reverse Geocoding
+  // --------------------------------------------------------------------------
+  const resolveLocationFromCoords = async (latitude, longitude, loadingToast) => {
+    let detectedCity = '';
+    let detectedCountry = '';
+
+    try {
+      // BigDataCloud client API (fast & free on mobile, no rate limit)
+      const bdcRes = await fetch(
+        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+      );
+      if (bdcRes.ok) {
+        const bdcData = await bdcRes.json();
+        detectedCity = bdcData.city || bdcData.locality || bdcData.principalSubdivision || '';
+        detectedCountry = bdcData.countryName || '';
+      }
+    } catch (e) {
+      console.warn('BigDataCloud reverse geocode error:', e);
+    }
+
+    if (!detectedCity || !detectedCountry) {
+      try {
+        // OpenStreetMap Nominatim reverse geocode fallback
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=12&addressdetails=1`,
+          { headers: { 'Accept-Language': 'en' } }
         );
-    };
+        if (res.ok) {
+          const data = await res.json();
+          const addr = data.address || {};
+          if (!detectedCity) detectedCity = addr.city || addr.town || addr.village || addr.suburb || addr.state_district || addr.state || '';
+          if (!detectedCountry) detectedCountry = addr.country || '';
+        }
+      } catch (e) {
+        console.warn('Nominatim reverse geocode error:', e);
+      }
+    }
 
-    useEffect(() => {
-        const fetchRestaurants = async () => {
-            try {
-                let API_URL = getApiUrl();
-                const res = await axios.get(`${API_URL}/restaurants`);
-                let realRest = Array.isArray(res.data) 
-                    ? res.data.filter(r => 
-                        !r.isDeleted && 
-                        r.status !== 'Inactive' && 
-                        r.status !== 'Suspended' && 
-                        r.status !== 'Deleted' && 
-                        r.isActive !== false && 
-                        r.approvalStatus === 'Approved'
-                    ) 
-                    : [];
-                setRestaurants(realRest);
+    // Format into City, Country
+    const formattedLocation = (detectedCity && detectedCountry)
+      ? `${detectedCity}, ${detectedCountry}`
+      : (detectedCity || detectedCountry || `${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`);
 
-                // Auto-clean localStorage so users never have stale items from inactive/deleted restaurants
-                try {
-                    const savedCart = JSON.parse(localStorage.getItem('restosys_cart') || '[]');
-                    if (Array.isArray(savedCart) && savedCart.length > 0) {
-                        const activeIds = new Set(realRest.map(r => String(r._id)));
-                        const validCart = savedCart.filter(item => {
-                            const rId = typeof item.restaurantId === 'object' ? item.restaurantId?._id : (item.restaurantId || item.restaurant);
-                            return !rId || activeIds.has(String(rId));
-                        });
-                        if (validCart.length !== savedCart.length) {
-                            localStorage.setItem('restosys_cart', JSON.stringify(validCart));
-                        }
-                    }
-                } catch (e) {
-                    console.warn("Storage cleanup note:", e);
-                }
-            } catch (error) {
-                console.error("Failed to load restaurants", error);
-                setRestaurants([]);
-            } finally {
-                setTimeout(() => setLoading(false), 300);
+    setLocation(formattedLocation);
+    localStorage.setItem('userLocation', formattedLocation);
+    localStorage.setItem('userCoordinates', JSON.stringify({ latitude, longitude }));
+
+    if (user && api) {
+      api.put('/customer/profile', { location: formattedLocation, coordinates: { latitude, longitude } }).catch(() => {});
+    }
+
+    setIsDetectingLocation(false);
+    if (loadingToast) toast.dismiss(loadingToast);
+    toast.success(`Location set to ${formattedLocation}!`, { icon: '📍' });
+  };
+
+  // Fallback to IP-based Geolocation if mobile device GPS is toggled off or unavailable
+  const fallbackIpGeolocation = async (loadingToast) => {
+    try {
+      const ipRes = await fetch('https://ipapi.co/json/');
+      if (ipRes.ok) {
+        const ipData = await ipRes.json();
+        if (ipData && (ipData.city || ipData.region)) {
+          const locStr = `${ipData.city || ipData.region}, ${ipData.country_name || ''}`.replace(/,\s*$/, '');
+          setLocation(locStr);
+          localStorage.setItem('userLocation', locStr);
+          if (ipData.latitude && ipData.longitude) {
+            localStorage.setItem('userCoordinates', JSON.stringify({ latitude: ipData.latitude, longitude: ipData.longitude }));
+          }
+          setIsDetectingLocation(false);
+          if (loadingToast) toast.dismiss(loadingToast);
+          toast.success(`Location detected: ${locStr}!`, { icon: '📍' });
+          return true;
+        }
+      }
+    } catch (e) {
+      console.warn('IP geolocation fallback failed:', e);
+    }
+    return false;
+  };
+
+  const handleGetLocation = async () => {
+    setIsDetectingLocation(true);
+    const loadingToast = toast.loading('Detecting location...');
+
+    // If running inside Capacitor Native Mobile App (Android APK / iOS)
+    if (Capacitor.isNativePlatform()) {
+      try {
+        let permStatus = await Geolocation.checkPermissions();
+
+        // If permission is prompt or prompt-with-rationale, request it at runtime
+        if (permStatus.location !== 'granted' && permStatus.coarseLocation !== 'granted') {
+          permStatus = await Geolocation.requestPermissions({ permissions: ['location', 'coarseLocation'] });
+        }
+
+        // Check if user denied permission
+        if (permStatus.location === 'denied' && permStatus.coarseLocation === 'denied') {
+          setIsDetectingLocation(false);
+          toast.dismiss(loadingToast);
+          setLocationModal({
+            isOpen: true,
+            type: 'permanently_denied',
+            title: 'Location Permission Required',
+            message: 'FoodNest needs location access to find restaurants and calculate delivery times accurately. Please allow Location permission in your Android App Settings.'
+          });
+          return;
+        }
+
+        // If granted (fine or coarse), get GPS coordinates
+        if (permStatus.location === 'granted' || permStatus.coarseLocation === 'granted') {
+          try {
+            // Attempt high accuracy GPS first
+            const nativePos = await Geolocation.getCurrentPosition({
+              enableHighAccuracy: true,
+              timeout: 10000,
+              maximumAge: 30000
+            });
+            if (nativePos && nativePos.coords) {
+              await resolveLocationFromCoords(nativePos.coords.latitude, nativePos.coords.longitude, loadingToast);
+              return;
             }
-        };
-        fetchRestaurants();
-    }, []);
+          } catch (highAccErr) {
+            console.warn('Native high-accuracy GPS error/timeout, trying cell/wifi...', highAccErr);
+            // Attempt low accuracy (Cell / Wi-Fi network)
+            try {
+              const lowPos = await Geolocation.getCurrentPosition({
+                enableHighAccuracy: false,
+                timeout: 10000,
+                maximumAge: 180000
+              });
+              if (lowPos && lowPos.coords) {
+                await resolveLocationFromCoords(lowPos.coords.latitude, lowPos.coords.longitude, loadingToast);
+                return;
+              }
+            } catch (lowAccErr) {
+              console.warn('Native low-accuracy GPS also failed:', lowAccErr);
+              const errMsg = String(lowAccErr?.message || lowAccErr || '');
+              if (errMsg.includes('services are not enabled') || errMsg.includes('disabled') || lowAccErr?.code === 'OS-PLUG-GLOC-0007') {
+                setIsDetectingLocation(false);
+                toast.dismiss(loadingToast);
+                setLocationModal({
+                  isOpen: true,
+                  type: 'services_disabled',
+                  title: 'Device GPS is Switched Off',
+                  message: 'Please enable Location / GPS in your Android notification quick settings and tap Try Again.'
+                });
+                return;
+              }
+            }
+          }
+        }
+      } catch (nativeErr) {
+        console.warn('Capacitor native Geolocation exception:', nativeErr);
+        const errMsg = String(nativeErr?.message || nativeErr || '');
+        if (errMsg.includes('services are not enabled') || errMsg.includes('disabled') || nativeErr?.code === 'OS-PLUG-GLOC-0007') {
+          setIsDetectingLocation(false);
+          toast.dismiss(loadingToast);
+          setLocationModal({
+            isOpen: true,
+            type: 'services_disabled',
+            title: 'Device GPS is Switched Off',
+            message: 'Please turn on Location / GPS in your device settings and tap Try Again.'
+          });
+          return;
+        }
+        if (errMsg.includes('denied') || nativeErr?.code === 'OS-PLUG-GLOC-0003') {
+          setIsDetectingLocation(false);
+          toast.dismiss(loadingToast);
+          setLocationModal({
+            isOpen: true,
+            type: 'permission_denied',
+            title: 'Location Permission Denied',
+            message: 'Location access was not granted. Tap Try Again to request permission or select your city manually.'
+          });
+          return;
+        }
+      }
+    }
 
-    const filtered = restaurants.filter(r => r.name.toLowerCase().includes(search.toLowerCase()));
+    // Web / WebView fallback via navigator.geolocation
+    if (!navigator.geolocation) {
+      const ok = await fallbackIpGeolocation(loadingToast);
+      if (!ok) {
+        setIsDetectingLocation(false);
+        toast.dismiss(loadingToast);
+        toast.error('Geolocation is not supported by your device.');
+      }
+      return;
+    }
 
-    return (
-        <div className="flex flex-col min-h-screen bg-white dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 transition-colors">
-            
-            {/* Header */}
-            <header className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 shadow-sm py-3.5 px-4 lg:px-20">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-4 max-w-[1200px] mx-auto w-full">
-                    
-                    {/* Logo & Location */}
-                    <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-start">
-                        <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-3xl font-black italic tracking-tighter text-red-500 hover:opacity-80 transition-opacity">
-                            RestoSys
-                        </Link>
-                        
-                        {/* Location Selector */}
-                        <div className="relative">
-                            <div 
-                                onClick={() => setIsLocationOpen(!isLocationOpen)}
-                                className="flex items-center gap-1.5 sm:gap-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 px-2 py-1.5 rounded-lg transition-colors border-b-2 border-transparent hover:border-slate-300 dark:hover:border-slate-700"
-                            >
-                                <MapPin size={18} className="text-red-500 shrink-0" />
-                                <div className="flex flex-col">
-                                    <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white line-clamp-1 border-b border-dashed border-slate-400 dark:border-slate-500 max-w-[80px] xs:max-w-[120px] sm:max-w-none">
-                                        {location}
-                                    </span>
-                                </div>
-                                <ChevronDown size={14} className="text-red-500" />
-                            </div>
-
-                            {isLocationOpen && (
-                                <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg py-2 z-50">
-                                    <div 
-                                        onClick={fetchLocation}
-                                        className="px-4 py-2 text-sm cursor-pointer hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 transition-colors font-bold flex items-center gap-2"
-                                    >
-                                        <Navigation size={16} /> Detect Current Location
-                                    </div>
-                                    {availableLocations.map(loc => (
-                                        <div 
-                                            key={loc}
-                                            onClick={() => { setLocation(loc); localStorage.setItem('userLocation', loc); setIsLocationOpen(false); }}
-                                            className={`px-4 py-2 text-sm cursor-pointer hover:bg-red-50 dark:hover:bg-slate-800 hover:text-red-600 transition-colors ${location === loc ? 'font-bold text-red-500 bg-red-50/50 dark:bg-slate-800' : 'text-slate-700 dark:text-slate-300'}`}
-                                        >
-                                            {loc}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Search & Auth */}
-                    <div className="flex items-center gap-4 w-full md:w-auto flex-1 md:flex-none justify-end">
-                        {/* Search Bar */}
-                        <div className="flex-1 md:w-80 lg:w-[400px] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center px-4 py-2.5 focus-within:bg-white dark:focus-within:bg-slate-900 focus-within:shadow-md focus-within:border-slate-300 dark:focus-within:border-slate-700 transition-all">
-                            <Search className="text-slate-400 dark:text-slate-500 shrink-0 mr-3" size={18} />
-                            <input 
-                                type="text" 
-                                placeholder="Search for restaurant, cuisine or a dish" 
-                                className="w-full bg-transparent outline-none text-slate-900 dark:text-white text-sm font-medium placeholder-slate-400 dark:placeholder-slate-500"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
-                        </div>
-
-                        {user ? (
-                            <Link 
-                                to="/profile" 
-                                className="flex items-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-800 p-2 md:px-3 md:py-2 rounded-xl transition-colors font-bold text-slate-800 dark:text-slate-200"
-                            >
-                                <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 shrink-0">
-                                    <User size={18} />
-                                </div>
-                                <span className="hidden md:inline">{user.name}</span>
-                            </Link>
-                        ) : (
-                            <div className="flex items-center gap-2 md:gap-3 text-sm shrink-0">
-                                <Link to="/customer/login" className="text-slate-700 dark:text-slate-300 hover:text-red-500 font-bold px-2 py-1.5 md:px-4 md:py-2 rounded-xl hover:bg-red-50 dark:hover:bg-slate-800 transition-colors">
-                                    Log in
-                                </Link>
-                                <Link to="/customer/register" className="bg-red-500 hover:bg-red-600 text-white font-black px-3 py-1.5 md:px-6 md:py-2 rounded-xl shadow-sm hover:shadow transition-all text-xs md:text-sm">
-                                    Sign up
-                                </Link>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </header>
-
-            {/* Main Content */}
-            <main className="max-w-[1200px] mx-auto w-full px-4 py-8">
-                
-                {/* Promo Banner with Abstract Graphics & Intro Summary */}
-                <div className="relative rounded-[2rem] overflow-hidden bg-gradient-to-r from-red-500 to-orange-500 text-white p-8 md:p-12 mb-10 shadow-lg shadow-red-500/10 flex flex-col md:flex-row items-center justify-between gap-6">
-                    {/* Abstract Decorative Circles */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3"></div>
-                    <div className="absolute -bottom-10 left-10 w-48 h-48 bg-black/10 rounded-full blur-xl"></div>
-                    
-                    <div className="relative z-10 space-y-3 max-w-xl">
-                        <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                            Special Offer
-                        </span>
-                        <h2 className="text-3xl md:text-4xl font-black font-sans tracking-tight text-white">
-                            Delicious food, delivered right to your table!
-                        </h2>
-                        <p className="text-white/90 text-sm font-medium leading-relaxed">
-                            Order online for contactless table service, schedule a quick pickup, or reserve your favorite table in advance. Get 50% discount on your first order.
-                        </p>
-                    </div>
-                    <div className="relative z-10 shrink-0">
-                        <Link 
-                            to="/menu" 
-                            style={{ backgroundColor: '#ffffff', color: '#dc2626' }}
-                            className="font-bold px-6 py-3.5 rounded-xl shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shrink-0 cursor-pointer"
-                        >
-                            Explore Menu <ArrowRight size={18} />
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Food Items Section: "What's on your mind?" */}
-                <section className="mb-14">
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">What's on your mind?</h2>
-                    </div>
-                    
-                    <div className="flex overflow-x-auto gap-6 pb-6 pt-2 custom-scrollbar no-scrollbar scroll-smooth">
-                        {foodItems.map((item, idx) => (
-                            <div 
-                                key={idx} 
-                                onClick={() => {
-                                    setSearch(item.name);
-                                    document.getElementById('restaurant-grid')?.scrollIntoView({ behavior: 'smooth' });
-                                }}
-                                className="flex flex-col items-center gap-3 min-w-[130px] cursor-pointer group shrink-0"
-                            >
-                                <div className="w-32 h-32 rounded-full bg-slate-100 dark:bg-slate-800 shadow-md border-2 border-slate-100 dark:border-slate-800 overflow-hidden transform group-hover:scale-105 transition-transform duration-300">
-                                    <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
-                                </div>
-                                <span className="text-lg font-bold text-slate-800 dark:text-slate-100 group-hover:text-red-500 transition-colors">{item.name}</span>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="w-full h-[1px] bg-slate-200 dark:bg-slate-800 mt-4"></div>
-                </section>
-
-                {/* Restaurant Grid Section */}
-                <section id="restaurant-grid" className="scroll-mt-24">
-                    <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-8 tracking-tight">Restaurants with Self-Pickup near you</h2>
-
-                    {loading ? (
-                        <div className="flex justify-center py-20">
-                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-red-500"></div>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                            {filtered.map(restaurant => (
-                                <Link to={`/restaurant/${restaurant._id}`} key={restaurant._id} className="group cursor-pointer block hover:scale-[0.98] transition-transform duration-200">
-                                    <div className="relative rounded-2xl overflow-hidden aspect-[4/3] mb-3 shadow-sm group-hover:shadow-md transition-shadow bg-slate-100 dark:bg-slate-900">
-                                        <img 
-                                            src={
-                                                restaurant.img 
-                                                    ? restaurant.img 
-                                                    : restaurant.logo 
-                                                        ? (restaurant.logo.startsWith('http') || restaurant.logo.startsWith('data:')
-                                                            ? restaurant.logo 
-                                                            : `${new URL(getApiUrl()).origin}${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`)
-                                                        : "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
-                                            } 
-                                            alt={restaurant.name} 
-                                            className="w-full h-full object-cover"
-                                        />
-                                        
-                                        {/* Gradient Overlay for text readability at bottom */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                                        
-                                        {/* Offer Text */}
-                                        <div className="absolute bottom-2 left-3 right-3 text-white">
-                                            <h4 className="text-xl font-black tracking-tighter flex items-center gap-1.5">
-                                                <Percent size={18} /> 50% OFF UPTO ₹100
-                                            </h4>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="px-1">
-                                        <div className="flex justify-between items-start mb-1">
-                                            <h3 className="text-[1.15rem] font-black text-slate-900 dark:text-white truncate">
-                                                {restaurant.name}
-                                            </h3>
-                                        </div>
-                                        
-                                        <div className="flex items-center gap-2 mb-1.5">
-                                            <div className="bg-green-700 text-white px-1.5 py-0.5 rounded text-xs font-bold flex items-center gap-1 shadow-sm">
-                                                <Star size={10} className="fill-white" /> 4.{Math.floor(Math.random() * 5) + 1}
-                                            </div>
-                                            <span className="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600"></span>
-                                            <span className="text-sm font-extrabold text-slate-800 dark:text-slate-200">{restaurant.time || '15-20'} mins</span>
-                                        </div>
-                                        
-                                        <div className="text-[14px] text-slate-500 dark:text-slate-400 font-medium truncate mb-2">
-                                            {restaurant.tags || 'North Indian, Fast Food, Beverages'}
-                                        </div>
-                                        
-                                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800 border-dashed font-semibold">
-                                            <ShoppingBag size={14} className="text-orange-500" />
-                                            <span>Multiple self-pickup locations available</span>
-                                        </div>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    )}
-                    
-                    {!loading && filtered.length === 0 && (
-                        <div className="text-center py-20 flex flex-col items-center">
-                            <img src="https://b.zmtcdn.com/web/assets/not-found.svg" alt="Not found" className="w-64 h-64 opacity-50 mb-6" />
-                            <h3 className="text-2xl font-bold text-slate-700 dark:text-slate-300">No restaurants found</h3>
-                            <p className="text-slate-500 dark:text-slate-400 mt-2 font-light">Try searching for something else.</p>
-                        </div>
-                    )}
-                </section>
-            </main>
-        </div>
+    // Attempt 1: High accuracy GPS
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        resolveLocationFromCoords(latitude, longitude, loadingToast);
+      },
+      (error) => {
+        console.warn('High accuracy GPS error, trying low accuracy / network...', error.code, error.message);
+        
+        // Attempt 2: Low accuracy (Wi-Fi / Cell tower triangulation)
+        navigator.geolocation.getCurrentPosition(
+          (netPos) => {
+            const { latitude, longitude } = netPos.coords;
+            resolveLocationFromCoords(latitude, longitude, loadingToast);
+          },
+          async (netError) => {
+            console.warn('Network location also failed, falling back to IP geolocation...', netError);
+            const ipSuccess = await fallbackIpGeolocation(loadingToast);
+            if (!ipSuccess) {
+              setIsDetectingLocation(false);
+              toast.dismiss(loadingToast);
+              if (error.code === 1 || netError.code === 1) {
+                setLocationModal({
+                  isOpen: true,
+                  type: 'permission_denied',
+                  title: 'Location Access Needed',
+                  message: 'Location permission was denied. Tap Try Again or enable location access in App Settings.'
+                });
+              } else if (error.code === 2 || netError.code === 2) {
+                setLocationModal({
+                  isOpen: true,
+                  type: 'services_disabled',
+                  title: 'GPS Signal Unavailable',
+                  message: 'Could not detect your GPS signal. Please ensure device Location is turned on and try again.'
+                });
+              } else {
+                toast.error('Could not detect location. Please check GPS settings or select location manually.');
+              }
+            }
+          },
+          {
+            enableHighAccuracy: false,
+            timeout: 12000,
+            maximumAge: 300000 // Accept 5 min cached coordinates
+          }
+        );
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 8000,
+        maximumAge: 60000
+      }
     );
-};
+  };
 
-export default Explore;
+  const handleCopyCoupon = (code) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCoupon(true);
+    toast.success(`Coupon code ${code} copied!`);
+    setTimeout(() => setCopiedCoupon(false), 2000);
+  };
+
+  const handleAddToCart = (dish) => {
+    addToCart(dish);
+    toast.success(`Added ${dish.name} to cart!`);
+  };
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    const cleanEmail = emailInput.trim();
+    if (!cleanEmail) {
+      toast.error('Please enter your email address');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+    setIsSubscribing(true);
+    // Simulate instantaneous newsletter registration API dispatch
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    try {
+      localStorage.setItem('foodnest_newsletter_subscribed', cleanEmail);
+    } catch {
+      // ignore localStorage quota errors
+    }
+    setSubscribed(true);
+    setEmailInput('');
+    setIsSubscribing(false);
+    toast.success('Thank you for subscribing! Exclusive offers and 20% OFF coupon sent to your inbox.', {
+      icon: '🎉',
+      duration: 4000
+    });
+  };
+
+  const handleFindRestaurants = () => {
+    const el = document.getElementById('featured-restaurants');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate('/menu');
+    }
+  };
+
+  // Filter dishes by cuisine or search with graceful fallback
+  const displayedDishes = dishes.filter(d => {
+    const qCuisine = selectedCuisine.toLowerCase().replace('-', ' ').trim();
+    const dCuisine = (d.cuisine || '').toLowerCase();
+    const dCat = (d.category || '').toLowerCase();
+    const dName = (d.name || '').toLowerCase();
+
+    let matchesCuisine = selectedCuisine === 'all';
+    if (!matchesCuisine) {
+      matchesCuisine = dCuisine.includes(qCuisine) || 
+                       dCat.includes(qCuisine) || 
+                       dName.includes(qCuisine);
+
+      // Smart cuisine mapping for common terms
+      if (!matchesCuisine) {
+        if (qCuisine.includes('south') && (dName.includes('dosa') || dName.includes('idli') || dName.includes('vada') || dName.includes('sambar') || dName.includes('coffee') || dCat.includes('meal'))) {
+          matchesCuisine = true;
+        } else if (qCuisine.includes('italian') && (dName.includes('pizza') || dName.includes('pasta') || dCat.includes('pizza'))) {
+          matchesCuisine = true;
+        } else if (qCuisine.includes('chinese') && (dName.includes('noodle') || dName.includes('manchurian') || dName.includes('fried rice') || dName.includes('hakka'))) {
+          matchesCuisine = true;
+        } else if (qCuisine.includes('fast food') && (dName.includes('burger') || dName.includes('fries') || dName.includes('sandwich') || dCat.includes('pizza'))) {
+          matchesCuisine = true;
+        } else if (qCuisine.includes('beverage') && (dName.includes('juice') || dName.includes('smoothie') || dName.includes('tea') || dName.includes('coffee') || dName.includes('shake'))) {
+          matchesCuisine = true;
+        } else if (qCuisine.includes('dessert') && (dName.includes('cake') || dName.includes('sweet') || dName.includes('ice cream'))) {
+          matchesCuisine = true;
+        }
+      }
+    }
+
+    const matchesSearch = !searchQuery || 
+      dName.includes(searchQuery.toLowerCase()) ||
+      dCuisine.includes(searchQuery.toLowerCase()) ||
+      dCat.includes(searchQuery.toLowerCase());
+
+    return matchesCuisine && matchesSearch;
+  });
+
+  // Filter restaurants by detected location and search query
+  const displayedRestaurants = (() => {
+    // 1. Search Query filter first
+    let base = restaurants.filter(r => {
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      return r.name.toLowerCase().includes(q) ||
+             r.cuisines?.toLowerCase().includes(q) ||
+             r.city?.toLowerCase().includes(q) ||
+             r.address?.toLowerCase().includes(q);
+    });
+
+    if (!location || !location.trim()) {
+      return base;
+    }
+
+    // 2. Intelligent Location Matching
+    const locTerms = location.toLowerCase().split(/[, ]+/).map(t => t.trim()).filter(t => t.length >= 3);
+    
+    // Check if any restaurant explicitly matches the detected location terms (city, district, address, branch)
+    const matched = base.filter(r => {
+      const restCity = (r.city || '').toLowerCase();
+      const restState = (r.state || '').toLowerCase();
+      const restAddress = (r.address || '').toLowerCase();
+      const verifAddr = (r.verificationAddress || '').toLowerCase();
+      const restName = (r.name || '').toLowerCase();
+      const branchLocations = (r.branches || []).map(b => {
+        const loc = b.location || {};
+        return `${loc.city || ''} ${loc.state || ''} ${loc.address || ''} ${loc.country || ''}`.toLowerCase();
+      }).join(' ');
+
+      const combined = `${restName} ${restCity} ${restState} ${restAddress} ${verifAddr} ${branchLocations}`.trim();
+      return locTerms.some(term => combined.includes(term));
+    });
+
+    // If matches found (e.g. Krishnagiri restaurants 'vegiii', 'RA', etc.), show them!
+    if (matched.length > 0) {
+      return matched;
+    }
+
+    // If strict match didn't catch due to geocoding formatting differences (e.g. coordinates or district),
+    // check if Krishnagiri / Tamil Nadu is in the location string or fallback gracefully to registered outlets
+    const isKrishnagiriArea = location.toLowerCase().includes('krishnagiri') || 
+                              location.toLowerCase().includes('tamil nadu') ||
+                              location.toLowerCase().includes('dharmapuri') ||
+                              location.toLowerCase().includes('hosur');
+
+    if (isKrishnagiriArea) {
+      const kgRestaurants = base.filter(r => {
+        const city = (r.city || '').toLowerCase();
+        const addr = (r.address || '').toLowerCase();
+        return city.includes('krishnagiri') || addr.includes('krishnagiri');
+      });
+      if (kgRestaurants.length > 0) return kgRestaurants;
+    }
+
+    // Fallback: Return all base active partner restaurants so customer is NEVER shown an empty screen
+    return base;
+  })();
+
+  return (
+    <div ref={containerRef} className="min-h-screen bg-white text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white">
+
+      {/* ======================================================================= */}
+      {/* 1. NAVBAR (RESPONSIVE FOR MOBILE APPS & TABLETS)                        */}
+      {/* ======================================================================= */}
+      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-[76px] flex items-center justify-between gap-2 sm:gap-4">
+          
+          {/* Logo with Utensil Icon & Tagline */}
+          <Link to="/" className="flex items-center gap-2 shrink-0 group">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#FF5A1F] text-white flex items-center justify-center shadow-md shadow-[#FF5A1F]/25 group-hover:scale-105 transition-transform">
+              <UtensilsCrossed size={18} className="sm:w-[22px] sm:h-[22px] stroke-[2.2]" />
+            </div>
+            <div className="flex flex-col text-left">
+              <span className="text-lg sm:text-[22px] font-black tracking-tight text-slate-900 leading-none">
+                Food<span className="text-[#FF5A1F]">Nest</span>
+              </span>
+              <span className="hidden xs:inline text-[9px] sm:text-[10px] font-medium text-slate-400 mt-0.5 sm:mt-1">
+                Good Food, Better Mood
+              </span>
+            </div>
+          </Link>
+
+          {/* Desktop Navigation Links with Dynamic Active State */}
+          <div className="hidden lg:flex items-center gap-7 text-[15px] font-semibold">
+            {[
+              { id: 'home', label: 'Home', targetId: 'home' },
+              { id: 'restaurants', label: 'Restaurants', targetId: 'featured-restaurants' },
+              { id: 'menu', label: 'Menu', targetId: 'popular-dishes' },
+              { id: 'offers', label: 'Offers', targetId: 'offers' },
+              { id: 'about', label: 'About Us', targetId: 'how-it-works' },
+            ].map((item) => {
+              const isActive = activeNav === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavClick(item.id, item.targetId)}
+                  className={`relative py-1.5 font-semibold transition-colors duration-200 cursor-pointer select-none ${
+                    isActive
+                      ? 'text-[#FF5A1F]'
+                      : 'text-slate-600 hover:text-[#FF5A1F]'
+                  }`}
+                >
+                  <span>{item.label}</span>
+                  <span
+                    className={`absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-[#FF5A1F] transition-all duration-200 ${
+                      isActive ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0'
+                    }`}
+                  />
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Right Action Icons: Location, Search, Cart, Login */}
+          <div className="flex items-center gap-1.5 sm:gap-3">
+            
+            {/* GPS Location Button (Hidden on very narrow screens to prevent crushing, integrated into hero/sub-bar) */}
+            <button
+              onClick={handleGetLocation}
+              disabled={isDetectingLocation}
+              className={`hidden sm:flex items-center gap-1.5 text-xs font-bold transition-all px-2.5 py-1.5 rounded-xl border cursor-pointer ${
+                isDetectingLocation
+                  ? 'bg-orange-50 text-[#FF5A1F] border-orange-200 animate-pulse'
+                  : 'text-slate-700 hover:text-[#FF5A1F] hover:bg-orange-50/60 border-slate-200/80 hover:border-orange-200 shadow-xs'
+              }`}
+              title="Click to detect your current location via GPS"
+              aria-label="Detect GPS Location"
+            >
+              <MapPin size={15} className={`text-[#FF5A1F] shrink-0 ${isDetectingLocation ? 'animate-bounce' : ''}`} />
+              <span className="max-w-[100px] md:max-w-[150px] truncate">
+                {isDetectingLocation ? 'Detecting...' : (location || 'Detect Location')}
+              </span>
+            </button>
+
+            {/* Search Icon */}
+            <button
+              onClick={() => {
+                const nextState = !isSearchOpen;
+                setIsSearchOpen(nextState);
+                if (nextState) {
+                  setTimeout(() => searchInputRef.current?.focus(), 100);
+                }
+              }}
+              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+                isSearchOpen ? 'bg-orange-50 text-[#FF5A1F]' : 'text-slate-600 hover:bg-slate-100 hover:text-[#FF5A1F]'
+              }`}
+              aria-label="Search"
+              title="Search menu and restaurants"
+            >
+              <Search size={18} />
+            </button>
+
+            {/* Cart Icon with Live Badge Counter */}
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-[#FF5A1F] transition-colors cursor-pointer"
+              aria-label="Shopping Cart"
+              title="View your cart"
+            >
+              <ShoppingBag size={19} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#FF5A1F] text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-xs">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+
+            {/* User Profile / Login */}
+            {user ? (
+              <div className="relative" ref={profileRef}>
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center gap-1.5 bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs font-bold border border-orange-200 transition-colors cursor-pointer"
+                  title="My Account"
+                  aria-label="Account Menu"
+                >
+                  <User size={14} />
+                  <span className="max-w-[70px] sm:max-w-[85px] truncate">{user.name || 'Account'}</span>
+                  <ChevronDown size={12} className={`transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Profile Dropdown Menu */}
+                {isProfileOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-left">
+                    <div className="px-4 py-2 border-b border-slate-100">
+                      <p className="text-xs font-bold text-slate-900 truncate">{user.name || 'Customer'}</p>
+                      <p className="text-[11px] text-slate-400 truncate">{user.email || ''}</p>
+                    </div>
+                    
+                    <div className="py-1">
+                      <Link
+                        to="/profile"
+                        onClick={() => setIsProfileOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-[#FF5A1F] transition-colors"
+                      >
+                        <User size={14} />
+                        <span>My Dashboard</span>
+                      </Link>
+
+                      <Link
+                        to="/profile/orders"
+                        onClick={() => setIsProfileOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-[#FF5A1F] transition-colors"
+                      >
+                        <ShoppingBag size={14} />
+                        <span>My Orders</span>
+                      </Link>
+
+                      <Link
+                        to="/reservations"
+                        onClick={() => setIsProfileOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-[#FF5A1F] transition-colors"
+                      >
+                        <UtensilsCrossed size={14} />
+                        <span>Book a Table</span>
+                      </Link>
+                    </div>
+
+                    <div className="pt-1 border-t border-slate-100">
+                      <button
+                        onClick={() => {
+                          setIsProfileOpen(false);
+                          logout();
+                          toast.success('Logged out successfully');
+                        }}
+                        className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 transition-colors cursor-pointer text-left"
+                      >
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                to="/customer/login"
+                className="bg-[#FF5A1F] hover:bg-[#e04f1a] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-[13px] shadow-sm shadow-[#FF5A1F]/30 hover:shadow-md transition-all cursor-pointer"
+              >
+                Login
+              </Link>
+            )}
+
+          </div>
+        </div>
+
+        {/* Mobile GPS Location Strip (Shown on mobile screens right under top bar) */}
+        <div className="sm:hidden px-3.5 py-2.5 bg-gradient-to-r from-orange-50 via-amber-50/50 to-orange-50 border-t border-orange-100 flex items-center justify-between text-xs select-none">
+          <button
+            type="button"
+            onClick={handleGetLocation}
+            disabled={isDetectingLocation}
+            className="flex items-center gap-2 text-slate-800 truncate text-left flex-1 min-w-0 cursor-pointer active:opacity-75 touch-manipulation"
+          >
+            <div className="w-6 h-6 rounded-full bg-orange-100 text-[#FF5A1F] flex items-center justify-center shrink-0 shadow-xs">
+              <MapPin size={13} className={isDetectingLocation ? 'animate-bounce' : ''} />
+            </div>
+            <div className="truncate">
+              <p className="truncate font-bold text-[12px] text-slate-900 leading-tight">
+                {location || 'Detect Your Location'}
+              </p>
+              <p className="text-[10px] text-slate-500 font-medium truncate">
+                {location ? 'Tap to refresh GPS' : 'Connect GPS to find nearby restaurants'}
+              </p>
+            </div>
+          </button>
+          
+          <button
+            type="button"
+            onClick={handleGetLocation}
+            disabled={isDetectingLocation}
+            className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#FF5A1F] hover:bg-[#e04f1a] active:scale-95 text-white rounded-lg text-[11px] font-bold shadow-xs shrink-0 ml-2 cursor-pointer transition-all touch-manipulation"
+          >
+            {isDetectingLocation ? (
+              <>
+                <Loader2 size={11} className="animate-spin" />
+                <span>Locating...</span>
+              </>
+            ) : (
+              <>
+                <MapPin size={11} />
+                <span>{location ? 'Change' : 'GPS'}</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Live Search Input Bar */}
+        {isSearchOpen && (
+          <div className="bg-slate-50 border-t border-slate-100 px-3 sm:px-4 py-2.5 animate-in slide-in-from-top-1">
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (searchQuery.trim()) {
+                  const el = document.getElementById('popular-dishes');
+                  if (el) {
+                    el.scrollIntoView({ behavior: 'smooth' });
+                  }
+                  toast.success(`Found items matching "${searchQuery}"`);
+                }
+              }}
+              className="max-w-xl mx-auto relative flex items-center gap-2"
+            >
+              <div className="relative flex-1 flex items-center">
+                <Search size={16} className="text-slate-400 absolute left-3.5 pointer-events-none" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Search dishes or restaurants..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-14 py-2 bg-white border border-slate-200 rounded-full text-xs font-medium focus:outline-none focus:border-[#FF5A1F]"
+                />
+                {searchQuery && (
+                  <button 
+                    type="button" 
+                    onClick={() => setSearchQuery('')} 
+                    className="absolute right-3.5 text-xs text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <button
+                type="submit"
+                className="bg-[#FF5A1F] hover:bg-[#e04f1a] text-white px-3 sm:px-4 py-2 rounded-full text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
+              >
+                Search
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSearchOpen(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors cursor-pointer text-xs"
+                title="Close"
+              >
+                ✕
+              </button>
+            </form>
+          </div>
+        )}
+      </nav>
+
+
+      {/* ======================================================================= */}
+      {/* 2. HERO SECTION (RESPONSIVE SEAMLESS FOOD COMPOSITION)                  */}
+      {/* ======================================================================= */}
+      <section id="home" className="relative w-full overflow-hidden bg-[#FAF6F0]">
+        
+        {/* Soft Organic Background Glow (Top Left) */}
+        <div className="absolute top-0 left-0 w-64 sm:w-96 h-64 sm:h-96 bg-gradient-to-br from-amber-100/60 via-orange-100/30 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/4 w-80 h-80 bg-orange-50/50 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Food Scene - Ambient Seamless Background on Mobile, Split Right on Desktop */}
+        <div className="absolute right-0 top-0 bottom-0 w-full lg:w-[58%] xl:w-[54%] h-full pointer-events-none select-none z-0">
+          <img
+            src="/images/food/biryani-hero-platter.jpg"
+            alt="Delicious Chicken Dum Biryani Platter with raita and sides"
+            className="w-full h-full object-cover object-[75%_25%] sm:object-[center_center] lg:object-[left_center] opacity-40 sm:opacity-75 lg:opacity-100"
+            style={{
+              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.3) 15%, rgba(0,0,0,0.9) 35%, black 55%), linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
+              WebkitMaskComposite: 'destination-in',
+              maskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.3) 15%, rgba(0,0,0,0.9) 35%, black 55%), linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
+              maskComposite: 'intersect'
+            }}
+            loading="eager"
+          />
+          
+          {/* Multi-layered Feathering & Seamless Atmosphere Gradients */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#FAF6F0]/80 via-transparent to-[#FAF6F0] lg:hidden pointer-events-none" />
+          <div className="absolute inset-y-0 left-0 w-full sm:w-60 lg:w-72 bg-gradient-to-r from-[#FAF6F0] via-[#FAF6F0]/90 lg:via-[#FAF6F0]/80 to-transparent pointer-events-none" />
+          <div className="absolute inset-x-0 top-0 h-16 sm:h-24 bg-gradient-to-b from-[#FAF6F0] via-[#FAF6F0]/60 to-transparent pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-16 sm:h-24 bg-gradient-to-t from-[#FAF6F0] via-[#FAF6F0]/70 to-transparent pointer-events-none" />
+          <div className="absolute inset-y-0 right-0 w-16 sm:w-28 bg-gradient-to-l from-[#FAF6F0]/40 to-transparent pointer-events-none" />
+
+          {/* Handwritten "Hot & Fresh Always!" Callout with Arrow */}
+          <div className="absolute top-3 right-3 sm:top-8 sm:right-10 z-20 flex flex-col items-end pointer-events-none select-none bg-white/75 backdrop-blur-md px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl border border-amber-900/10 shadow-xs">
+            <span className="font-serif italic font-black text-[#78350F] text-[10px] sm:text-base tracking-tight drop-shadow-xs">
+              Hot &amp; Fresh<br />Always! ↝
+            </span>
+          </div>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center py-6 sm:py-10 lg:py-14">
+            
+            {/* Left Content Column */}
+            <div className="lg:col-span-7 flex flex-col items-start text-left space-y-3.5 sm:space-y-5 lg:pr-6">
+              
+              {/* Fresh & Tasty Tag */}
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-emerald-700 text-[11px] sm:text-xs font-bold">
+                <span className="text-xs sm:text-sm">🌿</span>
+                <span>Fresh &amp; Tasty Food</span>
+              </div>
+
+              {/* Main Headline */}
+              <h1 className="text-2xl xs:text-3xl sm:text-4xl lg:text-[52px] font-black text-slate-900 tracking-tight leading-[1.18]">
+                Delicious Food<br />
+                Delivered to <span className="text-[#FF5A1F]">Your Door</span>
+              </h1>
+
+              {/* Subtitle */}
+              <p className="text-xs sm:text-base text-slate-600 font-medium max-w-lg leading-relaxed">
+                Explore your favourite restaurants, order online and get fresh, hot and delicious food delivered at your doorstep.
+              </p>
+
+              {/* Location / Search Box Card */}
+              <div className="w-full max-w-lg bg-white p-1.5 sm:p-2 rounded-2xl shadow-md sm:shadow-lg shadow-slate-200/60 border border-slate-100 flex items-center gap-1 sm:gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-1 px-2 sm:px-3 py-1 min-w-0">
+                  <button
+                    type="button"
+                    onClick={handleGetLocation}
+                    disabled={isDetectingLocation}
+                    title="Detect current location via GPS"
+                    className="p-1 rounded-lg hover:bg-orange-50 text-[#FF5A1F] transition-colors cursor-pointer shrink-0"
+                  >
+                    <MapPin size={16} className={isDetectingLocation ? 'animate-bounce' : ''} />
+                  </button>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder={location ? `In ${location}...` : "Enter delivery location..."}
+                    className="w-full text-xs sm:text-sm font-medium text-slate-700 placeholder-slate-400 bg-transparent focus:outline-none min-w-0"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleGetLocation}
+                    disabled={isDetectingLocation}
+                    className="text-[10px] sm:text-[11px] font-bold text-[#FF5A1F] hover:underline whitespace-nowrap cursor-pointer shrink-0"
+                  >
+                    {isDetectingLocation ? '...' : 'GPS'}
+                  </button>
+                </div>
+                <button
+                  onClick={handleFindRestaurants}
+                  className="bg-[#FF5A1F] hover:bg-[#e04f1a] text-white font-bold px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-xl shadow-md shadow-[#FF5A1F]/30 text-xs sm:text-sm shrink-0 transition-all cursor-pointer whitespace-nowrap"
+                >
+                  <span className="sm:hidden">Search</span>
+                  <span className="hidden sm:inline">Find Restaurants</span>
+                </button>
+              </div>
+
+              {/* Trust Highlights (3 Horizontal Pills) */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-lg pt-1">
+                
+                {/* Fast Delivery */}
+                <div className="flex items-center gap-1.5 sm:gap-2.5 bg-white/95 backdrop-blur-xs p-2 sm:p-2.5 rounded-xl border border-slate-100 shadow-xs min-w-0">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-orange-100 text-[#FF5A1F] flex items-center justify-center shrink-0">
+                    <Clock size={15} />
+                  </div>
+                  <div className="flex flex-col text-left min-w-0">
+                    <span className="text-[10px] sm:text-xs font-bold text-slate-900 leading-tight truncate">Fast Delivery</span>
+                    <span className="text-[8px] sm:text-[10px] text-slate-400 font-medium truncate">In time delivery</span>
+                  </div>
+                </div>
+
+                {/* Safe & Secure */}
+                <div className="flex items-center gap-1.5 sm:gap-2.5 bg-white/95 backdrop-blur-xs p-2 sm:p-2.5 rounded-xl border border-slate-100 shadow-xs min-w-0">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                    <ShieldCheck size={15} />
+                  </div>
+                  <div className="flex flex-col text-left min-w-0">
+                    <span className="text-[10px] sm:text-xs font-bold text-slate-900 leading-tight truncate">Safe &amp; Secure</span>
+                    <span className="text-[8px] sm:text-[10px] text-slate-400 font-medium truncate">Secure payments</span>
+                  </div>
+                </div>
+
+                {/* Great Offers */}
+                <div className="flex items-center gap-1.5 sm:gap-2.5 bg-white/95 backdrop-blur-xs p-2 sm:p-2.5 rounded-xl border border-slate-100 shadow-xs min-w-0">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+                    <Tag size={15} />
+                  </div>
+                  <div className="flex flex-col text-left min-w-0">
+                    <span className="text-[10px] sm:text-xs font-bold text-slate-900 leading-tight truncate">Great Offers</span>
+                    <span className="text-[8px] sm:text-[10px] text-slate-400 font-medium truncate">Save more</span>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* Spacer for desktop layout balance */}
+            <div className="hidden lg:block lg:col-span-5 pointer-events-none" />
+
+          </div>
+
+
+        </div>
+      </section>
+
+
+      {/* ======================================================================= */}
+      {/* 3. FEATURED RESTAURANTS (EXACT PIXEL RECREATION: 4 CARDS, 16:9, COMPACT)*/}
+      {/* ======================================================================= */}
+      <section id="featured-restaurants" className="py-4 sm:py-6 bg-white relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          {/* Section Header */}
+          <div className="flex items-end justify-between mb-5 sm:mb-6">
+            <div className="text-left">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl sm:text-[22px] font-bold text-slate-900 tracking-tight">
+                  Featured Restaurants
+                </h2>
+                {location && (
+                  <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-orange-50 border border-orange-200/80 text-[#FF5A1F] text-[11px] font-bold">
+                    <MapPin size={11} /> {location}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs sm:text-[13px] font-medium text-slate-500 mt-0.5">
+                {location ? `Restaurants serving ${location}` : 'Top rated restaurants near you'}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              {location && (
+                <button
+                  onClick={() => {
+                    setLocation('');
+                    localStorage.removeItem('userLocation');
+                    toast('Showing all restaurants', { icon: '🍽️' });
+                  }}
+                  className="text-xs font-semibold text-slate-400 hover:text-slate-700 cursor-pointer"
+                >
+                  Clear location
+                </button>
+              )}
+              <Link
+                to="/menu"
+                className="text-xs sm:text-sm font-bold text-[#FF5A1F] hover:underline flex items-center gap-1 group"
+              >
+                <span>View All</span>
+                <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            </div>
+          </div>
+
+          {/* 4 Cards Responsive Grid or Empty State */}
+          {displayedRestaurants.length === 0 ? (
+            <div className="bg-slate-50 rounded-2xl border border-dashed border-slate-200 p-8 sm:p-12 text-center max-w-xl mx-auto space-y-3">
+              <div className="w-12 h-12 rounded-full bg-orange-100 text-[#FF5A1F] flex items-center justify-center mx-auto">
+                <MapPin size={24} />
+              </div>
+              <h3 className="text-base font-bold text-slate-900">No restaurants currently detected in "{location}"</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                We couldn't find active restaurants registered in this exact area yet. You can explore all our partner outlets or search another city.
+              </p>
+              <button
+                onClick={() => {
+                  setLocation('');
+                  localStorage.removeItem('userLocation');
+                }}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#FF5A1F] hover:bg-[#e04f1a] text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+              >
+                <span>Explore All Outlets</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+              {displayedRestaurants.slice(0, 4).map((rest, index) => (
+                <div
+                  key={rest._id}
+                  onClick={() => navigate(`/restaurant/${rest._id}`)}
+                  className="group bg-white rounded-xl border border-slate-200/80 overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer text-left reveal-on-scroll"
+                  style={{ transitionDelay: `${index * 50}ms` }}
+                >
+                  {/* 16:9 Cover Image with Optional Badge */}
+                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
+                    <img
+                      src={rest.image}
+                      alt={rest.name}
+                      className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                    {rest.badge && (
+                      <div className={`absolute top-2.5 left-2.5 text-[10px] font-bold px-2 py-0.5 rounded shadow-xs ${rest.badgeColor}`}>
+                        {rest.badge}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Details (Compact spacing & exact typography) */}
+                  <div className="p-3 space-y-1">
+                    {/* Rating & Delivery Time */}
+                    <div className="flex items-center gap-1 text-xs text-slate-500 font-semibold">
+                      <div className="flex items-center gap-1 text-slate-800 font-bold">
+                        <Star size={12} className="fill-amber-400 text-amber-400" />
+                        <span>{rest.rating}</span>
+                      </div>
+                      <span className="text-slate-300 mx-1">•</span>
+                      <div className="flex items-center gap-1 text-slate-500">
+                        <Clock size={11} className="text-slate-400" />
+                        <span className="text-[11px] font-medium">{rest.deliveryTime}</span>
+                      </div>
+                    </div>
+
+                    {/* Name */}
+                    <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 group-hover:text-[#FF5A1F] transition-colors line-clamp-1">
+                      {rest.name}
+                    </h3>
+
+                    {/* Cuisines & Location pill */}
+                    <div className="flex items-center justify-between text-xs text-slate-400 font-medium">
+                      <p className="line-clamp-1">{rest.cuisines}</p>
+                      {rest.city && (
+                        <span className="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded shrink-0 ml-1">
+                          {rest.city}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+        </div>
+      </section>
+
+
+      {/* ======================================================================= */}
+      {/* 4. EXPLORE BY CUISINE (EXACT 8 TILES ROW, COMPACT, ACTIVE ORANGE ALL)   */}
+      {/* ======================================================================= */}
+      <section className="py-3 sm:py-4 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          {/* Header */}
+          <div className="flex items-end justify-between mb-5 sm:mb-6">
+            <div className="text-left">
+              <h2 className="text-xl sm:text-[22px] font-bold text-slate-900 tracking-tight">
+                Explore by Cuisine
+              </h2>
+              <p className="text-xs sm:text-[13px] font-medium text-slate-500 mt-0.5">
+                Find your favourite cuisine
+              </p>
+            </div>
+            <button
+              onClick={() => setSelectedCuisine('all')}
+              className="text-xs sm:text-sm font-bold text-[#FF5A1F] hover:underline flex items-center gap-1 group cursor-pointer"
+            >
+              <span>View All</span>
+              <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+            </button>
+          </div>
+
+          {/* 8 Compact Category Tiles (Horizontal scroll on mobile, grid on desktop) */}
+          <div className="flex sm:grid sm:grid-cols-8 overflow-x-auto sm:overflow-x-visible pb-2 sm:pb-0 gap-3 sm:gap-3.5 no-scrollbar scroll-smooth">
+            {CUISINES_LIST.map((c) => {
+              const isActive = selectedCuisine === c.id;
+
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setSelectedCuisine(c.id)}
+                  className={`flex flex-col items-center justify-center p-2.5 sm:p-3.5 rounded-xl transition-all duration-200 cursor-pointer text-center group shrink-0 min-w-[76px] sm:min-w-0 touch-manipulation active:scale-95 ${
+                    isActive
+                      ? 'bg-[#FF5A1F] text-white shadow-md shadow-[#FF5A1F]/20 scale-102'
+                      : 'bg-white text-slate-700 border border-slate-200/80 hover:border-orange-200 hover:shadow-xs'
+                  }`}
+                >
+                  {/* Icon or Food Photo */}
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-2 overflow-hidden ${
+                    isActive ? 'bg-white/20' : 'bg-transparent'
+                  }`}>
+                    {c.isGrid ? (
+                      <div className="grid grid-cols-2 gap-1 p-1">
+                        <span className="w-2 h-2 rounded-xs bg-white" />
+                        <span className="w-2 h-2 rounded-xs bg-white" />
+                        <span className="w-2 h-2 rounded-xs bg-white" />
+                        <span className="w-2 h-2 rounded-xs bg-white" />
+                      </div>
+                    ) : (
+                      <img 
+                        src={c.image} 
+                        alt={c.name} 
+                        className="w-full h-full object-cover rounded-md group-hover:scale-108 transition-transform"
+                      />
+                    )}
+                  </div>
+                  <span className={`text-xs font-bold tracking-tight line-clamp-1 ${
+                    isActive ? 'text-white' : 'text-slate-800 group-hover:text-[#FF5A1F]'
+                  }`}>
+                    {c.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+        </div>
+      </section>
+
+
+      {/* ======================================================================= */}
+      {/* 5. POPULAR DISHES (EXACT 5-COL ROW, SQUARES, GREEN DISCOUNT, ORANGE BTN)*/}
+      {/* ======================================================================= */}
+      <section id="popular-dishes" className="py-3 sm:py-4 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          {/* Header */}
+          <div className="flex items-end justify-between mb-5 sm:mb-6">
+            <div className="text-left">
+              <h2 className="text-xl sm:text-[22px] font-bold text-slate-900 tracking-tight">
+                Popular Dishes
+              </h2>
+              <p className="text-xs sm:text-[13px] font-medium text-slate-500 mt-0.5">
+                Loved by our customers
+              </p>
+            </div>
+            <Link
+              to="/menu"
+              className="text-xs sm:text-sm font-bold text-[#FF5A1F] hover:underline flex items-center gap-1 group"
+            >
+              <span>View All</span>
+              <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          </div>
+
+          {/* Responsive Grid or Empty State */}
+          {displayedDishes.length === 0 ? (
+            <div className="bg-slate-50 rounded-2xl border border-dashed border-slate-200 p-8 sm:p-10 text-center max-w-md mx-auto space-y-2">
+              <div className="w-10 h-10 rounded-full bg-orange-100 text-[#FF5A1F] flex items-center justify-center mx-auto">
+                <UtensilsCrossed size={18} />
+              </div>
+              <h3 className="text-sm font-bold text-slate-800">No dishes available right now</h3>
+              <p className="text-xs text-slate-500">
+                Menu items will appear here as soon as registered restaurants publish their live menus.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-4">
+              {displayedDishes.slice(0, 5).map((dish, index) => {
+                const isFav = wishlist?.some(item => (item._id || item.id) === (dish._id || dish.id));
+
+                return (
+                  <div
+                    key={dish._id}
+                    className="bg-white rounded-xl border border-slate-200/80 p-3 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between text-left reveal-on-scroll"
+                    style={{ transitionDelay: `${index * 40}ms` }}
+                  >
+                    <div>
+                      {/* Square Image with Green Discount Badge & Wishlist Heart */}
+                      <div className="relative aspect-square rounded-lg overflow-hidden bg-slate-50 mb-2.5 flex items-center justify-center">
+                        {dish.image ? (
+                          <img
+                            src={dish.image}
+                            alt={dish.name}
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                            className="w-full h-full object-cover hover:scale-103 transition-transform duration-300"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center bg-orange-50/50 text-[#FF5A1F]">
+                            <UtensilsCrossed size={28} className="opacity-40" />
+                            <span className="text-[10px] font-bold text-slate-400 mt-1">{dish.category || 'Specialty'}</span>
+                          </div>
+                        )}
+                        {dish.discount && (
+                          <div className="absolute top-2 left-2 bg-[#10B981] text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-xs">
+                            {dish.discount}
+                          </div>
+                        )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleWishlist(dish);
+                            toast(isFav ? 'Removed from favourites' : 'Added to favourites!', { icon: '❤️' });
+                          }}
+                          className={`absolute top-2 right-2 p-1.5 rounded-full backdrop-blur-xs transition-colors cursor-pointer ${
+                            isFav ? 'bg-red-500 text-white shadow-xs' : 'bg-white/90 text-slate-600 hover:text-red-500 shadow-xs'
+                          }`}
+                          aria-label="Wishlist"
+                        >
+                          <Heart size={12} className={isFav ? 'fill-white' : ''} />
+                        </button>
+                      </div>
+
+                      {/* Dish Info */}
+                      <div className="space-y-0.5">
+                        <h4 className="text-[13px] sm:text-sm font-bold text-slate-900 line-clamp-1">
+                          {dish.name}
+                        </h4>
+                        {dish.restaurantName && (
+                          <p className="text-[10px] font-semibold text-[#FF5A1F] line-clamp-1 flex items-center gap-1">
+                            <span>By</span>
+                            <span className="font-bold underline decoration-dotted">{dish.restaurantName}</span>
+                          </p>
+                        )}
+                        <div className="flex items-center gap-1 text-xs text-slate-600 font-semibold">
+                          <Star size={11} className="fill-amber-400 text-amber-400" />
+                          <span>{dish.rating}</span>
+                        </div>
+                        <div className="flex items-baseline gap-1.5 pt-1">
+                          <span className="text-base font-extrabold text-slate-900">
+                            ₹{dish.price}
+                          </span>
+                          {dish.originalPrice && (
+                            <span className="text-xs font-semibold text-slate-400 line-through">
+                              ₹{dish.originalPrice}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Add to Cart Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleAddToCart(dish)}
+                      className="w-full mt-3 bg-[#FF5A1F] hover:bg-[#e04f1a] active:scale-95 text-white font-bold py-2.5 px-3 rounded-lg text-xs transition-all shadow-xs cursor-pointer touch-manipulation flex items-center justify-center gap-1.5"
+                    >
+                      <ShoppingBag size={13} />
+                      <span>Add to Cart</span>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+        </div>
+      </section>
+
+
+      {/* ======================================================================= */}
+      {/* 6. PROMOTIONAL BANNER (DYNAMIC OFFER / VOUCHER)                          */}
+      {/* ======================================================================= */}
+      <section id="offers" className="py-2.5 sm:py-5 bg-white">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="relative rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#FFF5ED] via-[#FFF9F3] to-[#FFF5ED] border border-orange-200/60 p-4 sm:p-8 lg:p-10 shadow-xs overflow-hidden">
+            
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-center relative z-10">
+              
+              {/* Left Column: Heading & Coupon */}
+              <div className="lg:col-span-5 text-center lg:text-left flex flex-col items-center lg:items-start space-y-2 sm:space-y-4">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white border border-orange-200 text-orange-700 text-[11px] sm:text-xs font-bold shadow-xs">
+                  <span>🌿</span>
+                  <span>Special Offer</span>
+                </div>
+
+                <h3 className="text-xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+                  {activeOffer ? (
+                    activeOffer.type === 'Percentage' ? `Flat ${activeOffer.discountValue}% OFF` :
+                    activeOffer.type === 'Fixed Amount' ? `Flat ₹${activeOffer.discountValue} OFF` :
+                    'Free Express Delivery'
+                  ) : (
+                    'Special Partner Offers'
+                  )}<br />
+                  <span className="text-slate-500 font-semibold text-base sm:text-xl lg:text-2xl">
+                    {activeOffer?.description || (activeOffer?.minSpend > 0 ? `on orders above ₹${activeOffer.minSpend}` : 'available on your next order')}
+                  </span>
+                </h3>
+
+                {/* Coupon Code Pill */}
+                {activeOffer?.code && (
+                  <div className="pt-0.5">
+                    <div
+                      onClick={() => handleCopyCoupon(activeOffer.code)}
+                      className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-white border border-dashed border-[#FF5A1F] text-[#FF5A1F] font-mono font-bold text-xs sm:text-sm shadow-xs cursor-pointer hover:bg-orange-50/50 transition-colors group"
+                      title="Click to copy coupon code"
+                    >
+                      <span>Use Code:</span>
+                      <span className="text-slate-900 tracking-wider">{activeOffer.code}</span>
+                      <Copy size={13} className="text-[#FF5A1F] group-hover:scale-110 transition-transform" />
+                      {copiedCoupon && <span className="text-[10px] text-emerald-600 font-bold ml-1">Copied!</span>}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Center Column: Promo Badge Visual */}
+              <div className="lg:col-span-4 flex items-center justify-center py-1 sm:py-2 lg:py-0">
+                <div className="relative w-28 h-28 sm:w-40 sm:h-40 lg:w-52 lg:h-52 rounded-full overflow-hidden shadow-lg sm:shadow-xl border-3 sm:border-4 border-white shrink-0 bg-gradient-to-tr from-[#FF5A1F] to-[#FF8A00] flex flex-col items-center justify-center text-white p-4 text-center">
+                  <Sparkles size={36} className="text-amber-200 animate-pulse mb-1" />
+                  <span className="text-xl sm:text-2xl font-black tracking-tight">50% OFF</span>
+                  <span className="text-[10px] sm:text-xs font-semibold text-white/90 uppercase tracking-widest mt-0.5">Special Treat</span>
+                </div>
+              </div>
+
+              {/* Right Column: 3 Perks in a balanced responsive grid */}
+              <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-2 sm:gap-4 w-full">
+                
+                {/* Free Delivery */}
+                <div className="flex items-center gap-2.5 sm:gap-3 bg-white/80 lg:bg-transparent p-2 sm:p-2.5 lg:p-0 rounded-xl sm:rounded-2xl lg:rounded-none border border-orange-100/60 lg:border-none shadow-xs lg:shadow-none text-left">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#FF5A1F] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Truck size={15} />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs sm:text-sm font-bold text-slate-900 truncate">Free Delivery</span>
+                    <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate">on orders above ₹199</span>
+                  </div>
+                </div>
+
+                {/* Exclusive Deals */}
+                <div className="flex items-center gap-2.5 sm:gap-3 bg-white/80 lg:bg-transparent p-2 sm:p-2.5 lg:p-0 rounded-xl sm:rounded-2xl lg:rounded-none border border-orange-100/60 lg:border-none shadow-xs lg:shadow-none text-left">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Sparkles size={15} />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs sm:text-sm font-bold text-slate-900 truncate">Exclusive Deals</span>
+                    <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate">only on our app</span>
+                  </div>
+                </div>
+
+                {/* Easy Payments */}
+                <div className="flex items-center gap-2.5 sm:gap-3 bg-white/80 lg:bg-transparent p-2 sm:p-2.5 lg:p-0 rounded-xl sm:rounded-2xl lg:rounded-none border border-orange-100/60 lg:border-none shadow-xs lg:shadow-none text-left">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#10B981] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <CreditCard size={15} />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs sm:text-sm font-bold text-slate-900 truncate">Easy Payments</span>
+                    <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate">UPI, Cards, Wallets</span>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+
+      {/* ======================================================================= */}
+      {/* 7. HOW IT WORKS (4 STEPS BALANCED 2x2 ON MOBILE, 4-COL ON DESKTOP)      */}
+      {/* ======================================================================= */}
+      <section id="how-it-works" className="py-4 sm:py-6 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          {/* Header */}
+          <div className="mb-6 text-center sm:text-left">
+            <h2 className="text-xl sm:text-[22px] font-bold text-slate-900 tracking-tight">
+              How It Works
+            </h2>
+            <p className="text-xs sm:text-[13px] font-medium text-slate-500 mt-0.5">
+              Get your favourite food in just a few steps
+            </p>
+          </div>
+
+          {/* 4 Steps: 2x2 Grid on Mobile, 4 Columns on Large Screens */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            
+            {/* Step 1: Choose Restaurant */}
+            <div className="flex flex-col items-center text-center p-3 sm:p-4 rounded-2xl bg-orange-50/30 sm:bg-transparent border border-orange-100/50 sm:border-none space-y-2.5 sm:space-y-3">
+              <div className="relative">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-orange-50 border border-orange-200 text-[#FF5A1F] flex items-center justify-center shadow-xs">
+                  <Search size={20} className="sm:hidden" />
+                  <Search size={22} className="hidden sm:block" />
+                </div>
+                <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#FF5A1F] text-white text-[11px] font-black flex items-center justify-center shadow-xs">
+                  1
+                </div>
+              </div>
+              <h4 className="text-xs sm:text-base font-bold text-slate-900">Choose Restaurant</h4>
+              <p className="text-[11px] sm:text-xs text-slate-500 sm:text-slate-400 font-medium max-w-[200px] leading-relaxed">
+                Browse restaurants near you.
+              </p>
+            </div>
+
+            {/* Step 2: Select Food */}
+            <div className="flex flex-col items-center text-center p-3 sm:p-4 rounded-2xl bg-orange-50/30 sm:bg-transparent border border-orange-100/50 sm:border-none space-y-2.5 sm:space-y-3">
+              <div className="relative">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-orange-50 border border-orange-200 text-[#FF5A1F] flex items-center justify-center shadow-xs">
+                  <UtensilsCrossed size={20} className="sm:hidden" />
+                  <UtensilsCrossed size={22} className="hidden sm:block" />
+                </div>
+                <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#FF5A1F] text-white text-[11px] font-black flex items-center justify-center shadow-xs">
+                  2
+                </div>
+              </div>
+              <h4 className="text-xs sm:text-base font-bold text-slate-900">Select Food</h4>
+              <p className="text-[11px] sm:text-xs text-slate-500 sm:text-slate-400 font-medium max-w-[200px] leading-relaxed">
+                Add dishes to your cart.
+              </p>
+            </div>
+
+            {/* Step 3: Make Payment */}
+            <div className="flex flex-col items-center text-center p-3 sm:p-4 rounded-2xl bg-orange-50/30 sm:bg-transparent border border-orange-100/50 sm:border-none space-y-2.5 sm:space-y-3">
+              <div className="relative">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-orange-50 border border-orange-200 text-[#FF5A1F] flex items-center justify-center shadow-xs">
+                  <CreditCard size={20} className="sm:hidden" />
+                  <CreditCard size={22} className="hidden sm:block" />
+                </div>
+                <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#FF5A1F] text-white text-[11px] font-black flex items-center justify-center shadow-xs">
+                  3
+                </div>
+              </div>
+              <h4 className="text-xs sm:text-base font-bold text-slate-900">Make Payment</h4>
+              <p className="text-[11px] sm:text-xs text-slate-500 sm:text-slate-400 font-medium max-w-[200px] leading-relaxed">
+                Quick &amp; secure checkout.
+              </p>
+            </div>
+
+            {/* Step 4: Enjoy Food */}
+            <div className="flex flex-col items-center text-center p-3 sm:p-4 rounded-2xl bg-emerald-50/30 sm:bg-transparent border border-emerald-100/50 sm:border-none space-y-2.5 sm:space-y-3">
+              <div className="relative">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-emerald-50 border border-emerald-200 text-[#10B981] flex items-center justify-center shadow-xs">
+                  <Truck size={20} className="sm:hidden" />
+                  <Truck size={22} className="hidden sm:block" />
+                </div>
+                <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#10B981] text-white text-[11px] font-black flex items-center justify-center shadow-xs">
+                  4
+                </div>
+              </div>
+              <h4 className="text-xs sm:text-base font-bold text-slate-900">Enjoy Food</h4>
+              <p className="text-[11px] sm:text-xs text-slate-500 sm:text-slate-400 font-medium max-w-[200px] leading-relaxed">
+                Delivered right to your door.
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+
+      {/* ======================================================================= */}
+      {/* 8. WHAT OUR CUSTOMERS SAY (3 TESTIMONIAL CARDS WITH AVATARS & STARS)   */}
+      {/* ======================================================================= */}
+      <section className="py-4 sm:py-6 bg-[#FAFAF8]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          {/* Header */}
+          <div className="flex items-end justify-between mb-7">
+            <div className="text-left">
+              <h2 className="text-2xl sm:text-[26px] font-black text-slate-900 tracking-tight">
+                What Our Customers Say
+              </h2>
+              <p className="text-xs sm:text-sm font-medium text-slate-400 mt-1">
+                Real people. Real experiences.
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Link to="/profile" className="hidden sm:inline text-xs font-bold text-[#FF5A1F] hover:underline mr-2">
+                Write a Review →
+              </Link>
+              <button
+                onClick={() => setReviewCarouselIndex(prev => Math.max(0, prev - 1))}
+                disabled={reviewCarouselIndex === 0}
+                className={`w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center transition-colors shadow-xs ${
+                  reviewCarouselIndex === 0 ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600 hover:text-[#FF5A1F] cursor-pointer'
+                }`}
+                aria-label="Previous"
+              >
+                <ChevronLeft size={15} />
+              </button>
+              <button
+                onClick={() => setReviewCarouselIndex(prev => Math.min(Math.max(0, customerReviews.length - 3), prev + 1))}
+                disabled={reviewCarouselIndex >= Math.max(0, customerReviews.length - 3)}
+                className={`w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center transition-colors shadow-xs ${
+                  reviewCarouselIndex >= Math.max(0, customerReviews.length - 3) ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600 hover:text-[#FF5A1F] cursor-pointer'
+                }`}
+                aria-label="Next"
+              >
+                <ChevronRight size={15} />
+              </button>
+            </div>
+          </div>
+
+          {/* Review Cards (Shows 3 at a time or slides dynamically, or empty state) */}
+          {customerReviews.length === 0 ? (
+            <div className="bg-white p-8 sm:p-10 rounded-2xl border border-dashed border-slate-200 text-center max-w-md mx-auto space-y-3">
+              <div className="w-12 h-12 rounded-full bg-orange-50 text-[#FF5A1F] flex items-center justify-center mx-auto">
+                <Star size={20} className="fill-[#FF5A1F]" />
+              </div>
+              <h4 className="text-sm font-bold text-slate-800">No customer reviews yet</h4>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Be the first to share your dining experience! Leave your feedback directly from your customer dashboard.
+              </p>
+              <Link
+                to="/profile"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#FF5A1F] hover:bg-[#e04f1a] text-white rounded-xl text-xs font-bold transition-all shadow-xs"
+              >
+                Share Your Review
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {customerReviews.slice(reviewCarouselIndex, reviewCarouselIndex + 3).map((rev) => (
+                <div
+                  key={rev.id || rev._id}
+                  className="bg-white p-5 rounded-2xl border border-slate-100 shadow-xs hover:shadow-md transition-all text-left flex flex-col justify-between"
+                >
+                  <div className="space-y-2.5">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={rev.avatar}
+                        alt={rev.name}
+                        onError={(e) => {
+                          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(rev.name)}&background=FF5A1F&color=fff`;
+                        }}
+                        className="w-10 h-10 rounded-full object-cover border border-orange-100"
+                      />
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="text-sm font-bold text-slate-900">{rev.name}</h4>
+                          {rev.createdAt && (
+                            <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded">
+                              Verified
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-0.5 text-amber-400">
+                          {[...Array(Number(rev.rating) || 5)].map((_, i) => (
+                            <Star key={i} size={11} className="fill-amber-400" />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-500 font-medium leading-relaxed italic">
+                      "{rev.text}"
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+        </div>
+      </section>
+
+
+
+
+      {/* ======================================================================= */}
+      {/* 10. FOOTER (DARK SLATE #0D1527, BRAND, QUICK LINKS, HELP, APP BADGES)   */}
+      {/* ======================================================================= */}
+      <footer className="bg-[#0D1527] text-slate-400 pt-12 pb-8 border-t border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10 text-left">
+            
+            {/* Brand Column */}
+            <div className="space-y-3.5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-[#FF5A1F] text-white flex items-center justify-center">
+                  <UtensilsCrossed size={19} />
+                </div>
+                <div className="flex flex-col text-left">
+                  <span className="text-xl font-black text-white tracking-tight leading-none">
+                    Food<span className="text-[#FF5A1F]">Nest</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-medium mt-1">
+                    Good Food, Better Mood
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed max-w-xs">
+                Your favourite dishes and restaurants delivered fast, fresh, and hot right to your doorstep.
+              </p>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h4 className="text-xs font-bold text-white mb-3.5 tracking-wider uppercase">
+                Quick Links
+              </h4>
+              <ul className="space-y-2 text-xs font-medium">
+                <li><button type="button" onClick={() => handleNavClick('home', 'home')} className="hover:text-[#FF5A1F] transition-colors cursor-pointer text-left">Home</button></li>
+                <li><button type="button" onClick={() => handleNavClick('restaurants', 'featured-restaurants')} className="hover:text-[#FF5A1F] transition-colors cursor-pointer text-left">Restaurants</button></li>
+                <li><button type="button" onClick={() => handleNavClick('menu', 'popular-dishes')} className="hover:text-[#FF5A1F] transition-colors cursor-pointer text-left">Menu</button></li>
+                <li><button type="button" onClick={() => handleNavClick('offers', 'offers')} className="hover:text-[#FF5A1F] transition-colors cursor-pointer text-left">Offers</button></li>
+                <li><button type="button" onClick={() => handleNavClick('about', 'how-it-works')} className="hover:text-[#FF5A1F] transition-colors cursor-pointer text-left">About Us</button></li>
+              </ul>
+            </div>
+
+            {/* Help */}
+            <div>
+              <h4 className="text-xs font-bold text-white mb-3.5 tracking-wider uppercase">
+                Help
+              </h4>
+              <ul className="space-y-2 text-xs font-medium">
+                <li>
+                  <button 
+                    type="button" 
+                    onClick={() => handleNavClick('about', 'how-it-works')} 
+                    className="hover:text-[#FF5A1F] transition-colors cursor-pointer text-left no-underline outline-none"
+                  >
+                    How It Works
+                  </button>
+                </li>
+                <li><Link to="/reservations" className="hover:text-[#FF5A1F] transition-colors no-underline">Book a Table</Link></li>
+              </ul>
+            </div>
+
+            {/* App Badges */}
+            <div className="space-y-3.5">
+              <h4 className="text-xs font-bold text-white tracking-wider uppercase">
+                Download Our App
+              </h4>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                <div className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:bg-slate-700 transition-colors">
+                  <span>Google Play</span>
+                </div>
+                <div className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:bg-slate-700 transition-colors">
+                  <span>App Store</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-medium text-slate-500">
+            <p>© 2026 FoodNest. All rights reserved.</p>
+            <p className="flex items-center gap-2">
+              <span>Good Food</span>
+              <span>|</span>
+              <span>Great Mood</span>
+            </p>
+          </div>
+
+        </div>
+      </footer>
+
+      {/* Location Permission & GPS Services Alert / Retry Modal */}
+      {locationModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 flex flex-col items-center text-center space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 rounded-full bg-orange-50 border border-orange-100 flex items-center justify-center text-[#FF5A1F] shadow-inner">
+              <MapPin size={32} className="animate-bounce" />
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-lg font-extrabold text-slate-800 tracking-tight">
+                {locationModal.title}
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                {locationModal.message}
+              </p>
+            </div>
+
+            <div className="w-full flex flex-col gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setLocationModal(prev => ({ ...prev, isOpen: false }));
+                  handleGetLocation();
+                }}
+                className="w-full py-3 px-4 rounded-xl bg-[#FF5A1F] hover:bg-[#e04f1a] text-white font-bold text-sm shadow-md shadow-[#FF5A1F]/25 transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                <span>Try Again</span>
+                <ArrowRight size={16} />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setLocationModal(prev => ({ ...prev, isOpen: false }))}
+                className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs transition-colors cursor-pointer"
+              >
+                Close & Enter Manually
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}

@@ -1,9 +1,25 @@
 import axios from 'axios';
+import { Capacitor } from '@capacitor/core';
 
 export const getApiUrl = () => {
-    // If running in browser on localhost or local network, always use local backend port 5000
-    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-        return 'http://localhost:5000/api';
+    // Check custom localStorage override first (useful for manual setting or testing on real devices)
+    if (typeof window !== 'undefined' && window.localStorage) {
+        const customUrl = window.localStorage.getItem('foodnest_api_url');
+        if (customUrl) return customUrl;
+    }
+
+    // If running in Capacitor Native Android Mobile App (or inside WebView),
+    // always connect to the server's network LAN IP
+    if (Capacitor.isNativePlatform()) {
+        return 'http://192.168.1.41:5000/api';
+    }
+
+    // If running in browser on localhost or local network, use local backend port 5000
+    if (typeof window !== 'undefined') {
+        const host = window.location.hostname;
+        if (host === 'localhost' || host === '127.0.0.1') {
+            return 'http://localhost:5000/api';
+        }
     }
 
     if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) {
@@ -13,8 +29,8 @@ export const getApiUrl = () => {
         return envUrl;
     }
 
-    // Default to deployed Render backend URL for seamless connectivity across web & mobile apps
-    return 'https://f-hms-1.onrender.com/api';
+    // Default fallback (local development LAN / fallback)
+    return 'http://192.168.1.41:5000/api';
 };
 
 const api = axios.create({
