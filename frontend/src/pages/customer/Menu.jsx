@@ -34,12 +34,10 @@ const Menu = () => {
         const fetchMenu = async () => {
             try {
                 const { data } = await api.get('/menu');
-                const apiNames = new Set(data.map(i => i.name.toLowerCase()));
-                const nonDuplicateFallbacks = fallbackMenu.filter(i => !apiNames.has(i.name.toLowerCase()));
-                setMenuItems([...data, ...nonDuplicateFallbacks]);
+                setMenuItems(Array.isArray(data) ? data : []);
             } catch (error) {
                 console.error('Failed to fetch menu', error);
-                setMenuItems(fallbackMenu);
+                setMenuItems([]);
             } finally {
                 setLoading(false);
             }
