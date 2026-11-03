@@ -111,6 +111,7 @@ import MyTestimonial from './pages/admin/MyTestimonial';
 import TestimonialsManagement from './pages/superadmin/TestimonialsManagement';
 import ManagementFeatures from './pages/ManagementFeatures';
 import ModuleDetails from './pages/ModuleDetails';
+import PosModuleLandingPage from './pages/customer/PosModuleLandingPage';
 import OutletTypeLandingPage from './pages/customer/OutletTypeLandingPage';
 import CustomerMenu from './pages/customer/CustomerMenu';
 import CustomerOrderTracking from './pages/customer/CustomerOrderTracking';
