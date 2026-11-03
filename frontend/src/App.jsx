@@ -111,8 +111,15 @@ import MyTestimonial from './pages/admin/MyTestimonial';
 import TestimonialsManagement from './pages/superadmin/TestimonialsManagement';
 import ManagementFeatures from './pages/ManagementFeatures';
 import ModuleDetails from './pages/ModuleDetails';
-import PosModuleLandingPage from './pages/customer/PosModuleLandingPage';
 import OutletTypeLandingPage from './pages/customer/OutletTypeLandingPage';
+import CustomerMenu from './pages/customer/CustomerMenu';
+import CustomerOrderTracking from './pages/customer/CustomerOrderTracking';
+import Explore from './pages/customer/Explore';
+import Menu from './pages/customer/Menu';
+import RestaurantDetails from './pages/customer/RestaurantDetails';
+import Checkout from './pages/customer/Checkout';
+import Reservations from './pages/customer/Reservations';
+import CustomerLayout from './layouts/CustomerLayout';
 import ThemeToggle from './components/ThemeToggle';
 import FloatingVideoWidget from './components/FloatingVideoWidget';
 
@@ -189,19 +196,15 @@ function App() {
         <Route path="/delivery/login" element={<DeliveryPartnerLogin />} />
         <Route path="/delivery/dashboard" element={<ProtectedRoute allowedRoles={['DeliveryPartner']}><DeliveryPartnerDashboard /></ProtectedRoute>} />
 
-        {/* Customer Route Forwarding to Dedicated Customer Website */}
-        <Route path="/explore" element={<CustomerRedirect path="/explore" />} />
-        <Route path="/menu" element={<CustomerRedirect path="/menu" />} />
-        <Route path="/restaurant/:id" element={<CustomerRedirect />} />
-        <Route path="/checkout" element={<CustomerRedirect path="/checkout" />} />
-        <Route path="/track/:id" element={<CustomerRedirect />} />
-        <Route path="/reservations" element={<CustomerRedirect path="/reservations" />} />
-        <Route path="/profile" element={<CustomerRedirect path="/profile" />} />
-        <Route path="/profile/*" element={<CustomerRedirect />} />
-        <Route path="/customer/login" element={<CustomerRedirect path="/login" />} />
-        <Route path="/customer/register" element={<CustomerRedirect path="/register" />} />
-        <Route path="/customer/menu" element={<CustomerRedirect />} />
-        <Route path="/customer/track/:orderId" element={<CustomerRedirect />} />
+        {/* Customer Experience Routes */}
+        <Route path="/explore" element={<Explore />} />
+        <Route path="/menu" element={<Menu />} />
+        <Route path="/restaurant/:id" element={<RestaurantDetails />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/track/:id" element={<CustomerOrderTracking />} />
+        <Route path="/reservations" element={<Reservations />} />
+        <Route path="/customer/menu" element={<CustomerMenu />} />
+        <Route path="/customer/track/:orderId" element={<CustomerOrderTracking />} />
 
         {/* Alias for super admin mistypes */}
         <Route path="/superadmin" element={<Navigate to="/super-admin" replace />} />
