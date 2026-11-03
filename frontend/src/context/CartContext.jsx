@@ -25,14 +25,30 @@ export const useCart = () => {
 };
 
 export const CartProvider = ({ children }) => {
-    // Initialize cleanly from localStorage directly on mount
+    // Initialize cleanly from localStorage directly on mount, purging any legacy/stale demo carts
     const [cartItems, setCartItems] = useState(() => {
         try {
+            // Check legacy migration / clear old corrupted items
+            const legacyPurged = localStorage.getItem('foodnest_cart_purged_v2');
+            if (!legacyPurged) {
+                localStorage.removeItem('restosys_cart');
+                localStorage.setItem('foodnest_cart_purged_v2', 'true');
+                return [];
+            }
+
             const savedCart = localStorage.getItem('restosys_cart');
             if (savedCart) {
                 const parsed = JSON.parse(savedCart);
                 if (Array.isArray(parsed)) {
-                    return parsed.map(item => ({ ...item, image: getItemImage(item) }));
+                    // Only keep items that have valid IDs and positive quantity
+                    const validItems = parsed.filter(item => 
+                        item && (item.id || item._id) && Number(item.quantity || item.qty) > 0
+                    );
+                    return validItems.map(item => ({ 
+                        ...item, 
+                        quantity: Number(item.quantity || item.qty || 1),
+                        image: getItemImage(item) 
+                    }));
                 }
             }
         } catch (e) {
@@ -132,8 +148,8 @@ export const CartProvider = ({ children }) => {
 
     const clearCart = () => setCartItems([]);
 
-    const cartTotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-    const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+    const cartTotal = cartItems.reduce((acc, item) => acc + (Number(item.price || 0) * Math.max(0, Number(item.quantity || 1))), 0);
+    const cartCount = cartItems.reduce((acc, item) => acc + Math.max(0, Number(item.quantity || 1)), 0);
 
     return (
         <CartContext.Provider value={{

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { getItemImage } from '../utils/imageHelper';
 
 const CartDrawer = () => {
-    const { isCartOpen, setIsCartOpen, cartItems, updateQuantity, removeFromCart, cartTotal } = useCart();
+    const { isCartOpen, setIsCartOpen, cartItems, updateQuantity, removeFromCart, clearCart, cartTotal } = useCart();
     const navigate = useNavigate();
 
     if (!isCartOpen) return null;
@@ -27,12 +27,23 @@ const CartDrawer = () => {
                         </div>
                         <h2 className="text-xl font-bold text-gray-900 font-sans">Your Cart</h2>
                     </div>
-                    <button 
-                        onClick={() => setIsCartOpen(false)}
-                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
-                    >
-                        <X size={24} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {cartItems.length > 0 && (
+                            <button
+                                onClick={clearCart}
+                                className="text-xs font-semibold text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2.5 py-1 rounded-lg transition-colors"
+                                title="Empty cart"
+                            >
+                                Clear All
+                            </button>
+                        )}
+                        <button 
+                            onClick={() => setIsCartOpen(false)}
+                            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
+                        >
+                            <X size={24} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Items */}
