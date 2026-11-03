@@ -7,19 +7,19 @@ export const getMenuItems = async (req, res) => {
     try {
         const filter = { isActive: true };
         
+        // If explicit restaurantId is supplied in query (e.g. from customer QR scan),
+        // it must strictly take precedence over any residual staff/admin JWT in headers/cookies!
         if (req.query.restaurantId && req.query.restaurantId !== 'null' && req.query.restaurantId !== 'undefined') {
             filter.restaurantId = req.query.restaurantId;
-        }
-        if (req.query.branchId && req.query.branchId !== 'null' && req.query.branchId !== 'undefined') {
-            filter.$or = [
-                { branchId: req.query.branchId },
-                { branchId: { $exists: false } },
-                { branchId: null }
-            ];
-        }
-        
-        // If staff is logged in, filter by their restaurant
-        if (req.user && req.user.restaurantId) {
+            if (req.query.branchId && req.query.branchId !== 'null' && req.query.branchId !== 'undefined') {
+                filter.$or = [
+                    { branchId: req.query.branchId },
+                    { branchId: { $exists: false } },
+                    { branchId: null }
+                ];
+            }
+        } else if (req.user && req.user.restaurantId) {
+            // Staff/Admin is logged in and viewing their own dashboard menu without explicit query params
             filter.restaurantId = req.user.restaurantId;
             
             // If they belong to a specific branch, allow global items OR branch-specific items
