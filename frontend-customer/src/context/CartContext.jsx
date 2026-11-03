@@ -25,42 +25,54 @@ export const useCart = () => {
 };
 
 export const CartProvider = ({ children }) => {
-    const [cartItems, setCartItems] = useState([]);
-    const [wishlist, setWishlist] = useState([]);
-    const [isCartOpen, setIsCartOpen] = useState(false);
-    const [isWishlistOpen, setIsWishlistOpen] = useState(false);
-
-    // Load from local storage
-    useEffect(() => {
-        const isUserLoggedIn = !!localStorage.getItem('restosys_customer_user');
-        if (!isUserLoggedIn) {
-            localStorage.removeItem('restosys_cart');
-            localStorage.removeItem('restosys_wishlist');
-            setCartItems([]);
-            setWishlist([]);
-            return;
-        }
-        const savedCart = localStorage.getItem('restosys_cart');
-        const savedWishlist = localStorage.getItem('restosys_wishlist');
+    // Initialize cleanly from localStorage directly on mount
+    const [cartItems, setCartItems] = useState(() => {
         try {
+            const savedCart = localStorage.getItem('restosys_cart');
             if (savedCart) {
                 const parsed = JSON.parse(savedCart);
-                setCartItems(parsed.map(item => ({ ...item, image: getItemImage(item) })));
-            }
-            if (savedWishlist) {
-                const parsed = JSON.parse(savedWishlist);
-                setWishlist(parsed.map(item => ({ ...item, image: getItemImage(item) })));
+                if (Array.isArray(parsed)) {
+                    return parsed.map(item => ({ ...item, image: getItemImage(item) }));
+                }
             }
         } catch (e) {
             localStorage.removeItem('restosys_cart');
+        }
+        return [];
+    });
+
+    const [wishlist, setWishlist] = useState(() => {
+        try {
+            const savedWishlist = localStorage.getItem('restosys_wishlist');
+            if (savedWishlist) {
+                const parsed = JSON.parse(savedWishlist);
+                if (Array.isArray(parsed)) {
+                    return parsed.map(item => ({ ...item, image: getItemImage(item) }));
+                }
+            }
+        } catch (e) {
             localStorage.removeItem('restosys_wishlist');
         }
-    }, []);
+        return [];
+    });
 
-    // Save to local storage
+    const [isCartOpen, setIsCartOpen] = useState(false);
+    const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+
+    // Save changes to localStorage
     useEffect(() => {
-        localStorage.setItem('restosys_cart', JSON.stringify(cartItems));
-        localStorage.setItem('restosys_wishlist', JSON.stringify(wishlist));
+        try {
+            if (cartItems.length > 0) {
+                localStorage.setItem('restosys_cart', JSON.stringify(cartItems));
+            } else {
+                localStorage.removeItem('restosys_cart');
+            }
+            if (wishlist.length > 0) {
+                localStorage.setItem('restosys_wishlist', JSON.stringify(wishlist));
+            } else {
+                localStorage.removeItem('restosys_wishlist');
+            }
+        } catch (e) {}
     }, [cartItems, wishlist]);
 
     const addToCart = (item, quantity = 1) => {

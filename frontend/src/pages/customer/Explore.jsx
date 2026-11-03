@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Capacitor } from '@capacitor/core';
-import { Geolocation } from '@capacitor/geolocation';
 import { 
   Search, MapPin, ChevronDown, ShoppingBag, Heart, Star, 
   Clock, ShieldCheck, Tag, ArrowRight, Sparkles,
@@ -403,99 +401,7 @@ export default function Explore() {
     setIsDetectingLocation(true);
     const loadingToast = toast.loading('Detecting location...');
 
-    // If running inside Capacitor Native Mobile App (Android APK / iOS)
-    if (Capacitor.isNativePlatform()) {
-      try {
-        let permStatus = await Geolocation.checkPermissions();
-
-        // If permission is prompt or prompt-with-rationale, request it at runtime
-        if (permStatus.location !== 'granted' && permStatus.coarseLocation !== 'granted') {
-          permStatus = await Geolocation.requestPermissions({ permissions: ['location', 'coarseLocation'] });
-        }
-
-        // Check if user denied permission
-        if (permStatus.location === 'denied' && permStatus.coarseLocation === 'denied') {
-          setIsDetectingLocation(false);
-          toast.dismiss(loadingToast);
-          setLocationModal({
-            isOpen: true,
-            type: 'permanently_denied',
-            title: 'Location Permission Required',
-            message: 'FoodNest needs location access to find restaurants and calculate delivery times accurately. Please allow Location permission in your Android App Settings.'
-          });
-          return;
-        }
-
-        // If granted (fine or coarse), get GPS coordinates
-        if (permStatus.location === 'granted' || permStatus.coarseLocation === 'granted') {
-          try {
-            // Attempt high accuracy GPS first
-            const nativePos = await Geolocation.getCurrentPosition({
-              enableHighAccuracy: true,
-              timeout: 10000,
-              maximumAge: 30000
-            });
-            if (nativePos && nativePos.coords) {
-              await resolveLocationFromCoords(nativePos.coords.latitude, nativePos.coords.longitude, loadingToast);
-              return;
-            }
-          } catch (highAccErr) {
-            console.warn('Native high-accuracy GPS error/timeout, trying cell/wifi...', highAccErr);
-            // Attempt low accuracy (Cell / Wi-Fi network)
-            try {
-              const lowPos = await Geolocation.getCurrentPosition({
-                enableHighAccuracy: false,
-                timeout: 10000,
-                maximumAge: 180000
-              });
-              if (lowPos && lowPos.coords) {
-                await resolveLocationFromCoords(lowPos.coords.latitude, lowPos.coords.longitude, loadingToast);
-                return;
-              }
-            } catch (lowAccErr) {
-              console.warn('Native low-accuracy GPS also failed:', lowAccErr);
-              const errMsg = String(lowAccErr?.message || lowAccErr || '');
-              if (errMsg.includes('services are not enabled') || errMsg.includes('disabled') || lowAccErr?.code === 'OS-PLUG-GLOC-0007') {
-                setIsDetectingLocation(false);
-                toast.dismiss(loadingToast);
-                setLocationModal({
-                  isOpen: true,
-                  type: 'services_disabled',
-                  title: 'Device GPS is Switched Off',
-                  message: 'Please enable Location / GPS in your Android notification quick settings and tap Try Again.'
-                });
-                return;
-              }
-            }
-          }
-        }
-      } catch (nativeErr) {
-        console.warn('Capacitor native Geolocation exception:', nativeErr);
-        const errMsg = String(nativeErr?.message || nativeErr || '');
-        if (errMsg.includes('services are not enabled') || errMsg.includes('disabled') || nativeErr?.code === 'OS-PLUG-GLOC-0007') {
-          setIsDetectingLocation(false);
-          toast.dismiss(loadingToast);
-          setLocationModal({
-            isOpen: true,
-            type: 'services_disabled',
-            title: 'Device GPS is Switched Off',
-            message: 'Please turn on Location / GPS in your device settings and tap Try Again.'
-          });
-          return;
-        }
-        if (errMsg.includes('denied') || nativeErr?.code === 'OS-PLUG-GLOC-0003') {
-          setIsDetectingLocation(false);
-          toast.dismiss(loadingToast);
-          setLocationModal({
-            isOpen: true,
-            type: 'permission_denied',
-            title: 'Location Permission Denied',
-            message: 'Location access was not granted. Tap Try Again to request permission or select your city manually.'
-          });
-          return;
-        }
-      }
-    }
+    // Web browser geolocation via navigator.geolocation
 
     // Web / WebView fallback via navigator.geolocation
     if (!navigator.geolocation) {
