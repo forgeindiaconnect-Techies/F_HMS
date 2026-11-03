@@ -52,6 +52,14 @@ export default function Explore() {
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [reviewCarouselIndex, setReviewCarouselIndex] = useState(0);
 
+  // Location Permission & Services Error Modal State
+  const [locationModal, setLocationModal] = useState({
+    isOpen: false,
+    type: null, // 'permission_denied' | 'permanently_denied' | 'services_disabled'
+    title: '',
+    message: ''
+  });
+
   const containerRef = useRef(null);
   const profileRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -338,11 +346,27 @@ export default function Explore() {
     if (Capacitor.isNativePlatform()) {
       try {
         let permStatus = await Geolocation.checkPermissions();
-        if (permStatus.location !== 'granted') {
-          permStatus = await Geolocation.requestPermissions();
+
+        // If permission is prompt or prompt-with-rationale, request it at runtime
+        if (permStatus.location !== 'granted' && permStatus.coarseLocation !== 'granted') {
+          permStatus = await Geolocation.requestPermissions({ permissions: ['location', 'coarseLocation'] });
         }
 
-        if (permStatus.location === 'granted') {
+        // Check if user denied permission
+        if (permStatus.location === 'denied' && permStatus.coarseLocation === 'denied') {
+          setIsDetectingLocation(false);
+          toast.dismiss(loadingToast);
+          setLocationModal({
+            isOpen: true,
+            type: 'permanently_denied',
+            title: 'Location Permission Required',
+            message: 'FoodNest needs location access to find restaurants and calculate delivery times accurately. Please allow Location permission in your Android App Settings.'
+          });
+          return;
+        }
+
+        // If granted (fine or coarse), get GPS coordinates
+        if (permStatus.location === 'granted' || permStatus.coarseLocation === 'granted') {
           try {
             // Attempt high accuracy GPS first
             const nativePos = await Geolocation.getCurrentPosition({
@@ -355,35 +379,71 @@ export default function Explore() {
               return;
             }
           } catch (highAccErr) {
-            console.warn('Native high-accuracy GPS timeout/error, trying cell/wifi...', highAccErr);
+            console.warn('Native high-accuracy GPS error/timeout, trying cell/wifi...', highAccErr);
             // Attempt low accuracy (Cell / Wi-Fi network)
-            const lowPos = await Geolocation.getCurrentPosition({
-              enableHighAccuracy: false,
-              timeout: 10000,
-              maximumAge: 180000
-            });
-            if (lowPos && lowPos.coords) {
-              await resolveLocationFromCoords(lowPos.coords.latitude, lowPos.coords.longitude, loadingToast);
-              return;
+            try {
+              const lowPos = await Geolocation.getCurrentPosition({
+                enableHighAccuracy: false,
+                timeout: 10000,
+                maximumAge: 180000
+              });
+              if (lowPos && lowPos.coords) {
+                await resolveLocationFromCoords(lowPos.coords.latitude, lowPos.coords.longitude, loadingToast);
+                return;
+              }
+            } catch (lowAccErr) {
+              console.warn('Native low-accuracy GPS also failed:', lowAccErr);
+              const errMsg = String(lowAccErr?.message || lowAccErr || '');
+              if (errMsg.includes('services are not enabled') || errMsg.includes('disabled') || lowAccErr?.code === 'OS-PLUG-GLOC-0007') {
+                setIsDetectingLocation(false);
+                toast.dismiss(loadingToast);
+                setLocationModal({
+                  isOpen: true,
+                  type: 'services_disabled',
+                  title: 'Device GPS is Switched Off',
+                  message: 'Please enable Location / GPS in your Android notification quick settings and tap Try Again.'
+                });
+                return;
+              }
             }
           }
-        } else {
-          console.warn('Native geolocation permission not granted:', permStatus);
         }
       } catch (nativeErr) {
-        console.warn('Capacitor native Geolocation error, checking web/IP fallback...', nativeErr);
+        console.warn('Capacitor native Geolocation exception:', nativeErr);
+        const errMsg = String(nativeErr?.message || nativeErr || '');
+        if (errMsg.includes('services are not enabled') || errMsg.includes('disabled') || nativeErr?.code === 'OS-PLUG-GLOC-0007') {
+          setIsDetectingLocation(false);
+          toast.dismiss(loadingToast);
+          setLocationModal({
+            isOpen: true,
+            type: 'services_disabled',
+            title: 'Device GPS is Switched Off',
+            message: 'Please turn on Location / GPS in your device settings and tap Try Again.'
+          });
+          return;
+        }
+        if (errMsg.includes('denied') || nativeErr?.code === 'OS-PLUG-GLOC-0003') {
+          setIsDetectingLocation(false);
+          toast.dismiss(loadingToast);
+          setLocationModal({
+            isOpen: true,
+            type: 'permission_denied',
+            title: 'Location Permission Denied',
+            message: 'Location access was not granted. Tap Try Again to request permission or select your city manually.'
+          });
+          return;
+        }
       }
     }
 
     // Web / WebView fallback via navigator.geolocation
     if (!navigator.geolocation) {
-      fallbackIpGeolocation(loadingToast).then(ok => {
-        if (!ok) {
-          setIsDetectingLocation(false);
-          toast.dismiss(loadingToast);
-          toast.error('Geolocation is not supported by your device.');
-        }
-      });
+      const ok = await fallbackIpGeolocation(loadingToast);
+      if (!ok) {
+        setIsDetectingLocation(false);
+        toast.dismiss(loadingToast);
+        toast.error('Geolocation is not supported by your device.');
+      }
       return;
     }
 
@@ -409,7 +469,19 @@ export default function Explore() {
               setIsDetectingLocation(false);
               toast.dismiss(loadingToast);
               if (error.code === 1 || netError.code === 1) {
-                toast.error('Location permission was denied. Please allow location access in your phone settings.');
+                setLocationModal({
+                  isOpen: true,
+                  type: 'permission_denied',
+                  title: 'Location Access Needed',
+                  message: 'Location permission was denied. Tap Try Again or enable location access in App Settings.'
+                });
+              } else if (error.code === 2 || netError.code === 2) {
+                setLocationModal({
+                  isOpen: true,
+                  type: 'services_disabled',
+                  title: 'GPS Signal Unavailable',
+                  message: 'Could not detect your GPS signal. Please ensure device Location is turned on and try again.'
+                });
               } else {
                 toast.error('Could not detect location. Please check GPS settings or select location manually.');
               }
@@ -1689,6 +1761,48 @@ export default function Explore() {
 
         </div>
       </footer>
+
+      {/* Location Permission & GPS Services Alert / Retry Modal */}
+      {locationModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 flex flex-col items-center text-center space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 rounded-full bg-orange-50 border border-orange-100 flex items-center justify-center text-[#FF5A1F] shadow-inner">
+              <MapPin size={32} className="animate-bounce" />
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-lg font-extrabold text-slate-800 tracking-tight">
+                {locationModal.title}
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                {locationModal.message}
+              </p>
+            </div>
+
+            <div className="w-full flex flex-col gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setLocationModal(prev => ({ ...prev, isOpen: false }));
+                  handleGetLocation();
+                }}
+                className="w-full py-3 px-4 rounded-xl bg-[#FF5A1F] hover:bg-[#e04f1a] text-white font-bold text-sm shadow-md shadow-[#FF5A1F]/25 transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                <span>Try Again</span>
+                <ArrowRight size={16} />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setLocationModal(prev => ({ ...prev, isOpen: false }))}
+                className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs transition-colors cursor-pointer"
+              >
+                Close & Enter Manually
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
