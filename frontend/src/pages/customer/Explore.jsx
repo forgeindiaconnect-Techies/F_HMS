@@ -64,17 +64,38 @@ export default function Explore() {
   const profileRef = useRef(null);
   const searchInputRef = useRef(null);
 
+  const [fetchError, setFetchError] = useState(null);
+  const [fetchTrigger, setFetchTrigger] = useState(0);
+
   // --------------------------------------------------------------------------
   // Fetch Real-time Backend Data Exclusively from MongoDB
   // --------------------------------------------------------------------------
   useEffect(() => {
     let isMounted = true;
     setLoadingData(true);
+    setFetchError(null);
 
-    // Load Live Restaurants from MongoDB
-    api.get('/restaurants').then(({ data }) => {
-      if (isMounted && Array.isArray(data)) {
-        const approved = data.filter(r => r.isDeleted !== true && r.status !== 'Inactive' && (r.approvalStatus === 'Approved' || !r.approvalStatus));
+    // Guaranteed fallback timer so skeleton loading NEVER hangs indefinitely
+    const safetyTimeout = setTimeout(() => {
+      if (isMounted) {
+        setLoadingData(false);
+      }
+    }, 8000);
+
+    // Parallel atomic fetching with Promise.allSettled
+    Promise.allSettled([
+      api.get('/restaurants'),
+      api.get('/menu'),
+      api.get('/offers'),
+      api.get('/customer-reviews/public')
+    ]).then(([restRes, menuRes, offersRes, reviewsRes]) => {
+      if (!isMounted) return;
+
+      // 1. Process Restaurants
+      if (restRes.status === 'fulfilled' && Array.isArray(restRes.value?.data)) {
+        const approved = restRes.value.data.filter(
+          (r) => r.isDeleted !== true && r.status !== 'Inactive' && (r.approvalStatus === 'Approved' || !r.approvalStatus)
+        );
         const backendMapped = approved.map((r, i) => {
           const fallbackImg = r.name?.toLowerCase().includes('veg')
             ? 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?q=80&w=640&auto=format&fit=crop'
@@ -98,21 +119,17 @@ export default function Explore() {
           };
         });
         setRestaurants(backendMapped);
+      } else if (restRes.status === 'rejected') {
+        console.error('Failed to load restaurants from server:', restRes.reason);
       }
-    }).catch((err) => {
-      console.error('Failed to load restaurants from server:', err);
-    });
 
-    // Load Live Menu from MongoDB
-    api.get('/menu').then(({ data }) => {
-      if (isMounted && Array.isArray(data)) {
-        const backendDishes = data.map((d, i) => {
-          // Normalize restaurant info if populated
+      // 2. Process Menu Dishes
+      if (menuRes.status === 'fulfilled' && Array.isArray(menuRes.value?.data)) {
+        const backendDishes = menuRes.value.data.map((d, i) => {
           const restObj = typeof d.restaurantId === 'object' && d.restaurantId !== null ? d.restaurantId : null;
           const restName = restObj?.name || '';
           const restId = restObj?._id || (typeof d.restaurantId === 'string' ? d.restaurantId : '');
 
-          // Infer cuisine if empty
           let inferredCuisine = d.cuisine || '';
           const dNameLower = (d.name || '').toLowerCase();
           const dCatLower = (d.category || '').toLowerCase();
@@ -128,7 +145,6 @@ export default function Explore() {
             }
           }
 
-          // Safe photo for dish
           let dishImg = d.image;
           if (!dishImg || dishImg.includes('undefined')) {
             if (dNameLower.includes('pizza')) {
@@ -156,28 +172,24 @@ export default function Explore() {
           };
         });
         setDishes(backendDishes);
+      } else if (menuRes.status === 'rejected') {
+        console.error('Failed to load menu dishes from server:', menuRes.reason);
       }
-    }).catch((err) => {
-      console.error('Failed to load menu dishes from server:', err);
-    }).finally(() => {
-      if (isMounted) setLoadingData(false);
-    });
 
-    // Load Live Active Offers / Coupons
-    api.get('/offers').then(({ data }) => {
-      if (isMounted && Array.isArray(data)) {
-        const active = data.filter(o => o.status === 'Active' || (!o.status && o.isActive !== false));
-        if (active.length > 0) {
-          setActiveOffer(active[0]);
-        }
+      // Check if both core queries failed
+      if (restRes.status === 'rejected' && menuRes.status === 'rejected') {
+        setFetchError('Unable to connect to FoodNest server. Please check your internet connection.');
       }
-    }).catch(() => {});
 
-    // Load Live Customer Reviews (Real-time DB synced from Customer Reviews)
-    setReviewsLoading(true);
-    api.get('/customer-reviews/public').then(({ data }) => {
-      if (isMounted && data && Array.isArray(data.data)) {
-        const liveReviews = data.data.map(r => ({
+      // 3. Process Offers
+      if (offersRes.status === 'fulfilled' && Array.isArray(offersRes.value?.data)) {
+        const active = offersRes.value.data.filter((o) => o.status === 'Active' || (!o.status && o.isActive !== false));
+        if (active.length > 0) setActiveOffer(active[0]);
+      }
+
+      // 4. Process Reviews
+      if (reviewsRes.status === 'fulfilled' && Array.isArray(reviewsRes.value?.data?.data)) {
+        const liveReviews = reviewsRes.value.data.data.map((r) => ({
           id: r._id,
           name: r.customerName || 'Happy Customer',
           avatar: r.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(r.customerName || 'Customer')}&background=FF5A1F&color=fff`,
@@ -187,16 +199,22 @@ export default function Explore() {
         }));
         setCustomerReviews(liveReviews);
       }
-    }).catch(() => {
-      if (isMounted) setCustomerReviews([]);
+      setReviewsLoading(false);
+    }).catch((err) => {
+      console.error('Unexpected error in Explore data loader:', err);
+      if (isMounted) setFetchError('Failed to load restaurant data.');
     }).finally(() => {
-      if (isMounted) setReviewsLoading(false);
+      clearTimeout(safetyTimeout);
+      if (isMounted) {
+        setLoadingData(false);
+      }
     });
 
     return () => {
       isMounted = false;
+      clearTimeout(safetyTimeout);
     };
-  }, [api]);
+  }, [api, fetchTrigger]);
 
   // --------------------------------------------------------------------------
   // Intersection Observer for Smooth Scroll-Reveal

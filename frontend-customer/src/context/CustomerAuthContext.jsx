@@ -36,15 +36,18 @@ api.interceptors.response.use(
         const status = error.response ? error.response.status : 0;
         
         // Cold-start spin-up status codes (502, 503, 504, or network drops during boot).
-        // Exclude 429 rate-limiting from auto-retry loops so we do not spam Cloudflare / Render edge proxies.
-        const isColdStart = status === 502 || status === 503 || status === 504 || (!error.response && error.code === 'ERR_NETWORK');
+        const isNetworkDown = !error.response || error.code === 'ERR_NETWORK';
+        const isColdStart = status === 502 || status === 503 || status === 504 || isNetworkDown;
         
-        if (config && isColdStart && (!config._retryCount || config._retryCount < 10)) {
-            config._retryCount = (config._retryCount || 0) + 1;
-            // Progressive delay capped at 14s (10 retries = 120s max window) to reliably wait through slow Render boots
-            const backoffMs = Math.min(config._retryCount * 2500 + 2500, 14000);
-            console.log(`[Render Cold-Start] Server warming up (${status || 'Network Error'}). Retrying attempt ${config._retryCount}/10 in ${(backoffMs/1000).toFixed(1)}s...`);
+        // Fallback to live Render backend if local/LAN port 5000 is unreachable
+        if (config && isNetworkDown && config.baseURL && (config.baseURL.includes('5000') || config.baseURL.includes('localhost') || config.baseURL.includes('192.168.'))) {
+            config.baseURL = 'https://f-hms-1.onrender.com/api';
+            return api.request(config);
+        }
 
+        if (config && isColdStart && (!config._retryCount || config._retryCount < 3)) {
+            config._retryCount = (config._retryCount || 0) + 1;
+            const backoffMs = Math.min(config._retryCount * 1500 + 1000, 5000);
             await new Promise((resolve) => setTimeout(resolve, backoffMs));
             return api.request(config);
         }

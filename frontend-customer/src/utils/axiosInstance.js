@@ -8,13 +8,7 @@ export const getApiUrl = () => {
         if (customUrl) return customUrl;
     }
 
-    // If running in Capacitor Native Android Mobile App (or inside WebView),
-    // always connect to the server's network LAN IP
-    if (Capacitor.isNativePlatform()) {
-        return 'http://192.168.1.41:5000/api';
-    }
-
-    // If running in browser on localhost or local network, use local backend port 5000
+    // If running in browser on localhost or local loopback, use local backend port 5000
     if (typeof window !== 'undefined') {
         const host = window.location.hostname;
         if (host === 'localhost' || host === '127.0.0.1') {
@@ -26,11 +20,15 @@ export const getApiUrl = () => {
         let envUrl = import.meta.env.VITE_API_URL.trim();
         if (envUrl.endsWith('/')) envUrl = envUrl.slice(0, -1);
         if (!envUrl.endsWith('/api')) envUrl += '/api';
+        // If native platform and envUrl is localhost, use Render backend instead of localhost
+        if (Capacitor.isNativePlatform() && (envUrl.includes('localhost') || envUrl.includes('127.0.0.1'))) {
+            return 'https://f-hms-1.onrender.com/api';
+        }
         return envUrl;
     }
 
-    // Default fallback (local development LAN / fallback)
-    return 'http://192.168.1.41:5000/api';
+    // Default to the live Render backend URL for Capacitor Native Android and production deployments
+    return 'https://f-hms-1.onrender.com/api';
 };
 
 const api = axios.create({
@@ -76,15 +74,15 @@ api.interceptors.response.use(
         const isNetworkDown = !error.response || error.code === 'ERR_NETWORK';
         const isColdStart = status === 502 || status === 503 || status === 504 || isNetworkDown;
 
-        // Fallback to live Render backend ONLY if local port 5000 is completely down/unreachable, NEVER on 401/400/404
-        if (config && isNetworkDown && config.baseURL && config.baseURL.includes('localhost:5000')) {
+        // Fallback to live Render backend if local/LAN port 5000 is unreachable
+        if (config && isNetworkDown && config.baseURL && (config.baseURL.includes('5000') || config.baseURL.includes('localhost') || config.baseURL.includes('192.168.'))) {
             config.baseURL = 'https://f-hms-1.onrender.com/api';
             return api.request(config);
         }
 
-        if (config && isColdStart && (!config._retryCount || config._retryCount < 5)) {
+        if (config && isColdStart && (!config._retryCount || config._retryCount < 3)) {
             config._retryCount = (config._retryCount || 0) + 1;
-            const backoffMs = Math.min(config._retryCount * 2000 + 1000, 10000);
+            const backoffMs = Math.min(config._retryCount * 1500 + 1000, 5000);
             await new Promise((resolve) => setTimeout(resolve, backoffMs));
             return api.request(config);
         }
