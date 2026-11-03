@@ -552,7 +552,7 @@ export const getRestaurantPublicConfig = async (req, res) => {
                 customTipAllowed: config.waiterTips?.customTipAllowed ?? true
             },
             orderKitchen: {
-                kitchenMode: config.orderKitchen?.kitchenMode || targetRest.kitchenMode || 'KDS',
+                kitchenMode: config.orderKitchen?.kitchenMode || restaurant.kitchenMode || 'KDS',
                 kotEnabled: config.orderKitchen?.kotEnabled ?? true,
                 kdsEnabled: config.orderKitchen?.kdsEnabled ?? true,
                 kotPrintEnabled: config.orderKitchen?.kotPrintEnabled ?? true
