@@ -127,13 +127,12 @@ const RestaurantDetails = () => {
                 }
 
                 // Check if restaurant is inactive, suspended, or soft-deleted
-                if (
-                    !fetchedRest || 
-                    fetchedRest.isDeleted || 
-                    (fetchedRest.status && fetchedRest.status !== 'Active') || 
-                    fetchedRest.isActive === false || 
-                    fetchedRest.approvalStatus === 'Rejected'
-                ) {
+                const isInactive = fetchedRest?.status && fetchedRest.status.toLowerCase() === 'inactive';
+                const isSoftDeleted = fetchedRest?.isDeleted === true;
+                const isExplicitlyDisabled = fetchedRest?.isActive === false;
+                const isRejected = fetchedRest?.approvalStatus === 'Rejected';
+
+                if (!fetchedRest || isSoftDeleted || isInactive || isExplicitlyDisabled || isRejected) {
                     setRestaurant(null);
                     // Automatically clean up cart if it holds items for this unavailable restaurant
                     try {

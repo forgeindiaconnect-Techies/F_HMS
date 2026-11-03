@@ -157,15 +157,11 @@ export default function Explore() {
             }
           }
 
-          let dishImg = d.image;
-          if (!dishImg || dishImg.includes('undefined')) {
-            if (dNameLower.includes('pizza')) {
-              dishImg = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=480&auto=format&fit=crop';
-            } else if (dNameLower.includes('dosa')) {
-              dishImg = 'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?q=80&w=480&auto=format&fit=crop';
-            } else {
-              dishImg = 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?q=80&w=480&auto=format&fit=crop';
-            }
+          let dishImg = d.image && typeof d.image === 'string' && !d.image.includes('undefined') && !d.image.includes('unsplash.com') ? d.image : null;
+          if (dishImg && !dishImg.startsWith('http') && !dishImg.startsWith('data:')) {
+            const apiBase = getApiUrl();
+            const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : '';
+            dishImg = `${origin}${dishImg.startsWith('/') ? '' : '/'}${dishImg}`;
           }
 
           return {
@@ -681,9 +677,10 @@ export default function Explore() {
     }
 
     // 2. Intelligent Location Matching
-    const locTerms = location.toLowerCase().split(/[, ]+/).map(t => t.trim()).filter(t => t.length >= 3);
+    const locLower = location.toLowerCase().trim();
+    const locTerms = locLower.split(/[, ]+/).map(t => t.trim()).filter(t => t.length >= 2);
     
-    // Check if any restaurant explicitly matches the detected location terms (city, district, address, branch)
+    // Check if any restaurant explicitly matches the detected location terms (city, district, state, address, branch)
     const matched = base.filter(r => {
       const restCity = (r.city || '').toLowerCase();
       const restState = (r.state || '').toLowerCase();
@@ -696,32 +693,36 @@ export default function Explore() {
       }).join(' ');
 
       const combined = `${restName} ${restCity} ${restState} ${restAddress} ${verifAddr} ${branchLocations}`.trim();
-      return locTerms.some(term => combined.includes(term));
+
+      // Check direct substring of location or individual terms
+      if (restCity && locLower.includes(restCity)) return true;
+      return locTerms.some(term => term.length >= 3 && combined.includes(term));
     });
 
-    // If matches found (e.g. Krishnagiri restaurants 'vegiii', 'RA', etc.), show them!
+    // If matches found (e.g. Krishnagiri restaurants 'vegiii', 'RA', etc.), show all of them!
     if (matched.length > 0) {
       return matched;
     }
 
-    // If strict match didn't catch due to geocoding formatting differences (e.g. coordinates or district),
-    // check if Krishnagiri / Tamil Nadu is in the location string or fallback gracefully to registered outlets
-    const isKrishnagiriArea = location.toLowerCase().includes('krishnagiri') || 
-                              location.toLowerCase().includes('tamil nadu') ||
-                              location.toLowerCase().includes('dharmapuri') ||
-                              location.toLowerCase().includes('hosur');
+    // Special check for Krishnagiri variations / Tamil Nadu district
+    const isKrishnagiriArea = locLower.includes('krishnagiri') || 
+                              locLower.includes('tamil nadu') ||
+                              locLower.includes('dharmapuri') ||
+                              locLower.includes('hosur');
 
     if (isKrishnagiriArea) {
       const kgRestaurants = base.filter(r => {
         const city = (r.city || '').toLowerCase();
         const addr = (r.address || '').toLowerCase();
-        return city.includes('krishnagiri') || addr.includes('krishnagiri');
+        const branches = (r.branches || []).map(b => (b.location?.city || '').toLowerCase()).join(' ');
+        return city.includes('krishnagiri') || addr.includes('krishnagiri') || branches.includes('krishnagiri');
       });
       if (kgRestaurants.length > 0) return kgRestaurants;
     }
 
-    // Fallback: Return all base active partner restaurants so customer is NEVER shown an empty screen
-    return base;
+    // When a specific location has no restaurants found in the database, return empty array
+    // so the clean empty state with "Explore All Outlets" button is properly displayed
+    return [];
   })();
 
   return (
@@ -1254,7 +1255,7 @@ export default function Explore() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-              {displayedRestaurants.slice(0, 4).map((rest, index) => (
+              {displayedRestaurants.map((rest, index) => (
                 <div
                   key={rest._id}
                   onClick={() => navigate(`/restaurant/${rest._id}`)}
