@@ -514,9 +514,11 @@ const CashierDashboard = () => {
             kitchenStation: 'Main Kitchen',
             items: (bill.orderItems || []).map(i => ({
                 name: i.name,
-                quantity: i.qty || i.quantity || 1,
+                qty: i.qty || i.quantity || 1,
+                price: i.price || 0,
                 notes: i.notes || ''
             })),
+            totalPrice: bill.totalPrice || 0,
             notes: bill.notes,
             createdAt: bill.createdAt || new Date().toISOString()
         });

@@ -488,6 +488,7 @@ const WaiterDashboard = () => {
                 price: i.price || 0,
                 notes: i.notes || ''
             })),
+            totalPrice: order.totalPrice || 0,
             notes: order.notes,
             createdAt: order.createdAt || new Date().toISOString()
         });

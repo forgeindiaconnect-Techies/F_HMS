@@ -381,7 +381,10 @@ export const generateThermalKOTHtml = (order = {}, restaurantInfo = {}, options 
         const qty = Math.max(1, Number(item.qty || item.quantity || item.count || 1));
         const name = String(item.name || 'Menu Item').trim();
         const note = item.notes ? String(item.notes).trim() : '';
-        const unitPrice = Number(item.price || item.unitPrice || 0);
+        let unitPrice = Number(item.price ?? item.unitPrice ?? item.rate ?? item.cost ?? item.product?.price ?? 0);
+        if (unitPrice === 0 && items.length === 1 && (order.totalPrice || order.totalAmount || order.total || order.billAmount)) {
+            unitPrice = Number(order.totalPrice || order.totalAmount || order.total || order.billAmount) / qty;
+        }
         const lineTotal = Number(item.total || (unitPrice * qty));
         totalKotAmount += lineTotal;
 
@@ -403,7 +406,7 @@ export const generateThermalKOTHtml = (order = {}, restaurantInfo = {}, options 
     }).join('');
 
     const totalItemCount = items.reduce((sum, it) => sum + (Number(it.qty || it.quantity || 1)), 0);
-    const finalAmount = order.totalAmount || order.total || order.billAmount || totalKotAmount;
+    const finalAmount = order.totalPrice || order.totalAmount || order.total || order.billAmount || totalKotAmount;
 
     return `
 <!DOCTYPE html>

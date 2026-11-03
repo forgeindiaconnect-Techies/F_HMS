@@ -284,9 +284,11 @@ const ChefDashboard = () => {
             kitchenStation: selectedStation !== 'All' ? selectedStation.replace(/^[^\w]+/, '').trim() : 'Main Kitchen',
             items: (order.orderItems || []).map(i => ({
                 name: i.name,
-                quantity: i.qty || i.quantity || 1,
+                qty: i.qty || i.quantity || 1,
+                price: i.price || 0,
                 notes: i.notes || ''
             })),
+            totalPrice: order.totalPrice || 0,
             notes: order.notes,
             createdAt: order.createdAt || new Date().toISOString(),
             restaurantName: user?.restaurantName || 'Restaurant',

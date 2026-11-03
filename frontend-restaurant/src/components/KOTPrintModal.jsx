@@ -163,23 +163,39 @@ const KOTPrintModal = ({ isOpen, onClose, kot, onPrinted }) => {
                         {/* Items Section */}
                         <div className="py-2">
                             <div className="flex justify-between font-bold border-b border-slate-900 pb-1 mb-1 text-[11px]">
-                                <span className="w-12">QTY</span>
+                                <span className="w-10">QTY</span>
                                 <span className="flex-1">ITEM DESCRIPTION</span>
+                                <span className="text-right">PRICE</span>
                             </div>
                             <div className="space-y-1.5 py-1">
-                                {kot.items?.map((item, idx) => (
-                                    <div key={idx} className="border-b border-dotted border-slate-200 pb-1">
-                                        <div className="flex items-start">
-                                            <span className="w-12 font-black text-sm">{item.qty}x</span>
-                                            <span className="flex-1 font-bold text-xs uppercase leading-tight">{item.name}</span>
-                                        </div>
-                                        {item.notes && (
-                                            <div className="pl-12 text-[10px] text-slate-600 italic font-medium">
-                                                * {item.notes}
+                                {kot.items?.map((item, idx) => {
+                                    const qty = Number(item.qty || item.quantity || 1);
+                                    const unitPrice = Number(item.price || item.unitPrice || 0);
+                                    const lineTotal = Number(item.total || (unitPrice * qty));
+                                    return (
+                                        <div key={idx} className="border-b border-dotted border-slate-200 pb-1">
+                                            <div className="flex items-start justify-between">
+                                                <div className="flex items-start flex-1 min-w-0 pr-2">
+                                                    <span className="w-10 font-black text-sm shrink-0">{qty}x</span>
+                                                    <span className="font-bold text-xs uppercase leading-tight">
+                                                        {item.name}
+                                                        {qty > 1 && unitPrice > 0 && (
+                                                            <span className="text-[10px] font-normal text-slate-500 block">(@ ₹{unitPrice.toFixed(2)})</span>
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                {lineTotal > 0 && (
+                                                    <span className="font-black text-xs font-mono shrink-0">₹{lineTotal.toFixed(2)}</span>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
-                                ))}
+                                            {item.notes && (
+                                                <div className="pl-10 text-[10px] text-slate-600 italic font-medium">
+                                                    * {item.notes}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -191,9 +207,28 @@ const KOTPrintModal = ({ isOpen, onClose, kot, onPrinted }) => {
                             </div>
                         )}
 
+                        {/* Total Items & Total Amount */}
+                        {(() => {
+                            const calculatedTotal = kot.items?.reduce((sum, i) => sum + (Number(i.price || 0) * Number(i.qty || i.quantity || 1)), 0) || 0;
+                            const totalAmount = Number(kot.totalPrice || kot.totalAmount || kot.total || calculatedTotal);
+                            return (
+                                <div className="py-2 border-t border-dashed border-slate-400 text-[11px] space-y-1">
+                                    <div className="flex justify-between font-bold">
+                                        <span>TOTAL ITEMS:</span>
+                                        <span>{kot.items?.reduce((sum, i) => sum + (Number(i.qty || i.quantity || 1)), 0) || 0} Items</span>
+                                    </div>
+                                    {totalAmount > 0 && (
+                                        <div className="flex justify-between font-black text-xs font-mono">
+                                            <span>TOTAL AMOUNT:</span>
+                                            <span>₹{totalAmount.toFixed(2)}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })()}
+
                         {/* Footer */}
-                        <div className="text-center pt-3 border-t border-dashed border-slate-400 text-[10px] text-slate-500 space-y-0.5 mt-2">
-                            <p className="font-bold">TOTAL ITEMS: {kot.items?.reduce((sum, i) => sum + (i.qty || 1), 0) || 0}</p>
+                        <div className="text-center pt-2 border-t border-dashed border-slate-400 text-[10px] text-slate-500 space-y-0.5 mt-1">
                             <p>Printed: {new Date().toLocaleTimeString()} • Slip #{printCount}</p>
                             <p className="font-mono text-[9px] text-slate-400">--- END OF KOT ---</p>
                         </div>

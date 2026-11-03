@@ -182,17 +182,25 @@ const CustomerOrderTracking = () => {
             return;
         }
         const items = order.orderItems || [];
-        const itemsHtml = items.map(item => `
-            <tr style="border-bottom: 1px dashed #ddd;">
-                <td style="padding: 6px 0; font-weight: bold;">${item.qty}x ${item.name}</td>
-                <td style="text-align: right; padding: 6px 0; font-family: monospace;">₹${((item.price || 0) * (item.qty || 1)).toFixed(2)}</td>
+        const itemsHtml = items.map(item => {
+            const unitPrice = Number(item.price || 0);
+            const qty = Number(item.qty || 1);
+            const lineTotal = unitPrice * qty;
+            return `
+            <tr style="border-bottom: 1px dashed #ccc;">
+                <td style="padding: 6px 0; font-weight: bold;">
+                    ${qty}x ${item.name}
+                    ${qty > 1 ? `<div style="font-size: 11px; font-weight: normal; color: #555;">(@ ₹${unitPrice.toFixed(2)})</div>` : ''}
+                </td>
+                <td style="text-align: right; padding: 6px 0; font-family: monospace; font-weight: bold; white-space: nowrap;">₹${lineTotal.toFixed(2)}</td>
             </tr>
-        `).join('');
+            `;
+        }).join('');
 
-        const subtotal = items.reduce((acc, it) => acc + (it.price || 0) * (it.qty || 1), 0);
-        const tax = order.taxPrice || 0;
-        const tip = order.tipAmount || 0;
-        const total = order.totalPrice || (subtotal + tax + tip);
+        const subtotal = items.reduce((acc, it) => acc + (Number(it.price || 0) * Number(it.qty || 1)), 0);
+        const tax = Number(order.taxPrice || 0);
+        const tip = Number(order.tipAmount || 0);
+        const total = Number(order.totalPrice || (subtotal + tax + tip));
         const ticketNum = order._id ? String(order._id).slice(-5).toUpperCase() : 'ORDER';
         const kotNum = order.kotNumbers?.[0] || order.kots?.[0]?.kotNumber || `KOT-${ticketNum}`;
 
@@ -211,37 +219,51 @@ const CustomerOrderTracking = () => {
                             padding: 8px 4px;
                             font-size: 13px;
                             line-height: 1.3;
+                            color: #000;
+                            background: #fff;
                         }
                         .center { text-align: center; }
                         .line { border-bottom: 1px dashed #000; margin: 8px 0; }
+                        .double { border-bottom: 3px double #000; margin: 8px 0; }
                         table { width: 100%; border-collapse: collapse; font-size: 12px; }
                     </style>
                 </head>
                 <body>
                     <div class="center">
-                        <h2 style="margin: 0; font-size: 18px; font-weight: 900;">FOODNEST DINING</h2>
-                        <p style="margin: 3px 0; font-weight: bold;">CUSTOMER BILL RECEIPT</p>
-                        <p style="margin: 2px 0;">Order #${ticketNum} • ${kotNum}</p>
+                        <h2 style="margin: 0; font-size: 18px; font-weight: 900; text-transform: uppercase;">FOODNEST DINING</h2>
+                        <div style="display: inline-block; background: #000; color: #fff; padding: 2px 8px; font-weight: 900; font-size: 11px; margin: 4px 0; border-radius: 2px;">*** CUSTOMER BILL RECEIPT ***</div>
+                        <p style="margin: 2px 0; font-weight: bold;">Order #${ticketNum} • ${kotNum}</p>
                         <p style="margin: 2px 0; font-weight: bold;">${order.orderType || 'Dine In'} ${order.tableNumber ? `• Table ${order.tableNumber}` : ''}</p>
-                        ${order.customerName ? `<p style="margin: 2px 0;">Guest: ${order.customerName}</p>` : ''}
+                        ${order.customerName ? `<p style="margin: 2px 0;">Customer: ${order.customerName}</p>` : ''}
+                        <p style="margin: 2px 0; font-size: 11px; color: #444;">${new Date(order.createdAt || Date.now()).toLocaleString()}</p>
                     </div>
                     <div class="line"></div>
                     <table>
-                        ${itemsHtml}
+                        <thead>
+                            <tr style="border-bottom: 1px solid #000; font-size: 11px;">
+                                <th style="text-align: left; padding-bottom: 4px;">ITEM</th>
+                                <th style="text-align: right; padding-bottom: 4px;">PRICE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHtml}
+                        </tbody>
                     </table>
                     <div class="line"></div>
                     <table>
-                        <tr><td>Subtotal</td><td style="text-align: right;">₹${subtotal.toFixed(2)}</td></tr>
-                        ${tax > 0 ? `<tr><td>Tax</td><td style="text-align: right;">₹${tax.toFixed(2)}</td></tr>` : ''}
-                        ${tip > 0 ? `<tr><td>Staff Gratuity / Tip</td><td style="text-align: right;">₹${tip.toFixed(2)}</td></tr>` : ''}
-                        <tr style="font-weight: 900; font-size: 15px;"><td>Total Amount</td><td style="text-align: right;">₹${total.toFixed(2)}</td></tr>
+                        <tr><td style="padding: 2px 0;">Subtotal</td><td style="text-align: right; font-family: monospace;">₹${subtotal.toFixed(2)}</td></tr>
+                        ${tax > 0 ? `<tr><td style="padding: 2px 0;">Tax</td><td style="text-align: right; font-family: monospace;">₹${tax.toFixed(2)}</td></tr>` : ''}
+                        ${tip > 0 ? `<tr><td style="padding: 2px 0;">Staff Gratuity / Tip</td><td style="text-align: right; font-family: monospace;">₹${tip.toFixed(2)}</td></tr>` : ''}
+                        <tr style="font-weight: 900; font-size: 15px; border-top: 1px dashed #000;">
+                            <td style="padding: 6px 0;">TOTAL AMOUNT</td>
+                            <td style="text-align: right; padding: 6px 0; font-family: monospace;">₹${total.toFixed(2)}</td>
+                        </tr>
                     </table>
-                    <div class="line"></div>
-                    <div class="center" style="font-size: 11px;">
-                        Payment Method: ${order.paymentMethod || 'Pay at Counter / Waiter'}<br/>
-                        Settlement: ${order.isPaid ? 'PAID & SETTLED' : 'PAYMENT DUE'}<br/>
-                        Date: ${new Date(order.createdAt || Date.now()).toLocaleString()}<br/><br/>
-                        Thank you for dining with us!
+                    <div class="double"></div>
+                    <div class="center" style="font-size: 11px; line-height: 1.4;">
+                        <strong>Payment Method:</strong> ${order.paymentMethod || 'Pay at Counter / Waiter'}<br/>
+                        <strong>Status:</strong> ${order.isPaid ? 'PAID & SETTLED' : 'PAYMENT DUE'}<br/><br/>
+                        *** THANK YOU FOR DINING WITH US ***
                     </div>
                     <script>
                         window.onload = function() { window.print(); }
@@ -790,6 +812,18 @@ const CustomerOrderTracking = () => {
                                 <span className="text-gray-500 font-medium">₹{item.price * item.qty}</span>
                             </div>
                         ))}
+                    </div>
+
+                    {/* View / Print Full Bill Receipt Button */}
+                    <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
+                        <span className="text-[11px] text-gray-500 font-medium">Need customer copy receipt?</span>
+                        <button
+                            type="button"
+                            onClick={handlePrintCustomerBill}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-xs transition-colors cursor-pointer"
+                        >
+                            <Receipt size={14} className="text-orange-600" /> Print Bill Receipt
+                        </button>
                     </div>
                 </div>
 
