@@ -494,10 +494,27 @@ const RestaurantVerification = () => {
                 </div>
 
                 {/* Optional uploads */}
-                <div className="space-y-4 bg-gray-50/50 p-6 rounded-3xl border border-gray-100">
-                    <div className="border-b border-gray-100 pb-2">
-                        <h3 className="text-base font-black text-gray-900 uppercase tracking-wide">2. Optional Brand Assets</h3>
-                        <p className="text-xs text-gray-400 font-semibold mt-0.5">Upload brand assets to customize your customers experience.</p>
+                <div className="space-y-4 bg-orange-50/20 p-6 rounded-3xl border-2 border-orange-100 shadow-xs">
+                    <div className="border-b border-orange-100/60 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-base font-black text-gray-900 uppercase tracking-wide">2. Optional Brand Assets</h3>
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-orange-100 text-orange-700">Instant Landing Page Sync</span>
+                            </div>
+                            <p className="text-xs text-gray-500 font-semibold mt-0.5">Upload logo &amp; showcase images to appear immediately on the customer landing page without waiting for KYC review.</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={handleSaveBrandAssets}
+                            disabled={savingBrandAssets}
+                            className="px-4 py-2.5 bg-gradient-to-r from-orange-500 to-[#FF5A1F] hover:from-orange-600 hover:to-orange-500 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50 shrink-0 self-start sm:self-auto"
+                        >
+                            {savingBrandAssets ? (
+                                <><RefreshCw size={14} className="animate-spin" /> Saving Assets…</>
+                            ) : (
+                                <><Check size={14} /> Save &amp; Publish Brand Assets</>
+                            )}
+                        </button>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
