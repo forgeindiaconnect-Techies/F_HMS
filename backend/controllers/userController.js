@@ -79,3 +79,40 @@ export const deleteUser = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+// @desc    Update user profile
+// @route   PUT /api/users/profile
+// @access  Private
+export const updateUserProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (req.body.name) user.name = req.body.name;
+        if (req.body.phoneNumber !== undefined) user.phoneNumber = req.body.phoneNumber;
+        if (req.body.address !== undefined) user.address = req.body.address;
+        if (req.body.location !== undefined) user.location = req.body.location;
+        if (req.body.coordinates !== undefined) user.coordinates = req.body.coordinates;
+        if (req.body.password) {
+            user.password = req.body.password;
+        }
+
+        const updatedUser = await user.save();
+        res.json({
+            _id: updatedUser._id,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            phoneNumber: updatedUser.phoneNumber,
+            address: updatedUser.address,
+            location: updatedUser.location,
+            coordinates: updatedUser.coordinates,
+            role: updatedUser.role,
+            restaurantId: updatedUser.restaurantId,
+            branchId: updatedUser.branchId,
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

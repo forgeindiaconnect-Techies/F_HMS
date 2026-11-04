@@ -1,27 +1,58 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { ArrowLeft, ShoppingCart, User, UtensilsCrossed, Heart, CalendarDays, ShoppingBag, Truck } from 'lucide-react';
+import { ArrowLeft, User, UtensilsCrossed, Heart, CalendarDays, ShoppingBag, MapPin, ChevronDown } from 'lucide-react';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { useCart } from '../context/CartContext';
 import CartDrawer from '../components/CartDrawer';
 import WishlistDrawer from '../components/WishlistDrawer';
+import LocationPickerModal from '../components/LocationPickerModal';
+import { getSavedLocation, EVENT_LOCATION_UPDATED } from '../utils/locationHelper';
 
 const CustomerLayout = () => {
-    const { user, logout } = useCustomerAuth();
+    const { user } = useCustomerAuth();
     const { cartCount, setIsCartOpen, wishlist, setIsWishlistOpen } = useCart();
-    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [userLocation, setUserLocation] = useState(() => getSavedLocation());
+    const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
+    const [restaurants, setRestaurants] = useState([]);
+
     const location = useLocation();
     const isLandingPage = location.pathname === '/' || location.pathname === '/explore';
+
+    // Synchronize location across dashboards
+    useEffect(() => {
+        const handleLocationUpdate = (e) => {
+            if (e?.detail?.location !== undefined) {
+                setUserLocation(e.detail.location);
+            } else {
+                setUserLocation(getSavedLocation());
+            }
+        };
+
+        window.addEventListener(EVENT_LOCATION_UPDATED, handleLocationUpdate);
+        window.addEventListener('storage', handleLocationUpdate);
+        return () => {
+            window.removeEventListener(EVENT_LOCATION_UPDATED, handleLocationUpdate);
+            window.removeEventListener('storage', handleLocationUpdate);
+        };
+    }, []);
 
     return (
         <div className="min-h-screen flex flex-col font-sans relative bg-white text-slate-800">
             <CartDrawer />
             <WishlistDrawer />
             
+            <LocationPickerModal
+                isOpen={isLocationPickerOpen}
+                onClose={() => setIsLocationPickerOpen(false)}
+                currentLocation={userLocation}
+                onSelectLocation={(loc) => setUserLocation(loc)}
+                restaurants={restaurants}
+            />
+
             {!isLandingPage && (
                 <header className="bg-white/95 backdrop-blur-md border-b border-slate-100 sticky top-0 z-40 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
                     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-[76px] flex items-center justify-between gap-2 sm:gap-4">
-                        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 min-w-0">
+                        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 min-w-0">
                             <button
                                 onClick={() => window.history.back()}
                                 className="md:hidden p-1.5 px-2 text-slate-700 hover:bg-slate-100 rounded-xl transition-colors shrink-0 flex items-center gap-1 text-xs font-bold border border-slate-200 shadow-xs"
@@ -45,6 +76,18 @@ const CustomerLayout = () => {
                                     </span>
                                 </div>
                             </Link>
+
+                            {/* Location Detect & Change Pill */}
+                            <button
+                                type="button"
+                                onClick={() => setIsLocationPickerOpen(true)}
+                                className="flex items-center gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl border border-slate-200 hover:border-orange-200 bg-slate-50 hover:bg-orange-50/70 text-slate-700 hover:text-[#FF5A1F] text-[11px] sm:text-xs font-bold transition-all shadow-xs cursor-pointer max-w-[120px] sm:max-w-[180px] truncate ml-1"
+                                title="Click to detect or change delivery location"
+                            >
+                                <MapPin size={13} className="text-[#FF5A1F] shrink-0" />
+                                <span className="truncate">{userLocation ? userLocation.split(',')[0] : 'Detect Location'}</span>
+                                <ChevronDown size={12} className="text-slate-400 shrink-0 hidden xs:block" />
+                            </button>
                         </div>
 
                         <nav className="hidden lg:flex items-center gap-7 text-[15px] font-semibold">

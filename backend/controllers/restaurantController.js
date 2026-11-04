@@ -145,6 +145,7 @@ export const getRestaurants = async (req, res) => {
             const primaryBranch = branches[0];
 
             // Attach showcase images and logo from verification if unset
+            let verifAddress = '';
             try {
                 const verif = await RestaurantVerification.findOne({ restaurantId: rest._id }).lean();
                 verifAddress = verif?.documents?.addressProof?.addressText || '';
@@ -163,8 +164,23 @@ export const getRestaurants = async (req, res) => {
                 ? primaryBranch.location.address 
                 : '';
 
-            rest.address = rest.address || branchAddress || verifAddress || primaryBranch?.location?.address || '';
-            rest.city = primaryBranch?.location?.city || rest.city || (verifAddress ? verifAddress.split(',')[0].trim() : '');
+            const combinedAddr = rest.address || branchAddress || verifAddress || primaryBranch?.location?.address || '';
+            rest.address = combinedAddr;
+
+            // Extract city accurately: if address has commas (e.g. "Anna salai, Chennai"), city is typically the second part or last city token
+            let resolvedCity = primaryBranch?.location?.city || '';
+            if (!resolvedCity && rest.city && rest.city !== combinedAddr) {
+                resolvedCity = rest.city;
+            }
+            if (!resolvedCity && combinedAddr) {
+                const addrParts = combinedAddr.split(',').map(p => p.trim()).filter(Boolean);
+                if (addrParts.length >= 2) {
+                    resolvedCity = addrParts[addrParts.length - 1]; // e.g. "Chennai" from "Anna salai, Chennai"
+                } else if (addrParts.length === 1) {
+                    resolvedCity = addrParts[0];
+                }
+            }
+            rest.city = resolvedCity;
             rest.state = primaryBranch?.location?.state || rest.state || '';
             rest.country = primaryBranch?.location?.country || rest.country || 'India';
             rest.verificationAddress = verifAddress;

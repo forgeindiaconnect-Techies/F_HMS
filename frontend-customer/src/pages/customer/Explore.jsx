@@ -9,6 +9,8 @@ import {
   Smartphone, User, Copy, Check, Loader2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import LocationPickerModal from '../../components/LocationPickerModal';
+import { getSavedLocation, saveUserLocation, detectUserLocation, filterRestaurantsForLocation, EVENT_LOCATION_UPDATED } from '../../utils/locationHelper';
 import { useCart } from '../../context/CartContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 
@@ -41,7 +43,7 @@ export default function Explore() {
   const [selectedCuisine, setSelectedCuisine] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   // Initialize location from localStorage if previously detected
-  const [location, setLocation] = useState(() => localStorage.getItem('userLocation') || 'Krishnagiri, India');
+  const [location, setLocation] = useState(() => getSavedLocation() || '');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
@@ -59,6 +61,8 @@ export default function Explore() {
     title: '',
     message: ''
   });
+  const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
+  const [manualCityInput, setManualCityInput] = useState('');
 
   const containerRef = useRef(null);
   const profileRef = useRef(null);
@@ -384,12 +388,56 @@ export default function Explore() {
 
   // Fallback to IP-based Geolocation if mobile device GPS is toggled off or unavailable
   const fallbackIpGeolocation = async (loadingToast) => {
+    // Service 1: ipwho.is (fast, free, high precision for India & global)
+    try {
+      const res = await fetch('https://ipwho.is/');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.success && (data.city || data.region)) {
+          const locStr = `${data.city || data.region}, ${data.country || 'India'}`;
+          setLocation(locStr);
+          localStorage.setItem('userLocation', locStr);
+          if (data.latitude && data.longitude) {
+            localStorage.setItem('userCoordinates', JSON.stringify({ latitude: data.latitude, longitude: data.longitude }));
+          }
+          setIsDetectingLocation(false);
+          if (loadingToast) toast.dismiss(loadingToast);
+          toast.success(`Location detected: ${locStr}!`, { icon: '📍' });
+          return true;
+        }
+      }
+    } catch (_) {}
+
+    // Service 2: ipinfo.io
+    try {
+      const res2 = await fetch('https://ipinfo.io/json');
+      if (res2.ok) {
+        const data2 = await res2.json();
+        if (data2 && (data2.city || data2.region)) {
+          const locStr = `${data2.city || data2.region}, India`;
+          setLocation(locStr);
+          localStorage.setItem('userLocation', locStr);
+          if (data2.loc) {
+            const [lat, lon] = data2.loc.split(',').map(Number);
+            if (!isNaN(lat) && !isNaN(lon)) {
+              localStorage.setItem('userCoordinates', JSON.stringify({ latitude: lat, longitude: lon }));
+            }
+          }
+          setIsDetectingLocation(false);
+          if (loadingToast) toast.dismiss(loadingToast);
+          toast.success(`Location detected: ${locStr}!`, { icon: '📍' });
+          return true;
+        }
+      }
+    } catch (_) {}
+
+    // Service 3: ipapi.co
     try {
       const ipRes = await fetch('https://ipapi.co/json/');
       if (ipRes.ok) {
         const ipData = await ipRes.json();
-        if (ipData && (ipData.city || ipData.region)) {
-          const locStr = `${ipData.city || ipData.region}, ${ipData.country_name || ''}`.replace(/,\s*$/, '');
+        if (ipData && (ipData.city || ipData.region) && !ipData.error) {
+          const locStr = `${ipData.city || ipData.region}, ${ipData.country_name || 'India'}`.replace(/,\s*$/, '');
           setLocation(locStr);
           localStorage.setItem('userLocation', locStr);
           if (ipData.latitude && ipData.longitude) {
@@ -401,13 +449,33 @@ export default function Explore() {
           return true;
         }
       }
-    } catch (e) {
-      console.warn('IP geolocation fallback failed:', e);
-    }
+    } catch (_) {}
+
     return false;
   };
 
   const handleGetLocation = async () => {
+    setIsDetectingLocation(true);
+    const loadingToast = toast.loading('Detecting location via GPS & Network...');
+    try {
+      const res = await detectUserLocation();
+      toast.dismiss(loadingToast);
+      if (res.success && res.formattedLocation) {
+        setLocation(res.formattedLocation);
+        toast.success(`Location set to ${res.formattedLocation}!`, { icon: '📍' });
+      } else {
+        setIsLocationPickerOpen(true);
+        toast('Please pick your city from the list', { icon: '📍' });
+      }
+    } catch (err) {
+      toast.dismiss(loadingToast);
+      setIsLocationPickerOpen(true);
+    } finally {
+      setIsDetectingLocation(false);
+    }
+  };
+
+  const oldHandleGetLocation_UNUSED = async () => {
     setIsDetectingLocation(true);
     const loadingToast = toast.loading('Detecting location...');
 
@@ -523,49 +591,41 @@ export default function Explore() {
         resolveLocationFromCoords(latitude, longitude, loadingToast);
       },
       (error) => {
-        console.warn('High accuracy GPS error, trying low accuracy / network...', error.code, error.message);
-        
         // Attempt 2: Low accuracy (Wi-Fi / Cell tower triangulation)
         navigator.geolocation.getCurrentPosition(
           (netPos) => {
             const { latitude, longitude } = netPos.coords;
             resolveLocationFromCoords(latitude, longitude, loadingToast);
           },
-          async (netError) => {
-            console.warn('Network location also failed, falling back to IP geolocation...', netError);
+          async () => {
             const ipSuccess = await fallbackIpGeolocation(loadingToast);
             if (!ipSuccess) {
               setIsDetectingLocation(false);
               toast.dismiss(loadingToast);
-              if (error.code === 1 || netError.code === 1) {
+              if (error.code === 1) {
                 setLocationModal({
                   isOpen: true,
                   type: 'permission_denied',
                   title: 'Location Access Needed',
-                  message: 'Location permission was denied. Tap Try Again or enable location access in App Settings.'
-                });
-              } else if (error.code === 2 || netError.code === 2) {
-                setLocationModal({
-                  isOpen: true,
-                  type: 'services_disabled',
-                  title: 'GPS Signal Unavailable',
-                  message: 'Could not detect your GPS signal. Please ensure device Location is turned on and try again.'
+                  message: 'Location permission was denied. Tap Try Again or pick your city from the list.'
                 });
               } else {
-                toast.error('Could not detect location. Please check GPS settings or select location manually.');
+                // Timeout or GPS unavailable: open the quick city picker modal so user is not blocked
+                setIsLocationPickerOpen(true);
+                toast('Please select your city from the list', { icon: '📍' });
               }
             }
           },
           {
             enableHighAccuracy: false,
-            timeout: 12000,
-            maximumAge: 300000 // Accept 5 min cached coordinates
+            timeout: 6000,
+            maximumAge: 300000 // Accept cached coordinates
           }
         );
       },
       {
         enableHighAccuracy: true,
-        timeout: 8000,
+        timeout: 5000,
         maximumAge: 60000
       }
     );
@@ -613,6 +673,39 @@ export default function Explore() {
   };
 
   const handleFindRestaurants = () => {
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim();
+      const qLower = q.toLowerCase();
+
+      // Check if query matches restaurant name, dish name, or cuisine
+      const matchesDishOrCuisine = dishes.some(d => 
+        (d.name || '').toLowerCase().includes(qLower) || 
+        (d.cuisine || '').toLowerCase().includes(qLower) ||
+        (d.category || '').toLowerCase().includes(qLower)
+      );
+
+      // Check if user typed a city or location
+      const isLikelyLocation = restaurants.some(r => {
+        const c = (r.city || '').toLowerCase();
+        const a = (r.address || '').toLowerCase();
+        const v = (r.verificationAddress || '').toLowerCase();
+        return c.includes(qLower) || a.includes(qLower) || v.includes(qLower) || qLower.includes(c);
+      }) || ['chennai', 'krishnagiri', 'bangalore', 'bengaluru', 'mumbai', 'delhi', 'hyderabad', 'coimbatore', 'madurai', 'salem', 'hosur'].some(known => qLower.includes(known) || known.includes(qLower));
+
+      if (isLikelyLocation && !matchesDishOrCuisine) {
+        setLocation(q);
+        localStorage.setItem('userLocation', q);
+        setSearchQuery('');
+        toast.success(`Showing restaurants in ${q}!`, { icon: '📍' });
+      } else if (isLikelyLocation && matchesDishOrCuisine) {
+        // If query matches both (or pure city), set location
+        setLocation(q);
+        localStorage.setItem('userLocation', q);
+        setSearchQuery('');
+        toast.success(`Showing restaurants in ${q}!`, { icon: '📍' });
+      }
+    }
+
     const el = document.getElementById('featured-restaurants');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
@@ -1165,7 +1258,7 @@ export default function Explore() {
                 )}
               </div>
               <p className="text-xs sm:text-[13px] font-medium text-slate-500 mt-0.5">
-                {location ? `Restaurants serving ${location}` : 'Top rated restaurants near you'}
+                {location ? `Showing ${displayedRestaurants.length} verified restaurants with ${matchingOutletsCount || displayedRestaurants.length} active outlets delivering to ${location.split(',')[0]}` : 'Showing all verified partner outlets nationwide'}
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -1941,6 +2034,14 @@ export default function Explore() {
 
         </div>
       </footer>
+
+      <LocationPickerModal
+        isOpen={isLocationPickerOpen}
+        onClose={() => setIsLocationPickerOpen(false)}
+        currentLocation={location}
+        onSelectLocation={(loc) => setLocation(loc)}
+        restaurants={restaurants}
+      />
 
       {/* Location Permission & GPS Services Alert / Retry Modal */}
       {locationModal.isOpen && (

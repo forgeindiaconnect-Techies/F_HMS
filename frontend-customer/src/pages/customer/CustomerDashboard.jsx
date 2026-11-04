@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { 
     LayoutGrid, BookOpen, ShoppingBag, 
     Calendar, Heart, MessageSquare, Settings, 
@@ -13,6 +13,9 @@ import { useCart } from '../../context/CartContext';
 import { getItemImage } from '../../utils/imageHelper';
 import toast from 'react-hot-toast';
 import { ThemeSettingCard } from '../../components/ThemeToggle';
+import LocationPickerModal from '../../components/LocationPickerModal';
+import { getSavedLocation, saveUserLocation, detectUserLocation, filterRestaurantsForLocation, matchesRestaurantLocation, EVENT_LOCATION_UPDATED } from '../../utils/locationHelper';
+import { Navigation, Loader2 } from 'lucide-react';
 import { getOrderReadyTimeInfo } from '../../utils/orderReadyHelper';
 
 const CustomerDashboard = () => {
@@ -32,6 +35,11 @@ const CustomerDashboard = () => {
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [registeredRestaurants, setRegisteredRestaurants] = useState([]);
     const [selectedRestaurantFilter, setSelectedRestaurantFilter] = useState('All');
+    const [userLocation, setUserLocation] = useState(() => getSavedLocation() || '');
+    const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
+    const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+    const [showOnlyLocalOutlets, setShowOnlyLocalOutlets] = useState(true);
+    const [outletSearchFilter, setOutletSearchFilter] = useState('');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     
     // Add Funds Modal States
@@ -88,6 +96,64 @@ const CustomerDashboard = () => {
             if (user.address) setProfileAddress(user.address);
         }
     }, [user]);
+
+        // Synchronize location across dashboard and listen for updates
+    useEffect(() => {
+        const saved = getSavedLocation();
+        if (saved) {
+            setUserLocation(saved);
+        } else {
+            // Silently detect on mount if location is empty
+            detectUserLocation({ silent: true }).then((res) => {
+                if (res.success && res.formattedLocation) {
+                    setUserLocation(res.formattedLocation);
+                }
+            }).catch(() => {});
+        }
+
+        const handleLocationUpdate = (e) => {
+            if (e?.detail?.location !== undefined) {
+                setUserLocation(e.detail.location);
+            } else {
+                setUserLocation(getSavedLocation());
+            }
+        };
+
+        window.addEventListener(EVENT_LOCATION_UPDATED, handleLocationUpdate);
+        window.addEventListener('storage', handleLocationUpdate);
+        return () => {
+            window.removeEventListener(EVENT_LOCATION_UPDATED, handleLocationUpdate);
+            window.removeEventListener('storage', handleLocationUpdate);
+        };
+    }, []);
+
+    // Filter restaurants for current location
+    const locationFilteredRestaurants = useMemo(() => {
+        if (!userLocation) return registeredRestaurants;
+        return registeredRestaurants.filter(r => matchesRestaurantLocation(r, userLocation));
+    }, [registeredRestaurants, userLocation]);
+
+    // Handle detecting GPS location
+    const handleDetectLocation = async () => {
+        setIsDetectingLocation(true);
+        const loadingToast = toast.loading('Detecting your GPS location...');
+        try {
+            const res = await detectUserLocation();
+            toast.dismiss(loadingToast);
+            if (res.success && res.formattedLocation) {
+                setUserLocation(res.formattedLocation);
+                toast.success(`Location set to ${res.formattedLocation}!`, { icon: '📍' });
+            } else {
+                setIsLocationPickerOpen(true);
+                toast('Please select your city from the list', { icon: '📍' });
+            }
+        } catch (err) {
+            toast.dismiss(loadingToast);
+            setIsLocationPickerOpen(true);
+        } finally {
+            setIsDetectingLocation(false);
+        }
+    };
 
     const [liveMenuItems, setLiveMenuItems] = useState([]);
     const [loadingMenuItems, setLoadingMenuItems] = useState(true);
@@ -387,6 +453,7 @@ const CustomerDashboard = () => {
     // Sidebar navigation tabs definitions
     const tabsList = [
         { id: 'overview', name: 'Overview', icon: <LayoutGrid size={18} /> },
+        { id: 'outlets', name: 'Nearby Outlets', icon: <Store size={18} /> },
         { id: 'orders', name: 'Orders & Tracking', icon: <ShoppingBag size={18} /> },
         { id: 'reservations', name: 'Reservations', icon: <Calendar size={18} /> },
         { id: 'favorites', name: 'Favorite Items', icon: <Heart size={18} /> },
@@ -678,6 +745,194 @@ const CustomerDashboard = () => {
                 {/* Main Dynamic Viewport Panel */}
                 <div className={`${isSidebarOpen ? 'lg:col-span-3' : 'w-full'}`}>
                     
+                                        {/* Tab: Nearby Outlets */}
+                    {activeTab === 'outlets' && (
+                        <div className="space-y-6 text-left">
+                            <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-xs border border-slate-200/80 space-y-4">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                                            <Store className="text-[#FF5A1F]" size={20} /> Verified Outlets &amp; Dining Locations
+                                        </h3>
+                                        <p className="text-xs text-slate-500 font-medium mt-0.5">
+                                            {userLocation 
+                                                ? `Found ${locationFilteredRestaurants.length} kitchen outlets serving ${userLocation}`
+                                                : `Found ${registeredRestaurants.length} registered outlets nationwide`}
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={handleDetectLocation}
+                                            disabled={isDetectingLocation}
+                                            className="px-3 py-1.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] border border-orange-200 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                                        >
+                                            <Navigation size={13} />
+                                            <span>GPS</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsLocationPickerOpen(true)}
+                                            className="px-3.5 py-1.5 rounded-xl bg-[#FF5A1F] hover:bg-[#e04f1a] text-white text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
+                                        >
+                                            <MapPin size={13} />
+                                            <span>Change Location</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Outlet Search & Filter Bar */}
+                                <div className="flex flex-col sm:flex-row items-center gap-3">
+                                    <div className="relative flex-1 w-full">
+                                        <input
+                                            type="text"
+                                            placeholder="Search outlets by name, city, or address..."
+                                            value={outletSearchFilter}
+                                            onChange={(e) => setOutletSearchFilter(e.target.value)}
+                                            className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-[#FF5A1F]"
+                                        />
+                                    </div>
+                                    {userLocation && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowOnlyLocalOutlets(!showOnlyLocalOutlets)}
+                                            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                                                showOnlyLocalOutlets
+                                                    ? 'bg-[#FF5A1F] text-white shadow-xs'
+                                                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                            }`}
+                                        >
+                                            {showOnlyLocalOutlets ? `In ${userLocation.split(',')[0]} Only` : 'All Cities'}
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Outlets Grid */}
+                                {(() => {
+                                    let list = showOnlyLocalOutlets && userLocation && locationFilteredRestaurants.length > 0
+                                        ? locationFilteredRestaurants
+                                        : registeredRestaurants;
+
+                                    if (outletSearchFilter.trim()) {
+                                        const q = outletSearchFilter.toLowerCase();
+                                        list = list.filter(r => 
+                                            (r.name || '').toLowerCase().includes(q) ||
+                                            (r.city || '').toLowerCase().includes(q) ||
+                                            (r.address || '').toLowerCase().includes(q) ||
+                                            (r.cuisines || '').toLowerCase().includes(q)
+                                        );
+                                    }
+
+                                    if (list.length === 0) {
+                                        return (
+                                            <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200 space-y-3">
+                                                <Store size={32} className="mx-auto text-slate-400" />
+                                                <h4 className="text-sm font-bold text-slate-700">No outlets found</h4>
+                                                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                                                    No registered outlets matched your current filter. You can explore all outlets or pick a different city.
+                                                </p>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setShowOnlyLocalOutlets(false);
+                                                        setOutletSearchFilter('');
+                                                    }}
+                                                    className="px-4 py-2 bg-[#FF5A1F] text-white text-xs font-bold rounded-xl shadow-xs"
+                                                >
+                                                    View All Registered Outlets
+                                                </button>
+                                            </div>
+                                        );
+                                    }
+
+                                    return (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                                            {list.map((outlet) => {
+                                                const branchList = Array.isArray(outlet.branches) ? outlet.branches : [];
+                                                const primaryBranch = branchList[0];
+                                                const branchCity = primaryBranch?.location?.city || outlet.city || '';
+                                                const branchAddr = primaryBranch?.location?.address || outlet.address || 'Central Kitchen';
+
+                                                return (
+                                                    <div 
+                                                        key={outlet._id}
+                                                        className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-3 group"
+                                                    >
+                                                        <div className="space-y-2.5">
+                                                            <div className="flex items-start justify-between gap-2">
+                                                                <div className="flex items-center gap-2.5">
+                                                                    <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-200 text-[#FF5A1F] flex items-center justify-center shrink-0">
+                                                                        <Store size={20} />
+                                                                    </div>
+                                                                    <div>
+                                                                        <h4 className="text-sm font-bold text-slate-900 group-hover:text-[#FF5A1F] transition-colors">
+                                                                            {outlet.name}
+                                                                        </h4>
+                                                                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                                                                            Verified Kitchen
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                                {branchCity && (
+                                                                    <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-lg shrink-0">
+                                                                        {branchCity}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="space-y-1 text-xs text-slate-600 pl-0.5">
+                                                                <p className="flex items-center gap-1.5 text-[11px]">
+                                                                    <MapPin size={13} className="text-[#FF5A1F] shrink-0" />
+                                                                    <span className="line-clamp-1">{branchAddr}</span>
+                                                                </p>
+                                                                {outlet.phone && (
+                                                                    <p className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                                                                        <Phone size={13} className="text-slate-400 shrink-0" />
+                                                                        <span>{outlet.phone}</span>
+                                                                    </p>
+                                                                )}
+                                                            </div>
+
+                                                            {branchList.length > 1 && (
+                                                                <div className="pt-1">
+                                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                                                                        Available Branches ({branchList.length}):
+                                                                    </span>
+                                                                    <div className="flex flex-wrap gap-1">
+                                                                        {branchList.map(b => (
+                                                                            <span key={b._id} className="text-[10px] font-medium bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md text-slate-700">
+                                                                                {b.name}
+                                                                            </span>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-100">
+                                                            <Link
+                                                                to={`/restaurant/${outlet._id}`}
+                                                                className="flex-1 py-2 px-3 bg-[#FF5A1F] hover:bg-[#e04f1a] text-white text-xs font-bold rounded-xl text-center shadow-xs transition-colors"
+                                                            >
+                                                                Browse Outlet Menu
+                                                            </Link>
+                                                            <Link
+                                                                to="/reservations"
+                                                                className="py-2 px-3 bg-white hover:bg-orange-50 text-slate-700 hover:text-[#FF5A1F] border border-slate-200 text-xs font-bold rounded-xl transition-colors"
+                                                            >
+                                                                Book Table
+                                                            </Link>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Tab: Overview */}
                     {activeTab === 'overview' && (
                         <div className="space-y-8 min-w-0 pr-1.5 flex-1">
@@ -1935,6 +2190,13 @@ const CustomerDashboard = () => {
                 </div>
             )}
 
+            <LocationPickerModal
+                isOpen={isLocationPickerOpen}
+                onClose={() => setIsLocationPickerOpen(false)}
+                currentLocation={userLocation}
+                onSelectLocation={(loc) => setUserLocation(loc)}
+                restaurants={registeredRestaurants}
+            />
         </div>
     );
 };

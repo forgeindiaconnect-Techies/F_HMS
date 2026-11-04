@@ -18,6 +18,18 @@ const userSchema = new mongoose.Schema({
     phoneNumber: {
         type: String,
     },
+    address: {
+        type: String,
+        default: '',
+    },
+    location: {
+        type: String,
+        default: '',
+    },
+    coordinates: {
+        latitude: { type: Number },
+        longitude: { type: Number },
+    },
     role: {
         type: String,
         required: true,
