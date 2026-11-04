@@ -100,13 +100,13 @@ export default function Explore() {
       // 1. Process Restaurants
       if (restRes.status === 'fulfilled' && Array.isArray(restRes.value?.data)) {
         const approved = restRes.value.data.filter(
-          (r) => r.isDeleted !== true && r.status !== 'Inactive' && (r.approvalStatus === 'Approved' || !r.approvalStatus)
+          (r) => r.isDeleted !== true && r.status !== 'Inactive' && (r.approvalStatus === 'Approved' || r.approvalStatus === 'Pending' || !r.approvalStatus)
         );
         const backendMapped = approved.map((r) => {
           // Resolve actual uploaded image URL from DB
           let rawImg = r.image || r.bannerImage || r.logo || null;
           if (rawImg && typeof rawImg === 'string') {
-            const apiBase = getApiUrl();
+            const apiBase = api?.defaults?.baseURL || '';
             const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : '';
             if (!rawImg.startsWith('http') && !rawImg.startsWith('data:')) {
               rawImg = `${origin}${rawImg.startsWith('/') ? '' : '/'}${rawImg}`;
@@ -159,7 +159,7 @@ export default function Explore() {
 
           let dishImg = d.image && typeof d.image === 'string' && !d.image.includes('undefined') && !d.image.includes('unsplash.com') ? d.image : null;
           if (dishImg && !dishImg.startsWith('http') && !dishImg.startsWith('data:')) {
-            const apiBase = getApiUrl();
+            const apiBase = api?.defaults?.baseURL || '';
             const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : '';
             dishImg = `${origin}${dishImg.startsWith('/') ? '' : '/'}${dishImg}`;
           }
