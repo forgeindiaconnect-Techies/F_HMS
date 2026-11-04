@@ -127,29 +127,43 @@ const RestaurantVerification = () => {
         const isNew = !verification || !verification._id;
         const status = verification?.status || 'Pending';
 
-        // Validations
-        if (isNew) {
-            // Mandatory check
-            const mandatory = ['fssai', 'businessRegistration', 'panCard', 'aadhaarCard', 'addressProof', 'bankProof'];
-            const missing = mandatory.filter(f => !files[f]);
-            if (missing.length > 0) {
-                toast.error(`Please select files for all mandatory documents.`);
-                return;
-            }
-            if (!addressText.trim()) {
-                toast.error("Please enter your business address.");
-                return;
-            }
-            if (!fssaiExpiryDate) {
-                toast.error("Please enter your FSSAI License expiry date.");
-                return;
-            }
+        // Validations: verify all mandatory documents exist either locally in state or previously uploaded in verification record
+        const mandatory = [
+            { key: 'fssai', label: 'FSSAI License' },
+            { key: 'businessRegistration', label: 'Business Registration Certificate' },
+            { key: 'panCard', label: 'PAN Card' },
+            { key: 'aadhaarCard', label: 'Aadhaar Card' },
+            { key: 'addressProof', label: 'Business Address Proof' },
+            { key: 'bankProof', label: 'Bank Account Proof' }
+        ];
+
+        const existingDocs = verification?.documents || {};
+        const missingMandatory = mandatory.filter(({ key }) => {
+            const hasLocalFile = !!files[key];
+            const hasExisting = !!existingDocs[key]?.filePath || (key === 'addressProof' && !!(existingDocs[key]?.addressText || addressText.trim()));
+            return !hasLocalFile && !hasExisting;
+        });
+
+        if (missingMandatory.length > 0) {
+            toast.error(`Please upload mandatory document(s): ${missingMandatory.map(m => m.label).join(', ')}`);
+            return;
+        }
+
+        if (!addressText.trim()) {
+            toast.error("Please enter your business address.");
+            return;
+        }
+
+        const hasFssaiUpload = !!files.fssai || !!existingDocs.fssai?.filePath;
+        if (hasFssaiUpload && !fssaiExpiryDate) {
+            toast.error("Please enter your FSSAI License expiry date.");
+            return;
         }
 
         if (fssaiExpiryDate) {
             const expiry = new Date(fssaiExpiryDate);
-            if (expiry < new Date()) {
-                toast.error("FSSAI License expiry date must be in the future.");
+            if (isNaN(expiry.getTime()) || expiry < new Date()) {
+                toast.error("FSSAI License expiry date must be a valid future date.");
                 return;
             }
         }
@@ -170,7 +184,7 @@ const RestaurantVerification = () => {
         });
 
         // Add text metadata
-        formData.append('addressText', addressText);
+        formData.append('addressText', addressText.trim());
         if (fssaiExpiryDate) {
             formData.append('fssaiExpiryDate', fssaiExpiryDate);
         }
@@ -179,7 +193,11 @@ const RestaurantVerification = () => {
         }
 
         try {
-            await api.post('/restaurants/verification/submit', formData);
+            await api.post('/restaurants/verification/submit', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
             
             toast.success("Verification documents submitted successfully!");
             // Refresh context and local details
@@ -200,7 +218,8 @@ const RestaurantVerification = () => {
             setOptionalImages([]);
         } catch (error) {
             console.error("Submission failed", error);
-            toast.error(error.response?.data?.message || "Failed to submit verification.");
+            const serverMsg = error.response?.data?.message || error.response?.data?.error || (typeof error.response?.data === 'string' ? error.response.data : null);
+            toast.error(serverMsg || "Failed to submit verification. Please check required fields and try again.");
         } finally {
             setSubmitting(false);
         }
