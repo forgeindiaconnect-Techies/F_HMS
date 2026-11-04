@@ -216,58 +216,78 @@ const RestaurantDetails = () => {
                 })()}
             </div>
 
-            {/* Restaurant Info */}
-            <div className="max-w-6xl mx-auto px-6 -mt-16 relative z-10">
-                <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col md:flex-row justify-between gap-6">
-                    <div>
-                        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">{restaurant.name}</h1>
-                        <p className="text-gray-500 dark:text-slate-400 mb-4">Multi-Cuisine • Desserts • Beverages</p>
-                        <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-slate-300">
-                            <span className="flex items-center gap-1"><Clock size={16} className="text-red-500" /> Opens at 10:00 AM</span>
-                            <span className="flex items-center gap-1"><Info size={16} className="text-gray-400 dark:text-slate-500" /> Known for great ambiance</span>
+            {/* Restaurant Info Card */}
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 -mt-14 sm:-mt-16 relative z-10">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-md border border-gray-100 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
+                    <div className="space-y-1.5 sm:space-y-2 w-full md:w-auto text-left">
+                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tight">
+                            {restaurant.name}
+                        </h1>
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400 font-medium">
+                            Multi-Cuisine • Desserts • Beverages
+                        </p>
+                        <div className="flex flex-wrap items-center gap-3 sm:gap-6 pt-1 text-xs sm:text-sm text-gray-600 dark:text-slate-300">
+                            <span className="inline-flex items-center gap-1.5 font-medium">
+                                <Clock size={15} className="text-[#FF5A1F] shrink-0" /> 
+                                <span>Opens at 10:00 AM</span>
+                            </span>
+                            <span className="inline-flex items-center gap-1.5 font-medium">
+                                <Info size={15} className="text-gray-400 dark:text-slate-500 shrink-0" /> 
+                                <span>Known for great ambiance</span>
+                            </span>
                         </div>
                     </div>
-                    <div className="flex gap-4 items-start">
-                        <div className="flex flex-col items-center p-3 bg-green-50 dark:bg-green-950/40 rounded-xl">
-                            <span className="flex items-center gap-1 text-green-700 dark:text-green-400 font-bold text-lg">4.5 <Star size={16} className="fill-green-700 dark:fill-green-400" /></span>
-                            <span className="text-xs text-gray-500 dark:text-slate-400 uppercase tracking-wider font-bold mt-1">Dining Rating</span>
+                    <div className="flex items-center shrink-0 self-start md:self-center">
+                        <div className="flex items-center md:flex-col gap-2 md:gap-1 px-3.5 py-2 sm:px-4 sm:py-2.5 bg-green-50 dark:bg-green-950/40 border border-green-200/60 dark:border-green-800/40 rounded-xl sm:rounded-2xl shadow-2xs">
+                            <span className="flex items-center gap-1 text-green-700 dark:text-green-400 font-extrabold text-base sm:text-lg">
+                                4.5 <Star size={15} className="fill-green-600 text-green-600 dark:fill-green-400 dark:text-green-400" />
+                            </span>
+                            <span className="text-[10px] sm:text-xs text-green-800/80 dark:text-green-300 uppercase tracking-wider font-bold">
+                                Dining Rating
+                            </span>
                         </div>
                     </div>
                 </div>
 
                 {/* Branch Selection */}
-                <div className="mt-8 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800">
-                    <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                        <MapPin size={20} className="text-red-500" /> 
-                        Select Pickup Location (Branch)
+                <div className="mt-5 sm:mt-8 bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 dark:border-slate-800 text-left">
+                    <h3 className="font-extrabold text-gray-900 dark:text-white text-sm sm:text-base mb-3 sm:mb-4 flex items-center gap-2">
+                        <MapPin size={18} className="text-[#FF5A1F]" /> 
+                        <span>Select Pickup Location (Branch)</span>
                     </h3>
-                    <div className="flex flex-wrap gap-4">
+                    <div className="flex flex-wrap gap-2.5 sm:gap-4">
                         {branches.map(branch => (
                             <button
                                 key={branch._id}
                                 onClick={() => setSelectedBranch(branch._id)}
-                                className={`px-6 py-3 rounded-xl font-medium border-2 transition-all ${
+                                className={`px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm border-2 transition-all cursor-pointer ${
                                     selectedBranch === branch._id 
-                                    ? 'border-red-500 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 shadow-sm' 
-                                    : 'border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-950 text-gray-600 dark:text-slate-300 hover:border-gray-200 dark:hover:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-900'
+                                    ? 'border-[#FF5A1F] bg-orange-50 dark:bg-orange-950/40 text-[#FF5A1F] shadow-sm' 
+                                    : 'border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-gray-700 dark:text-slate-300 hover:border-orange-200 hover:bg-orange-50/40'
                                 }`}
                             >
-                                {branch.name}
-                                <span className="block text-xs opacity-70 font-normal mt-0.5">{branch.address}</span>
+                                <span>{branch.name}</span>
+                                {branch.address && (
+                                    <span className="block text-[11px] opacity-75 font-normal mt-0.5">{branch.address}</span>
+                                )}
                             </button>
                         ))}
-                        {branches.length === 0 && <span className="text-gray-500 dark:text-slate-400">No branches available for self-pickup.</span>}
+                        {branches.length === 0 && (
+                            <span className="text-xs text-gray-400 dark:text-slate-500 italic py-1">
+                                No specific branches listed. Default counter pickup available.
+                            </span>
+                        )}
                     </div>
                 </div>
 
                 {/* Mobile Categories Quick Bar */}
                 {categories.length > 0 && (
-                    <div className="md:hidden mt-6 flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+                    <div className="md:hidden mt-5 sm:mt-6 flex gap-2 overflow-x-auto py-2 -mx-1 px-1 scrollbar-none items-center">
                         {categories.map(cat => (
                             <a 
                                 href={`#category-${cat}`} 
                                 key={cat} 
-                                className="px-3.5 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-full text-xs font-bold text-gray-700 dark:text-slate-300 hover:text-red-600 hover:border-red-300 whitespace-nowrap shadow-xs"
+                                className="px-4 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-xs font-bold text-gray-700 dark:text-slate-300 hover:text-[#FF5A1F] hover:border-[#FF5A1F] transition-all whitespace-nowrap shadow-2xs shrink-0"
                             >
                                 {cat}
                             </a>
