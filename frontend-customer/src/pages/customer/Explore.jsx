@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { Geolocation } from '@capacitor/geolocation';
@@ -714,47 +714,10 @@ export default function Explore() {
     }
   };
 
-  // Filter restaurants by detected location and search query universally
-  const displayedRestaurants = (() => {
-    // 1. Search Query filter first
-    let base = restaurants.filter(r => {
-      if (!searchQuery) return true;
-      const q = searchQuery.toLowerCase().trim();
-      return (r.name || '').toLowerCase().includes(q) ||
-             (r.cuisines || '').toLowerCase().includes(q) ||
-             (r.city || '').toLowerCase().includes(q) ||
-             (r.address || '').toLowerCase().includes(q);
-    });
-
-    if (!location || !location.trim()) {
-      return base;
-    }
-
-    // 2. Universal, Multi-city Location Matching (GPS or manual search)
-    const locLower = location.toLowerCase().trim();
-    const locTerms = locLower.split(/[, -]+/).map(t => t.trim()).filter(t => t.length >= 2);
-    
-    const matched = base.filter(r => {
-      const restCity = (r.city || '').toLowerCase().trim();
-      const restState = (r.state || '').toLowerCase().trim();
-      const restAddress = (r.address || '').toLowerCase().trim();
-      const verifAddr = (r.verificationAddress || '').toLowerCase().trim();
-      const restName = (r.name || '').toLowerCase().trim();
-      const branchLocations = (r.branches || []).map(b => {
-        const loc = b.location || {};
-        return `${loc.city || ''} ${loc.state || ''} ${loc.address || ''} ${loc.country || ''}`.toLowerCase();
-      }).join(' ');
-
-      const combined = `${restName} ${restCity} ${restState} ${restAddress} ${verifAddr} ${branchLocations}`.trim();
-
-      // Check if restaurant city matches any location term, or combined info contains location terms
-      if (restCity && locLower.includes(restCity)) return true;
-      if (restCity && locTerms.some(term => restCity.includes(term) || term.includes(restCity))) return true;
-      return locTerms.some(term => term.length >= 3 && combined.includes(term));
-    });
-
-    return matched;
-  })();
+    // Filter restaurants and outlets by detected location and search query
+  const { filtered: displayedRestaurants, matchingOutletsCount } = useMemo(() => {
+    return filterRestaurantsForLocation(restaurants, location, searchQuery);
+  }, [restaurants, location, searchQuery]);
 
   // Filter dishes by cuisine, search, and matching restaurants
   const displayedDishes = dishes.filter(d => {
