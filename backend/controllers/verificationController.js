@@ -97,11 +97,16 @@ export const submitVerification = async (req, res) => {
             });
         }
 
-        // Validate FSSAI expiry date if FSSAI is being uploaded
-        if (files.fssai || (verification && fssaiExpiryDate)) {
+        // Validate FSSAI expiry date if FSSAI is being newly uploaded or expiry date is provided
+        if (files.fssai) {
             if (!fssaiExpiryDate) {
-                return res.status(400).json({ message: 'FSSAI expiry date is required' });
+                return res.status(400).json({ message: 'FSSAI expiry date is required when uploading FSSAI license' });
             }
+            const expiry = new Date(fssaiExpiryDate);
+            if (isNaN(expiry.getTime()) || expiry < new Date()) {
+                return res.status(400).json({ message: 'FSSAI License expiry date must be a valid future date' });
+            }
+        } else if (fssaiExpiryDate && fssaiExpiryDate.trim()) {
             const expiry = new Date(fssaiExpiryDate);
             if (isNaN(expiry.getTime()) || expiry < new Date()) {
                 return res.status(400).json({ message: 'FSSAI License expiry date must be a valid future date' });
