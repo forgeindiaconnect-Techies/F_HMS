@@ -124885,6 +124885,14 @@ var init_Restaurant = __esm({
       logo: {
         type: String
       },
+      bannerImage: {
+        type: String,
+        default: ""
+      },
+      showcaseImages: {
+        type: [String],
+        default: []
+      },
       currency: {
         type: String,
         default: "USD"
@@ -126211,8 +126219,19 @@ var registerUser = async (req, res) => {
           restaurantName: restName,
           plan: restPlan
         }).catch((err) => console.error("Welcome email background error:", err.message));
+        if (createdRestaurant && createdRestaurant.subscription) {
+          sendSubscriptionSuccessEmail({
+            email: user.email,
+            name: user.name,
+            restaurantName: restName,
+            plan: `${restPlan} (${createdRestaurant.subscription.trialActive ? "7-Day Free Trial" : "Active"})`,
+            billingCycle: createdRestaurant.subscription.billingCycle || "monthly",
+            price: 0,
+            expiryDate: createdRestaurant.subscription.expiryDate
+          }).catch((subErr) => console.error("Subscription success email background error:", subErr.message));
+        }
       } catch (eErr) {
-        console.error("Welcome email dispatch error:", eErr.message);
+        console.error("Welcome/Subscription email dispatch error:", eErr.message);
       }
       const token = generateToken(user._id);
       const cookieName = loginType === "customer" ? "jwt_customer" : "jwt_staff";
@@ -126734,8 +126753,12 @@ var fileFilter = (req, file, cb) => {
 };
 var upload = (0, import_multer.default)({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
-  // 5 MB limit
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+    // 10 MB per file limit
+    fieldSize: 25 * 1024 * 1024
+    // 25 MB field size limit to support Base64 images without LIMIT_FIELD_VALUE
+  },
   fileFilter
 });
 var verificationUpload = upload.fields([
@@ -126780,10 +126803,15 @@ var submitVerification = async (req, res) => {
         message: `Missing required mandatory documents: ${missing.join(", ")}`
       });
     }
-    if (files.fssai || verification && fssaiExpiryDate) {
+    if (files.fssai) {
       if (!fssaiExpiryDate) {
-        return res.status(400).json({ message: "FSSAI expiry date is required" });
+        return res.status(400).json({ message: "FSSAI expiry date is required when uploading FSSAI license" });
       }
+      const expiry = new Date(fssaiExpiryDate);
+      if (isNaN(expiry.getTime()) || expiry < /* @__PURE__ */ new Date()) {
+        return res.status(400).json({ message: "FSSAI License expiry date must be a valid future date" });
+      }
+    } else if (fssaiExpiryDate && fssaiExpiryDate.trim()) {
       const expiry = new Date(fssaiExpiryDate);
       if (isNaN(expiry.getTime()) || expiry < /* @__PURE__ */ new Date()) {
         return res.status(400).json({ message: "FSSAI License expiry date must be a valid future date" });
@@ -126846,9 +126874,15 @@ var submitVerification = async (req, res) => {
     if (files.menuPdf) {
       documents.menuPdf = { filePath: getFileUrl(files.menuPdf[0]) };
     }
-    if (files.images) {
+    if (files.images && files.images.length > 0) {
       const newImages = files.images.map((img) => ({ filePath: getFileUrl(img) }));
       documents.images = [...documents.images || [], ...newImages];
+      const allImgPaths = documents.images.map((img) => img.filePath);
+      restaurant.showcaseImages = allImgPaths;
+      if (allImgPaths.length > 0 && !restaurant.bannerImage) {
+        restaurant.bannerImage = allImgPaths[0];
+      }
+      await restaurant.save();
     }
     if (verification) {
       verification.documents = documents;
@@ -126869,6 +126903,33 @@ var submitVerification = async (req, res) => {
         status: "Under Review"
       });
     }
+    if (addressText && addressText.trim()) {
+      const cleanAddress = addressText.trim();
+      restaurant.address = cleanAddress;
+      const parts = cleanAddress.split(",").map((p) => p.trim()).filter(Boolean);
+      if (parts.length > 0) {
+        restaurant.city = parts[0];
+      }
+      if (parts.length > 1) {
+        restaurant.state = parts[1];
+      }
+      try {
+        const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+        const primaryBranch = await Branch3.findOne({ restaurantId: restaurant._id, isActive: true });
+        if (primaryBranch) {
+          primaryBranch.location = {
+            ...primaryBranch.location || {},
+            address: cleanAddress,
+            city: restaurant.city || primaryBranch.location?.city || "",
+            state: restaurant.state || primaryBranch.location?.state || "",
+            country: primaryBranch.location?.country || "India"
+          };
+          await primaryBranch.save();
+        }
+      } catch (branchSyncErr) {
+        console.error("Branch location sync error during verification submit:", branchSyncErr.message);
+      }
+    }
     restaurant.verificationStatus = "Under Review";
     restaurant.approvalStatus = "Pending";
     await restaurant.save();
@@ -126880,6 +126941,64 @@ var submitVerification = async (req, res) => {
     });
     res.status(200).json(verification);
   } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+var updateBrandAssets = async (req, res) => {
+  try {
+    const restaurantId = req.user.restaurantId;
+    if (!restaurantId) {
+      return res.status(404).json({ message: "No restaurant associated with this user" });
+    }
+    const restaurant = await Restaurant_default.findById(restaurantId);
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
+    let verification = await RestaurantVerification_default.findOne({ restaurantId });
+    if (!verification) {
+      verification = new RestaurantVerification_default({
+        restaurantId,
+        documents: {},
+        status: "Pending"
+      });
+    }
+    const files = req.files || {};
+    if (req.body.logoBase64) {
+      verification.documents.logo = { filePath: req.body.logoBase64 };
+      restaurant.logo = req.body.logoBase64;
+    } else if (files.logo && files.logo.length > 0) {
+      const logoFile = files.logo[0];
+      verification.documents.logo = { filePath: getFileUrl(logoFile) };
+      try {
+        const fileBuffer = import_fs2.default.readFileSync(logoFile.path);
+        const ext = import_path2.default.extname(logoFile.originalname || logoFile.filename || "").toLowerCase();
+        const mimeType = ext === ".pdf" ? "application/pdf" : logoFile.mimetype || "image/png";
+        restaurant.logo = `data:${mimeType};base64,${fileBuffer.toString("base64")}`;
+      } catch (e) {
+        restaurant.logo = getFileUrl(logoFile);
+      }
+    }
+    if (files.menuPdf && files.menuPdf.length > 0) {
+      verification.documents.menuPdf = { filePath: getFileUrl(files.menuPdf[0]) };
+    }
+    if (files.images && files.images.length > 0) {
+      const newImages = files.images.map((img) => ({ filePath: getFileUrl(img) }));
+      verification.documents.images = [...verification.documents.images || [], ...newImages];
+      const allImgPaths = verification.documents.images.map((img) => img.filePath);
+      restaurant.showcaseImages = allImgPaths;
+      if (allImgPaths.length > 0 && !restaurant.bannerImage) {
+        restaurant.bannerImage = allImgPaths[0];
+      }
+    }
+    await verification.save();
+    await restaurant.save();
+    res.status(200).json({
+      message: "Brand assets saved and updated for landing page successfully!",
+      verification,
+      restaurant
+    });
+  } catch (error) {
+    console.error("Brand assets update error:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -127053,6 +127172,30 @@ var reviewVerification = async (req, res) => {
       }
       restaurant.subscription.status = "Active";
       restaurant.subscription.expiryDate = expiry;
+      const verifiedAddr = verification.documents?.addressProof?.addressText;
+      if (verifiedAddr && verifiedAddr.trim()) {
+        const cleanAddress = verifiedAddr.trim();
+        restaurant.address = cleanAddress;
+        const parts = cleanAddress.split(",").map((p) => p.trim()).filter(Boolean);
+        if (parts.length > 0) restaurant.city = parts[0];
+        if (parts.length > 1) restaurant.state = parts[1];
+        try {
+          const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+          const primaryBranch = await Branch3.findOne({ restaurantId: restaurant._id, isActive: true });
+          if (primaryBranch) {
+            primaryBranch.location = {
+              ...primaryBranch.location || {},
+              address: cleanAddress,
+              city: restaurant.city || primaryBranch.location?.city || "",
+              state: restaurant.state || primaryBranch.location?.state || "",
+              country: primaryBranch.location?.country || "India"
+            };
+            await primaryBranch.save();
+          }
+        } catch (bErr) {
+          console.error("Branch location sync on approval error:", bErr.message);
+        }
+      }
       const fields = ["fssai", "businessRegistration", "panCard", "aadhaarCard", "addressProof", "bankProof"];
       fields.forEach((f) => {
         if (verification.documents && verification.documents[f]) {
@@ -127315,8 +127458,12 @@ var logoFileFilter = (req, file, cb) => {
 };
 var logoUpload = (0, import_multer2.default)({
   storage: logoStorage,
-  limits: { fileSize: 5 * 1024 * 1024 },
-  // 5 MB
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+    // 10 MB
+    fieldSize: 25 * 1024 * 1024
+    // 25 MB for base64 logos
+  },
   fileFilter: logoFileFilter
 }).single("logo");
 var getRestaurants = async (req, res) => {
@@ -127361,8 +127508,13 @@ var getRestaurants = async (req, res) => {
       isDeleted: { $ne: true },
       status: { $nin: ["Inactive", "Suspended", "Deleted"] },
       isActive: { $ne: false },
-      approvalStatus: "Approved",
-      "subscription.status": { $nin: ["Cancelled", "Frozen", "Expired", "Suspended", "Inactive"] }
+      approvalStatus: { $in: ["Approved", "Pending"] },
+      // Subscribed restaurants must show automatically without manual DB edits
+      $or: [
+        { "subscription.status": { $in: ["Active", "Expiring Soon"] } },
+        { "subscription.trialActive": true },
+        { "subscription.status": { $nin: ["Cancelled", "Frozen", "Expired", "Suspended", "Inactive"] } }
+      ]
     };
     let restaurants = await Restaurant_default.find(filter).populate("ownerId", "name email").sort({ createdAt: -1 }).lean();
     const populatedRestaurants = await Promise.all(restaurants.map(async (rest) => {
@@ -127398,10 +127550,18 @@ var getRestaurants = async (req, res) => {
       const branches = await Branch3.find({ restaurantId: rest._id, isActive: true }).lean();
       rest.branches = branches;
       const primaryBranch = branches[0];
-      let verifAddress = "";
       try {
         const verif = await RestaurantVerification_default.findOne({ restaurantId: rest._id }).lean();
         verifAddress = verif?.documents?.addressProof?.addressText || "";
+        if (!rest.logo && verif?.documents?.logo?.filePath) {
+          rest.logo = verif.documents.logo.filePath;
+        }
+        if ((!rest.showcaseImages || rest.showcaseImages.length === 0) && verif?.documents?.images?.length > 0) {
+          rest.showcaseImages = verif.documents.images.map((img) => img.filePath);
+        }
+        if (!rest.bannerImage && rest.showcaseImages?.length > 0) {
+          rest.bannerImage = rest.showcaseImages[0];
+        }
       } catch (_) {
       }
       const branchAddress = primaryBranch?.location?.address && primaryBranch.location.address !== "Primary Location" ? primaryBranch.location.address : "";
@@ -127585,6 +127745,21 @@ var getMyRestaurant = async (req, res) => {
         restaurant.restaurantConfig.paymentMethods = { cash: true, upi: true, card: true, onlineGateway: true };
       }
     }
+    if (!restaurant.logo || !restaurant.showcaseImages || restaurant.showcaseImages.length === 0) {
+      try {
+        const verif = await RestaurantVerification_default.findOne({ restaurantId: restaurant._id }).lean();
+        if (!restaurant.logo && verif?.documents?.logo?.filePath) {
+          restaurant.logo = verif.documents.logo.filePath;
+        }
+        if ((!restaurant.showcaseImages || restaurant.showcaseImages.length === 0) && verif?.documents?.images?.length > 0) {
+          restaurant.showcaseImages = verif.documents.images.map((img) => img.filePath);
+        }
+        if (!restaurant.bannerImage && restaurant.showcaseImages?.length > 0) {
+          restaurant.bannerImage = restaurant.showcaseImages[0];
+        }
+      } catch (_) {
+      }
+    }
     res.json(restaurant);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -127695,6 +127870,31 @@ var updateMyRestaurant = async (req, res) => {
       } else if (req.file) {
         restaurant.logo = `/uploads/logos/${req.file.filename}`;
       }
+      if (Array.isArray(req.body.showcaseImages)) {
+        restaurant.showcaseImages = req.body.showcaseImages;
+        if (!restaurant.bannerImage && req.body.showcaseImages.length > 0) {
+          restaurant.bannerImage = req.body.showcaseImages[0];
+        }
+      }
+      if (req.body.bannerImage) {
+        restaurant.bannerImage = req.body.bannerImage;
+      }
+      try {
+        const verif = await RestaurantVerification_default.findOne({ restaurantId: restaurant._id });
+        if (verif) {
+          if (restaurant.logo) {
+            verif.documents.logo = { filePath: restaurant.logo };
+          }
+          if (restaurant.showcaseImages?.length > 0) {
+            verif.documents.images = restaurant.showcaseImages.map((img) => ({ filePath: img }));
+          }
+          if (req.body.menuPdf) {
+            verif.documents.menuPdf = { filePath: req.body.menuPdf };
+          }
+          await verif.save();
+        }
+      } catch (_) {
+      }
       const updatedRestaurant = await restaurant.save();
       res.json(updatedRestaurant);
     } else {
@@ -127717,7 +127917,7 @@ var getRestaurantPublicConfig = async (req, res) => {
     if (restaurant.isDeleted || restaurant.status === "Deleted") {
       return res.status(404).json({ message: "Restaurant not found" });
     }
-    if (restaurant.status === "Inactive" || restaurant.status === "Suspended" || !restaurant.isActive || restaurant.approvalStatus !== "Approved") {
+    if (restaurant.status === "Inactive" || restaurant.status === "Suspended" || !restaurant.isActive || restaurant.approvalStatus !== "Approved" && restaurant.approvalStatus !== "Pending") {
       return res.status(403).json({ message: "This restaurant is currently unavailable or inactive." });
     }
     const config = restaurant.restaurantConfig || {};
@@ -127742,7 +127942,7 @@ var getRestaurantPublicConfig = async (req, res) => {
         customTipAllowed: config.waiterTips?.customTipAllowed ?? true
       },
       orderKitchen: {
-        kitchenMode: config.orderKitchen?.kitchenMode || targetRest.kitchenMode || "KDS",
+        kitchenMode: config.orderKitchen?.kitchenMode || restaurant.kitchenMode || "KDS",
         kotEnabled: config.orderKitchen?.kotEnabled ?? true,
         kdsEnabled: config.orderKitchen?.kdsEnabled ?? true,
         kotPrintEnabled: config.orderKitchen?.kotPrintEnabled ?? true
@@ -127944,7 +128144,8 @@ var getRestaurantById = async (req, res) => {
       if (restaurant.isDeleted || restaurant.status === "Deleted") {
         return res.status(404).json({ message: "Restaurant not found" });
       }
-      if (restaurant.status === "Inactive" || restaurant.status === "Suspended" || !restaurant.isActive || restaurant.approvalStatus !== "Approved") {
+      const isSubscribed = restaurant.subscription?.status && !["Cancelled", "Frozen", "Expired", "Suspended", "Inactive"].includes(restaurant.subscription.status) || restaurant.subscription?.trialActive;
+      if (restaurant.status === "Inactive" || restaurant.status === "Suspended" || !restaurant.isActive || !isSubscribed && restaurant.approvalStatus !== "Approved") {
         return res.status(403).json({ message: "This restaurant is currently unavailable or inactive." });
       }
     }
@@ -127967,6 +128168,19 @@ var getRestaurantById = async (req, res) => {
       } else {
         restaurant.deliverySettings.enabled = true;
       }
+    }
+    try {
+      const verif = await RestaurantVerification_default.findOne({ restaurantId: restaurant._id }).lean();
+      if (!restaurant.logo && verif?.documents?.logo?.filePath) {
+        restaurant.logo = verif.documents.logo.filePath;
+      }
+      if ((!restaurant.showcaseImages || restaurant.showcaseImages.length === 0) && verif?.documents?.images?.length > 0) {
+        restaurant.showcaseImages = verif.documents.images.map((img) => img.filePath);
+      }
+      if (!restaurant.bannerImage && restaurant.showcaseImages?.length > 0) {
+        restaurant.bannerImage = restaurant.showcaseImages[0];
+      }
+    } catch (_) {
     }
     res.json(restaurant);
   } catch (error) {
@@ -128450,6 +128664,15 @@ var confirmSubscriptionQRPayment = async (req, res) => {
 
 // routes/restaurantRoutes.js
 var router2 = import_express2.default.Router();
+router2.route("/verification/brand-assets").post(protect, authorize("RestaurantAdmin"), (req, res, next) => {
+  verificationUpload(req, res, (err) => {
+    if (err) {
+      console.error("Brand assets upload error:", err);
+      return res.status(400).json({ message: err.message || "File upload failed." });
+    }
+    next();
+  });
+}, updateBrandAssets);
 router2.route("/verification/submit").post(protect, authorize("RestaurantAdmin"), (req, res, next) => {
   verificationUpload(req, res, (err) => {
     if (err) {
@@ -128463,7 +128686,15 @@ router2.route("/verification/mine").get(protect, authorize("RestaurantAdmin"), g
 router2.route("/verification/all").get(protect, authorize("SuperAdmin"), getAllVerifications);
 router2.route("/verification/:id").get(protect, authorize("SuperAdmin"), getVerificationById).delete(protect, authorize("SuperAdmin"), deleteVerification);
 router2.route("/verification/:id/review").put(protect, authorize("SuperAdmin"), reviewVerification);
-router2.route("/mine").get(protect, getMyRestaurant).put(protect, authorize("RestaurantAdmin"), logoUpload, updateMyRestaurant);
+router2.route("/mine").get(protect, getMyRestaurant).put(protect, authorize("RestaurantAdmin"), (req, res, next) => {
+  logoUpload(req, res, (err) => {
+    if (err) {
+      console.error("Logo upload error:", err);
+      return res.status(400).json({ message: err.message || "Logo upload error" });
+    }
+    next();
+  });
+}, updateMyRestaurant);
 router2.route("/mine/config").get(protect, authorize("RestaurantAdmin", "BranchManager", "SuperAdmin", "Admin"), getRestaurantConfig).put(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), updateRestaurantConfig);
 router2.route("/:id/public-config").get(getRestaurantPublicConfig);
 router2.route("/mine/billing-history").get(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), getMyBillingHistory);
@@ -128818,8 +129049,8 @@ var generateKOTsForOrder = async (order, options = {}) => {
   if (!order) return [];
   try {
     const Restaurant3 = (await Promise.resolve().then(() => (init_Restaurant(), Restaurant_exports))).default;
-    const targetRest2 = await Restaurant3.findById(order.restaurantId).select("restaurantConfig");
-    if (targetRest2?.restaurantConfig?.orderKitchen?.kotEnabled === false) {
+    const targetRest = await Restaurant3.findById(order.restaurantId).select("restaurantConfig");
+    if (targetRest?.restaurantConfig?.orderKitchen?.kotEnabled === false) {
       return [];
     }
   } catch (e) {
@@ -131235,15 +131466,14 @@ var getMenuItems = async (req, res) => {
     const filter = { isActive: true };
     if (req.query.restaurantId && req.query.restaurantId !== "null" && req.query.restaurantId !== "undefined") {
       filter.restaurantId = req.query.restaurantId;
-    }
-    if (req.query.branchId && req.query.branchId !== "null" && req.query.branchId !== "undefined") {
-      filter.$or = [
-        { branchId: req.query.branchId },
-        { branchId: { $exists: false } },
-        { branchId: null }
-      ];
-    }
-    if (req.user && req.user.restaurantId) {
+      if (req.query.branchId && req.query.branchId !== "null" && req.query.branchId !== "undefined") {
+        filter.$or = [
+          { branchId: req.query.branchId },
+          { branchId: { $exists: false } },
+          { branchId: null }
+        ];
+      }
+    } else if (req.user && req.user.restaurantId) {
       filter.restaurantId = req.user.restaurantId;
       if (req.user.branchId) {
         filter.$or = [
@@ -131259,9 +131489,10 @@ var getMenuItems = async (req, res) => {
       if (typeof item.restaurantId === "object") {
         if (item.restaurantId.isDeleted) return false;
         if (item.restaurantId.status && item.restaurantId.status !== "Active") return false;
-        if (item.restaurantId.approvalStatus !== "Approved") return false;
         if (item.restaurantId.isActive === false) return false;
         const subStatus = item.restaurantId.subscription?.status;
+        const isSubscribed = subStatus && !["Frozen", "Cancelled", "Inactive", "Expired", "Suspended"].includes(subStatus) || item.restaurantId.subscription?.trialActive;
+        if (!isSubscribed && item.restaurantId.approvalStatus !== "Approved") return false;
         if (subStatus && ["Frozen", "Cancelled", "Inactive", "Expired", "Suspended"].includes(subStatus)) {
           return false;
         }

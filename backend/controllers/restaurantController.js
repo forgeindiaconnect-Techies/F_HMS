@@ -530,6 +530,34 @@ export const updateMyRestaurant = async (req, res) => {
             } else if (req.file) {
                 restaurant.logo = `/uploads/logos/${req.file.filename}`;
             }
+
+            // Support showcaseImages and menuPdf directly on PUT /api/restaurants/mine
+            if (Array.isArray(req.body.showcaseImages)) {
+                restaurant.showcaseImages = req.body.showcaseImages;
+                if (!restaurant.bannerImage && req.body.showcaseImages.length > 0) {
+                    restaurant.bannerImage = req.body.showcaseImages[0];
+                }
+            }
+            if (req.body.bannerImage) {
+                restaurant.bannerImage = req.body.bannerImage;
+            }
+
+            // Sync with verification documents if present
+            try {
+                const verif = await RestaurantVerification.findOne({ restaurantId: restaurant._id });
+                if (verif) {
+                    if (restaurant.logo) {
+                        verif.documents.logo = { filePath: restaurant.logo };
+                    }
+                    if (restaurant.showcaseImages?.length > 0) {
+                        verif.documents.images = restaurant.showcaseImages.map(img => ({ filePath: img }));
+                    }
+                    if (req.body.menuPdf) {
+                        verif.documents.menuPdf = { filePath: req.body.menuPdf };
+                    }
+                    await verif.save();
+                }
+            } catch (_) {}
             
             const updatedRestaurant = await restaurant.save();
             res.json(updatedRestaurant);

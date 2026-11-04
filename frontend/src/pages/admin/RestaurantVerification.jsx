@@ -246,7 +246,36 @@ const RestaurantVerification = () => {
         });
 
         try {
-            await api.post('/restaurants/verification/brand-assets', formData);
+            try {
+                await api.post('/restaurants/verification/brand-assets', formData);
+            } catch (postErr) {
+                if (postErr.response?.status === 404) {
+                    console.warn("brand-assets endpoint returned 404, falling back to /restaurants/mine...");
+                    // Convert files to Base64 and send to /restaurants/mine
+                    const readFileAsBase64 = (file) => new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.onerror = () => resolve(null);
+                        reader.readAsDataURL(file);
+                    });
+
+                    const payload = {};
+                    if (files.logo) {
+                        payload.logoBase64 = await readFileAsBase64(files.logo);
+                    } else if (logoBase64) {
+                        payload.logoBase64 = logoBase64;
+                    }
+
+                    if (optionalImages.length > 0) {
+                        const base64Images = await Promise.all(optionalImages.map(f => readFileAsBase64(f)));
+                        payload.showcaseImages = base64Images.filter(Boolean);
+                    }
+
+                    await api.put('/restaurants/mine', payload);
+                } else {
+                    throw postErr;
+                }
+            }
             toast.success("Brand assets saved successfully! Your logo and showcase images are now live on the platform.", { duration: 4000 });
             await fetchRestaurant();
             await loadVerification();
