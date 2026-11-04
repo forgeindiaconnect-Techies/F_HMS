@@ -189,7 +189,7 @@ const RestaurantDetails = () => {
     return (
         <div className="bg-gray-50 dark:bg-slate-950 min-h-screen pb-32 transition-colors">
             {/* Header Images / Clean Store Banner */}
-            <div className="h-72 w-full bg-gradient-to-r from-slate-900 via-slate-800 to-orange-950 overflow-hidden relative flex items-center justify-center">
+            <div className="h-44 sm:h-56 md:h-64 w-full bg-gradient-to-r from-slate-900 via-slate-800 to-orange-950 overflow-hidden relative flex items-center justify-center">
                 {(() => {
                     const rawBanner = restaurant.bannerImage || restaurant.image || restaurant.logo;
                     if (rawBanner && typeof rawBanner === 'string') {
@@ -216,65 +216,74 @@ const RestaurantDetails = () => {
                 })()}
             </div>
 
-            {/* Restaurant Info Card */}
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 -mt-14 sm:-mt-16 relative z-10">
-                <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-md border border-gray-100 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
-                    <div className="space-y-1.5 sm:space-y-2 w-full md:w-auto text-left">
-                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tight">
-                            {restaurant.name}
-                        </h1>
-                        <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400 font-medium">
-                            Multi-Cuisine • Desserts • Beverages
-                        </p>
-                        <div className="flex flex-wrap items-center gap-3 sm:gap-6 pt-1 text-xs sm:text-sm text-gray-600 dark:text-slate-300">
-                            <span className="inline-flex items-center gap-1.5 font-medium">
-                                <Clock size={15} className="text-[#FF5A1F] shrink-0" /> 
-                                <span>Opens at 10:00 AM</span>
-                            </span>
-                            <span className="inline-flex items-center gap-1.5 font-medium">
-                                <Info size={15} className="text-gray-400 dark:text-slate-500 shrink-0" /> 
-                                <span>Known for great ambiance</span>
-                            </span>
+            {/* Restaurant Info Card - Compact & Balanced */}
+            <div className="max-w-4xl mx-auto px-3.5 sm:px-6 -mt-10 sm:-mt-14 relative z-10">
+                <div className="bg-white dark:bg-slate-900 rounded-xl sm:rounded-2xl p-3.5 sm:p-5 shadow-sm border border-gray-100 dark:border-slate-800">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-1 min-w-0 text-left">
+                            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight truncate">
+                                {restaurant.name}
+                            </h1>
+                            <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">
+                                Multi-Cuisine • Desserts • Beverages
+                            </p>
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-xs text-gray-600 dark:text-slate-300">
+                                <span className="inline-flex items-center gap-1 font-medium">
+                                    <Clock size={13} className="text-[#FF5A1F] shrink-0" /> 
+                                    <span>Opens at 10:00 AM</span>
+                                </span>
+                                <span className="inline-flex items-center gap-1 font-medium">
+                                    <Info size={13} className="text-gray-400 dark:text-slate-500 shrink-0" /> 
+                                    <span>Known for great ambiance</span>
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                    <div className="flex items-center shrink-0 self-start md:self-center">
-                        <div className="flex items-center md:flex-col gap-2 md:gap-1 px-3.5 py-2 sm:px-4 sm:py-2.5 bg-green-50 dark:bg-green-950/40 border border-green-200/60 dark:border-green-800/40 rounded-xl sm:rounded-2xl shadow-2xs">
-                            <span className="flex items-center gap-1 text-green-700 dark:text-green-400 font-extrabold text-base sm:text-lg">
-                                4.5 <Star size={15} className="fill-green-600 text-green-600 dark:fill-green-400 dark:text-green-400" />
+
+                        {/* Dining Rating Pill */}
+                        <div className="shrink-0 flex flex-col items-center justify-center px-2.5 py-1.5 sm:px-3 sm:py-2 bg-green-50 dark:bg-green-950/40 border border-green-200/60 dark:border-green-800/40 rounded-lg sm:rounded-xl">
+                            <span className="flex items-center gap-1 text-green-700 dark:text-green-400 font-extrabold text-sm sm:text-base leading-none">
+                                4.5 <Star size={13} className="fill-green-600 text-green-600 dark:fill-green-400 dark:text-green-400" />
                             </span>
-                            <span className="text-[10px] sm:text-xs text-green-800/80 dark:text-green-300 uppercase tracking-wider font-bold">
-                                Dining Rating
+                            <span className="text-[9px] sm:text-[10px] text-green-800/80 dark:text-green-300 uppercase tracking-wider font-bold mt-0.5 leading-none">
+                                Dining
                             </span>
                         </div>
                     </div>
                 </div>
 
-                {/* Branch Selection */}
-                <div className="mt-5 sm:mt-8 bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 dark:border-slate-800 text-left">
-                    <h3 className="font-extrabold text-gray-900 dark:text-white text-sm sm:text-base mb-3 sm:mb-4 flex items-center gap-2">
-                        <MapPin size={18} className="text-[#FF5A1F]" /> 
-                        <span>Select Pickup Location (Branch)</span>
-                    </h3>
-                    <div className="flex flex-wrap gap-2.5 sm:gap-4">
+                {/* Branch Selection - Compact */}
+                <div className="mt-3 sm:mt-4 bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-xs border border-gray-100 dark:border-slate-800 text-left">
+                    <div className="flex items-center justify-between mb-2.5">
+                        <h3 className="font-bold text-gray-900 dark:text-white text-xs sm:text-sm flex items-center gap-1.5">
+                            <MapPin size={15} className="text-[#FF5A1F]" /> 
+                            <span>Select Pickup Branch</span>
+                        </h3>
+                        {branches.length > 0 && (
+                            <span className="text-[11px] text-gray-400 dark:text-slate-500 font-medium">
+                                {branches.length} available
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
                         {branches.map(branch => (
                             <button
                                 key={branch._id}
                                 onClick={() => setSelectedBranch(branch._id)}
-                                className={`px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm border-2 transition-all cursor-pointer ${
+                                className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl font-bold text-xs border transition-all cursor-pointer ${
                                     selectedBranch === branch._id 
-                                    ? 'border-[#FF5A1F] bg-orange-50 dark:bg-orange-950/40 text-[#FF5A1F] shadow-sm' 
-                                    : 'border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-gray-700 dark:text-slate-300 hover:border-orange-200 hover:bg-orange-50/40'
+                                    ? 'border-[#FF5A1F] bg-orange-50/70 dark:bg-orange-950/40 text-[#FF5A1F] shadow-2xs' 
+                                    : 'border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-gray-700 dark:text-slate-300 hover:border-orange-200 hover:bg-orange-50/30'
                                 }`}
                             >
                                 <span>{branch.name}</span>
                                 {branch.address && (
-                                    <span className="block text-[11px] opacity-75 font-normal mt-0.5">{branch.address}</span>
+                                    <span className="block text-[10px] opacity-75 font-normal mt-0.5">{branch.address}</span>
                                 )}
                             </button>
                         ))}
                         {branches.length === 0 && (
-                            <span className="text-xs text-gray-400 dark:text-slate-500 italic py-1">
-                                No specific branches listed. Default counter pickup available.
+                            <span className="text-xs text-gray-400 dark:text-slate-500 italic py-0.5">
+                                Default counter pickup available.
                             </span>
                         )}
                     </div>
