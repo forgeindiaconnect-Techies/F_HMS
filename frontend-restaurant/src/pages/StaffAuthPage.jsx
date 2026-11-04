@@ -151,6 +151,23 @@ const StaffAuthPage = () => {
         });
     };
 
+    const startFreeTrial = async () => {
+        if (paymentStatus === 'processing') return;
+        setPaymentStatus('processing');
+        try {
+            setPaymentStatus('success');
+            toast.success("🎉 7-Day Free Trial Activated! Completing setup...");
+            setTimeout(() => {
+                setStep(5);
+                submitRegistration('FREE_TRIAL_7_DAYS');
+            }, 400);
+        } catch (err) {
+            console.error("Trial activation error:", err);
+            setPaymentStatus('failed');
+            toast.error("Failed to start free trial.");
+        }
+    };
+
     const startRazorpayPayment = async () => {
         if (paymentStatus === 'processing') return;
         setPaymentStatus('processing');
@@ -723,20 +740,49 @@ const StaffAuthPage = () => {
                 </div>
             </div>
 
+            {/* 7-Day Free Trial Callout */}
+            <div className="mb-4 p-4 bg-orange-50/70 border-2 border-dashed border-orange-300 rounded-2xl text-left space-y-2">
+                <div className="flex items-center justify-between">
+                    <span className="text-xs font-black uppercase tracking-wider text-[#FF5A1F] bg-white px-2.5 py-0.5 rounded-full border border-orange-200">
+                        🎁 Limited Offer
+                    </span>
+                    <span className="text-xs font-black text-green-700">₹0 Due Today</span>
+                </div>
+                <h4 className="font-black text-slate-900 text-sm">Start Your 7-Day Free Trial</h4>
+                <p className="text-xs text-slate-600 font-medium">
+                    Enjoy complete unrestricted access to all dashboards (POS, KDS, Tables, Staff, Reports) for 7 days. After 7 days, your dashboards freeze until you pay to continue.
+                </p>
+                <button
+                    type="button"
+                    onClick={startFreeTrial}
+                    disabled={paymentStatus === 'processing'}
+                    className="w-full mt-2 py-3 bg-[#FF5A1F] hover:bg-[#E04812] text-white font-black text-sm rounded-xl shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                    <span>Start 7-Day Free Trial (No Card Required)</span>
+                    <ArrowRight size={16} />
+                </button>
+            </div>
+
+            <div className="relative flex py-2 items-center">
+                <div className="flex-grow border-t border-gray-200"></div>
+                <span className="flex-shrink mx-4 text-gray-400 font-bold text-xs uppercase tracking-wider">Or Pay Now</span>
+                <div className="flex-grow border-t border-gray-200"></div>
+            </div>
+
             <button 
                 type="button"
                 onClick={startRazorpayPayment}
                 disabled={paymentStatus === 'processing'}
-                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-base cursor-pointer disabled:opacity-60"
+                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-md shadow-green-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-60"
             >
                 {paymentStatus === 'processing' ? (
                     <>
-                        <Loader2 className="animate-spin text-white" size={20} />
+                        <Loader2 className="animate-spin text-white" size={18} />
                         Verifying Payment...
                     </>
                 ) : (
                     <>
-                        <CheckCircle2 size={20} /> Confirm Payment & Register Account <ArrowRight size={18} />
+                        <CheckCircle2 size={18} /> Pay ₹{getPlanAmount()} & Activate Subscription <ArrowRight size={16} />
                     </>
                 )}
             </button>
