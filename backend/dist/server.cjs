@@ -124780,6 +124780,18 @@ var init_User = __esm({
       phoneNumber: {
         type: String
       },
+      address: {
+        type: String,
+        default: ""
+      },
+      location: {
+        type: String,
+        default: ""
+      },
+      coordinates: {
+        latitude: { type: Number },
+        longitude: { type: Number }
+      },
       role: {
         type: String,
         required: true
@@ -127550,6 +127562,7 @@ var getRestaurants = async (req, res) => {
       const branches = await Branch3.find({ restaurantId: rest._id, isActive: true }).lean();
       rest.branches = branches;
       const primaryBranch = branches[0];
+      let verifAddress = "";
       try {
         const verif = await RestaurantVerification_default.findOne({ restaurantId: rest._id }).lean();
         verifAddress = verif?.documents?.addressProof?.addressText || "";
@@ -127565,8 +127578,21 @@ var getRestaurants = async (req, res) => {
       } catch (_) {
       }
       const branchAddress = primaryBranch?.location?.address && primaryBranch.location.address !== "Primary Location" ? primaryBranch.location.address : "";
-      rest.address = rest.address || branchAddress || verifAddress || primaryBranch?.location?.address || "";
-      rest.city = primaryBranch?.location?.city || rest.city || (verifAddress ? verifAddress.split(",")[0].trim() : "");
+      const combinedAddr = rest.address || branchAddress || verifAddress || primaryBranch?.location?.address || "";
+      rest.address = combinedAddr;
+      let resolvedCity = primaryBranch?.location?.city || "";
+      if (!resolvedCity && rest.city && rest.city !== combinedAddr) {
+        resolvedCity = rest.city;
+      }
+      if (!resolvedCity && combinedAddr) {
+        const addrParts = combinedAddr.split(",").map((p) => p.trim()).filter(Boolean);
+        if (addrParts.length >= 2) {
+          resolvedCity = addrParts[addrParts.length - 1];
+        } else if (addrParts.length === 1) {
+          resolvedCity = addrParts[0];
+        }
+      }
+      rest.city = resolvedCity;
       rest.state = primaryBranch?.location?.state || rest.state || "";
       rest.country = primaryBranch?.location?.country || rest.country || "India";
       rest.verificationAddress = verifAddress;
@@ -134111,9 +134137,41 @@ var deleteUser2 = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+var updateUserProfile = async (req, res) => {
+  try {
+    const user = await User_default.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (req.body.name) user.name = req.body.name;
+    if (req.body.phoneNumber !== void 0) user.phoneNumber = req.body.phoneNumber;
+    if (req.body.address !== void 0) user.address = req.body.address;
+    if (req.body.location !== void 0) user.location = req.body.location;
+    if (req.body.coordinates !== void 0) user.coordinates = req.body.coordinates;
+    if (req.body.password) {
+      user.password = req.body.password;
+    }
+    const updatedUser = await user.save();
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      phoneNumber: updatedUser.phoneNumber,
+      address: updatedUser.address,
+      location: updatedUser.location,
+      coordinates: updatedUser.coordinates,
+      role: updatedUser.role,
+      restaurantId: updatedUser.restaurantId,
+      branchId: updatedUser.branchId
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // routes/userRoutes.js
 var router11 = import_express11.default.Router();
+router11.route("/profile").put(protect, updateUserProfile);
 router11.use(protect);
 router11.use(authorize("RestaurantAdmin", "SuperAdmin", "SupportAgent"));
 router11.use(checkSubscription);
