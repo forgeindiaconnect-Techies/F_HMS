@@ -621,8 +621,59 @@ export default function Explore() {
     }
   };
 
-  // Filter dishes by cuisine or search with graceful fallback
+  // Filter restaurants by detected location and search query universally
+  const displayedRestaurants = (() => {
+    // 1. Search Query filter first
+    let base = restaurants.filter(r => {
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase().trim();
+      return (r.name || '').toLowerCase().includes(q) ||
+             (r.cuisines || '').toLowerCase().includes(q) ||
+             (r.city || '').toLowerCase().includes(q) ||
+             (r.address || '').toLowerCase().includes(q);
+    });
+
+    if (!location || !location.trim()) {
+      return base;
+    }
+
+    // 2. Universal, Multi-city Location Matching (GPS or manual search)
+    const locLower = location.toLowerCase().trim();
+    const locTerms = locLower.split(/[, -]+/).map(t => t.trim()).filter(t => t.length >= 2);
+    
+    const matched = base.filter(r => {
+      const restCity = (r.city || '').toLowerCase().trim();
+      const restState = (r.state || '').toLowerCase().trim();
+      const restAddress = (r.address || '').toLowerCase().trim();
+      const verifAddr = (r.verificationAddress || '').toLowerCase().trim();
+      const restName = (r.name || '').toLowerCase().trim();
+      const branchLocations = (r.branches || []).map(b => {
+        const loc = b.location || {};
+        return `${loc.city || ''} ${loc.state || ''} ${loc.address || ''} ${loc.country || ''}`.toLowerCase();
+      }).join(' ');
+
+      const combined = `${restName} ${restCity} ${restState} ${restAddress} ${verifAddr} ${branchLocations}`.trim();
+
+      // Check if restaurant city matches any location term, or combined info contains location terms
+      if (restCity && locLower.includes(restCity)) return true;
+      if (restCity && locTerms.some(term => restCity.includes(term) || term.includes(restCity))) return true;
+      return locTerms.some(term => term.length >= 3 && combined.includes(term));
+    });
+
+    return matched;
+  })();
+
+  // Filter dishes by cuisine, search, and matching restaurants
   const displayedDishes = dishes.filter(d => {
+    // If a location filter is active, only show dishes belonging to matching restaurants (if restaurants match)
+    if (location && location.trim() && displayedRestaurants.length > 0) {
+      const matchingRestIds = new Set(displayedRestaurants.map(r => String(r._id)));
+      const dishRestId = String(d.restaurantId?._id || d.restaurantId || '');
+      if (dishRestId && !matchingRestIds.has(dishRestId)) {
+        return false;
+      }
+    }
+
     const qCuisine = selectedCuisine.toLowerCase().replace('-', ' ').trim();
     const dCuisine = (d.cuisine || '').toLowerCase();
     const dCat = (d.category || '').toLowerCase();
@@ -659,71 +710,6 @@ export default function Explore() {
 
     return matchesCuisine && matchesSearch;
   });
-
-  // Filter restaurants by detected location and search query
-  const displayedRestaurants = (() => {
-    // 1. Search Query filter first
-    let base = restaurants.filter(r => {
-      if (!searchQuery) return true;
-      const q = searchQuery.toLowerCase();
-      return r.name.toLowerCase().includes(q) ||
-             r.cuisines?.toLowerCase().includes(q) ||
-             r.city?.toLowerCase().includes(q) ||
-             r.address?.toLowerCase().includes(q);
-    });
-
-    if (!location || !location.trim()) {
-      return base;
-    }
-
-    // 2. Intelligent Location Matching
-    const locLower = location.toLowerCase().trim();
-    const locTerms = locLower.split(/[, ]+/).map(t => t.trim()).filter(t => t.length >= 2);
-    
-    // Check if any restaurant explicitly matches the detected location terms (city, district, state, address, branch)
-    const matched = base.filter(r => {
-      const restCity = (r.city || '').toLowerCase();
-      const restState = (r.state || '').toLowerCase();
-      const restAddress = (r.address || '').toLowerCase();
-      const verifAddr = (r.verificationAddress || '').toLowerCase();
-      const restName = (r.name || '').toLowerCase();
-      const branchLocations = (r.branches || []).map(b => {
-        const loc = b.location || {};
-        return `${loc.city || ''} ${loc.state || ''} ${loc.address || ''} ${loc.country || ''}`.toLowerCase();
-      }).join(' ');
-
-      const combined = `${restName} ${restCity} ${restState} ${restAddress} ${verifAddr} ${branchLocations}`.trim();
-
-      // Check direct substring of location or individual terms
-      if (restCity && locLower.includes(restCity)) return true;
-      return locTerms.some(term => term.length >= 3 && combined.includes(term));
-    });
-
-    // If matches found (e.g. Krishnagiri restaurants 'vegiii', 'RA', etc.), show all of them!
-    if (matched.length > 0) {
-      return matched;
-    }
-
-    // Special check for Krishnagiri variations / Tamil Nadu district
-    const isKrishnagiriArea = locLower.includes('krishnagiri') || 
-                              locLower.includes('tamil nadu') ||
-                              locLower.includes('dharmapuri') ||
-                              locLower.includes('hosur');
-
-    if (isKrishnagiriArea) {
-      const kgRestaurants = base.filter(r => {
-        const city = (r.city || '').toLowerCase();
-        const addr = (r.address || '').toLowerCase();
-        const branches = (r.branches || []).map(b => (b.location?.city || '').toLowerCase()).join(' ');
-        return city.includes('krishnagiri') || addr.includes('krishnagiri') || branches.includes('krishnagiri');
-      });
-      if (kgRestaurants.length > 0) return kgRestaurants;
-    }
-
-    // When a specific location has no restaurants found in the database, return empty array
-    // so the clean empty state with "Explore All Outlets" button is properly displayed
-    return [];
-  })();
 
   return (
     <div ref={containerRef} className="min-h-screen bg-white text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white">

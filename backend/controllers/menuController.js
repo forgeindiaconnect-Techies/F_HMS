@@ -39,9 +39,10 @@ export const getMenuItems = async (req, res) => {
             if (typeof item.restaurantId === 'object') {
                 if (item.restaurantId.isDeleted) return false;
                 if (item.restaurantId.status && item.restaurantId.status !== 'Active') return false;
-                if (item.restaurantId.approvalStatus !== 'Approved') return false;
                 if (item.restaurantId.isActive === false) return false;
                 const subStatus = item.restaurantId.subscription?.status;
+                const isSubscribed = (subStatus && !['Frozen', 'Cancelled', 'Inactive', 'Expired', 'Suspended'].includes(subStatus)) || item.restaurantId.subscription?.trialActive;
+                if (!isSubscribed && item.restaurantId.approvalStatus !== 'Approved') return false;
                 if (subStatus && ['Frozen', 'Cancelled', 'Inactive', 'Expired', 'Suspended'].includes(subStatus)) {
                     return false;
                 }

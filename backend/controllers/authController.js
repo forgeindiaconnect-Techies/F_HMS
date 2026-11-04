@@ -7,7 +7,7 @@ import Restaurant from '../models/Restaurant.js';
 import Branch from '../models/Branch.js';
 import Notification from '../models/Notification.js';
 import RestaurantVerification from '../models/RestaurantVerification.js';
-import { sendWelcomeEmail, sendLoginNotificationEmail, sendApprovalEmail } from '../utils/emailService.js';
+import { sendWelcomeEmail, sendLoginNotificationEmail, sendApprovalEmail, sendSubscriptionSuccessEmail } from '../utils/emailService.js';
 
 // Generate JWT
 const generateToken = (id) => {
@@ -210,18 +210,31 @@ export const registerUser = async (req, res) => {
                 console.error("Failed to create signup notification", notifErr);
             }
 
-            // Trigger Welcome Email in background
+            // Trigger Welcome and Subscription/Trial Activation Emails in background
             try {
                 const restName = createdRestaurant ? createdRestaurant.name : req.body.restaurantName || 'Your Account';
                 const restPlan = createdRestaurant ? createdRestaurant.subscription?.plan : req.body.plan || 'Basic';
+                
                 sendWelcomeEmail({
                     email: user.email,
                     name: user.name,
                     restaurantName: restName,
                     plan: restPlan
                 }).catch(err => console.error("Welcome email background error:", err.message));
+
+                if (createdRestaurant && createdRestaurant.subscription) {
+                    sendSubscriptionSuccessEmail({
+                        email: user.email,
+                        name: user.name,
+                        restaurantName: restName,
+                        plan: `${restPlan} (${createdRestaurant.subscription.trialActive ? '7-Day Free Trial' : 'Active'})`,
+                        billingCycle: createdRestaurant.subscription.billingCycle || 'monthly',
+                        price: 0,
+                        expiryDate: createdRestaurant.subscription.expiryDate
+                    }).catch(subErr => console.error("Subscription success email background error:", subErr.message));
+                }
             } catch (eErr) {
-                console.error("Welcome email dispatch error:", eErr.message);
+                console.error("Welcome/Subscription email dispatch error:", eErr.message);
             }
 
             const token = generateToken(user._id);

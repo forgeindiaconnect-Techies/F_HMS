@@ -8,6 +8,7 @@ const RestaurantVerification = () => {
     const [verification, setVerification] = useState(null);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [savingBrandAssets, setSavingBrandAssets] = useState(false);
 
     // Form states
     const [addressText, setAddressText] = useState('');
@@ -219,6 +220,44 @@ const RestaurantVerification = () => {
             toast.error(serverMsg || "Failed to submit verification. Please check required fields and try again.");
         } finally {
             setSubmitting(false);
+        }
+    };
+
+    const handleSaveBrandAssets = async () => {
+        if (!files.logo && !logoBase64 && optionalImages.length === 0 && !files.menuPdf) {
+            toast.error("Please select a logo, showcase images, or menu PDF first to save brand assets.");
+            return;
+        }
+
+        setSavingBrandAssets(true);
+        const formData = new FormData();
+        if (files.logo) {
+            formData.append('logo', files.logo);
+        } else if (logoBase64) {
+            formData.append('logoBase64', logoBase64);
+        }
+
+        if (files.menuPdf) {
+            formData.append('menuPdf', files.menuPdf);
+        }
+
+        optionalImages.forEach(img => {
+            formData.append('images', img);
+        });
+
+        try {
+            await api.post('/restaurants/verification/brand-assets', formData);
+            toast.success("Brand assets saved successfully! Your logo and showcase images are now live on the platform.", { duration: 4000 });
+            await fetchRestaurant();
+            await loadVerification();
+            setFiles(prev => ({ ...prev, logo: null, menuPdf: null }));
+            setOptionalImages([]);
+        } catch (err) {
+            console.error("Failed to save brand assets", err);
+            const msg = err.response?.data?.message || err.message;
+            toast.error(msg || "Failed to save brand assets.");
+        } finally {
+            setSavingBrandAssets(false);
         }
     };
 
@@ -588,6 +627,26 @@ const RestaurantVerification = () => {
                                 ))}
                             </div>
                         )}
+
+                        {/* Direct Save Brand Assets Button */}
+                        <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 bg-orange-50/60 p-4 rounded-2xl border border-orange-100 mt-4">
+                            <div className="text-left">
+                                <h4 className="text-xs font-black text-slate-800 uppercase tracking-wide">Ready to showcase on Customer Landing Page?</h4>
+                                <p className="text-[11px] text-slate-500 font-medium">Save logo &amp; showcase images immediately without waiting for KYC document approval.</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleSaveBrandAssets}
+                                disabled={savingBrandAssets}
+                                className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-[#FF5A1F] hover:from-orange-600 hover:to-orange-500 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer disabled:opacity-50 shrink-0"
+                            >
+                                {savingBrandAssets ? (
+                                    <><RefreshCw size={13} className="animate-spin" /> Saving Assets…</>
+                                ) : (
+                                    <><Check size={14} /> Save Brand Assets &amp; Show on Landing Page</>
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
 

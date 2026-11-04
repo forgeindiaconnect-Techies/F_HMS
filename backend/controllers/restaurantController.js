@@ -89,13 +89,18 @@ export const getRestaurants = async (req, res) => {
             }
         }
 
-        // Return only active, approved, non-deleted restaurants to customer listing
+        // Return eligible customer-facing restaurants: must not be deleted, must be active,
+        // and have an active subscription or valid free trial.
         const filter = {
             isDeleted: { $ne: true },
             status: { $nin: ['Inactive', 'Suspended', 'Deleted'] },
             isActive: { $ne: false },
-            approvalStatus: 'Approved',
-            'subscription.status': { $nin: ['Cancelled', 'Frozen', 'Expired', 'Suspended', 'Inactive'] }
+            approvalStatus: { $in: ['Approved', 'Pending'] }, // Subscribed restaurants must show automatically without manual DB edits
+            $or: [
+                { 'subscription.status': { $in: ['Active', 'Expiring Soon'] } },
+                { 'subscription.trialActive': true },
+                { 'subscription.status': { $nin: ['Cancelled', 'Frozen', 'Expired', 'Suspended', 'Inactive'] } }
+            ]
         };
 
         let restaurants = await Restaurant.find(filter).populate('ownerId', 'name email').sort({ createdAt: -1 }).lean();
@@ -553,7 +558,7 @@ export const getRestaurantPublicConfig = async (req, res) => {
         if (restaurant.isDeleted || restaurant.status === 'Deleted') {
             return res.status(404).json({ message: 'Restaurant not found' });
         }
-        if (restaurant.status === 'Inactive' || restaurant.status === 'Suspended' || !restaurant.isActive || restaurant.approvalStatus !== 'Approved') {
+        if (restaurant.status === 'Inactive' || restaurant.status === 'Suspended' || !restaurant.isActive || (restaurant.approvalStatus !== 'Approved' && restaurant.approvalStatus !== 'Pending')) {
             return res.status(403).json({ message: 'This restaurant is currently unavailable or inactive.' });
         }
 
@@ -832,7 +837,8 @@ export const getRestaurantById = async (req, res) => {
             if (restaurant.isDeleted || restaurant.status === 'Deleted') {
                 return res.status(404).json({ message: 'Restaurant not found' });
             }
-            if (restaurant.status === 'Inactive' || restaurant.status === 'Suspended' || !restaurant.isActive || restaurant.approvalStatus !== 'Approved') {
+            const isSubscribed = (restaurant.subscription?.status && !['Cancelled', 'Frozen', 'Expired', 'Suspended', 'Inactive'].includes(restaurant.subscription.status)) || restaurant.subscription?.trialActive;
+            if (restaurant.status === 'Inactive' || restaurant.status === 'Suspended' || !restaurant.isActive || (!isSubscribed && restaurant.approvalStatus !== 'Approved')) {
                 return res.status(403).json({ message: 'This restaurant is currently unavailable or inactive.' });
             }
         }

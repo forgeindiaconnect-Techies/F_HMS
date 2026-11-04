@@ -266,6 +266,79 @@ export const submitVerification = async (req, res) => {
     }
 };
 
+// @desc    Update only brand assets (Logo & Showcase Images) directly so they appear immediately on landing page
+// @route   POST /api/restaurants/verification/brand-assets
+// @access  Private/RestaurantAdmin
+export const updateBrandAssets = async (req, res) => {
+    try {
+        const restaurantId = req.user.restaurantId;
+        if (!restaurantId) {
+            return res.status(404).json({ message: 'No restaurant associated with this user' });
+        }
+
+        const restaurant = await Restaurant.findById(restaurantId);
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        let verification = await RestaurantVerification.findOne({ restaurantId });
+        if (!verification) {
+            verification = new RestaurantVerification({
+                restaurantId,
+                documents: {},
+                status: 'Pending'
+            });
+        }
+
+        const files = req.files || {};
+
+        // 1. Handle Logo (uploaded file or Base64 string)
+        if (req.body.logoBase64) {
+            verification.documents.logo = { filePath: req.body.logoBase64 };
+            restaurant.logo = req.body.logoBase64;
+        } else if (files.logo && files.logo.length > 0) {
+            const logoFile = files.logo[0];
+            verification.documents.logo = { filePath: getFileUrl(logoFile) };
+            try {
+                const fileBuffer = fs.readFileSync(logoFile.path);
+                const ext = path.extname(logoFile.originalname || logoFile.filename || '').toLowerCase();
+                const mimeType = ext === '.pdf' ? 'application/pdf' : (logoFile.mimetype || 'image/png');
+                restaurant.logo = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+            } catch (e) {
+                restaurant.logo = getFileUrl(logoFile);
+            }
+        }
+
+        // 2. Handle Menu PDF if present
+        if (files.menuPdf && files.menuPdf.length > 0) {
+            verification.documents.menuPdf = { filePath: getFileUrl(files.menuPdf[0]) };
+        }
+
+        // 3. Handle Showcase Images
+        if (files.images && files.images.length > 0) {
+            const newImages = files.images.map(img => ({ filePath: getFileUrl(img) }));
+            verification.documents.images = [...(verification.documents.images || []), ...newImages];
+            const allImgPaths = verification.documents.images.map(img => img.filePath);
+            restaurant.showcaseImages = allImgPaths;
+            if (allImgPaths.length > 0 && !restaurant.bannerImage) {
+                restaurant.bannerImage = allImgPaths[0];
+            }
+        }
+
+        await verification.save();
+        await restaurant.save();
+
+        res.status(200).json({
+            message: 'Brand assets saved and updated for landing page successfully!',
+            verification,
+            restaurant
+        });
+    } catch (error) {
+        console.error("Brand assets update error:", error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 // @desc    Get current restaurant verification status
 // @route   GET /api/restaurants/verification/mine
 // @access  Private/RestaurantAdmin

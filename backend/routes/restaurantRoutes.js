@@ -8,10 +8,21 @@ import {
     generateRazorpaySubscriptionQR, confirmSubscriptionQRPayment,
     getRestaurantConfig, updateRestaurantConfig, getRestaurantPublicConfig
 } from '../controllers/restaurantController.js';
-import { submitVerification, getMyVerification, getAllVerifications, getVerificationById, reviewVerification, verificationUpload, deleteVerification } from '../controllers/verificationController.js';
+import { submitVerification, getMyVerification, getAllVerifications, getVerificationById, reviewVerification, verificationUpload, deleteVerification, updateBrandAssets } from '../controllers/verificationController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
+
+router.route('/verification/brand-assets')
+    .post(protect, authorize('RestaurantAdmin'), (req, res, next) => {
+        verificationUpload(req, res, (err) => {
+            if (err) {
+                console.error("Brand assets upload error:", err);
+                return res.status(400).json({ message: err.message || 'File upload failed.' });
+            }
+            next();
+        });
+    }, updateBrandAssets);
 
 router.route('/verification/submit')
     .post(protect, authorize('RestaurantAdmin'), (req, res, next) => {
