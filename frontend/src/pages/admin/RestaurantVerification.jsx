@@ -188,7 +188,8 @@ const RestaurantVerification = () => {
         if (fssaiExpiryDate) {
             formData.append('fssaiExpiryDate', fssaiExpiryDate);
         }
-        if (logoBase64) {
+        // If logo file was not added directly to files, append logoBase64 if present
+        if (!files.logo && logoBase64) {
             formData.append('logoBase64', logoBase64);
         }
 

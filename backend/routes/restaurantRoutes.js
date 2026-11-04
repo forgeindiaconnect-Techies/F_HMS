@@ -39,7 +39,15 @@ router.route('/verification/:id/review')
 
 router.route('/mine')
     .get(protect, getMyRestaurant)
-    .put(protect, authorize('RestaurantAdmin'), logoUpload, updateMyRestaurant);
+    .put(protect, authorize('RestaurantAdmin'), (req, res, next) => {
+        logoUpload(req, res, (err) => {
+            if (err) {
+                console.error("Logo upload error:", err);
+                return res.status(400).json({ message: err.message || 'Logo upload error' });
+            }
+            next();
+        });
+    }, updateMyRestaurant);
 
 router.route('/mine/config')
     .get(protect, authorize('RestaurantAdmin', 'BranchManager', 'SuperAdmin', 'Admin'), getRestaurantConfig)

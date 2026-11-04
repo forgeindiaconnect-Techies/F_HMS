@@ -37,7 +37,10 @@ const fileFilter = (req, file, cb) => {
 
 export const upload = multer({
     storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB limit
+    limits: { 
+        fileSize: 10 * 1024 * 1024, // 10 MB per file limit
+        fieldSize: 25 * 1024 * 1024  // 25 MB field size limit to support Base64 images without LIMIT_FIELD_VALUE
+    },
     fileFilter: fileFilter
 });
 
@@ -182,9 +185,16 @@ export const submitVerification = async (req, res) => {
         }
 
         // Optional Images
-        if (files.images) {
+        if (files.images && files.images.length > 0) {
             const newImages = files.images.map(img => ({ filePath: getFileUrl(img) }));
             documents.images = [...(documents.images || []), ...newImages];
+            // Sync showcase images to restaurant model so they show on dashboards and landing pages immediately
+            const allImgPaths = documents.images.map(img => img.filePath);
+            restaurant.showcaseImages = allImgPaths;
+            if (allImgPaths.length > 0 && !restaurant.bannerImage) {
+                restaurant.bannerImage = allImgPaths[0];
+            }
+            await restaurant.save();
         }
 
         if (verification) {

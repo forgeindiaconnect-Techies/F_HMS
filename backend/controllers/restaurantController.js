@@ -36,7 +36,10 @@ const logoFileFilter = (req, file, cb) => {
 
 export const logoUpload = multer({
     storage: logoStorage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+    limits: { 
+        fileSize: 10 * 1024 * 1024, // 10 MB
+        fieldSize: 25 * 1024 * 1024  // 25 MB for base64 logos
+    },
     fileFilter: logoFileFilter
 }).single('logo');
 
@@ -136,11 +139,19 @@ export const getRestaurants = async (req, res) => {
             rest.branches = branches;
             const primaryBranch = branches[0];
 
-            // If restaurant address/city is unset or default, check verification documents
-            let verifAddress = '';
+            // Attach showcase images and logo from verification if unset
             try {
                 const verif = await RestaurantVerification.findOne({ restaurantId: rest._id }).lean();
                 verifAddress = verif?.documents?.addressProof?.addressText || '';
+                if (!rest.logo && verif?.documents?.logo?.filePath) {
+                    rest.logo = verif.documents.logo.filePath;
+                }
+                if ((!rest.showcaseImages || rest.showcaseImages.length === 0) && verif?.documents?.images?.length > 0) {
+                    rest.showcaseImages = verif.documents.images.map(img => img.filePath);
+                }
+                if (!rest.bannerImage && rest.showcaseImages?.length > 0) {
+                    rest.bannerImage = rest.showcaseImages[0];
+                }
             } catch (_) {}
 
             const branchAddress = primaryBranch?.location?.address && primaryBranch.location.address !== 'Primary Location' 
@@ -376,6 +387,22 @@ export const getMyRestaurant = async (req, res) => {
             if (!restaurant.restaurantConfig.paymentMethods) {
                 restaurant.restaurantConfig.paymentMethods = { cash: true, upi: true, card: true, onlineGateway: true };
             }
+        }
+
+        // Auto-fallback: populate logo and showcase images from verification if unset
+        if (!restaurant.logo || !restaurant.showcaseImages || restaurant.showcaseImages.length === 0) {
+            try {
+                const verif = await RestaurantVerification.findOne({ restaurantId: restaurant._id }).lean();
+                if (!restaurant.logo && verif?.documents?.logo?.filePath) {
+                    restaurant.logo = verif.documents.logo.filePath;
+                }
+                if ((!restaurant.showcaseImages || restaurant.showcaseImages.length === 0) && verif?.documents?.images?.length > 0) {
+                    restaurant.showcaseImages = verif.documents.images.map(img => img.filePath);
+                }
+                if (!restaurant.bannerImage && restaurant.showcaseImages?.length > 0) {
+                    restaurant.bannerImage = restaurant.showcaseImages[0];
+                }
+            } catch (_) {}
         }
 
         res.json(restaurant);
@@ -831,6 +858,20 @@ export const getRestaurantById = async (req, res) => {
                 restaurant.deliverySettings.enabled = true;
             }
         }
+
+        // Attach showcase images and logo from verification if unset
+        try {
+            const verif = await RestaurantVerification.findOne({ restaurantId: restaurant._id }).lean();
+            if (!restaurant.logo && verif?.documents?.logo?.filePath) {
+                restaurant.logo = verif.documents.logo.filePath;
+            }
+            if ((!restaurant.showcaseImages || restaurant.showcaseImages.length === 0) && verif?.documents?.images?.length > 0) {
+                restaurant.showcaseImages = verif.documents.images.map(img => img.filePath);
+            }
+            if (!restaurant.bannerImage && restaurant.showcaseImages?.length > 0) {
+                restaurant.bannerImage = restaurant.showcaseImages[0];
+            }
+        } catch (_) {}
         
         res.json(restaurant);
     } catch (error) {

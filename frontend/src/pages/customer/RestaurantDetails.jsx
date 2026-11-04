@@ -236,22 +236,43 @@ const RestaurantDetails = () => {
             <div className="max-w-4xl mx-auto px-3.5 sm:px-6 -mt-10 sm:-mt-14 relative z-10">
                 <div className="bg-white dark:bg-slate-900 rounded-xl sm:rounded-2xl p-3.5 sm:p-5 shadow-sm border border-gray-100 dark:border-slate-800">
                     <div className="flex items-start justify-between gap-3">
-                        <div className="space-y-1 min-w-0 text-left">
-                            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight truncate">
-                                {restaurant.name}
-                            </h1>
-                            <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">
-                                Multi-Cuisine • Desserts • Beverages
-                            </p>
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-xs text-gray-600 dark:text-slate-300">
-                                <span className="inline-flex items-center gap-1 font-medium">
-                                    <Clock size={13} className="text-[#FF5A1F] shrink-0" /> 
-                                    <span>Opens at 10:00 AM</span>
-                                </span>
-                                <span className="inline-flex items-center gap-1 font-medium">
-                                    <Info size={13} className="text-gray-400 dark:text-slate-500 shrink-0" /> 
-                                    <span>Known for great ambiance</span>
-                                </span>
+                        <div className="flex items-start gap-3.5 min-w-0 text-left">
+                            {/* Restaurant Logo */}
+                            {restaurant.logo && (() => {
+                                const apiBase = getApiUrl();
+                                const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : '';
+                                const logoSrc = (restaurant.logo.startsWith('http') || restaurant.logo.startsWith('data:'))
+                                    ? restaurant.logo
+                                    : `${origin}${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`;
+                                return (
+                                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl overflow-hidden border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-800 shrink-0 shadow-sm flex items-center justify-center">
+                                        <img 
+                                            src={logoSrc} 
+                                            alt={restaurant.name} 
+                                            onError={(e) => { e.target.parentElement.style.display = 'none'; }}
+                                            className="w-full h-full object-cover" 
+                                        />
+                                    </div>
+                                );
+                            })()}
+
+                            <div className="space-y-1 min-w-0">
+                                <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight truncate">
+                                    {restaurant.name}
+                                </h1>
+                                <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">
+                                    Multi-Cuisine • Desserts • Beverages
+                                </p>
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-xs text-gray-600 dark:text-slate-300">
+                                    <span className="inline-flex items-center gap-1 font-medium">
+                                        <Clock size={13} className="text-[#FF5A1F] shrink-0" /> 
+                                        <span>Opens at 10:00 AM</span>
+                                    </span>
+                                    <span className="inline-flex items-center gap-1 font-medium">
+                                        <Info size={13} className="text-gray-400 dark:text-slate-500 shrink-0" /> 
+                                        <span>Known for great ambiance</span>
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
@@ -265,6 +286,29 @@ const RestaurantDetails = () => {
                             </span>
                         </div>
                     </div>
+
+                    {/* Showcase Image Gallery Preview */}
+                    {Array.isArray(restaurant.showcaseImages) && restaurant.showcaseImages.length > 0 && (
+                        <div className="mt-4 pt-3.5 border-t border-gray-100 dark:border-slate-800">
+                            <span className="text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider block mb-2 text-left">
+                                Outlet Showcase &amp; Ambiance
+                            </span>
+                            <div className="flex items-center gap-2.5 overflow-x-auto pb-1 no-scrollbar">
+                                {restaurant.showcaseImages.map((imgUrl, i) => {
+                                    const apiBase = getApiUrl();
+                                    const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : '';
+                                    const src = (imgUrl.startsWith('http') || imgUrl.startsWith('data:'))
+                                        ? imgUrl
+                                        : `${origin}${imgUrl.startsWith('/') ? '' : '/'}${imgUrl}`;
+                                    return (
+                                        <div key={i} className="relative w-20 h-14 sm:w-24 sm:h-16 shrink-0 rounded-lg overflow-hidden border border-gray-200 dark:border-slate-800 shadow-2xs">
+                                            <img src={src} alt={`Showcase ${i+1}`} className="w-full h-full object-cover hover:scale-105 transition-transform" />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Branch Selection - Compact */}
