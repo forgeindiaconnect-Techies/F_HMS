@@ -142,17 +142,20 @@ const WebsiteNavbar = () => {
     const navigate = useNavigate();
 
     // Dropdown States
+    const [isFeaturesOpen, setIsFeaturesOpen] = useState(false);
     const [isPosOpen, setIsPosOpen] = useState(false);
     const [isAddonsOpen, setIsAddonsOpen] = useState(false);
     const [isOutletsOpen, setIsOutletsOpen] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     // Mobile Accordion States
+    const [mobileFeaturesOpen, setMobileFeaturesOpen] = useState(false);
     const [mobilePosOpen, setMobilePosOpen] = useState(false);
     const [mobileAddonsOpen, setMobileAddonsOpen] = useState(false);
     const [mobileOutletsOpen, setMobileOutletsOpen] = useState(false);
 
     // Refs for click outside
+    const featuresRef = useRef(null);
     const posRef = useRef(null);
     const addonsRef = useRef(null);
     const outletsRef = useRef(null);
@@ -160,6 +163,9 @@ const WebsiteNavbar = () => {
     // Close dropdowns on outside click or escape
     useEffect(() => {
         const handleClickOutside = (event) => {
+            if (featuresRef.current && !featuresRef.current.contains(event.target)) {
+                setIsFeaturesOpen(false);
+            }
             if (posRef.current && !posRef.current.contains(event.target)) {
                 setIsPosOpen(false);
             }
@@ -173,6 +179,7 @@ const WebsiteNavbar = () => {
 
         const handleKeyDown = (event) => {
             if (event.key === 'Escape') {
+                setIsFeaturesOpen(false);
                 setIsPosOpen(false);
                 setIsAddonsOpen(false);
                 setIsOutletsOpen(false);
@@ -190,6 +197,7 @@ const WebsiteNavbar = () => {
 
     // Close all menus when location changes
     useEffect(() => {
+        setIsFeaturesOpen(false);
         setIsPosOpen(false);
         setIsAddonsOpen(false);
         setIsOutletsOpen(false);
@@ -249,18 +257,165 @@ const WebsiteNavbar = () => {
                     >
                         Home
                     </Link>
-                    <a 
-                        href="/#features"
-                        onClick={(e) => {
-                            if (location.pathname === '/') {
-                                e.preventDefault();
-                                document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
-                            }
-                        }}
-                        className="text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
-                    >
-                        Features
-                    </a>
+                    {/* Features Dropdown Menu */}
+                    <div className="relative" ref={featuresRef}>
+                        <button
+                            type="button"
+                            onClick={() => setIsFeaturesOpen(!isFeaturesOpen)}
+                            onMouseEnter={() => setIsFeaturesOpen(true)}
+                            className={`flex items-center gap-1.5 transition-colors cursor-pointer py-1.5 ${
+                                isFeaturesOpen ? 'text-[#FF5A1F] font-bold' : 'text-slate-600 hover:text-slate-900'
+                            }`}
+                            aria-expanded={isFeaturesOpen}
+                            aria-haspopup="true"
+                        >
+                            <span>Features</span>
+                            <ChevronDown 
+                                size={15} 
+                                className={`transition-transform duration-200 ${isFeaturesOpen ? 'rotate-180 text-[#FF5A1F]' : ''}`} 
+                            />
+                        </button>
+
+                        {/* Dropdown Popover */}
+                        {isFeaturesOpen && (
+                            <div 
+                                onMouseLeave={() => setIsFeaturesOpen(false)}
+                                className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50 w-[580px] animate-in fade-in slide-in-from-top-2 duration-150"
+                            >
+                                <div className="bg-white rounded-2xl p-5 shadow-2xl border border-slate-200/90 ring-1 ring-black/5">
+                                    
+                                    {/* Header */}
+                                    <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+                                        <div>
+                                            <span className="text-[10px] font-black uppercase tracking-wider text-[#FF5A1F] bg-orange-50 border border-orange-100 px-2 py-0.5 rounded-full inline-block">
+                                                Software Modules
+                                            </span>
+                                            <h4 className="text-sm font-black text-slate-900 mt-1">Core Restaurant Capabilities</h4>
+                                        </div>
+                                        <a
+                                            href="/#features"
+                                            onClick={(e) => {
+                                                setIsFeaturesOpen(false);
+                                                if (location.pathname === '/') {
+                                                    e.preventDefault();
+                                                    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+                                                }
+                                            }}
+                                            className="text-xs font-bold text-[#FF5A1F] hover:underline flex items-center gap-1 cursor-pointer"
+                                        >
+                                            <span>Scroll to Overview</span>
+                                            <ArrowRight size={13} />
+                                        </a>
+                                    </div>
+
+                                    {/* Features Grid */}
+                                    <div className="grid grid-cols-2 gap-2.5">
+                                        {[
+                                            {
+                                                title: "Order Management",
+                                                badge: "POS & KOT",
+                                                desc: "Real-time sync across dine-in, takeaway & kitchen",
+                                                icon: ShoppingCart,
+                                                link: "/pos/billing",
+                                                iconBg: "bg-orange-50",
+                                                iconColor: "text-[#FF5A1F]"
+                                            },
+                                            {
+                                                title: "Menu Management",
+                                                badge: "Dynamic",
+                                                desc: "Categories, variations & instant 1-click 86 item toggle",
+                                                icon: Utensils,
+                                                link: "/pos/menu",
+                                                iconBg: "bg-orange-50",
+                                                iconColor: "text-[#FF5A1F]"
+                                            },
+                                            {
+                                                title: "Staff & Role Management",
+                                                badge: "Permissions",
+                                                desc: "Roles for waiters, chefs, cashiers & managers",
+                                                icon: Users,
+                                                link: "/features/management",
+                                                iconBg: "bg-orange-50",
+                                                iconColor: "text-[#FF5A1F]"
+                                            },
+                                            {
+                                                title: "Inventory Tracking",
+                                                badge: "Auto-Deplete",
+                                                desc: "Recipe-level stock deduction & low-stock alerts",
+                                                icon: Boxes,
+                                                link: "/pos/inventory",
+                                                iconBg: "bg-orange-50",
+                                                iconColor: "text-[#FF5A1F]"
+                                            },
+                                            {
+                                                title: "Reports & Analytics",
+                                                badge: "Insights",
+                                                desc: "Sales, gross profit, peak hours & tax summaries",
+                                                icon: BarChart3,
+                                                link: "/pos/reporting",
+                                                iconBg: "bg-orange-50",
+                                                iconColor: "text-[#FF5A1F]"
+                                            },
+                                            {
+                                                title: "Restaurant Settings",
+                                                badge: "Config",
+                                                desc: "Multi-branch outlets, GST rules & table floor plans",
+                                                icon: Store,
+                                                link: "/features/management",
+                                                iconBg: "bg-orange-50",
+                                                iconColor: "text-[#FF5A1F]"
+                                            }
+                                        ].map((feat, idx) => {
+                                            const IconCmp = feat.icon;
+                                            return (
+                                                <Link
+                                                    key={idx}
+                                                    to={feat.link}
+                                                    onClick={() => setIsFeaturesOpen(false)}
+                                                    className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-orange-50/60 transition-all border border-transparent hover:border-orange-100 group"
+                                                >
+                                                    <div className={`w-9 h-9 rounded-lg ${feat.iconBg} ${feat.iconColor} flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:bg-[#FF5A1F] group-hover:text-white transition-all shadow-2xs`}>
+                                                        <IconCmp size={18} strokeWidth={2.2} />
+                                                    </div>
+                                                    <div className="min-w-0 flex-1 text-left">
+                                                        <div className="flex items-center justify-between gap-1">
+                                                            <span className="text-xs font-extrabold text-slate-900 group-hover:text-[#FF5A1F] transition-colors truncate">
+                                                                {feat.title}
+                                                            </span>
+                                                            {feat.badge && (
+                                                                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-orange-100/70 text-[#FF5A1F] shrink-0">
+                                                                    {feat.badge}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-[11px] text-slate-500 font-medium line-clamp-1 mt-0.5">
+                                                            {feat.desc}
+                                                        </p>
+                                                    </div>
+                                                </Link>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* Bottom Footer */}
+                                    <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                                        <span className="text-slate-400 font-medium text-[11px]">
+                                            Unified dine-in, KDS, inventory &amp; reporting platform
+                                        </span>
+                                        <Link
+                                            to="/features/management"
+                                            onClick={() => setIsFeaturesOpen(false)}
+                                            className="font-bold text-[#FF5A1F] hover:text-[#E04812] flex items-center gap-1 group"
+                                        >
+                                            <span>View Full Management Suite</span>
+                                            <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+                                        </Link>
+                                    </div>
+
+                                </div>
+                            </div>
+                        )}
+                    </div>
                     <a 
                         href="/#pricing"
                         onClick={(e) => {
@@ -328,13 +483,82 @@ const WebsiteNavbar = () => {
                     >
                         Home
                     </Link>
-                    <a
-                        href="/#features"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block px-3 py-2 text-sm font-bold text-slate-800 hover:text-[#FF5A1F] hover:bg-orange-50 rounded-xl transition-colors"
-                    >
-                        Features
-                    </a>
+                    {/* Mobile Features Accordion */}
+                    <div className="border-y border-slate-100 py-1">
+                        <button
+                            type="button"
+                            onClick={() => setMobileFeaturesOpen(!mobileFeaturesOpen)}
+                            className="flex items-center justify-between w-full px-3 py-2 text-sm font-bold text-slate-800 hover:text-[#FF5A1F] hover:bg-orange-50 rounded-xl transition-colors"
+                        >
+                            <span className="flex items-center gap-1.5">
+                                <span>Features</span>
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-[#FF5A1F]">
+                                    6 Modules
+                                </span>
+                            </span>
+                            <ChevronDown 
+                                size={16} 
+                                className={`transition-transform duration-200 text-slate-400 ${mobileFeaturesOpen ? 'rotate-180 text-[#FF5A1F]' : ''}`} 
+                            />
+                        </button>
+
+                        {mobileFeaturesOpen && (
+                            <div className="mt-1.5 space-y-1 pl-2 pt-1 border-l-2 border-orange-200">
+                                {[
+                                    { title: "Order Management", link: "/pos/billing", icon: ShoppingCart },
+                                    { title: "Menu Management", link: "/pos/menu", icon: Utensils },
+                                    { title: "Staff & Role Management", link: "/features/management", icon: Users },
+                                    { title: "Inventory Tracking", link: "/pos/inventory", icon: Boxes },
+                                    { title: "Reports & Analytics", link: "/pos/reporting", icon: BarChart3 },
+                                    { title: "Restaurant Settings", link: "/features/management", icon: Store }
+                                ].map((feat, idx) => {
+                                    const IconCmp = feat.icon;
+                                    return (
+                                        <Link
+                                            key={idx}
+                                            to={feat.link}
+                                            onClick={() => {
+                                                setMobileFeaturesOpen(false);
+                                                setMobileMenuOpen(false);
+                                            }}
+                                            className="flex items-center gap-2.5 py-1.5 px-2.5 rounded-xl hover:bg-orange-50 text-xs font-semibold text-slate-700"
+                                        >
+                                            <div className="w-6 h-6 rounded-md bg-orange-50 text-[#FF5A1F] flex items-center justify-center shrink-0">
+                                                <IconCmp size={13} />
+                                            </div>
+                                            <span className="truncate">{feat.title}</span>
+                                        </Link>
+                                    );
+                                })}
+                                <div className="pt-2 pb-1 flex items-center justify-between px-2">
+                                    <a
+                                        href="/#features"
+                                        onClick={(e) => {
+                                            setMobileFeaturesOpen(false);
+                                            setMobileMenuOpen(false);
+                                            if (location.pathname === '/') {
+                                                e.preventDefault();
+                                                document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+                                            }
+                                        }}
+                                        className="text-xs font-bold text-[#FF5A1F] hover:underline"
+                                    >
+                                        Scroll to section ↓
+                                    </a>
+                                    <Link
+                                        to="/features/management"
+                                        onClick={() => {
+                                            setMobileFeaturesOpen(false);
+                                            setMobileMenuOpen(false);
+                                        }}
+                                        className="text-xs font-bold text-[#FF5A1F] hover:underline"
+                                    >
+                                        All features →
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                     <a
                         href="/#pricing"
                         onClick={() => setMobileMenuOpen(false)}

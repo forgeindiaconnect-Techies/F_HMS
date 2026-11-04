@@ -6,7 +6,8 @@ import {
     Utensils, Users, Boxes, BarChart3, Settings as SettingsIcon,
     Play, ChevronRight, Check, Sparkles, Phone, Award,
     Clock, Shield, Heart, Store, ChevronDown, IndianRupee,
-    UserPlus, TrendingUp, Plus, CheckCircle, RefreshCw
+    UserPlus, TrendingUp, Plus, CheckCircle, RefreshCw,
+    Receipt, Package, BookOpen, Truck, Monitor, ChefHat, QrCode
 } from 'lucide-react';
 import api from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
@@ -197,6 +198,30 @@ const Home = () => {
     const [activeFeatureModal, setActiveFeatureModal] = useState(null);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [activeSection, setActiveSection] = useState('home');
+    const [featuresDropdownOpen, setFeaturesDropdownOpen] = useState(false);
+    const [mobileFeaturesOpen, setMobileFeaturesOpen] = useState(false);
+    const featuresDropdownRef = useRef(null);
+
+    // Close features dropdown on click outside or escape key
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (featuresDropdownRef.current && !featuresDropdownRef.current.contains(event.target)) {
+                setFeaturesDropdownOpen(false);
+            }
+        };
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                setFeaturesDropdownOpen(false);
+                setMobileMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, []);
 
     // Dynamic Testimonials from DB
     const [testimonials, setTestimonials] = useState([]);
@@ -342,6 +367,7 @@ const Home = () => {
                     </Link>
 
                     {/* Desktop Navigation Links */}
+                    {/* Desktop Navigation Links */}
                     <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
                         <button 
                             onClick={() => scrollToSection('home')}
@@ -349,12 +375,109 @@ const Home = () => {
                         >
                             Home
                         </button>
-                        <button 
-                            onClick={() => scrollToSection('features')}
-                            className={`transition-colors cursor-pointer ${activeSection === 'features' ? 'text-[#FF5A1F] font-bold' : 'hover:text-slate-900'}`}
-                        >
-                            Features
-                        </button>
+
+                        {/* Features Dropdown Menu */}
+                        <div className="relative" ref={featuresDropdownRef}>
+                            <button
+                                type="button"
+                                onClick={() => setFeaturesDropdownOpen(!featuresDropdownOpen)}
+                                onMouseEnter={() => setFeaturesDropdownOpen(true)}
+                                className={`flex items-center gap-1.5 transition-colors cursor-pointer py-2 ${
+                                    featuresDropdownOpen || activeSection === 'features' ? 'text-[#FF5A1F] font-bold' : 'hover:text-slate-900'
+                                }`}
+                                aria-expanded={featuresDropdownOpen}
+                                aria-haspopup="true"
+                            >
+                                <span>Features</span>
+                                <ChevronDown 
+                                    size={15} 
+                                    className={`transition-transform duration-200 ${featuresDropdownOpen ? 'rotate-180 text-[#FF5A1F]' : ''}`} 
+                                />
+                            </button>
+
+                            {/* Features Dropdown Popover */}
+                            {featuresDropdownOpen && (
+                                <div
+                                    onMouseLeave={() => setFeaturesDropdownOpen(false)}
+                                    className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50 w-[580px] animate-in fade-in slide-in-from-top-2 duration-150"
+                                >
+                                    <div className="bg-white rounded-2xl p-5 shadow-2xl border border-slate-200/90 ring-1 ring-black/5">
+                                        
+                                        {/* Dropdown Header */}
+                                        <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+                                            <div>
+                                                <span className="text-[10px] font-black uppercase tracking-wider text-[#FF5A1F] bg-orange-50 border border-orange-100 px-2 py-0.5 rounded-full inline-block">
+                                                    Software Modules
+                                                </span>
+                                                <h4 className="text-sm font-black text-slate-900 mt-1">Core Restaurant Capabilities</h4>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setFeaturesDropdownOpen(false);
+                                                    scrollToSection('features');
+                                                }}
+                                                className="text-xs font-bold text-[#FF5A1F] hover:underline flex items-center gap-1 cursor-pointer"
+                                            >
+                                                <span>Scroll to Overview</span>
+                                                <ArrowRight size={13} />
+                                            </button>
+                                        </div>
+
+                                        {/* 6 Features Grid */}
+                                        <div className="grid grid-cols-2 gap-2.5">
+                                            {FEATURES.map((feat) => {
+                                                const IconCmp = feat.icon;
+                                                return (
+                                                    <Link
+                                                        key={feat.id}
+                                                        to={feat.link}
+                                                        onClick={() => setFeaturesDropdownOpen(false)}
+                                                        className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-orange-50/60 transition-all border border-transparent hover:border-orange-100 group"
+                                                    >
+                                                        <div className={`w-9 h-9 rounded-lg ${feat.iconBg} ${feat.iconColor} flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:bg-[#FF5A1F] group-hover:text-white transition-all shadow-2xs`}>
+                                                            <IconCmp size={18} strokeWidth={2.2} />
+                                                        </div>
+                                                        <div className="min-w-0 flex-1 text-left">
+                                                            <div className="flex items-center justify-between gap-1">
+                                                                <span className="text-xs font-extrabold text-slate-900 group-hover:text-[#FF5A1F] transition-colors truncate">
+                                                                    {feat.title}
+                                                                </span>
+                                                                {feat.badge && (
+                                                                    <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-orange-100/70 text-[#FF5A1F] shrink-0">
+                                                                        {feat.badge}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-[11px] text-slate-500 font-medium line-clamp-1 mt-0.5">
+                                                                {feat.description}
+                                                            </p>
+                                                        </div>
+                                                    </Link>
+                                                );
+                                            })}
+                                        </div>
+
+                                        {/* Bottom Action Footer */}
+                                        <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                                            <span className="text-slate-400 font-medium text-[11px]">
+                                                Unified dine-in, KDS, inventory &amp; reporting platform
+                                            </span>
+                                            <Link
+                                                to="/features/management"
+                                                onClick={() => setFeaturesDropdownOpen(false)}
+                                                className="font-bold text-[#FF5A1F] hover:text-[#E04812] flex items-center gap-1 group"
+                                            >
+                                                <span>View Full Management Suite</span>
+                                                <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+                                            </Link>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
                         <button 
                             onClick={() => scrollToSection('pricing')}
                             className={`transition-colors cursor-pointer ${activeSection === 'pricing' ? 'text-[#FF5A1F] font-bold' : 'hover:text-slate-900'}`}
@@ -419,19 +542,83 @@ const Home = () => {
 
                 {/* Mobile Dropdown Menu */}
                 {mobileMenuOpen && (
-                    <div className="md:hidden bg-[#FFFDF9] border-b border-orange-100 px-6 py-4 space-y-3 animate-in fade-in slide-in-from-top-2">
+                    <div className="md:hidden bg-[#FFFDF9] border-b border-orange-100 px-6 py-4 space-y-3 animate-in fade-in slide-in-from-top-2 max-h-[85vh] overflow-y-auto">
                         <button 
                             onClick={() => scrollToSection('home')}
                             className="block w-full text-left py-2 text-sm font-bold text-slate-700"
                         >
                             Home
                         </button>
-                        <button 
-                            onClick={() => scrollToSection('features')}
-                            className="block w-full text-left py-2 text-sm font-bold text-slate-700"
-                        >
-                            Features
-                        </button>
+
+                        {/* Mobile Features Accordion */}
+                        <div className="border-y border-orange-100/80 py-2">
+                            <button 
+                                type="button"
+                                onClick={() => setMobileFeaturesOpen(!mobileFeaturesOpen)}
+                                className="flex items-center justify-between w-full text-left py-1.5 text-sm font-bold text-slate-700"
+                            >
+                                <span className="flex items-center gap-1.5">
+                                    <span>Features</span>
+                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-[#FF5A1F]">
+                                        6 Modules
+                                    </span>
+                                </span>
+                                <ChevronDown 
+                                    size={16} 
+                                    className={`transition-transform duration-200 text-slate-400 ${mobileFeaturesOpen ? 'rotate-180 text-[#FF5A1F]' : ''}`} 
+                                />
+                            </button>
+
+                            {mobileFeaturesOpen && (
+                                <div className="mt-2 space-y-1.5 pl-2 pt-1 border-l-2 border-orange-200">
+                                    {FEATURES.map((feat) => {
+                                        const IconCmp = feat.icon;
+                                        return (
+                                            <Link
+                                                key={feat.id}
+                                                to={feat.link}
+                                                onClick={() => {
+                                                    setMobileFeaturesOpen(false);
+                                                    setMobileMenuOpen(false);
+                                                }}
+                                                className="flex items-center gap-2.5 py-2 px-2.5 rounded-xl hover:bg-orange-50 text-xs font-semibold text-slate-700"
+                                            >
+                                                <div className={`w-7 h-7 rounded-lg ${feat.iconBg} ${feat.iconColor} flex items-center justify-center shrink-0`}>
+                                                    <IconCmp size={14} />
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <span className="block font-bold text-slate-900 truncate">{feat.title}</span>
+                                                    <span className="block text-[10px] text-slate-400 truncate">{feat.description}</span>
+                                                </div>
+                                            </Link>
+                                        );
+                                    })}
+                                    <div className="pt-2 flex items-center justify-between">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setMobileFeaturesOpen(false);
+                                                scrollToSection('features');
+                                            }}
+                                            className="text-xs font-bold text-[#FF5A1F] hover:underline"
+                                        >
+                                            Scroll to section ↓
+                                        </button>
+                                        <Link
+                                            to="/features/management"
+                                            onClick={() => {
+                                                setMobileFeaturesOpen(false);
+                                                setMobileMenuOpen(false);
+                                            }}
+                                            className="text-xs font-bold text-[#FF5A1F] hover:underline"
+                                        >
+                                            All features →
+                                        </Link>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
                         <button 
                             onClick={() => scrollToSection('pricing')}
                             className="block w-full text-left py-2 text-sm font-bold text-slate-700"
