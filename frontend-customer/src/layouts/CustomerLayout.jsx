@@ -123,24 +123,25 @@ const CustomerLayout = () => {
                                 </button>
                             </div>
                             
-                            {/* Profile Avatar or Login Button - Always 100% Fully Visible inside Navbar */}
+                            {/* Profile Avatar or User Icon - Guaranteed 100% Visible on Mobile View */}
                             {user ? (
                                 <Link 
                                     to="/profile" 
-                                    className="flex items-center gap-1.5 p-0.5 rounded-full hover:bg-orange-50 transition-colors shrink-0"
+                                    className="w-8 h-8 rounded-full bg-[#FF5A1F] text-white flex items-center justify-center text-xs font-black shadow-xs ring-2 ring-orange-200 shrink-0 hover:opacity-95 transition-all"
                                     title={'Profile: ' + (user.name || 'User')}
+                                    aria-label="Profile"
                                 >
-                                    <div className="w-8 h-8 rounded-full bg-[#FF5A1F] text-white flex items-center justify-center text-xs font-black shadow-xs ring-2 ring-white">
-                                        {user.name ? user.name.charAt(0).toUpperCase() : <User size={14} />}
-                                    </div>
-                                    <span className="hidden md:inline text-xs font-bold text-slate-700 truncate max-w-[85px]">{user.name}</span>
+                                    {user.name ? user.name.charAt(0).toUpperCase() : <User size={15} />}
                                 </Link>
                             ) : (
                                 <Link 
                                     to="/customer/login" 
-                                    className="bg-[#FF5A1F] hover:bg-[#e04f1a] text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow-xs hover:shadow-md transition-all cursor-pointer whitespace-nowrap shrink-0"
+                                    className="w-8 h-8 sm:w-auto sm:px-3 sm:py-1.5 rounded-full sm:rounded-xl bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] border border-orange-200 flex items-center justify-center transition-colors shrink-0 shadow-xs"
+                                    title="Sign In / Profile"
+                                    aria-label="Sign In / Profile"
                                 >
-                                    Login
+                                    <User size={16} className="shrink-0" />
+                                    <span className="hidden sm:inline text-xs font-bold ml-1.5">Login</span>
                                 </Link>
                             )}
                         </div>
