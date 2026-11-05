@@ -69,6 +69,7 @@ export const registerUser = async (req, res) => {
             const sanitizePlan = (p) => {
                 if (!p) return 'Basic';
                 const lower = String(p).trim().toLowerCase();
+                if (lower.includes('trial') || lower.includes('free')) return '7-Day Free Trial';
                 if (lower === 'basic') return 'Basic';
                 if (lower === 'pro' || lower === 'professional') return 'Pro';
                 if (lower === 'enterprise') return 'Enterprise';

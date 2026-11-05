@@ -1,16 +1,20 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Eye, EyeOff, UtensilsCrossed, ArrowRight, Mail, Lock, User as UserIcon, Tag, AlertCircle, Phone, CheckCircle2, QrCode, Loader2, ShieldCheck, X, Truck } from 'lucide-react';
+import { 
+    Eye, EyeOff, UtensilsCrossed, ArrowRight, Mail, Lock, User as UserIcon, 
+    AlertCircle, Phone, CheckCircle2, QrCode, Loader2, ShieldCheck, X, Truck, 
+    Sparkles, Clock, Check, Building2, HelpCircle 
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api, { getApiUrl } from '../utils/axiosInstance';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
 const DEFAULT_PLANS = [
-    { _id: 'p1', name: 'Basic', monthlyPrice: 1, yearlyPrice: 390, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'] },
-    { _id: 'p2', name: 'Pro', monthlyPrice: 2, yearlyPrice: 990, features: ['Up to 3 Branches', 'Kitchen Display System', 'Online Ordering', 'Advanced Analytics', 'Priority Support'] },
-    { _id: 'p3', name: 'Enterprise', monthlyPrice: 3, yearlyPrice: 2490, features: ['Unlimited Branches', 'Custom APIs & Webhooks', 'Dedicated Account Manager', 'SLA Guarantee', 'White-label Branding'] }
+    { _id: 'p1', name: 'Starter', monthlyPrice: 49, yearlyPrice: 39, features: ['1 Outlet', 'Basic POS Billing', 'QR Table Ordering', 'Email Support'] },
+    { _id: 'p2', name: 'Professional', monthlyPrice: 99, yearlyPrice: 79, features: ['Up to 3 Outlets', 'Kitchen Display System (KDS)', 'Online Ordering', 'Advanced Analytics', 'Priority Support'] },
+    { _id: 'p3', name: 'Enterprise', monthlyPrice: 199, yearlyPrice: 159, features: ['Unlimited Outlets', 'Custom APIs & Webhooks', 'Dedicated Account Manager', 'SLA Guarantee', 'White-label Branding'] }
 ];
 
 const StaffAuthPage = () => {
@@ -19,16 +23,14 @@ const StaffAuthPage = () => {
     const location = useLocation();
     
     // Determine initial mode from path or URL params
-    const initialMode = location.pathname.includes('register') ? 'register' : 'login';
+    const initialMode = location.pathname.includes('register') || searchParams.get('mode') === 'register' ? 'register' : 'login';
     const [mode, setMode] = useState(initialMode); // 'login' | 'register'
-    const [step, setStep] = useState(1); // 1: Account, 2: Plan, 3: Scan, 4: Registering
+    const [step, setStep] = useState(1); // 1: Plan, 2: Account, 3: KYC, 4: Payment, 5: Processing, 6: Success/Pending, 7: Error
     
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [loading, setLoading] = useState(false);
     const [authError, setAuthError] = useState('');
-    const [scanActive, setScanActive] = useState(false);
-    const [showUpiModal, setShowUpiModal] = useState(false);
     const [paymentStatus, setPaymentStatus] = useState('idle'); // 'idle', 'processing', 'success', 'failed'
     const [plans, setPlans] = useState(DEFAULT_PLANS);
     const [plansLoading, setPlansLoading] = useState(false);
@@ -46,13 +48,24 @@ const StaffAuthPage = () => {
     const [menuFile, setMenuFile] = useState(null);
     const [imagesFiles, setImagesFiles] = useState([]);
     
-    const { login, register: registerUser } = useAuth();
+    const { login } = useAuth();
     
-    const { register, handleSubmit, watch, formState: { errors, isValid }, trigger, getValues, reset, setValue } = useForm({
+    const urlPlan = searchParams.get('plan');
+    const initialPlan = (!urlPlan || urlPlan.toLowerCase().includes('trial') || urlPlan.toLowerCase().includes('free'))
+        ? 'Free Trial'
+        : urlPlan;
+
+    const { register, handleSubmit, watch, formState: { errors }, trigger, getValues, reset, setValue } = useForm({
         mode: 'onChange',
         defaultValues: {
-            plan: searchParams.get('plan') || 'Basic',
-            billingCycle: searchParams.get('billing') || 'monthly'
+            plan: initialPlan,
+            billingCycle: searchParams.get('billing') || 'monthly',
+            restaurantName: '',
+            name: '',
+            email: '',
+            phoneNumber: '',
+            password: '',
+            confirmPassword: ''
         }
     });
 
@@ -65,27 +78,30 @@ const StaffAuthPage = () => {
     useEffect(() => {
         const fetchPlans = async () => {
             try {
+                setPlansLoading(true);
                 const res = await api.get('/plans');
                 if (res.data && Array.isArray(res.data) && res.data.length > 0) {
                     setPlans(res.data);
-                    const urlPlan = searchParams.get('plan');
-                    const match = res.data.find(p => p.name.toLowerCase() === (urlPlan || '').toLowerCase());
-                    if (match) {
-                        setValue('plan', match.name);
-                    } else if (res.data[0]?.name) {
-                        const currentPlan = getValues('plan');
-                        const currentExists = res.data.some(p => p.name.toLowerCase() === (currentPlan || '').toLowerCase());
-                        if (!currentExists) {
-                            setValue('plan', res.data[0].name);
-                        }
+                    const qPlan = searchParams.get('plan');
+                    if (qPlan && (qPlan.toLowerCase().includes('trial') || qPlan.toLowerCase().includes('free'))) {
+                        setValue('plan', 'Free Trial');
+                    } else if (qPlan) {
+                        const match = res.data.find(p => p.name.toLowerCase() === qPlan.toLowerCase());
+                        if (match) setValue('plan', match.name);
                     }
                 }
             } catch (err) {
                 console.error('Background fetch for plans failed, using default plans', err);
+            } finally {
+                setPlansLoading(false);
             }
         };
         fetchPlans();
-    }, []);
+    }, [searchParams, setValue]);
+
+    const selectedPlan = watch('plan') || 'Free Trial';
+    const isYearly = watch('billingCycle') === 'yearly';
+    const isTrialSelected = selectedPlan === 'Free Trial' || selectedPlan.toLowerCase().includes('trial') || selectedPlan.toLowerCase().includes('free');
 
     const onSubmitLogin = async (data) => {
         setLoading(true);
@@ -112,60 +128,13 @@ const StaffAuthPage = () => {
         }
     };
 
-    const handleNextStep = async () => {
-        let fieldsToValidate = [];
-        if (step === 1) fieldsToValidate = ['name', 'email', 'phoneNumber', 'password', 'confirmPassword'];
-        if (step === 2) fieldsToValidate = ['restaurantName', 'plan', 'billingCycle'];
-        
-        const isStepValid = await trigger(fieldsToValidate);
-        if (isStepValid) {
-            if (step === 2) {
-                setStep(3);
-            } else {
-                setStep(step + 1);
-            }
-        }
-    };
-
     const getPlanAmount = () => {
-        const selectedPlanName = watch('plan');
-        const isYearly = watch('billingCycle') === 'yearly';
-        const found = plans.find(p => p.name === selectedPlanName);
+        if (isTrialSelected) return '0.00';
+        const found = plans.find(p => p.name.toLowerCase() === selectedPlan.toLowerCase());
         if (found) {
             return isYearly ? (found.yearlyPrice || 0).toFixed(2) : (found.monthlyPrice || 0).toFixed(2);
         }
-        return '0.00';
-    };
-
-    const loadRazorpayScript = () => {
-        return new Promise((resolve) => {
-            if (window.Razorpay) {
-                resolve(true);
-                return;
-            }
-            const script = document.createElement('script');
-            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-            script.onload = () => resolve(true);
-            script.onerror = () => resolve(false);
-            document.body.appendChild(script);
-        });
-    };
-
-    const startFreeTrial = async () => {
-        if (paymentStatus === 'processing') return;
-        setPaymentStatus('processing');
-        try {
-            setPaymentStatus('success');
-            toast.success("🎉 7-Day Free Trial Activated! Completing setup...");
-            setTimeout(() => {
-                setStep(5);
-                submitRegistration('FREE_TRIAL_7_DAYS');
-            }, 400);
-        } catch (err) {
-            console.error("Trial activation error:", err);
-            setPaymentStatus('failed');
-            toast.error("Failed to start free trial.");
-        }
+        return isYearly ? '39.00' : '49.00';
     };
 
     const startRazorpayPayment = async () => {
@@ -173,7 +142,7 @@ const StaffAuthPage = () => {
         setPaymentStatus('processing');
         try {
             setPaymentStatus('success');
-            toast.success("Payment verified! Completing restaurant registration...");
+            toast.success("Payment verified! Submitting restaurant registration...");
             setTimeout(() => {
                 setStep(5);
                 submitRegistration(`PAY_MOCK_${Date.now()}`);
@@ -190,8 +159,9 @@ const StaffAuthPage = () => {
     const submitRegistration = async (razorpayPaymentId = '') => {
         setLoading(true);
         setAuthError('');
-        setRegStatusMessage('Uploading KYC documents & restaurant info...');
+        setRegStatusMessage('Uploading KYC documents & restaurant information...');
         const data = getValues();
+        const effectivePlan = isTrialSelected ? '7-Day Free Trial' : (data.plan || 'Starter');
         
         const formData = new FormData();
         formData.append('name', data.name);
@@ -201,8 +171,8 @@ const StaffAuthPage = () => {
         formData.append('roleName', 'RestaurantAdmin');
         formData.append('loginType', 'staff');
         formData.append('restaurantName', data.restaurantName);
-        formData.append('plan', data.plan);
-        formData.append('billingCycle', data.billingCycle);
+        formData.append('plan', effectivePlan);
+        formData.append('billingCycle', data.billingCycle || 'monthly');
         if (razorpayPaymentId) {
             formData.append('razorpayPaymentId', razorpayPaymentId);
         }
@@ -231,15 +201,20 @@ const StaffAuthPage = () => {
                 timeout: 180000
             });
 
-            setRegStatusMessage('Signing into admin portal...');
-            const loginRes = await login(data.email, data.password);
+            setRegStatusMessage('Signing into restaurant portal...');
+            try {
+                await login(data.email, data.password);
+            } catch (loginErr) {
+                console.warn('Auto-login background notice:', loginErr);
+            }
+
             setLoading(false);
-            if (loginRes.success) {
-                toast.success('Registration & KYC Submitted Successfully!');
-                navigate('/admin');
-            } else {
-                setAuthError('Account registered but auto-login failed. Please sign in manually.');
+            if (isTrialSelected) {
+                toast.success('🎉 7-Day Free Trial Request Submitted! Pending Super Admin Approval.');
                 setStep(6);
+            } else {
+                toast.success('Registration & Payment Successful!');
+                navigate('/admin');
             }
         } catch (err) {
             setLoading(false);
@@ -260,7 +235,7 @@ const StaffAuthPage = () => {
             }
 
             setAuthError(errMsg || 'Registration and KYC submission failed. Please try again.');
-            setStep(6);
+            setStep(7);
         }
     };
 
@@ -272,15 +247,80 @@ const StaffAuthPage = () => {
         setShowConfirm(false);
         setAuthError('');
         setPaymentStatus('idle');
-        setShowUpiModal(false);
-        setScanActive(false);
     };
 
-    const selectedPlan = watch('plan');
-    const isYearly = watch('billingCycle') === 'yearly';
+    const handleFileChange = (setter) => (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error("Maximum file size allowed is 5 MB per document.");
+                return;
+            }
+            const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+            if (!['.pdf', '.jpg', '.jpeg', '.png'].includes(ext)) {
+                toast.error("Only PDF, JPG, JPEG, and PNG files are allowed.");
+                return;
+            }
+            setter(file);
+        }
+    };
 
+    const handleDocsSubmit = () => {
+        if (!fssaiFile) {
+            toast.error("Please upload your FSSAI License document (Required).");
+            return;
+        }
+        if (!fssaiExpiryDate) {
+            toast.error("Please select the FSSAI License expiry date (Required).");
+            return;
+        }
+        const expiry = new Date(fssaiExpiryDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (isNaN(expiry.getTime()) || expiry < today) {
+            toast.error("FSSAI License expiry date must be today or a future date.");
+            return;
+        }
+        if (!bizFile) {
+            toast.error("Please upload your Business Registration Certificate (Required).");
+            return;
+        }
+        if (!panFile) {
+            toast.error("Please upload your Business/Owner PAN Card (Required).");
+            return;
+        }
+        if (!aadhaarFile) {
+            toast.error("Please upload the Owner Aadhaar Card (Required).");
+            return;
+        }
+        if (!addressText.trim()) {
+            toast.error("Please enter the restaurant's physical address (Required).");
+            return;
+        }
+        if (!addressFile) {
+            toast.error("Please upload the Business Address Proof document (Required).");
+            return;
+        }
+        if (!bankFile) {
+            toast.error("Please upload your Bank Account Proof (Required).");
+            return;
+        }
+        
+        if (isTrialSelected) {
+            // Free trial does not require payment QR step! Submit directly
+            setStep(5);
+            submitRegistration('');
+        } else {
+            // Paid plans proceed to payment scan QR
+            setStep(4);
+        }
+    };
+
+    // =========================================================================
+    // RENDER: LOGIN FORM
+    // =========================================================================
     const renderLoginForm = () => (
-        <form onSubmit={handleSubmit(onSubmitLogin)} className="space-y-4 min-w-0 pr-1.5 flex-1">
+        <form onSubmit={handleSubmit(onSubmitLogin)} className="space-y-4 min-w-0 pr-1.5 flex-1 text-left">
             <div>
                 <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F] transition-colors">
@@ -325,455 +365,541 @@ const StaffAuthPage = () => {
         </form>
     );
 
-    const renderRegisterStep1 = () => (
-        <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Create your account</h2>
-            
-            <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F]">
-                    <UserIcon size={18} />
-                </div>
-                <input
-                    type="text"
-                    placeholder="Full Name"
-                    {...register('name', { required: 'Name is required' })}
-                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
-                />
-                {errors.name && <p className="text-xs text-red-500 mt-1 pl-1">{errors.name.message}</p>}
+    // =========================================================================
+    // STEP 1: SUBSCRIPTION PLAN SELECTION (WITH DEDICATED 7-DAY FREE TRIAL)
+    // =========================================================================
+    const renderRegisterStep1Plan = () => (
+        <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500 text-left">
+            {/* Step Indicator */}
+            <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-1">
+                <span className="text-[#FF5A1F]">Step 1 of 3: Plan Selection</span>
+                <span>Next: Restaurant Details</span>
+            </div>
+            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mb-4">
+                <div className="bg-[#FF5A1F] h-full w-1/3 rounded-full transition-all duration-300" />
             </div>
 
-            <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F]">
-                    <Mail size={18} />
-                </div>
-                <input
-                    type="email"
-                    placeholder="Email Address"
-                    {...register('email', { 
-                        required: 'Email is required',
-                        pattern: { value: /^\S+@\S+$/i, message: 'Invalid email address' }
-                    })}
-                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
-                />
-                {errors.email && <p className="text-xs text-red-500 mt-1 pl-1">{errors.email.message}</p>}
+            <div className="mb-4">
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Choose Your Subscription Plan</h2>
+                <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
+                    Start risk-free with our 7-Day Free Trial or choose a paid plan for instant continuous access.
+                </p>
             </div>
 
-            <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F]">
-                    <Phone size={18} />
-                </div>
-                <input
-                    type="tel"
-                    placeholder="Phone Number (10 digits)"
-                    {...register('phoneNumber', { 
-                        required: 'Phone number is required',
-                        pattern: { value: /^[0-9]{10}$/, message: 'Phone number must be exactly 10 digits' }
-                    })}
-                    onInput={(e) => { e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10); }}
-                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
-                />
-                {errors.phoneNumber && <p className="text-xs text-red-500 mt-1 pl-1">{errors.phoneNumber.message}</p>}
-            </div>
-
-            <div className="group">
-                <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F]">
-                        <Lock size={18} />
-                    </div>
-                    <input
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Create Password"
-                        {...register('password', { 
-                            required: 'Password is required', 
-                            minLength: { value: 6, message: 'Password must be at least 6 characters long' } 
-                        })}
-                        className="w-full pl-11 pr-11 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
-                    />
-                    <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-[#FF5A1F]"
-                    >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                </div>
-                {errors.password && <p className="text-xs text-red-500 mt-1 pl-1">{errors.password.message}</p>}
-            </div>
-
-            <div className="group">
-                <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F]">
-                        <Lock size={18} />
-                    </div>
-                    <input
-                        type={showConfirm ? 'text' : 'password'}
-                        placeholder="Confirm Password"
-                        {...register('confirmPassword', { 
-                            required: 'Please confirm password',
-                            validate: val => val === watch('password') || 'Passwords do not match'
-                        })}
-                        className="w-full pl-11 pr-11 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
-                    />
-                    <button
-                        type="button"
-                        onClick={() => setShowConfirm(!showConfirm)}
-                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-[#FF5A1F]"
-                    >
-                        {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                </div>
-                {errors.confirmPassword && <p className="text-xs text-red-500 mt-1 pl-1">{errors.confirmPassword.message}</p>}
-            </div>
-
-            <button
-                type="button"
-                onClick={handleNextStep}
-                className="w-full mt-6 bg-gradient-to-r from-[#FF5A1F] to-[#E04812] hover:from-[#E04812] hover:to-[#C83B09] active:scale-[0.98] text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 cursor-pointer"
+            {/* DEDICATED 7-DAY FREE TRIAL CARD */}
+            <div 
+                onClick={() => setValue('plan', 'Free Trial')}
+                className={`relative p-5 rounded-2xl border-2 cursor-pointer transition-all ${
+                    isTrialSelected 
+                        ? 'border-[#FF5A1F] bg-gradient-to-br from-orange-50/80 via-white to-amber-50/40 shadow-lg shadow-orange-500/10 ring-2 ring-orange-500/20' 
+                        : 'border-slate-200 bg-white hover:border-orange-200'
+                }`}
             >
-                Next Step <ArrowRight size={18} />
-            </button>
-        </div>
-    );
-
-    const renderRegisterStep2 = () => (
-        <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
-            <button onClick={() => setStep(1)} className="text-sm font-medium text-slate-500 hover:text-slate-900 mb-2 inline-flex items-center gap-1 cursor-pointer">
-                &larr; Back
-            </button>
-            <h2 className="text-xl font-bold text-slate-900 mb-4">Choose your plan</h2>
-            
-            <div className="relative group mb-6">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F]">
-                    <UtensilsCrossed size={18} />
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-[#FF5A1F] bg-orange-100/90 px-2.5 py-0.5 rounded-full border border-orange-200 shadow-2xs">
+                            <Sparkles size={12} className="text-[#FF5A1F]" /> Recommended
+                        </span>
+                        <span className="text-[11px] font-bold text-amber-800 bg-amber-100/70 px-2 py-0.5 rounded-full border border-amber-200">
+                            Super Admin Approval Required
+                        </span>
+                    </div>
+                    {isTrialSelected && (
+                        <div className="w-6 h-6 rounded-full bg-[#FF5A1F] text-white flex items-center justify-center shrink-0 shadow-xs">
+                            <Check size={14} strokeWidth={3} />
+                        </div>
+                    )}
                 </div>
-                <input
-                    type="text"
-                    placeholder="Restaurant Name"
-                    {...register('restaurantName', { required: 'Restaurant Name is required' })}
-                    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
-                />
+
+                <div className="flex justify-between items-baseline mb-2">
+                    <div>
+                        <h3 className="text-lg font-black text-slate-900">7-Day Free Trial Plan</h3>
+                        <p className="text-xs text-slate-500 font-medium">Complete access to all restaurant operational features</p>
+                    </div>
+                    <div className="text-right">
+                        <div className="text-2xl font-black text-emerald-600">Free</div>
+                        <div className="text-[11px] font-bold text-slate-400">7 Days Duration</div>
+                    </div>
+                </div>
+
+                {/* Important Approval notice */}
+                <div className="p-2.5 rounded-xl bg-amber-50/80 border border-amber-200 text-[11px] text-amber-900 font-medium flex items-start gap-2 mb-3">
+                    <Clock size={15} className="text-[#FF5A1F] shrink-0 mt-0.5" />
+                    <span>
+                        <strong>Approval Countdown Rule:</strong> The 7-day trial countdown begins <u>strictly after</u> Super Admin approves your account, not when you submit.
+                    </span>
+                </div>
+
+                {/* Features Included */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-2 border-t border-orange-100 text-xs text-slate-700 font-medium">
+                    <div className="flex items-center gap-1.5"><Check size={13} className="text-[#FF5A1F]" /> Full POS Billing & Table QR</div>
+                    <div className="flex items-center gap-1.5"><Check size={13} className="text-[#FF5A1F]" /> Kitchen Display (KOT / KDS)</div>
+                    <div className="flex items-center gap-1.5"><Check size={13} className="text-[#FF5A1F]" /> Menu & Category Management</div>
+                    <div className="flex items-center gap-1.5"><Check size={13} className="text-[#FF5A1F]" /> Table Occupancy & Floor Plan</div>
+                    <div className="flex items-center gap-1.5"><Check size={13} className="text-[#FF5A1F]" /> Staff Permissions & Shifts</div>
+                    <div className="flex items-center gap-1.5"><Check size={13} className="text-[#FF5A1F]" /> Live Inventory & Stock Alerts</div>
+                    <div className="flex items-center gap-1.5"><Check size={13} className="text-[#FF5A1F]" /> Reports & Analytics</div>
+                    <div className="flex items-center gap-1.5"><Check size={13} className="text-[#FF5A1F]" /> Safe Expiry (Data Preserved)</div>
+                </div>
             </div>
 
-            <div className="flex bg-gray-100 p-1 rounded-xl mb-4">
-                <button type="button" onClick={() => trigger().then(() => register('billingCycle').onChange({ target: { name: 'billingCycle', value: 'monthly' } }))} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${!isYearly ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>Monthly</button>
-                <button type="button" onClick={() => trigger().then(() => register('billingCycle').onChange({ target: { name: 'billingCycle', value: 'yearly' } }))} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${isYearly ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>Yearly (Save more)</button>
+            {/* DIVIDER: OR CHOOSE A PAID PLAN */}
+            <div className="relative flex py-2 items-center">
+                <div className="flex-grow border-t border-slate-200"></div>
+                <span className="flex-shrink mx-4 text-slate-400 font-bold text-xs uppercase tracking-wider">Or Choose A Paid Plan</span>
+                <div className="flex-grow border-t border-slate-200"></div>
             </div>
 
-            {plansLoading ? (
-                <div className="flex justify-center py-6"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF5A1F]"></div></div>
-            ) : (
-                <div className="grid grid-cols-1 gap-3">
-                    {(plans.length > 0 ? plans : [
-                        { _id: 'p1', name: 'Starter', monthlyPrice: 49, yearlyPrice: 39, features: ['1 Branch', 'Basic Reporting', 'Email Support'] },
-                        { _id: 'p2', name: 'Professional', monthlyPrice: 99, yearlyPrice: 79, features: ['3 Branches', 'Advanced Analytics', 'Priority Support'] },
-                        { _id: 'p3', name: 'Enterprise', monthlyPrice: 199, yearlyPrice: 159, features: ['Unlimited Branches', 'Custom Features', '24/7 Support'] }
-                    ]).map((plan, idx) => {
-                        const mPrice = plan.monthlyPrice || plan.price || 0;
-                        const yPrice = plan.yearlyPrice || mPrice;
-                        const price = isYearly ? yPrice : mPrice;
-                        const savings = mPrice && yPrice && mPrice > yPrice
-                            ? Math.round((1 - yPrice / mPrice) * 100)
-                            : 0;
-                        return (
-                            <label key={plan._id || idx} className={`relative p-4 border-2 rounded-xl cursor-pointer transition-all ${selectedPlan?.toLowerCase() === plan.name?.toLowerCase() ? 'border-[#FF5A1F] bg-orange-50/50 shadow-xs' : 'border-slate-200 hover:border-orange-200'}`}>
-                                <input type="radio" value={plan.name} {...register('plan')} className="hidden" />
-                                <div className="flex justify-between items-center mb-1">
-                                    <span className="font-bold text-slate-900">{plan.name}</span>
-                                    <span className="font-bold text-[#FF5A1F]">
-                                        ₹{(price || 0).toLocaleString('en-IN')}/mo
-                                        {isYearly && savings > 0 && (
-                                             <span className="ml-2 text-xs bg-orange-100 text-[#FF5A1F] px-1.5 py-0.5 rounded-full font-semibold">
-                                                 Save {savings}%
-                                             </span>
-                                        )}
-                                    </span>
+            {/* Billing Cycle Toggle */}
+            <div className="flex bg-slate-100 p-1 rounded-xl">
+                <button 
+                    type="button" 
+                    onClick={() => setValue('billingCycle', 'monthly')} 
+                    className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${!isYearly ? 'bg-white shadow-xs text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                    Monthly
+                </button>
+                <button 
+                    type="button" 
+                    onClick={() => setValue('billingCycle', 'yearly')} 
+                    className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${isYearly ? 'bg-white shadow-xs text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                    Yearly <span className="text-[#FF5A1F] text-[10px] font-extrabold">(Save 20%)</span>
+                </button>
+            </div>
+
+            {/* Paid Plans Grid */}
+            <div className="grid grid-cols-1 gap-2.5">
+                {(plans.length > 0 ? plans : DEFAULT_PLANS).map((plan, idx) => {
+                    const mPrice = plan.monthlyPrice || plan.price || 0;
+                    const yPrice = plan.yearlyPrice || Math.round(mPrice * 0.8);
+                    const price = isYearly ? yPrice : mPrice;
+                    const isSelected = !isTrialSelected && selectedPlan.toLowerCase() === plan.name.toLowerCase();
+
+                    return (
+                        <div
+                            key={plan._id || idx}
+                            onClick={() => setValue('plan', plan.name)}
+                            className={`p-3.5 border-2 rounded-xl cursor-pointer transition-all flex items-center justify-between ${
+                                isSelected 
+                                    ? 'border-[#FF5A1F] bg-orange-50/50 shadow-xs' 
+                                    : 'border-slate-200 bg-white hover:border-slate-300'
+                            }`}
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${isSelected ? 'border-[#FF5A1F] bg-[#FF5A1F]' : 'border-slate-300'}`}>
+                                    {isSelected && <Check size={12} className="text-white" strokeWidth={3} />}
                                 </div>
-                                <p className="text-xs text-slate-500 font-medium">
-                                    {(plan.features || []).slice(0, 2).join(' · ')}{(plan.features || []).length > 2 ? ` · +${plan.features.length - 2} more` : ''}
-                                </p>
-                                {selectedPlan?.toLowerCase() === plan.name?.toLowerCase() && <CheckCircle2 size={18} className="absolute top-4 right-4 text-[#FF5A1F]" />}
-                            </label>
-                        );
-                    })}
-                </div>
-            )}
+                                <div>
+                                    <div className="font-bold text-slate-900 text-sm">{plan.name}</div>
+                                    <p className="text-[11px] text-slate-500 font-medium">
+                                        {(plan.features || []).slice(0, 2).join(' · ')}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <div className="font-black text-slate-900 text-sm">₹{price}/mo</div>
+                                <div className="text-[10px] text-slate-400 font-semibold">{isYearly ? 'Billed yearly' : 'Billed monthly'}</div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
 
             <button
                 type="button"
-                onClick={handleNextStep}
-                className="w-full mt-6 bg-gradient-to-r from-[#FF5A1F] to-[#E04812] hover:from-[#E04812] hover:to-[#C83B09] active:scale-[0.98] text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 cursor-pointer"
+                onClick={() => setStep(2)}
+                className="w-full mt-4 bg-gradient-to-r from-[#FF5A1F] to-[#E04812] hover:from-[#E04812] hover:to-[#C83B09] active:scale-[0.98] text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 cursor-pointer text-sm"
             >
-                Continue to KYC Upload <ArrowRight size={18} />
+                <span>Continue with {isTrialSelected ? '7-Day Free Trial' : `${selectedPlan} Plan`}</span>
+                <ArrowRight size={18} />
             </button>
         </div>
     );
 
-    const renderRegisterStepDocs = () => {
-        const handleFileChange = (setter) => (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                if (file.size > 5 * 1024 * 1024) {
-                    toast.error("Maximum file size allowed is 5 MB per document.");
-                    return;
-                }
-                const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-                if (!['.pdf', '.jpg', '.jpeg', '.png'].includes(ext)) {
-                    toast.error("Only PDF, JPG, JPEG, and PNG files are allowed.");
-                    return;
-                }
-                setter(file);
+    // =========================================================================
+    // STEP 2: RESTAURANT & OWNER CREDENTIALS
+    // =========================================================================
+    const renderRegisterStep2Account = () => {
+        const handleProceedToKYC = async () => {
+            const isValidStep = await trigger(['restaurantName', 'name', 'email', 'phoneNumber', 'password', 'confirmPassword']);
+            if (isValidStep) {
+                setStep(3);
             }
-        };
-
-        const handleDocsSubmit = () => {
-            if (!fssaiFile) {
-                toast.error("Please upload your FSSAI License document (Required).");
-                return;
-            }
-            if (!fssaiExpiryDate) {
-                toast.error("Please select the FSSAI License expiry date (Required).");
-                return;
-            }
-            const expiry = new Date(fssaiExpiryDate);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            if (isNaN(expiry.getTime()) || expiry < today) {
-                toast.error("FSSAI License expiry date must be today or a future date.");
-                return;
-            }
-            if (!bizFile) {
-                toast.error("Please upload your Business Registration Certificate (Required).");
-                return;
-            }
-            if (!panFile) {
-                toast.error("Please upload your Business/Owner PAN Card (Required).");
-                return;
-            }
-            if (!aadhaarFile) {
-                toast.error("Please upload the Owner Aadhaar Card (Required).");
-                return;
-            }
-            if (!addressText.trim()) {
-                toast.error("Please enter the restaurant's physical address (Required).");
-                return;
-            }
-            if (!addressFile) {
-                toast.error("Please upload the Business Address Proof document (Required).");
-                return;
-            }
-            if (!bankFile) {
-                toast.error("Please upload your Bank Account Proof (Required).");
-                return;
-            }
-            
-            // Proceed to scanning options
-            setStep(4);
         };
 
         return (
-            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500 max-h-[55vh] overflow-y-auto pr-1 custom-scrollbar text-left">
-                <button onClick={() => setStep(2)} className="text-sm font-medium text-gray-500 hover:text-gray-900 inline-flex items-center gap-1">
-                    &larr; Back
-                </button>
-                <div className="flex items-center gap-2 mb-1">
-                    <div className="bg-green-100 text-green-700 p-1.5 rounded-lg">
-                        <ShieldCheck size={20} />
-                    </div>
-                    <h2 className="text-lg font-bold text-gray-900">Upload KYC Documents</h2>
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500 text-left">
+                {/* Step Indicator */}
+                <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-1">
+                    <span className="text-[#FF5A1F]">Step 2 of 3: Restaurant &amp; Account</span>
+                    <span>Next: KYC Verification</span>
                 </div>
-                <p className="text-[11px] text-gray-500 leading-relaxed mb-2">All mandatory documents must be uploaded. Format: PDF, JPG, JPEG, PNG under 5 MB.</p>
+                <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mb-3">
+                    <div className="bg-[#FF5A1F] h-full w-2/3 rounded-full transition-all duration-300" />
+                </div>
 
-                {/* 1. FSSAI License */}
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 space-y-2">
-                    <label className="text-xs font-bold text-gray-700 block">1. FSSAI License (Required)</label>
-                    <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                    <button 
+                        type="button"
+                        onClick={() => setStep(1)} 
+                        className="text-xs font-bold text-slate-500 hover:text-slate-900 inline-flex items-center gap-1 cursor-pointer"
+                    >
+                        &larr; Change Plan
+                    </button>
+                    <span className="text-xs font-bold text-[#FF5A1F] bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-200">
+                        {isTrialSelected ? '7-Day Free Trial (₹0)' : `${selectedPlan} Plan`}
+                    </span>
+                </div>
+
+                <h2 className="text-xl font-bold text-slate-900 mb-2">Create Restaurant Account</h2>
+                
+                {/* Restaurant Name */}
+                <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F]">
+                        <UtensilsCrossed size={18} />
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Restaurant / Business Name"
+                        {...register('restaurantName', { required: 'Restaurant Name is required' })}
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
+                    />
+                    {errors.restaurantName && <p className="text-xs text-red-500 mt-1 pl-1">{errors.restaurantName.message}</p>}
+                </div>
+
+                {/* Owner Name */}
+                <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F]">
+                        <UserIcon size={18} />
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Owner Full Name"
+                        {...register('name', { required: 'Owner Name is required' })}
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
+                    />
+                    {errors.name && <p className="text-xs text-red-500 mt-1 pl-1">{errors.name.message}</p>}
+                </div>
+
+                {/* Owner Email */}
+                <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F]">
+                        <Mail size={18} />
+                    </div>
+                    <input
+                        type="email"
+                        placeholder="Owner Email Address"
+                        {...register('email', { 
+                            required: 'Email is required',
+                            pattern: { value: /^\S+@\S+$/i, message: 'Invalid email address' }
+                        })}
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
+                    />
+                    {errors.email && <p className="text-xs text-red-500 mt-1 pl-1">{errors.email.message}</p>}
+                </div>
+
+                {/* Owner Phone */}
+                <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F]">
+                        <Phone size={18} />
+                    </div>
+                    <input
+                        type="tel"
+                        placeholder="Phone Number (10 digits)"
+                        {...register('phoneNumber', { 
+                            required: 'Phone number is required',
+                            pattern: { value: /^[0-9]{10}$/, message: 'Phone number must be exactly 10 digits' }
+                        })}
+                        onInput={(e) => { e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10); }}
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
+                    />
+                    {errors.phoneNumber && <p className="text-xs text-red-500 mt-1 pl-1">{errors.phoneNumber.message}</p>}
+                </div>
+
+                {/* Password */}
+                <div className="group">
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F]">
+                            <Lock size={18} />
+                        </div>
                         <input
-                            type="file"
-                            accept=".pdf,.jpg,.jpeg,.png"
-                            onChange={handleFileChange(setFssaiFile)}
-                            className="text-xs w-full file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                            type={showPassword ? 'text' : 'password'}
+                            placeholder="Create Password"
+                            {...register('password', { 
+                                required: 'Password is required', 
+                                minLength: { value: 6, message: 'Password must be at least 6 characters long' } 
+                            })}
+                            className="w-full pl-11 pr-11 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
                         />
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-gray-400 font-bold shrink-0">EXPIRY DATE:</span>
-                            <input
-                                type="date"
-                                value={fssaiExpiryDate}
-                                onChange={(e) => setFssaiExpiryDate(e.target.value)}
-                                className="text-xs px-2 py-1 border border-gray-200 rounded-lg outline-none bg-white flex-1"
-                            />
-                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-[#FF5A1F] cursor-pointer"
+                        >
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
                     </div>
-                    {fssaiFile && <p className="text-[10px] text-green-600 font-semibold truncate">✓ {fssaiFile.name}</p>}
+                    {errors.password && <p className="text-xs text-red-500 mt-1 pl-1">{errors.password.message}</p>}
                 </div>
 
-                {/* 2. Business Registration */}
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 space-y-1">
-                    <label className="text-xs font-bold text-gray-700 block">2. Business Registration Certificate (Required)</label>
-                    <input
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={handleFileChange(setBizFile)}
-                        className="text-xs w-full file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
-                    />
-                    {bizFile && <p className="text-[10px] text-green-600 font-semibold truncate">✓ {bizFile.name}</p>}
-                </div>
-
-                {/* 3. PAN Card */}
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 space-y-1">
-                    <label className="text-xs font-bold text-gray-700 block">3. Business/Owner PAN Card (Required)</label>
-                    <input
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={handleFileChange(setPanFile)}
-                        className="text-xs w-full file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
-                    />
-                    {panFile && <p className="text-[10px] text-green-600 font-semibold truncate">✓ {panFile.name}</p>}
-                </div>
-
-                {/* 4. Aadhaar Card */}
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 space-y-1">
-                    <label className="text-xs font-bold text-gray-700 block">4. Owner Aadhaar Card (Required)</label>
-                    <input
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={handleFileChange(setAadhaarFile)}
-                        className="text-xs w-full file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
-                    />
-                    {aadhaarFile && <p className="text-[10px] text-green-600 font-semibold truncate">✓ {aadhaarFile.name}</p>}
-                </div>
-
-                {/* 5. Business Address */}
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 space-y-2">
-                    <label className="text-xs font-bold text-gray-700 block">5. Business Address & Proof (Required)</label>
-                    <textarea
-                        placeholder="Enter full street address of the restaurant..."
-                        value={addressText}
-                        onChange={(e) => setAddressText(e.target.value)}
-                        className="w-full text-xs p-2 border border-gray-200 rounded-lg outline-none bg-white min-h-[50px] resize-none"
-                    />
-                    <input
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={handleFileChange(setAddressFile)}
-                        className="text-xs w-full file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
-                    />
-                    {addressFile && <p className="text-[10px] text-green-600 font-semibold truncate">✓ {addressFile.name}</p>}
-                </div>
-
-                {/* 6. Bank Proof */}
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 space-y-1">
-                    <label className="text-xs font-bold text-gray-700 block">6. Bank Account Proof (Required)</label>
-                    <input
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={handleFileChange(setBankFile)}
-                        className="text-xs w-full file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
-                    />
-                    {bankFile && <p className="text-[10px] text-green-600 font-semibold truncate">✓ {bankFile.name}</p>}
-                </div>
-
-                {/* Optional items */}
-                <div className="bg-gray-50/50 p-3 rounded-xl border border-dashed border-gray-200 space-y-2">
-                    <label className="text-xs font-bold text-gray-400 block">Optional Brand Assets</label>
-                    <div className="space-y-2 text-xs">
-                        <div>
-                            <span className="text-[10px] text-gray-400 block mb-1">RESTAURANT LOGO (JPG/PNG)</span>
-                            <input
-                                type="file"
-                                accept=".jpg,.jpeg,.png"
-                                onChange={handleFileChange(setLogoFile)}
-                                className="text-xs w-full file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-gray-100 file:text-gray-600"
-                            />
-                            {logoFile && <p className="text-[10px] text-green-600 truncate mt-0.5">✓ {logoFile.name}</p>}
+                {/* Confirm Password */}
+                <div className="group">
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F]">
+                            <Lock size={18} />
                         </div>
-                        <div>
-                            <span className="text-[10px] text-gray-400 block mb-1">MENU PDF</span>
-                            <input
-                                type="file"
-                                accept=".pdf"
-                                onChange={handleFileChange(setMenuFile)}
-                                className="text-xs w-full file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-gray-100 file:text-gray-600"
-                            />
-                            {menuFile && <p className="text-[10px] text-green-600 truncate mt-0.5">✓ {menuFile.name}</p>}
-                        </div>
+                        <input
+                            type={showConfirm ? 'text' : 'password'}
+                            placeholder="Confirm Password"
+                            {...register('confirmPassword', { 
+                                required: 'Please confirm password',
+                                validate: val => val === watch('password') || 'Passwords do not match'
+                            })}
+                            className="w-full pl-11 pr-11 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowConfirm(!showConfirm)}
+                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-[#FF5A1F] cursor-pointer"
+                        >
+                            {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
                     </div>
+                    {errors.confirmPassword && <p className="text-xs text-red-500 mt-1 pl-1">{errors.confirmPassword.message}</p>}
                 </div>
 
                 <button
                     type="button"
-                    onClick={handleDocsSubmit}
-                    className="w-full mt-4 py-3.5 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-500/20"
+                    onClick={handleProceedToKYC}
+                    className="w-full mt-6 bg-gradient-to-r from-[#FF5A1F] to-[#E04812] hover:from-[#E04812] hover:to-[#C83B09] active:scale-[0.98] text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 cursor-pointer text-sm"
                 >
-                    Continue to Payment <ArrowRight size={18} />
+                    Continue to KYC Upload <ArrowRight size={18} />
                 </button>
             </div>
         );
     };
 
-    const renderRegisterStep3 = () => (
-        <div className="text-center animate-in fade-in zoom-in-95 duration-500 py-4">
-            <button onClick={() => setStep(3)} disabled={paymentStatus === 'processing'} className="text-sm font-medium text-gray-500 hover:text-gray-900 mb-4 inline-flex items-center gap-1 self-start mr-auto block">
-                &larr; Back
+    // =========================================================================
+    // STEP 3: KYC DOCUMENT UPLOAD
+    // =========================================================================
+    const renderRegisterStep3KYC = () => (
+        <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar text-left">
+            {/* Step Indicator */}
+            <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-1">
+                <span className="text-[#FF5A1F]">Step 3 of 3: KYC Verification</span>
+                <span>Final Step</span>
+            </div>
+            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mb-3">
+                <div className="bg-[#FF5A1F] h-full w-full rounded-full transition-all duration-300" />
+            </div>
+
+            <button onClick={() => setStep(2)} className="text-xs font-bold text-slate-500 hover:text-slate-900 inline-flex items-center gap-1 cursor-pointer">
+                &larr; Back to Account Details
             </button>
-            <h2 className="text-2xl font-black text-gray-900 mb-1">Activate {watch('plan')} Subscription</h2>
-            <p className="text-sm text-gray-500 mb-4 font-medium">Scan QR code or click confirm button below to activate <span className="font-bold text-gray-800">₹{getPlanAmount()}</span>.</p>
+            
+            <div className="flex items-center gap-2 mb-1">
+                <div className="bg-emerald-100 text-emerald-700 p-1.5 rounded-lg">
+                    <ShieldCheck size={20} />
+                </div>
+                <div>
+                    <h2 className="text-lg font-bold text-slate-900">Upload KYC Documents</h2>
+                    <p className="text-[11px] text-slate-500">Government compliance verification documents</p>
+                </div>
+            </div>
+
+            {/* Free Trial Banner in KYC */}
+            {isTrialSelected && (
+                <div className="p-3 bg-orange-50/80 border border-orange-200 rounded-xl space-y-1">
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs font-black text-[#FF5A1F] uppercase tracking-wider flex items-center gap-1">
+                            <Sparkles size={13} /> 7-Day Free Trial
+                        </span>
+                        <span className="text-xs font-black text-emerald-700">₹0 Due Today</span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 font-medium">
+                        No credit card or payment required. Submitting this request initiates Super Admin review. Your 7-day countdown begins strictly after approval.
+                    </p>
+                </div>
+            )}
+
+            {/* 1. FSSAI License */}
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 space-y-2">
+                <label className="text-xs font-bold text-slate-700 block">1. FSSAI License (Required)</label>
+                <div className="flex flex-col gap-2">
+                    <input
+                        type="file"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={handleFileChange(setFssaiFile)}
+                        className="text-xs w-full file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+                    />
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-slate-400 font-bold shrink-0">EXPIRY DATE:</span>
+                        <input
+                            type="date"
+                            value={fssaiExpiryDate}
+                            onChange={(e) => setFssaiExpiryDate(e.target.value)}
+                            className="text-xs px-2 py-1 border border-slate-200 rounded-lg outline-none bg-white flex-1"
+                        />
+                    </div>
+                </div>
+                {fssaiFile && <p className="text-[10px] text-emerald-600 font-semibold truncate">✓ {fssaiFile.name}</p>}
+            </div>
+
+            {/* 2. Business Registration */}
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 space-y-1">
+                <label className="text-xs font-bold text-slate-700 block">2. Business Registration Certificate (Required)</label>
+                <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleFileChange(setBizFile)}
+                    className="text-xs w-full file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+                />
+                {bizFile && <p className="text-[10px] text-emerald-600 font-semibold truncate">✓ {bizFile.name}</p>}
+            </div>
+
+            {/* 3. PAN Card */}
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 space-y-1">
+                <label className="text-xs font-bold text-slate-700 block">3. Business/Owner PAN Card (Required)</label>
+                <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleFileChange(setPanFile)}
+                    className="text-xs w-full file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+                />
+                {panFile && <p className="text-[10px] text-emerald-600 font-semibold truncate">✓ {panFile.name}</p>}
+            </div>
+
+            {/* 4. Aadhaar Card */}
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 space-y-1">
+                <label className="text-xs font-bold text-slate-700 block">4. Owner Aadhaar Card (Required)</label>
+                <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleFileChange(setAadhaarFile)}
+                    className="text-xs w-full file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+                />
+                {aadhaarFile && <p className="text-[10px] text-emerald-600 font-semibold truncate">✓ {aadhaarFile.name}</p>}
+            </div>
+
+            {/* 5. Business Address */}
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 space-y-2">
+                <label className="text-xs font-bold text-slate-700 block">5. Business Address &amp; Proof (Required)</label>
+                <textarea
+                    placeholder="Enter full street address of the restaurant..."
+                    value={addressText}
+                    onChange={(e) => setAddressText(e.target.value)}
+                    className="w-full text-xs p-2 border border-slate-200 rounded-lg outline-none bg-white min-h-[50px] resize-none"
+                />
+                <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleFileChange(setAddressFile)}
+                    className="text-xs w-full file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+                />
+                {addressFile && <p className="text-[10px] text-emerald-600 font-semibold truncate">✓ {addressFile.name}</p>}
+            </div>
+
+            {/* 6. Bank Proof */}
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 space-y-1">
+                <label className="text-xs font-bold text-slate-700 block">6. Bank Account Proof (Required)</label>
+                <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleFileChange(setBankFile)}
+                    className="text-xs w-full file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+                />
+                {bankFile && <p className="text-[10px] text-emerald-600 font-semibold truncate">✓ {bankFile.name}</p>}
+            </div>
+
+            {/* Optional items */}
+            <div className="bg-slate-50/50 p-3 rounded-xl border border-dashed border-slate-200 space-y-2">
+                <label className="text-xs font-bold text-slate-400 block">Optional Brand Assets</label>
+                <div className="space-y-2 text-xs">
+                    <div>
+                        <span className="text-[10px] text-slate-400 block mb-1">RESTAURANT LOGO (JPG/PNG)</span>
+                        <input
+                            type="file"
+                            accept=".jpg,.jpeg,.png"
+                            onChange={handleFileChange(setLogoFile)}
+                            className="text-xs w-full file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-slate-100 file:text-slate-600"
+                        />
+                        {logoFile && <p className="text-[10px] text-emerald-600 truncate mt-0.5">✓ {logoFile.name}</p>}
+                    </div>
+                    <div>
+                        <span className="text-[10px] text-slate-400 block mb-1">MENU PDF</span>
+                        <input
+                            type="file"
+                            accept=".pdf"
+                            onChange={handleFileChange(setMenuFile)}
+                            className="text-xs w-full file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-slate-100 file:text-slate-600"
+                        />
+                        {menuFile && <p className="text-[10px] text-emerald-600 truncate mt-0.5">✓ {menuFile.name}</p>}
+                    </div>
+                </div>
+            </div>
+
+            {/* ACTION BUTTON */}
+            {isTrialSelected ? (
+                <button
+                    type="button"
+                    onClick={handleDocsSubmit}
+                    className="w-full mt-4 py-3.5 bg-gradient-to-r from-[#FF5A1F] to-[#E04812] hover:from-[#E04812] hover:to-[#C83B09] text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25 cursor-pointer text-sm"
+                >
+                    <span>Submit 7-Day Free Trial Request (No Card Required)</span>
+                    <ArrowRight size={18} />
+                </button>
+            ) : (
+                <button
+                    type="button"
+                    onClick={handleDocsSubmit}
+                    className="w-full mt-4 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 cursor-pointer text-sm"
+                >
+                    <span>Continue to Payment (₹{getPlanAmount()})</span>
+                    <ArrowRight size={18} />
+                </button>
+            )}
+        </div>
+    );
+
+    // =========================================================================
+    // STEP 4: PAYMENT (ONLY FOR PAID PLANS)
+    // =========================================================================
+    const renderRegisterStep4Payment = () => (
+        <div className="text-center animate-in fade-in zoom-in-95 duration-500 py-2">
+            <button onClick={() => setStep(3)} disabled={paymentStatus === 'processing'} className="text-xs font-bold text-slate-500 hover:text-slate-900 mb-3 inline-flex items-center gap-1 self-start mr-auto block cursor-pointer">
+                &larr; Back to KYC
+            </button>
+            <h2 className="text-2xl font-black text-slate-900 mb-1">Activate {watch('plan')} Plan</h2>
+            <p className="text-xs text-slate-500 mb-4 font-medium">Scan QR code or click simulate payment below for <span className="font-bold text-slate-800">₹{getPlanAmount()}</span>.</p>
 
             <div 
                 onClick={startRazorpayPayment}
-                className="bg-white border-2 border-green-200 rounded-3xl p-5 mb-6 text-center space-y-3 shadow-md flex flex-col items-center cursor-pointer group hover:scale-[1.02] transition-transform"
+                className="bg-white border-2 border-emerald-200 rounded-3xl p-5 mb-4 text-center space-y-3 shadow-md flex flex-col items-center cursor-pointer group hover:scale-[1.02] transition-transform"
                 title="Click QR Code to Simulate Payment"
             >
-                <div className="w-48 h-48 bg-white p-3 rounded-2xl border border-gray-200 shadow-inner flex items-center justify-center relative">
+                <div className="w-48 h-48 bg-white p-3 rounded-2xl border border-slate-200 shadow-inner flex items-center justify-center relative">
                     <img 
                         src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi%3A%2F%2Fpay%3Fpa%3Dresto%40upi%26pn%3DRestaurantRegistration%26am%3D${getPlanAmount()}%26cu%3DINR&bgcolor=ffffff&color=15803d`}
                         alt="Registration Payment QR Code" 
                         className="w-40 h-40 object-contain"
                     />
-                    <div className="absolute inset-0 bg-green-600/20 group-hover:opacity-100 opacity-0 transition-opacity rounded-2xl flex items-center justify-center font-black text-green-950 text-xs bg-white/90 p-2 text-center">
+                    <div className="absolute inset-0 bg-emerald-600/20 group-hover:opacity-100 opacity-0 transition-opacity rounded-2xl flex items-center justify-center font-black text-emerald-950 text-xs bg-white/90 p-2 text-center">
                         Click QR to Simulate Payment →
                     </div>
                 </div>
 
                 <div className="flex items-center justify-center gap-2">
-                    <ShieldCheck size={16} className="text-green-600" />
-                    <span className="text-xs font-bold text-gray-600">Scan via GPay, PhonePe, Paytm, or click below</span>
+                    <ShieldCheck size={16} className="text-emerald-600" />
+                    <span className="text-xs font-bold text-slate-600">Scan via GPay, PhonePe, Paytm, or click QR</span>
                 </div>
-            </div>
-
-            {/* 7-Day Free Trial Callout */}
-            <div className="mb-4 p-4 bg-orange-50/70 border-2 border-dashed border-orange-300 rounded-2xl text-left space-y-2">
-                <div className="flex items-center justify-between">
-                    <span className="text-xs font-black uppercase tracking-wider text-[#FF5A1F] bg-white px-2.5 py-0.5 rounded-full border border-orange-200">
-                        🎁 Limited Offer
-                    </span>
-                    <span className="text-xs font-black text-green-700">₹0 Due Today</span>
-                </div>
-                <h4 className="font-black text-slate-900 text-sm">Start Your 7-Day Free Trial</h4>
-                <p className="text-xs text-slate-600 font-medium">
-                    Enjoy complete unrestricted access to all dashboards (POS, KDS, Tables, Staff, Reports) for 7 days. After 7 days, your dashboards freeze until you pay to continue.
-                </p>
-                <button
-                    type="button"
-                    onClick={startFreeTrial}
-                    disabled={paymentStatus === 'processing'}
-                    className="w-full mt-2 py-3 bg-[#FF5A1F] hover:bg-[#E04812] text-white font-black text-sm rounded-xl shadow-md shadow-orange-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                    <span>Start 7-Day Free Trial (No Card Required)</span>
-                    <ArrowRight size={16} />
-                </button>
-            </div>
-
-            <div className="relative flex py-2 items-center">
-                <div className="flex-grow border-t border-gray-200"></div>
-                <span className="flex-shrink mx-4 text-gray-400 font-bold text-xs uppercase tracking-wider">Or Pay Now</span>
-                <div className="flex-grow border-t border-gray-200"></div>
             </div>
 
             <button 
                 type="button"
                 onClick={startRazorpayPayment}
                 disabled={paymentStatus === 'processing'}
-                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-md shadow-green-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-60"
+                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-3.5 rounded-xl shadow-md shadow-emerald-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-60"
             >
                 {paymentStatus === 'processing' ? (
                     <>
@@ -782,63 +908,139 @@ const StaffAuthPage = () => {
                     </>
                 ) : (
                     <>
-                        <CheckCircle2 size={18} /> Pay ₹{getPlanAmount()} & Activate Subscription <ArrowRight size={16} />
+                        <CheckCircle2 size={18} /> Pay ₹{getPlanAmount()} &amp; Activate Subscription <ArrowRight size={16} />
                     </>
                 )}
             </button>
-
-            {paymentStatus === 'success' && (
-                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl flex flex-col items-center gap-2 animate-in fade-in slide-in-from-bottom-4">
-                    <CheckCircle2 size={32} className="text-green-500" />
-                    <p className="text-sm font-bold text-green-800">Subscription Paid Successfully!</p>
-                    <p className="text-xs text-green-600">Registering account and KYC documents...</p>
-                </div>
-            )}
-
-            {paymentStatus === 'failed' && (
-                <div className="mt-6 flex flex-col items-center gap-3 animate-in fade-in">
-                    <p className="text-sm font-bold text-red-500">Payment Unsuccessful or Cancelled.</p>
-                    <button onClick={startRazorpayPayment} className="bg-gray-900 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-black transition-colors shadow-lg">
-                        Retry Razorpay Payment
-                    </button>
-                </div>
-            )}
         </div>
     );
 
-    const renderRegisterStep4 = () => (
-        <div className="text-center py-12 animate-in fade-in zoom-in duration-500">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Loader2 className="animate-spin text-green-500" size={40} />
+    // =========================================================================
+    // STEP 5: REGISTRATION IN PROGRESS
+    // =========================================================================
+    const renderRegisterStep5Processing = () => (
+        <div className="text-center py-10 animate-in fade-in zoom-in duration-500">
+            <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Loader2 className="animate-spin text-[#FF5A1F]" size={40} />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Creating your account...</h2>
-            <p className="text-sm font-semibold text-green-700 bg-green-50 py-1.5 px-4 rounded-full inline-block mb-3 border border-green-200 animate-pulse">
+            <h2 className="text-2xl font-black text-slate-900 mb-2">Creating Your Account...</h2>
+            <p className="text-xs font-bold text-[#FF5A1F] bg-orange-50 py-1.5 px-4 rounded-full inline-block mb-3 border border-orange-200 animate-pulse">
                 {regStatusMessage}
             </p>
-            <p className="text-xs text-gray-500 font-medium max-w-xs mx-auto mb-6">
-                Registering and uploading KYC for <span className="font-bold text-gray-800">{getValues('restaurantName')}</span>. This may take a few seconds while server initializes.
+            <p className="text-xs text-slate-500 font-medium max-w-xs mx-auto mb-6">
+                Registering and uploading KYC for <span className="font-bold text-slate-800">{getValues('restaurantName')}</span>. This may take a few seconds.
             </p>
-            <button
-                type="button"
-                onClick={() => switchMode('login')}
-                className="text-xs font-bold text-gray-500 hover:text-green-600 underline cursor-pointer"
-            >
-                Taking too long? Click here to Sign In
-            </button>
         </div>
     );
 
-    const renderRegisterStep5 = () => (
+    // =========================================================================
+    // STEP 6: SUBMISSION RESULT / PENDING APPROVAL SCREEN
+    // =========================================================================
+    const renderRegisterStep6Success = () => {
+        const restaurantName = getValues('restaurantName');
+        const ownerEmail = getValues('email');
+
+        if (isTrialSelected) {
+            return (
+                <div className="text-center py-6 animate-in fade-in zoom-in duration-500 space-y-4">
+                    {/* Glowing Amber Hourglass Icon */}
+                    <div className="w-20 h-20 bg-gradient-to-br from-amber-100 to-orange-100 text-[#FF5A1F] rounded-full flex items-center justify-center mx-auto shadow-inner ring-4 ring-orange-200/50">
+                        <Clock size={40} strokeWidth={2.5} />
+                    </div>
+
+                    <div>
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 font-black text-xs uppercase tracking-wider mb-2 border border-amber-200">
+                            ⏳ Pending Super Admin Approval
+                        </span>
+                        <h2 className="text-2xl font-black text-slate-900">7-Day Free Trial Request Submitted!</h2>
+                        <p className="text-xs text-slate-500 font-medium mt-1">
+                            Your trial request for <strong className="text-slate-800">{restaurantName}</strong> has been received.
+                        </p>
+                    </div>
+
+                    {/* Information Summary Box */}
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-left space-y-2.5 text-xs text-slate-700">
+                        <div className="flex justify-between items-center py-1 border-b border-slate-200/70">
+                            <span className="text-slate-500 font-semibold">Selected Plan:</span>
+                            <span className="font-black text-slate-900">7-Day Free Trial Plan</span>
+                        </div>
+                        <div className="flex justify-between items-center py-1 border-b border-slate-200/70">
+                            <span className="text-slate-500 font-semibold">Amount Due:</span>
+                            <span className="font-black text-emerald-600">₹0 (Free / No Card Required)</span>
+                        </div>
+                        <div className="flex justify-between items-center py-1 border-b border-slate-200/70">
+                            <span className="text-slate-500 font-semibold">Trial Duration:</span>
+                            <span className="font-black text-slate-900">7 Full Days (168 Hours)</span>
+                        </div>
+                        <div className="flex justify-between items-center py-1 border-b border-slate-200/70">
+                            <span className="text-slate-500 font-semibold">Countdown Start:</span>
+                            <span className="font-bold text-[#FF5A1F]">Strictly after Super Admin Approval</span>
+                        </div>
+                        <div className="flex justify-between items-center py-1">
+                            <span className="text-slate-500 font-semibold">Email Notification:</span>
+                            <span className="font-bold text-slate-800 truncate max-w-[180px]">{ownerEmail}</span>
+                        </div>
+                    </div>
+
+                    {/* Explanatory callout */}
+                    <div className="p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl text-left text-[11px] text-amber-900 font-medium leading-relaxed">
+                        🛡️ <strong>Zero Trial Days Consumed While Waiting:</strong> Your 7-day countdown has <u>not</u> started yet. Once the Super Admin approves your account, you will receive an activation email and get 7 full days of unrestricted access.
+                    </div>
+
+                    <div className="pt-2 flex flex-col gap-2">
+                        <button
+                            type="button"
+                            onClick={() => navigate('/admin')}
+                            className="w-full py-3.5 bg-gradient-to-r from-[#FF5A1F] to-[#E04812] hover:from-[#E04812] hover:to-[#C83B09] text-white font-bold rounded-xl transition-all shadow-md shadow-orange-500/25 flex items-center justify-center gap-2 cursor-pointer text-sm"
+                        >
+                            <span>Open Restaurant Dashboard</span>
+                            <ArrowRight size={18} />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => navigate('/')}
+                            className="w-full py-2.5 text-xs font-bold text-slate-500 hover:text-slate-900 cursor-pointer"
+                        >
+                            Return to Home Page
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // Paid success
+        return (
+            <div className="text-center py-8 animate-in fade-in zoom-in duration-500 space-y-4">
+                <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                    <CheckCircle2 size={44} />
+                </div>
+                <h2 className="text-2xl font-black text-slate-900">Subscription Active!</h2>
+                <p className="text-xs text-slate-500">Welcome to FoodNest! Your account and KYC have been submitted.</p>
+                <button
+                    type="button"
+                    onClick={() => navigate('/admin')}
+                    className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition-all text-sm cursor-pointer"
+                >
+                    Go to Dashboard →
+                </button>
+            </div>
+        );
+    };
+
+    // =========================================================================
+    // STEP 7: ERROR SCREEN
+    // =========================================================================
+    const renderRegisterStep7Error = () => (
         <div className="text-center py-8 animate-in fade-in zoom-in duration-500">
             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <AlertCircle className="text-red-500" size={40} />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Registration Failed</h2>
-            <p className="text-red-500 font-medium mb-6 px-4">{authError}</p>
-            <p className="text-gray-500 text-sm mb-8">If you're testing, make sure to use a different email address each time, as accounts cannot share emails.</p>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Registration Failed</h2>
+            <p className="text-red-500 font-medium mb-6 px-4 text-xs">{authError}</p>
+            <p className="text-slate-500 text-xs mb-8">Please check your details and try again. Each restaurant account must use a unique email address.</p>
             <button 
                 onClick={() => setStep(1)}
-                className="bg-gray-900 text-white font-bold py-3 px-8 rounded-xl hover:bg-black transition-colors"
+                className="bg-slate-900 text-white font-bold py-3 px-8 rounded-xl hover:bg-black transition-colors text-sm cursor-pointer"
             >
                 Start Over
             </button>
@@ -858,70 +1060,71 @@ const StaffAuthPage = () => {
                 />
             </div>
 
-            {/* Glass Card */}
-            <div className="relative z-10 w-full max-w-md bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-orange-100/80">
+            {/* Glass Card - Dynamically wider for plan selection & KYC */}
+            <div className={`relative z-10 w-full ${mode === 'register' && (step === 1 || step === 3 || step === 6) ? 'max-w-xl' : 'max-w-md'} bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-orange-100/80 transition-all duration-300`}>
                 
                 {/* Branding Header with Warm Vibrant FoodNest Orange */}
-                <div className="bg-gradient-to-br from-[#FF5A1F] to-[#E04812] p-8 text-center relative overflow-hidden shadow-md shadow-orange-500/20">
+                <div className="bg-gradient-to-br from-[#FF5A1F] to-[#E04812] p-7 text-center relative overflow-hidden shadow-md shadow-orange-500/20">
                     <Link to="/" className="absolute top-4 right-4 text-white/80 hover:text-white bg-black/10 hover:bg-black/20 p-2 rounded-full transition-all z-20 cursor-pointer">
-                        <X size={20} />
+                        <X size={18} />
                     </Link>
 
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white font-extrabold text-[11px] uppercase tracking-wider mb-3 relative z-10 backdrop-blur-xs">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white font-extrabold text-[11px] uppercase tracking-wider mb-2 relative z-10 backdrop-blur-xs">
                         <ShieldCheck size={13} /> Restaurant Partner &amp; Staff Portal
                     </div>
 
                     <Link to="/" className="inline-flex items-center justify-center gap-2 mb-1 relative z-10 w-full group">
                         <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm group-hover:scale-105 transition-transform">
-                            <UtensilsCrossed size={28} className="text-white" />
+                            <UtensilsCrossed size={26} className="text-white" />
                         </div>
                         <span className="text-3xl font-extrabold text-white tracking-tight">FoodNest</span>
                     </Link>
                     <p className="text-orange-100 text-xs font-semibold relative z-10 opacity-95">
-                        {mode === 'login' ? 'Sign in to manage POS billing, KDS, inventory & staff' : 'Register your restaurant & choose a plan'}
+                        {mode === 'login' ? 'Sign in to manage POS billing, KDS, inventory & staff' : 'Start your 7-Day Free Trial or register your restaurant'}
                     </p>
                 </div>
 
                 {/* Main Content */}
-                <div className="p-8 bg-white auth-form-container">
+                <div className="p-6 sm:p-8 bg-white auth-form-container">
                     {/* Tabs (Only show if not mid-registration) */}
-                    {step === 1 && (
-                        <div className="flex bg-gray-100 p-1 rounded-2xl mb-8 relative">
+                    {(mode === 'login' || step === 1) && (
+                        <div className="flex bg-slate-100 p-1 rounded-2xl mb-6 relative">
                             <button
                                 type="button"
                                 onClick={() => switchMode('login')}
-                                className={`flex-1 py-2 text-sm font-bold rounded-xl transition-all ${mode === 'login' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+                                className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${mode === 'login' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 Sign In
                             </button>
                             <button
                                 type="button"
                                 onClick={() => switchMode('register')}
-                                className={`flex-1 py-2 text-sm font-bold rounded-xl transition-all ${mode === 'register' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+                                className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${mode === 'register' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
                             >
-                                Subscribe Now
+                                Get Started Free
                             </button>
                         </div>
                     )}
 
-                    {authError && (
+                    {authError && step !== 7 && (
                         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
                             <AlertCircle size={20} className="text-red-500 shrink-0 mt-0.5" />
-                            <p className="text-sm font-medium text-red-800">{authError}</p>
+                            <p className="text-xs font-medium text-red-800">{authError}</p>
                         </div>
                     )}
 
                     {mode === 'login' && renderLoginForm()}
-                    {mode === 'register' && step === 1 && renderRegisterStep1()}
-                    {mode === 'register' && step === 2 && renderRegisterStep2()}
-                    {mode === 'register' && step === 3 && renderRegisterStepDocs()}
-                    {mode === 'register' && step === 4 && renderRegisterStep3()}
-                    {mode === 'register' && step === 5 && renderRegisterStep4()}
-                    {mode === 'register' && step === 6 && renderRegisterStep5()}
+                    {mode === 'register' && step === 1 && renderRegisterStep1Plan()}
+                    {mode === 'register' && step === 2 && renderRegisterStep2Account()}
+                    {mode === 'register' && step === 3 && renderRegisterStep3KYC()}
+                    {mode === 'register' && step === 4 && renderRegisterStep4Payment()}
+                    {mode === 'register' && step === 5 && renderRegisterStep5Processing()}
+                    {mode === 'register' && step === 6 && renderRegisterStep6Success()}
+                    {mode === 'register' && step === 7 && renderRegisterStep7Error()}
 
                     {/* Portal Switcher Footer */}
                     <div className="mt-6 pt-4 border-t border-slate-100 text-center space-y-2">
-                        <p className="text-xs text-slate-400 font-medium">Looking for another portal?</p>
+                        <p className="text-[11px] text-slate-400 font-medium">Looking for another portal?</p>
                         <div className="flex flex-wrap gap-2 justify-center">
                             <Link 
                                 to="/delivery/login" 
@@ -933,89 +1136,6 @@ const StaffAuthPage = () => {
                     </div>
                 </div>
             </div>
-
-            {/* UPI Simulator Modal */}
-            {showUpiModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 animate-in fade-in">
-                    <div className="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95">
-                        <div className="bg-gray-50 p-6 text-center border-b border-gray-100">
-                            <h3 className="text-lg font-black text-gray-900 mb-1">
-                                Complete Payment
-                            </h3>
-                            <p className="text-sm text-gray-500 font-medium">Paying for {getValues('restaurantName')} Subscription</p>
-                        </div>
-                        
-                        <div className="p-8 flex flex-col items-center justify-center min-h-[200px]">
-                            {paymentStatus === 'idle' && (
-                                <>
-                                    <div className="text-3xl font-black text-gray-900 mb-6">
-                                        ₹{getPlanAmount()}/mo
-                                    </div>
-                                    <p className="text-sm font-bold text-gray-500 mb-4">Select UPI App:</p>
-                                    <div className="flex flex-col w-full gap-3">
-                                        <button onClick={() => handleUpiPayment(true)} className="flex items-center justify-center gap-3 py-3 rounded-xl border-2 border-gray-100 hover:border-blue-500 hover:bg-blue-50 transition-all bg-white shadow-sm hover:shadow text-gray-900 font-bold">
-                                            <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" alt="GPay" className="h-5 object-contain" />
-                                            Google Pay
-                                        </button>
-                                        <button onClick={() => handleUpiPayment(true)} className="flex items-center justify-center gap-3 py-3 rounded-xl border-2 border-gray-100 hover:border-purple-500 hover:bg-purple-50 transition-all bg-white shadow-sm hover:shadow text-gray-900 font-bold">
-                                            <img src="https://upload.wikimedia.org/wikipedia/commons/7/71/PhonePe_Logo.svg" alt="PhonePe" className="h-6 object-contain" />
-                                            PhonePe
-                                        </button>
-                                        <button onClick={() => handleUpiPayment(true)} className="flex items-center justify-center gap-3 py-3 rounded-xl border-2 border-gray-100 hover:border-blue-400 hover:bg-blue-50/50 transition-all bg-white shadow-sm hover:shadow text-gray-900 font-bold">
-                                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm" className="h-4 object-contain" />
-                                            Paytm
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                            
-                            {paymentStatus === 'processing' && (
-                                <div className="flex flex-col items-center gap-4">
-                                    <Loader2 className="animate-spin text-green-500" size={40} />
-                                    <p className="font-bold text-gray-600 text-sm">Processing Payment...</p>
-                                </div>
-                            )}
-
-                            {paymentStatus === 'success' && (
-                                <div className="flex flex-col items-center gap-4 text-green-500">
-                                    <CheckCircle2 size={48} className="animate-in zoom-in" />
-                                    <p className="font-bold text-green-600 text-lg">Payment Successful</p>
-                                </div>
-                            )}
-
-                            {paymentStatus === 'failed' && (
-                                <div className="flex flex-col items-center gap-4 text-red-500">
-                                    <AlertCircle size={48} className="animate-in zoom-in" />
-                                    <p className="font-bold text-red-600 text-lg">Payment Failed</p>
-                                    <button onClick={() => setShowUpiModal(false)} className="mt-2 text-sm font-bold text-gray-500 hover:text-gray-900">Close</button>
-                                </div>
-                            )}
-                        </div>
-                        
-                        {(paymentStatus === 'idle') && (
-                            <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-center">
-                                <button 
-                                    onClick={() => setShowUpiModal(false)}
-                                    className="text-sm font-bold text-gray-500 hover:text-gray-900"
-                                >
-                                    Cancel Payment
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
-            
-            <style dangerouslySetInnerHTML={{__html: `
-                @keyframes scan-line {
-                    0% { transform: translateY(0); }
-                    50% { transform: translateY(192px); }
-                    100% { transform: translateY(0); }
-                }
-                .animate-scan-line {
-                    animation: scan-line 2s linear infinite;
-                }
-            `}} />
         </div>
     );
 };

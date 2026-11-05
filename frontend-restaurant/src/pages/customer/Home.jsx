@@ -507,7 +507,7 @@ const Home = () => {
                             Login
                         </Link>
                         <Link
-                            to="/register"
+                            to="/register?plan=trial"
                             className="px-5 py-2.5 text-sm font-bold bg-[#FF5A1F] hover:bg-[#E04812] text-white rounded-xl shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/30 transition-all flex items-center gap-2 group"
                         >
                             <span>Get Started</span>
@@ -639,7 +639,7 @@ const Home = () => {
                         </Link>
                         <div className="pt-2 flex flex-col gap-2">
                             <Link
-                                to="/register"
+                                to="/register?plan=trial"
                                 className="w-full text-center py-2.5 bg-[#FF5A1F] text-white font-bold rounded-xl text-sm"
                             >
                                 Get Started Free →
@@ -706,7 +706,7 @@ const Home = () => {
                             {/* CTA BUTTONS: Orange Filled & Outlined Watch Demo */}
                             <div className="flex flex-wrap items-center gap-3 pt-1">
                                 <Link
-                                    to="/register"
+                                    to="/register?plan=trial"
                                     className="px-5 sm:px-6 py-2.5 sm:py-3 bg-[#FF5A0A] hover:bg-[#E04F08] text-white font-bold rounded-xl shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 hover:-translate-y-0.5 transition-all text-xs sm:text-sm flex items-center gap-2 group"
                                 >
                                     <span>Get Started Free</span>
@@ -1817,7 +1817,62 @@ const Home = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl w-full mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 max-w-7xl w-full mx-auto">
+                        {/* 7-DAY FREE TRIAL DEDICATED CARD */}
+                        <div className="rounded-2xl p-6 sm:p-7 text-left flex flex-col justify-between transition-all bg-gradient-to-b from-orange-50/60 via-white to-amber-50/20 border-2 border-orange-300 shadow-md hover:shadow-xl relative group">
+                            <div className="absolute -top-3.5 left-6 bg-gradient-to-r from-[#FF5A1F] to-[#E04812] text-white text-[10px] font-black uppercase px-3 py-0.5 rounded-full tracking-wider shadow-sm flex items-center gap-1">
+                                <Sparkles size={11} /> 7-Day Free Trial
+                            </div>
+                            <div className="space-y-4">
+                                <div>
+                                    <h3 className="text-xl font-black text-slate-900">7-Day Free Trial</h3>
+                                    <p className="text-xs text-[#FF5A1F] font-bold mt-0.5">
+                                        Super Admin Approval Required
+                                    </p>
+                                </div>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-3xl sm:text-4xl font-black text-emerald-600">₹0</span>
+                                    <span className="text-xs text-slate-500 font-bold">/7 days</span>
+                                </div>
+                                <div className="p-2 rounded-lg bg-orange-100/60 text-[11px] text-amber-900 font-medium">
+                                    Trial countdown starts strictly after Super Admin approval.
+                                </div>
+                                <div className="pt-2 border-t border-slate-100 space-y-2">
+                                    <div className="flex items-start gap-2 text-xs text-slate-700 font-medium">
+                                        <Check size={14} className="text-[#FF5A1F] shrink-0 mt-0.5" strokeWidth={2.5} />
+                                        <span>Full POS & QR Table Ordering</span>
+                                    </div>
+                                    <div className="flex items-start gap-2 text-xs text-slate-700 font-medium">
+                                        <Check size={14} className="text-[#FF5A1F] shrink-0 mt-0.5" strokeWidth={2.5} />
+                                        <span>Kitchen Display (KOT / KDS)</span>
+                                    </div>
+                                    <div className="flex items-start gap-2 text-xs text-slate-700 font-medium">
+                                        <Check size={14} className="text-[#FF5A1F] shrink-0 mt-0.5" strokeWidth={2.5} />
+                                        <span>Menu & Recipe Management</span>
+                                    </div>
+                                    <div className="flex items-start gap-2 text-xs text-slate-700 font-medium">
+                                        <Check size={14} className="text-[#FF5A1F] shrink-0 mt-0.5" strokeWidth={2.5} />
+                                        <span>Staff Permissions & Shifts</span>
+                                    </div>
+                                    <div className="flex items-start gap-2 text-xs text-slate-700 font-medium">
+                                        <Check size={14} className="text-[#FF5A1F] shrink-0 mt-0.5" strokeWidth={2.5} />
+                                        <span>Inventory & Stock Alerts</span>
+                                    </div>
+                                    <div className="flex items-start gap-2 text-xs text-slate-700 font-medium">
+                                        <Check size={14} className="text-[#FF5A1F] shrink-0 mt-0.5" strokeWidth={2.5} />
+                                        <span>Business Reports & Analytics</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="pt-6">
+                                <Link
+                                    to="/register?plan=trial"
+                                    className="w-full py-2.5 rounded-xl font-bold text-xs text-center block transition-all shadow-md bg-gradient-to-r from-[#FF5A1F] to-[#E04812] hover:from-[#E04812] hover:to-[#C83B09] text-white shadow-orange-500/25"
+                                >
+                                    Start 7-Day Free Trial →
+                                </Link>
+                            </div>
+                        </div>
                         {plans.map((plan, idx) => {
                             const isPro = plan.name.toLowerCase().includes('pro');
                             const price = isYearly ? (plan.yearlyPrice || Math.round(plan.monthlyPrice * 0.8)) : plan.monthlyPrice;
@@ -1916,7 +1971,7 @@ const Home = () => {
                         {/* Orange Get Started Free Button */}
                         <div className="shrink-0 w-full sm:w-auto">
                             <Link
-                                to="/register"
+                                to="/register?plan=trial"
                                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[#FF5A1F] hover:bg-[#E04812] text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 transition-all text-sm group"
                             >
                                 <span>Get Started Free</span>
@@ -2099,7 +2154,7 @@ const Home = () => {
                                 Ready to set up your restaurant in under 10 minutes?
                             </span>
                             <Link
-                                to="/register"
+                                to="/register?plan=trial"
                                 className="px-5 py-2.5 bg-[#FF5A1F] text-white font-bold rounded-xl text-xs hover:bg-[#E04812] transition-colors"
                             >
                                 Start Free Trial →
@@ -2170,7 +2225,7 @@ const Home = () => {
                                 <ArrowRight size={15} />
                             </Link>
                             <Link
-                                to="/register"
+                                to="/register?plan=trial"
                                 className="w-full sm:w-auto py-3 px-5 bg-slate-900 hover:bg-slate-800 text-white text-center font-bold text-xs sm:text-sm rounded-xl transition-all"
                             >
                                 Start Free Trial

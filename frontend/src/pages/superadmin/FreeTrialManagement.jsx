@@ -671,3 +671,4 @@ const FreeTrialManagement = () => {
 };
 
 export default FreeTrialManagement;
+
