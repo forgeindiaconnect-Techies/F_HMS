@@ -161,7 +161,7 @@ const StaffAuthPage = () => {
         setAuthError('');
         setRegStatusMessage('Uploading KYC documents & restaurant information...');
         const data = getValues();
-        const effectivePlan = isTrialSelected ? '7-Day Free Trial' : (data.plan || 'Starter');
+        const effectivePlan = isTrialSelected ? 'Starter' : (data.plan || 'Starter');
         
         const formData = new FormData();
         formData.append('name', data.name);
@@ -172,6 +172,8 @@ const StaffAuthPage = () => {
         formData.append('loginType', 'staff');
         formData.append('restaurantName', data.restaurantName);
         formData.append('plan', effectivePlan);
+        formData.append('isTrial', isTrialSelected ? 'true' : 'false');
+        formData.append('trialPlanName', '7-Day Free Trial');
         formData.append('billingCycle', data.billingCycle || 'monthly');
         if (razorpayPaymentId) {
             formData.append('razorpayPaymentId', razorpayPaymentId);
