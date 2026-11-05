@@ -302,7 +302,7 @@ const RestaurantDetails = () => {
                                         : `${origin}${imgUrl.startsWith('/') ? '' : '/'}${imgUrl}`;
                                     return (
                                         <div key={i} className="relative w-20 h-14 sm:w-24 sm:h-16 shrink-0 rounded-lg overflow-hidden border border-gray-200 dark:border-slate-800 shadow-2xs">
-                                            <img src={src} alt={`Showcase ${i+1}`} className="w-full h-full object-cover hover:scale-105 transition-transform" />
+                                            <img src={src} alt={`Showcase ${i+1}`} onError={(e) => { e.currentTarget.parentElement.style.display = 'none'; }} className="w-full h-full object-cover hover:scale-105 transition-transform" />
                                         </div>
                                     );
                                 })}

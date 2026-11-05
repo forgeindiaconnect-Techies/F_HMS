@@ -31,15 +31,6 @@ const CUISINES_LIST = [
   { id: 'desserts', name: 'Desserts', image: 'https://images.unsplash.com/photo-1587314168485-3236d6710814?q=80&w=240&auto=format&fit=crop' }
 ];
 
-const DEFAULT_RESTAURANT_COVERS = [
-  'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=640&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=640&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=640&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1552566626-52f8b828add9?q=80&w=640&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=640&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1537047902294-62a40c20a6ae?q=80&w=640&auto=format&fit=crop'
-];
-
 export default function Explore() {
   const navigate = useNavigate();
   const { cartCount, addToCart, wishlist, toggleWishlist, setIsCartOpen } = useCart();
@@ -132,7 +123,8 @@ export default function Explore() {
             }
           }
 
-          const finalImage = rawImg || DEFAULT_RESTAURANT_COVERS[idx % DEFAULT_RESTAURANT_COVERS.length];
+          // Only show image if uploaded by restaurant admin; otherwise null (empty placeholder)
+          const finalImage = rawImg || null;
 
           return {
             _id: r._id,
@@ -1071,26 +1063,38 @@ export default function Explore() {
                     onClick={() => navigate(`/restaurant/${rest._id}`)}
                     className="group bg-white rounded-xl border border-slate-200/80 overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer text-left"
                   >
-                    {/* 16:9 Cover Image or Clean Default Store Placeholder */}
+                    {/* 16:9 Cover Image or Clean Store Placeholder (Only uploaded images shown) */}
                     <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100 flex items-center justify-center">
-                      <img
-                        src={rest.image}
-                        alt={rest.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                        onError={(e) => {
-                          if (!e.target.dataset.triedFallback) {
-                            e.target.dataset.triedFallback = 'true';
-                            e.target.src = DEFAULT_RESTAURANT_COVERS[index % DEFAULT_RESTAURANT_COVERS.length];
-                          }
-                        }}
-                      />
+                      {rest.image ? (
+                        <img
+                          src={rest.image}
+                          alt={rest.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            if (e.currentTarget.nextElementSibling) {
+                              e.currentTarget.nextElementSibling.style.display = 'flex';
+                            }
+                          }}
+                        />
+                      ) : null}
+                      <div
+                        className={`w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-orange-50/40 text-slate-400 group-hover:text-[#FF5A1F] transition-colors ${
+                          rest.image ? 'hidden' : 'flex'
+                        }`}
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-white shadow-xs border border-slate-200/60 flex items-center justify-center text-[#FF5A1F]">
+                          <UtensilsCrossed size={18} />
+                        </div>
+                        <span className="text-[11px] font-bold text-slate-600 mt-1.5">{rest.name}</span>
+                      </div>
                       {rest.badge && (
                         <div className={`absolute top-2.5 left-2.5 text-[10px] font-bold px-2 py-0.5 rounded shadow-xs ${rest.badgeColor}`}>
                           {rest.badge}
                         </div>
                       )}
-                      {rest.hasCustomImage && (
+                      {rest.image && (
                         <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
                           <Sparkles size={10} className="text-amber-300" />
                           <span>Showcase</span>
@@ -1098,7 +1102,7 @@ export default function Explore() {
                       )}
                     </div>
 
-                    {/* Details (Compact spacing & exact typography) */}
+                    {/* Details */}
                     <div className="p-3 space-y-1.5">
                       {/* Rating & Delivery Time */}
                       <div className="flex items-center gap-1 text-xs text-slate-500 font-semibold">
