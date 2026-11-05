@@ -151,7 +151,7 @@ const CustomerLayout = () => {
                         </div>
                     </div>
                 </header>
-            )}}
+            )}
             
             <main className="flex-grow pb-20 md:pb-0">
                 <Outlet />
