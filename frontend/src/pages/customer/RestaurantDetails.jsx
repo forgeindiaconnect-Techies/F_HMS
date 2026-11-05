@@ -4,42 +4,8 @@ import axios from 'axios';
 import { MapPin, Star, Clock, Info, ShoppingBag, Plus, Minus, CheckCircle, Store, AlertCircle, ArrowLeft } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { getItemImage } from '../../utils/imageHelper';
-import { getApiUrl } from '../../utils/axiosInstance';
+import api, { getApiUrl } from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
-
-const dummyBranches = [
-    { _id: 'b1', name: 'Downtown Branch', address: '123 Main St, Downtown' },
-    { _id: 'b2', name: 'Uptown Branch', address: '456 High St, Uptown' }
-];
-
-const dummyMenus = {
-    demo1: [
-        { _id: 'm1', name: 'Margherita Pizza', price: 299, category: 'Pizzas', description: 'Classic cheese and tomato pizza with basil.', image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80&w=800' },
-        { _id: 'm2', name: 'Pepperoni Pizza', price: 399, category: 'Pizzas', description: 'Double pepperoni and mozzarella cheese.', image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=800' }
-    ],
-    demo2: [
-        { _id: 'm4', name: 'Classic Cheeseburger', price: 199, category: 'Burgers', description: 'Flame-grilled beef patty, cheddar, lettuce, tomato, pickles.', image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800' },
-        { _id: 'm5', name: 'Veggie Burger', price: 179, category: 'Burgers', description: 'Spiced potato and pea patty, cheese, special sauce.', image: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?q=80&w=800' },
-        { _id: 'm6', name: 'French Fries', price: 99, category: 'Sides', description: 'Crispy golden potato fries, seasoned with salt.', image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?q=80&w=800' }
-    ],
-    demo3: [
-        { _id: 'm7', name: 'Masala Dosa', price: 120, category: 'Mains', description: 'Crispy rice crepe filled with spiced potato masala.', image: 'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?q=80&w=800' },
-        { _id: 'm8', name: 'Idli Sambar (2 Pcs)', price: 80, category: 'Starters', description: 'Steamed rice cakes served with sambar and coconut chutney.', image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?q=80&w=800' },
-        { _id: 'm9', name: 'Filter Coffee', price: 50, category: 'Beverages', description: 'Traditional South Indian chicory blend filter coffee.', image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=800' }
-    ],
-    demo4: [
-        { _id: 'm10', name: 'Veg Hakka Noodles', price: 180, category: 'Mains', description: 'Wok-tossed noodles with mixed vegetables and oriental spices.', image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?q=80&w=800' },
-        { _id: 'm11', name: 'Chicken Manchurian', price: 240, category: 'Starters', description: 'Crispy chicken chunks in a spicy, tangy manchurian sauce.', image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?q=80&w=800' }
-    ],
-    demo5: [
-        { _id: 'm12', name: 'Paneer Tikka', price: 280, category: 'Starters', description: 'Clay-oven roasted cottage cheese cubes marinated in yogurt spices.', image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=800' },
-        { _id: 'm13', name: 'Chicken Seekh Kebab', price: 320, category: 'Starters', description: 'Minced spiced chicken skewers grilled to perfection.', image: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?q=80&w=800' }
-    ],
-    demo6: [
-        { _id: 'm14', name: 'Fresh Orange Juice', price: 120, category: 'Beverages', description: 'Freshly squeezed 100% natural orange juice.', image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?q=80&w=800' },
-        { _id: 'm15', name: 'Mango Smoothie', price: 150, category: 'Beverages', description: 'Creamy yogurt blend with fresh sweet Alphonso mango pulp.', image: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?q=80&w=800' }
-    ]
-};
 
 const RestaurantDetails = () => {
     const { id } = useParams();
@@ -104,35 +70,31 @@ const RestaurantDetails = () => {
 
     useEffect(() => {
         const fetchDetails = async () => {
-            if (id && id.startsWith('demo')) {
-                setBranches(dummyBranches);
-                setSelectedBranch(dummyBranches[0]._id);
-                setMenu(dummyMenus[id] || []);
-                setRestaurant(dummyRestaurants.find(r => r._id === id));
-                setLoading(false);
-                return;
-            }
             try {
-                let API_URL = getApiUrl();
-
                 // Fetch restaurant profile directly to verify visibility and status
                 let fetchedRest = null;
                 try {
-                    const restRes = await axios.get(`${API_URL}/restaurants/${id}`);
+                    const restRes = await api.get(`/restaurants/${id}`);
                     fetchedRest = restRes.data;
                 } catch (rErr) {
                     // Fallback to list search
-                    const listRes = await axios.get(`${API_URL}/restaurants`);
-                    fetchedRest = listRes.data.find(r => r._id === id);
+                    try {
+                        const listRes = await api.get('/restaurants');
+                        if (Array.isArray(listRes.data)) {
+                            fetchedRest = listRes.data.find(r => String(r._id) === String(id));
+                        }
+                    } catch (lErr) {
+                        console.error("Failed to query fallback restaurants list", lErr);
+                    }
                 }
 
                 // Check if restaurant is inactive, suspended, or soft-deleted
-                const isInactive = fetchedRest?.status && fetchedRest.status.toLowerCase() === 'inactive';
+                const isInactiveStatus = fetchedRest?.status && fetchedRest.status.toLowerCase() === 'inactive';
                 const isSoftDeleted = fetchedRest?.isDeleted === true;
                 const isExplicitlyDisabled = fetchedRest?.isActive === false;
                 const isRejected = fetchedRest?.approvalStatus === 'Rejected';
 
-                if (!fetchedRest || isSoftDeleted || isInactive || isExplicitlyDisabled || isRejected) {
+                if (!fetchedRest || isSoftDeleted || isInactiveStatus || isExplicitlyDisabled || isRejected) {
                     setRestaurant(null);
                     // Automatically clean up cart if it holds items for this unavailable restaurant
                     try {
@@ -153,7 +115,7 @@ const RestaurantDetails = () => {
 
                 // Fetch branches
                 try {
-                    const branchRes = await axios.get(`${API_URL}/restaurants/${id}/branches`);
+                    const branchRes = await api.get(`/restaurants/${id}/branches`);
                     setBranches(branchRes.data || []);
                     if (branchRes.data?.length > 0) {
                         setSelectedBranch(branchRes.data[0]._id);
@@ -163,8 +125,17 @@ const RestaurantDetails = () => {
                 }
                 
                 // Fetch menu
-                const menuRes = await axios.get(`${API_URL}/menu?restaurantId=${id}`);
-                setMenu(Array.isArray(menuRes.data) ? menuRes.data.filter(m => m.restaurantId === id) : []);
+                try {
+                    const menuRes = await api.get(`/menu?restaurantId=${id}`);
+                    const rawMenu = Array.isArray(menuRes.data) ? menuRes.data : [];
+                    const restaurantMenu = rawMenu.filter(m => {
+                        const rId = typeof m.restaurantId === 'object' ? (m.restaurantId?._id || m.restaurantId?.id) : m.restaurantId;
+                        return !rId || String(rId) === String(id);
+                    });
+                    setMenu(restaurantMenu);
+                } catch (mErr) {
+                    setMenu([]);
+                }
                 
             } catch (error) {
                 console.error("Failed to load restaurant details", error);
@@ -217,26 +188,43 @@ const RestaurantDetails = () => {
 
     return (
         <div className="bg-gray-50 dark:bg-slate-950 min-h-screen pb-32 transition-colors">
-            {/* Header Images */}
-            <div className="h-44 sm:h-56 md:h-64 w-full bg-gray-900 dark:bg-slate-900 overflow-hidden relative">
-                <img 
-                    src={
-                        restaurant.logo 
-                            ? (restaurant.logo.startsWith('http') || restaurant.logo.startsWith('data:')
-                                ? restaurant.logo 
-                                : `${new URL(getApiUrl()).origin}${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`)
-                            : "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2000&auto=format&fit=crop"
-                    } 
-                    alt={restaurant.name}
-                    className="w-full h-full object-cover opacity-60"
-                />
+            {/* Header Images / Clean Store Banner */}
+            <div className="h-32 sm:h-52 md:h-64 w-full bg-gradient-to-r from-stone-900 via-neutral-900 to-orange-950 overflow-hidden relative flex items-center justify-center">
+                {(() => {
+                    const hasDedicatedBanner = (restaurant.bannerImage && restaurant.bannerImage !== restaurant.logo) || 
+                                               (restaurant.image && restaurant.image !== restaurant.logo);
+                    const rawBanner = hasDedicatedBanner ? (restaurant.bannerImage || restaurant.image) : null;
+                    if (rawBanner && typeof rawBanner === 'string') {
+                        const apiBase = getApiUrl();
+                        const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : '';
+                        const bannerSrc = (rawBanner.startsWith('http') || rawBanner.startsWith('data:'))
+                            ? rawBanner
+                            : `${origin}${rawBanner.startsWith('/') ? '' : '/'}${rawBanner}`;
+                        return (
+                            <img 
+                                src={bannerSrc} 
+                                alt={restaurant.name}
+                                onError={(e) => { e.target.style.display = 'none'; }}
+                                className="w-full h-full object-cover opacity-75"
+                            />
+                        );
+                    }
+                    return (
+                        <div className="flex flex-col items-center justify-center text-white/40 space-y-1.5">
+                            <div className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/15 text-[#FF5A1F]">
+                                <Store size={22} />
+                            </div>
+                            <span className="text-[11px] font-bold tracking-widest uppercase text-white/60">{restaurant.name}</span>
+                        </div>
+                    );
+                })()}
             </div>
 
-            {/* Restaurant Info Card - Compact & Balanced */}
-            <div className="max-w-4xl mx-auto px-3.5 sm:px-6 -mt-10 sm:-mt-14 relative z-10">
-                <div className="bg-white dark:bg-slate-900 rounded-xl sm:rounded-2xl p-3.5 sm:p-5 shadow-sm border border-gray-100 dark:border-slate-800">
-                    <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-start gap-3.5 min-w-0 text-left">
+            {/* Restaurant Info Card - Compact & Balanced for Mobile & Desktop */}
+            <div className="max-w-4xl mx-auto px-3 sm:px-6 -mt-8 sm:-mt-12 relative z-10">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 sm:p-5 shadow-sm border border-slate-100 dark:border-slate-800">
+                    <div className="flex items-start justify-between gap-2.5 sm:gap-4">
+                        <div className="flex items-start gap-2.5 sm:gap-4 min-w-0 text-left flex-1">
                             {/* Restaurant Logo */}
                             {restaurant.logo && (() => {
                                 const apiBase = getApiUrl();
@@ -245,7 +233,7 @@ const RestaurantDetails = () => {
                                     ? restaurant.logo
                                     : `${origin}${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`;
                                 return (
-                                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl overflow-hidden border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-800 shrink-0 shadow-sm flex items-center justify-center">
+                                    <div className="w-13 h-13 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800 shrink-0 shadow-sm flex items-center justify-center">
                                         <img 
                                             src={logoSrc} 
                                             alt={restaurant.name} 
@@ -256,34 +244,30 @@ const RestaurantDetails = () => {
                                 );
                             })()}
 
-                            <div className="space-y-1 min-w-0">
-                                <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight truncate">
+                            <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
+                                <h1 className="text-base sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight truncate leading-snug">
                                     {restaurant.name}
                                 </h1>
-                                <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">
-                                    Multi-Cuisine • Desserts • Beverages
+                                <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
+                                    {restaurant.cuisines || 'Multi-Cuisine • Fast Food • Beverages'}
                                 </p>
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-xs text-gray-600 dark:text-slate-300">
-                                    <span className="inline-flex items-center gap-1 font-medium">
-                                        <Clock size={13} className="text-[#FF5A1F] shrink-0" /> 
-                                        <span>Opens at 10:00 AM</span>
+                                <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 pt-0.5 text-[11px] sm:text-xs text-slate-600 dark:text-slate-300">
+                                    <span className="inline-flex items-center gap-1 font-semibold text-[#FF5A1F] truncate">
+                                        <MapPin size={11} className="shrink-0" /> 
+                                        <span className="truncate">{restaurant.address || restaurant.city || 'Verified Outlet'}</span>
                                     </span>
-                                    <span className="inline-flex items-center gap-1 font-medium">
-                                        <Info size={13} className="text-gray-400 dark:text-slate-500 shrink-0" /> 
-                                        <span>Known for great ambiance</span>
+                                    <span className="inline-flex items-center gap-1 font-medium text-slate-400 shrink-0">
+                                        <Clock size={11} className="shrink-0" /> 
+                                        <span>Open Now</span>
                                     </span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Dining Rating Pill */}
-                        <div className="shrink-0 flex flex-col items-center justify-center px-2.5 py-1.5 sm:px-3 sm:py-2 bg-green-50 dark:bg-green-950/40 border border-green-200/60 dark:border-green-800/40 rounded-lg sm:rounded-xl">
-                            <span className="flex items-center gap-1 text-green-700 dark:text-green-400 font-extrabold text-sm sm:text-base leading-none">
-                                4.5 <Star size={13} className="fill-green-600 text-green-600 dark:fill-green-400 dark:text-green-400" />
-                            </span>
-                            <span className="text-[9px] sm:text-[10px] text-green-800/80 dark:text-green-300 uppercase tracking-wider font-bold mt-0.5 leading-none">
-                                Dining
-                            </span>
+                        <div className="shrink-0 flex items-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/40 rounded-xl text-emerald-700 dark:text-emerald-400 font-black text-xs sm:text-sm shadow-2xs self-start">
+                            <span>4.5</span>
+                            <Star size={12} className="fill-emerald-600 text-emerald-600 dark:fill-emerald-400 dark:text-emerald-400" />
                         </div>
                     </div>
 
@@ -364,15 +348,15 @@ const RestaurantDetails = () => {
                     </div>
                 )}
 
-                {/* Menu Layout */}
-                <div className="mt-8 flex flex-col md:flex-row gap-8">
-                    {/* Sidebar Categories */}
-                    <div className="md:w-64 shrink-0 hidden md:block">
+                {/* Main Content: Menu Items FIRST, followed by Table Booking */}
+                <div className="mt-8 flex flex-col lg:flex-row gap-8 items-start">
+                    {/* Left Categories Sidebar (Desktop) */}
+                    <div className="lg:w-56 shrink-0 hidden lg:block">
                         <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-slate-800 sticky top-24">
                             <h3 className="font-bold text-gray-900 dark:text-white mb-4 px-2">Menu</h3>
                             <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                 {categories.map(cat => (
-                                    <a href={`#category-${cat}`} key={cat} className="block px-4 py-2.5 rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-red-600 dark:hover:text-red-400 transition-colors font-medium">
+                                    <a href={`#category-${cat}`} key={cat} className="block px-4 py-2.5 rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-red-600 dark:hover:text-red-400 transition-colors font-medium text-sm">
                                         {cat}
                                     </a>
                                 ))}
@@ -380,23 +364,23 @@ const RestaurantDetails = () => {
                         </div>
                     </div>
 
-                    {/* Menu Items */}
-                    <div className="flex-1 space-y-12">
+                    {/* Menu Items (Appears First) */}
+                    <div className="flex-1 w-full space-y-10 order-1">
                         {categories.map(category => (
                             <div key={category} id={`category-${category}`} className="scroll-mt-24">
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{category}</h2>
+                                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">{category}</h2>
                                 <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden divide-y divide-gray-50 dark:divide-slate-800">
                                     {menu.filter(item => item.category === category).map(item => (
                                         <div 
                                              key={item._id} 
-                                             className="p-6 flex gap-6 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors group rounded-2xl"
+                                             className="p-4 sm:p-6 flex gap-4 sm:gap-6 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors group rounded-2xl"
                                          >
                                              <div className="flex-1">
                                                  <div className="flex items-start justify-between mb-1">
-                                                     <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">{item.name}</h3>
+                                                     <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">{item.name}</h3>
                                                  </div>
-                                                 <div className="font-extrabold text-red-600 dark:text-red-400 mb-2">₹{item.price}</div>
-                                                 <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed line-clamp-2">{item.description}</p>
+                                                 <div className="font-extrabold text-red-600 dark:text-red-400 mb-1.5">₹{item.price}</div>
+                                                 <p className="text-gray-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed line-clamp-2">{item.description}</p>
                                                  <button 
                                                      onClick={() => { addToCart(item); toast.success(`${item.name} added to cart!`); }}
                                                      className="mt-3 px-4 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
@@ -405,7 +389,7 @@ const RestaurantDetails = () => {
                                                  </button>
                                              </div>
                                              {item.image && item.image.trim() !== '' && !item.image.includes('unsplash.com') && !item.image.includes('placeholder') && (
-                                                 <div className="w-32 h-32 shrink-0 relative overflow-hidden rounded-xl bg-gray-100 dark:bg-slate-800">
+                                                 <div className="w-24 h-24 sm:w-32 sm:h-32 shrink-0 relative overflow-hidden rounded-xl bg-gray-100 dark:bg-slate-800">
                                                      <img 
                                                          src={item.image} 
                                                          alt={item.name} 
@@ -418,11 +402,11 @@ const RestaurantDetails = () => {
                                 </div>
                             </div>
                         ))}
-                        {menu.length === 0 && <div className="text-center text-gray-500 dark:text-slate-400 py-10">Menu not available for this restaurant.</div>}
+                        {menu.length === 0 && <div className="text-center text-gray-500 dark:text-slate-400 py-10 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800">Menu not available for this restaurant.</div>}
                     </div>
 
-                    {/* Table Booking Column */}
-                    <div className="md:w-80 shrink-0">
+                    {/* Table Booking Column (Positioned after the menu items) */}
+                    <div className="w-full lg:w-80 shrink-0 order-2">
                         <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-800 sticky top-24">
                             <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-4 flex items-center gap-2">
                                 <Clock size={20} className="text-red-500" /> Book a Table

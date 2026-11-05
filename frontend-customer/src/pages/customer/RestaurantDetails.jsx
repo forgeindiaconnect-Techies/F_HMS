@@ -189,9 +189,11 @@ const RestaurantDetails = () => {
     return (
         <div className="bg-gray-50 dark:bg-slate-950 min-h-screen pb-32 transition-colors">
             {/* Header Images / Clean Store Banner */}
-            <div className="h-44 sm:h-56 md:h-64 w-full bg-gradient-to-r from-slate-900 via-slate-800 to-orange-950 overflow-hidden relative flex items-center justify-center">
+            <div className="h-32 sm:h-52 md:h-64 w-full bg-gradient-to-r from-stone-900 via-neutral-900 to-orange-950 overflow-hidden relative flex items-center justify-center">
                 {(() => {
-                    const rawBanner = restaurant.bannerImage || restaurant.image || restaurant.logo;
+                    const hasDedicatedBanner = (restaurant.bannerImage && restaurant.bannerImage !== restaurant.logo) || 
+                                               (restaurant.image && restaurant.image !== restaurant.logo);
+                    const rawBanner = hasDedicatedBanner ? (restaurant.bannerImage || restaurant.image) : null;
                     if (rawBanner && typeof rawBanner === 'string') {
                         const apiBase = getApiUrl();
                         const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : '';
@@ -203,24 +205,26 @@ const RestaurantDetails = () => {
                                 src={bannerSrc} 
                                 alt={restaurant.name}
                                 onError={(e) => { e.target.style.display = 'none'; }}
-                                className="w-full h-full object-cover opacity-60"
+                                className="w-full h-full object-cover opacity-75"
                             />
                         );
                     }
                     return (
-                        <div className="flex flex-col items-center justify-center text-white/40">
-                            <Store size={48} className="text-[#FF5A1F] opacity-70 mb-2" />
-                            <span className="text-sm font-semibold tracking-wider uppercase text-white/60">{restaurant.name}</span>
+                        <div className="flex flex-col items-center justify-center text-white/40 space-y-1.5">
+                            <div className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/15 text-[#FF5A1F]">
+                                <Store size={22} />
+                            </div>
+                            <span className="text-[11px] font-bold tracking-widest uppercase text-white/60">{restaurant.name}</span>
                         </div>
                     );
                 })()}
             </div>
 
-            {/* Restaurant Info Card - Compact & Balanced */}
-            <div className="max-w-4xl mx-auto px-3.5 sm:px-6 -mt-10 sm:-mt-14 relative z-10">
-                <div className="bg-white dark:bg-slate-900 rounded-xl sm:rounded-2xl p-3.5 sm:p-5 shadow-sm border border-gray-100 dark:border-slate-800">
-                    <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-start gap-3.5 min-w-0 text-left">
+            {/* Restaurant Info Card - Compact & Balanced for Mobile & Desktop */}
+            <div className="max-w-4xl mx-auto px-3 sm:px-6 -mt-8 sm:-mt-12 relative z-10">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 sm:p-5 shadow-sm border border-slate-100 dark:border-slate-800">
+                    <div className="flex items-start justify-between gap-2.5 sm:gap-4">
+                        <div className="flex items-start gap-2.5 sm:gap-4 min-w-0 text-left flex-1">
                             {/* Restaurant Logo */}
                             {restaurant.logo && (() => {
                                 const apiBase = getApiUrl();
@@ -229,7 +233,7 @@ const RestaurantDetails = () => {
                                     ? restaurant.logo
                                     : `${origin}${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`;
                                 return (
-                                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl overflow-hidden border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-800 shrink-0 shadow-sm flex items-center justify-center">
+                                    <div className="w-13 h-13 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800 shrink-0 shadow-sm flex items-center justify-center">
                                         <img 
                                             src={logoSrc} 
                                             alt={restaurant.name} 
@@ -240,34 +244,30 @@ const RestaurantDetails = () => {
                                 );
                             })()}
 
-                            <div className="space-y-1 min-w-0">
-                                <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight truncate">
+                            <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
+                                <h1 className="text-base sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight truncate leading-snug">
                                     {restaurant.name}
                                 </h1>
-                                <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">
-                                    Multi-Cuisine • Desserts • Beverages
+                                <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
+                                    {restaurant.cuisines || 'Multi-Cuisine • Fast Food • Beverages'}
                                 </p>
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-xs text-gray-600 dark:text-slate-300">
-                                    <span className="inline-flex items-center gap-1 font-medium">
-                                        <Clock size={13} className="text-[#FF5A1F] shrink-0" /> 
-                                        <span>Opens at 10:00 AM</span>
+                                <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 pt-0.5 text-[11px] sm:text-xs text-slate-600 dark:text-slate-300">
+                                    <span className="inline-flex items-center gap-1 font-semibold text-[#FF5A1F] truncate">
+                                        <MapPin size={11} className="shrink-0" /> 
+                                        <span className="truncate">{restaurant.address || restaurant.city || 'Verified Outlet'}</span>
                                     </span>
-                                    <span className="inline-flex items-center gap-1 font-medium">
-                                        <Info size={13} className="text-gray-400 dark:text-slate-500 shrink-0" /> 
-                                        <span>Known for great ambiance</span>
+                                    <span className="inline-flex items-center gap-1 font-medium text-slate-400 shrink-0">
+                                        <Clock size={11} className="shrink-0" /> 
+                                        <span>Open Now</span>
                                     </span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Dining Rating Pill */}
-                        <div className="shrink-0 flex flex-col items-center justify-center px-2.5 py-1.5 sm:px-3 sm:py-2 bg-green-50 dark:bg-green-950/40 border border-green-200/60 dark:border-green-800/40 rounded-lg sm:rounded-xl">
-                            <span className="flex items-center gap-1 text-green-700 dark:text-green-400 font-extrabold text-sm sm:text-base leading-none">
-                                4.5 <Star size={13} className="fill-green-600 text-green-600 dark:fill-green-400 dark:text-green-400" />
-                            </span>
-                            <span className="text-[9px] sm:text-[10px] text-green-800/80 dark:text-green-300 uppercase tracking-wider font-bold mt-0.5 leading-none">
-                                Dining
-                            </span>
+                        <div className="shrink-0 flex items-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/40 rounded-xl text-emerald-700 dark:text-emerald-400 font-black text-xs sm:text-sm shadow-2xs self-start">
+                            <span>4.5</span>
+                            <Star size={12} className="fill-emerald-600 text-emerald-600 dark:fill-emerald-400 dark:text-emerald-400" />
                         </div>
                     </div>
 
