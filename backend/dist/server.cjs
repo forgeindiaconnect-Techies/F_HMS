@@ -128063,19 +128063,23 @@ var getRestaurants = async (req, res) => {
       const branchAddress = primaryBranch?.location?.address && primaryBranch.location.address !== "Primary Location" ? primaryBranch.location.address : "";
       const combinedAddr = rest.address || branchAddress || verifAddress || primaryBranch?.location?.address || "";
       rest.address = combinedAddr;
-      let resolvedCity = primaryBranch?.location?.city || "";
-      if (!resolvedCity && rest.city && rest.city !== combinedAddr) {
-        resolvedCity = rest.city;
+      let resolvedCity = rest.city && rest.city.trim() ? rest.city.trim() : "";
+      if (!resolvedCity && primaryBranch?.location?.city && primaryBranch.location.city !== "Primary Location") {
+        resolvedCity = primaryBranch.location.city.trim();
       }
       if (!resolvedCity && combinedAddr) {
         const addrParts = combinedAddr.split(",").map((p) => p.trim()).filter(Boolean);
         if (addrParts.length >= 2) {
-          resolvedCity = addrParts[addrParts.length - 1];
+          let candidate = addrParts[addrParts.length - 1];
+          if (candidate.toLowerCase() === "tamil nadu" || candidate.toLowerCase() === "karnataka" || candidate.toLowerCase() === "india") {
+            candidate = addrParts[addrParts.length > 2 ? addrParts.length - 2 : 0];
+          }
+          resolvedCity = candidate;
         } else if (addrParts.length === 1) {
           resolvedCity = addrParts[0];
         }
       }
-      rest.city = resolvedCity;
+      rest.city = resolvedCity || "";
       rest.state = primaryBranch?.location?.state || rest.state || "";
       rest.country = primaryBranch?.location?.country || rest.country || "India";
       rest.verificationAddress = verifAddress;
@@ -128286,6 +128290,22 @@ var updateMyRestaurant = async (req, res) => {
       restaurant.contactEmail = contactEmail !== void 0 ? contactEmail : restaurant.contactEmail;
       restaurant.phone = phone !== void 0 ? phone : restaurant.phone;
       restaurant.address = address !== void 0 ? address : restaurant.address;
+      if (req.body.city) {
+        restaurant.city = req.body.city;
+      } else if (address) {
+        const parts = address.split(",").map((s) => s.trim()).filter(Boolean);
+        if (parts.length >= 2) {
+          let candidate = parts[parts.length - 1];
+          if (candidate.toLowerCase() === "tamil nadu" || candidate.toLowerCase() === "karnataka" || candidate.toLowerCase() === "india") {
+            candidate = parts[parts.length > 2 ? parts.length - 2 : 0];
+          }
+          restaurant.city = candidate;
+        } else if (parts.length === 1) {
+          restaurant.city = parts[0];
+        }
+      }
+      if (req.body.state) restaurant.state = req.body.state;
+      if (req.body.country) restaurant.country = req.body.country;
       restaurant.currency = currency || restaurant.currency;
       restaurant.timezone = timezone || restaurant.timezone;
       if (features) {
@@ -128405,6 +128425,21 @@ var updateMyRestaurant = async (req, res) => {
       } catch (_) {
       }
       const updatedRestaurant = await restaurant.save();
+      try {
+        const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+        const branch = await Branch3.findOne({ restaurantId: restaurant._id });
+        if (branch) {
+          branch.location = {
+            ...branch.location || {},
+            address: restaurant.address || branch.location?.address || "",
+            city: restaurant.city || branch.location?.city || "",
+            state: restaurant.state || branch.location?.state || "",
+            country: restaurant.country || branch.location?.country || "India"
+          };
+          await branch.save();
+        }
+      } catch (_) {
+      }
       res.json(updatedRestaurant);
     } else {
       res.status(404).json({ message: "Restaurant not found" });
