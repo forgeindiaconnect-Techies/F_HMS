@@ -102,13 +102,6 @@ const CustomerDashboard = () => {
         const saved = getSavedLocation();
         if (saved) {
             setUserLocation(saved);
-        } else {
-            // Silently detect on mount if location is empty
-            detectUserLocation({ silent: true }).then((res) => {
-                if (res.success && res.formattedLocation) {
-                    setUserLocation(res.formattedLocation);
-                }
-            }).catch(() => {});
         }
 
         const handleLocationUpdate = (e) => {

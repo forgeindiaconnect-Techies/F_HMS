@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import LocationPickerModal from '../../components/LocationPickerModal';
-import { getSavedLocation, saveUserLocation, detectUserLocation, filterRestaurantsForLocation, EVENT_LOCATION_UPDATED } from '../../utils/locationHelper';
+import { getSavedLocation, saveUserLocation, detectUserLocation, requestBrowserGpsLocation, reverseGeocodeCoords, filterRestaurantsForLocation, EVENT_LOCATION_UPDATED } from '../../utils/locationHelper';
 import { useCart } from '../../context/CartContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 
@@ -330,305 +330,45 @@ export default function Explore() {
   };
 
   // --------------------------------------------------------------------------
-  // React GPS Method: Robust Mobile Geolocation + IP Fallback + Reverse Geocoding
+  // React GPS Method: Hardware GPS + Reverse Geocoding + Persistence
   // --------------------------------------------------------------------------
-  const resolveLocationFromCoords = async (latitude, longitude, loadingToast) => {
-    let detectedCity = '';
-    let detectedCountry = '';
-
-    try {
-      // BigDataCloud client API (fast & free on mobile, no rate limit)
-      const bdcRes = await fetch(
-        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
-      );
-      if (bdcRes.ok) {
-        const bdcData = await bdcRes.json();
-        detectedCity = bdcData.city || bdcData.locality || bdcData.principalSubdivision || '';
-        detectedCountry = bdcData.countryName || '';
-      }
-    } catch (e) {
-      console.warn('BigDataCloud reverse geocode error:', e);
-    }
-
-    if (!detectedCity || !detectedCountry) {
-      try {
-        // OpenStreetMap Nominatim reverse geocode fallback
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=12&addressdetails=1`,
-          { headers: { 'Accept-Language': 'en' } }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          const addr = data.address || {};
-          if (!detectedCity) detectedCity = addr.city || addr.town || addr.village || addr.suburb || addr.state_district || addr.state || '';
-          if (!detectedCountry) detectedCountry = addr.country || '';
-        }
-      } catch (e) {
-        console.warn('Nominatim reverse geocode error:', e);
-      }
-    }
-
-    // Format into City, Country
-    const formattedLocation = (detectedCity && detectedCountry)
-      ? `${detectedCity}, ${detectedCountry}`
-      : (detectedCity || detectedCountry || `${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`);
-
-    setLocation(formattedLocation);
-    localStorage.setItem('userLocation', formattedLocation);
-    localStorage.setItem('userCoordinates', JSON.stringify({ latitude, longitude }));
-
-    if (user && api) {
-      api.put('/customer/profile', { location: formattedLocation, coordinates: { latitude, longitude } }).catch(() => {});
-    }
-
-    setIsDetectingLocation(false);
-    if (loadingToast) toast.dismiss(loadingToast);
-    toast.success(`Location set to ${formattedLocation}!`, { icon: '📍' });
-  };
-
-  // Fallback to IP-based Geolocation if mobile device GPS is toggled off or unavailable
-  const fallbackIpGeolocation = async (loadingToast) => {
-    // Service 1: ipwho.is (fast, free, high precision for India & global)
-    try {
-      const res = await fetch('https://ipwho.is/');
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.success && (data.city || data.region)) {
-          const locStr = `${data.city || data.region}, ${data.country || 'India'}`;
-          setLocation(locStr);
-          localStorage.setItem('userLocation', locStr);
-          if (data.latitude && data.longitude) {
-            localStorage.setItem('userCoordinates', JSON.stringify({ latitude: data.latitude, longitude: data.longitude }));
-          }
-          setIsDetectingLocation(false);
-          if (loadingToast) toast.dismiss(loadingToast);
-          toast.success(`Location detected: ${locStr}!`, { icon: '📍' });
-          return true;
-        }
-      }
-    } catch (_) {}
-
-    // Service 2: ipinfo.io
-    try {
-      const res2 = await fetch('https://ipinfo.io/json');
-      if (res2.ok) {
-        const data2 = await res2.json();
-        if (data2 && (data2.city || data2.region)) {
-          const locStr = `${data2.city || data2.region}, India`;
-          setLocation(locStr);
-          localStorage.setItem('userLocation', locStr);
-          if (data2.loc) {
-            const [lat, lon] = data2.loc.split(',').map(Number);
-            if (!isNaN(lat) && !isNaN(lon)) {
-              localStorage.setItem('userCoordinates', JSON.stringify({ latitude: lat, longitude: lon }));
-            }
-          }
-          setIsDetectingLocation(false);
-          if (loadingToast) toast.dismiss(loadingToast);
-          toast.success(`Location detected: ${locStr}!`, { icon: '📍' });
-          return true;
-        }
-      }
-    } catch (_) {}
-
-    // Service 3: ipapi.co
-    try {
-      const ipRes = await fetch('https://ipapi.co/json/');
-      if (ipRes.ok) {
-        const ipData = await ipRes.json();
-        if (ipData && (ipData.city || ipData.region) && !ipData.error) {
-          const locStr = `${ipData.city || ipData.region}, ${ipData.country_name || 'India'}`.replace(/,\s*$/, '');
-          setLocation(locStr);
-          localStorage.setItem('userLocation', locStr);
-          if (ipData.latitude && ipData.longitude) {
-            localStorage.setItem('userCoordinates', JSON.stringify({ latitude: ipData.latitude, longitude: ipData.longitude }));
-          }
-          setIsDetectingLocation(false);
-          if (loadingToast) toast.dismiss(loadingToast);
-          toast.success(`Location detected: ${locStr}!`, { icon: '📍' });
-          return true;
-        }
-      }
-    } catch (_) {}
-
-    return false;
-  };
-
   const handleGetLocation = async () => {
     setIsDetectingLocation(true);
-    const loadingToast = toast.loading('Detecting location via GPS & Network...');
+    const loadingToast = toast.loading('Waiting for browser GPS permission...');
     try {
-      const res = await detectUserLocation();
+      const res = await requestBrowserGpsLocation();
       toast.dismiss(loadingToast);
-      if (res.success && res.formattedLocation) {
+      if (res && res.formattedLocation) {
         setLocation(res.formattedLocation);
-        toast.success(`Location set to ${res.formattedLocation}!`, { icon: '📍' });
+        saveUserLocation(res.formattedLocation, res.coordinates);
+        if (user && api) {
+          api.put('/customer/profile', {
+            location: res.formattedLocation,
+            coordinates: res.coordinates
+          }).catch(() => {});
+        }
+        toast.success('Location set to ' + res.formattedLocation + '!', { icon: '📍' });
       } else {
         setIsLocationPickerOpen(true);
         toast('Please pick your city from the list', { icon: '📍' });
       }
     } catch (err) {
       toast.dismiss(loadingToast);
-      setIsLocationPickerOpen(true);
+      console.warn('GPS location detection error:', err);
+      if (err?.code === 1 || err?.message?.toLowerCase().includes('denied')) {
+        setLocationModal({
+          isOpen: true,
+          type: 'permission_denied',
+          title: 'Location Permission Denied',
+          message: 'Location permission was denied. Please allow location access in your browser settings or select your city manually.'
+        });
+      } else {
+        toast.error('Could not get GPS location. Please select your city manually.');
+        setIsLocationPickerOpen(true);
+      }
     } finally {
       setIsDetectingLocation(false);
     }
-  };
-
-  const oldHandleGetLocation_UNUSED = async () => {
-    setIsDetectingLocation(true);
-    const loadingToast = toast.loading('Detecting location...');
-
-    // If running inside Capacitor Native Mobile App (Android APK / iOS)
-    if (Capacitor.isNativePlatform()) {
-      try {
-        let permStatus = await Geolocation.checkPermissions();
-
-        // If permission is prompt or prompt-with-rationale, request it at runtime
-        if (permStatus.location !== 'granted' && permStatus.coarseLocation !== 'granted') {
-          permStatus = await Geolocation.requestPermissions({ permissions: ['location', 'coarseLocation'] });
-        }
-
-        // Check if user denied permission
-        if (permStatus.location === 'denied' && permStatus.coarseLocation === 'denied') {
-          setIsDetectingLocation(false);
-          toast.dismiss(loadingToast);
-          setLocationModal({
-            isOpen: true,
-            type: 'permanently_denied',
-            title: 'Location Permission Required',
-            message: 'FoodNest needs location access to find restaurants and calculate delivery times accurately. Please allow Location permission in your Android App Settings.'
-          });
-          return;
-        }
-
-        // If granted (fine or coarse), get GPS coordinates
-        if (permStatus.location === 'granted' || permStatus.coarseLocation === 'granted') {
-          try {
-            // Attempt high accuracy GPS first
-            const nativePos = await Geolocation.getCurrentPosition({
-              enableHighAccuracy: true,
-              timeout: 10000,
-              maximumAge: 30000
-            });
-            if (nativePos && nativePos.coords) {
-              await resolveLocationFromCoords(nativePos.coords.latitude, nativePos.coords.longitude, loadingToast);
-              return;
-            }
-          } catch (highAccErr) {
-            console.warn('Native high-accuracy GPS error/timeout, trying cell/wifi...', highAccErr);
-            // Attempt low accuracy (Cell / Wi-Fi network)
-            try {
-              const lowPos = await Geolocation.getCurrentPosition({
-                enableHighAccuracy: false,
-                timeout: 10000,
-                maximumAge: 180000
-              });
-              if (lowPos && lowPos.coords) {
-                await resolveLocationFromCoords(lowPos.coords.latitude, lowPos.coords.longitude, loadingToast);
-                return;
-              }
-            } catch (lowAccErr) {
-              console.warn('Native low-accuracy GPS also failed:', lowAccErr);
-              const errMsg = String(lowAccErr?.message || lowAccErr || '');
-              if (errMsg.includes('services are not enabled') || errMsg.includes('disabled') || lowAccErr?.code === 'OS-PLUG-GLOC-0007') {
-                setIsDetectingLocation(false);
-                toast.dismiss(loadingToast);
-                setLocationModal({
-                  isOpen: true,
-                  type: 'services_disabled',
-                  title: 'Device GPS is Switched Off',
-                  message: 'Please enable Location / GPS in your Android notification quick settings and tap Try Again.'
-                });
-                return;
-              }
-            }
-          }
-        }
-      } catch (nativeErr) {
-        console.warn('Capacitor native Geolocation exception:', nativeErr);
-        const errMsg = String(nativeErr?.message || nativeErr || '');
-        if (errMsg.includes('services are not enabled') || errMsg.includes('disabled') || nativeErr?.code === 'OS-PLUG-GLOC-0007') {
-          setIsDetectingLocation(false);
-          toast.dismiss(loadingToast);
-          setLocationModal({
-            isOpen: true,
-            type: 'services_disabled',
-            title: 'Device GPS is Switched Off',
-            message: 'Please turn on Location / GPS in your device settings and tap Try Again.'
-          });
-          return;
-        }
-        if (errMsg.includes('denied') || nativeErr?.code === 'OS-PLUG-GLOC-0003') {
-          setIsDetectingLocation(false);
-          toast.dismiss(loadingToast);
-          setLocationModal({
-            isOpen: true,
-            type: 'permission_denied',
-            title: 'Location Permission Denied',
-            message: 'Location access was not granted. Tap Try Again to request permission or select your city manually.'
-          });
-          return;
-        }
-      }
-    }
-
-    // Web / WebView fallback via navigator.geolocation
-    if (!navigator.geolocation) {
-      const ok = await fallbackIpGeolocation(loadingToast);
-      if (!ok) {
-        setIsDetectingLocation(false);
-        toast.dismiss(loadingToast);
-        toast.error('Geolocation is not supported by your device.');
-      }
-      return;
-    }
-
-    // Attempt 1: High accuracy GPS
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        resolveLocationFromCoords(latitude, longitude, loadingToast);
-      },
-      (error) => {
-        // Attempt 2: Low accuracy (Wi-Fi / Cell tower triangulation)
-        navigator.geolocation.getCurrentPosition(
-          (netPos) => {
-            const { latitude, longitude } = netPos.coords;
-            resolveLocationFromCoords(latitude, longitude, loadingToast);
-          },
-          async () => {
-            const ipSuccess = await fallbackIpGeolocation(loadingToast);
-            if (!ipSuccess) {
-              setIsDetectingLocation(false);
-              toast.dismiss(loadingToast);
-              if (error.code === 1) {
-                setLocationModal({
-                  isOpen: true,
-                  type: 'permission_denied',
-                  title: 'Location Access Needed',
-                  message: 'Location permission was denied. Tap Try Again or pick your city from the list.'
-                });
-              } else {
-                // Timeout or GPS unavailable: open the quick city picker modal so user is not blocked
-                setIsLocationPickerOpen(true);
-                toast('Please select your city from the list', { icon: '📍' });
-              }
-            }
-          },
-          {
-            enableHighAccuracy: false,
-            timeout: 6000,
-            maximumAge: 300000 // Accept cached coordinates
-          }
-        );
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 60000
-      }
-    );
   };
 
   const handleCopyCoupon = (code) => {

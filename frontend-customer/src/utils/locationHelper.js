@@ -75,56 +75,43 @@ export const getCityOnly = (locationStr) => {
 };
 
 /**
- * Reverse Geocode Coordinates to Address & City using LocationIQ + Fallbacks
+ * Convert Coordinates into City and Country using Reverse Geocoding
+ * Priority 1: LocationIQ (Reverse Geocode API with OpenStreetMap data)
+ * Priority 2: OpenStreetMap Nominatim
+ * Priority 3: BigDataCloud client API
  */
 export const reverseGeocodeCoords = async (latitude, longitude) => {
   let detectedCity = '';
   let detectedState = '';
   let detectedCountry = '';
 
-  // 1. Primary: LocationIQ Reverse Geocoding (high accuracy worldwide + India)
+  // 1. Primary: LocationIQ Reverse Geocoding (high precision worldwide & India)
   try {
     const liqUrl = `https://us1.locationiq.com/v1/reverse?key=${LOCATIONIQ_KEY}&lat=${latitude}&lon=${longitude}&format=json&normalizeaddress=1`;
-    const res = await fetch(liqUrl, { signal: AbortSignal.timeout(6000) });
+    const res = await fetch(liqUrl, { signal: AbortSignal.timeout(7000) });
     if (res.ok) {
       const data = await res.json();
       const addr = data.address || {};
-      detectedCity = addr.city || addr.town || addr.village || addr.suburb || addr.city_district || addr.county || addr.state_district || '';
+      detectedCity = addr.city || addr.town || addr.municipality || addr.village || addr.suburb || addr.city_district || addr.county || addr.state_district || '';
       detectedState = addr.state || '';
       detectedCountry = addr.country || 'India';
     }
   } catch (e) {
-    console.warn('[locationHelper] LocationIQ geocode failed, trying BigDataCloud...', e);
+    console.warn('[locationHelper] LocationIQ geocode error:', e);
   }
 
-  // 2. Fallback: BigDataCloud client API (free, fast, no API key needed)
-  if (!detectedCity) {
-    try {
-      const bdcUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`;
-      const res = await fetch(bdcUrl, { signal: AbortSignal.timeout(5000) });
-      if (res.ok) {
-        const data = await res.json();
-        detectedCity = data.city || data.locality || data.principalSubdivision || '';
-        detectedState = data.principalSubdivision || '';
-        detectedCountry = data.countryName || 'India';
-      }
-    } catch (e) {
-      console.warn('[locationHelper] BigDataCloud geocode error:', e);
-    }
-  }
-
-  // 3. Fallback: OpenStreetMap Nominatim
+  // 2. Fallback: OpenStreetMap Nominatim Reverse Geocoding
   if (!detectedCity) {
     try {
       const osmUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=14&addressdetails=1`;
       const res = await fetch(osmUrl, {
         headers: { 'Accept-Language': 'en' },
-        signal: AbortSignal.timeout(5000)
+        signal: AbortSignal.timeout(6000)
       });
       if (res.ok) {
         const data = await res.json();
         const addr = data.address || {};
-        detectedCity = addr.city || addr.town || addr.village || addr.suburb || addr.county || addr.state_district || '';
+        detectedCity = addr.city || addr.town || addr.municipality || addr.village || addr.suburb || addr.county || addr.state_district || '';
         detectedState = addr.state || '';
         detectedCountry = addr.country || 'India';
       }
@@ -133,12 +120,30 @@ export const reverseGeocodeCoords = async (latitude, longitude) => {
     }
   }
 
-  // Assemble clean location string
+  // 3. Fallback: BigDataCloud client API
+  if (!detectedCity) {
+    try {
+      const bdcUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`;
+      const res = await fetch(bdcUrl, { signal: AbortSignal.timeout(6000) });
+      if (res.ok) {
+        const data = await res.json();
+        detectedCity = data.city || data.locality || data.localityInfo?.administrative?.[3]?.name || data.localityInfo?.administrative?.[2]?.name || '';
+        detectedState = data.principalSubdivision || '';
+        detectedCountry = data.countryName || 'India';
+      }
+    } catch (e) {
+      console.warn('[locationHelper] BigDataCloud geocode error:', e);
+    }
+  }
+
+  // Format into "City, Country"
   let formattedLocation = '';
   if (detectedCity && detectedCountry) {
     formattedLocation = `${detectedCity}, ${detectedCountry}`;
   } else if (detectedCity) {
     formattedLocation = detectedCity;
+  } else if (detectedState && detectedCountry) {
+    formattedLocation = `${detectedState}, ${detectedCountry}`;
   } else if (latitude && longitude) {
     formattedLocation = `${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`;
   }
@@ -153,127 +158,68 @@ export const reverseGeocodeCoords = async (latitude, longitude) => {
 };
 
 /**
- * IP-based geolocation fallback when GPS is disabled or permission denied
+ * React GPS Method:
+ * 1. Asks for browser GPS permission
+ * 2. Gets real latitude and longitude
+ * 3. Converts coordinates into city and country using reverse geocoding
+ * 4. Automatically updates localStorage and notifies React components
  */
-export const detectLocationByIP = async () => {
-  // Service 1: ipwho.is (fast & detailed)
-  try {
-    const res = await fetch('https://ipwho.is/', { signal: AbortSignal.timeout(5000) });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.success && (data.city || data.region)) {
-        const city = data.city || data.region || '';
-        const country = data.country || 'India';
-        const formattedLocation = `${city}, ${country}`.replace(/^,\s*/, '');
-        const coordinates = (data.latitude && data.longitude) ? { latitude: data.latitude, longitude: data.longitude } : null;
-        return { city, state: data.region || '', country, formattedLocation, coordinates };
-      }
-    }
-  } catch (_) {}
-
-  // Service 2: ipapi.co
-  try {
-    const res = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(5000) });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && (data.city || data.region) && !data.error) {
-        const city = data.city || data.region || '';
-        const country = data.country_name || 'India';
-        const formattedLocation = `${city}, ${country}`.replace(/^,\s*/, '');
-        const coordinates = (data.latitude && data.longitude) ? { latitude: data.latitude, longitude: data.longitude } : null;
-        return { city, state: data.region || '', country, formattedLocation, coordinates };
-      }
-    }
-  } catch (_) {}
-
-  // Service 3: ipinfo.io
-  try {
-    const res = await fetch('https://ipinfo.io/json', { signal: AbortSignal.timeout(5000) });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && (data.city || data.region)) {
-        const city = data.city || data.region || '';
-        const country = data.country === 'IN' ? 'India' : (data.country || 'India');
-        const formattedLocation = `${city}, ${country}`.replace(/^,\s*/, '');
-        let coordinates = null;
-        if (data.loc) {
-          const [lat, lon] = data.loc.split(',').map(Number);
-          if (!isNaN(lat) && !isNaN(lon)) coordinates = { latitude: lat, longitude: lon };
-        }
-        return { city, state: data.region || '', country, formattedLocation, coordinates };
-      }
-    }
-  } catch (_) {}
-
-  return null;
-};
-
-/**
- * Full automatic location detection (GPS with IP Fallback)
- */
-export const detectUserLocation = async ({ silent = false } = {}) => {
-  // 1. If running inside Capacitor Native Mobile App (Android APK / iOS)
+export const requestBrowserGpsLocation = async () => {
+  // If running inside Capacitor Native Mobile App (Android APK / iOS)
   if (Capacitor.isNativePlatform()) {
     try {
       let permStatus = await Geolocation.checkPermissions();
       if (permStatus.location !== 'granted' && permStatus.coarseLocation !== 'granted') {
-        if (!silent) {
-          permStatus = await Geolocation.requestPermissions({ permissions: ['location', 'coarseLocation'] });
-        }
+        permStatus = await Geolocation.requestPermissions({ permissions: ['location', 'coarseLocation'] });
       }
 
       if (permStatus.location === 'granted' || permStatus.coarseLocation === 'granted') {
         const nativePos = await Geolocation.getCurrentPosition({
           enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 60000
+          timeout: 15000,
+          maximumAge: 0
         });
 
         if (nativePos?.coords) {
           const result = await reverseGeocodeCoords(nativePos.coords.latitude, nativePos.coords.longitude);
           if (result.formattedLocation) {
             saveUserLocation(result.formattedLocation, result.coordinates);
-            return { success: true, ...result, source: 'gps_native' };
+            return { success: true, ...result };
           }
         }
       }
     } catch (nativeErr) {
-      console.warn('[locationHelper] Capacitor Geolocation failed:', nativeErr);
+      console.warn('[locationHelper] Capacitor native GPS error:', nativeErr);
     }
   }
 
-  // 2. Web / Browser Geolocation
-  if (typeof navigator !== 'undefined' && navigator.geolocation) {
-    try {
-      const pos = await new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 7000,
-          maximumAge: 120000
-        });
-      });
-
-      if (pos?.coords) {
-        const result = await reverseGeocodeCoords(pos.coords.latitude, pos.coords.longitude);
-        if (result.formattedLocation) {
-          saveUserLocation(result.formattedLocation, result.coordinates);
-          return { success: true, ...result, source: 'gps_browser' };
-        }
-      }
-    } catch (geoErr) {
-      console.warn('[locationHelper] Browser GPS failed or denied, using IP fallback...', geoErr?.message);
-    }
+  // Standard Browser Geolocation
+  if (typeof navigator === 'undefined' || !navigator.geolocation) {
+    throw new Error('Geolocation is not supported by your browser');
   }
 
-  // 3. Fallback to IP Geolocation
-  const ipResult = await detectLocationByIP();
-  if (ipResult && ipResult.formattedLocation) {
-    saveUserLocation(ipResult.formattedLocation, ipResult.coordinates);
-    return { success: true, ...ipResult, source: 'ip_fallback' };
+  const pos = await new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: true,
+      timeout: 15000, // 15 seconds so user has time to click "Allow"
+      maximumAge: 0   // Fresh real-time GPS hardware coordinates
+    });
+  });
+
+  const { latitude, longitude } = pos.coords;
+  const result = await reverseGeocodeCoords(latitude, longitude);
+
+  if (result.formattedLocation) {
+    saveUserLocation(result.formattedLocation, result.coordinates);
   }
 
-  return { success: false, error: 'Could not detect location' };
+  return { success: true, ...result };
 };
+
+/**
+ * Backward compatibility alias
+ */
+export const detectUserLocation = requestBrowserGpsLocation;
 
 /**
  * Calculate distance between two GPS points using Haversine formula (km)
@@ -438,4 +384,3 @@ export const filterRestaurantsForLocation = (restaurants = [], location = '', se
     matchingOutletsCount
   };
 };
-
