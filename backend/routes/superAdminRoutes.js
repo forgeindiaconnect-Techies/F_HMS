@@ -7,7 +7,9 @@ import {
     updateTicket, deleteTicket, updateApprovalStatus, getAllUsers, updateUserStatus, deleteUser,
     broadcastNotification, deleteSuperAdminNotification,
     getSubscriptionPayments, getSubscriptionAnalytics,
-    updateRestaurantModules
+    updateRestaurantModules,
+    getTrialRequests, approveTrialRequest, rejectTrialRequest,
+    manualFreezeRestaurant, manualUnfreezeRestaurant
 } from '../controllers/superAdminController.js';
 import { deleteVerification } from '../controllers/verificationController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
@@ -58,8 +60,6 @@ router.route('/billing-history')
 router.route('/subscription-analytics')
     .get(getSubscriptionAnalytics);
 
-export default router;
-
 router.route('/trial-requests')
     .get(getTrialRequests);
 router.route('/trial-requests/:id/approve')
@@ -71,3 +71,5 @@ router.route('/restaurants/:id/freeze')
     .post(manualFreezeRestaurant);
 router.route('/restaurants/:id/unfreeze')
     .post(manualUnfreezeRestaurant);
+
+export default router;
