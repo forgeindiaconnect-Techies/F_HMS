@@ -1,21 +1,54 @@
-import { useState } from 'react';
-import { Outlet, Link } from 'react-router-dom';
-import { ArrowLeft, ShoppingCart, User, UtensilsCrossed, Heart, CalendarDays, ShoppingBag, Truck } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Outlet, Link, useLocation } from 'react-router-dom';
+import { ArrowLeft, User, UtensilsCrossed, Heart, CalendarDays, ShoppingBag, MapPin, ChevronDown } from 'lucide-react';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { useCart } from '../context/CartContext';
 import CartDrawer from '../components/CartDrawer';
 import WishlistDrawer from '../components/WishlistDrawer';
+import LocationPickerModal from '../components/LocationPickerModal';
+import { getSavedLocation, EVENT_LOCATION_UPDATED } from '../utils/locationHelper';
 
 const CustomerLayout = () => {
-    const { user, logout } = useCustomerAuth();
+    const { user } = useCustomerAuth();
     const { cartCount, setIsCartOpen, wishlist, setIsWishlistOpen } = useCart();
-    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [userLocation, setUserLocation] = useState(() => getSavedLocation());
+    const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
+    const [restaurants, setRestaurants] = useState([]);
+
+    const location = useLocation();
+    const isLandingPage = location.pathname === '/' || location.pathname === '/explore';
+
+    // Synchronize location across dashboards
+    useEffect(() => {
+        const handleLocationUpdate = (e) => {
+            if (e?.detail?.location !== undefined) {
+                setUserLocation(e.detail.location);
+            } else {
+                setUserLocation(getSavedLocation());
+            }
+        };
+
+        window.addEventListener(EVENT_LOCATION_UPDATED, handleLocationUpdate);
+        window.addEventListener('storage', handleLocationUpdate);
+        return () => {
+            window.removeEventListener(EVENT_LOCATION_UPDATED, handleLocationUpdate);
+            window.removeEventListener('storage', handleLocationUpdate);
+        };
+    }, []);
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col font-sans relative text-slate-900 dark:text-slate-100 transition-colors">
+        <div className="min-h-screen flex flex-col font-sans relative bg-white text-slate-800">
             <CartDrawer />
             <WishlistDrawer />
             
+            <LocationPickerModal
+                isOpen={isLocationPickerOpen}
+                onClose={() => setIsLocationPickerOpen(false)}
+                currentLocation={userLocation}
+                onSelectLocation={(loc) => setUserLocation(loc)}
+                restaurants={restaurants}
+            />
+
             {!isLandingPage && (
                 <header className="bg-white/95 backdrop-blur-md border-b border-slate-100 sticky top-0 z-40 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
                     <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 h-14 sm:h-[76px] flex items-center justify-between gap-1 sm:gap-4 overflow-hidden">
@@ -120,59 +153,126 @@ const CustomerLayout = () => {
                 </header>
             )}
             
-            <main className="flex-grow pb-16 md:pb-0">
+            <main className="flex-grow pb-20 md:pb-0">
                 <Outlet />
             </main>
 
-            {/* Mobile Bottom Navigation */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-3 px-2 flex justify-around items-center z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
-                <Link to="/explore" className="flex flex-col items-center text-slate-500 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
-                    <UtensilsCrossed size={20} />
+            {/* Mobile Bottom Navigation (Persistent native app bar with active indicator and safe-area support) */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-2 px-3 flex justify-around items-center z-40 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+                <Link 
+                    to="/explore" 
+                    className={`flex flex-col items-center transition-colors ${
+                        location.pathname === '/' || location.pathname === '/explore' 
+                            ? 'text-[#FF5A1F]' 
+                            : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                >
+                    <UtensilsCrossed size={19} className="stroke-[2.2]" />
                     <span className="text-[10px] font-bold mt-1">Explore</span>
                 </Link>
-                <Link to="/menu" className="flex flex-col items-center text-slate-500 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
-                    <ShoppingBag size={20} />
+                <Link 
+                    to="/menu" 
+                    className={`flex flex-col items-center transition-colors ${
+                        location.pathname.startsWith('/menu') 
+                            ? 'text-[#FF5A1F]' 
+                            : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                >
+                    <ShoppingBag size={19} className="stroke-[2.2]" />
                     <span className="text-[10px] font-bold mt-1">Menu</span>
                 </Link>
-                <Link to="/reservations" className="flex flex-col items-center text-slate-500 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
-                    <CalendarDays size={20} />
-                    <span className="text-[10px] font-bold mt-1">Booking</span>
+                <Link 
+                    to="/reservations" 
+                    className={`flex flex-col items-center transition-colors ${
+                        location.pathname.startsWith('/reservations') 
+                            ? 'text-[#FF5A1F]' 
+                            : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                >
+                    <CalendarDays size={19} className="stroke-[2.2]" />
+                    <span className="text-[10px] font-bold mt-1">Dine In</span>
                 </Link>
-                <Link to="/profile" className="flex flex-col items-center text-slate-500 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
-                    <User size={20} />
+                <Link 
+                    to="/profile" 
+                    className={`flex flex-col items-center transition-colors ${
+                        location.pathname.startsWith('/profile') 
+                            ? 'text-[#FF5A1F]' 
+                            : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                >
+                    <User size={19} className="stroke-[2.2]" />
                     <span className="text-[10px] font-bold mt-1">Account</span>
                 </Link>
             </div>
 
-            <footer className="bg-slate-900 dark:bg-slate-950 text-slate-300 py-12 border-t border-slate-800">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div>
-                        <Link 
-                            to="/explore" 
-                            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                            className="text-2xl font-bold text-white mb-4 flex items-center gap-2 hover:text-green-400 transition-colors inline-flex cursor-pointer"
-                        >
-                            <UtensilsCrossed className="text-green-500" /> RestoSys
-                        </Link>
-                        <p className="text-slate-400">The premium dining experience delivered directly to your table or doorstep.</p>
+            {!isLandingPage && (
+                <footer className="bg-slate-950 text-slate-300 py-12 border-t border-slate-800">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+                        <div className="space-y-3.5">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-9 h-9 rounded-xl bg-[#FF5A1F] text-white flex items-center justify-center">
+                                    <UtensilsCrossed size={19} />
+                                </div>
+                                <div className="flex flex-col text-left">
+                                    <span className="text-xl font-black text-white tracking-tight leading-none">
+                                        Food<span className="text-[#FF5A1F]">Nest</span>
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 font-medium mt-1">
+                                        Good Food, Better Mood
+                                    </span>
+                                </div>
+                            </div>
+                            <p className="text-xs text-slate-400 leading-relaxed max-w-xs">
+                                Your favourite dishes and restaurants delivered fast, fresh, and hot right to your doorstep.
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 className="text-xs font-bold text-white mb-3.5 tracking-wider uppercase">Quick Links</h4>
+                            <ul className="space-y-2 text-xs font-medium">
+                                <li><Link to="/explore" className="hover:text-[#FF5A1F] transition-colors">Home</Link></li>
+                                <li><Link to="/explore#featured-restaurants" className="hover:text-[#FF5A1F] transition-colors">Restaurants</Link></li>
+                                <li><Link to="/menu" className="hover:text-[#FF5A1F] transition-colors">Menu</Link></li>
+                                <li><Link to="/explore#offers" className="hover:text-[#FF5A1F] transition-colors">Offers</Link></li>
+                                <li><Link to="/explore#how-it-works" className="hover:text-[#FF5A1F] transition-colors">About Us</Link></li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h4 className="text-xs font-bold text-white mb-3.5 tracking-wider uppercase">Help</h4>
+                            <ul className="space-y-2 text-xs font-medium">
+                                <li>
+                                    <Link 
+                                        to="/explore#how-it-works" 
+                                        onClick={() => {
+                                            setTimeout(() => {
+                                                const el = document.getElementById('how-it-works');
+                                                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                                            }, 100);
+                                        }}
+                                        className="hover:text-[#FF5A1F] transition-colors no-underline outline-none"
+                                    >
+                                        How It Works
+                                    </Link>
+                                </li>
+                                <li><Link to="/reservations" className="hover:text-[#FF5A1F] transition-colors no-underline">Book a Table</Link></li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h4 className="text-xs font-bold text-white mb-3.5 tracking-wider uppercase">Download Our App</h4>
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                                <div className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:bg-slate-700 transition-colors">
+                                    <span>Google Play</span>
+                                </div>
+                                <div className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:bg-slate-700 transition-colors">
+                                    <span>App Store</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <h4 className="text-lg font-bold text-white mb-4">Quick Links</h4>
-                        <ul className="space-y-2">
-                            <li><Link to="/menu" className="hover:text-green-400 transition-colors">Browse Menu</Link></li>
-                            <li><Link to="/reservations" className="hover:text-green-400 transition-colors">Book a Table</Link></li>
-                            <li><Link to="/delivery/login" className="hover:text-emerald-400 text-slate-300 font-semibold transition-colors flex items-center gap-1.5"><Truck size={14} className="text-emerald-400" /> Delivery Partner Portal</Link></li>
-                            <li><Link to="/login" className="hover:text-green-400 text-slate-400 transition-colors">Restaurant Owner & Staff Login</Link></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 className="text-lg font-bold text-white mb-4">Contact Us</h4>
-                        <p className="text-slate-400">123 Culinary Ave, Food District</p>
-                        <p className="text-slate-400">support@restosys.com</p>
-                        <p className="text-slate-400">+1 234 567 8900</p>
-                    </div>
-                </div>
-            </footer>
+                </footer>
+            )}
         </div>
     );
 };
