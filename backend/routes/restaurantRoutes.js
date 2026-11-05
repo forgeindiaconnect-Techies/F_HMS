@@ -5,7 +5,7 @@ import {
     selfSubscribe, logoUpload, getMyBillingHistory, upgradeSubscription, 
     downgradeSubscription, renewSubscription,
     createRazorpaySubscriptionOrder, verifyRazorpaySubscriptionPayment,
-    generateRazorpaySubscriptionQR, confirmSubscriptionQRPayment,
+    generateRazorpaySubscriptionQR, confirmSubscriptionQRPayment, requestFreeTrial,
     getRestaurantConfig, updateRestaurantConfig, getRestaurantPublicConfig
 } from '../controllers/restaurantController.js';
 import { submitVerification, getMyVerification, getAllVerifications, getVerificationById, reviewVerification, verificationUpload, deleteVerification, updateBrandAssets } from '../controllers/verificationController.js';
@@ -90,6 +90,9 @@ router.route('/mine/razorpay-qr')
 
 router.route('/mine/confirm-qr-payment')
     .post(protect, authorize('RestaurantAdmin', 'SuperAdmin', 'Admin'), confirmSubscriptionQRPayment);
+
+router.route('/trial-request')
+    .post(protect, authorize('RestaurantAdmin', 'Admin'), requestFreeTrial);
 
 router.route('/subscribe')
     .put(protect, authorize('RestaurantAdmin', 'SuperAdmin', 'Admin'), selfSubscribe);

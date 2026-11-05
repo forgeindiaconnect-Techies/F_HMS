@@ -1,3 +1,5 @@
+import { initSubscriptionScheduler } from './services/subscriptionCronService.js';
+import { checkSubscriptionAccess } from './middleware/subscriptionMiddleware.js';
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -95,23 +97,23 @@ app.get('/api', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/menu', menuRoutes);
 app.use('/api/categories', categoryRoutes);
-app.use('/api/inventory', inventoryRoutes);
+app.use('/api/inventory', checkSubscriptionAccess, inventoryRoutes);
 app.use('/api/suppliers', supplierRoutes);
 app.use('/api/offers', offerRoutes);
 app.use('/api/taxes', taxRoutes);
-app.use('/api/reports', reportRoutes);
+app.use('/api/reports', checkSubscriptionAccess, reportRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/restaurants', restaurantRoutes);
 app.use('/api/branches', branchRoutes);
 app.use('/api/customers', customerRoutes);
-app.use('/api/staff', staffRoutes);
+app.use('/api/staff', checkSubscriptionAccess, staffRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/reservations', reservationRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/analytics', analyticsRoutes);
+app.use('/api/orders', checkSubscriptionAccess, orderRoutes);
+app.use('/api/analytics', checkSubscriptionAccess, analyticsRoutes);
 app.use('/api/super-admin', superAdminRoutes);
-app.use('/api/tables', tableRoutes);
+app.use('/api/tables', checkSubscriptionAccess, tableRoutes);
 app.use('/api/plans', planRoutes);
 app.use('/api/service-requests', serviceRequestRoutes);
 app.use('/api/support', supportRoutes);
@@ -119,8 +121,8 @@ app.use('/api/delivery', deliveryRoutes);
 app.use('/api/auth/delivery', deliveryRoutes);
 app.use('/api/inquiries', inquiryRoutes);
 app.use('/api/billing-demos', billingDemoRoutes);
-app.use('/api/expenses', expenseRoutes);
-app.use('/api/kot', kotRoutes);
+app.use('/api/expenses', checkSubscriptionAccess, expenseRoutes);
+app.use('/api/kot', checkSubscriptionAccess, kotRoutes);
 app.use('/api/tips', tipRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/customer-reviews', customerReviewRoutes);
@@ -158,6 +160,10 @@ server.listen(PORT, '0.0.0.0', () => {
     
     // Connect to MongoDB Atlas asynchronously
     connectDB().then(async () => {
+
+        // Start background trial expiration & reminder scheduler
+        initSubscriptionScheduler();
+
         try {
             const count = await Plan.countDocuments();
             if (count === 0) {

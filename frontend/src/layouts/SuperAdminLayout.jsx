@@ -4,7 +4,7 @@ import {
     LayoutDashboard, Store, CreditCard, Percent, TrendingUp, 
     Users, MessageSquare, SlidersHorizontal, Settings, BarChart3, 
     Bell, ShieldCheck, LogOut, User, Menu, X, ChevronRight, ArrowLeft,
-    CalendarCheck, Receipt, MessageSquareQuote
+    CalendarCheck, Receipt, MessageSquareQuote, Sparkles
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -67,6 +67,7 @@ const SuperAdminLayout = () => {
             { name: 'Leads & Walkthroughs', href: '/super-admin/inquiries',     icon: CalendarCheck,   roles: ['SuperAdmin'] },
             { name: 'Billing Demo Requests', href: '/super-admin/billing-demos', icon: Receipt,        roles: ['SuperAdmin'] },
             { name: 'Restaurants',         href: '/super-admin/restaurants',   icon: Store,           roles: ['SuperAdmin'] },
+            { name: 'Free Trial Requests', href: '/super-admin/free-trials',   icon: Sparkles,        roles: ['SuperAdmin'] },
             { name: 'Plans',               href: '/super-admin/plans',         icon: CreditCard,      roles: ['SuperAdmin'] },
             { name: 'Commissions',         href: '/super-admin/commissions',   icon: Percent,         roles: ['SuperAdmin'] },
             { name: 'Revenue Analytics',   href: '/super-admin/revenue',       icon: TrendingUp,      roles: ['SuperAdmin'] },

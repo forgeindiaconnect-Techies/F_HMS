@@ -47,26 +47,34 @@ const restaurantSchema = new mongoose.Schema({
         required: true,
     },
     subscription: {
-        status: { type: String, enum: ['Active', 'Frozen', 'Cancelled', 'Inactive', 'Expiring Soon', 'Expired', 'Suspended'], default: 'Inactive' },
+        status: { 
+            type: String, 
+            enum: ['Pending Approval', 'Active', 'Frozen', 'Cancelled', 'Inactive', 'Expiring Soon', 'Expired', 'Suspended', 'Rejected'], 
+            default: 'Inactive' 
+        },
         plan: {
             type: String,
-            enum: ['Basic', 'Pro', 'Enterprise', 'Starter', 'Professional', 'basic', 'pro', 'enterprise', 'starter', 'professional'],
-            set: (v) => {
-                if (!v) return 'Basic';
-                const lower = String(v).trim().toLowerCase();
-                if (lower === 'basic') return 'Basic';
-                if (lower === 'pro' || lower === 'professional') return 'Pro';
-                if (lower === 'enterprise') return 'Enterprise';
-                if (lower === 'starter') return 'Starter';
-                return v.charAt(0).toUpperCase() + v.slice(1);
-            },
             default: 'Basic'
         },
         billingCycle: { type: String, enum: ['monthly', 'yearly'], default: 'monthly' },
-        trialActive: { type: Boolean, default: true },
+        trialActive: { type: Boolean, default: false },
+        trialRequestDate: { type: Date },
+        trialStartDate: { type: Date },
+        trialEndDate: { type: Date },
+        approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        approvedAt: { type: Date },
+        rejectedAt: { type: Date },
+        rejectionReason: { type: String, default: '' },
+        paymentStatus: { type: String, enum: ['Unpaid', 'Trial', 'Paid', 'Pending', 'Failed'], default: 'Unpaid' },
+        manualFreeze: { type: Boolean, default: false },
+        freezeReason: { type: String, default: '' },
+        frozenAt: { type: Date },
+        subscriptionStartDate: { type: Date },
+        subscriptionEndDate: { type: Date },
         expiryDate: { type: Date },
         startDate: { type: Date, default: Date.now },
         price: { type: Number, default: 0 },
+        reminderSent24h: { type: Boolean, default: false },
         downgradeScheduledPlan: { type: String, default: '' },
         downgradeScheduledDate: { type: Date }
     },

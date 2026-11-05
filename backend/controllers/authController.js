@@ -76,19 +76,35 @@ export const registerUser = async (req, res) => {
                 return p.charAt(0).toUpperCase() + p.slice(1);
             };
 
+            const isPaidUpfront = Boolean(req.body.razorpayPaymentId);
+            const isTrial = !isPaidUpfront;
+
+            const subData = isPaidUpfront ? {
+                status: 'Active',
+                plan: sanitizePlan(req.body.plan),
+                billingCycle: req.body.billingCycle || 'monthly',
+                trialActive: false,
+                paymentStatus: 'Paid',
+                subscriptionStartDate: new Date(),
+                subscriptionEndDate: new Date(Date.now() + (req.body.billingCycle === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000),
+                startDate: new Date(),
+                expiryDate: new Date(Date.now() + (req.body.billingCycle === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000)
+            } : {
+                status: 'Pending Approval',
+                plan: sanitizePlan(req.body.plan) || 'Basic',
+                billingCycle: req.body.billingCycle || 'monthly',
+                trialActive: false,
+                trialRequestDate: new Date(),
+                paymentStatus: 'Trial',
+                manualFreeze: false
+            };
+
             createdRestaurant = await Restaurant.create({
                 name: restaurantName,
                 ownerId: user._id,
-                subscription: {
-                    status: 'Active',
-                    plan: sanitizePlan(req.body.plan),
-                    billingCycle: req.body.billingCycle || 'monthly',
-                    trialActive: true,
-                    startDate: new Date(),
-                    expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7-Day Free Trial
-                },
-                approvalStatus: 'Approved',
-                verificationStatus: 'Verified',
+                subscription: subData,
+                approvalStatus: isPaidUpfront ? 'Approved' : 'Pending',
+                verificationStatus: hasVerificationFiles ? 'Under Review' : 'Pending',
                 isActive: true
             });
             user.restaurantId = createdRestaurant._id;
@@ -223,15 +239,24 @@ export const registerUser = async (req, res) => {
                 }).catch(err => console.error("Welcome email background error:", err.message));
 
                 if (createdRestaurant && createdRestaurant.subscription) {
-                    sendSubscriptionSuccessEmail({
-                        email: user.email,
-                        name: user.name,
-                        restaurantName: restName,
-                        plan: `${restPlan} (${createdRestaurant.subscription.trialActive ? '7-Day Free Trial' : 'Active'})`,
-                        billingCycle: createdRestaurant.subscription.billingCycle || 'monthly',
-                        price: 0,
-                        expiryDate: createdRestaurant.subscription.expiryDate
-                    }).catch(subErr => console.error("Subscription success email background error:", subErr.message));
+                    if (createdRestaurant.subscription.paymentStatus === 'Trial' && createdRestaurant.subscription.status === 'Pending Approval') {
+                        sendTrialRequestSubmittedEmail({
+                            email: user.email,
+                            name: user.name,
+                            restaurantName: restName,
+                            requestDate: createdRestaurant.subscription.trialRequestDate || new Date()
+                        }).catch(trialErr => console.error("Trial request email background error:", trialErr.message));
+                    } else if (createdRestaurant.subscription.status === 'Active') {
+                        sendSubscriptionSuccessEmail({
+                            email: user.email,
+                            name: user.name,
+                            restaurantName: restName,
+                            plan: restPlan,
+                            billingCycle: createdRestaurant.subscription.billingCycle || 'monthly',
+                            price: createdRestaurant.subscription.price || 0,
+                            expiryDate: createdRestaurant.subscription.subscriptionEndDate || createdRestaurant.subscription.expiryDate
+                        }).catch(subErr => console.error("Subscription success email background error:", subErr.message));
+                    }
                 }
             } catch (eErr) {
                 console.error("Welcome/Subscription email dispatch error:", eErr.message);

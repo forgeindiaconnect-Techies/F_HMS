@@ -7,7 +7,7 @@ import SubscriptionPayment from '../models/SubscriptionPayment.js';
 import Plan from '../models/Plan.js';
 import User from '../models/User.js';
 import RestaurantVerification from '../models/RestaurantVerification.js';
-import { sendSubscriptionSuccessEmail } from '../utils/emailService.js';
+import { sendSubscriptionSuccessEmail, sendTrialRequestSubmittedEmail, sendDashboardAccessRestoredEmail } from '../utils/emailService.js';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -1526,5 +1526,89 @@ export const confirmSubscriptionQRPayment = async (req, res) => {
         });
     } catch (error) {
         res.status(400).json({ message: error.message });
+    }
+};
+
+// @desc    Submit a 7-day free trial subscription request
+// @route   POST /api/restaurants/trial-request
+// @access  Private (RestaurantAdmin)
+export const requestFreeTrial = async (req, res) => {
+    try {
+        const restaurantId = req.user.restaurantId;
+        if (!restaurantId) {
+            return res.status(404).json({ message: 'Restaurant not found for this user.' });
+        }
+
+        const restaurant = await Restaurant.findById(restaurantId);
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found.' });
+        }
+
+        const sub = restaurant.subscription || {};
+
+        // Prevent duplicate trial requests if trial was already completed or active
+        if (sub.trialStartDate || (sub.trialActive && sub.trialEndDate && new Date() <= new Date(sub.trialEndDate))) {
+            return res.status(400).json({ 
+                message: 'Your restaurant has already used or is currently on a 7-Day Free Trial. Please select a subscription plan.' 
+            });
+        }
+
+        if (sub.status === 'Pending Approval') {
+            return res.status(400).json({ 
+                message: 'Your free trial subscription request is already pending Super Admin approval.' 
+            });
+        }
+
+        const requestedPlan = req.body.plan || 'Pro';
+        const requestDate = new Date();
+
+        restaurant.subscription = {
+            ...sub,
+            status: 'Pending Approval',
+            plan: requestedPlan,
+            trialActive: false,
+            trialRequestDate: requestDate,
+            paymentStatus: 'Trial',
+            manualFreeze: false,
+            rejectionReason: '',
+            price: 0
+        };
+
+        await restaurant.save();
+
+        // Super Admin Notification
+        try {
+            await Notification.create({
+                title: 'New Free Trial Request',
+                desc: `Restaurant "${restaurant.name}" requested a 7-Day Free Trial (${requestedPlan} Plan). Pending Super Admin review.`,
+                type: 'System',
+                isSuperAdminOnly: true
+            });
+        } catch (notifErr) {
+            console.error('Failed to create SuperAdmin trial request notification:', notifErr.message);
+        }
+
+        // Email Owner (Trigger 1: Free trial subscription request submitted)
+        try {
+            const owner = await User.findById(restaurant.ownerId || req.user._id);
+            const targetEmail = owner?.email || req.user?.email;
+            if (targetEmail) {
+                sendTrialRequestSubmittedEmail({
+                    email: targetEmail,
+                    name: owner?.name || req.user?.name,
+                    restaurantName: restaurant.name,
+                    requestDate
+                }).catch(err => console.error('Trial submitted email error:', err.message));
+            }
+        } catch (emailErr) {
+            console.error('Failed to send trial request email:', emailErr.message);
+        }
+
+        res.status(200).json({
+            message: '7-Day Free Trial request submitted successfully! It is now pending Super Admin approval. Your 7-day countdown will begin upon approval.',
+            restaurant
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };

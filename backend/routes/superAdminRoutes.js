@@ -59,3 +59,15 @@ router.route('/subscription-analytics')
     .get(getSubscriptionAnalytics);
 
 export default router;
+
+router.route('/trial-requests')
+    .get(getTrialRequests);
+router.route('/trial-requests/:id/approve')
+    .post(approveTrialRequest);
+router.route('/trial-requests/:id/reject')
+    .post(rejectTrialRequest);
+
+router.route('/restaurants/:id/freeze')
+    .post(manualFreezeRestaurant);
+router.route('/restaurants/:id/unfreeze')
+    .post(manualUnfreezeRestaurant);

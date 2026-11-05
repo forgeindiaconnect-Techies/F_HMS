@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { 
     Check, X, Ban, RefreshCw, Eye, EyeOff, Trash2, Search, Store, 
     Sparkles, TrendingUp, ShieldCheck, AlertCircle, Building2, Calendar, 
-    Phone, Mail, MapPin, RotateCcw, CheckCircle2, ShieldAlert
+    Phone, Mail, MapPin, RotateCcw, CheckCircle2, ShieldAlert, Lock, Unlock
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -38,6 +38,35 @@ const PlatformRestaurants = () => {
     }, [api]);
 
     // Handle Restaurant Approval
+    
+    const handleFreezeRestaurant = async (id, name) => {
+        const reason = window.prompt(`Enter reason to freeze dashboard for ${name}:`, 'Administrative review hold');
+        if (!reason) return;
+        try {
+            await api.post(`/super-admin/restaurants/${id}/freeze`, { reason });
+            toast.success(`Dashboard for ${name} has been frozen.`);
+            setRestaurants(prev => prev.map(r => r._id === id ? { ...r, subscription: { ...r.subscription, status: 'Frozen', manualFreeze: true, freezeReason: reason } } : r));
+            if (viewingRestaurant?._id === id) {
+                setViewingRestaurant(prev => ({ ...prev, subscription: { ...prev.subscription, status: 'Frozen', manualFreeze: true, freezeReason: reason } }));
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to freeze restaurant.');
+        }
+    };
+
+    const handleUnfreezeRestaurant = async (id, name) => {
+        try {
+            await api.post(`/super-admin/restaurants/${id}/unfreeze`);
+            toast.success(`Dashboard for ${name} has been unfrozen.`);
+            setRestaurants(prev => prev.map(r => r._id === id ? { ...r, subscription: { ...r.subscription, status: 'Active', manualFreeze: false, freezeReason: '' } } : r));
+            if (viewingRestaurant?._id === id) {
+                setViewingRestaurant(prev => ({ ...prev, subscription: { ...prev.subscription, status: 'Active', manualFreeze: false, freezeReason: '' } }));
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Cannot unfreeze restaurant: Subscription or trial is invalid/expired.');
+        }
+    };
+
     const handleApproval = async (id, status) => {
         try {
             await api.put(`/super-admin/restaurants/${id}/approval`, { approvalStatus: status });
@@ -448,6 +477,23 @@ const PlatformRestaurants = () => {
                                                 >
                                                     <Eye size={16} />
                                                 </button>
+                                                {restaurant.subscription?.manualFreeze || restaurant.subscription?.status === 'Frozen' ? (
+                                                    <button
+                                                        onClick={() => handleUnfreezeRestaurant(restaurant._id, restaurant.name)}
+                                                        className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors"
+                                                        title="Unfreeze Dashboard"
+                                                    >
+                                                        <Unlock size={16} />
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleFreezeRestaurant(restaurant._id, restaurant.name)}
+                                                        className="p-2 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+                                                        title="Freeze Dashboard"
+                                                    >
+                                                        <Lock size={16} />
+                                                    </button>
+                                                )}
 
                                                 {isDeleted ? (
                                                     /* Restore Soft-Deleted Restaurant */
@@ -645,6 +691,47 @@ const PlatformRestaurants = () => {
                                     <span className="text-gray-900 font-semibold">
                                         {viewingRestaurant.subscription?.expiryDate ? new Date(viewingRestaurant.subscription?.expiryDate).toLocaleDateString() : 'Perpetual'}
                                     </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 font-medium">Trial Start Date:</span>
+                                    <span className="text-gray-900 font-semibold">
+                                        {viewingRestaurant.subscription?.trialStartDate ? new Date(viewingRestaurant.subscription.trialStartDate).toLocaleString() : 'Not on trial'}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 font-medium">Trial Expiration:</span>
+                                    <span className="text-gray-900 font-semibold">
+                                        {viewingRestaurant.subscription?.trialEndDate ? new Date(viewingRestaurant.subscription.trialEndDate).toLocaleString() : 'N/A'}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 font-medium">Payment Status:</span>
+                                    <span className="text-gray-900 font-bold uppercase text-xs">
+                                        {viewingRestaurant.subscription?.paymentStatus || 'Trial'}
+                                    </span>
+                                </div>
+                                {viewingRestaurant.subscription?.manualFreeze && (
+                                    <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs space-y-1">
+                                        <span className="font-bold text-red-700">❄️ Manually Frozen:</span>
+                                        <p className="text-red-600">{viewingRestaurant.subscription.freezeReason || 'Administrative freeze'}</p>
+                                    </div>
+                                )}
+                                <div className="pt-2">
+                                    {viewingRestaurant.subscription?.manualFreeze || viewingRestaurant.subscription?.status === 'Frozen' ? (
+                                        <button
+                                            onClick={() => handleUnfreezeRestaurant(viewingRestaurant._id, viewingRestaurant.name)}
+                                            className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5"
+                                        >
+                                            <Unlock size={14} /> Unfreeze Restaurant Dashboard
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleFreezeRestaurant(viewingRestaurant._id, viewingRestaurant.name)}
+                                            className="w-full py-2.5 bg-slate-900 hover:bg-black text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5"
+                                        >
+                                            <Lock size={14} /> Freeze Restaurant Dashboard
+                                        </button>
+                                    )}
                                 </div>
                                 <div className="flex justify-between items-center border-t border-gray-100 pt-2.5">
                                     <span className="text-gray-500 font-medium">Renewal Countdown:</span>

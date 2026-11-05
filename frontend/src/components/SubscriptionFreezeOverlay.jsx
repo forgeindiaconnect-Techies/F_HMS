@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Lock, Sparkles, CheckCircle, ShieldCheck, ArrowRight, Zap, RefreshCw, AlertCircle, CreditCard, QrCode } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { 
+    Lock, Sparkles, CheckCircle, ArrowRight, RefreshCw, 
+    CreditCard, Clock, ShieldAlert, LifeBuoy, XCircle 
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const SubscriptionFreezeOverlay = ({ onUnfrozen }) => {
@@ -13,6 +17,12 @@ const SubscriptionFreezeOverlay = ({ onUnfrozen }) => {
     const [submitting, setSubmitting] = useState(false);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [paymentStep, setPaymentStep] = useState('select'); // 'select' | 'qr' | 'processing' | 'success'
+
+    const sub = restaurant?.subscription || {};
+    const isManualFrozen = sub.manualFreeze || sub.status === 'Frozen';
+    const isPending = sub.status === 'Pending Approval';
+    const isRejected = sub.status === 'Rejected';
+    const isTrial = sub.paymentStatus === 'Trial';
 
     // Load available plans from backend
     useEffect(() => {
@@ -69,9 +79,10 @@ const SubscriptionFreezeOverlay = ({ onUnfrozen }) => {
 
         try {
             const billingCycle = isYearly ? 'yearly' : 'monthly';
-            await api.post('/restaurants/mine/upgrade', {
+            await api.post('/restaurants/mine/confirm-qr-payment', {
                 planName: selectedPlan,
-                billingCycle: billingCycle
+                billingCycle: billingCycle,
+                refId: `PAY-MANUAL-${Date.now().toString().slice(-8)}`
             });
 
             setPaymentStep('success');
@@ -85,7 +96,7 @@ const SubscriptionFreezeOverlay = ({ onUnfrozen }) => {
                 window.location.reload();
             }, 1000);
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to process subscription. Please try again.');
+            toast.error(error.response?.data?.message || 'Failed to process subscription payment.');
             setPaymentStep('qr');
         } finally {
             setSubmitting(false);
@@ -96,40 +107,117 @@ const SubscriptionFreezeOverlay = ({ onUnfrozen }) => {
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-slate-950/85 backdrop-blur-xl overflow-y-auto animate-in fade-in duration-300">
             <div className="w-full max-w-5xl bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden flex flex-col my-auto relative animate-in zoom-in-95 duration-300">
                 
-                {/* Header Banner */}
-                <div className="relative bg-gradient-to-r from-rose-600 via-red-600 to-amber-600 p-8 sm:p-10 text-white overflow-hidden">
-                    <div className="absolute top-0 right-0 transform translate-x-8 -translate-y-8 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-                    
-                    <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                        <div className="space-y-2">
-                            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-white font-extrabold text-xs uppercase tracking-wider border border-white/30">
-                                <Lock size={14} className="animate-bounce" /> 7-Day Free Trial Expired
+                {/* Header Banner - Contextual according to freeze type */}
+                {isManualFrozen ? (
+                    <div className="relative bg-gradient-to-r from-slate-800 via-slate-900 to-zinc-900 p-8 sm:p-10 text-white overflow-hidden">
+                        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                            <div className="space-y-2">
+                                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-md text-amber-300 font-extrabold text-xs uppercase tracking-wider border border-white/20">
+                                    <ShieldAlert size={14} /> Administrative Hold
+                                </div>
+                                <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
+                                    Dashboard Frozen by Super Admin ❄️
+                                </h2>
+                                <p className="text-slate-300 font-medium text-sm sm:text-base max-w-2xl">
+                                    {sub.freezeReason ? `Reason: ${sub.freezeReason}` : 'An administrative freeze has been placed on this restaurant dashboard.'}
+                                </p>
+                                <p className="text-xs text-slate-400 font-semibold">
+                                    All your orders, inventory data, and settings remain safe and securely preserved.
+                                </p>
                             </div>
-                            <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
-                                Your Dashboard is Currently Frozen ❄️
-                            </h2>
-                            <p className="text-rose-100 font-medium text-sm sm:text-base max-w-2xl">
-                                Your 7-day free trial has completed. Subscribe to any plan below to immediately unfreeze your dashboard and resume POS billing, kitchen KDS, and order management.
-                            </p>
-                        </div>
-
-                        <div className="shrink-0 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-center min-w-[160px]">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-rose-200 block">Status</span>
-                            <span className="text-xl font-black text-white flex items-center justify-center gap-1.5 mt-0.5">
-                                <span className="w-3 h-3 rounded-full bg-amber-400 animate-ping inline-block" />
-                                FROZEN
-                            </span>
+                            <div className="flex flex-col gap-2 shrink-0">
+                                <Link 
+                                    to="/admin/support"
+                                    className="px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
+                                >
+                                    <LifeBuoy size={16} /> Contact Support Desk
+                                </Link>
+                                <Link 
+                                    to="/admin/billing"
+                                    className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all"
+                                >
+                                    View Subscription
+                                </Link>
+                            </div>
                         </div>
                     </div>
-                </div>
+                ) : isPending ? (
+                    <div className="relative bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 p-8 sm:p-10 text-white overflow-hidden">
+                        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                            <div className="space-y-2">
+                                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-white font-extrabold text-xs uppercase tracking-wider border border-white/30">
+                                    <Clock size={14} className="animate-spin" /> Free Trial Pending Super Admin Approval
+                                </div>
+                                <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
+                                    Your 7-Day Free Trial is Under Review ⏳
+                                </h2>
+                                <p className="text-amber-100 font-medium text-sm sm:text-base max-w-2xl">
+                                    Your free trial subscription request has been submitted. <strong>The 7-day countdown will begin only after Super Admin approval</strong>, ensuring you receive the full duration.
+                                </p>
+                            </div>
+                            <div className="shrink-0 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-center min-w-[160px]">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-amber-200 block">Status</span>
+                                <span className="text-lg font-black text-white flex items-center justify-center gap-1.5 mt-0.5">
+                                    PENDING
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                ) : isRejected ? (
+                    <div className="relative bg-gradient-to-r from-red-600 to-rose-700 p-8 sm:p-10 text-white overflow-hidden">
+                        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                            <div className="space-y-2">
+                                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-white font-extrabold text-xs uppercase tracking-wider border border-white/30">
+                                    <XCircle size={14} /> Request Not Approved
+                                </div>
+                                <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
+                                    Free Trial Request Was Not Approved
+                                </h2>
+                                <p className="text-red-100 font-medium text-sm sm:text-base max-w-2xl">
+                                    {sub.rejectionReason ? `Reason: ${sub.rejectionReason}` : 'Documentation verification requirements could not be confirmed.'}
+                                </p>
+                            </div>
+                            <Link 
+                                to="/admin/support"
+                                className="px-5 py-3 rounded-xl bg-white text-red-600 hover:bg-red-50 font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
+                            >
+                                Contact Support
+                            </Link>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="relative bg-gradient-to-r from-rose-600 via-red-600 to-amber-600 p-8 sm:p-10 text-white overflow-hidden">
+                        <div className="absolute top-0 right-0 transform translate-x-8 -translate-y-8 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+                        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                            <div className="space-y-2">
+                                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-white font-extrabold text-xs uppercase tracking-wider border border-white/30">
+                                    <Lock size={14} className="animate-bounce" /> {isTrial ? '7-Day Free Trial Expired' : 'Subscription Expired'}
+                                </div>
+                                <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
+                                    Your Dashboard is Currently Frozen ❄️
+                                </h2>
+                                <p className="text-rose-100 font-medium text-sm sm:text-base max-w-2xl">
+                                    Your {isTrial ? '7-day free trial' : 'subscription'} has ended. Subscribe or renew any plan below to immediately unfreeze your dashboard and resume POS billing, kitchen KDS, and order management.
+                                </p>
+                            </div>
+                            <div className="shrink-0 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-center min-w-[160px]">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-rose-200 block">Status</span>
+                                <span className="text-xl font-black text-white flex items-center justify-center gap-1.5 mt-0.5">
+                                    <span className="w-3 h-3 rounded-full bg-rose-400 animate-ping inline-block" />
+                                    FROZEN
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
-                {/* Main Content Area */}
+                {/* Main Content Area - Plan Selection */}
                 <div className="p-6 sm:p-10 space-y-8 bg-slate-50/50 dark:bg-slate-900/50">
                     
                     {/* Billing Toggle */}
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                         <div>
-                            <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-base">Select Subscription Plan</h3>
+                            <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-base">Select Subscription Plan to Unfreeze</h3>
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Choose monthly or yearly billing. Instant unfreeze upon activation.</p>
                         </div>
 
@@ -224,12 +312,16 @@ const SubscriptionFreezeOverlay = ({ onUnfrozen }) => {
                 </div>
 
                 {/* Footer Note */}
-                <div className="p-4 bg-slate-100 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400 font-medium">
-                    🔒 SSL Encrypted 256-Bit Payment Gateway. Instant Activation upon confirmation.
+                <div className="p-4 bg-slate-100 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400 font-medium px-6">
+                    <span>🔒 SSL Encrypted 256-Bit Payment Gateway. Instant Activation upon confirmation.</span>
+                    <div className="flex items-center gap-4">
+                        <Link to="/admin/billing" className="text-rose-600 hover:underline font-bold">Subscription Portal</Link>
+                        <Link to="/admin/support" className="hover:underline">Contact Support</Link>
+                    </div>
                 </div>
             </div>
 
-            {/* Real-time Razorpay Payment Modal */}
+            {/* Real-time Payment Confirmation Modal */}
             {showPaymentModal && (
                 <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in">
                     <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 sm:p-8 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6 text-center animate-in zoom-in-95">

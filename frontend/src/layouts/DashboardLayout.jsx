@@ -134,15 +134,38 @@ const DashboardLayout = () => {
     // Default to 'Active' so features aren't locked if subscription status isn't set yet
     const status = restaurant?.subscription?.status || 'Active';
 
-    // 1-Day Trial Expiration / Frozen Check
-    const isTrialExpired = restaurant?.subscription?.trialActive && 
-        restaurant?.subscription?.expiryDate && 
-        (new Date() > new Date(restaurant.subscription.expiryDate));
-        
-    const isFrozen = user?.role !== 'SuperAdmin' && (
-        status === 'Frozen' || 
-        status === 'Expired' || 
-        isTrialExpired
+    // 7-Day Free Trial & Subscription Access Verification
+    const sub = restaurant?.subscription || {};
+    const now = new Date();
+    const isTrialExpired = Boolean(
+        sub.trialActive && 
+        sub.trialEndDate && 
+        now > new Date(sub.trialEndDate)
+    );
+    const isPaidExpired = Boolean(
+        sub.paymentStatus === 'Paid' &&
+        sub.subscriptionEndDate &&
+        now > new Date(sub.subscriptionEndDate)
+    );
+    const isPendingApproval = sub.status === 'Pending Approval';
+    const isRejected = sub.status === 'Rejected';
+    const isManualFrozen = Boolean(sub.manualFreeze || sub.status === 'Frozen');
+
+    // Essential routes exempt from freeze so owners can pay, renew, or get support
+    const isEssentialPage = (
+        location.pathname === '/admin/billing' ||
+        location.pathname.startsWith('/admin/support') ||
+        location.pathname === '/admin/settings' ||
+        location.pathname === '/admin/verification'
+    );
+
+    const isFrozen = user?.role !== 'SuperAdmin' && !isEssentialPage && (
+        isManualFrozen ||
+        sub.status === 'Expired' ||
+        isTrialExpired ||
+        isPaidExpired ||
+        isPendingApproval ||
+        isRejected
     );
 
     // Custom Billing Configuration check

@@ -1,3 +1,4 @@
+import { sendTrialApprovedEmail, sendTrialRejectedEmail, sendTrialStartedEmail, sendManualFreezeEmail, sendManualUnfreezeEmail } from '../utils/emailService.js';
 import Restaurant from '../models/Restaurant.js';
 import User from '../models/User.js';
 import Order from '../models/Order.js';
@@ -755,5 +756,277 @@ export const updateRestaurantModules = async (req, res) => {
     } catch (error) {
         console.error('Error updating restaurant modules:', error);
         res.status(500).json({ message: error.message || 'Server error updating modules' });
+    }
+};
+
+// ============================================================================
+// 7-DAY FREE TRIAL & SUBSCRIPTION MANAGEMENT CONTROLLERS
+// ============================================================================
+
+// @desc    Get all free trial subscription requests
+// @route   GET /api/super-admin/trial-requests
+// @access  Private/SuperAdmin
+export const getTrialRequests = async (req, res) => {
+    try {
+        const { status } = req.query;
+        let query = {
+            $or: [
+                { 'subscription.paymentStatus': 'Trial' },
+                { 'subscription.trialRequestDate': { $exists: true } },
+                { 'subscription.status': { $in: ['Pending Approval', 'Active', 'Frozen', 'Expired', 'Rejected'] } }
+            ]
+        };
+
+        if (status && status !== 'All') {
+            if (status === 'Pending') {
+                query = { 'subscription.status': 'Pending Approval' };
+            } else if (status === 'Frozen') {
+                query = { $or: [{ 'subscription.status': 'Frozen' }, { 'subscription.manualFreeze': true }] };
+            } else {
+                query = { 'subscription.status': status };
+            }
+        }
+
+        const restaurants = await Restaurant.find(query)
+            .populate('ownerId', 'name email phoneNumber')
+            .populate('subscription.approvedBy', 'name email')
+            .sort({ 'subscription.trialRequestDate': -1, createdAt: -1 });
+
+        res.json(restaurants);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Approve a 7-day free trial request (starts the 7-day countdown)
+// @route   POST /api/super-admin/trial-requests/:id/approve
+// @access  Private/SuperAdmin
+export const approveTrialRequest = async (req, res) => {
+    try {
+        const restaurant = await Restaurant.findById(req.params.id).populate('ownerId');
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        const now = new Date();
+        const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 full days from exact approval timestamp
+
+        restaurant.subscription = {
+            ...restaurant.subscription,
+            status: 'Active',
+            trialActive: true,
+            trialStartDate: now,
+            trialEndDate: trialEnd,
+            expiryDate: trialEnd,
+            approvedBy: req.user._id,
+            approvedAt: now,
+            paymentStatus: 'Trial',
+            manualFreeze: false,
+            freezeReason: '',
+            rejectionReason: '',
+            reminderSent24h: false
+        };
+        restaurant.approvalStatus = 'Approved';
+        restaurant.isActive = true;
+
+        await restaurant.save();
+
+        // Create in-app notification for owner
+        try {
+            await Notification.create({
+                title: 'Free Trial Approved! 🎉',
+                desc: `Super Admin has approved your 7-Day Free Trial. Your 7-day countdown has begun and will expire on ${trialEnd.toLocaleDateString()}.`,
+                type: 'System',
+                restaurantId: restaurant._id
+            });
+        } catch (notifErr) {
+            console.error('Approval notification error:', notifErr.message);
+        }
+
+        // Email Owner: Trigger 2 (Approved) & Trigger 4 (Trial Started)
+        const ownerEmail = restaurant.ownerId?.email;
+        const ownerName = restaurant.ownerId?.name || restaurant.name;
+        if (ownerEmail) {
+            sendTrialApprovedEmail({
+                email: ownerEmail,
+                name: ownerName,
+                restaurantName: restaurant.name,
+                trialStartDate: now,
+                trialEndDate: trialEnd,
+                plan: restaurant.subscription.plan
+            }).catch(e => console.error('Trial approved email error:', e.message));
+
+            sendTrialStartedEmail({
+                email: ownerEmail,
+                name: ownerName,
+                restaurantName: restaurant.name,
+                trialEndDate: trialEnd,
+                plan: restaurant.subscription.plan
+            }).catch(e => console.error('Trial started email error:', e.message));
+        }
+
+        res.json({
+            message: '7-Day Free Trial approved successfully! The 7-day countdown has begun.',
+            restaurant
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Reject a free trial request
+// @route   POST /api/super-admin/trial-requests/:id/reject
+// @access  Private/SuperAdmin
+export const rejectTrialRequest = async (req, res) => {
+    try {
+        const { reason } = req.body;
+        const restaurant = await Restaurant.findById(req.params.id).populate('ownerId');
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        const rejectionReason = reason || 'Documentation criteria or verification requirements not met.';
+
+        restaurant.subscription = {
+            ...restaurant.subscription,
+            status: 'Rejected',
+            trialActive: false,
+            rejectedAt: new Date(),
+            rejectionReason
+        };
+        restaurant.approvalStatus = 'Rejected';
+
+        await restaurant.save();
+
+        // Email Owner: Trigger 3 (Rejected)
+        const ownerEmail = restaurant.ownerId?.email;
+        const ownerName = restaurant.ownerId?.name || restaurant.name;
+        if (ownerEmail) {
+            sendTrialRejectedEmail({
+                email: ownerEmail,
+                name: ownerName,
+                restaurantName: restaurant.name,
+                rejectionReason
+            }).catch(e => console.error('Trial rejected email error:', e.message));
+        }
+
+        res.json({
+            message: 'Free trial request rejected.',
+            restaurant
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Manually freeze a restaurant dashboard
+// @route   POST /api/super-admin/restaurants/:id/freeze
+// @access  Private/SuperAdmin
+export const manualFreezeRestaurant = async (req, res) => {
+    try {
+        const { reason } = req.body;
+        const restaurant = await Restaurant.findById(req.params.id).populate('ownerId');
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        const freezeReason = reason || 'Administrative freeze placed by Super Admin.';
+        const frozenAt = new Date();
+
+        restaurant.subscription = {
+            ...restaurant.subscription,
+            status: 'Frozen',
+            manualFreeze: true,
+            freezeReason,
+            frozenAt
+        };
+
+        await restaurant.save();
+
+        // Email Owner: Trigger 9 (Manually frozen)
+        const ownerEmail = restaurant.ownerId?.email;
+        const ownerName = restaurant.ownerId?.name || restaurant.name;
+        if (ownerEmail) {
+            sendManualFreezeEmail({
+                email: ownerEmail,
+                name: ownerName,
+                restaurantName: restaurant.name,
+                freezeReason,
+                frozenAt
+            }).catch(e => console.error('Manual freeze email error:', e.message));
+        }
+
+        res.json({
+            message: `Restaurant "${restaurant.name}" dashboard has been manually frozen.`,
+            restaurant
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Manually unfreeze a restaurant dashboard (only if subscription is valid)
+// @route   POST /api/super-admin/restaurants/:id/unfreeze
+// @access  Private/SuperAdmin
+export const manualUnfreezeRestaurant = async (req, res) => {
+    try {
+        const restaurant = await Restaurant.findById(req.params.id).populate('ownerId');
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        const sub = restaurant.subscription || {};
+        const now = new Date();
+
+        // STRICT VALIDATION: Do not allow unfreezing to bypass expired trial or unpaid subscription
+        if (sub.status === 'Pending Approval') {
+            return res.status(400).json({
+                message: 'Cannot unfreeze: Free trial request is still pending approval. Please approve the trial request instead.'
+            });
+        }
+
+        if (sub.paymentStatus === 'Trial') {
+            if (!sub.trialStartDate || !sub.trialEndDate || now > new Date(sub.trialEndDate)) {
+                return res.status(400).json({
+                    message: 'Cannot unfreeze restaurant: 7-day free trial has expired. The restaurant owner must purchase or renew an active subscription plan.'
+                });
+            }
+        } else if (sub.paymentStatus === 'Paid') {
+            if (sub.subscriptionEndDate && now > new Date(sub.subscriptionEndDate)) {
+                return res.status(400).json({
+                    message: 'Cannot unfreeze restaurant: Paid subscription has expired. The restaurant owner must renew payment.'
+                });
+            }
+        } else if (sub.status === 'Expired' || sub.status === 'Inactive' || sub.status === 'Rejected') {
+            return res.status(400).json({
+                message: 'Cannot unfreeze restaurant: No active subscription found. Restaurant must have a valid trial or paid subscription.'
+            });
+        }
+
+        restaurant.subscription.manualFreeze = false;
+        restaurant.subscription.status = 'Active';
+        restaurant.subscription.freezeReason = '';
+
+        await restaurant.save();
+
+        // Email Owner: Trigger 10 (Manually unfrozen)
+        const ownerEmail = restaurant.ownerId?.email;
+        const ownerName = restaurant.ownerId?.name || restaurant.name;
+        if (ownerEmail) {
+            sendManualUnfreezeEmail({
+                email: ownerEmail,
+                name: ownerName,
+                restaurantName: restaurant.name,
+                plan: restaurant.subscription.plan,
+                status: 'Active'
+            }).catch(e => console.error('Manual unfreeze email error:', e.message));
+        }
+
+        res.json({
+            message: `Restaurant "${restaurant.name}" dashboard has been unfrozen successfully.`,
+            restaurant
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };

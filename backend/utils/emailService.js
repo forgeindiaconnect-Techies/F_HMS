@@ -334,3 +334,352 @@ export const sendSubscriptionSuccessEmail = async ({ email, name, restaurantName
     return await sendEmail({ to: email, toName: name, subject, html });
 };
 
+
+// ============================================================================
+// 7-DAY FREE TRIAL & SUBSCRIPTION LIFECYCLE EMAIL NOTIFICATIONS (10 TRIGGERS)
+// ============================================================================
+
+const portalBaseUrl = process.env.FRONTEND_URL || 'https://f-hms-ten.vercel.app';
+
+/**
+ * 1. Free trial subscription request submitted
+ */
+export const sendTrialRequestSubmittedEmail = async ({ email, name, restaurantName, requestDate }) => {
+    const formattedDate = requestDate ? new Date(requestDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleDateString('en-US');
+    const subject = `Free Trial Request Received: ${restaurantName || 'Your Restaurant'}`;
+    const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">7-Day Free Trial Request Submitted ⏳</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Super Admin Approval Pending</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || 'Restaurant Owner'},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    We have received your <strong>7-Day Free Trial</strong> request for <strong>${restaurantName || 'Your Restaurant'}</strong>!
+                </p>
+                <div style="background-color: #fffbeb; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+                    <p style="margin: 0; font-size: 13px; color: #92400e;"><strong>Plan:</strong> 7-Day Free Trial (Pro Features)</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #92400e;"><strong>Price:</strong> Free (₹0)</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #92400e;"><strong>Request Submitted:</strong> ${formattedDate}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #92400e;"><strong>Status:</strong> Pending Super Admin Review</p>
+                </div>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Our Super Admin team is reviewing your restaurant request. <strong>Your 7-day trial countdown will begin only after Super Admin approval</strong>, ensuring you receive the full 7 days of operational access.
+                </p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${portalBaseUrl}/admin/billing" style="background-color: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        View Trial Request Status
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${new Date().getFullYear()} Restaurant Hub SaaS. All rights reserved.
+            </div>
+        </div>
+    `;
+    return await sendEmail({ to: email, toName: name, subject, html });
+};
+
+/**
+ * 2. Free trial request approved
+ */
+export const sendTrialApprovedEmail = async ({ email, name, restaurantName, trialStartDate, trialEndDate, plan }) => {
+    const formattedStart = trialStartDate ? new Date(trialStartDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Today';
+    const formattedEnd = trialEndDate ? new Date(trialEndDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'In 7 days';
+    const subject = `🎉 Free Trial Approved! Welcome to ${restaurantName || 'Restaurant Hub'}`;
+    const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Free Trial Approved! 🎉</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Your 7-Day Access Starts Now</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Congratulations, ${name || 'Restaurant Owner'}!</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Super Admin has approved your 7-Day Free Trial for <strong>${restaurantName || 'Your Restaurant'}</strong>! Your dashboard and all operational features are now fully unlocked.
+                </p>
+                <div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+                    <p style="margin: 0; font-size: 13px; color: #166534;"><strong>Plan:</strong> ${plan || 'Pro (7-Day Trial)'}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #166534;"><strong>Trial Start Date:</strong> ${formattedStart}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #166534;"><strong>Trial Expiration Date:</strong> ${formattedEnd}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #166534;"><strong>Dashboard Status:</strong> Unlocked & Ready</p>
+                </div>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    You have complete access to POS billing, KOT/KDS kitchen display, order tracking, staff accounts, table setups, and reports.
+                </p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${portalBaseUrl}/admin" style="background-color: #10b981; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Open Restaurant Dashboard
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${new Date().getFullYear()} Restaurant Hub SaaS. All rights reserved.
+            </div>
+        </div>
+    `;
+    return await sendEmail({ to: email, toName: name, subject, html });
+};
+
+/**
+ * 3. Free trial request rejected
+ */
+export const sendTrialRejectedEmail = async ({ email, name, restaurantName, rejectionReason }) => {
+    const subject = `Update Regarding Your Free Trial Request - ${restaurantName || 'Your Restaurant'}`;
+    const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Trial Request Update</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Request Status Notification</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || 'Restaurant Owner'},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Thank you for your interest in Restaurant Hub. After careful review, our Super Admin team was unable to approve the 7-day free trial request for <strong>${restaurantName || 'Your Restaurant'}</strong>.
+                </p>
+                <div style="background-color: #fef2f2; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ef4444;">
+                    <p style="margin: 0; font-size: 13px; color: #991b1b;"><strong>Status:</strong> Rejected</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #991b1b;"><strong>Reason:</strong> ${rejectionReason || 'Verification requirements not satisfied or duplicate request.'}</p>
+                </div>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    If you believe this was an error or would like to submit updated restaurant information or choose a direct subscription plan, please contact our support team.
+                </p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${portalBaseUrl}/admin/support" style="background-color: #475569; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Contact Platform Support
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${new Date().getFullYear()} Restaurant Hub SaaS. All rights reserved.
+            </div>
+        </div>
+    `;
+    return await sendEmail({ to: email, toName: name, subject, html });
+};
+
+/**
+ * 4. Free trial started
+ */
+export const sendTrialStartedEmail = async ({ email, name, restaurantName, trialEndDate, plan }) => {
+    const formattedEnd = trialEndDate ? new Date(trialEndDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'In 7 days';
+    const subject = `🚀 Your 7-Day Free Trial Has Started - ${restaurantName || 'Restaurant Hub'}`;
+    const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Your Free Trial is Active 🚀</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">7 Days of Full Operational Access</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || 'Restaurant Owner'},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Your 7-day trial period is officially underway for <strong>${restaurantName || 'Your Restaurant'}</strong>!
+                </p>
+                <div style="background-color: #eff6ff; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
+                    <p style="margin: 0; font-size: 13px; color: #1e40af;"><strong>Tier:</strong> ${plan || 'Pro Trial'}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #1e40af;"><strong>Duration:</strong> 7 Full Days</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #1e40af;"><strong>Trial Expiry Date:</strong> ${formattedEnd}</p>
+                </div>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${portalBaseUrl}/admin" style="background-color: #3b82f6; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Go to Dashboard
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${new Date().getFullYear()} Restaurant Hub SaaS. All rights reserved.
+            </div>
+        </div>
+    `;
+    return await sendEmail({ to: email, toName: name, subject, html });
+};
+
+/**
+ * 5. Trial expiration reminder (24 hours before expiration)
+ */
+export const sendTrialExpiringReminderEmail = async ({ email, name, restaurantName, hoursRemaining = 24, trialEndDate, plan }) => {
+    const formattedEnd = trialEndDate ? new Date(trialEndDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Tomorrow';
+    const subject = `⏳ Warning: 24 Hours Left on Your Free Trial - ${restaurantName || 'Your Restaurant'}`;
+    const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Trial Expiring in 24 Hours ⏰</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Avoid Service Interruption</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || 'Restaurant Owner'},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    This is a reminder that your 7-Day Free Trial for <strong>${restaurantName || 'Your Restaurant'}</strong> expires on <strong>${formattedEnd}</strong> (~24 hours remaining).
+                </p>
+                <div style="background-color: #fff7ed; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f97316;">
+                    <p style="margin: 0; font-size: 13px; color: #9a3412;"><strong>Important:</strong> When the trial period expires, your dashboard features will automatically freeze until a paid plan is selected.</p>
+                    <p style="margin: 6px 0 0 0; font-size: 13px; color: #9a3412;">Don't worry: All your menu items, orders, tables, and settings are safely preserved.</p>
+                </div>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${portalBaseUrl}/admin/billing" style="background-color: #ea580c; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Upgrade to a Paid Plan Now
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${new Date().getFullYear()} Restaurant Hub SaaS. All rights reserved.
+            </div>
+        </div>
+    `;
+    return await sendEmail({ to: email, toName: name, subject, html });
+};
+
+/**
+ * 6. Free trial expired and dashboard frozen
+ */
+export const sendTrialExpiredAndFrozenEmail = async ({ email, name, restaurantName, expiredDate, plan }) => {
+    const formattedDate = expiredDate ? new Date(expiredDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'recently';
+    const subject = `🔒 Free Trial Expired - Dashboard Frozen for ${restaurantName || 'Your Restaurant'}`;
+    const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Free Trial Expired 🔒</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Dashboard Features Have Been Frozen</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || 'Restaurant Owner'},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Your 7-day free trial for <strong>${restaurantName || 'Your Restaurant'}</strong> has expired on <strong>${formattedDate}</strong>.
+                </p>
+                <div style="background-color: #fef2f2; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ef4444;">
+                    <p style="margin: 0; font-size: 13px; color: #991b1b;"><strong>Current Status:</strong> Dashboard Frozen</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #991b1b;">Operational features (POS, orders, KDS, inventory) are temporarily locked until a subscription plan is activated.</p>
+                    <p style="margin: 6px 0 0 0; font-size: 13px; color: #166534;"><strong>Your Data is 100% Safe:</strong> None of your orders, menu items, or configurations have been deleted.</p>
+                </div>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Unlock your restaurant operations immediately by choosing one of our affordable subscription tiers:
+                </p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${portalBaseUrl}/admin/billing" style="background-color: #dc2626; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Select Plan & Unfreeze Dashboard
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${new Date().getFullYear()} Restaurant Hub SaaS. All rights reserved.
+            </div>
+        </div>
+    `;
+    return await sendEmail({ to: email, toName: name, subject, html });
+};
+
+/**
+ * 7. Paid subscription payment successful
+ */
+export const sendPaidSubscriptionSuccessEmail = async ({ email, name, restaurantName, plan, billingCycle, price, transactionId, expiryDate }) => {
+    return await sendSubscriptionSuccessEmail({ email, name, restaurantName, plan, billingCycle, price, transactionId, expiryDate });
+};
+
+/**
+ * 8. Dashboard access restored after successful payment
+ */
+export const sendDashboardAccessRestoredEmail = async ({ email, name, restaurantName, plan, validUntil }) => {
+    const formattedValid = validUntil ? new Date(validUntil).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Next billing cycle';
+    const subject = `🔓 Dashboard Access Restored - ${restaurantName || 'Your Restaurant'}`;
+    const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Dashboard Unlocked! 🔓</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Full Access Restored</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Welcome Back, ${name || 'Restaurant Owner'}!</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Your payment was successfully received and verified. All operational features for <strong>${restaurantName || 'Your Restaurant'}</strong> have been restored.
+                </p>
+                <div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+                    <p style="margin: 0; font-size: 13px; color: #166534;"><strong>Plan:</strong> ${plan || 'Active Paid Plan'}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #166534;"><strong>Valid Until:</strong> ${formattedValid}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #166534;"><strong>Operational Status:</strong> Fully Active & Unfrozen</p>
+                </div>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${portalBaseUrl}/admin" style="background-color: #10b981; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Return to Operations
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${new Date().getFullYear()} Restaurant Hub SaaS. All rights reserved.
+            </div>
+        </div>
+    `;
+    return await sendEmail({ to: email, toName: name, subject, html });
+};
+
+/**
+ * 9. Super Admin manually freezes a restaurant
+ */
+export const sendManualFreezeEmail = async ({ email, name, restaurantName, freezeReason, frozenAt }) => {
+    const formattedDate = frozenAt ? new Date(frozenAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleDateString('en-US');
+    const subject = `⚠️ Account Notice: Dashboard Manually Frozen - ${restaurantName || 'Your Restaurant'}`;
+    const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #64748b 0%, #334155 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Account Notice: Access Frozen</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Administrative Action Taken</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || 'Restaurant Owner'},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Your restaurant dashboard access for <strong>${restaurantName || 'Your Restaurant'}</strong> has been temporarily frozen by a Super Admin on <strong>${formattedDate}</strong>.
+                </p>
+                <div style="background-color: #f8fafc; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #64748b; border: 1px solid #e2e8f0;">
+                    <p style="margin: 0; font-size: 13px; color: #334155;"><strong>Reason Provided:</strong> ${freezeReason || 'Administrative administrative review or compliance hold.'}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #334155;">All your restaurant data, configurations, and records remain completely intact.</p>
+                </div>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Please contact our support desk or your dedicated administrator to resolve this hold.
+                </p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${portalBaseUrl}/admin/support" style="background-color: #334155; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Contact Platform Support
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${new Date().getFullYear()} Restaurant Hub SaaS. All rights reserved.
+            </div>
+        </div>
+    `;
+    return await sendEmail({ to: email, toName: name, subject, html });
+};
+
+/**
+ * 10. Super Admin manually unfreezes a restaurant
+ */
+export const sendManualUnfreezeEmail = async ({ email, name, restaurantName, plan, status }) => {
+    const subject = `✅ Dashboard Unfrozen: Access Restored for ${restaurantName || 'Your Restaurant'}`;
+    const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Dashboard Unfrozen ✅</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Access Restored by Super Admin</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || 'Restaurant Owner'},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Great news! The administrative hold on <strong>${restaurantName || 'Your Restaurant'}</strong> has been lifted by a Super Admin.
+                </p>
+                <div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+                    <p style="margin: 0; font-size: 13px; color: #166534;"><strong>Plan:</strong> ${plan || 'Active'}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #166534;"><strong>Status:</strong> Active & Unrestricted</p>
+                </div>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${portalBaseUrl}/admin" style="background-color: #10b981; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Open Dashboard
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${new Date().getFullYear()} Restaurant Hub SaaS. All rights reserved.
+            </div>
+        </div>
+    `;
+    return await sendEmail({ to: email, toName: name, subject, html });
+};
