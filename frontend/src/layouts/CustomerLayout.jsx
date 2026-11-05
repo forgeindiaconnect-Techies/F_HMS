@@ -49,14 +49,15 @@ const CustomerLayout = () => {
                 restaurants={restaurants}
             />
 
-            {!isLandingPage && (
+                        {!isLandingPage && (
                 <header className="bg-white/95 backdrop-blur-md border-b border-slate-100 sticky top-0 z-40 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
-                    <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 h-14 sm:h-[76px] flex items-center justify-between gap-1 sm:gap-4 overflow-hidden">
-                        <div className="flex items-center gap-1 sm:gap-2.5 shrink-0 min-w-0">
-                            {/* Back Icon Button (Compact for Mobile Apps without word 'Back') */}
+                    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-[76px] flex items-center justify-between gap-2 sm:gap-4">
+                        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 min-w-0">
+                            {/* Back Icon Button (Only Icon, No Text) */}
                             <button
+                                type="button"
                                 onClick={() => window.history.back()}
-                                className="w-8 h-8 rounded-xl bg-slate-50 hover:bg-slate-100 active:bg-slate-200 text-slate-700 transition-colors shrink-0 flex items-center justify-center border border-slate-200 shadow-xs cursor-pointer"
+                                className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 transition-colors shrink-0 flex items-center justify-center border border-slate-200 shadow-xs cursor-pointer"
                                 aria-label="Go Back"
                                 title="Go Back"
                             >
@@ -64,29 +65,23 @@ const CustomerLayout = () => {
                             </button>
                             <Link to="/" className="flex items-center gap-1.5 sm:gap-2 shrink-0 group">
                                 <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#FF5A1F] text-white flex items-center justify-center shadow-md shadow-[#FF5A1F]/25 group-hover:scale-105 transition-transform shrink-0">
-                                    <UtensilsCrossed size={17} className="sm:hidden stroke-[2.2]" />
-                                    <UtensilsCrossed size={22} className="hidden sm:block stroke-[2.2]" />
+                                    <UtensilsCrossed size={17} className="stroke-[2.2]" />
                                 </div>
-                                <div className="flex flex-col text-left">
-                                    <span className="text-base sm:text-[22px] font-black tracking-tight text-slate-900 leading-none">
-                                        Food<span className="text-[#FF5A1F]">Nest</span>
-                                    </span>
-                                    <span className="hidden sm:block text-[10px] font-medium text-slate-400 mt-1">
-                                        Good Food, Better Mood
-                                    </span>
-                                </div>
+                                <span className="text-base sm:text-[22px] font-black tracking-tight text-slate-900 leading-none">
+                                    Food<span className="text-[#FF5A1F]">Nest</span>
+                                </span>
                             </Link>
 
-                            {/* Location Detect & Change Pill */}
+                            {/* Location Detect & Change Pill - Visible on md+ screens so profile/login stays 100% visible on mobile */}
                             <button
                                 type="button"
                                 onClick={() => setIsLocationPickerOpen(true)}
-                                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl border border-slate-200 hover:border-orange-200 bg-slate-50 hover:bg-orange-50/70 text-slate-700 hover:text-[#FF5A1F] text-[11px] sm:text-xs font-bold transition-all shadow-xs cursor-pointer max-w-[80px] xs:max-w-[110px] sm:max-w-[180px] shrink truncate ml-0.5 sm:ml-1"
+                                className="hidden md:flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 rounded-xl border border-slate-200 hover:border-orange-200 bg-slate-50 hover:bg-orange-50/70 text-slate-700 hover:text-[#FF5A1F] text-xs font-bold transition-all shadow-xs cursor-pointer max-w-[180px] shrink truncate ml-1"
                                 title="Click to detect or change delivery location"
                             >
                                 <MapPin size={12} className="text-[#FF5A1F] shrink-0" />
                                 <span className="truncate">{userLocation ? userLocation.split(',')[0] : 'Location'}</span>
-                                <ChevronDown size={11} className="text-slate-400 shrink-0 hidden sm:block" />
+                                <ChevronDown size={11} className="text-slate-400 shrink-0" />
                             </button>
                         </div>
 
@@ -98,15 +93,15 @@ const CustomerLayout = () => {
                             <Link to="/explore#how-it-works" className="text-slate-600 hover:text-[#FF5A1F] transition-colors py-1.5">About Us</Link>
                         </nav>
 
-                        <div className="flex items-center gap-1 sm:gap-3 shrink-0">
-                            <div className="flex items-center gap-0.5 sm:gap-2">
+                        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 ml-auto pr-0.5">
+                            <div className="flex items-center gap-1 sm:gap-2">
                                 <button 
+                                    type="button"
                                     onClick={() => setIsWishlistOpen(true)}
                                     className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-[#FF5A1F] transition-colors cursor-pointer shrink-0"
                                     title="Wishlist"
                                 >
-                                    <Heart size={18} className="sm:hidden" />
-                                    <Heart size={20} className="hidden sm:block" />
+                                    <Heart size={18} />
                                     {wishlist && wishlist.length > 0 && (
                                         <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-xs">
                                             {wishlist.length}
@@ -114,12 +109,12 @@ const CustomerLayout = () => {
                                     )}
                                 </button>
                                 <button 
+                                    type="button"
                                     onClick={() => setIsCartOpen(true)}
                                     className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-[#FF5A1F] transition-colors cursor-pointer shrink-0"
                                     title="Cart"
                                 >
-                                    <ShoppingBag size={18} className="sm:hidden" />
-                                    <ShoppingBag size={20} className="hidden sm:block" />
+                                    <ShoppingBag size={18} />
                                     {cartCount > 0 && (
                                         <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#FF5A1F] text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-xs">
                                             {cartCount}
@@ -128,24 +123,24 @@ const CustomerLayout = () => {
                                 </button>
                             </div>
                             
+                            {/* Profile Avatar or Login Button - Always 100% Fully Visible inside Navbar */}
                             {user ? (
                                 <Link 
                                     to="/profile" 
-                                    className="w-8 h-8 sm:w-auto sm:px-3 sm:py-1.5 rounded-full bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] sm:border sm:border-orange-200 flex items-center justify-center sm:gap-1.5 transition-colors shrink-0"
-                                    title="My Profile"
+                                    className="flex items-center gap-1.5 p-0.5 rounded-full hover:bg-orange-50 transition-colors shrink-0"
+                                    title={'Profile: ' + (user.name || 'User')}
                                 >
-                                    <div className="w-7 h-7 sm:w-5 sm:h-5 rounded-full bg-[#FF5A1F] text-white flex items-center justify-center text-xs font-black shrink-0">
-                                        {user.name ? user.name.charAt(0).toUpperCase() : <User size={13} />}
+                                    <div className="w-8 h-8 rounded-full bg-[#FF5A1F] text-white flex items-center justify-center text-xs font-black shadow-xs ring-2 ring-white">
+                                        {user.name ? user.name.charAt(0).toUpperCase() : <User size={14} />}
                                     </div>
-                                    <span className="hidden sm:inline text-xs font-bold truncate max-w-[85px]">{user.name}</span>
+                                    <span className="hidden md:inline text-xs font-bold text-slate-700 truncate max-w-[85px]">{user.name}</span>
                                 </Link>
                             ) : (
                                 <Link 
                                     to="/customer/login" 
-                                    className="bg-[#FF5A1F] hover:bg-[#e04f1a] text-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-[13px] shadow-xs hover:shadow-md transition-all cursor-pointer whitespace-nowrap shrink-0"
+                                    className="bg-[#FF5A1F] hover:bg-[#e04f1a] text-white px-3 py-1.5 rounded-xl font-bold text-xs shadow-xs hover:shadow-md transition-all cursor-pointer whitespace-nowrap shrink-0"
                                 >
-                                    <span className="sm:hidden">Login</span>
-                                    <span className="hidden sm:inline">Login / Sign Up</span>
+                                    Login
                                 </Link>
                             )}
                         </div>
