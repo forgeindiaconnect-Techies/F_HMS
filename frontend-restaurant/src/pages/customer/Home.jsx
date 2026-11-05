@@ -653,7 +653,7 @@ const Home = () => {
             {/* ========================================================================= */}
             {/* 2. HERO SECTION: EXACT RECREATION OF REFERENCE IMAGE                      */}
             {/* ========================================================================= */}
-            <section id="home" className="relative pt-6 pb-14 sm:pt-10 sm:pb-20 bg-gradient-to-r from-[#FFFDF9] via-[#FFF9F2] to-[#FFF5EC] z-20">
+            <section id="home" className="relative pt-6 pb-14 sm:pt-10 sm:pb-20 bg-gradient-to-r from-[#FFFDF9] via-[#FFF9F2] to-[#FFF5EC] z-20 overflow-x-clip">
                 {/* Subtle warm cream background ambient glows */}
                 <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-orange-100/35 rounded-full blur-3xl pointer-events-none -z-10" />
                 <div className="absolute top-10 right-0 w-[600px] h-[600px] bg-[#FFEEDB]/40 rounded-full blur-3xl pointer-events-none -z-10" />
@@ -765,7 +765,7 @@ const Home = () => {
                         {/* RIGHT COLUMN: ~57% WIDTH (Col 7 / 12 on lg/xl)                      */}
                         {/* HP LAPTOP MOCKUP & VERTICAL RECTANGULAR REDMI PHONE MOCKUP          */}
                         {/* ================================================================= */}
-                        <div className="lg:col-span-7 xl:col-span-7 relative flex items-center justify-center lg:justify-start pt-3 pb-8 sm:pb-12 pl-4 sm:pl-8 lg:pl-10">
+                        <div className="lg:col-span-7 xl:col-span-7 relative flex items-center justify-center lg:justify-start pt-4 sm:pt-3 pb-10 sm:pb-12 px-1 xs:px-2 sm:px-0 sm:pl-8 lg:pl-10 overflow-visible">
 
                             {/* Leaves accent floating behind laptop on the left side matching reference */}
                             <div className="absolute top-8 -left-6 sm:-left-10 pointer-events-none select-none z-0 hidden lg:block opacity-85">
@@ -776,7 +776,7 @@ const Home = () => {
                             </div>
 
                             {/* SQUARE-SHAPED HP LAPTOP STRUCTURE (Reduced width from right to left for balanced square aspect ratio) */}
-                            <div className="relative w-full max-w-[460px] sm:max-w-[490px] lg:max-w-[520px] xl:max-w-[540px] z-10 drop-shadow-2xl">
+                            <div className="relative w-full max-w-[340px] xs:max-w-[390px] sm:max-w-[490px] lg:max-w-[520px] xl:max-w-[540px] z-10 drop-shadow-2xl">
                                 
                                 {/* HP Laptop Display Lid / Bezel */}
                                 <div className="bg-[#1E242E] rounded-t-xl sm:rounded-t-2xl p-2 sm:p-2.5 pb-2 shadow-2xl border border-slate-700/80 ring-1 ring-black/40">
@@ -792,7 +792,7 @@ const Home = () => {
                                     <div className="bg-white rounded-md overflow-hidden text-left flex border border-slate-200 shadow-inner">
                                         
                                         {/* Left Dark Sidebar matching screenshot with working interactive tabs */}
-                                        <div className="w-26 sm:w-32 bg-[#111927] text-slate-300 p-2 sm:p-2.5 flex flex-col justify-between shrink-0 select-none z-10">
+                                        <div className="w-22 xs:w-26 sm:w-32 bg-[#111927] text-slate-300 p-1.5 xs:p-2 sm:p-2.5 flex flex-col justify-between shrink-0 select-none z-10">
                                             <div className="space-y-2">
                                                 {/* Brand Header */}
                                                 <div className="flex items-center gap-1.5 pb-1.5 border-b border-slate-800">
@@ -1184,107 +1184,107 @@ const Home = () => {
 
                             </div>
 
-                            {/* VERTICAL RECTANGULAR REDMI-STYLE PHONE MOCKUP (Positioned to the left so all laptop sidebar buttons remain completely visible) */}
-                            <div className="absolute -bottom-8 sm:-bottom-10 lg:-bottom-12 -left-10 sm:-left-14 lg:-left-20 xl:-left-24 w-32 sm:w-36 lg:w-38 bg-[#11161F] p-2 rounded-[22px] shadow-2xl border border-slate-600/90 z-20 ring-1 ring-black/50">
+                            {/* VERTICAL RECTANGULAR REDMI-STYLE PHONE MOCKUP (Responsive positioning and legible typography for mobile & desktop) */}
+                            <div className="absolute -bottom-6 sm:-bottom-10 lg:-bottom-12 -left-2 xs:-left-3 sm:-left-10 lg:-left-16 xl:-left-20 w-[142px] xs:w-[158px] sm:w-[165px] lg:w-[175px] bg-[#11161F] p-1.5 sm:p-2 rounded-[20px] sm:rounded-[22px] shadow-2xl border border-slate-600/90 z-20 ring-1 ring-black/50">
                                 
                                 {/* Redmi front punch-hole camera centered at top */}
-                                <div className="flex items-center justify-center pb-1.5">
-                                    <span className="w-2.5 h-2.5 rounded-full bg-black ring-1 ring-slate-700 block" />
+                                <div className="flex items-center justify-center pb-1">
+                                    <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-black ring-1 ring-slate-700 block" />
                                 </div>
                                 
-                                <div className="bg-white rounded-[16px] p-2.5 text-left space-y-2 shadow-inner">
+                                <div className="bg-white rounded-[15px] sm:rounded-[16px] p-2 sm:p-2.5 text-left space-y-1.5 sm:space-y-2 shadow-inner">
                                     
                                     {/* Mobile App Header with FoodNest & user icon */}
-                                    <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
-                                        <div className="flex items-center gap-1.5">
-                                            <div className="w-4 h-4 rounded bg-[#FF5A0A] text-white flex items-center justify-center text-[9px] font-black shadow-xs">
+                                    <div className="flex justify-between items-center border-b border-slate-100 pb-1 sm:pb-1.5">
+                                        <div className="flex items-center gap-1 sm:gap-1.5">
+                                            <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded bg-[#FF5A0A] text-white flex items-center justify-center text-[8px] sm:text-[9px] font-black shadow-xs">
                                                 F
                                             </div>
-                                            <span className="text-[10px] font-black text-slate-900 tracking-tight">FoodNest</span>
+                                            <span className="text-[9px] sm:text-[10px] font-black text-slate-900 tracking-tight">FoodNest</span>
                                         </div>
                                         <img 
                                             src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100&auto=format&fit=crop" 
                                             alt="User" 
-                                            className="w-4 h-4 rounded-full object-cover ring-1 ring-orange-300"
+                                            className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full object-cover ring-1 ring-orange-300"
                                         />
                                     </div>
 
                                     {/* Mobile Order Items with Thumbnails matching screenshot */}
-                                    <div className="space-y-1.5 text-[8px]">
-                                        <div className="p-1.5 rounded-lg bg-orange-50/60 border border-orange-100/70 flex items-center justify-between">
-                                            <div className="flex items-center gap-1.5 min-w-0">
+                                    <div className="space-y-1 sm:space-y-1.5 text-[8px]">
+                                        <div className="p-1 sm:p-1.5 rounded-lg bg-orange-50/60 border border-orange-100/70 flex items-center justify-between gap-1">
+                                            <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
                                                 <img 
                                                     src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?q=80&w=60&auto=format&fit=crop" 
                                                     alt="Biryani" 
-                                                    className="w-4.5 h-4.5 rounded-full object-cover shrink-0"
+                                                    className="w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full object-cover shrink-0"
                                                 />
-                                                <div className="min-w-0">
-                                                    <p className="font-extrabold text-slate-800 leading-tight truncate">Chicken Biryani</p>
-                                                    <p className="text-slate-400 text-[7px]">Qty: 1 • ₹240</p>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="font-extrabold text-slate-800 leading-tight truncate text-[7.5px] sm:text-[8px]">Chicken Biryani</p>
+                                                    <p className="text-slate-400 text-[6.5px] sm:text-[7px]">Qty: 1 • ₹240</p>
                                                 </div>
                                             </div>
-                                            <span className="text-[6.5px] bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded shrink-0">
+                                            <span className="text-[6px] sm:text-[6.5px] bg-amber-100 text-amber-700 font-bold px-1 sm:px-1.5 py-0.5 rounded shrink-0">
                                                 Preparing
                                             </span>
                                         </div>
 
-                                        <div className="p-1.5 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between">
-                                            <div className="flex items-center gap-1.5 min-w-0">
+                                        <div className="p-1 sm:p-1.5 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between gap-1">
+                                            <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
                                                 <img 
                                                     src="https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=60&auto=format&fit=crop" 
                                                     alt="Pizza" 
-                                                    className="w-4.5 h-4.5 rounded-full object-cover shrink-0"
+                                                    className="w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full object-cover shrink-0"
                                                 />
-                                                <div className="min-w-0">
-                                                    <p className="font-extrabold text-slate-800 leading-tight truncate">Margherita Pizza</p>
-                                                    <p className="text-slate-400 text-[7px]">Qty: 1 • ₹350</p>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="font-extrabold text-slate-800 leading-tight truncate text-[7.5px] sm:text-[8px]">Margherita Pizza</p>
+                                                    <p className="text-slate-400 text-[6.5px] sm:text-[7px]">Qty: 1 • ₹350</p>
                                                 </div>
                                             </div>
-                                            <span className="text-[6.5px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded shrink-0">
+                                            <span className="text-[6px] sm:text-[6.5px] bg-emerald-100 text-emerald-700 font-bold px-1 sm:px-1.5 py-0.5 rounded shrink-0">
                                                 Confirmed
                                             </span>
                                         </div>
 
-                                        <div className="p-1.5 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between">
-                                            <div className="flex items-center gap-1.5 min-w-0">
+                                        <div className="p-1 sm:p-1.5 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between gap-1">
+                                            <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
                                                 <img 
                                                     src="https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?q=80&w=60&auto=format&fit=crop" 
                                                     alt="Fried Rice" 
-                                                    className="w-4.5 h-4.5 rounded-full object-cover shrink-0"
+                                                    className="w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full object-cover shrink-0"
                                                 />
-                                                <div className="min-w-0">
-                                                    <p className="font-extrabold text-slate-800 leading-tight truncate">Veg Fried Rice</p>
-                                                    <p className="text-slate-400 text-[7px]">Qty: 1 • ₹180</p>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="font-extrabold text-slate-800 leading-tight truncate text-[7.5px] sm:text-[8px]">Veg Fried Rice</p>
+                                                    <p className="text-slate-400 text-[6.5px] sm:text-[7px]">Qty: 1 • ₹180</p>
                                                 </div>
                                             </div>
-                                            <span className="text-[6.5px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded shrink-0">
+                                            <span className="text-[6px] sm:text-[6.5px] bg-emerald-100 text-emerald-700 font-bold px-1 sm:px-1.5 py-0.5 rounded shrink-0">
                                                 Confirmed
                                             </span>
                                         </div>
 
                                         {/* Additional item showing extended height */}
-                                        <div className="p-1.5 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between">
-                                            <div className="flex items-center gap-1.5 min-w-0">
+                                        <div className="p-1 sm:p-1.5 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between gap-1">
+                                            <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
                                                 <img 
                                                     src="https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=60&auto=format&fit=crop" 
                                                     alt="Burger" 
-                                                    className="w-4.5 h-4.5 rounded-full object-cover shrink-0"
+                                                    className="w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full object-cover shrink-0"
                                                 />
-                                                <div className="min-w-0">
-                                                    <p className="font-extrabold text-slate-800 leading-tight truncate">Paneer Tikka Roll</p>
-                                                    <p className="text-slate-400 text-[7px]">Qty: 2 • ₹260</p>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="font-extrabold text-slate-800 leading-tight truncate text-[7.5px] sm:text-[8px]">Paneer Tikka Roll</p>
+                                                    <p className="text-slate-400 text-[6.5px] sm:text-[7px]">Qty: 2 • ₹260</p>
                                                 </div>
                                             </div>
-                                            <span className="text-[6.5px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded shrink-0">
+                                            <span className="text-[6px] sm:text-[6.5px] bg-emerald-100 text-emerald-700 font-bold px-1 sm:px-1.5 py-0.5 rounded shrink-0">
                                                 Delivered
                                             </span>
                                         </div>
                                     </div>
 
                                     {/* Mobile Bottom Footer */}
-                                    <div className="pt-1.5 text-center border-t border-slate-100 flex items-center justify-center gap-1.5">
+                                    <div className="pt-1 sm:pt-1.5 text-center border-t border-slate-100 flex items-center justify-center gap-1.5">
                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-                                        <span className="text-[8px] font-bold text-[#FF5A0A]">
+                                        <span className="text-[7.5px] sm:text-[8px] font-bold text-[#FF5A0A]">
                                             4 Active Orders
                                         </span>
                                     </div>
@@ -1292,8 +1292,8 @@ const Home = () => {
                                 </div>
 
                                 {/* Redmi slim bottom bezel bar */}
-                                <div className="h-1.5 flex items-center justify-center pt-1">
-                                    <span className="w-10 h-0.5 bg-slate-700/80 rounded-full" />
+                                <div className="h-1.5 flex items-center justify-center pt-0.5 sm:pt-1">
+                                    <span className="w-8 sm:w-10 h-0.5 bg-slate-700/80 rounded-full" />
                                 </div>
                             </div>
 
@@ -1332,23 +1332,24 @@ const Home = () => {
 
 
             {/* ========================================================================= */}
+            {/* ========================================================================= */}
             {/* 3. STATISTICS STRIP: 4 HORIZONTAL STAT CARDS WITH CIRCULAR ICONS          */}
             {/* ========================================================================= */}
-            <section className="py-10 bg-white border-y border-orange-100/70 shadow-xs">
+            <section className="py-8 sm:py-10 bg-white border-y border-orange-100/70 shadow-xs">
                 <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-12">
-                    <div className="flex flex-wrap items-center justify-start gap-8 sm:gap-12 md:gap-16">
+                    <div className="grid grid-cols-2 lg:flex lg:flex-wrap items-center justify-between lg:justify-start gap-4 sm:gap-6 md:gap-10 lg:gap-16">
                         {STATISTICS.map((stat, idx) => {
                             const IconComponent = stat.icon;
                             return (
-                                <div key={idx} className="flex items-center gap-4 text-left group">
-                                    <div className={`w-12 h-12 rounded-full ${stat.bgColor} ${stat.iconColor} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-xs`}>
-                                        <IconComponent size={22} strokeWidth={2.2} />
+                                <div key={idx} className="flex items-center gap-2.5 sm:gap-4 text-left group">
+                                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${stat.bgColor} ${stat.iconColor} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-xs`}>
+                                        <IconComponent size={20} className="sm:w-[22px] sm:h-[22px]" strokeWidth={2.2} />
                                     </div>
-                                    <div>
-                                        <span className="text-xl sm:text-2xl font-black text-slate-900 block leading-tight">
+                                    <div className="min-w-0">
+                                        <span className="text-base sm:text-2xl font-black text-slate-900 block leading-tight truncate">
                                             {stat.value}
                                         </span>
-                                        <span className="text-xs sm:text-sm font-semibold text-slate-500">
+                                        <span className="text-[11px] sm:text-sm font-semibold text-slate-500 block truncate">
                                             {stat.label}
                                         </span>
                                     </div>
