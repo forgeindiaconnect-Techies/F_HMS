@@ -31,6 +31,15 @@ const CUISINES_LIST = [
   { id: 'desserts', name: 'Desserts', image: 'https://images.unsplash.com/photo-1587314168485-3236d6710814?q=80&w=240&auto=format&fit=crop' }
 ];
 
+const DEFAULT_RESTAURANT_COVERS = [
+  'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=640&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=640&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=640&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1552566626-52f8b828add9?q=80&w=640&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=640&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1537047902294-62a40c20a6ae?q=80&w=640&auto=format&fit=crop'
+];
+
 export default function Explore() {
   const navigate = useNavigate();
   const { cartCount, addToCart, wishlist, toggleWishlist, setIsCartOpen } = useCart();
@@ -106,16 +115,24 @@ export default function Explore() {
         const approved = restRes.value.data.filter(
           (r) => r.isDeleted !== true && r.status !== 'Inactive' && (r.approvalStatus === 'Approved' || r.approvalStatus === 'Pending' || !r.approvalStatus)
         );
-        const backendMapped = approved.map((r) => {
-          // Resolve actual uploaded image URL from DB
-          let rawImg = r.image || r.bannerImage || r.logo || null;
+        const backendMapped = approved.map((r, idx) => {
+          // Resolve actual uploaded showcase/brand image from DB with highest priority
+          const showcaseImg = (Array.isArray(r.showcaseImages) && r.showcaseImages.length > 0 ? r.showcaseImages[0] : null)
+            || (typeof r.showcaseImages === 'string' && r.showcaseImages ? r.showcaseImages : null)
+            || r.bannerImage
+            || r.image
+            || (r.logo && !r.logo.includes('.pdf') ? r.logo : null);
+
+          let rawImg = showcaseImg || null;
           if (rawImg && typeof rawImg === 'string') {
             const apiBase = api?.defaults?.baseURL || '';
             const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : '';
             if (!rawImg.startsWith('http') && !rawImg.startsWith('data:')) {
-              rawImg = `${origin}${rawImg.startsWith('/') ? '' : '/'}${rawImg}`;
+              rawImg = origin + (rawImg.startsWith('/') ? '' : '/') + rawImg;
             }
           }
+
+          const finalImage = rawImg || DEFAULT_RESTAURANT_COVERS[idx % DEFAULT_RESTAURANT_COVERS.length];
 
           return {
             _id: r._id,
@@ -125,7 +142,11 @@ export default function Explore() {
             rating: r.rating ? String(r.rating) : null,
             deliveryTime: r.deliveryTime || null,
             cuisines: r.cuisineType || r.cuisine || '',
-            image: rawImg,
+            image: finalImage,
+            hasCustomImage: !!rawImg,
+            showcaseImages: Array.isArray(r.showcaseImages) ? r.showcaseImages : (r.showcaseImages ? [r.showcaseImages] : []),
+            bannerImage: r.bannerImage || '',
+            logo: r.logo || '',
             city: r.city || '',
             state: r.state || '',
             country: r.country || '',
@@ -1037,90 +1058,90 @@ export default function Explore() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-              {displayedRestaurants.map((rest, index) => (
-                <div
-                  key={rest._id}
-                  onClick={() => navigate(`/restaurant/${rest._id}`)}
-                  className="group bg-white rounded-xl border border-slate-200/80 overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer text-left reveal-on-scroll"
-                  style={{ transitionDelay: `${index * 50}ms` }}
-                >
-                  {/* 16:9 Cover Image or Clean Default Store Placeholder */}
-                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100 flex items-center justify-center">
-                    {rest.image ? (
+              {displayedRestaurants.map((rest, index) => {
+                const outletCount = (rest.branches && rest.branches.length > 0) ? rest.branches.length : 1;
+                const primaryBranch = rest.branches?.[0];
+                const outletAddress = primaryBranch?.location?.address && primaryBranch.location.address !== 'Primary Location'
+                  ? primaryBranch.location.address
+                  : (rest.address && rest.address !== 'Primary Location' ? rest.address : (rest.city ? `${rest.city}, India` : 'Verified Outlet'));
+
+                return (
+                  <div
+                    key={rest._id}
+                    onClick={() => navigate(`/restaurant/${rest._id}`)}
+                    className="group bg-white rounded-xl border border-slate-200/80 overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer text-left"
+                  >
+                    {/* 16:9 Cover Image or Clean Default Store Placeholder */}
+                    <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100 flex items-center justify-center">
                       <img
                         src={rest.image}
                         alt={rest.name}
-                        className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
                         onError={(e) => {
-                          e.target.style.display = 'none';
-                          if (e.target.nextElementSibling) {
-                            e.target.nextElementSibling.style.display = 'flex';
+                          if (!e.target.dataset.triedFallback) {
+                            e.target.dataset.triedFallback = 'true';
+                            e.target.src = DEFAULT_RESTAURANT_COVERS[index % DEFAULT_RESTAURANT_COVERS.length];
                           }
                         }}
                       />
-                    ) : null}
-                    <div
-                      className={`w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-orange-50/40 text-slate-400 group-hover:text-[#FF5A1F] transition-colors ${
-                        rest.image ? 'hidden' : 'flex'
-                      }`}
-                    >
-                      <div className="w-10 h-10 rounded-xl bg-white shadow-xs border border-slate-200/60 flex items-center justify-center text-[#FF5A1F]">
-                        <UtensilsCrossed size={18} />
-                      </div>
-                      <span className="text-[11px] font-bold text-slate-600 mt-1.5">{rest.name}</span>
+                      {rest.badge && (
+                        <div className={`absolute top-2.5 left-2.5 text-[10px] font-bold px-2 py-0.5 rounded shadow-xs ${rest.badgeColor}`}>
+                          {rest.badge}
+                        </div>
+                      )}
+                      {rest.hasCustomImage && (
+                        <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
+                          <Sparkles size={10} className="text-amber-300" />
+                          <span>Showcase</span>
+                        </div>
+                      )}
                     </div>
-                    {rest.badge && (
-                      <div className={`absolute top-2.5 left-2.5 text-[10px] font-bold px-2 py-0.5 rounded shadow-xs ${rest.badgeColor}`}>
-                        {rest.badge}
-                      </div>
-                    )}
-                  </div>
 
-                  {/* Details (Compact spacing & exact typography) */}
-                  <div className="p-3 space-y-1">
-                    {/* Rating & Delivery Time (only if present in database) */}
-                    {(rest.rating || rest.deliveryTime) && (
+                    {/* Details (Compact spacing & exact typography) */}
+                    <div className="p-3 space-y-1.5">
+                      {/* Rating & Delivery Time */}
                       <div className="flex items-center gap-1 text-xs text-slate-500 font-semibold">
-                        {rest.rating && (
-                          <div className="flex items-center gap-1 text-slate-800 font-bold">
-                            <Star size={12} className="fill-amber-400 text-amber-400" />
-                            <span>{rest.rating}</span>
-                          </div>
-                        )}
-                        {rest.rating && rest.deliveryTime && (
-                          <span className="text-slate-300 mx-1">•</span>
-                        )}
-                        {rest.deliveryTime && (
-                          <div className="flex items-center gap-1 text-slate-500">
-                            <Clock size={11} className="text-slate-400" />
-                            <span className="text-[11px] font-medium">{rest.deliveryTime}</span>
-                          </div>
+                        <div className="flex items-center gap-1 text-slate-800 font-bold">
+                          <Star size={12} className="fill-amber-400 text-amber-400" />
+                          <span>{rest.rating || '4.5'}</span>
+                        </div>
+                        <span className="text-slate-300 mx-1">•</span>
+                        <div className="flex items-center gap-1 text-slate-500">
+                          <Clock size={11} className="text-slate-400" />
+                          <span className="text-[11px] font-medium">{rest.deliveryTime || '25-35 min'}</span>
+                        </div>
+                      </div>
+
+                      {/* Name */}
+                      <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 group-hover:text-[#FF5A1F] transition-colors line-clamp-1">
+                        {rest.name}
+                      </h3>
+
+                      {/* Cuisines & Location pill */}
+                      <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
+                        <p className="line-clamp-1 text-[12px]">{rest.cuisines || 'Multi-Cuisine • Pure Veg & Non-Veg'}</p>
+                        {rest.city && (
+                          <span className="text-[10px] text-slate-600 bg-slate-100 font-semibold px-1.5 py-0.5 rounded shrink-0 ml-1">
+                            {rest.city}
+                          </span>
                         )}
                       </div>
-                    )}
 
-                    {/* Name */}
-                    <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 group-hover:text-[#FF5A1F] transition-colors line-clamp-1">
-                      {rest.name}
-                    </h3>
-
-                    {/* Cuisines & Location pill */}
-                    <div className="flex items-center justify-between text-xs text-slate-400 font-medium">
-                      {rest.cuisines ? (
-                        <p className="line-clamp-1">{rest.cuisines}</p>
-                      ) : (
-                        <span />
-                      )}
-                      {rest.city && (
-                        <span className="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded shrink-0 ml-1">
-                          {rest.city}
+                      {/* Outlet Location & Outlets Count */}
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                        <div className="flex items-center gap-1 min-w-0 pr-1 text-slate-600 font-medium truncate">
+                          <MapPin size={12} className="text-[#FF5A1F] shrink-0" />
+                          <span className="truncate">{outletAddress}</span>
+                        </div>
+                        <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-50 text-[#FF5A1F] border border-orange-200/60">
+                          {outletCount > 1 ? `${outletCount} Outlets` : 'Main Outlet'}
                         </span>
-                      )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
@@ -1256,7 +1277,7 @@ export default function Explore() {
                 return (
                   <div
                     key={dish._id}
-                    className="bg-white rounded-xl border border-slate-200/80 p-3 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between text-left reveal-on-scroll"
+                    className="bg-white rounded-xl border border-slate-200/80 p-3 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between text-left"
                     style={{ transitionDelay: `${index * 40}ms` }}
                   >
                     <div>

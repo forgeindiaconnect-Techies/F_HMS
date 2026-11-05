@@ -58,7 +58,22 @@ export const verificationUpload = upload.fields([
 
 // Helper to construct file URLs (or absolute paths)
 const getFileUrl = (file) => {
-    return `/uploads/verification/${file.filename}`;
+    return '/uploads/verification/' + file.filename;
+};
+
+const fileToDataUri = (file) => {
+    try {
+        const buf = fs.readFileSync(file.path);
+        const ext = path.extname(file.originalname || file.filename || '').toLowerCase();
+        let mime = 'image/png';
+        if (ext === '.jpg' || ext === '.jpeg') mime = 'image/jpeg';
+        else if (ext === '.webp') mime = 'image/webp';
+        else if (ext === '.svg') mime = 'image/svg+xml';
+        else if (ext === '.gif') mime = 'image/gif';
+        return 'data:' + mime + ';base64,' + buf.toString('base64');
+    } catch (_) {
+        return getFileUrl(file);
+    }
 };
 
 // @desc    Submit verification documents
@@ -185,10 +200,14 @@ export const submitVerification = async (req, res) => {
         }
 
         // Optional Images
-        if (files.images && files.images.length > 0) {
-            const newImages = files.images.map(img => ({ filePath: getFileUrl(img) }));
+        if (req.body.showcaseImages && Array.isArray(req.body.showcaseImages) && req.body.showcaseImages.length > 0) {
+            restaurant.showcaseImages = req.body.showcaseImages;
+            if (!restaurant.bannerImage) restaurant.bannerImage = req.body.showcaseImages[0];
+            documents.images = req.body.showcaseImages.map(img => ({ filePath: img }));
+            await restaurant.save();
+        } else if (files.images && files.images.length > 0) {
+            const newImages = files.images.map(img => ({ filePath: fileToDataUri(img) }));
             documents.images = [...(documents.images || []), ...newImages];
-            // Sync showcase images to restaurant model so they show on dashboards and landing pages immediately
             const allImgPaths = documents.images.map(img => img.filePath);
             restaurant.showcaseImages = allImgPaths;
             if (allImgPaths.length > 0 && !restaurant.bannerImage) {
@@ -315,8 +334,12 @@ export const updateBrandAssets = async (req, res) => {
         }
 
         // 3. Handle Showcase Images
-        if (files.images && files.images.length > 0) {
-            const newImages = files.images.map(img => ({ filePath: getFileUrl(img) }));
+        if (req.body.showcaseImages && Array.isArray(req.body.showcaseImages) && req.body.showcaseImages.length > 0) {
+            restaurant.showcaseImages = req.body.showcaseImages;
+            if (!restaurant.bannerImage) restaurant.bannerImage = req.body.showcaseImages[0];
+            verification.documents.images = req.body.showcaseImages.map(img => ({ filePath: img }));
+        } else if (files.images && files.images.length > 0) {
+            const newImages = files.images.map(img => ({ filePath: fileToDataUri(img) }));
             verification.documents.images = [...(verification.documents.images || []), ...newImages];
             const allImgPaths = verification.documents.images.map(img => img.filePath);
             restaurant.showcaseImages = allImgPaths;

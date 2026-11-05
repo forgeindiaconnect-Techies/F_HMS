@@ -126785,7 +126785,21 @@ var verificationUpload = upload.fields([
   { name: "menuPdf", maxCount: 1 }
 ]);
 var getFileUrl = (file) => {
-  return `/uploads/verification/${file.filename}`;
+  return "/uploads/verification/" + file.filename;
+};
+var fileToDataUri = (file) => {
+  try {
+    const buf = import_fs2.default.readFileSync(file.path);
+    const ext = import_path2.default.extname(file.originalname || file.filename || "").toLowerCase();
+    let mime = "image/png";
+    if (ext === ".jpg" || ext === ".jpeg") mime = "image/jpeg";
+    else if (ext === ".webp") mime = "image/webp";
+    else if (ext === ".svg") mime = "image/svg+xml";
+    else if (ext === ".gif") mime = "image/gif";
+    return "data:" + mime + ";base64," + buf.toString("base64");
+  } catch (_) {
+    return getFileUrl(file);
+  }
 };
 var submitVerification = async (req, res) => {
   try {
@@ -126886,8 +126900,13 @@ var submitVerification = async (req, res) => {
     if (files.menuPdf) {
       documents.menuPdf = { filePath: getFileUrl(files.menuPdf[0]) };
     }
-    if (files.images && files.images.length > 0) {
-      const newImages = files.images.map((img) => ({ filePath: getFileUrl(img) }));
+    if (req.body.showcaseImages && Array.isArray(req.body.showcaseImages) && req.body.showcaseImages.length > 0) {
+      restaurant.showcaseImages = req.body.showcaseImages;
+      if (!restaurant.bannerImage) restaurant.bannerImage = req.body.showcaseImages[0];
+      documents.images = req.body.showcaseImages.map((img) => ({ filePath: img }));
+      await restaurant.save();
+    } else if (files.images && files.images.length > 0) {
+      const newImages = files.images.map((img) => ({ filePath: fileToDataUri(img) }));
       documents.images = [...documents.images || [], ...newImages];
       const allImgPaths = documents.images.map((img) => img.filePath);
       restaurant.showcaseImages = allImgPaths;
@@ -126993,8 +127012,12 @@ var updateBrandAssets = async (req, res) => {
     if (files.menuPdf && files.menuPdf.length > 0) {
       verification.documents.menuPdf = { filePath: getFileUrl(files.menuPdf[0]) };
     }
-    if (files.images && files.images.length > 0) {
-      const newImages = files.images.map((img) => ({ filePath: getFileUrl(img) }));
+    if (req.body.showcaseImages && Array.isArray(req.body.showcaseImages) && req.body.showcaseImages.length > 0) {
+      restaurant.showcaseImages = req.body.showcaseImages;
+      if (!restaurant.bannerImage) restaurant.bannerImage = req.body.showcaseImages[0];
+      verification.documents.images = req.body.showcaseImages.map((img) => ({ filePath: img }));
+    } else if (files.images && files.images.length > 0) {
+      const newImages = files.images.map((img) => ({ filePath: fileToDataUri(img) }));
       verification.documents.images = [...verification.documents.images || [], ...newImages];
       const allImgPaths = verification.documents.images.map((img) => img.filePath);
       restaurant.showcaseImages = allImgPaths;
@@ -140333,6 +140356,9 @@ app.use("/api/customer-reviews", customerReviewRoutes_default);
 var PORT = process.env.PORT || 5e3;
 var __dirname = import_path6.default.resolve();
 app.use("/uploads", import_express32.default.static(import_path6.default.join(__dirname, "uploads")));
+app.use("/uploads", import_express32.default.static(import_path6.default.join(__dirname, "backend", "uploads")));
+app.use("/uploads", import_express32.default.static(import_path6.default.join(process.cwd(), "uploads")));
+app.use("/uploads", import_express32.default.static(import_path6.default.join(process.cwd(), "backend", "uploads")));
 app.get("/", (req, res) => {
   res.status(200).json({ status: "ok", message: "Restaurant SaaS API is running live" });
 });
