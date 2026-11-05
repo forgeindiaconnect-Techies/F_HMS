@@ -52,43 +52,6 @@ export const getRestaurants = async (req, res) => {
             return res.json([]);
         }
 
-        // Auto-heal: Ensure any registered RestaurantAdmin/Admin user has an active Restaurant record
-        const Branch = (await import('../models/Branch.js')).default;
-        const User = (await import('../models/User.js')).default;
-        const adminUsers = await User.find({ role: { $in: ['RestaurantAdmin', 'Admin'] } });
-
-        for (const admin of adminUsers) {
-            const exists = await Restaurant.exists({ $or: [{ ownerId: admin._id }, { _id: admin.restaurantId }] });
-            if (!exists) {
-                const restName = admin.name ? `${admin.name}'s Restaurant` : 'New Restaurant';
-                const newRest = await Restaurant.create({
-                    name: restName,
-                    ownerId: admin._id,
-                    subscription: {
-                        status: 'Active',
-                        plan: 'Basic',
-                        billingCycle: 'monthly',
-                        trialActive: true,
-                        startDate: new Date(),
-                        expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-                    },
-                    approvalStatus: 'Approved',
-                    verificationStatus: 'Verified',
-                    isActive: true
-                });
-                admin.restaurantId = newRest._id;
-                await admin.save();
-
-                await Branch.create({
-                    restaurantId: newRest._id,
-                    name: `${newRest.name} Branch`,
-                    location: { address: 'Primary Location' },
-                    contact: { phone: admin.phoneNumber || '' },
-                    isActive: true
-                });
-            }
-        }
-
         // Return eligible customer-facing restaurants: must not be deleted, must be active,
         // and have an active subscription or valid free trial.
         const filter = {

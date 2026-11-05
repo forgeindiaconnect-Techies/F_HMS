@@ -125574,13 +125574,49 @@ var getBrevoConfig = () => {
     "Tm68g8GmBDYOA3Sd"
   ].join("-");
   const apiKey = process.env.BREVO_API_KEY || defaultApiKey;
-  const senderEmail = process.env.BREVO_SENDER_EMAIL || "forgeindiaconnectfic@gmail.com";
-  const senderName = process.env.BREVO_SENDER_NAME || "Restaurant Hub";
+  const senderEmail = process.env.BREVO_SENDER_EMAIL || process.env.SMTP_FROM || "forgeindiaconnectfic@gmail.com";
+  const senderName = process.env.BREVO_SENDER_NAME || "FoodNest";
   return { apiKey, senderEmail, senderName };
+};
+var getSmtpConfig = () => {
+  const defaultSmtpPass = [
+    "xsmtpsib",
+    "c6631c60c4656c1ba3be795c6f60f1a94fa9a47c45ecc92add4e4f83827b7d6d",
+    "ftTnqc7yVNlO1O2j"
+  ].join("-");
+  const host = process.env.SMTP_HOST || "smtp-relay.brevo.com";
+  const port = Number(process.env.SMTP_PORT || process.env.SMTP_Port || 587);
+  const user = process.env.SMTP_USER || process.env.SMPT_USER || "b5786a001@smtp-brevo.com";
+  const pass = process.env.SMTP_PASS || process.env.smtp_pass_key || defaultSmtpPass;
+  const senderEmail = process.env.BREVO_SENDER_EMAIL || process.env.SMTP_FROM || "forgeindiaconnectfic@gmail.com";
+  const senderName = process.env.BREVO_SENDER_NAME || "FoodNest";
+  return { host, port, user, pass, senderEmail, senderName };
 };
 var sendEmail = async ({ to, toName, subject, html }) => {
   if (!to) return false;
+  const smtpConfig = getSmtpConfig();
   const { apiKey, senderEmail, senderName } = getBrevoConfig();
+  try {
+    const transporter = import_nodemailer.default.createTransport({
+      host: smtpConfig.host,
+      port: smtpConfig.port,
+      secure: false,
+      auth: {
+        user: smtpConfig.user,
+        pass: smtpConfig.pass
+      }
+    });
+    const info = await transporter.sendMail({
+      from: `"${smtpConfig.senderName}" <${smtpConfig.senderEmail}>`,
+      to,
+      subject,
+      html
+    });
+    console.log(`[Brevo SMTP Email Sent Successfully] Delivered to ${to}. Message ID: ${info.messageId}`);
+    return true;
+  } catch (smtpErr) {
+    console.warn(`[Brevo SMTP Warning] Falling back to Brevo API: ${smtpErr.message}`);
+  }
   if (apiKey) {
     try {
       const response = await fetch("https://api.brevo.com/v3/smtp/email", {
@@ -125603,66 +125639,13 @@ var sendEmail = async ({ to, toName, subject, html }) => {
         console.log(`[Brevo API Email Sent Successfully] Delivered real-time to ${to}. Message ID:`, data.messageId);
         return true;
       } else {
-        if (data.code === "unauthorized" || data.message && data.message.includes("unrecognised IP")) {
-          console.error("[Brevo IP Restriction Alert]: Brevo rejected dispatch because IP address security restriction is active in your Brevo account. Please disable IP restrictions at https://app.brevo.com/security/authorised_ips");
-        } else {
-          console.error("[Brevo API Error Details]:", JSON.stringify(data));
-        }
+        console.error("[Brevo API Error Details]:", JSON.stringify(data));
       }
     } catch (brevoErr) {
       console.error("[Brevo HTTP Dispatch Error]:", brevoErr.message);
     }
   }
-  try {
-    let transporter;
-    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-      transporter = import_nodemailer.default.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587,
-        secure: process.env.SMTP_SECURE === "true",
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        }
-      });
-    } else if (apiKey) {
-      transporter = import_nodemailer.default.createTransport({
-        host: "smtp-relay.brevo.com",
-        port: 587,
-        secure: false,
-        auth: {
-          user: senderEmail,
-          pass: apiKey
-        }
-      });
-    } else {
-      const testAccount = await import_nodemailer.default.createTestAccount();
-      transporter = import_nodemailer.default.createTransport({
-        host: "smtp.ethereal.email",
-        port: 587,
-        secure: false,
-        auth: {
-          user: testAccount.user,
-          pass: testAccount.pass
-        }
-      });
-    }
-    const info = await transporter.sendMail({
-      from: `"${senderName}" <${senderEmail}>`,
-      to,
-      subject,
-      html
-    });
-    console.log(`[SMTP Mail Sent Successfully] Message sent to ${to}. ID: ${info.messageId}`);
-    const previewUrl = import_nodemailer.default.getTestMessageUrl(info);
-    if (previewUrl) {
-      console.log(`[Email Test Preview URL]: ${previewUrl}`);
-    }
-    return true;
-  } catch (smtpErr) {
-    console.error(`[SMTP Fallback Error] Failed to send email to ${to}:`, smtpErr.message);
-    return false;
-  }
+  return false;
 };
 var sendWelcomeEmail = async ({ email, name, restaurantName, plan }) => {
   const subject = `Welcome to Restaurant Hub - Subscription & Registration Received!`;
@@ -126593,9 +126576,25 @@ var registerUser = async (req, res) => {
         paymentStatus: "Trial",
         manualFreeze: false
       };
+      const rawAddress = req.body.address || req.body.addressText || "";
+      let resolvedCity = req.body.city || "";
+      if (!resolvedCity && rawAddress) {
+        const parts = rawAddress.split(",").map((s) => s.trim()).filter(Boolean);
+        if (parts.length >= 2) {
+          resolvedCity = parts[parts.length > 2 ? parts.length - 2 : parts.length - 1];
+          if (resolvedCity.toLowerCase() === "tamil nadu" || resolvedCity.toLowerCase() === "india") {
+            resolvedCity = parts[0];
+          }
+        } else if (parts.length === 1) {
+          resolvedCity = parts[0];
+        }
+      }
       createdRestaurant = await Restaurant_default.create({
         name: restaurantName,
         ownerId: user._id,
+        phone: phoneNumber || "",
+        address: rawAddress,
+        city: resolvedCity,
         subscription: subData,
         approvalStatus: isPaidUpfront ? "Approved" : "Pending",
         verificationStatus: hasVerificationFiles ? "Under Review" : "Pending",
@@ -126604,8 +126603,11 @@ var registerUser = async (req, res) => {
       user.restaurantId = createdRestaurant._id;
       const initialBranch = await Branch_default.create({
         restaurantId: createdRestaurant._id,
-        name: `${createdRestaurant.name} Branch`,
-        location: { address: "Primary Location" },
+        name: `${createdRestaurant.name} Main Branch`,
+        location: {
+          address: rawAddress || "Primary Location",
+          city: resolvedCity || ""
+        },
         contact: { phone: phoneNumber || "" },
         isActive: true
       });
@@ -127997,39 +127999,6 @@ var getRestaurants = async (req, res) => {
     if (import_mongoose13.default.connection.readyState !== 1) {
       return res.json([]);
     }
-    const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
-    const User2 = (await Promise.resolve().then(() => (init_User(), User_exports))).default;
-    const adminUsers = await User2.find({ role: { $in: ["RestaurantAdmin", "Admin"] } });
-    for (const admin of adminUsers) {
-      const exists = await Restaurant_default.exists({ $or: [{ ownerId: admin._id }, { _id: admin.restaurantId }] });
-      if (!exists) {
-        const restName = admin.name ? `${admin.name}'s Restaurant` : "New Restaurant";
-        const newRest = await Restaurant_default.create({
-          name: restName,
-          ownerId: admin._id,
-          subscription: {
-            status: "Active",
-            plan: "Basic",
-            billingCycle: "monthly",
-            trialActive: true,
-            startDate: /* @__PURE__ */ new Date(),
-            expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1e3)
-          },
-          approvalStatus: "Approved",
-          verificationStatus: "Verified",
-          isActive: true
-        });
-        admin.restaurantId = newRest._id;
-        await admin.save();
-        await Branch3.create({
-          restaurantId: newRest._id,
-          name: `${newRest.name} Branch`,
-          location: { address: "Primary Location" },
-          contact: { phone: admin.phoneNumber || "" },
-          isActive: true
-        });
-      }
-    }
     const filter = {
       isDeleted: { $ne: true },
       status: { $nin: ["Inactive", "Suspended", "Deleted"] },
@@ -128073,7 +128042,7 @@ var getRestaurants = async (req, res) => {
           rest.deliverySettings.enabled = true;
         }
       }
-      const branches = await Branch3.find({ restaurantId: rest._id, isActive: true }).lean();
+      const branches = await Branch_default.find({ restaurantId: rest._id, isActive: true }).lean();
       rest.branches = branches;
       const primaryBranch = branches[0];
       let verifAddress = "";
@@ -132262,38 +132231,6 @@ var Ticket_default = Ticket;
 init_Notification();
 var getStats = async (req, res) => {
   try {
-    const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
-    const adminUsers = await User_default.find({ role: { $in: ["RestaurantAdmin", "Admin"] } });
-    for (const admin of adminUsers) {
-      const exists = await Restaurant_default.exists({ $or: [{ ownerId: admin._id }, { _id: admin.restaurantId }] });
-      if (!exists) {
-        const restName = admin.name ? `${admin.name}'s Restaurant` : "New Restaurant";
-        const newRest = await Restaurant_default.create({
-          name: restName,
-          ownerId: admin._id,
-          subscription: {
-            status: "Active",
-            plan: "Basic",
-            billingCycle: "monthly",
-            trialActive: true,
-            startDate: /* @__PURE__ */ new Date(),
-            expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1e3)
-          },
-          approvalStatus: "Approved",
-          verificationStatus: "Verified",
-          isActive: true
-        });
-        admin.restaurantId = newRest._id;
-        await admin.save();
-        await Branch3.create({
-          restaurantId: newRest._id,
-          name: `${newRest.name} Branch`,
-          location: { address: "Primary Location" },
-          contact: { phone: admin.phoneNumber || "" },
-          isActive: true
-        });
-      }
-    }
     const totalRestaurants = await Restaurant_default.countDocuments({ isDeleted: { $ne: true } });
     const activeRestaurants = await Restaurant_default.countDocuments({
       isDeleted: { $ne: true },

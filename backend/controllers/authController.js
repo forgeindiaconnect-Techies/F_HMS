@@ -100,9 +100,26 @@ export const registerUser = async (req, res) => {
                 manualFreeze: false
             };
 
+                        const rawAddress = req.body.address || req.body.addressText || '';
+            let resolvedCity = req.body.city || '';
+            if (!resolvedCity && rawAddress) {
+                const parts = rawAddress.split(',').map(s => s.trim()).filter(Boolean);
+                if (parts.length >= 2) {
+                    resolvedCity = parts[parts.length > 2 ? parts.length - 2 : parts.length - 1];
+                    if (resolvedCity.toLowerCase() === 'tamil nadu' || resolvedCity.toLowerCase() === 'india') {
+                        resolvedCity = parts[0];
+                    }
+                } else if (parts.length === 1) {
+                    resolvedCity = parts[0];
+                }
+            }
+
             createdRestaurant = await Restaurant.create({
                 name: restaurantName,
                 ownerId: user._id,
+                phone: phoneNumber || '',
+                address: rawAddress,
+                city: resolvedCity,
                 subscription: subData,
                 approvalStatus: isPaidUpfront ? 'Approved' : 'Pending',
                 verificationStatus: hasVerificationFiles ? 'Under Review' : 'Pending',
@@ -113,8 +130,11 @@ export const registerUser = async (req, res) => {
             // Create initial main branch
             const initialBranch = await Branch.create({
                 restaurantId: createdRestaurant._id,
-                name: `${createdRestaurant.name} Branch`,
-                location: { address: 'Primary Location' },
+                name: `${createdRestaurant.name} Main Branch`,
+                location: { 
+                    address: rawAddress || 'Primary Location',
+                    city: resolvedCity || ''
+                },
                 contact: { phone: phoneNumber || '' },
                 isActive: true
             });
