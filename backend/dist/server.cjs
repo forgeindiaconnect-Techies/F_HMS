@@ -137993,13 +137993,15 @@ var upload2 = (0, import_multer3.default)({
   // 10MB limit
   fileFilter: fileFilter2
 });
-var checkEnterprisePlan = async (restaurantId) => {
-  if (!restaurantId) return false;
-  const restaurant = await Restaurant_default.findById(restaurantId);
-  if (!restaurant) return false;
-  const plan = restaurant.subscription?.plan;
-  const status = restaurant.subscription?.status;
-  return plan === "Enterprise" && status === "Active";
+var getEffectiveRestaurantId = async (user) => {
+  if (!user) return null;
+  if (user.restaurantId) return user.restaurantId;
+  if (user.restaurant) return user.restaurant;
+  if (user._id) {
+    const rest = await Restaurant_default.findOne({ ownerId: user._id });
+    if (rest) return rest._id;
+  }
+  return null;
 };
 var logActivity = async (ticketId, action, req, details) => {
   try {
@@ -138046,10 +138048,10 @@ var generateTicketId = async () => {
 };
 var createTicket = async (req, res) => {
   try {
-    const isEnterprise = await checkEnterprisePlan(req.user.restaurantId);
-    if (!isEnterprise && req.user.role !== "SuperAdmin" && req.user.role !== "SupportAgent") {
-      return res.status(403).json({
-        message: "24/7 Customer Care is available only for Enterprise Plan subscribers."
+    let restaurantId = await getEffectiveRestaurantId(req.user);
+    if (!restaurantId && req.user.role !== "SuperAdmin" && req.user.role !== "SupportAgent") {
+      return res.status(400).json({
+        message: "Restaurant profile not found for this account."
       });
     }
     const { subject, category, priority, description, branchId } = req.body;
@@ -138060,7 +138062,7 @@ var createTicket = async (req, res) => {
     const tktId = await generateTicketId();
     const ticket = new Ticket_default({
       ticketId: tktId,
-      restaurantId: req.user.restaurantId,
+      restaurantId: restaurantId || req.user.restaurantId,
       branchId: branchId || void 0,
       subject,
       category,
@@ -138075,7 +138077,7 @@ var createTicket = async (req, res) => {
       title: `Ticket Created - ${tktId}`,
       desc: `Your ticket regarding "${subject}" has been successfully created.`,
       type: "Info",
-      restaurantId: req.user.restaurantId
+      restaurantId: restaurantId || req.user.restaurantId
     });
     const assignedAgent = await autoAssignTicket(ticket);
     if (assignedAgent) {
@@ -138084,13 +138086,13 @@ var createTicket = async (req, res) => {
         title: `Agent Assigned - ${tktId}`,
         desc: `Support Agent "${assignedAgent.name}" has been assigned to help you.`,
         type: "Info",
-        restaurantId: req.user.restaurantId
+        restaurantId: restaurantId || req.user.restaurantId
       });
       await Notification_default.create({
         title: `New Ticket Assigned - ${tktId}`,
         desc: `A new ticket "${subject}" has been assigned to you.`,
         type: "Alert",
-        restaurantId: req.user.restaurantId
+        restaurantId: restaurantId || req.user.restaurantId
         // Linked to restaurant
       });
     } else {
@@ -138115,15 +138117,12 @@ var createTicket = async (req, res) => {
 var getTickets2 = async (req, res) => {
   try {
     const isSuperAdminOrAgent = req.user.role === "SuperAdmin" || req.user.role === "SupportAgent";
-    if (!isSuperAdminOrAgent) {
-      const isEnterprise = await checkEnterprisePlan(req.user.restaurantId);
-      if (!isEnterprise) {
-        return res.json([]);
-      }
-    }
     let query = {};
     if (!isSuperAdminOrAgent) {
-      query.restaurantId = req.user.restaurantId;
+      const restaurantId = await getEffectiveRestaurantId(req.user);
+      if (restaurantId) {
+        query.restaurantId = restaurantId;
+      }
     } else if (req.user.role === "SupportAgent") {
       query = {
         $or: [
@@ -138165,14 +138164,10 @@ var getTicketById = async (req, res) => {
     }
     const isSuperAdminOrAgent = req.user.role === "SuperAdmin" || req.user.role === "SupportAgent";
     if (!isSuperAdminOrAgent) {
-      if (ticket.restaurantId._id.toString() !== req.user.restaurantId?.toString()) {
+      const userRestId = await getEffectiveRestaurantId(req.user);
+      const ticketRestId = ticket.restaurantId?._id ? ticket.restaurantId._id.toString() : ticket.restaurantId?.toString();
+      if (userRestId && ticketRestId && ticketRestId !== userRestId.toString()) {
         return res.status(403).json({ message: "Unauthorized access to this ticket." });
-      }
-      const isEnterprise = await checkEnterprisePlan(req.user.restaurantId);
-      if (!isEnterprise) {
-        return res.status(403).json({
-          message: "24/7 Customer Care is available only for Enterprise Plan subscribers."
-        });
       }
     }
     res.json(ticket);

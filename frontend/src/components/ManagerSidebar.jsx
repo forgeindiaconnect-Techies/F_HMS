@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { 
     Store, ShoppingBag, UserCheck, PackageSearch, FileText, Settings, LogOut, UtensilsCrossed, ChefHat, MessageSquare, DollarSign, PieChart, QrCode, Truck, Bell, Receipt,
     CalendarDays, CreditCard, ChevronRight
@@ -156,7 +156,7 @@ const ManagerSidebar = () => {
                             {group.items.map((item) => {
                                 const Icon = item.icon;
                                 return (
-                                    <NavLink
+                                    <Link
                                         key={item.name}
                                         to={item.path}
                                         onClick={() => setIsOpen(false)}
@@ -170,7 +170,7 @@ const ManagerSidebar = () => {
                                         <Icon size={17} className={clsx("transition-transform group-hover:scale-110 shrink-0", isItemActive(item.path) ? "text-white" : "text-indigo-300/60 group-hover:text-indigo-200")} />
                                         <span className="truncate">{item.name}</span>
                                         {isItemActive(item.path) && <ChevronRight size={14} className="ml-auto shrink-0 opacity-80" />}
-                                    </NavLink>
+                                    </Link>
                                 );
                             })}
                         </div>

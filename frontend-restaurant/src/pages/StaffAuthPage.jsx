@@ -636,12 +636,16 @@ const StaffAuthPage = () => {
                     </div>
                     <input
                         type="tel"
-                        placeholder="Phone Number (10 digits)"
+                        placeholder="Mobile Number (10 digits, starts with 6-9)"
                         {...register('phoneNumber', { 
                             required: 'Phone number is required',
-                            pattern: { value: /^[0-9]{10}$/, message: 'Phone number must be exactly 10 digits' }
+                            pattern: { value: /^[6-9]\d{9}$/, message: 'Phone number must be exactly 10 digits starting with 6, 7, 8, or 9' }
                         })}
-                        onInput={(e) => { e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10); }}
+                        onInput={(e) => {
+                        let v = e.target.value.replace(/\D/g, '').slice(0, 10);
+                        if (v.length > 0 && !/^[6-9]/.test(v)) v = '';
+                        e.target.value = v;
+                    }}
                         className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
                     />
                     {errors.phoneNumber && <p className="text-xs text-red-500 mt-1 pl-1">{errors.phoneNumber.message}</p>}

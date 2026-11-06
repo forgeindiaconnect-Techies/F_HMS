@@ -189,9 +189,13 @@ const CustomerAuthPage = () => {
                                         placeholder="Mobile Number (10 digits)"
                                         {...register('phoneNumber', { 
                                             required: 'Mobile number is required',
-                                            pattern: { value: /^[0-9]{10}$/, message: 'Phone number must be exactly 10 digits' }
+                                            pattern: { value: /^[6-9]\d{9}$/, message: 'Mobile number must be exactly 10 digits starting with 6, 7, 8, or 9' }
                                         })}
-                                        onInput={(e) => { e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10); }}
+                                        onInput={(e) => {
+                        let v = e.target.value.replace(/\D/g, '').slice(0, 10);
+                        if (v.length > 0 && !/^[6-9]/.test(v)) v = '';
+                        e.target.value = v;
+                    }}
                                         className={`w-full pl-11 pr-4 py-3.5 bg-gray-50 border rounded-xl text-sm outline-none transition-all ${errors.phoneNumber ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-gray-200 hover:border-gray-300 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-100'}`}
                                     />
                                 </div>

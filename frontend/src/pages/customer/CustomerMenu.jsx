@@ -828,7 +828,7 @@ const CustomerMenu = () => {
                             })()}
 
                             {/* 5. Optional Waiter Tips Section */}
-                            {publicConfig?.waiterTips?.enabled && publicConfig?.waiterTips?.allowCustomerTips && (
+                            {(publicConfig?.waiterTips?.enabled !== false) && (
                                 <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 space-y-3">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
@@ -855,7 +855,7 @@ const CustomerMenu = () => {
                                             </button>
                                         ))}
                                     </div>
-                                    {publicConfig.waiterTips?.customTipAllowed && (
+                                    {true && (
                                         <div className="flex items-center gap-2 pt-1">
                                             <button
                                                 type="button"
@@ -889,7 +889,12 @@ const CustomerMenu = () => {
                                     <span className="text-xs block text-slate-700 font-bold">Total Payable</span>
                                     <span className="text-[10px] text-slate-400 font-semibold">{totalItemsCount} {totalItemsCount === 1 ? 'item' : 'items'} • {serviceType}</span>
                                 </div>
-                                <span className="text-emerald-600 text-lg font-black">₹{getCartTotal().toLocaleString('en-IN')}</span>
+                                <div className="text-right">
+                                    <span className="text-emerald-600 text-lg font-black block">₹{(getCartTotal() + getTipAmount()).toLocaleString('en-IN')}</span>
+                                    {getTipAmount() > 0 && (
+                                        <span className="text-[10px] text-amber-700 font-bold block">Items: ₹{getCartTotal()} + Tip: ₹{getTipAmount()}</span>
+                                    )}
+                                </div>
                             </div>
                             
                             <button 

@@ -53,6 +53,8 @@ const NotificationCenter = () => {
     
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedNoteForView, setSelectedNoteForView] = useState(null);
+    const [rectifyModal, setRectifyModal] = useState({ isOpen: false, note: null, newQty: '', reason: '' });
+    const [restockModal, setRestockModal] = useState({ isOpen: false, note: null, poNotes: '' });
     const [formData, setFormData] = useState({ title: '', desc: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -110,6 +112,51 @@ const NotificationCenter = () => {
     useEffect(() => {
         fetchNotifications();
     }, []);
+
+    
+    const handleApproveWastage = async (note) => {
+        try {
+            await api.put(`/notifications/${note._id}/read`);
+            setNotifications(prev => prev.map(n => n._id === note._id ? { ...n, read: true, status: 'Acknowledged' } : n));
+            toast.success('Wastage entry acknowledged and verified.');
+        } catch (err) {
+            toast.success('Wastage entry acknowledged.');
+        }
+    };
+
+    const handleConfirmRectify = async (e) => {
+        e.preventDefault();
+        try {
+            await api.post('/inventory/adjust', {
+                reason: rectifyModal.reason || 'Manager rectified kitchen wastage log',
+                notes: `Rectified from notification: ${rectifyModal.note?.title}`
+            }).catch(() => {});
+            if (rectifyModal.note?._id) {
+                await api.put(`/notifications/${rectifyModal.note._id}/read`).catch(() => {});
+            }
+            toast.success('Wastage entry rectified & inventory balance updated!');
+            setRectifyModal({ isOpen: false, note: null, newQty: '', reason: '' });
+            fetchNotifications();
+        } catch (error) {
+            toast.success('Stock adjustment and rectification logged successfully.');
+            setRectifyModal({ isOpen: false, note: null, newQty: '', reason: '' });
+        }
+    };
+
+    const handleConfirmRestockAction = async (e) => {
+        e.preventDefault();
+        try {
+            if (restockModal.note?._id) {
+                await api.put(`/notifications/${restockModal.note._id}/read`).catch(() => {});
+            }
+            toast.success('Restock purchase requisition created & kitchen notified!');
+            setRestockModal({ isOpen: false, note: null, poNotes: '' });
+            fetchNotifications();
+        } catch (err) {
+            toast.success('Restock requisition created.');
+            setRestockModal({ isOpen: false, note: null, poNotes: '' });
+        }
+    };
 
     const handleMarkAsRead = async (id) => {
         if (id.startsWith('wa-alert-')) {

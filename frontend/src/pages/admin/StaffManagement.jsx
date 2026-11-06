@@ -1,6 +1,6 @@
 
 // Helper: Calculate overtime hours (Standard shift is 9 hours)
-const calculateOvertimeHours = (checkIn, checkOut, standardShiftHours = 9) => {
+const calculateOvertimeHours = (checkIn, checkOut, standardShiftHours = 8) => {
     if (!checkIn || !checkOut) return 0;
     try {
         const [inH, inM] = checkIn.split(':').map(Number);
@@ -263,24 +263,31 @@ const StaffManagement = () => {
             const map = {};
             staffList.forEach(emp => {
                 const existing = list.find(r => (r.employee?._id || r.employee) === emp._id);
+                const shiftHrs = emp.salaryConfig?.dailyWorkHours || 8;
                 if (existing) {
+                    const cIn = existing.checkInTime ? new Date(existing.checkInTime).toTimeString().slice(0, 5) : '09:00';
+                    const cOut = existing.checkOutTime ? new Date(existing.checkOutTime).toTimeString().slice(0, 5) : '18:00';
+                    const autoOt = (existing.overtimeHours !== undefined && existing.overtimeHours !== null)
+                        ? Number(existing.overtimeHours)
+                        : calculateOvertimeHours(cIn, cOut, shiftHrs);
                     map[emp._id] = {
                         _id: existing._id,
                         status: existing.status,
-                        checkInTime: existing.checkInTime ? new Date(existing.checkInTime).toTimeString().slice(0, 5) : '09:00',
-                        checkOutTime: existing.checkOutTime ? new Date(existing.checkOutTime).toTimeString().slice(0, 5) : '18:00',
+                        checkInTime: cIn,
+                        checkOutTime: cOut,
                         lateMinutes: existing.lateMinutes || 0,
-                        overtimeHours: existing.overtimeHours || 0,
+                        overtimeHours: autoOt,
                         notes: existing.notes || '',
                         isSaved: true
                     };
                 } else {
+                    const autoOt = calculateOvertimeHours('09:00', '18:00', shiftHrs);
                     map[emp._id] = {
                         status: 'Present',
                         checkInTime: '09:00',
                         checkOutTime: '18:00',
                         lateMinutes: 0,
-                        overtimeHours: 0,
+                        overtimeHours: autoOt,
                         notes: '',
                         isSaved: false
                     };
@@ -354,13 +361,21 @@ const StaffManagement = () => {
     };
 
     const handleAttendanceFieldChange = (empId, field, val) => {
-        setAttendanceMap(prev => ({
-            ...prev,
-            [empId]: {
-                ...(prev[empId] || {}),
-                [field]: val
+        setAttendanceMap(prev => {
+            const current = prev[empId] || { status: 'Present', checkInTime: '09:00', checkOutTime: '18:00', overtimeHours: 0 };
+            const updated = { ...current, [field]: val };
+            if (field === 'checkInTime' || field === 'checkOutTime') {
+                const cIn = field === 'checkInTime' ? val : (current.checkInTime || '09:00');
+                const cOut = field === 'checkOutTime' ? val : (current.checkOutTime || '18:00');
+                const emp = staffList.find(s => s._id === empId);
+                const shiftHrs = emp?.salaryConfig?.dailyWorkHours || 8;
+                updated.overtimeHours = calculateOvertimeHours(cIn, cOut, shiftHrs);
             }
-        }));
+            return {
+                ...prev,
+                [empId]: updated
+            };
+        });
     };
 
     const handleOpenCorrectionModal = (record) => {
@@ -528,13 +543,21 @@ const StaffManagement = () => {
     // ── Payroll Adjustments & Audit History ──────────────────────────────────
     const handleOpenPayrollAdjustModal = (payroll) => {
         setAdjustTarget(payroll);
+        const totalDays = 30;
+        const lopDays = payroll.attendanceSummary?.lopDays || payroll.attendanceSummary?.unpaidLeaveDays || 0;
+        const basic = payroll.basicSalary || 0;
+        const perDay = totalDays > 0 ? Math.round(basic / totalDays) : 0;
+        const initialDeduction = payroll.calculations?.deductions ?? (lopDays * perDay);
+
         setAdjustForm({
-            basicSalary: payroll.basicSalary || 0,
+            basicSalary: basic,
             allowances: payroll.calculations?.allowances || 0,
             overtimePay: payroll.calculations?.overtimePay || 0,
             bonuses: payroll.calculations?.bonuses || 0,
-            deductions: payroll.calculations?.deductions || 0,
+            deductions: initialDeduction,
             advances: payroll.calculations?.advances || 0,
+            totalMonthDays: totalDays,
+            absentDays: lopDays,
             notes: ''
         });
         setIsPayrollAdjustModalOpen(true);
@@ -2554,13 +2577,65 @@ const StaffManagement = () => {
                                 </div>
                             </div>
 
+                                                        {/* Absent Days & Automatic Salary Deduction Calculation */}
+                            <div className="p-3.5 bg-rose-50/60 dark:bg-rose-950/30 rounded-2xl border border-rose-200/70 dark:border-rose-900/50 space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[11px] font-black uppercase tracking-wider text-rose-800 dark:text-rose-300">
+                                        Loss of Pay (LOP) / Absent Days Calculation
+                                    </span>
+                                    <span className="text-[10px] font-bold text-rose-600 bg-rose-100 dark:bg-rose-900/60 px-2 py-0.5 rounded-full">
+                                        Per Day: ₹{Math.round((Number(adjustForm.basicSalary) || 0) / (Number(adjustForm.totalMonthDays) || 30))}
+                                    </span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Total Month Days</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="31"
+                                            value={adjustForm.totalMonthDays || 30}
+                                            onChange={(e) => {
+                                                const totalD = Number(e.target.value) || 30;
+                                                const absD = Number(adjustForm.absentDays) || 0;
+                                                const perDay = Math.round((Number(adjustForm.basicSalary) || 0) / totalD);
+                                                const autoDed = Math.round(absD * perDay);
+                                                setAdjustForm({ ...adjustForm, totalMonthDays: totalD, deductions: autoDed });
+                                            }}
+                                            className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[11px] font-bold text-rose-700 dark:text-rose-300 mb-1">Absent Days</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max={adjustForm.totalMonthDays || 31}
+                                            step="0.5"
+                                            value={adjustForm.absentDays || 0}
+                                            onChange={(e) => {
+                                                const absD = Number(e.target.value) || 0;
+                                                const totalD = Number(adjustForm.totalMonthDays) || 30;
+                                                const perDay = Math.round((Number(adjustForm.basicSalary) || 0) / totalD);
+                                                const autoDed = Math.round(absD * perDay);
+                                                setAdjustForm({ ...adjustForm, absentDays: absD, deductions: autoDed });
+                                            }}
+                                            className="w-full px-3 py-1.5 bg-white dark:bg-slate-800 border border-rose-300 dark:border-rose-700 rounded-xl text-xs font-bold text-rose-600"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="text-[11px] text-rose-700 dark:text-rose-400 font-medium">
+                                    Auto Calculated Deduction: <strong className="font-bold">₹{adjustForm.deductions || 0}</strong> ({adjustForm.absentDays || 0} days × ₹{Math.round((Number(adjustForm.basicSalary) || 0) / (Number(adjustForm.totalMonthDays) || 30))}/day)
+                                </div>
+                            </div>
+
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Deductions (₹)</label>
+                                    <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Final Deductions (₹)</label>
                                     <input
                                         type="number"
                                         value={adjustForm.deductions}
-                                        onChange={(e) => setAdjustForm({ ...adjustForm, deductions: e.target.value })}
+                                        onChange={(e) => setAdjustForm({ ...adjustForm, deductions: Number(e.target.value) || 0 })}
                                         className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-rose-500"
                                     />
                                 </div>

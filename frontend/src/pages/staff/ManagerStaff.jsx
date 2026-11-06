@@ -1,6 +1,6 @@
 
 // Helper: Calculate overtime hours (Standard shift is 9 hours)
-const calculateOvertimeHours = (checkIn, checkOut, standardShiftHours = 9) => {
+const calculateOvertimeHours = (checkIn, checkOut, standardShiftHours = 8) => {
     if (!checkIn || !checkOut) return 0;
     try {
         const [inH, inM] = checkIn.split(':').map(Number);
@@ -184,26 +184,33 @@ const ManagerStaff = () => {
             const map = {};
             staffList.forEach(emp => {
                 const existing = list.find(r => (r.employee?._id || r.employee) === emp._id);
+                const shiftHrs = emp.salaryConfig?.dailyWorkHours || 8;
                 if (existing) {
+                    const cIn = existing.checkInTime ? new Date(existing.checkInTime).toTimeString().slice(0, 5) : '09:00';
+                    const cOut = existing.checkOutTime ? new Date(existing.checkOutTime).toTimeString().slice(0, 5) : '18:00';
+                    const autoOt = (existing.overtimeHours !== undefined && existing.overtimeHours !== null) 
+                        ? Number(existing.overtimeHours) 
+                        : calculateOvertimeHours(cIn, cOut, shiftHrs);
                     map[emp._id] = {
                         _id: existing._id,
                         status: existing.status,
-                        checkInTime: existing.checkInTime ? new Date(existing.checkInTime).toTimeString().slice(0, 5) : '09:00',
-                        checkOutTime: existing.checkOutTime ? new Date(existing.checkOutTime).toTimeString().slice(0, 5) : '18:00',
+                        checkInTime: cIn,
+                        checkOutTime: cOut,
                         lateMinutes: existing.lateMinutes || 0,
-                        overtimeHours: existing.overtimeHours || 0,
+                        overtimeHours: autoOt,
                         isPaidLeave: existing.isPaidLeave,
                         isLOP: existing.isLOP,
                         notes: existing.notes || '',
                         isSaved: true
                     };
                 } else {
+                    const autoOt = calculateOvertimeHours('09:00', '18:00', shiftHrs);
                     map[emp._id] = {
                         status: 'Present',
                         checkInTime: '09:00',
                         checkOutTime: '18:00',
                         lateMinutes: 0,
-                        overtimeHours: 0,
+                        overtimeHours: autoOt,
                         notes: '',
                         isSaved: false
                     };
@@ -213,6 +220,24 @@ const ManagerStaff = () => {
         } catch (err) {
             console.error('Failed to fetch attendance records', err);
         }
+    };
+
+        const handleAttendanceFieldChange = (empId, field, val) => {
+        setAttendanceMap(prev => {
+            const current = prev[empId] || { status: 'Present', checkInTime: '09:00', checkOutTime: '18:00', overtimeHours: 0 };
+            const updated = { ...current, [field]: val };
+            if (field === 'checkInTime' || field === 'checkOutTime') {
+                const cIn = field === 'checkInTime' ? val : (current.checkInTime || '09:00');
+                const cOut = field === 'checkOutTime' ? val : (current.checkOutTime || '18:00');
+                const emp = staffList.find(s => s._id === empId);
+                const shiftHrs = emp?.salaryConfig?.dailyWorkHours || 8;
+                updated.overtimeHours = calculateOvertimeHours(cIn, cOut, shiftHrs);
+            }
+            return {
+                ...prev,
+                [empId]: updated
+            };
+        });
     };
 
     const fetchBranchPayroll = async () => {
@@ -1102,10 +1127,7 @@ const ManagerStaff = () => {
                                                     <input
                                                         type="time"
                                                         value={entry.checkInTime || '09:00'}
-                                                        onChange={(e) => setAttendanceMap(prev => ({
-                                                            ...prev,
-                                                            [emp._id]: { ...(prev[emp._id] || {}), checkInTime: e.target.value }
-                                                        }))}
+                                                        onChange={(e) => handleAttendanceFieldChange(emp._id, 'checkInTime', e.target.value)}
                                                         disabled={entry.status === 'Absent' || entry.status === 'Leave'}
                                                         className="px-2 py-1 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-mono disabled:opacity-40"
                                                     />
@@ -1114,10 +1136,7 @@ const ManagerStaff = () => {
                                                     <input
                                                         type="time"
                                                         value={entry.checkOutTime || '18:00'}
-                                                        onChange={(e) => setAttendanceMap(prev => ({
-                                                            ...prev,
-                                                            [emp._id]: { ...(prev[emp._id] || {}), checkOutTime: e.target.value }
-                                                        }))}
+                                                        onChange={(e) => handleAttendanceFieldChange(emp._id, 'checkOutTime', e.target.value)}
                                                         disabled={entry.status === 'Absent' || entry.status === 'Leave'}
                                                         className="px-2 py-1 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-mono disabled:opacity-40"
                                                     />
@@ -1128,11 +1147,8 @@ const ManagerStaff = () => {
                                                         min="0"
                                                         max="12"
                                                         step="0.5"
-                                                        value={entry.overtimeHours || 0}
-                                                        onChange={(e) => setAttendanceMap(prev => ({
-                                                            ...prev,
-                                                            [emp._id]: { ...(prev[emp._id] || {}), overtimeHours: Number(e.target.value) }
-                                                        }))}
+                                                        value={entry.overtimeHours ?? 0}
+                                                        onChange={(e) => handleAttendanceFieldChange(emp._id, 'overtimeHours', Number(e.target.value))}
                                                         disabled={entry.status === 'Absent' || entry.status === 'Leave'}
                                                         className="w-16 px-2 py-1 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-mono disabled:opacity-40"
                                                     />

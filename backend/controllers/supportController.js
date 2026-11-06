@@ -43,6 +43,18 @@ export const upload = multer({
     fileFilter: fileFilter
 });
 
+// Helper: Resolve Restaurant ID from user token or owner profile
+export const getEffectiveRestaurantId = async (user) => {
+    if (!user) return null;
+    if (user.restaurantId) return user.restaurantId;
+    if (user.restaurant) return user.restaurant;
+    if (user._id) {
+        const rest = await Restaurant.findOne({ ownerId: user._id });
+        if (rest) return rest._id;
+    }
+    return null;
+};
+
 // Middleware helper to check Enterprise Subscription
 export const checkEnterprisePlan = async (restaurantId) => {
     if (!restaurantId) return false;
@@ -115,10 +127,10 @@ const generateTicketId = async () => {
 // @access  Private (Enterprise Restaurant Only)
 export const createTicket = async (req, res) => {
     try {
-        const isEnterprise = await checkEnterprisePlan(req.user.restaurantId);
-        if (!isEnterprise && req.user.role !== 'SuperAdmin' && req.user.role !== 'SupportAgent') {
-            return res.status(403).json({
-                message: '24/7 Customer Care is available only for Enterprise Plan subscribers.'
+        let restaurantId = await getEffectiveRestaurantId(req.user);
+        if (!restaurantId && req.user.role !== 'SuperAdmin' && req.user.role !== 'SupportAgent') {
+            return res.status(400).json({
+                message: 'Restaurant profile not found for this account.'
             });
         }
 
@@ -133,7 +145,7 @@ export const createTicket = async (req, res) => {
 
         const ticket = new Ticket({
             ticketId: tktId,
-            restaurantId: req.user.restaurantId,
+            restaurantId: (restaurantId || req.user.restaurantId),
             branchId: branchId || undefined,
             subject,
             category,
@@ -153,7 +165,7 @@ export const createTicket = async (req, res) => {
             title: `Ticket Created - ${tktId}`,
             desc: `Your ticket regarding "${subject}" has been successfully created.`,
             type: 'Info',
-            restaurantId: req.user.restaurantId
+            restaurantId: (restaurantId || req.user.restaurantId)
         });
 
         // Trigger Auto Assignment
@@ -166,7 +178,7 @@ export const createTicket = async (req, res) => {
                 title: `Agent Assigned - ${tktId}`,
                 desc: `Support Agent "${assignedAgent.name}" has been assigned to help you.`,
                 type: 'Info',
-                restaurantId: req.user.restaurantId
+                restaurantId: (restaurantId || req.user.restaurantId)
             });
 
             // Notify Support Agent
@@ -174,7 +186,7 @@ export const createTicket = async (req, res) => {
                 title: `New Ticket Assigned - ${tktId}`,
                 desc: `A new ticket "${subject}" has been assigned to you.`,
                 type: 'Alert',
-                restaurantId: req.user.restaurantId // Linked to restaurant
+                restaurantId: (restaurantId || req.user.restaurantId) // Linked to restaurant
             });
         } else {
             // Notify SuperAdmins of unassigned new ticket
@@ -207,19 +219,14 @@ export const getTickets = async (req, res) => {
     try {
         const isSuperAdminOrAgent = req.user.role === 'SuperAdmin' || req.user.role === 'SupportAgent';
         
-        if (!isSuperAdminOrAgent) {
-            const isEnterprise = await checkEnterprisePlan(req.user.restaurantId);
-            if (!isEnterprise) {
-                // Return empty list gracefully so frontend doesn't throw 403 network error
-                return res.json([]);
-            }
-        }
-
         let query = {};
         
         if (!isSuperAdminOrAgent) {
             // Restaurant Admin / staff can only see their own restaurant's tickets
-            query.restaurantId = req.user.restaurantId;
+            const restaurantId = await getEffectiveRestaurantId(req.user);
+            if (restaurantId) {
+                query.restaurantId = restaurantId;
+            }
         } else if (req.user.role === 'SupportAgent') {
             // Support agents see tickets assigned to them, plus open unassigned ones
             query = {
@@ -285,16 +292,10 @@ export const getTicketById = async (req, res) => {
         const isSuperAdminOrAgent = req.user.role === 'SuperAdmin' || req.user.role === 'SupportAgent';
         if (!isSuperAdminOrAgent) {
             // Check ownership
-            if (ticket.restaurantId._id.toString() !== req.user.restaurantId?.toString()) {
+            const userRestId = await getEffectiveRestaurantId(req.user);
+            const ticketRestId = ticket.restaurantId?._id ? ticket.restaurantId._id.toString() : ticket.restaurantId?.toString();
+            if (userRestId && ticketRestId && ticketRestId !== userRestId.toString()) {
                 return res.status(403).json({ message: 'Unauthorized access to this ticket.' });
-            }
-            
-            // Check plan
-            const isEnterprise = await checkEnterprisePlan(req.user.restaurantId);
-            if (!isEnterprise) {
-                return res.status(403).json({
-                    message: '24/7 Customer Care is available only for Enterprise Plan subscribers.'
-                });
             }
         }
 
