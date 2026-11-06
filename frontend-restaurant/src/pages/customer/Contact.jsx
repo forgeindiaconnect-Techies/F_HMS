@@ -36,15 +36,17 @@ const Contact = () => {
     };
 
     return (
-        <div className="flex flex-col min-h-screen bg-[#FFFDF9] font-sans text-slate-900 transition-colors relative overflow-x-hidden">
+        <div className="flex flex-col min-h-screen bg-[#FFFDF9] font-sans text-slate-900 transition-colors relative overflow-x-clip">
             {/* Unified FoodNest Navbar */}
             <WebsiteNavbar />
 
-            {/* Ambient Warm Glow */}
+            {/* Fixed Navbar Spacer */}
+            <div className="h-16 sm:h-20 shrink-0" aria-hidden="true" />
+{/* Ambient Warm Glow */}
             <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-orange-100/40 via-amber-50/20 to-transparent blur-3xl pointer-events-none z-0" />
 
             {/* Main Section */}
-            <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-28 sm:pt-32 pb-16 relative z-10">
+            <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-16 relative z-10">
                 
                 {/* Back Link */}
                 <div className="mb-8 flex items-center justify-between">
@@ -75,7 +77,7 @@ const Contact = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
                     {/* Left Column: Details */}
                     <div className="lg:col-span-5 space-y-6">
-                        <div className="bg-[#142B45] text-white p-8 rounded-3xl relative overflow-hidden border border-slate-800 shadow-xl">
+                        <div className="bg-[#142B45] text-white p-5 sm:p-8 rounded-2xl sm:rounded-3xl relative overflow-hidden border border-slate-800 shadow-xl">
                             <div className="absolute top-0 right-0 w-48 h-48 bg-[#FF5A1F]/15 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3"></div>
                             
                             <h3 className="text-xl font-black mb-6 relative z-10 text-white">Contact Information</h3>
@@ -120,7 +122,7 @@ const Contact = () => {
 
                     {/* Right Column: Form */}
                     <div className="lg:col-span-7">
-                        <div className="bg-white p-8 sm:p-10 rounded-3xl border border-slate-200/90 shadow-sm relative">
+                        <div className="bg-white p-5 sm:p-8 lg:p-10 rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-sm relative">
                             <h3 className="text-2xl font-black text-[#142B45] mb-6">Send Us a Message</h3>
                             
                             <form onSubmit={handleSubmit} className="space-y-5 min-w-0 pr-1.5 flex-1">

@@ -39,15 +39,17 @@ const CORE_VALUES = [
 
 const About = () => {
     return (
-        <div className="flex flex-col min-h-screen bg-[#FFFDF9] font-sans text-slate-900 transition-colors relative overflow-x-hidden">
+        <div className="flex flex-col min-h-screen bg-[#FFFDF9] font-sans text-slate-900 transition-colors relative overflow-x-clip">
             {/* Unified FoodNest Navbar */}
             <WebsiteNavbar />
 
-            {/* Ambient Warm Glow */}
+            {/* Fixed Navbar Spacer */}
+            <div className="h-16 sm:h-20 shrink-0" aria-hidden="true" />
+{/* Ambient Warm Glow */}
             <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-orange-100/40 via-amber-50/20 to-transparent blur-3xl pointer-events-none z-0" />
 
             {/* Main Content */}
-            <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-28 sm:pt-32 pb-20 relative z-10 space-y-16 sm:space-y-20">
+            <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-16 sm:pb-20 relative z-10 space-y-12 sm:space-y-16">
                 
                 {/* Back Link */}
                 <div className="flex items-center justify-between">
@@ -77,7 +79,7 @@ const About = () => {
                 </div>
 
                 {/* Story & Vision Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center bg-white p-8 sm:p-12 rounded-3xl border border-slate-200/90 shadow-xs">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center bg-white p-5 sm:p-8 lg:p-12 rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-xs">
                     <div className="lg:col-span-7 space-y-5 text-left">
                         <span className="text-xs font-bold uppercase tracking-wider text-[#FF5A1F] bg-orange-50 px-3 py-1 rounded-full inline-block">
                             Our Story
@@ -91,20 +93,20 @@ const About = () => {
                         <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
                             We built FoodNest with a simple belief: restaurant owners shouldn't have to juggle five disjointed software tools just to get through a single dinner service. Today, FoodNest delivers seamless POS billing, live kitchen displays, automated commissary stock alerts, and customer loyalty in one connected system.
                         </p>
-                        <div className="pt-2 flex flex-wrap items-center gap-6">
+                        <div className="pt-2 grid grid-cols-3 gap-2 sm:flex sm:items-center sm:gap-6 text-center sm:text-left">
                             <div>
-                                <span className="text-2xl sm:text-3xl font-black text-[#142B45] block">500+</span>
-                                <span className="text-xs text-slate-400 font-bold">Active Outlets</span>
+                                <span className="text-xl sm:text-3xl font-black text-[#142B45] block">500+</span>
+                                <span className="text-[10px] sm:text-xs text-slate-400 font-bold">Active Outlets</span>
                             </div>
-                            <div className="w-px h-8 bg-slate-200" />
+                            <div className="hidden sm:block w-px h-8 bg-slate-200" />
                             <div>
-                                <span className="text-2xl sm:text-3xl font-black text-[#142B45] block">50,000+</span>
-                                <span className="text-xs text-slate-400 font-bold">Daily Orders</span>
+                                <span className="text-xl sm:text-3xl font-black text-[#142B45] block">50,000+</span>
+                                <span className="text-[10px] sm:text-xs text-slate-400 font-bold">Daily Orders</span>
                             </div>
-                            <div className="w-px h-8 bg-slate-200" />
+                            <div className="hidden sm:block w-px h-8 bg-slate-200" />
                             <div>
-                                <span className="text-2xl sm:text-3xl font-black text-[#142B45] block">99.9%</span>
-                                <span className="text-xs text-slate-400 font-bold">Uptime Track Record</span>
+                                <span className="text-xl sm:text-3xl font-black text-[#142B45] block">99.9%</span>
+                                <span className="text-[10px] sm:text-xs text-slate-400 font-bold">Uptime Record</span>
                             </div>
                         </div>
                     </div>
@@ -136,13 +138,13 @@ const About = () => {
                         </h2>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                         {CORE_VALUES.map((val, idx) => {
                             const IconComponent = val.icon;
                             return (
                                 <div 
                                     key={idx}
-                                    className="bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all text-left space-y-3 group"
+                                    className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all text-left space-y-3 group"
                                 >
                                     <div className="w-12 h-12 rounded-xl bg-orange-50 text-[#FF5A1F] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                                         <IconComponent size={22} strokeWidth={2.2} />
@@ -170,11 +172,11 @@ const About = () => {
                         </h2>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 text-left">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-left">
                         {MILESTONES.map((m, idx) => (
                             <div 
                                 key={idx}
-                                className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs relative overflow-hidden"
+                                className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-xs relative overflow-hidden"
                             >
                                 <span className="text-2xl sm:text-3xl font-black text-[#FF5A1F] block mb-2">
                                     {m.year}
@@ -191,7 +193,7 @@ const About = () => {
                 </div>
 
                 {/* Bottom Callout Banner */}
-                <div className="rounded-3xl bg-gradient-to-r from-[#FFF0E8] via-[#FFEADB] to-[#FFF3EB] border border-orange-200/80 p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+                <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#FFF0E8] via-[#FFEADB] to-[#FFF3EB] border border-orange-200/80 p-5 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-5 sm:gap-6 shadow-sm text-center md:text-left">
                     <div className="text-left space-y-1">
                         <h3 className="text-xl sm:text-2xl font-black text-[#142B45] tracking-tight">
                             Ready to transform your restaurant operations?
@@ -200,7 +202,7 @@ const About = () => {
                             Join hundreds of restaurant owners who power their kitchen with FoodNest.
                         </p>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
+                    <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2.5 sm:gap-3 w-full md:w-auto shrink-0">
                         <Link 
                             to="/register"
                             className="px-6 py-3 bg-[#FF5A1F] hover:bg-[#E04812] text-white font-bold rounded-xl text-xs sm:text-sm shadow-md shadow-orange-500/25 transition-all flex items-center gap-2 group"

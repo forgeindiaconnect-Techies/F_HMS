@@ -318,12 +318,12 @@ const Home = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#FFFDF9] text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white relative overflow-x-hidden">
+        <div className="min-h-screen bg-[#FFFDF9] text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white relative overflow-x-clip">
 
             {/* ========================================================================= */}
             {/* 1. TOP NAVBAR (STICKY, LOGO, NAV LINKS, LOGIN, ORANGE GET STARTED)        */}
             {/* ========================================================================= */}
-            <header className="sticky top-0 z-50 bg-[#FFFDF9]/95 backdrop-blur-md border-b border-orange-100/60 transition-all">
+            <header className="fixed top-0 left-0 right-0 z-50 bg-[#FFFDF9]/95 backdrop-blur-md border-b border-orange-100/60 shadow-xs transition-all">
                 <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-12 h-16 sm:h-20 flex items-center justify-between">
                     
                     {/* Brand Logo matching reference */}
@@ -462,6 +462,9 @@ const Home = () => {
                 )}
             </header>
 
+
+            {/* Fixed Navbar Spacer for 100% Scroll Stability */}
+            <div className="h-16 sm:h-20 shrink-0" aria-hidden="true" />
 
             {/* ========================================================================= */}
             {/* 2. HERO SECTION: EXACT RECREATION OF REFERENCE IMAGE                      */}

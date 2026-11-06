@@ -484,16 +484,18 @@ const ModuleDetails = () => {
     // ── 1. DEDICATED FULL-SCREEN FEATURE DETAIL PAGE VIEW ──────────────────────────────────
     if (selectedFeature) {
         return (
-            <div className="min-h-screen bg-[#FFFDF9] text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white transition-colors relative overflow-x-hidden">
+            <div className="min-h-screen bg-[#FFFDF9] text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white transition-colors relative overflow-x-clip">
                 
                 {/* Global FoodNest Navbar */}
                 <WebsiteNavbar />
 
-                {/* Ambient Glow Background */}
+                {/* Fixed Navbar Spacer */}
+            <div className="h-16 sm:h-20 shrink-0" aria-hidden="true" />
+{/* Ambient Glow Background */}
                 <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-orange-100/40 via-amber-50/20 to-transparent blur-3xl pointer-events-none z-0" />
 
                 {/* Main Content Split Layout: Content on Left, Image on Right */}
-                <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-16 sm:pb-24 space-y-8 sm:space-y-12 relative z-10">
+                <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-16 sm:pb-24 space-y-6 sm:space-y-10 relative z-10">
 
                     {/* Back Navigation Bar */}
                     <div className="flex items-center justify-between">
@@ -688,16 +690,18 @@ const ModuleDetails = () => {
 
     // ── 2. MODULE OVERVIEW PAGE VIEW (NO FEATURE SELECTED) ──────────────────────────────────
     return (
-        <div className="min-h-screen bg-[#FFFDF9] text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white transition-colors relative overflow-x-hidden">
+        <div className="min-h-screen bg-[#FFFDF9] text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white transition-colors relative overflow-x-clip">
 
             {/* Global FoodNest Navbar */}
             <WebsiteNavbar />
 
-            {/* Ambient Warm Glow */}
+            {/* Fixed Navbar Spacer */}
+            <div className="h-16 sm:h-20 shrink-0" aria-hidden="true" />
+{/* Ambient Warm Glow */}
             <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-orange-100/40 via-amber-50/20 to-transparent blur-3xl pointer-events-none z-0" />
 
             {/* Content Container */}
-            <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-16 sm:pb-24 space-y-12 relative z-10">
+            <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-16 sm:pb-24 space-y-8 sm:space-y-12 relative z-10">
 
                 {/* Back Navigation Bar */}
                 <div className="flex items-center justify-between">
@@ -725,7 +729,7 @@ const ModuleDetails = () => {
                         <span>{current.tag}</span>
                         <ChevronRight size={13} />
                     </div>
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#142B45] tracking-tight leading-[1.14]">
+                    <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-black text-[#142B45] tracking-tight leading-[1.15]">
                         {current.title}
                     </h1>
                     <p className="text-sm sm:text-base text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed">
@@ -773,7 +777,7 @@ const ModuleDetails = () => {
                             <div 
                                 key={idx} 
                                 onClick={() => openFeatureModal(feat, idx)}
-                                className="bg-white dark:bg-white/[0.03] rounded-3xl p-8 border border-gray-200 dark:border-white/[0.08] shadow-sm dark:shadow-none hover:shadow-xl hover:border-[#FF5A1F]/50 dark:hover:border-[#FF5A1F]/40 hover:-translate-y-1 transition-all duration-300 cursor-pointer space-y-4 group relative overflow-hidden"
+                                className="bg-white dark:bg-white/[0.03] rounded-2xl sm:rounded-3xl p-5 sm:p-8 border border-gray-200 dark:border-white/[0.08] shadow-sm dark:shadow-none hover:shadow-xl hover:border-[#FF5A1F]/50 dark:hover:border-[#FF5A1F]/40 hover:-translate-y-1 transition-all duration-300 cursor-pointer space-y-4 group relative overflow-hidden"
                             >
                                 {/* Glow Accent on Hover */}
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-rose-500/10 to-transparent rounded-full blur-xl group-hover:opacity-100 opacity-0 transition-opacity" />
@@ -812,12 +816,12 @@ const ModuleDetails = () => {
                 </div>
 
                 {/* Call to Action Card */}
-                <div className="max-w-5xl mx-auto bg-gradient-to-r from-[#FF5A1F] to-[#FF8A00] rounded-3xl p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-orange-500/20">
+                <div className="max-w-5xl mx-auto bg-gradient-to-r from-[#FF5A1F] to-[#FF8A00] rounded-2xl sm:rounded-3xl p-6 sm:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-5 sm:gap-6 shadow-xl shadow-orange-500/20 text-center md:text-left">
                     <div className="space-y-2 text-center md:text-left">
                         <h2 className="text-3xl font-black">Ready to optimize your restaurant?</h2>
                         <p className="text-orange-100 font-medium text-sm">Experience the full power of the FoodNest restaurant management suite today.</p>
                     </div>
-                    <Link to="/register" className="bg-white text-[#FF5A1F] hover:bg-orange-50 font-black px-8 py-3.5 rounded-xl transition-all shadow-lg whitespace-nowrap">
+                    <Link to="/register" className="w-full md:w-auto text-center bg-white text-[#FF5A1F] hover:bg-orange-50 font-black px-8 py-3.5 rounded-xl transition-all shadow-lg whitespace-nowrap">
                         Get Started Free
                     </Link>
                 </div>

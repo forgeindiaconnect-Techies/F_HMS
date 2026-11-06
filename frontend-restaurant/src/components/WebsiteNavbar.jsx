@@ -223,8 +223,8 @@ const WebsiteNavbar = () => {
     };
 
     return (
-        <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 py-3 sm:py-4 px-4 sm:px-8 shadow-sm transition-all">
-            <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-12 flex items-center justify-between">
+        <header className="fixed top-0 left-0 right-0 z-50 bg-[#FFFDF9]/95 backdrop-blur-md border-b border-orange-100/60 shadow-xs transition-all">
+            <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-12 h-16 sm:h-20 flex items-center justify-between">
                 
                 {/* Brand Logo matching FoodNest Restaurant Landing Page */}
                 <Link 
@@ -460,22 +460,30 @@ const WebsiteNavbar = () => {
                         </Link>
                     </div>
 
-                    {/* Mobile Hamburger Menu Toggle Button */}
-                    <button
-                        type="button"
-                        onClick={() => setMobileMenuOpen(prev => !prev)}
-                        aria-label="Toggle Navigation Menu"
-                        aria-expanded={mobileMenuOpen}
-                        className="md:hidden p-2 rounded-xl text-slate-700 hover:text-slate-950 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center justify-center cursor-pointer"
-                    >
-                        {mobileMenuOpen ? <X size={20} /> : <MenuIcon size={20} />}
-                    </button>
+                    {/* Mobile Login & Hamburger Buttons */}
+                    <div className="md:hidden flex items-center gap-2">
+                        <Link
+                            to="/login"
+                            className="px-3 py-1.5 text-xs font-bold text-[#FF5A1F] bg-orange-50 hover:bg-orange-100 rounded-xl border border-orange-200/80 transition-colors shadow-2xs"
+                        >
+                            Login
+                        </Link>
+                        <button
+                            type="button"
+                            onClick={() => setMobileMenuOpen(prev => !prev)}
+                            aria-label="Toggle Navigation Menu"
+                            aria-expanded={mobileMenuOpen}
+                            className="p-2 text-slate-700 hover:text-slate-950 hover:bg-orange-50/50 rounded-xl transition-colors flex items-center justify-center cursor-pointer"
+                        >
+                            {mobileMenuOpen ? <X size={20} /> : <MenuIcon size={20} />}
+                        </button>
+                    </div>
                 </div>
             </div>
 
             {/* Mobile Navigation Menu */}
             {mobileMenuOpen && (
-                <div className="md:hidden mt-3 pt-3 border-t border-slate-200/80 space-y-2 bg-white rounded-2xl p-4 shadow-2xl max-h-[calc(100vh-90px)] overflow-y-auto">
+                <div className="md:hidden bg-[#FFFDF9] border-t border-orange-100 px-4 sm:px-6 py-4 space-y-3 max-h-[calc(100vh-4.5rem)] overflow-y-auto shadow-xl">
                     <Link
                         to="/"
                         onClick={() => setMobileMenuOpen(false)}

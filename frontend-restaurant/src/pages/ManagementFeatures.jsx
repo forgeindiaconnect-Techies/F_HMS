@@ -5,16 +5,18 @@ import WebsiteFooter from '../components/WebsiteFooter';
 
 const ManagementFeatures = () => {
     return (
-        <div className="min-h-screen bg-[#FFFDF9] text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white transition-colors relative overflow-x-hidden">
+        <div className="min-h-screen bg-[#FFFDF9] text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white transition-colors relative overflow-x-clip">
 
             {/* Global FoodNest Navbar */}
             <WebsiteNavbar />
 
-            {/* Ambient Warm Glow */}
+            {/* Fixed Navbar Spacer */}
+            <div className="h-16 sm:h-20 shrink-0" aria-hidden="true" />
+{/* Ambient Warm Glow */}
             <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-orange-100/40 via-amber-50/20 to-transparent blur-3xl pointer-events-none z-0" />
 
             {/* Main Content */}
-            <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-16 sm:pb-24 space-y-12 relative z-10">
+            <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-16 sm:pb-24 space-y-8 sm:space-y-12 relative z-10">
 
                 {/* Back Navigation Bar */}
                 <div className="flex items-center justify-between">
@@ -39,7 +41,7 @@ const ManagementFeatures = () => {
                         <span>Management &amp; Operations</span>
                         <ChevronRight size={13} />
                     </div>
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#142B45] tracking-tight leading-[1.14]">
+                    <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-black text-[#142B45] tracking-tight leading-[1.15]">
                         Complete Management Solution for Modern Restaurants
                     </h1>
                     <p className="text-sm sm:text-base text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed">
@@ -48,9 +50,9 @@ const ManagementFeatures = () => {
                 </div>
 
                 {/* 4 Categories Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                     {/* Category 1: Business Intelligence */}
-                    <div className="bg-white rounded-3xl p-7 border border-orange-100/80 shadow-sm hover:shadow-xl hover:border-orange-200 space-y-6 flex flex-col justify-between hover:-translate-y-1 transition-all group">
+                    <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-7 border border-orange-100/80 shadow-sm hover:shadow-xl hover:border-orange-200 space-y-5 sm:space-y-6 flex flex-col justify-between hover:-translate-y-1 transition-all group">
                         <div className="space-y-5 flex-1">
                             <div className="w-13 h-13 bg-orange-50 text-[#FF5A1F] rounded-2xl flex items-center justify-center text-2xl font-bold border border-orange-100">
                                 📊
@@ -79,7 +81,7 @@ const ManagementFeatures = () => {
                     </div>
 
                     {/* Category 2: Menu & Orders */}
-                    <div className="bg-white rounded-3xl p-7 border border-orange-100/80 shadow-sm hover:shadow-xl hover:border-orange-200 space-y-6 flex flex-col justify-between hover:-translate-y-1 transition-all group">
+                    <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-7 border border-orange-100/80 shadow-sm hover:shadow-xl hover:border-orange-200 space-y-5 sm:space-y-6 flex flex-col justify-between hover:-translate-y-1 transition-all group">
                         <div className="space-y-5 flex-1">
                             <div className="w-13 h-13 bg-orange-50 text-[#FF5A1F] rounded-2xl flex items-center justify-center text-2xl font-bold border border-orange-100">
                                 🍔
@@ -105,7 +107,7 @@ const ManagementFeatures = () => {
                     </div>
 
                     {/* Category 3: Staff & Customers */}
-                    <div className="bg-white rounded-3xl p-7 border border-orange-100/80 shadow-sm hover:shadow-xl hover:border-orange-200 space-y-6 flex flex-col justify-between hover:-translate-y-1 transition-all group">
+                    <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-7 border border-orange-100/80 shadow-sm hover:shadow-xl hover:border-orange-200 space-y-5 sm:space-y-6 flex flex-col justify-between hover:-translate-y-1 transition-all group">
                         <div className="space-y-5 flex-1">
                             <div className="w-13 h-13 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl font-bold border border-blue-100">
                                 👥
@@ -131,7 +133,7 @@ const ManagementFeatures = () => {
                     </div>
 
                     {/* Category 4: Branch Manager Dashboard */}
-                    <div className="bg-white rounded-3xl p-7 border border-orange-100/80 shadow-sm hover:shadow-xl hover:border-orange-200 space-y-6 flex flex-col justify-between hover:-translate-y-1 transition-all group">
+                    <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-7 border border-orange-100/80 shadow-sm hover:shadow-xl hover:border-orange-200 space-y-5 sm:space-y-6 flex flex-col justify-between hover:-translate-y-1 transition-all group">
                         <div className="space-y-5 flex-1">
                             <div className="w-13 h-13 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl font-bold border border-emerald-100">
                                 🏬

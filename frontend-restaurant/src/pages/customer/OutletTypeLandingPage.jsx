@@ -519,11 +519,13 @@ const OutletTypeLandingPage = ({ type: typeProp }) => {
     };
 
     return (
-        <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-[#FFF1F1] selection:text-[#FF2D55] transition-colors">
+        <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-[#FFF1F1] selection:text-[#FF2D55] transition-colors relative overflow-x-clip">
             {/* Top Navigation Bar with Outlet Types Dropdown */}
             <WebsiteNavbar />
 
-            <main className="pt-20 sm:pt-24 overflow-x-hidden">
+            {/* Fixed Navbar Spacer */}
+            <div className="h-16 sm:h-20 shrink-0" aria-hidden="true" />
+<main className="pt-4 sm:pt-6 overflow-x-clip">
                 
                 {/* ========================================================================= */}
                 {/* 1. BREADCRUMB NAVIGATION */}
@@ -567,7 +569,7 @@ const OutletTypeLandingPage = ({ type: typeProp }) => {
                         </p>
 
                         {/* CTA Buttons */}
-                        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+                        <div className="pt-2 flex flex-col xs:flex-row items-stretch xs:items-center justify-center gap-2.5 sm:gap-3">
                             <button
                                 type="button"
                                 onClick={() => {

@@ -1040,11 +1040,13 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
     };
 
     return (
-        <div className="min-h-screen bg-[#FFFDF9] text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white transition-colors relative overflow-x-hidden">
+        <div className="min-h-screen bg-[#FFFDF9] text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white transition-colors relative overflow-x-clip">
             {/* Top Navigation Bar with POS Dropdown */}
             <WebsiteNavbar />
 
-            <main className="pt-20 sm:pt-24 overflow-x-hidden">
+            {/* Fixed Navbar Spacer */}
+            <div className="h-16 sm:h-20 shrink-0" aria-hidden="true" />
+<main className="pt-4 sm:pt-6 overflow-x-clip">
                 
                 {/* ========================================================================= */}
                 {/* 1. HERO SECTION (Warm FoodNest Theme, Headline, Supporting Copy, Dual CTA) */}
@@ -1094,7 +1096,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                         </p>
 
                         {/* Dual CTA Buttons matching Home.jsx style, shadows & padding */}
-                        <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+                        <div className="pt-2 flex flex-col xs:flex-row items-stretch xs:items-center justify-center gap-2.5 sm:gap-3">
                             <Link
                                 to="/register"
                                 className="px-6 sm:px-7 py-3 bg-[#FF5A0A] hover:bg-[#E04F08] text-white font-bold rounded-xl shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 hover:-translate-y-0.5 transition-all text-xs sm:text-sm flex items-center gap-2 group"
