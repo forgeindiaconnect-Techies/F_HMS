@@ -126,16 +126,7 @@ const Sidebar = () => {
                 { name: 'Delivery Management', path: '/admin/delivery', icon: Truck, moduleKey: 'dineInTakeawayOrders' },
             ]
         },
-        {
-            title: 'Enterprise Suite',
-            items: [
-                { name: 'Franchise Management', path: '/admin/franchise', icon: Network },
-                { name: 'Central Kitchen Ops', path: '/admin/central-kitchen', icon: ChefHat },
-                { name: 'Developer Config', path: '/admin/developer-config', icon: Key },
-                { name: 'Audit Logs', path: '/admin/audit-logs', icon: ReceiptText },
-                { name: 'BI Console', path: '/admin/bi', icon: Activity },
-            ]
-        },
+        
         {
             title: 'Customer Care',
             items: [

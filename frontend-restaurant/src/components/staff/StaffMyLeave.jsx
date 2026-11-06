@@ -268,7 +268,7 @@ const StaffMyLeave = () => {
                                     <th className="py-3.5 px-5">Compensation Policy</th>
                                     <th className="py-3.5 px-5">Status</th>
                                     <th className="py-3.5 px-5">Manager Remarks</th>
-                                    <th className="py-3.5 px-5 text-right">Actions</th>
+                                    
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-slate-800 text-gray-700 dark:text-slate-300">
@@ -326,20 +326,7 @@ const StaffMyLeave = () => {
                                                     <span className="text-gray-400 italic">No remarks</span>
                                                 )}
                                             </td>
-                                            <td className="py-4 px-5 text-right">
-                                                {leave.status === 'Pending' ? (
-                                                    <button
-                                                        type="button"
-                                                        disabled={cancellingId === leave._id}
-                                                        onClick={() => handleCancelLeave(leave._id)}
-                                                        className="px-3 py-1.5 bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 text-rose-700 dark:text-rose-300 font-bold text-xs rounded-xl border border-rose-200 dark:border-rose-800 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
-                                                    >
-                                                        {cancellingId === leave._id ? 'Cancelling...' : 'Cancel'}
-                                                    </button>
-                                                ) : (
-                                                    <span className="text-[11px] text-gray-400 font-medium">—</span>
-                                                )}
-                                            </td>
+                                            
                                         </tr>
                                     );
                                 })}

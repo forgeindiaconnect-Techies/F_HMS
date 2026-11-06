@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Plus, Bell, Megaphone, AlertCircle, Info, MailOpen, MoreHorizontal, X, Clock, Eye, CheckCircle2, Phone, MessageCircle, ExternalLink, Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import { useLocation } from 'react-router-dom';
 import { useWhatsAppNotifications } from '../../context/WhatsAppNotificationContext';
 
 const getIcon = (type) => {
@@ -42,7 +43,9 @@ const formatTime = (dateString) => {
 };
 
 const NotificationCenter = () => {
-    const { api } = useAuth();
+    const { api, user } = useAuth();
+    const location = useLocation();
+    const isManager = user?.role === 'BranchManager' || location.pathname.startsWith('/manager');
     const { alerts: waAlerts, setIsDrawerOpen, ownerPhone, markAsRead: markWaAsRead } = useWhatsAppNotifications();
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -179,7 +182,7 @@ const NotificationCenter = () => {
         original: a
     }));
 
-    const allCombined = [...notifications, ...formattedWaAlerts];
+    const allCombined = isManager ? notifications : [...notifications, ...formattedWaAlerts];
 
     const filteredNotifications = filter === 'WhatsApp' 
         ? formattedWaAlerts 
@@ -200,7 +203,7 @@ const NotificationCenter = () => {
                 </div>
             </div>
             
-            <div className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-wrap gap-4 justify-between items-center">
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-wrap gap-4 justify-between items-center">
                 <div className="flex flex-wrap gap-2 p-1 bg-gray-50 dark:bg-slate-950 rounded-lg border border-gray-200 dark:border-slate-800">
                     <button 
                         onClick={() => setFilter('All')}
@@ -221,9 +224,28 @@ const NotificationCenter = () => {
                     >
                         Alerts
                     </button>
+                    {!isManager && (
+                        <button 
+                            onClick={() => setFilter('WhatsApp')}
+                            className={`px-4 py-1.5 font-bold rounded-md text-sm transition-colors flex items-center gap-1.5 cursor-pointer ${filter === 'WhatsApp' ? 'bg-[#075E54] text-white shadow-sm' : 'hover:bg-white dark:hover:bg-slate-800 text-emerald-700 dark:text-emerald-400'}`}
+                        >
+                            <Phone size={13} className={filter === 'WhatsApp' ? 'text-emerald-300' : 'text-emerald-600'} />
+                            <span>WhatsApp Alerts ({waAlerts.length})</span>
+                        </button>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-3">
+                    {!isManager && (
+                        <button
+                            type="button"
+                            onClick={() => setIsDrawerOpen(true)}
+                            className="px-3.5 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95 cursor-pointer"
+                        >
+                            <Phone size={13} />
+                            <span>Open WhatsApp Hub</span>
+                        </button>
+                    )}
 
                     {unreadCount > 0 && (
                         <button 

@@ -38,6 +38,21 @@ const ManagerSidebar = () => {
     };
     const logoSrc = getLogoUrl();
 
+    const currentFullPath = location.pathname + location.search;
+
+    const isItemActive = (itemPath) => {
+        if (itemPath.includes('?')) {
+            return currentFullPath === itemPath;
+        }
+        if (itemPath === '/manager/staff') {
+            return location.pathname === '/manager/staff' && (!location.search || location.search === '?tab=shifts' || location.search === '?tab=monitoring');
+        }
+        if (itemPath === '/manager') {
+            return location.pathname === '/manager' && !location.search;
+        }
+        return location.pathname === itemPath;
+    };
+
     const navGroups = [
         {
             title: 'Overview & Orders',
@@ -144,22 +159,17 @@ const ManagerSidebar = () => {
                                     <NavLink
                                         key={item.name}
                                         to={item.path}
-                                        end={item.path === '/manager'}
                                         onClick={() => setIsOpen(false)}
-                                        className={({ isActive }) => clsx(
+                                        className={clsx(
                                             "relative flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm group",
-                                            isActive 
+                                            isItemActive(item.path)
                                             ? "bg-indigo-600 text-white shadow-lg shadow-indigo-950/50 font-semibold" 
                                             : "text-indigo-200/70 hover:bg-[#151c42] hover:text-white"
                                         )}
                                     >
-                                        {({ isActive }) => (
-                                            <>
-                                                <Icon size={17} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-white" : "text-indigo-300/60 group-hover:text-indigo-200")} />
-                                                <span className="truncate">{item.name}</span>
-                                                {isActive && <ChevronRight size={14} className="ml-auto shrink-0 opacity-80" />}
-                                            </>
-                                        )}
+                                        <Icon size={17} className={clsx("transition-transform group-hover:scale-110 shrink-0", isItemActive(item.path) ? "text-white" : "text-indigo-300/60 group-hover:text-indigo-200")} />
+                                        <span className="truncate">{item.name}</span>
+                                        {isItemActive(item.path) && <ChevronRight size={14} className="ml-auto shrink-0 opacity-80" />}
                                     </NavLink>
                                 );
                             })}

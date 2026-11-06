@@ -1,3 +1,21 @@
+
+// Helper: Calculate overtime hours (Standard shift is 9 hours)
+const calculateOvertimeHours = (checkIn, checkOut, standardShiftHours = 9) => {
+    if (!checkIn || !checkOut) return 0;
+    try {
+        const [inH, inM] = checkIn.split(':').map(Number);
+        const [outH, outM] = checkOut.split(':').map(Number);
+        if (isNaN(inH) || isNaN(inM) || isNaN(outH) || isNaN(outM)) return 0;
+        let diffMinutes = (outH * 60 + outM) - (inH * 60 + inM);
+        if (diffMinutes < 0) diffMinutes += 24 * 60; // Overnight shift
+        const totalWorkedHours = diffMinutes / 60;
+        const ot = Math.max(0, totalWorkedHours - standardShiftHours);
+        return Math.round(ot * 2) / 2; // round to nearest 0.5 hour
+    } catch (e) {
+        return 0;
+    }
+};
+
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { 
@@ -1986,7 +2004,11 @@ const StaffManagement = () => {
                                     <input 
                                         type="time"
                                         value={correctionForm.checkInTime}
-                                        onChange={(e) => setCorrectionForm({ ...correctionForm, checkInTime: e.target.value })}
+                                        onChange={(e) => {
+                                        const newIn = e.target.value;
+                                        const autoOt = calculateOvertimeHours(newIn, correctionForm.checkOutTime);
+                                        setCorrectionForm({ ...correctionForm, checkInTime: newIn, overtimeHours: autoOt });
+                                    }}
                                         className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs"
                                     />
                                 </div>
@@ -1995,7 +2017,11 @@ const StaffManagement = () => {
                                     <input 
                                         type="time"
                                         value={correctionForm.checkOutTime}
-                                        onChange={(e) => setCorrectionForm({ ...correctionForm, checkOutTime: e.target.value })}
+                                        onChange={(e) => {
+                                        const newOut = e.target.value;
+                                        const autoOt = calculateOvertimeHours(correctionForm.checkInTime, newOut);
+                                        setCorrectionForm({ ...correctionForm, checkOutTime: newOut, overtimeHours: autoOt });
+                                    }}
                                         className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs"
                                     />
                                 </div>

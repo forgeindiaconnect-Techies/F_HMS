@@ -177,8 +177,16 @@ const VerificationManagement = () => {
 
     const getFullUrl = (filePath) => {
         if (!filePath) return '';
-        const base = api.defaults.baseURL.replace('/api', '');
-        return `${base}${filePath}`;
+        if (filePath.startsWith('http://') || filePath.startsWith('https://') || filePath.startsWith('data:')) {
+            return filePath;
+        }
+        const apiBase = api?.defaults?.baseURL || import.meta.env.VITE_API_URL || 'https://f-hms-1.onrender.com/api';
+        try {
+            const origin = new URL(apiBase).origin;
+            return `${origin}${filePath.startsWith('/') ? '' : '/'}${filePath}`;
+        } catch (e) {
+            return filePath;
+        }
     };
 
     if (loading) {
@@ -227,14 +235,33 @@ const VerificationManagement = () => {
                                     <tr key={v._id} className="hover:bg-gray-50/50 transition-colors">
                                         <td className="p-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 border border-gray-100 shrink-0">
-                                                    {v.restaurantId?.logo ? (
-                                                        <img src={getFullUrl(v.restaurantId.logo)} alt={v.restaurantId?.name || 'Restaurant'} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold">
-                                                            {v.restaurantId?.name?.charAt(0) || '?'}
-                                                        </div>
-                                                    )}
+                                                <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 border border-gray-100 shrink-0 flex items-center justify-center">
+                                                    {(() => {
+                                                        const logoPath = v.restaurantId?.logo || v.documents?.logo?.filePath;
+                                                        if (!logoPath) {
+                                                            return (
+                                                                <div className="w-full h-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold">
+                                                                    {v.restaurantId?.name?.charAt(0) || '?'}
+                                                                </div>
+                                                            );
+                                                        }
+                                                        return (
+                                                            <img 
+                                                                src={getFullUrl(logoPath)} 
+                                                                alt={v.restaurantId?.name || 'Restaurant'} 
+                                                                className="w-full h-full object-cover"
+                                                                onError={(e) => {
+                                                                    e.currentTarget.style.display = 'none';
+                                                                    if (e.currentTarget.nextSibling) {
+                                                                        e.currentTarget.nextSibling.style.display = 'flex';
+                                                                    }
+                                                                }}
+                                                            />
+                                                        );
+                                                    })()}
+                                                    <div className="w-full h-full items-center justify-center bg-blue-100 text-blue-600 font-bold hidden">
+                                                        {v.restaurantId?.name?.charAt(0) || '?'}
+                                                    </div>
                                                 </div>
                                                 <span className="font-bold text-gray-900">{v.restaurantId?.name || 'Deleted Restaurant'}</span>
                                             </div>

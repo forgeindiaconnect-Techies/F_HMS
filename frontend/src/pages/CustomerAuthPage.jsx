@@ -155,7 +155,22 @@ const CustomerAuthPage = () => {
                                 <input
                                     type="text"
                                     placeholder="Email Address"
-                                    {...register('email', { required: 'Email is required' })}
+                                    {...register('email', { 
+                                        required: 'Email is required',
+                                        validate: (val) => !/[A-Z]/.test(val) || 'Only lowercase letters allowed in email'
+                                    })}
+                                    onInput={(e) => { e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9@._+-]/g, ''); }}
+                                    onKeyDown={(e) => {
+                                        if (e.key && e.key.length === 1 && /[A-Z]/.test(e.key)) {
+                                            e.preventDefault();
+                                            const start = e.target.selectionStart;
+                                            const end = e.target.selectionEnd;
+                                            const val = e.target.value;
+                                            e.target.value = val.substring(0, start) + e.key.toLowerCase() + val.substring(end);
+                                            e.target.setSelectionRange(start + 1, start + 1);
+                                            e.target.dispatchEvent(new Event('input', { bubbles: true }));
+                                        }
+                                    }}
                                     className={`w-full pl-11 pr-4 py-3.5 bg-gray-50 border rounded-xl text-sm outline-none transition-all ${errors.email ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-gray-200 hover:border-gray-300 focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-100'}`}
                                 />
                             </div>

@@ -22,6 +22,7 @@ const StaffShiftClockWidget = ({ userRole = 'Staff', userName = 'Staff Member', 
             breakStartTime: null,
             totalBreakSeconds: 0,
             totalShiftSecondsToday: 0,
+            lastClockInTime: null,
             lastClockOutTime: null
         };
     });
@@ -80,6 +81,8 @@ const StaffShiftClockWidget = ({ userRole = 'Staff', userName = 'Staff Member', 
             ...shiftState,
             status: 'ClockedIn',
             clockInTime: nowIso,
+            lastClockInTime: nowIso,
+            lastClockOutTime: null,
             breakStartTime: null,
             totalBreakSeconds: 0
         };
@@ -122,6 +125,7 @@ const StaffShiftClockWidget = ({ userRole = 'Staff', userName = 'Staff Member', 
             ...shiftState,
             status: 'ClockedOut',
             lastClockOutTime: nowIso,
+            lastClockInTime: shiftState.clockInTime || shiftState.lastClockInTime,
             totalShiftSecondsToday: (shiftState.totalShiftSecondsToday || 0) + finalShiftSec,
             clockInTime: null,
             breakStartTime: null
@@ -145,13 +149,26 @@ const StaffShiftClockWidget = ({ userRole = 'Staff', userName = 'Staff Member', 
                     }`}></span>
                 </span>
 
-                <div className="text-xs font-bold">
+                <div className="text-xs font-bold flex items-center gap-1.5">
                     {shiftState.status === 'ClockedIn' ? (
-                        <span className="text-emerald-400 font-mono">Present: {formatDuration(elapsedSeconds)}</span>
+                        <div className="flex items-center gap-1.5 text-emerald-400 font-mono">
+                            <span>In: {formatTime12h(shiftState.clockInTime)}</span>
+                            <span className="text-[10px] bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-800">
+                                {formatDuration(elapsedSeconds)}
+                            </span>
+                        </div>
                     ) : shiftState.status === 'OnBreak' ? (
-                        <span className="text-amber-400">On Break ☕</span>
+                        <div className="flex items-center gap-1.5 text-amber-400">
+                            <span>Break ☕</span>
+                            <span className="text-[10px] text-amber-300 font-mono">In: {formatTime12h(shiftState.clockInTime || shiftState.lastClockInTime)}</span>
+                        </div>
                     ) : (
-                        <span className="text-slate-400">Clocked Out</span>
+                        <div className="flex items-center gap-1.5 text-slate-400">
+                            <span>{shiftState.lastClockOutTime ? `Out: ${formatTime12h(shiftState.lastClockOutTime)}` : 'Clocked Out'}</span>
+                            {shiftState.totalShiftSecondsToday > 0 && (
+                                <span className="text-[10px] text-slate-300 font-mono">(${formatDuration(shiftState.totalShiftSecondsToday)})</span>
+                            )}
+                        </div>
                     )}
                 </div>
 

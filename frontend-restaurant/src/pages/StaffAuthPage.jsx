@@ -331,7 +331,22 @@ const StaffAuthPage = () => {
                     <input
                         type="text"
                         placeholder="Email Address"
-                        {...register('email', { required: 'Email is required' })}
+                        {...register('email', { 
+                            required: 'Email is required',
+                            validate: (val) => !/[A-Z]/.test(val) || 'Only lowercase letters allowed in email'
+                        })}
+                        onInput={(e) => { e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9@._+-]/g, ''); }}
+                        onKeyDown={(e) => {
+                            if (e.key && e.key.length === 1 && /[A-Z]/.test(e.key)) {
+                                e.preventDefault();
+                                const start = e.target.selectionStart;
+                                const end = e.target.selectionEnd;
+                                const val = e.target.value;
+                                e.target.value = val.substring(0, start) + e.key.toLowerCase() + val.substring(end);
+                                e.target.setSelectionRange(start + 1, start + 1);
+                                e.target.dispatchEvent(new Event('input', { bubbles: true }));
+                            }
+                        }}
                         className={`w-full pl-11 pr-4 py-3.5 bg-slate-50 border rounded-xl text-sm outline-none transition-all ${errors.email ? 'border-red-400 focus:ring-4 focus:ring-red-100' : 'border-slate-200 hover:border-slate-300 focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100'}`}
                     />
                 </div>
@@ -594,8 +609,21 @@ const StaffAuthPage = () => {
                         placeholder="Owner Email Address"
                         {...register('email', { 
                             required: 'Email is required',
-                            pattern: { value: /^\S+@\S+$/i, message: 'Invalid email address' }
+                            pattern: { value: /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/, message: 'Invalid lowercase email address' },
+                            validate: (val) => !/[A-Z]/.test(val) || 'Only lowercase letters allowed in email'
                         })}
+                        onInput={(e) => { e.target.value = e.target.value.toLowerCase().replace(/[^a-z0-9@._+-]/g, ''); }}
+                        onKeyDown={(e) => {
+                            if (e.key && e.key.length === 1 && /[A-Z]/.test(e.key)) {
+                                e.preventDefault();
+                                const start = e.target.selectionStart;
+                                const end = e.target.selectionEnd;
+                                const val = e.target.value;
+                                e.target.value = val.substring(0, start) + e.key.toLowerCase() + val.substring(end);
+                                e.target.setSelectionRange(start + 1, start + 1);
+                                e.target.dispatchEvent(new Event('input', { bubbles: true }));
+                            }
+                        }}
                         className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
                     />
                     {errors.email && <p className="text-xs text-red-500 mt-1 pl-1">{errors.email.message}</p>}
