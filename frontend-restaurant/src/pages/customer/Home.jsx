@@ -349,7 +349,7 @@ const Home = () => {
             {/* 1. TOP NAVBAR (STICKY, LOGO, NAV LINKS, LOGIN, ORANGE GET STARTED)        */}
             {/* ========================================================================= */}
             <header className="sticky top-0 z-50 bg-[#FFFDF9]/95 backdrop-blur-md border-b border-orange-100/60 transition-all">
-                <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-12 h-20 flex items-center justify-between">
+                <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-12 h-16 sm:h-20 flex items-center justify-between">
                     
                     {/* Brand Logo matching reference */}
                     <Link to="/" className="flex items-center gap-2.5 group">
@@ -360,7 +360,7 @@ const Home = () => {
                             <span className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight leading-none">
                                 Food<span className="text-[#FF5A1F]">Nest</span>
                             </span>
-                            <span className="text-[10px] text-slate-400 font-medium tracking-wide mt-0.5">
+                            <span className="hidden xs:block text-[10px] text-slate-400 font-medium tracking-wide mt-0.5">
                                 Restaurant Management System
                             </span>
                         </div>
@@ -519,16 +519,16 @@ const Home = () => {
                     <div className="md:hidden flex items-center gap-2">
                         <Link
                             to="/login"
-                            className="px-3.5 py-1.5 text-xs font-bold text-slate-700 rounded-lg"
+                            className="px-3 py-1.5 text-xs font-bold text-[#FF5A1F] bg-orange-50 hover:bg-orange-100 rounded-xl border border-orange-200/80 transition-colors shadow-2xs"
                         >
                             Login
                         </Link>
                         <button 
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className="p-2 text-slate-700 hover:text-slate-950 rounded-lg"
+                            className="p-2 text-slate-700 hover:text-slate-950 hover:bg-orange-50/50 rounded-xl transition-colors cursor-pointer"
                             aria-label="Toggle navigation"
                         >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 {mobileMenuOpen ? (
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 ) : (
@@ -690,9 +690,9 @@ const Home = () => {
                             </p>
 
                             {/* Large bold dark navy headline across exactly TWO lines */}
-                            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[40px] xl:text-[44px] 2xl:text-[48px] font-black text-[#142B45] tracking-tight leading-[1.12]">
-                                <span className="block whitespace-nowrap">Manage Your Restaurant</span>
-                                <span className="block whitespace-nowrap">
+                            <h1 className="text-2xl xs:text-3xl sm:text-4xl lg:text-[40px] xl:text-[44px] 2xl:text-[48px] font-black text-[#142B45] tracking-tight leading-[1.15]">
+                                <span className="block sm:whitespace-nowrap">Manage Your Restaurant</span>
+                                <span className="block sm:whitespace-nowrap">
                                     <span>Smarter, </span>
                                     <span className="text-[#FF5A0A]">Not Harder</span>
                                 </span>
@@ -704,10 +704,10 @@ const Home = () => {
                             </p>
 
                             {/* CTA BUTTONS: Orange Filled & Outlined Watch Demo */}
-                            <div className="flex flex-wrap items-center gap-3 pt-1">
+                            <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2.5 sm:gap-3 pt-1">
                                 <Link
                                     to="/register?plan=trial"
-                                    className="px-5 sm:px-6 py-2.5 sm:py-3 bg-[#FF5A0A] hover:bg-[#E04F08] text-white font-bold rounded-xl shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 hover:-translate-y-0.5 transition-all text-xs sm:text-sm flex items-center gap-2 group"
+                                    className="px-5 sm:px-6 py-3 bg-[#FF5A0A] hover:bg-[#E04F08] text-white font-bold rounded-xl shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 transition-all text-xs sm:text-sm flex items-center justify-center gap-2 group text-center"
                                 >
                                     <span>Get Started Free</span>
                                     <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
@@ -715,7 +715,7 @@ const Home = () => {
 
                                 <button
                                     onClick={() => setShowDemoModal(true)}
-                                    className="px-4 sm:px-5 py-2.5 sm:py-3 bg-white hover:bg-orange-50/50 border border-orange-200 text-[#142B45] hover:text-[#FF5A0A] font-bold rounded-xl transition-all text-xs sm:text-sm flex items-center gap-2 shadow-2xs cursor-pointer group"
+                                    className="px-4 sm:px-5 py-3 bg-white hover:bg-orange-50/50 border border-orange-200 text-[#142B45] hover:text-[#FF5A0A] font-bold rounded-xl transition-all text-xs sm:text-sm flex items-center justify-center gap-2 shadow-2xs cursor-pointer group"
                                 >
                                     <div className="w-5 h-5 rounded-full bg-orange-100/80 text-[#FF5A0A] flex items-center justify-center group-hover:scale-110 transition-transform">
                                         <Play size={9} fill="currentColor" className="ml-0.5" />
@@ -724,39 +724,38 @@ const Home = () => {
                                 </button>
                             </div>
 
-                            {/* BENEFITS ROW: 3 compact horizontal items in one row */}
-                            <div className="pt-3 sm:pt-4 grid grid-cols-3 gap-2 sm:gap-3 border-t border-orange-100/70">
+                            {/* BENEFITS ROW: Responsive layout for mobile & desktop */}
+                            <div className="pt-3 sm:pt-4 grid grid-cols-1 xs:grid-cols-3 gap-2.5 sm:gap-3 border-t border-orange-100/70">
                                 
-                                <div className="flex items-center gap-2">
-                                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FFEADB] text-[#FF5A0A] flex items-center justify-center shrink-0">
-                                        <ShieldCheck size={15} strokeWidth={2.4} />
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-full bg-[#FFEADB] text-[#FF5A0A] flex items-center justify-center shrink-0">
+                                        <ShieldCheck size={16} strokeWidth={2.4} />
                                     </div>
                                     <div className="min-w-0">
-                                        <h4 className="text-[11px] sm:text-xs font-bold text-[#142B45] leading-tight truncate">Secure &amp; Reliable</h4>
-                                        <p className="text-[9px] sm:text-[10px] text-slate-400 font-medium truncate">Your data is safe with us</p>
+                                        <h4 className="text-xs font-bold text-[#142B45] leading-tight truncate">Secure &amp; Reliable</h4>
+                                        <p className="text-[10px] text-slate-400 font-medium truncate">Your data is safe with us</p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-2">
-                                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FFEADB] text-[#FF5A0A] flex items-center justify-center shrink-0">
-                                        <Headphones size={15} strokeWidth={2.4} />
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-full bg-[#FFEADB] text-[#FF5A0A] flex items-center justify-center shrink-0">
+                                        <Headphones size={16} strokeWidth={2.4} />
                                     </div>
                                     <div className="min-w-0">
-                                        <h4 className="text-[11px] sm:text-xs font-bold text-[#142B45] leading-tight truncate">24/7 Support</h4>
-                                        <p className="text-[9px] sm:text-[10px] text-slate-400 font-medium truncate">We're always here</p>
+                                        <h4 className="text-xs font-bold text-[#142B45] leading-tight truncate">24/7 Support</h4>
+                                        <p className="text-[10px] text-slate-400 font-medium truncate">We're always here</p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-2">
-                                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FFEADB] text-[#FF5A0A] flex items-center justify-center shrink-0">
-                                        <Zap size={15} strokeWidth={2.4} />
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-full bg-[#FFEADB] text-[#FF5A0A] flex items-center justify-center shrink-0">
+                                        <Zap size={16} strokeWidth={2.4} />
                                     </div>
                                     <div className="min-w-0">
-                                        <h4 className="text-[11px] sm:text-xs font-bold text-[#142B45] leading-tight truncate">Easy to Use</h4>
-                                        <p className="text-[9px] sm:text-[10px] text-slate-400 font-medium truncate">No technical skills needed</p>
+                                        <h4 className="text-xs font-bold text-[#142B45] leading-tight truncate">Easy to Use</h4>
+                                        <p className="text-[10px] text-slate-400 font-medium truncate">No technical skills needed</p>
                                     </div>
                                 </div>
-
                             </div>
 
                         </div>
@@ -776,7 +775,7 @@ const Home = () => {
                             </div>
 
                             {/* SQUARE-SHAPED HP LAPTOP STRUCTURE (Reduced width from right to left for balanced square aspect ratio) */}
-                            <div className="relative w-full max-w-[340px] xs:max-w-[390px] sm:max-w-[490px] lg:max-w-[520px] xl:max-w-[540px] z-10 drop-shadow-2xl">
+                            <div className="relative w-full max-w-[340px] xs:max-w-[390px] sm:max-w-[490px] lg:max-w-[520px] xl:max-w-[540px] z-10 drop-shadow-2xl mx-auto lg:mx-0">
                                 
                                 {/* HP Laptop Display Lid / Bezel */}
                                 <div className="bg-[#1E242E] rounded-t-xl sm:rounded-t-2xl p-2 sm:p-2.5 pb-2 shadow-2xl border border-slate-700/80 ring-1 ring-black/40">
@@ -1450,7 +1449,7 @@ const Home = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
                         
                         {/* Left: Chef / Restaurant Owner Photograph with organic warm background and "Grow Your Business" badge */}
-                        <div className="lg:col-span-5 xl:col-span-4 relative flex items-center justify-center lg:justify-start">
+                        <div className="lg:col-span-5 xl:col-span-4 relative flex items-center justify-center lg:justify-start mb-4 lg:mb-0">
                             
                             <div className="relative w-64 sm:w-72 lg:w-80 h-72 sm:h-80 lg:h-92">
                                 
@@ -1470,7 +1469,7 @@ const Home = () => {
                                 </div>
 
                                 {/* "Grow Your Business" Handwritten Style Badge with Curved Green Arrow */}
-                                <div className="absolute -top-3 -right-6 sm:-right-8 pointer-events-none select-none text-left">
+                                <div className="absolute -top-3 -right-2 sm:-right-8 pointer-events-none select-none text-left">
                                     <div className="text-[15px] sm:text-[17px] font-bold text-[#2D6A4F] tracking-tight leading-tight font-sans">
                                         Grow Your
                                     </div>
@@ -1938,16 +1937,17 @@ const Home = () => {
 
 
             {/* ========================================================================= */}
+            {/* ========================================================================= */}
             {/* 8. FINAL CTA BANNER: WIDE PALE ORANGE BANNER WITH BIRYANI DISH ON LEFT    */}
             {/* ========================================================================= */}
             <section id="contact" className="pt-2 pb-8 sm:pt-3 sm:pb-12 bg-white">
                 <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-12">
                     
-                    <div className="relative rounded-3xl bg-gradient-to-r from-[#FFF0E8] via-[#FFEADB] to-[#FFF3EB] border border-orange-200/80 p-6 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm overflow-hidden">
+                    <div className="relative rounded-3xl bg-gradient-to-r from-[#FFF0E8] via-[#FFEADB] to-[#FFF3EB] border border-orange-200/80 p-6 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm overflow-hidden text-center sm:text-left">
                         
                         {/* Food Photography Plate on Left */}
-                        <div className="flex items-center gap-6">
-                            <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-white shadow-xl shrink-0">
+                        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                            <div className="w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden border-4 border-white shadow-xl shrink-0">
                                 <img 
                                     src="/assets/images/dish-biryani-hero.jpg" 
                                     alt="Biryani Special Platter"
@@ -1959,7 +1959,7 @@ const Home = () => {
                             </div>
 
                             {/* Headline & supporting text */}
-                            <div className="text-left">
+                            <div className="text-center sm:text-left">
                                 <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight leading-tight">
                                     Ready to Take Your Restaurant to the Next Level?
                                 </h2>
@@ -2102,7 +2102,7 @@ const Home = () => {
                     </div>
 
                     {/* Bottom Row: Copyright + Better Food. Bigger Dreams. Tagline */}
-                    <div className="pt-8 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400 font-medium">
+                    <div className="pt-8 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left text-xs text-slate-400 font-medium">
                         <p>© 2026 FoodNest. All rights reserved.</p>
                         <p className="text-slate-400 font-semibold tracking-wide">
                             Better Food. Bigger Dreams.
