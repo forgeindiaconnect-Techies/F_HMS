@@ -251,7 +251,8 @@ const SubscriptionPortal = () => {
 
     const sub = restaurant.subscription || {};
     const isExpired = sub.expiryDate && new Date(sub.expiryDate) < new Date();
-    const isActive = sub.status === 'Active' && !isExpired;
+    const isActive = Boolean((sub.status === 'Active' || sub.status === 'active') && !isExpired);
+    const isPaidActive = Boolean(isActive || sub.paymentStatus === 'Paid');
 
     return (
         <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">

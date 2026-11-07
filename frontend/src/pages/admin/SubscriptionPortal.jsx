@@ -1,8 +1,7 @@
-import { QRCodeSVG } from 'qrcode.react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { 
-    CreditCard, CheckCircle, AlertTriangle, ShieldCheck, Loader2, 
+import {
+    CreditCard, CheckCircle, AlertTriangle, ShieldCheck, Loader2,
     CheckCircle2, AlertCircle, Sparkles, Receipt, HelpCircle, ArrowRight,
     Clock, ShieldAlert, XCircle, LifeBuoy, Zap, Lock
 } from 'lucide-react';
@@ -75,10 +74,10 @@ const SubscriptionPortal = () => {
     const [loading, setLoading] = useState(true);
     const [plans, setPlans] = useState([]);
     const [billingHistory, setBillingHistory] = useState([]);
-    
+
     // Switch state (monthly / yearly)
     const [billingCycle, setBillingCycle] = useState('monthly');
-    
+
     // Checkout states
     const [selectedPlanToBuy, setSelectedPlanToBuy] = useState(null);
     const [upgradeSummary, setUpgradeSummary] = useState(null);
@@ -99,7 +98,7 @@ const SubscriptionPortal = () => {
             setRestaurant(restRes.data);
             setPlans(plansRes.data || []);
             setBillingHistory(historyRes.data || []);
-            
+
             if (restRes.data?.subscription?.billingCycle) {
                 setBillingCycle(restRes.data.subscription.billingCycle);
             }
@@ -133,10 +132,10 @@ const SubscriptionPortal = () => {
 
     const handleSelectPlan = async (plan) => {
         const sub = restaurant?.subscription || {};
-        const isDowngrade = (plan.name === 'Basic' && sub.plan === 'Pro') || 
-                            (plan.name === 'Basic' && sub.plan === 'Enterprise') ||
-                            (plan.name === 'Pro' && sub.plan === 'Enterprise');
-        
+        const isDowngrade = (plan.name === 'Basic' && sub.plan === 'Pro') ||
+            (plan.name === 'Basic' && sub.plan === 'Enterprise') ||
+            (plan.name === 'Pro' && sub.plan === 'Enterprise');
+
         if (isDowngrade) {
             if (window.confirm(`Are you sure you want to downgrade to the ${plan.name} plan? This downgrade will take effect at the end of your current period (${sub.expiryDate ? new Date(sub.expiryDate).toLocaleDateString() : 'next billing'}).`)) {
                 try {
@@ -157,10 +156,10 @@ const SubscriptionPortal = () => {
         // It is an Upgrade or Renewal
         setSelectedPlanToBuy(plan);
         setPaymentStatus('idle');
-        
+
         const targetPrice = billingCycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
         const currentPrice = sub.price || 0;
-        
+
         const now = new Date();
         const expiry = sub.expiryDate ? new Date(sub.expiryDate) : now;
         const totalDuration = sub.billingCycle === 'yearly' ? 365 : 30;
@@ -231,7 +230,7 @@ const SubscriptionPortal = () => {
 
     const sub = restaurant.subscription || {};
     const now = new Date();
-    
+
     // Status helpers
     const isManualFrozen = sub.manualFreeze || sub.status === 'Frozen';
     const isPendingApproval = sub.status === 'Pending Approval';
@@ -239,7 +238,7 @@ const SubscriptionPortal = () => {
     const isTrialActive = Boolean(sub.trialActive && sub.trialEndDate && now <= new Date(sub.trialEndDate));
     const isTrialExpired = Boolean(sub.trialActive && sub.trialEndDate && now > new Date(sub.trialEndDate)) || (sub.status === 'Expired' && sub.paymentStatus === 'Trial');
     const isPaidExpired = Boolean(sub.paymentStatus === 'Paid' && sub.subscriptionEndDate && now > new Date(sub.subscriptionEndDate)) || (sub.status === 'Expired' && sub.paymentStatus === 'Paid');
-    const isPaidActive = Boolean(sub.paymentStatus === 'Paid' && sub.status === 'Active' && !isPaidExpired && !isManualFrozen);
+    const isPaidActive = Boolean((sub.paymentStatus === 'Paid' || sub.status === 'Active') && !isPaidExpired && !isManualFrozen);
     const hasUsedTrial = Boolean(sub.trialStartDate || sub.trialActive || sub.paymentStatus === 'Trial');
 
     // Trial countdown calculations
@@ -293,7 +292,7 @@ const SubscriptionPortal = () => {
                         </div>
                         <h3 className="text-lg font-black text-white">7-Day Free Trial Request Submitted ⏳</h3>
                         <p className="text-sm text-amber-50 leading-relaxed font-medium">
-                            Your free trial request was received on {sub.trialRequestDate ? new Date(sub.trialRequestDate).toLocaleString() : 'recently'}. 
+                            Your free trial request was received on {sub.trialRequestDate ? new Date(sub.trialRequestDate).toLocaleString() : 'recently'}.
                             <strong> The 7-day countdown will begin only after Super Admin approval</strong>, guaranteeing you the full 7-day period.
                         </p>
                         <p className="text-xs text-amber-100">You will receive an email as soon as Super Admin verifies and activates your trial.</p>
@@ -373,13 +372,12 @@ const SubscriptionPortal = () => {
                                     {sub.plan || 'Free Trial'} {isTrialActive && <span className="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full ml-2">7-Day Trial</span>}
                                 </h3>
                             </div>
-                            <span className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border shadow-inner ${
-                                isPaidActive || isTrialActive
-                                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' 
-                                    : isPendingApproval
+                            <span className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border shadow-inner ${isPaidActive || isTrialActive
+                                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                                : isPendingApproval
                                     ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
                                     : 'bg-rose-500/20 text-rose-400 border-rose-500/30'
-                            }`}>
+                                }`}>
                                 {isManualFrozen ? 'Manually Frozen' : isPendingApproval ? 'Pending Approval' : isTrialActive ? 'Trial Active' : isPaidActive ? 'Paid Active' : 'Frozen / Inactive'}
                             </span>
                         </div>
@@ -457,22 +455,20 @@ const SubscriptionPortal = () => {
                         <h3 className="font-black text-slate-900 dark:text-slate-100 text-base">Select Subscription Plan</h3>
                         <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Instant activation & dashboard unlock upon payment verification.</p>
                     </div>
-                    
+
                     {/* Billing Cycle Toggle */}
                     <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 p-1 rounded-2xl border border-slate-200 dark:border-slate-700">
                         <button
                             onClick={() => setBillingCycle('monthly')}
-                            className={`px-4 py-1.5 rounded-xl text-xs font-extrabold transition-all ${
-                                billingCycle === 'monthly' ? 'bg-white dark:bg-slate-800 text-orange-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'
-                            }`}
+                            className={`px-4 py-1.5 rounded-xl text-xs font-extrabold transition-all ${billingCycle === 'monthly' ? 'bg-white dark:bg-slate-800 text-orange-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                                }`}
                         >
                             Monthly
                         </button>
                         <button
                             onClick={() => setBillingCycle('yearly')}
-                            className={`px-4 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1 ${
-                                billingCycle === 'yearly' ? 'bg-white dark:bg-slate-800 text-orange-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'
-                            }`}
+                            className={`px-4 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1 ${billingCycle === 'yearly' ? 'bg-white dark:bg-slate-800 text-orange-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                                }`}
                         >
                             Yearly
                             <span className="text-[9px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full font-black">SAVE 15%</span>
@@ -480,26 +476,24 @@ const SubscriptionPortal = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {plans.map(plan => {
                         const price = billingCycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
                         const isCurrent = sub.plan === plan.name;
                         const isEnterprise = plan.name === 'Enterprise';
-                        const isPro = plan.name === 'Pro' || plan.name === 'Professional';
 
                         return (
-                            <div key={plan._id} className={`bg-white dark:bg-slate-800 rounded-3xl border-2 p-6 flex flex-col justify-between relative transition-all duration-300 h-full ${
-                                isCurrent && isPaidActive
+                            <div key={plan._id} className={`bg-white dark:bg-slate-800 rounded-3xl border-2 p-6 flex flex-col justify-between relative transition-all duration-300 ${isCurrent && isPaidActive
                                 ? 'border-orange-500 shadow-md shadow-orange-500/10'
                                 : 'border-slate-200 dark:border-slate-700 hover:border-orange-300'
-                            }`}>
-                                {(isEnterprise || isPro) && (
-                                    <div className="absolute top-4 right-4 bg-orange-50 border border-orange-200 text-orange-600 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                                        {isEnterprise ? 'All-Inclusive' : 'Most Popular'}
+                                }`}>
+                                {isEnterprise && (
+                                    <div className="absolute top-4 right-4 bg-orange-50 border border-orange-200 text-orange-600 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                        Popular
                                     </div>
                                 )}
-                                
-                                <div className="space-y-4 flex-1 flex flex-col justify-between">
+
+                                <div className="space-y-4">
                                     <div>
                                         <h4 className="font-black text-slate-900 dark:text-slate-100 text-lg">{plan.name}</h4>
                                         <div className="flex items-baseline gap-1 mt-2">
@@ -508,11 +502,11 @@ const SubscriptionPortal = () => {
                                         </div>
                                     </div>
 
-                                    <ul className="space-y-2.5 pt-4 border-t border-slate-100 dark:border-slate-700/60 min-h-[170px]">
+                                    <ul className="space-y-2.5 pt-4 border-t border-slate-100 dark:border-slate-700/60">
                                         {plan.features.slice(0, 6).map((feat, idx) => (
                                             <li key={idx} className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
                                                 <CheckCircle size={14} className="text-emerald-500 shrink-0" />
-                                                <span className="truncate">{feat}</span>
+                                                {feat}
                                             </li>
                                         ))}
                                     </ul>
@@ -521,14 +515,42 @@ const SubscriptionPortal = () => {
                                 <button
                                     onClick={() => handleSelectPlan(plan)}
                                     disabled={isSubmitting}
-                                    className={`w-full py-3.5 rounded-2xl font-black text-xs transition-all mt-6 cursor-pointer shrink-0 ${
-                                        isCurrent && isPaidActive
+                                    className={`w-full py-3 rounded-2xl font-black text-xs transition-all mt-6 cursor-pointer ${isCurrent && isPaidActive
                                         ? 'bg-orange-50 text-orange-600 border border-orange-200 cursor-default'
                                         : 'bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-500/20'
-                                    }`}
+                                        }`}
                                 >
-                                    {isCurrent && isPaidActive ? 'Your Current Active Plan' : `Upgrade to ${plan.name}`}
+                                    {isCurrent && isPaidActive ? 'Your Current Plan' : 'Select Plan & Unlock'}
                                 </button>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Feature Access Lock Matrix */}
+            <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 space-y-6">
+                <div>
+                    <h3 className="font-black text-slate-900 dark:text-slate-100 text-base">Plan Feature Matrix</h3>
+                    <p className="text-xs text-slate-400 font-semibold mt-0.5">Check which modules are unlocked or locked in your current tier.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {SaaS_FEATURES.map(feat => {
+                        const planObj = plans.find(p => p.name === sub.plan);
+                        const isUnlocked = isTrialActive || (isPaidActive && (planObj?.features.includes(feat.key) || ['Restaurant Management', 'Menu Management', 'QR Digital Menu', 'Order Management'].includes(feat.key)));
+
+                        return (
+                            <div key={feat.key} className="flex items-center justify-between p-4 bg-slate-50/50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                <div className="space-y-0.5 min-w-0 pr-1.5 flex-1">
+                                    <span className="text-xs font-black text-slate-900 dark:text-slate-100">{feat.key}</span>
+                                    <p className="text-[10px] text-slate-400 font-semibold leading-relaxed max-w-sm">{feat.desc}</p>
+                                </div>
+                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${isUnlocked
+                                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400'
+                                    : 'bg-slate-100 text-slate-400 border border-slate-200 dark:bg-slate-800'
+                                    }`}>
+                                    {isUnlocked ? '✓ Unlocked' : '🔒 Locked'}
+                                </span>
                             </div>
                         );
                     })}
@@ -571,9 +593,8 @@ const SubscriptionPortal = () => {
                                         <td className="p-4 capitalize">{payment.billingCycle}</td>
                                         <td className="p-4 font-black text-slate-900 dark:text-slate-100 text-right">₹{payment.amount.toLocaleString('en-IN')}</td>
                                         <td className="p-4 text-center">
-                                            <span className={`inline-block px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${
-                                                payment.status === 'Completed' ? 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-rose-100 text-rose-700 border-rose-200'
-                                            }`}>
+                                            <span className={`inline-block px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${payment.status === 'Completed' ? 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-rose-100 text-rose-700 border-rose-200'
+                                                }`}>
                                                 {payment.status}
                                             </span>
                                         </td>
@@ -609,15 +630,15 @@ const SubscriptionPortal = () => {
                         </div>
 
                         {/* UPI QR Code Container */}
-                        <div 
+                        <div
                             onClick={handleConfirmQRPayment}
                             className="p-4 bg-orange-50/50 dark:bg-slate-800/80 rounded-2xl border border-orange-200 dark:border-orange-900/40 flex flex-col items-center gap-3 cursor-pointer group hover:scale-[1.02] transition-transform"
                             title="Click QR to simulate instant verification"
                         >
                             <div className="w-44 h-44 bg-white p-2 rounded-xl shadow-md border border-slate-200 flex items-center justify-center relative">
-                                <img 
-                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=FoodNestPayment_${selectedPlanToBuy.name}`} 
-                                    alt="Payment QR" 
+                                <img
+                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=FoodNestPayment_${selectedPlanToBuy.name}`}
+                                    alt="Payment QR"
                                     className="w-full h-full object-contain"
                                 />
                                 <div className="absolute inset-0 bg-orange-500/10 group-hover:opacity-100 opacity-0 transition-opacity rounded-xl flex items-center justify-center font-black text-orange-700 text-xs bg-white/90 p-2 text-center">
