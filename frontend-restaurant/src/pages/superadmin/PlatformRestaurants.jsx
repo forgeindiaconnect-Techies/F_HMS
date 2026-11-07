@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { 
-    Check, X, Ban, RefreshCw, Eye, EyeOff, Trash2, Search, Store, 
+    Plus, Check, X, Ban, RefreshCw, Eye, EyeOff, Trash2, Search, Store, 
     Sparkles, TrendingUp, ShieldCheck, AlertCircle, Building2, Calendar, 
     Phone, Mail, MapPin, RotateCcw, CheckCircle2, ShieldAlert
 } from 'lucide-react';
@@ -14,6 +14,48 @@ const PlatformRestaurants = () => {
     const [loading, setLoading] = useState(true);
     const [viewingRestaurant, setViewingRestaurant] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [addFormSubmitting, setAddFormSubmitting] = useState(false);
+    const [addFormData, setAddFormData] = useState({
+        name: '',
+        ownerName: '',
+        email: '',
+        password: '',
+        phoneNumber: '',
+        plan: 'Pro',
+        billingCycle: 'monthly'
+    });
+
+    const handleCreateRestaurant = async (e) => {
+        e.preventDefault();
+        if (!/^[6-9]\d{9}$/.test(addFormData.phoneNumber.trim())) {
+            toast.error('Mobile number must be exactly 10 digits starting with 6, 7, 8, or 9.');
+            return;
+        }
+        setAddFormSubmitting(true);
+        try {
+            const res = await api.post('/super-admin/restaurants', addFormData);
+            toast.success(res.data?.message || 'Restaurant created successfully!');
+            if (res.data?.restaurant) {
+                setRestaurants(prev => [res.data.restaurant, ...prev]);
+            }
+            setShowAddModal(false);
+            setAddFormData({
+                name: '',
+                ownerName: '',
+                email: '',
+                password: '',
+                phoneNumber: '',
+                plan: 'Pro',
+                billingCycle: 'monthly'
+            });
+        } catch (error) {
+            console.error('Failed to create restaurant', error);
+            toast.error(error.response?.data?.message || 'Failed to create restaurant');
+        } finally {
+            setAddFormSubmitting(false);
+        }
+    };
     const [activeFilterTab, setActiveFilterTab] = useState('All');
     const [confirmModal, setConfirmModal] = useState({
         isOpen: false,
@@ -213,6 +255,13 @@ const PlatformRestaurants = () => {
                         <TrendingUp size={14} className="text-emerald-600" />
                         MRR: ₹{totalSaaSMRR.toLocaleString('en-IN')}/mo
                     </span>
+                    <button
+                        onClick={() => setShowAddModal(true)}
+                        className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                    >
+                        <Plus size={15} />
+                        Add Restaurant
+                    </button>
                 </div>
             </div>
 
@@ -703,6 +752,138 @@ const PlatformRestaurants = () => {
                                 Close Details
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+                        {showAddModal && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 my-8">
+                        <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+                            <div>
+                                <h3 className="text-lg font-black text-gray-900">Add New Restaurant</h3>
+                                <p className="text-xs text-gray-500 mt-0.5">Provision an active restaurant and assign subscription plan</p>
+                            </div>
+                            <button
+                                onClick={() => setShowAddModal(false)}
+                                className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleCreateRestaurant} className="space-y-4 pt-4">
+                            <div>
+                                <label className="text-xs font-bold text-gray-700 block mb-1">Restaurant / Brand Name *</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={addFormData.name}
+                                    onChange={(e) => setAddFormData({ ...addFormData, name: e.target.value })}
+                                    placeholder="e.g. Spice Symphony"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-indigo-600"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label className="text-xs font-bold text-gray-700 block mb-1">Owner Full Name *</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={addFormData.ownerName}
+                                        onChange={(e) => setAddFormData({ ...addFormData, ownerName: e.target.value })}
+                                        placeholder="e.g. Rajesh Kumar"
+                                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-indigo-600"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-gray-700 block mb-1">10-Digit Mobile Number *</label>
+                                    <input
+                                        type="tel"
+                                        required
+                                        maxLength={10}
+                                        value={addFormData.phoneNumber}
+                                        onChange={(e) => {
+                                            let val = e.target.value.replace(/\D/g, '');
+                                            if (val.length > 0 && !['6', '7', '8', '9'].includes(val[0])) val = '';
+                                            if (val.length > 10) val = val.slice(0, 10);
+                                            setAddFormData({ ...addFormData, phoneNumber: val });
+                                        }}
+                                        placeholder="e.g. 9876543210"
+                                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm font-mono focus:outline-none focus:border-indigo-600"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label className="text-xs font-bold text-gray-700 block mb-1">Login Email *</label>
+                                    <input
+                                        type="email"
+                                        required
+                                        value={addFormData.email}
+                                        onChange={(e) => setAddFormData({ ...addFormData, email: e.target.value.toLowerCase() })}
+                                        placeholder="owner@restaurant.com"
+                                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-indigo-600"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-gray-700 block mb-1">Admin Password *</label>
+                                    <input
+                                        type="password"
+                                        required
+                                        value={addFormData.password}
+                                        onChange={(e) => setAddFormData({ ...addFormData, password: e.target.value })}
+                                        placeholder="Min 6 characters"
+                                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-indigo-600"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label className="text-xs font-bold text-gray-700 block mb-1">Subscription Plan *</label>
+                                    <select
+                                        value={addFormData.plan}
+                                        onChange={(e) => setAddFormData({ ...addFormData, plan: e.target.value })}
+                                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm font-bold bg-white focus:outline-none focus:border-indigo-600"
+                                    >
+                                        <option value="Starter">Starter (₹49/mo)</option>
+                                        <option value="Pro">Pro (₹99/mo)</option>
+                                        <option value="Enterprise">Enterprise (₹199/mo)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-gray-700 block mb-1">Billing Cycle *</label>
+                                    <select
+                                        value={addFormData.billingCycle}
+                                        onChange={(e) => setAddFormData({ ...addFormData, billingCycle: e.target.value })}
+                                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm font-bold bg-white focus:outline-none focus:border-indigo-600"
+                                    >
+                                        <option value="monthly">Monthly</option>
+                                        <option value="yearly">Yearly (Annual)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="pt-3 flex items-center justify-end gap-3 border-t border-gray-100">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAddModal(false)}
+                                    className="px-4 py-2 text-xs font-bold text-gray-600 hover:text-gray-900 rounded-xl cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={addFormSubmitting}
+                                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-500/20 disabled:opacity-60 flex items-center gap-1.5 cursor-pointer"
+                                >
+                                    {addFormSubmitting ? 'Creating...' : 'Create & Activate Restaurant'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

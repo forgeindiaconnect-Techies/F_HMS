@@ -125615,7 +125615,11 @@ var sendEmail = async ({ to, toName, subject, html }) => {
     console.log(`[Brevo SMTP Email Sent Successfully] Delivered to ${to}. Message ID: ${info.messageId}`);
     return true;
   } catch (smtpErr) {
-    console.warn(`[Brevo SMTP Warning] Falling back to Brevo API: ${smtpErr.message}`);
+    if (smtpErr.message && (smtpErr.message.includes("525") || smtpErr.message.includes("Unauthorized IP"))) {
+      console.warn("[Brevo SMTP Warning]: Brevo blocked current IP (525 5.7.1 Unauthorized IP address). To enable live delivery from any IP, authorize IPs at https://app.brevo.com/security/authorised_ips");
+    } else {
+      console.warn(`[Brevo SMTP Warning] Falling back to Brevo API: ${smtpErr.message}`);
+    }
   }
   if (apiKey) {
     try {
@@ -125640,6 +125644,9 @@ var sendEmail = async ({ to, toName, subject, html }) => {
         return true;
       } else {
         console.error("[Brevo API Error Details]:", JSON.stringify(data));
+        if (data.message && data.message.includes("authorised_ips")) {
+          console.warn("[Action Required for Brevo Real-Time Mail]: Brevo security policy detected unrecognized server IP. Add IP at https://app.brevo.com/security/authorised_ips or disable Brevo IP restrictions to allow automated mail dispatch.");
+        }
       }
     } catch (brevoErr) {
       console.error("[Brevo HTTP Dispatch Error]:", brevoErr.message);
@@ -132264,6 +132271,7 @@ var Ticket_default = Ticket;
 
 // controllers/superAdminController.js
 init_Notification();
+init_Branch();
 var getStats = async (req, res) => {
   try {
     const totalRestaurants = await Restaurant_default.countDocuments({ isDeleted: { $ne: true } });
@@ -133053,12 +133061,76 @@ var manualUnfreezeRestaurant = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+var createRestaurantBySuperAdmin = async (req, res) => {
+  try {
+    const { name, ownerName, email, password, phoneNumber, plan, billingCycle } = req.body;
+    if (!name || !ownerName || !email || !password || !phoneNumber) {
+      return res.status(400).json({ message: "Restaurant name, owner name, email, password, and phone number are required." });
+    }
+    const cleanEmail = email.toLowerCase().trim();
+    const existingUser = await User_default.findOne({ email: cleanEmail });
+    if (existingUser) {
+      return res.status(400).json({ message: "An account with this email address already exists." });
+    }
+    const selectedPlan = plan || "Starter";
+    const expiryDate = /* @__PURE__ */ new Date();
+    if (billingCycle === "yearly") {
+      expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+    } else {
+      expiryDate.setDate(expiryDate.getDate() + 30);
+    }
+    const restaurant = await Restaurant_default.create({
+      name: name.trim(),
+      email: cleanEmail,
+      phoneNumber: phoneNumber.trim(),
+      approvalStatus: "Approved",
+      verificationStatus: "Verified",
+      isActive: true,
+      isProfileApproved: true,
+      status: "Active",
+      subscription: {
+        plan: selectedPlan,
+        status: "Active",
+        billingCycle: billingCycle || "monthly",
+        startDate: /* @__PURE__ */ new Date(),
+        expiryDate,
+        price: selectedPlan === "Enterprise" ? 199 : selectedPlan === "Pro" ? 99 : 49
+      }
+    });
+    const user = await User_default.create({
+      name: ownerName.trim(),
+      email: cleanEmail,
+      password,
+      phoneNumber: phoneNumber.trim(),
+      role: "RestaurantAdmin",
+      restaurantId: restaurant._id,
+      isActive: true
+    });
+    restaurant.ownerId = user._id;
+    await restaurant.save();
+    await Branch_default.create({
+      restaurantId: restaurant._id,
+      name: "Main Branch",
+      address: "Headquarters",
+      phone: phoneNumber.trim(),
+      isMain: true
+    });
+    res.status(201).json({
+      message: `Restaurant "${restaurant.name}" created successfully with ${selectedPlan} plan.`,
+      restaurant,
+      user: { _id: user._id, name: user.name, email: user.email, role: user.role }
+    });
+  } catch (error) {
+    console.error("SuperAdmin Create Restaurant Error:", error);
+    res.status(500).json({ message: error.message || "Failed to create restaurant." });
+  }
+};
 
 // routes/superAdminRoutes.js
 var router7 = import_express7.default.Router();
 router7.use(protect, authorize("SuperAdmin"));
 router7.route("/stats").get(getStats);
-router7.route("/restaurants").get(getRestaurants2);
+router7.route("/restaurants").get(getRestaurants2).post(createRestaurantBySuperAdmin);
 router7.route("/restaurants/:id").delete(deleteRestaurant);
 router7.route("/restaurants/:id/status").put(updateRestaurantVisibilityStatus);
 router7.route("/restaurants/:id/restore").put(restoreRestaurant);

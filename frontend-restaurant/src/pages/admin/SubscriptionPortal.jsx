@@ -1,3 +1,4 @@
+import { QRCodeSVG } from 'qrcode.react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -389,38 +390,39 @@ const SubscriptionPortal = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
                     {plans.map(plan => {
                         const price = billingCycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
                         const isCurrent = sub.plan === plan.name;
                         const isEnterprise = plan.name === 'Enterprise';
+                        const isPro = plan.name === 'Pro' || plan.name === 'Professional';
 
                         return (
-                            <div key={plan._id} className={`bg-white rounded-3xl border-2 p-6 flex flex-col justify-between relative transition-all duration-300 ${
-                                isCurrent && isActive
-                                ? 'border-indigo-600 shadow-md shadow-indigo-50/50'
-                                : 'border-slate-100 hover:border-slate-200 hover:shadow-sm'
+                            <div key={plan._id} className={`bg-white dark:bg-slate-800 rounded-3xl border-2 p-6 flex flex-col justify-between relative transition-all duration-300 h-full ${
+                                isCurrent && isPaidActive
+                                ? 'border-orange-500 shadow-md shadow-orange-500/10'
+                                : 'border-slate-200 dark:border-slate-700 hover:border-orange-300'
                             }`}>
-                                {isEnterprise && (
-                                    <div className="absolute top-4 right-4 bg-indigo-50 border border-indigo-100 text-indigo-600 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
-                                        Popular
+                                {(isEnterprise || isPro) && (
+                                    <div className="absolute top-4 right-4 bg-orange-50 border border-orange-200 text-orange-600 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                                        {isEnterprise ? 'All-Inclusive' : 'Most Popular'}
                                     </div>
                                 )}
                                 
-                                <div className="space-y-4 min-w-0 pr-1.5 flex-1">
+                                <div className="space-y-4 flex-1 flex flex-col justify-between">
                                     <div>
-                                        <h4 className="font-black text-slate-900 text-lg">{plan.name}</h4>
+                                        <h4 className="font-black text-slate-900 dark:text-slate-100 text-lg">{plan.name}</h4>
                                         <div className="flex items-baseline gap-1 mt-2">
-                                            <span className="text-3xl font-black text-slate-900">₹{price.toLocaleString('en-IN')}</span>
+                                            <span className="text-3xl font-black text-slate-900 dark:text-slate-100">₹{price.toLocaleString('en-IN')}</span>
                                             <span className="text-xs text-slate-400 font-extrabold">/{billingCycle === 'yearly' ? 'yr' : 'mo'}</span>
                                         </div>
                                     </div>
 
-                                    <ul className="space-y-2.5 pt-4 border-t border-slate-50">
+                                    <ul className="space-y-2.5 pt-4 border-t border-slate-100 dark:border-slate-700/60 min-h-[170px]">
                                         {plan.features.slice(0, 6).map((feat, idx) => (
-                                            <li key={idx} className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                                            <li key={idx} className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
                                                 <CheckCircle size={14} className="text-emerald-500 shrink-0" />
-                                                {feat}
+                                                <span className="truncate">{feat}</span>
                                             </li>
                                         ))}
                                     </ul>
@@ -429,45 +431,14 @@ const SubscriptionPortal = () => {
                                 <button
                                     onClick={() => handleSelectPlan(plan)}
                                     disabled={isSubmitting}
-                                    className={`w-full py-3 rounded-2xl font-black text-xs transition-all mt-6 ${
-                                        isCurrent && isActive
-                                        ? 'bg-indigo-50 text-indigo-600 border border-indigo-200 cursor-default'
-                                        : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow shadow-indigo-100'
+                                    className={`w-full py-3.5 rounded-2xl font-black text-xs transition-all mt-6 cursor-pointer shrink-0 ${
+                                        isCurrent && isPaidActive
+                                        ? 'bg-orange-50 text-orange-600 border border-orange-200 cursor-default'
+                                        : 'bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-500/20'
                                     }`}
                                 >
-                                    {isCurrent && isActive ? 'Your Current Plan' : 'Select Plan'}
+                                    {isCurrent && isPaidActive ? 'Your Current Active Plan' : `Upgrade to ${plan.name}`}
                                 </button>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* Feature Access Lock Matrix */}
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 space-y-6">
-                <div>
-                    <h3 className="font-black text-slate-900 text-base">Plan Feature Matrix</h3>
-                    <p className="text-xs text-slate-400 font-semibold mt-0.5">Check which modules are unlocked or locked in your current tier.</p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {SaaS_FEATURES.map(feat => {
-                        const planObj = plans.find(p => p.name === sub.plan);
-                        const isUnlocked = planObj?.features.includes(feat.key) || 
-                                           (!planObj && ['Restaurant Management', 'Menu Management', 'QR Digital Menu', 'Order Management', 'Basic Inventory', 'Basic Reports', 'Customer Support'].includes(feat.key));
-
-                        return (
-                            <div key={feat.key} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100 hover:bg-slate-50 transition-colors">
-                                <div className="space-y-0.5 min-w-0 pr-1.5 flex-1">
-                                    <span className="text-xs font-black text-slate-900">{feat.key}</span>
-                                    <p className="text-[10px] text-slate-400 font-semibold leading-relaxed max-w-sm">{feat.desc}</p>
-                                </div>
-                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                                    isUnlocked 
-                                    ? 'bg-green-100 text-green-700 border border-green-200' 
-                                    : 'bg-slate-100 text-slate-400 border border-slate-200'
-                                }`}>
-                                    {isUnlocked ? '✓ Unlocked' : '🔒 Locked'}
-                                </span>
                             </div>
                         );
                     })}

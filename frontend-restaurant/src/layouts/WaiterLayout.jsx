@@ -20,7 +20,8 @@ const WaiterLayout = () => {
         isTrialExpired
     );
 
-    const isUnverified = restaurant && (restaurant.approvalStatus === 'Rejected' || restaurant.approvalStatus === 'Suspended');
+    const isApproved = restaurant?.approvalStatus === 'Approved' || restaurant?.verificationStatus === 'Verified';
+    const isUnverified = user?.role !== 'SuperAdmin' && Boolean(restaurant && !isApproved && (restaurant.approvalStatus === 'Pending' || restaurant.approvalStatus === 'Rejected' || restaurant.verificationStatus === 'Rejected' || restaurant.verificationStatus === 'Re-upload Required'));
 
     return (
         <div className="flex flex-col h-screen overflow-hidden font-sans">

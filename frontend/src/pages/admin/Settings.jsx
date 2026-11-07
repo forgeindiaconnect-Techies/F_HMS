@@ -1582,9 +1582,41 @@ const Settings = () => {
                                 </div>
                             </div>
                         </div>
-                    ) : activeTab === 'appearance' ? (
+                    ) : activeTab === 'profile' ? (
                         <div className="space-y-6 min-w-0 pr-1.5 flex-1">
-                            <ThemeSettingCard />
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>My Account Profile</h3>
+                                <p className="text-gray-500 text-xs">View registered account credentials, role permissions and restaurant ownership.</p>
+                            </div>
+
+                            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm max-w-2xl space-y-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="p-4 bg-gray-50 rounded-xl">
+                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Full Name</span>
+                                        <span className="text-sm font-black text-gray-900 mt-1 block">{user?.name || 'Administrator'}</span>
+                                    </div>
+                                    <div className="p-4 bg-gray-50 rounded-xl">
+                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Registered Account Email</span>
+                                        <span className="text-sm font-mono font-bold text-indigo-700 mt-1 block break-all">{user?.email || restaurant?.email || 'N/A'}</span>
+                                    </div>
+                                    <div className="p-4 bg-gray-50 rounded-xl">
+                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Assigned Role</span>
+                                        <span className="text-sm font-bold text-gray-900 mt-1 block">{user?.role || 'RestaurantAdmin'}</span>
+                                    </div>
+                                    <div className="p-4 bg-gray-50 rounded-xl">
+                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Registered Phone</span>
+                                        <span className="text-sm font-mono font-bold text-gray-900 mt-1 block">{user?.phoneNumber || restaurant?.phoneNumber || 'N/A'}</span>
+                                    </div>
+                                    <div className="p-4 bg-gray-50 rounded-xl">
+                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Restaurant Entity</span>
+                                        <span className="text-sm font-bold text-gray-900 mt-1 block">{restaurant?.name || 'My Restaurant'}</span>
+                                    </div>
+                                    <div className="p-4 bg-gray-50 rounded-xl">
+                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Subscription Plan</span>
+                                        <span className="text-sm font-bold text-emerald-700 mt-1 block">{restaurant?.subscription?.plan || 'Starter'} ({restaurant?.subscription?.status || 'Active'})</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     ) : activeTab === 'security' ? (
                         <form onSubmit={handlePasswordChangeSubmit} className="space-y-6 min-w-0 pr-1.5 flex-1">

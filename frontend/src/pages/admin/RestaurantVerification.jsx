@@ -3,6 +3,16 @@ import { useAuth } from '../../context/AuthContext';
 import { Upload, CheckCircle, XCircle, AlertCircle, Clock, FileText, ArrowLeft, RefreshCw, Check, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+const resolveDocUrl = (filePath) => {
+        if (!filePath) return '';
+        if (filePath.startsWith('http://') || filePath.startsWith('https://') || filePath.startsWith('data:')) {
+            return filePath;
+        }
+        const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms-1.onrender.com/api';
+        const origin = apiBase.replace(/\/api\/?$/, '');
+        return `${origin}${filePath.startsWith('/') ? '' : '/'}${filePath}`;
+    };
+
 const RestaurantVerification = () => {
     const { api, restaurant, fetchRestaurant } = useAuth();
     const [verification, setVerification] = useState(null);
@@ -550,8 +560,8 @@ const RestaurantVerification = () => {
                         {/* Logo upload */}
                         <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                             <label className="text-xs font-black text-gray-500 uppercase tracking-wider block">Restaurant Logo (Image / PDF)</label>
-                            {verification?.documents?.logo?.filePath && (() => {
-                                const rawPath = verification.documents.logo.filePath;
+                            {(verification?.documents?.logo?.filePath || restaurant?.logo) && (() => {
+                                const rawPath = verification?.documents?.logo?.filePath || restaurant?.logo;
                                 const docUrl = (rawPath.startsWith('http') || rawPath.startsWith('data:'))
                                     ? rawPath
                                     : `${api.defaults.baseURL.replace('/api', '')}${rawPath.startsWith('/') ? '' : '/'}${rawPath}`;
@@ -588,10 +598,10 @@ const RestaurantVerification = () => {
                         {/* Menu PDF upload */}
                         <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                             <label className="text-xs font-black text-gray-500 uppercase tracking-wider block">Menu PDF</label>
-                            {verification?.documents?.menuPdf?.filePath && (
+                            {(verification?.documents?.menuPdf?.filePath || restaurant?.menuPdf) && (
                                 <div className="mb-3 flex items-center gap-1.5 text-xs font-bold text-blue-600">
                                     <FileText size={12} />
-                                    <a href={`${api.defaults.baseURL.replace('/api', '')}${verification.documents.menuPdf.filePath}`} target="_blank" rel="noreferrer" className="hover:underline">
+                                    <a href={resolveDocUrl(verification?.documents?.menuPdf?.filePath || restaurant?.menuPdf)} target="_blank" rel="noreferrer" className="hover:underline">
                                         View Menu PDF
                                     </a>
                                 </div>
@@ -621,11 +631,11 @@ const RestaurantVerification = () => {
                         <label className="text-xs font-black text-gray-500 uppercase tracking-wider block">Restaurant Showcase Images (Max 5)</label>
                         
                         {/* Display existing images */}
-                        {verification?.documents?.images?.length > 0 && (
+                        {((verification?.documents?.images?.length || 0) > 0 || (restaurant?.showcaseImages?.length || 0) > 0) && (
                             <div className="flex flex-wrap gap-3 mb-3">
-                                {verification.documents.images.map((img, idx) => (
+                                {(verification?.documents?.images?.length ? verification.documents.images : (restaurant?.showcaseImages || [])).map((img, idx) => (
                                     <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-200 shadow-sm group">
-                                        <img src={`${api.defaults.baseURL.replace('/api', '')}${img.filePath}`} alt="Showcase" className="w-full h-full object-cover" />
+                                        <img src={resolveDocUrl(img?.filePath || img)} alt="Showcase" className="w-full h-full object-cover" />
                                     </div>
                                 ))}
                             </div>

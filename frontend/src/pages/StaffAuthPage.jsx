@@ -12,9 +12,52 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 
 const DEFAULT_PLANS = [
-    { _id: 'p1', name: 'Starter', monthlyPrice: 49, yearlyPrice: 39, features: ['1 Outlet', 'Basic POS Billing', 'QR Table Ordering', 'Email Support'] },
-    { _id: 'p2', name: 'Professional', monthlyPrice: 99, yearlyPrice: 79, features: ['Up to 3 Outlets', 'Kitchen Display System (KDS)', 'Online Ordering', 'Advanced Analytics', 'Priority Support'] },
-    { _id: 'p3', name: 'Enterprise', monthlyPrice: 199, yearlyPrice: 159, features: ['Unlimited Outlets', 'Custom APIs & Webhooks', 'Dedicated Account Manager', 'SLA Guarantee', 'White-label Branding'] }
+    { 
+        _id: 'p1', 
+        name: 'Starter', 
+        badge: 'Single Outlet',
+        description: 'Essential cloud POS billing and QR table ordering for single cafes and food trucks.',
+        monthlyPrice: 49, 
+        yearlyPrice: 39, 
+        features: [
+            '1 Restaurant Branch Outlet',
+            'Full POS Billing & KOT Generation',
+            'QR Code Table Dine-In Ordering',
+            'Real-Time Menu & Catalog Control',
+            'Email & Chat Technical Support'
+        ] 
+    },
+    { 
+        _id: 'p2', 
+        name: 'Professional', 
+        badge: 'Most Popular',
+        description: 'Complete operations suite with Kitchen Display Systems, shifts & advanced reports.',
+        monthlyPrice: 99, 
+        yearlyPrice: 79, 
+        features: [
+            'Up to 3 Restaurant Outlets',
+            'Interactive Kitchen Display System (KDS)',
+            'Staff Attendance, Shifts & Overtime Tracker',
+            'Recipe Stock Depletion & Low Stock Alerts',
+            'Executive Sales & Profit Analytics',
+            '24/7 Priority Support'
+        ] 
+    },
+    { 
+        _id: 'p3', 
+        name: 'Enterprise', 
+        badge: 'All-Inclusive',
+        description: 'Full multi-outlet enterprise management with AI demand predictions & custom integrations.',
+        monthlyPrice: 199, 
+        yearlyPrice: 159, 
+        features: [
+            'Unlimited Restaurant Outlets & Franchises',
+            'AI-Powered Sales & Inventory Demand Forecasting',
+            'Centralized Multi-Outlet Stock Transfer',
+            'Dedicated Account Manager & 99.9% Uptime SLA',
+            'Custom Webhooks & External API Access'
+        ] 
+    }
 ];
 
 const StaffAuthPage = () => {
@@ -486,37 +529,64 @@ const StaffAuthPage = () => {
             </div>
 
             {/* Paid Plans Grid */}
-            <div className="grid grid-cols-1 gap-2.5">
+            <div className="space-y-3">
                 {(plans.length > 0 ? plans : DEFAULT_PLANS).map((plan, idx) => {
                     const mPrice = plan.monthlyPrice || plan.price || 0;
                     const yPrice = plan.yearlyPrice || Math.round(mPrice * 0.8);
                     const price = isYearly ? yPrice : mPrice;
                     const isSelected = !isTrialSelected && selectedPlan.toLowerCase() === plan.name.toLowerCase();
+                    const defaultPlanData = DEFAULT_PLANS.find(p => p.name.toLowerCase() === plan.name.toLowerCase()) || plan;
+                    const planDesc = plan.description || defaultPlanData.description || 'Comprehensive restaurant operations';
+                    const planBadge = plan.badge || defaultPlanData.badge || (plan.name === 'Professional' ? 'Popular' : 'Active');
+                    const planFeatures = (plan.features && plan.features.length > 2) ? plan.features : (defaultPlanData.features || []);
 
                     return (
                         <div
                             key={plan._id || idx}
                             onClick={() => setValue('plan', plan.name)}
-                            className={`p-3.5 border-2 rounded-xl cursor-pointer transition-all flex items-center justify-between ${
+                            className={`p-4 border-2 rounded-2xl cursor-pointer transition-all ${
                                 isSelected 
-                                    ? 'border-[#FF5A1F] bg-orange-50/50 shadow-xs' 
-                                    : 'border-slate-200 bg-white hover:border-slate-300'
+                                    ? 'border-[#FF5A1F] bg-gradient-to-br from-orange-50/70 via-white to-amber-50/30 shadow-md ring-2 ring-orange-500/15' 
+                                    : 'border-slate-200 bg-white hover:border-orange-200'
                             }`}
                         >
-                            <div className="flex items-center gap-3">
-                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${isSelected ? 'border-[#FF5A1F] bg-[#FF5A1F]' : 'border-slate-300'}`}>
-                                    {isSelected && <Check size={12} className="text-white" strokeWidth={3} />}
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="flex items-start gap-3">
+                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 shrink-0 ${
+                                        isSelected ? 'border-[#FF5A1F] bg-[#FF5A1F]' : 'border-slate-300'
+                                    }`}>
+                                        {isSelected && <Check size={12} className="text-white" strokeWidth={3} />}
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-black text-slate-900 text-base">{plan.name}</span>
+                                            {planBadge && (
+                                                <span className="text-[10px] font-black uppercase tracking-wider text-orange-700 bg-orange-100/90 px-2 py-0.5 rounded-full border border-orange-200">
+                                                    {planBadge}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="text-xs text-slate-500 font-medium mt-1 leading-snug">
+                                            {planDesc}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div className="font-bold text-slate-900 text-sm">{plan.name}</div>
-                                    <p className="text-[11px] text-slate-500 font-medium">
-                                        {(plan.features || []).slice(0, 2).join(' · ')}
-                                    </p>
+                                <div className="text-right shrink-0">
+                                    <div className="font-black text-slate-900 text-lg leading-tight">₹{price}<span className="text-xs font-medium text-slate-400">/mo</span></div>
+                                    <div className="text-[10px] text-slate-400 font-semibold mt-0.5">
+                                        {isYearly ? 'Billed annually' : 'Billed monthly'}
+                                    </div>
                                 </div>
                             </div>
-                            <div className="text-right">
-                                <div className="font-black text-slate-900 text-sm">₹{price}/mo</div>
-                                <div className="text-[10px] text-slate-400 font-semibold">{isYearly ? 'Billed yearly' : 'Billed monthly'}</div>
+
+                            {/* Plan Features Bullet Points */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-3 mt-3 border-t border-slate-100 text-[11px] text-slate-600 font-medium">
+                                {planFeatures.map((feat, fIdx) => (
+                                    <div key={fIdx} className="flex items-center gap-1.5">
+                                        <Check size={13} className="text-emerald-600 shrink-0" strokeWidth={2.5} />
+                                        <span className="truncate">{feat}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     );

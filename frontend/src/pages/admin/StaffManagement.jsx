@@ -362,13 +362,20 @@ const StaffManagement = () => {
 
     const handleAttendanceFieldChange = (empId, field, val) => {
         setAttendanceMap(prev => {
-            const current = prev[empId] || { status: 'Present', checkInTime: '09:00', checkOutTime: '18:00', overtimeHours: 0 };
+            const emp = staffList.find(s => s._id === empId);
+            const shiftHrs = emp?.salaryConfig?.dailyWorkHours || 8;
+            const current = prev[empId] || { 
+                status: 'Present', 
+                checkInTime: '09:00', 
+                checkOutTime: '18:00', 
+                overtimeHours: calculateOvertimeHours('09:00', '18:00', shiftHrs) 
+            };
             const updated = { ...current, [field]: val };
-            if (field === 'checkInTime' || field === 'checkOutTime') {
+            if (field === 'status' && (val === 'Absent' || val === 'Leave' || val === 'Holiday')) {
+                updated.overtimeHours = 0;
+            } else if (field === 'checkInTime' || field === 'checkOutTime' || (field === 'status' && val === 'Present')) {
                 const cIn = field === 'checkInTime' ? val : (current.checkInTime || '09:00');
                 const cOut = field === 'checkOutTime' ? val : (current.checkOutTime || '18:00');
-                const emp = staffList.find(s => s._id === empId);
-                const shiftHrs = emp?.salaryConfig?.dailyWorkHours || 8;
                 updated.overtimeHours = calculateOvertimeHours(cIn, cOut, shiftHrs);
             }
             return {
@@ -1171,7 +1178,9 @@ const StaffManagement = () => {
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
                                     {staffList.map(emp => {
-                                        const current = attendanceMap[emp._id] || { status: 'Present', checkInTime: '09:00', checkOutTime: '18:00' };
+                                        const shiftHrs = emp.salaryConfig?.dailyWorkHours || 8;
+                                        const defaultOt = calculateOvertimeHours('09:00', '18:00', shiftHrs);
+                                        const current = attendanceMap[emp._id] || { status: 'Present', checkInTime: '09:00', checkOutTime: '18:00', overtimeHours: defaultOt };
                                         const existingRecord = attendanceRecords.find(r => (r.employee?._id || r.employee) === emp._id);
                                         return (
                                             <tr key={emp._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors">

@@ -24,7 +24,7 @@ const ManagerSettings = () => {
                     {[
                         { name: 'My Profile', icon: User },
                         { name: 'Branch Details', icon: Store },
-                        { name: 'Appearance & Theme', icon: Sun },
+                        
                         { name: 'Security', icon: Lock },
                     ].map((item, i) => (
                         <button key={i} onClick={() => setActiveTab(item.name)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-bold text-sm ${activeTab === item.name ? 'bg-green-50 dark:bg-slate-800 text-green-700 dark:text-green-400' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 border border-transparent hover:border-gray-200'}`}>
@@ -35,9 +35,7 @@ const ManagerSettings = () => {
 
                 {/* Settings Content */}
                 <div className="lg:col-span-2 space-y-6">
-                    {activeTab === 'Appearance & Theme' && (
-                        <ThemeSettingCard />
-                    )}
+                    
                     
                     {activeTab === 'My Profile' && (
                         <>
@@ -58,7 +56,7 @@ const ManagerSettings = () => {
                                     
                                     <div className="space-y-1.5">
                                         <label className="text-sm font-bold text-gray-700">Email Address</label>
-                                        <input type="email" defaultValue="sarah.j@foodnest.com" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 focus:bg-white transition-colors" />
+                                        <input type="email" value={user?.email || "manager@branch.com"} disabled className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 focus:bg-white transition-colors opacity-70 cursor-not-allowed font-mono" />
                                     </div>
                                     
                                     <div className="space-y-1.5">

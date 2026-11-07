@@ -9,7 +9,8 @@ import {
     getSubscriptionPayments, getSubscriptionAnalytics,
     updateRestaurantModules,
     getTrialRequests, approveTrialRequest, rejectTrialRequest,
-    manualFreezeRestaurant, manualUnfreezeRestaurant
+    manualFreezeRestaurant, manualUnfreezeRestaurant,
+    createRestaurantBySuperAdmin
 } from '../controllers/superAdminController.js';
 import { deleteVerification } from '../controllers/verificationController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
@@ -19,7 +20,7 @@ const router = express.Router();
 router.use(protect, authorize('SuperAdmin'));
 
 router.route('/stats').get(getStats);
-router.route('/restaurants').get(getRestaurants);
+router.route('/restaurants').get(getRestaurants).post(createRestaurantBySuperAdmin);
 router.route('/restaurants/:id').delete(deleteRestaurant);
 router.route('/restaurants/:id/status').put(updateRestaurantVisibilityStatus);
 router.route('/restaurants/:id/restore').put(restoreRestaurant);

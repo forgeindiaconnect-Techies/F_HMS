@@ -42,13 +42,21 @@ const ManagerSidebar = () => {
 
     const isItemActive = (itemPath) => {
         if (itemPath.includes('?')) {
-            return currentFullPath === itemPath;
+            const [targetPath, targetQuery] = itemPath.split('?');
+            const targetParams = new URLSearchParams(targetQuery);
+            const currentParams = new URLSearchParams(location.search);
+            if (location.pathname !== targetPath) return false;
+            for (const [key, val] of targetParams.entries()) {
+                if (currentParams.get(key) !== val) return false;
+            }
+            return true;
         }
         if (itemPath === '/manager/staff') {
-            return location.pathname === '/manager/staff' && (!location.search || location.search === '?tab=shifts' || location.search === '?tab=monitoring');
+            const tab = new URLSearchParams(location.search).get('tab');
+            return location.pathname === '/manager/staff' && (!tab || tab === 'shifts' || tab === 'monitoring' || tab === 'attendance');
         }
         if (itemPath === '/manager') {
-            return location.pathname === '/manager' && !location.search;
+            return location.pathname === '/manager' && (!location.search || location.search === '');
         }
         return location.pathname === itemPath;
     };

@@ -5,6 +5,7 @@ import Order from '../models/Order.js';
 import Plan from '../models/Plan.js';
 import Ticket from '../models/Ticket.js';
 import Notification from '../models/Notification.js';
+import Branch from '../models/Branch.js';
 import SubscriptionPayment from '../models/SubscriptionPayment.js';
 
 // @desc    Get global stats
@@ -992,5 +993,81 @@ export const manualUnfreezeRestaurant = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    SuperAdmin creates restaurant with selected plan
+// @route   POST /api/super-admin/restaurants
+// @access  Private/SuperAdmin
+export const createRestaurantBySuperAdmin = async (req, res) => {
+    try {
+        const { name, ownerName, email, password, phoneNumber, plan, billingCycle } = req.body;
+        
+        if (!name || !ownerName || !email || !password || !phoneNumber) {
+            return res.status(400).json({ message: 'Restaurant name, owner name, email, password, and phone number are required.' });
+        }
+
+        const cleanEmail = email.toLowerCase().trim();
+        const existingUser = await User.findOne({ email: cleanEmail });
+        if (existingUser) {
+            return res.status(400).json({ message: 'An account with this email address already exists.' });
+        }
+
+        const selectedPlan = plan || 'Starter';
+        const expiryDate = new Date();
+        if (billingCycle === 'yearly') {
+            expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+        } else {
+            expiryDate.setDate(expiryDate.getDate() + 30);
+        }
+
+        const restaurant = await Restaurant.create({
+            name: name.trim(),
+            email: cleanEmail,
+            phoneNumber: phoneNumber.trim(),
+            approvalStatus: 'Approved',
+            verificationStatus: 'Verified',
+            isActive: true,
+            isProfileApproved: true,
+            status: 'Active',
+            subscription: {
+                plan: selectedPlan,
+                status: 'Active',
+                billingCycle: billingCycle || 'monthly',
+                startDate: new Date(),
+                expiryDate,
+                price: selectedPlan === 'Enterprise' ? 199 : (selectedPlan === 'Pro' ? 99 : 49)
+            }
+        });
+
+        const user = await User.create({
+            name: ownerName.trim(),
+            email: cleanEmail,
+            password,
+            phoneNumber: phoneNumber.trim(),
+            role: 'RestaurantAdmin',
+            restaurantId: restaurant._id,
+            isActive: true
+        });
+
+        restaurant.ownerId = user._id;
+        await restaurant.save();
+
+        await Branch.create({
+            restaurantId: restaurant._id,
+            name: 'Main Branch',
+            address: 'Headquarters',
+            phone: phoneNumber.trim(),
+            isMain: true
+        });
+
+        res.status(201).json({
+            message: `Restaurant "${restaurant.name}" created successfully with ${selectedPlan} plan.`,
+            restaurant,
+            user: { _id: user._id, name: user.name, email: user.email, role: user.role }
+        });
+    } catch (error) {
+        console.error('SuperAdmin Create Restaurant Error:', error);
+        res.status(500).json({ message: error.message || 'Failed to create restaurant.' });
     }
 };

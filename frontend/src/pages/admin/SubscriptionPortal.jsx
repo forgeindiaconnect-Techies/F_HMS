@@ -1,3 +1,4 @@
+import { QRCodeSVG } from 'qrcode.react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -479,25 +480,26 @@ const SubscriptionPortal = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
                     {plans.map(plan => {
                         const price = billingCycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
                         const isCurrent = sub.plan === plan.name;
                         const isEnterprise = plan.name === 'Enterprise';
+                        const isPro = plan.name === 'Pro' || plan.name === 'Professional';
 
                         return (
-                            <div key={plan._id} className={`bg-white dark:bg-slate-800 rounded-3xl border-2 p-6 flex flex-col justify-between relative transition-all duration-300 ${
+                            <div key={plan._id} className={`bg-white dark:bg-slate-800 rounded-3xl border-2 p-6 flex flex-col justify-between relative transition-all duration-300 h-full ${
                                 isCurrent && isPaidActive
                                 ? 'border-orange-500 shadow-md shadow-orange-500/10'
                                 : 'border-slate-200 dark:border-slate-700 hover:border-orange-300'
                             }`}>
-                                {isEnterprise && (
-                                    <div className="absolute top-4 right-4 bg-orange-50 border border-orange-200 text-orange-600 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
-                                        Popular
+                                {(isEnterprise || isPro) && (
+                                    <div className="absolute top-4 right-4 bg-orange-50 border border-orange-200 text-orange-600 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                                        {isEnterprise ? 'All-Inclusive' : 'Most Popular'}
                                     </div>
                                 )}
                                 
-                                <div className="space-y-4">
+                                <div className="space-y-4 flex-1 flex flex-col justify-between">
                                     <div>
                                         <h4 className="font-black text-slate-900 dark:text-slate-100 text-lg">{plan.name}</h4>
                                         <div className="flex items-baseline gap-1 mt-2">
@@ -506,11 +508,11 @@ const SubscriptionPortal = () => {
                                         </div>
                                     </div>
 
-                                    <ul className="space-y-2.5 pt-4 border-t border-slate-100 dark:border-slate-700/60">
+                                    <ul className="space-y-2.5 pt-4 border-t border-slate-100 dark:border-slate-700/60 min-h-[170px]">
                                         {plan.features.slice(0, 6).map((feat, idx) => (
                                             <li key={idx} className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
                                                 <CheckCircle size={14} className="text-emerald-500 shrink-0" />
-                                                {feat}
+                                                <span className="truncate">{feat}</span>
                                             </li>
                                         ))}
                                     </ul>
@@ -519,44 +521,14 @@ const SubscriptionPortal = () => {
                                 <button
                                     onClick={() => handleSelectPlan(plan)}
                                     disabled={isSubmitting}
-                                    className={`w-full py-3 rounded-2xl font-black text-xs transition-all mt-6 cursor-pointer ${
+                                    className={`w-full py-3.5 rounded-2xl font-black text-xs transition-all mt-6 cursor-pointer shrink-0 ${
                                         isCurrent && isPaidActive
                                         ? 'bg-orange-50 text-orange-600 border border-orange-200 cursor-default'
                                         : 'bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-500/20'
                                     }`}
                                 >
-                                    {isCurrent && isPaidActive ? 'Your Current Plan' : 'Select Plan & Unlock'}
+                                    {isCurrent && isPaidActive ? 'Your Current Active Plan' : `Upgrade to ${plan.name}`}
                                 </button>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* Feature Access Lock Matrix */}
-            <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 space-y-6">
-                <div>
-                    <h3 className="font-black text-slate-900 dark:text-slate-100 text-base">Plan Feature Matrix</h3>
-                    <p className="text-xs text-slate-400 font-semibold mt-0.5">Check which modules are unlocked or locked in your current tier.</p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {SaaS_FEATURES.map(feat => {
-                        const planObj = plans.find(p => p.name === sub.plan);
-                        const isUnlocked = isTrialActive || (isPaidActive && (planObj?.features.includes(feat.key) || ['Restaurant Management', 'Menu Management', 'QR Digital Menu', 'Order Management'].includes(feat.key)));
-
-                        return (
-                            <div key={feat.key} className="flex items-center justify-between p-4 bg-slate-50/50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800">
-                                <div className="space-y-0.5 min-w-0 pr-1.5 flex-1">
-                                    <span className="text-xs font-black text-slate-900 dark:text-slate-100">{feat.key}</span>
-                                    <p className="text-[10px] text-slate-400 font-semibold leading-relaxed max-w-sm">{feat.desc}</p>
-                                </div>
-                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                                    isUnlocked 
-                                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400' 
-                                    : 'bg-slate-100 text-slate-400 border border-slate-200 dark:bg-slate-800'
-                                }`}>
-                                    {isUnlocked ? '✓ Unlocked' : '🔒 Locked'}
-                                </span>
                             </div>
                         );
                     })}

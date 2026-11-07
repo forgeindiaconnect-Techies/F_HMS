@@ -482,6 +482,10 @@ const OutletTypeLandingPage = ({ type: typeProp }) => {
             toast.error('Please fill in your name, phone number, and restaurant name.');
             return;
         }
+        if (!/^[6-9]\d{9}$/.test(formData.phoneNumber.trim())) {
+            toast.error('Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.');
+            return;
+        }
         setSubmitting(true);
         try {
             const res = await api.post('/billing-demos', {
@@ -1075,9 +1079,15 @@ const OutletTypeLandingPage = ({ type: typeProp }) => {
                                     <input 
                                         type="tel" 
                                         required
+                                        maxLength={10}
                                         value={formData.phoneNumber}
-                                        onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                                        placeholder="e.g. +91 98200 12345"
+                                        onChange={(e) => {
+                                            let val = e.target.value.replace(/\D/g, '');
+                                            if (val.length > 0 && !['6', '7', '8', '9'].includes(val[0])) val = '';
+                                            if (val.length > 10) val = val.slice(0, 10);
+                                            setFormData({ ...formData, phoneNumber: val });
+                                        }}
+                                        placeholder="10-digit mobile number (e.g. 9876543210)"
                                         className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm font-medium focus:outline-none focus:border-[#FF2D55] focus:ring-2 focus:ring-[#FF2D55]/20"
                                     />
                                 </div>

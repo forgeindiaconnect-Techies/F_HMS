@@ -174,28 +174,66 @@ const Reports = () => {
         }
 
         const rows = reportResult.data;
-        const headers = Object.keys(rows[0]).filter(k => k !== 'id' && k !== '_id');
-        let csv = headers.join(',') + '\n';
+        const allKeysSet = new Set();
+        rows.forEach(r => {
+            if (typeof r === 'object' && r !== null) {
+                Object.keys(r).forEach(k => {
+                    if (k !== 'id' && k !== '_id' && k !== '__v') allKeysSet.add(k);
+                });
+            }
+        });
+        
+        const headers = [];
+        if (rows.some(r => r._id !== undefined)) {
+            headers.push('_id');
+        }
+        allKeysSet.forEach(k => headers.push(k));
+
+        const formatHeader = (key) => {
+            if (key === '_id') return 'Date / Identifier';
+            return key
+                .replace(/([A-Z])/g, ' $1')
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, c => c.toUpperCase())
+                .trim();
+        };
+
+        const headerLine = headers.map(h => `"${formatHeader(h)}"`).join(',');
+        let csv = headerLine + '\n';
 
         rows.forEach(row => {
             const line = headers.map(h => {
                 let val = row[h];
-                if (val === null || val === undefined) val = '';
+                if (val === null || val === undefined) return '""';
+                if (typeof val === 'object') {
+                    if (val instanceof Date) {
+                        val = val.toLocaleDateString();
+                    } else if (val.name) {
+                        val = val.name;
+                    } else if (val.title) {
+                        val = val.title;
+                    } else {
+                        val = JSON.stringify(val);
+                    }
+                }
+                if (typeof val === 'number') {
+                    return Number.isInteger(val) ? val : Number(val).toFixed(2);
+                }
                 val = String(val).replace(/"/g, '""');
                 return `"${val}"`;
             }).join(',');
             csv += line + '\n';
         });
 
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
         link.setAttribute('href', url);
-        link.setAttribute('download', `${selectedReport}_${reportResult.startDate}_to_${reportResult.endDate}.csv`);
+        link.setAttribute('download', `${selectedReport}_${reportResult.startDate || 'report'}_to_${reportResult.endDate || 'export'}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast.success('CSV Report downloaded successfully!');
+        toast.success('Excel/CSV Report downloaded successfully with aligned columns!');
     };
 
     return (

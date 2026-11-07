@@ -3,6 +3,16 @@ import { useAuth } from '../../context/AuthContext';
 import { ShieldCheck, Eye, Check, X, Clock, AlertTriangle, FileText, Download, CheckCircle, XCircle, ArrowUpRight, History, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+const resolveDocUrl = (filePath) => {
+        if (!filePath) return '';
+        if (filePath.startsWith('http://') || filePath.startsWith('https://') || filePath.startsWith('data:')) {
+            return filePath;
+        }
+        const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms-1.onrender.com/api';
+        const origin = apiBase.replace(/\/api\/?$/, '');
+        return `${origin}${filePath.startsWith('/') ? '' : '/'}${filePath}`;
+    };
+
 const VerificationManagement = () => {
     const { api } = useAuth();
     const [verifications, setVerifications] = useState([]);

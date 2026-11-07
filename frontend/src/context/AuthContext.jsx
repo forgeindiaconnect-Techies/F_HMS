@@ -70,7 +70,14 @@ api.interceptors.response.use(
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [restaurant, setRestaurant] = useState(null);
+    const [restaurant, setRestaurant] = useState(() => {
+        try {
+            const cached = localStorage.getItem('restosys_restaurant');
+            return cached ? JSON.parse(cached) : null;
+        } catch (e) {
+            return null;
+        }
+    });
     const [loading, setLoading] = useState(true);
 
     const fetchRestaurant = useCallback(async (currentUser = user) => {
@@ -85,6 +92,7 @@ export const AuthProvider = ({ children }) => {
             const res = await api.get('/restaurants/mine');
             if (res.data) {
                 setRestaurant(res.data);
+            try { localStorage.setItem('restosys_restaurant', JSON.stringify(res.data)); } catch(e){}
                 if (currentUser && !currentUser.restaurantId && res.data._id) {
                     const updatedUser = { ...currentUser, restaurantId: res.data._id, branchId: currentUser.branchId || res.data.mainBranchId };
                     setUser(updatedUser);
@@ -144,6 +152,7 @@ export const AuthProvider = ({ children }) => {
         setRestaurant(null);
         localStorage.removeItem('restosys_staff_user');
         localStorage.removeItem('token');
+        try { localStorage.removeItem('restosys_restaurant'); } catch(e){}
         // Clear all cached local data keys to prevent cross-restaurant data leakage
         Object.keys(localStorage).forEach(key => {
             if (key.startsWith('restosys_') || key.startsWith('cart_') || key.startsWith('table_')) {

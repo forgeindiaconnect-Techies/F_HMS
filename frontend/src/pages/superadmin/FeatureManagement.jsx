@@ -5,63 +5,63 @@ import toast from 'react-hot-toast';
 
 const SaaS_FEATURES = [
     // Operations
-    { key: 'Restaurant Management', category: 'Operations', desc: 'Define layouts, menu configurations, order flows.' },
-    { key: 'Menu Management', category: 'Operations', desc: 'Set up menu items, pricing, custom categories.' },
-    { key: 'QR Digital Menu', category: 'Operations', desc: 'Enable guests to order or view menus by scan.' },
+    { key: 'Restaurant Management', category: 'Operations', desc: 'Define layouts, menu configurations, order flows.', dashboardSection: '/admin/settings' },
+    { key: 'Menu Management', category: 'Operations', desc: 'Set up menu items, pricing, custom categories.', dashboardSection: '/admin/menu' },
+    { key: 'QR Digital Menu', category: 'Operations', desc: 'Enable guests to order or view menus by scan.', dashboardSection: '/admin/tables' },
     { key: 'Kitchen Order Ticket (KOT)', category: 'Operations', desc: 'Kitchen order ticket generation, station routing, and physical print.' },
     { key: 'Kitchen Display System (KDS)', category: 'Operations', desc: 'Real-time interactive digital kitchen order screens for chefs.' },
-    { key: 'Waiter Tips & Gratuity', category: 'Operations', desc: 'Tip recording, customer QR tipping, and waiter tip settlements.' },
-    { key: 'Online Payment Gateway', category: 'Operations', desc: 'Accept direct credit/debit cards and online gateway payments.' },
-    { key: 'Order Management', category: 'Operations', desc: 'Processes counter orders, takeaways, deliveries.' },
-    { key: 'Multi-Branch Management', category: 'Operations', desc: 'Create, monitor and track multiple branches.' },
-    { key: 'Advanced Staff Management', category: 'Operations', desc: 'Detailed permissions, roles, and shift check-ins.' },
-    { key: 'Delivery Partner Management', category: 'Operations', desc: 'Assign and track real-time delivery orders.' },
-    { key: 'Advanced Order Analytics', category: 'Operations', desc: 'Track sales performance, hourly volumes, and payment status.' },
-    { key: 'Advanced Table Management', category: 'Operations', desc: 'Manage reservations, table occupancy, and layout grids.' },
+    { key: 'Waiter Tips & Gratuity', category: 'Operations', desc: 'Tip recording, customer QR tipping, and waiter tip settlements.', dashboardSection: '/admin/staff' },
+    { key: 'Online Payment Gateway', category: 'Operations', desc: 'Accept direct credit/debit cards and online gateway payments.', dashboardSection: '/admin/settings' },
+    { key: 'Order Management', category: 'Operations', desc: 'Processes counter orders, takeaways, deliveries.', dashboardSection: '/admin/orders' },
+    { key: 'Multi-Branch Management', category: 'Operations', desc: 'Create, monitor and track multiple branches.', dashboardSection: '/admin/branches' },
+    { key: 'Advanced Staff Management', category: 'Operations', desc: 'Detailed permissions, roles, and shift check-ins.', dashboardSection: '/admin/staff' },
+    { key: 'Delivery Partner Management', category: 'Operations', desc: 'Assign and track real-time delivery orders.', dashboardSection: '/admin/delivery' },
+    { key: 'Advanced Order Analytics', category: 'Operations', desc: 'Track sales performance, hourly volumes, and payment status.', dashboardSection: '/admin/analytics' },
+    { key: 'Advanced Table Management', category: 'Operations', desc: 'Manage reservations, table occupancy, and layout grids.', dashboardSection: '/admin/tables' },
 
     // Inventory
-    { key: 'Raw Materials', category: 'Inventory', desc: 'Track stock of raw ingredients and recipe items.' },
-    { key: 'Stock Levels', category: 'Inventory', desc: 'Real-time monitoring of quantity on hand.' },
-    { key: 'Low Stock Alerts', category: 'Inventory', desc: 'Automatic email and system notifications when stock is low.' },
-    { key: 'Expiry Tracking', category: 'Inventory', desc: 'Trace perishables and track shelf life expiration.' },
-    { key: 'Purchase Orders', category: 'Inventory', desc: 'Create procurement workflows and orders for vendors.' },
-    { key: 'Vendor Management', category: 'Inventory', desc: 'Manage suppliers, contacts, and historical prices.' },
-    { key: 'Stock Transfer', category: 'Inventory', desc: 'Transfer stock items safely between branch outlets.' },
-    { key: 'Waste Management', category: 'Inventory', desc: 'Log daily food wastage logs, values and sources.' },
+    { key: 'Raw Materials', category: 'Inventory', desc: 'Track stock of raw ingredients and recipe items.', dashboardSection: '/admin/inventory' },
+    { key: 'Stock Levels', category: 'Inventory', desc: 'Real-time monitoring of quantity on hand.', dashboardSection: '/admin/inventory' },
+    { key: 'Low Stock Alerts', category: 'Inventory', desc: 'Automatic email and system notifications when stock is low.', dashboardSection: '/admin/inventory' },
+    { key: 'Expiry Tracking', category: 'Inventory', desc: 'Trace perishables and track shelf life expiration.', dashboardSection: '/admin/inventory' },
+    { key: 'Purchase Orders', category: 'Inventory', desc: 'Create procurement workflows and orders for vendors.', dashboardSection: '/admin/inventory' },
+    { key: 'Vendor Management', category: 'Inventory', desc: 'Manage suppliers, contacts, and historical prices.', dashboardSection: '/admin/inventory' },
+    { key: 'Stock Transfer', category: 'Inventory', desc: 'Transfer stock items safely between branch outlets.', dashboardSection: '/admin/inventory' },
+    { key: 'Waste Management', category: 'Inventory', desc: 'Log daily food wastage logs, values and sources.', dashboardSection: '/admin/inventory' },
 
     // Reports & Analytics
-    { key: 'Sales Reports', category: 'Reports & Analytics', desc: 'Basic sales reports and daily sales tracking.' },
-    { key: 'Profit & Loss', category: 'Reports & Analytics', desc: 'Compute operational profitability metrics.' },
-    { key: 'Inventory Reports', category: 'Reports & Analytics', desc: 'Historical consumption and valuation reports.' },
-    { key: 'Staff Performance', category: 'Reports & Analytics', desc: 'Track staff order count, speed, and accuracy.' },
-    { key: 'Customer Analytics', category: 'Reports & Analytics', desc: 'Analyze purchase frequency and preferences.' },
-    { key: 'Order Analytics', category: 'Reports & Analytics', desc: 'Detailed hourly, category, and payment report metrics.' },
-    { key: 'Tax Reports', category: 'Reports & Analytics', desc: 'Generate reports for SGST/CGST and service tax audits.' },
-    { key: 'PDF Export', category: 'Reports & Analytics', desc: 'Export reports to PDF format.' },
-    { key: 'Excel Export', category: 'Reports & Analytics', desc: 'Export reports to CSV/Excel format.' },
+    { key: 'Sales Reports', category: 'Reports & Analytics', desc: 'Basic sales reports and daily sales tracking.', dashboardSection: '/admin/reports' },
+    { key: 'Profit & Loss', category: 'Reports & Analytics', desc: 'Compute operational profitability metrics.', dashboardSection: '/admin/analytics' },
+    { key: 'Inventory Reports', category: 'Reports & Analytics', desc: 'Historical consumption and valuation reports.', dashboardSection: '/admin/reports' },
+    { key: 'Staff Performance', category: 'Reports & Analytics', desc: 'Track staff order count, speed, and accuracy.', dashboardSection: '/admin/staff' },
+    { key: 'Customer Analytics', category: 'Reports & Analytics', desc: 'Analyze purchase frequency and preferences.', dashboardSection: '/admin/customers' },
+    { key: 'Order Analytics', category: 'Reports & Analytics', desc: 'Detailed hourly, category, and payment report metrics.', dashboardSection: '/admin/analytics' },
+    { key: 'Tax Reports', category: 'Reports & Analytics', desc: 'Generate reports for SGST/CGST and service tax audits.', dashboardSection: '/admin/reports' },
+    { key: 'PDF Export', category: 'Reports & Analytics', desc: 'Export reports to PDF format.', dashboardSection: '/admin/reports' },
+    { key: 'Excel Export', category: 'Reports & Analytics', desc: 'Export reports to CSV/Excel format.', dashboardSection: '/admin/reports' },
 
     // Customer Management
-    { key: 'Advanced Customer Analytics', category: 'Customer Management', desc: 'Deconstruct lifetime values and loyalty.' },
-    { key: 'Customer Segmentation', category: 'Customer Management', desc: 'Categorize customers by frequency, spending, and tags.' },
-    { key: 'Customer Complaints', category: 'Customer Management', desc: 'Manage guest complaints and resolution tracking.' },
-    { key: 'Refund Requests', category: 'Customer Management', desc: 'Initiate and manage order refund workflows.' },
-    { key: 'Ticket History', category: 'Customer Management', desc: 'Review completed support interactions.' },
+    { key: 'Advanced Customer Analytics', category: 'Customer Management', desc: 'Deconstruct lifetime values and loyalty.', dashboardSection: '/admin/customers' },
+    { key: 'Customer Segmentation', category: 'Customer Management', desc: 'Categorize customers by frequency, spending, and tags.', dashboardSection: '/admin/customers' },
+    { key: 'Customer Complaints', category: 'Customer Management', desc: 'Manage guest complaints and resolution tracking.', dashboardSection: '/admin/feedback' },
+    { key: 'Refund Requests', category: 'Customer Management', desc: 'Initiate and manage order refund workflows.', dashboardSection: '/admin/orders' },
+    { key: 'Ticket History', category: 'Customer Management', desc: 'Review completed support interactions.', dashboardSection: '/admin/support' },
 
     // Subscription
-    { key: 'Upgrade/Downgrade', category: 'Subscription', desc: 'Change plans dynamically with pro-rata refunds.' },
-    { key: 'Billing History', category: 'Subscription', desc: 'Audit invoices and platform payments.' },
-    { key: 'Payment History', category: 'Subscription', desc: 'Review complete list of transactions.' },
-    { key: 'Renewal', category: 'Subscription', desc: 'Renew your subscription before plan expiry.' },
-    { key: 'Feature Access', category: 'Subscription', desc: 'Control permission locks on specific features.' },
+    { key: 'Upgrade/Downgrade', category: 'Subscription', desc: 'Change plans dynamically with pro-rata refunds.', dashboardSection: '/admin/subscription' },
+    { key: 'Billing History', category: 'Subscription', desc: 'Audit invoices and platform payments.', dashboardSection: '/admin/subscription' },
+    { key: 'Payment History', category: 'Subscription', desc: 'Review complete list of transactions.', dashboardSection: '/admin/subscription' },
+    { key: 'Renewal', category: 'Subscription', desc: 'Renew your subscription before plan expiry.', dashboardSection: '/admin/subscription' },
+    { key: 'Feature Access', category: 'Subscription', desc: 'Control permission locks on specific features.', dashboardSection: '/admin/subscription' },
 
     // Advanced Enterprise Features
-    { key: 'Advanced AI Insights', category: 'AI Tools (Enterprise)', desc: 'AI-generated platform improvement insights.' },
-    { key: 'Sales Prediction', category: 'AI Tools (Enterprise)', desc: 'Forecast sales using machine learning.' },
-    { key: 'Inventory Forecast', category: 'AI Tools (Enterprise)', desc: 'AI forecasts for ingredient depletion.' },
-    { key: 'Demand Forecast', category: 'AI Tools (Enterprise)', desc: 'Predict high-demand menu items.' },
-    { key: 'Menu Recommendations', category: 'AI Tools (Enterprise)', desc: 'AI pricing and menu engineering tips.' },
-    { key: 'Business Health Score', category: 'AI Tools (Enterprise)', desc: 'Calculate operational health index.' },
-    { key: 'Live Chat / Priority Support', category: 'Support (Enterprise)', desc: 'Real-time chat with support agents.' },
+    { key: 'Advanced AI Insights', category: 'AI Tools (Enterprise)', desc: 'AI-generated platform improvement insights.', dashboardSection: '/admin/analytics' },
+    { key: 'Sales Prediction', category: 'AI Tools (Enterprise)', desc: 'Forecast sales using machine learning.', dashboardSection: '/admin/analytics' },
+    { key: 'Inventory Forecast', category: 'AI Tools (Enterprise)', desc: 'AI forecasts for ingredient depletion.', dashboardSection: '/admin/inventory' },
+    { key: 'Demand Forecast', category: 'AI Tools (Enterprise)', desc: 'Predict high-demand menu items.', dashboardSection: '/admin/analytics' },
+    { key: 'Menu Recommendations', category: 'AI Tools (Enterprise)', desc: 'AI pricing and menu engineering tips.', dashboardSection: '/admin/menu' },
+    { key: 'Business Health Score', category: 'AI Tools (Enterprise)', desc: 'Calculate operational health index.', dashboardSection: '/admin/analytics' },
+    { key: 'Live Chat / Priority Support', category: 'Support (Enterprise)', desc: 'Real-time chat with support agents.', dashboardSection: '/admin/support' },
 ];
 
 const FeatureManagement = () => {
@@ -94,6 +94,19 @@ const FeatureManagement = () => {
     useEffect(() => {
         fetchPlans();
     }, [api]);
+
+    
+    const handleTogglePlanActive = async (plan) => {
+        try {
+            const nextActive = plan.isActive === false ? true : false;
+            await api.put(`/super-admin/plans/${plan._id}`, { isActive: nextActive });
+            setPlans(prev => prev.map(p => p._id === plan._id ? { ...p, isActive: nextActive } : p));
+            toast.success(`Plan "${plan.name}" is now ${nextActive ? 'Active' : 'Deactivated'}.`);
+        } catch (err) {
+            console.error('Failed to toggle plan active status', err);
+            toast.error(err.response?.data?.message || 'Failed to update plan status.');
+        }
+    };
 
     const handleFeatureToggle = async (plan, featureKey) => {
         setUpdatingPlanId(plan._id);
@@ -172,11 +185,23 @@ const FeatureManagement = () => {
                                 <th className="p-5 text-xs font-black uppercase text-slate-500 tracking-wider w-2/5">Description</th>
                                 {plans.map(plan => (
                                     <th key={plan._id} className="p-5 text-xs font-black uppercase text-slate-700 tracking-wider text-center">
-                                        <div className="flex flex-col items-center">
+                                        <div className="flex flex-col items-center gap-1.5">
                                             <span className="font-extrabold text-sm text-slate-900">{plan.name}</span>
-                                            <span className="text-[10px] text-slate-400 font-bold mt-0.5">
+                                            <span className="text-[10px] text-slate-400 font-bold">
                                                 ₹{plan.monthlyPrice}/mo
                                             </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleTogglePlanActive(plan)}
+                                                className={`px-2.5 py-0.5 rounded-full text-[9.5px] font-black cursor-pointer transition-colors ${
+                                                    plan.isActive !== false
+                                                        ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                                                        : 'bg-rose-100 text-rose-800 hover:bg-rose-200'
+                                                }`}
+                                                title="Toggle plan activation status"
+                                            >
+                                                {plan.isActive !== false ? '● Active' : '○ Inactive'}
+                                            </button>
                                         </div>
                                     </th>
                                 ))}
@@ -191,6 +216,11 @@ const FeatureManagement = () => {
                                             <span className="inline-block self-start text-[9px] font-black text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full mt-1 uppercase tracking-wider">
                                                 {feat.category}
                                             </span>
+                                            {feat.dashboardSection && (
+                                                <span className="inline-block self-start text-[9px] font-mono font-bold text-slate-500 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded mt-1">
+                                                    {feat.dashboardSection}
+                                                </span>
+                                            )}
                                         </div>
                                     </td>
                                     <td className="p-5 text-xs font-semibold text-slate-500 leading-relaxed">

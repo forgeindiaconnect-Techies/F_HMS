@@ -61,7 +61,11 @@ const sendEmail = async ({ to, toName, subject, html }) => {
         console.log(`[Brevo SMTP Email Sent Successfully] Delivered to ${to}. Message ID: ${info.messageId}`);
         return true;
     } catch (smtpErr) {
-        console.warn(`[Brevo SMTP Warning] Falling back to Brevo API: ${smtpErr.message}`);
+        if (smtpErr.message && (smtpErr.message.includes('525') || smtpErr.message.includes('Unauthorized IP'))) {
+            console.warn('[Brevo SMTP Warning]: Brevo blocked current IP (525 5.7.1 Unauthorized IP address). To enable live delivery from any IP, authorize IPs at https://app.brevo.com/security/authorised_ips');
+        } else {
+            console.warn(`[Brevo SMTP Warning] Falling back to Brevo API: ${smtpErr.message}`);
+        }
     }
 
     // 2. Fallback to Brevo HTTPS API
@@ -90,6 +94,9 @@ const sendEmail = async ({ to, toName, subject, html }) => {
                 return true;
             } else {
                 console.error('[Brevo API Error Details]:', JSON.stringify(data));
+                if (data.message && data.message.includes('authorised_ips')) {
+                    console.warn('[Action Required for Brevo Real-Time Mail]: Brevo security policy detected unrecognized server IP. Add IP at https://app.brevo.com/security/authorised_ips or disable Brevo IP restrictions to allow automated mail dispatch.');
+                }
             }
         } catch (brevoErr) {
             console.error('[Brevo HTTP Dispatch Error]:', brevoErr.message);

@@ -706,57 +706,57 @@ const Home = () => {
                                 FoodNest gives you everything you need to run your restaurant smoothly — from order management to staff control, inventory, reports and more. All in one powerful platform.
                             </p>
 
-                            {/* CTA BUTTONS: Compact Side-by-Side on Mobile for Clean Balance */}
-                            <div className="flex flex-row items-center gap-2 sm:gap-3 pt-1">
+                            {/* CTA BUTTONS: Stacked full-width on mobile (exact match to reference) */}
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 pt-1">
                                 <Link
                                     to="/register?plan=trial"
-                                    className="flex-1 xs:flex-initial px-3.5 sm:px-6 py-2.5 sm:py-3 bg-[#FF5A0A] hover:bg-[#E04F08] text-white font-bold rounded-xl shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 transition-all text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 group text-center"
+                                    className="w-full sm:w-auto px-6 py-3.5 sm:py-3 bg-[#FF5A0A] hover:bg-[#E04F08] text-white font-bold rounded-xl shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/35 transition-all text-sm flex items-center justify-center gap-2 group text-center"
                                 >
                                     <span>Get Started Free</span>
-                                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                                 </Link>
 
                                 <button
                                     onClick={() => setShowDemoModal(true)}
-                                    className="flex-1 xs:flex-initial px-3 sm:px-5 py-2.5 sm:py-3 bg-white hover:bg-orange-50/50 border border-orange-200 text-[#142B45] hover:text-[#FF5A0A] font-bold rounded-xl transition-all text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 shadow-2xs cursor-pointer group"
+                                    className="w-full sm:w-auto px-6 py-3.5 sm:py-3 bg-white hover:bg-orange-50/50 border border-orange-200 text-[#142B45] hover:text-[#FF5A0A] font-bold rounded-xl transition-all text-sm flex items-center justify-center gap-2 shadow-2xs cursor-pointer group"
                                 >
-                                    <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-orange-100/80 text-[#FF5A0A] flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
-                                        <Play size={8} fill="currentColor" className="ml-0.5" />
+                                    <div className="w-5 h-5 rounded-full bg-orange-100/80 text-[#FF5A0A] flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
+                                        <Play size={10} fill="currentColor" className="ml-0.5" />
                                     </div>
                                     <span className="whitespace-nowrap">Watch Demo</span>
                                 </button>
                             </div>
 
-                            {/* BENEFITS ROW: Compact 3-Column Strip on Mobile to save vertical space */}
-                            <div className="pt-2.5 sm:pt-4 grid grid-cols-3 gap-1.5 sm:gap-3 border-t border-orange-100/70">
+                            {/* BENEFITS LIST: Vertical stacked on Mobile, 3-Columns on Desktop */}
+                            <div className="pt-3.5 sm:pt-4 flex flex-col sm:grid sm:grid-cols-3 gap-2.5 sm:gap-3 border-t border-orange-100/70">
                                 
-                                <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
-                                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[#FFEADB] text-[#FF5A0A] flex items-center justify-center shrink-0">
-                                        <ShieldCheck size={13} className="sm:w-4 sm:h-4" strokeWidth={2.4} />
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className="w-8 h-8 rounded-full bg-[#FFEADB] text-[#FF5A0A] flex items-center justify-center shrink-0">
+                                        <ShieldCheck size={16} strokeWidth={2.4} />
                                     </div>
                                     <div className="min-w-0">
-                                        <h4 className="text-[10px] sm:text-xs font-bold text-[#142B45] leading-tight truncate">Secure &amp; Safe</h4>
-                                        <p className="hidden sm:block text-[10px] text-slate-400 font-medium truncate">Your data is safe with us</p>
+                                        <h4 className="text-xs sm:text-xs font-bold text-[#142B45] leading-tight">Secure &amp; Reliable</h4>
+                                        <p className="text-[11px] sm:text-[10px] text-slate-400 font-medium">Your data is safe with us</p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
-                                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[#FFEADB] text-[#FF5A0A] flex items-center justify-center shrink-0">
-                                        <Headphones size={13} className="sm:w-4 sm:h-4" strokeWidth={2.4} />
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className="w-8 h-8 rounded-full bg-[#FFEADB] text-[#FF5A0A] flex items-center justify-center shrink-0">
+                                        <Headphones size={16} strokeWidth={2.4} />
                                     </div>
                                     <div className="min-w-0">
-                                        <h4 className="text-[10px] sm:text-xs font-bold text-[#142B45] leading-tight truncate">24/7 Support</h4>
-                                        <p className="hidden sm:block text-[10px] text-slate-400 font-medium truncate">We're always here</p>
+                                        <h4 className="text-xs sm:text-xs font-bold text-[#142B45] leading-tight">24/7 Support</h4>
+                                        <p className="text-[11px] sm:text-[10px] text-slate-400 font-medium">We're always here</p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
-                                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[#FFEADB] text-[#FF5A0A] flex items-center justify-center shrink-0">
-                                        <Zap size={13} className="sm:w-4 sm:h-4" strokeWidth={2.4} />
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className="w-8 h-8 rounded-full bg-[#FFEADB] text-[#FF5A0A] flex items-center justify-center shrink-0">
+                                        <Zap size={16} strokeWidth={2.4} />
                                     </div>
                                     <div className="min-w-0">
-                                        <h4 className="text-[10px] sm:text-xs font-bold text-[#142B45] leading-tight truncate">Easy to Use</h4>
-                                        <p className="hidden sm:block text-[10px] text-slate-400 font-medium truncate">Zero setup lag</p>
+                                        <h4 className="text-xs sm:text-xs font-bold text-[#142B45] leading-tight">Easy to Use</h4>
+                                        <p className="text-[11px] sm:text-[10px] text-slate-400 font-medium">No technical skills needed</p>
                                     </div>
                                 </div>
                             </div>
@@ -767,7 +767,7 @@ const Home = () => {
                         {/* RIGHT COLUMN: ~57% WIDTH (Col 7 / 12 on lg/xl)                      */}
                         {/* HP LAPTOP MOCKUP & VERTICAL RECTANGULAR REDMI PHONE MOCKUP          */}
                         {/* ================================================================= */}
-                        <div className="lg:col-span-7 xl:col-span-7 relative flex items-center justify-center lg:justify-start pt-2 sm:pt-3 pb-8 sm:pb-12 px-1 xs:px-2 sm:px-0 sm:pl-8 lg:pl-10 overflow-visible">
+                        <div className="lg:col-span-7 xl:col-span-7 relative flex items-center justify-center lg:justify-start pt-3 sm:pt-4 pb-10 sm:pb-14 px-2 xs:px-4 sm:px-0 sm:pl-8 lg:pl-10">
 
                             {/* Leaves accent floating behind laptop on the left side matching reference */}
                             <div className="absolute top-8 -left-6 sm:-left-10 pointer-events-none select-none z-0 hidden lg:block opacity-85">
@@ -777,11 +777,14 @@ const Home = () => {
                                 </svg>
                             </div>
 
-                            {/* SQUARE-SHAPED HP LAPTOP STRUCTURE (Reduced width from right to left for balanced square aspect ratio) */}
-                            <div className="relative w-full max-w-[320px] xs:max-w-[380px] sm:max-w-[490px] lg:max-w-[520px] xl:max-w-[540px] z-10 drop-shadow-2xl mx-auto lg:mx-0">
+                            {/* UNIFIED MOCKUP WRAPPER FOR BOTH LAPTOP & PHONE TO ENSURE ZERO CUT-OFF ON MOBILE */}
+                            <div className="relative w-full max-w-[290px] xs:max-w-[340px] sm:max-w-[480px] lg:max-w-[530px] xl:max-w-[550px] mx-auto lg:mx-0 z-10">
                                 
-                                {/* HP Laptop Display Lid / Bezel */}
-                                <div className="bg-[#1E242E] rounded-t-xl sm:rounded-t-2xl p-2 sm:p-2.5 pb-2 shadow-2xl border border-slate-700/80 ring-1 ring-black/40">
+                                {/* SQUARE-SHAPED HP LAPTOP STRUCTURE */}
+                                <div className="relative w-full drop-shadow-2xl">
+                                    
+                                    {/* HP Laptop Display Lid / Bezel */}
+                                    <div className="bg-[#1E242E] rounded-t-xl sm:rounded-t-2xl p-1.5 xs:p-2 sm:p-2.5 pb-2 shadow-2xl border border-slate-700/80 ring-1 ring-black/40">
                                     
                                     {/* Top slim bezel webcam & microphone indicators */}
                                     <div className="flex items-center justify-center gap-2 pb-1.5">
@@ -1184,10 +1187,10 @@ const Home = () => {
                                     <div className="h-2 w-[98%] mx-auto bg-slate-900/35 rounded-b-md blur-[2px]" />
                                 </div>
 
-                            </div>
+                                </div>
 
-                            {/* VERTICAL RECTANGULAR REDMI-STYLE PHONE MOCKUP (Responsive positioning and legible typography for mobile & desktop) */}
-                            <div className="absolute -bottom-4 sm:-bottom-10 lg:-bottom-12 left-0 xs:left-1 sm:-left-10 lg:-left-16 xl:-left-20 w-[130px] xs:w-[150px] sm:w-[165px] lg:w-[175px] bg-[#11161F] p-1.5 sm:p-2 rounded-[18px] sm:rounded-[22px] shadow-2xl border border-slate-600/90 z-20 ring-1 ring-black/50">
+                                {/* VERTICAL RECTANGULAR REDMI-STYLE PHONE MOCKUP (Responsive positioning and legible typography for mobile & desktop) */}
+                                <div className="absolute -bottom-3 sm:-bottom-8 lg:-bottom-12 -left-2 xs:-left-3 sm:-left-8 lg:-left-14 w-[115px] xs:w-[135px] sm:w-[165px] lg:w-[175px] bg-[#11161F] p-1.5 sm:p-2 rounded-[18px] sm:rounded-[22px] shadow-2xl border border-slate-600/90 z-20 ring-1 ring-black/50">
                                 
                                 {/* Redmi front punch-hole camera centered at top */}
                                 <div className="flex items-center justify-center pb-1">
@@ -1299,6 +1302,8 @@ const Home = () => {
                                 </div>
                             </div>
 
+                            </div>
+
                             {/* CUSTOMER LANDING PAGE HERO FOOD IMAGE BLENDING WITH RIGHT SIDE OF LAPTOP */}
                             <div className="absolute -top-10 -right-10 sm:-right-16 lg:-right-24 xl:-right-32 w-72 sm:w-88 lg:w-[440px] xl:w-[480px] h-[340px] sm:h-[390px] lg:h-[440px] pointer-events-none select-none z-0 hidden md:block">
                                 <div 
@@ -1339,19 +1344,19 @@ const Home = () => {
             {/* ========================================================================= */}
             <section className="py-8 sm:py-10 bg-white border-y border-orange-100/70 shadow-xs">
                 <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-12">
-                    <div className="grid grid-cols-2 lg:flex lg:flex-wrap items-center justify-between lg:justify-start gap-4 sm:gap-6 md:gap-10 lg:gap-16">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:flex lg:flex-wrap items-center justify-between lg:justify-start gap-3 sm:gap-6 md:gap-10 lg:gap-16">
                         {STATISTICS.map((stat, idx) => {
                             const IconComponent = stat.icon;
                             return (
-                                <div key={idx} className="flex items-center gap-2.5 sm:gap-4 text-left group">
-                                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${stat.bgColor} ${stat.iconColor} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-xs`}>
-                                        <IconComponent size={20} className="sm:w-[22px] sm:h-[22px]" strokeWidth={2.2} />
+                                <div key={idx} className="flex items-center gap-2 sm:gap-3.5 text-left group min-w-0">
+                                    <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-full ${stat.bgColor} ${stat.iconColor} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs`}>
+                                        <IconComponent size={18} className="sm:w-[22px] sm:h-[22px]" strokeWidth={2.2} />
                                     </div>
-                                    <div className="min-w-0">
-                                        <span className="text-base sm:text-2xl font-black text-slate-900 block leading-tight truncate">
+                                    <div className="min-w-0 flex-1">
+                                        <span className="text-sm xs:text-base sm:text-2xl font-black text-slate-900 block leading-tight truncate">
                                             {stat.value}
                                         </span>
-                                        <span className="text-[11px] sm:text-sm font-semibold text-slate-500 block truncate">
+                                        <span className="text-[10px] sm:text-sm font-semibold text-slate-500 block truncate">
                                             {stat.label}
                                         </span>
                                     </div>
