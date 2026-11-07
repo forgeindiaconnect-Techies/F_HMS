@@ -229,18 +229,33 @@ const ManagerStaff = () => {
             const emp = staffList.find(s => s._id === empId);
             const shiftHrs = emp?.salaryConfig?.dailyWorkHours || 8;
             const current = prev[empId] || { 
-                status: 'Present', 
-                checkInTime: '09:00', 
-                checkOutTime: '18:00', 
-                overtimeHours: calculateOvertimeHours('09:00', '18:00', shiftHrs) 
+                status: 'Not Marked', 
+                checkInTime: '', 
+                checkOutTime: '', 
+                lateMinutes: 0,
+                overtimeHours: 0,
+                isSaved: false
             };
-            const updated = { ...current, [field]: val };
-            if (field === 'status' && (val === 'Absent' || val === 'Leave')) {
-                updated.overtimeHours = 0;
-            } else if (field === 'checkInTime' || field === 'checkOutTime' || (field === 'status' && val === 'Present')) {
-                const cIn = field === 'checkInTime' ? val : (current.checkInTime || '09:00');
-                const cOut = field === 'checkOutTime' ? val : (current.checkOutTime || '18:00');
-                updated.overtimeHours = calculateOvertimeHours(cIn, cOut, shiftHrs);
+            let updated = { ...current, [field]: val, isSaved: true };
+            if (field === 'status') {
+                if (val === 'Present' && !updated.checkInTime) {
+                    updated.checkInTime = '09:00';
+                    updated.checkOutTime = '18:00';
+                    updated.overtimeHours = calculateOvertimeHours('09:00', '18:00', shiftHrs);
+                } else if (val === 'Absent' || val === 'Leave' || val === 'Not Marked') {
+                    updated.checkInTime = '';
+                    updated.checkOutTime = '';
+                    updated.overtimeHours = 0;
+                }
+            } else if (field === 'checkInTime' || field === 'checkOutTime') {
+                const cIn = field === 'checkInTime' ? val : current.checkInTime;
+                const cOut = field === 'checkOutTime' ? val : current.checkOutTime;
+                if (cIn && cOut) {
+                    updated.overtimeHours = calculateOvertimeHours(cIn, cOut, shiftHrs);
+                }
+                if (cIn && updated.status === 'Not Marked') {
+                    updated.status = 'Present';
+                }
             }
             return {
                 ...prev,
@@ -1127,9 +1142,12 @@ const ManagerStaff = () => {
                                                                 ? 'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300'
                                                                 : entry.status === 'Leave'
                                                                 ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300'
+                                                                : entry.status === 'Not Marked'
+                                                                ? 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400'
                                                                 : 'bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300'
                                                         }`}
                                                     >
+                                                        <option value="Not Marked">Not Marked</option>
                                                         <option value="Present">Present</option>
                                                         <option value="Absent">Absent</option>
                                                         <option value="Leave">Leave</option>

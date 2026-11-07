@@ -370,6 +370,7 @@ export const bulkMarkAttendance = async (req, res) => {
         for (const r of records) {
             const employeeId = r.employeeId || r.employee;
             if (!employeeId) continue;
+            if (r.status === 'Not Marked' || !r.status) continue;
 
             const staffMember = await User.findById(employeeId);
             if (!staffMember) continue;

@@ -265,15 +265,17 @@ const StaffManagement = () => {
                 const existing = list.find(r => (r.employee?._id || r.employee) === emp._id);
                 const shiftHrs = emp.salaryConfig?.dailyWorkHours || 8;
                 if (existing) {
-                    const cIn = existing.checkInTime ? new Date(existing.checkInTime).toTimeString().slice(0, 5) : '09:00';
-                    const cOut = existing.checkOutTime ? new Date(existing.checkOutTime).toTimeString().slice(0, 5) : '18:00';
-                    const computedOt = calculateOvertimeHours(cIn, cOut, shiftHrs);
+                    const rawIn = existing.checkIn || existing.checkInTime;
+                    const rawOut = existing.checkOut || existing.checkOutTime;
+                    const cIn = rawIn ? new Date(rawIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
+                    const cOut = rawOut ? new Date(rawOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
+                    const computedOt = (cIn && cOut) ? calculateOvertimeHours(cIn, cOut, shiftHrs) : 0;
                     const autoOt = (existing.overtimeHours !== undefined && existing.overtimeHours !== null && Number(existing.overtimeHours) > 0)
                         ? Number(existing.overtimeHours)
                         : computedOt;
                     map[emp._id] = {
                         _id: existing._id,
-                        status: existing.status,
+                        status: existing.status || 'Present',
                         checkInTime: cIn,
                         checkOutTime: cOut,
                         lateMinutes: existing.lateMinutes || 0,
@@ -282,13 +284,12 @@ const StaffManagement = () => {
                         isSaved: true
                     };
                 } else {
-                    const autoOt = calculateOvertimeHours('09:00', '18:00', shiftHrs);
                     map[emp._id] = {
-                        status: 'Present',
-                        checkInTime: '09:00',
-                        checkOutTime: '18:00',
+                        status: 'Not Marked',
+                        checkInTime: '',
+                        checkOutTime: '',
                         lateMinutes: 0,
-                        overtimeHours: autoOt,
+                        overtimeHours: 0,
                         notes: '',
                         isSaved: false
                     };
@@ -352,13 +353,38 @@ const StaffManagement = () => {
     };
 
     const handleAttendanceStatusToggle = (empId, status) => {
-        setAttendanceMap(prev => ({
-            ...prev,
-            [empId]: {
-                ...(prev[empId] || {}),
-                status
+        setAttendanceMap(prev => {
+            const emp = staffList.find(s => s._id === empId);
+            const shiftHrs = emp?.salaryConfig?.dailyWorkHours || 8;
+            const current = prev[empId] || {
+                status: 'Not Marked',
+                checkInTime: '',
+                checkOutTime: '',
+                lateMinutes: 0,
+                overtimeHours: 0
+            };
+            let newIn = current.checkInTime;
+            let newOut = current.checkOutTime;
+            if (status === 'Present' && !newIn) {
+                newIn = '09:00';
+                newOut = '18:00';
+            } else if (status === 'Absent' || status === 'Leave' || status === 'Holiday') {
+                newIn = '';
+                newOut = '';
             }
-        }));
+            const autoOt = (newIn && newOut) ? calculateOvertimeHours(newIn, newOut, shiftHrs) : 0;
+            return {
+                ...prev,
+                [empId]: {
+                    ...current,
+                    status,
+                    checkInTime: newIn,
+                    checkOutTime: newOut,
+                    overtimeHours: autoOt,
+                    isSaved: true
+                }
+            };
+        });
     };
 
     const handleAttendanceFieldChange = (empId, field, val) => {
@@ -366,18 +392,27 @@ const StaffManagement = () => {
             const emp = staffList.find(s => s._id === empId);
             const shiftHrs = emp?.salaryConfig?.dailyWorkHours || 8;
             const current = prev[empId] || { 
-                status: 'Present', 
-                checkInTime: '09:00', 
-                checkOutTime: '18:00', 
-                overtimeHours: calculateOvertimeHours('09:00', '18:00', shiftHrs) 
+                status: 'Not Marked', 
+                checkInTime: '', 
+                checkOutTime: '', 
+                lateMinutes: 0,
+                overtimeHours: 0,
+                isSaved: false
             };
-            const updated = { ...current, [field]: val };
+            const updated = { ...current, [field]: val, isSaved: true };
             if (field === 'status' && (val === 'Absent' || val === 'Leave' || val === 'Holiday')) {
                 updated.overtimeHours = 0;
+                updated.checkInTime = '';
+                updated.checkOutTime = '';
             } else if (field === 'checkInTime' || field === 'checkOutTime' || (field === 'status' && val === 'Present')) {
-                const cIn = field === 'checkInTime' ? val : (current.checkInTime || '09:00');
-                const cOut = field === 'checkOutTime' ? val : (current.checkOutTime || '18:00');
-                updated.overtimeHours = calculateOvertimeHours(cIn, cOut, shiftHrs);
+                const cIn = field === 'checkInTime' ? val : current.checkInTime;
+                const cOut = field === 'checkOutTime' ? val : current.checkOutTime;
+                if (cIn && cOut) {
+                    updated.overtimeHours = calculateOvertimeHours(cIn, cOut, shiftHrs);
+                }
+                if (cIn && updated.status === 'Not Marked') {
+                    updated.status = 'Present';
+                }
             }
             return {
                 ...prev,
@@ -1198,12 +1233,17 @@ const StaffManagement = () => {
                                                 </td>
                                                 <td className="py-4 px-6">
                                                     <div className="flex flex-wrap items-center gap-1">
+                                                        {current.status === 'Not Marked' && (
+                                                            <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700 mr-1">
+                                                                Not Marked
+                                                            </span>
+                                                        )}
                                                         {ATTENDANCE_STATUSES.map(st => (
                                                             <button
                                                                 key={st}
                                                                 type="button"
                                                                 onClick={() => handleAttendanceStatusToggle(emp._id, st)}
-                                                                className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-all ${
+                                                                className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
                                                                     current.status === st 
                                                                         ? getAttendancePill(st) 
                                                                         : 'bg-white dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-400'
