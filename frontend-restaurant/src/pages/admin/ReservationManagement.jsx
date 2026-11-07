@@ -128,17 +128,8 @@ const ReservationManagement = () => {
                 </button>
             </div>
 
-            {/* Controls - Grouped Neatly Without Gap */}
-            <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-xl shadow-xs border border-gray-100 dark:border-slate-700/60 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <div className="flex items-center gap-2 bg-gray-50 dark:bg-slate-700/50 px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-600 shrink-0">
-                    <CalendarCheck size={16} className="text-gray-400 dark:text-slate-400 shrink-0" />
-                    <input 
-                        type="date" 
-                        value={date} 
-                        onChange={(e) => setDate(e.target.value)}
-                        className="bg-transparent text-sm text-gray-800 dark:text-white font-semibold focus:outline-none cursor-pointer"
-                    />
-                </div>
+            {/* Controls - Search First on Left, Date Calendar on Right Corner */}
+            <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-xl shadow-xs border border-gray-100 dark:border-slate-700/60 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                 <div className="relative flex-1 sm:max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={17} />
                     <input 
@@ -147,6 +138,15 @@ const ReservationManagement = () => {
                         value={searchQuery} 
                         onChange={(e) => setSearchQuery(e.target.value)} 
                         className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-lg text-sm text-gray-800 dark:text-white focus:outline-none focus:border-green-500 transition-all" 
+                    />
+                </div>
+                <div className="flex items-center gap-2 bg-gray-50 dark:bg-slate-700/50 px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-600 shrink-0 self-start sm:self-auto">
+                    <CalendarCheck size={16} className="text-gray-400 dark:text-slate-400 shrink-0" />
+                    <input 
+                        type="date" 
+                        value={date} 
+                        onChange={(e) => setDate(e.target.value)} 
+                        className="bg-transparent text-sm text-gray-800 dark:text-white font-semibold focus:outline-none cursor-pointer"
                     />
                 </div>
             </div>
