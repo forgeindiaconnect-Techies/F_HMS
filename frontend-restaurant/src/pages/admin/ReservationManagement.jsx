@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Calendar as CalendarIcon, Users, Plus, Check, X } from 'lucide-react';
+import { Search, Calendar as CalendarIcon, CalendarCheck, Users, Plus, Check, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
