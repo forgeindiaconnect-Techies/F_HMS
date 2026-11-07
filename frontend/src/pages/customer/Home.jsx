@@ -318,7 +318,7 @@ const Home = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#FFFDF9] text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white relative overflow-x-clip">
+        <div className="min-h-screen bg-[#FFFDF9] text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white relative overflow-x-hidden">
 
             {/* ========================================================================= */}
             {/* 1. TOP NAVBAR (STICKY, LOGO, NAV LINKS, LOGIN, ORANGE GET STARTED)        */}
@@ -469,7 +469,7 @@ const Home = () => {
             {/* ========================================================================= */}
             {/* 2. HERO SECTION: EXACT RECREATION OF REFERENCE IMAGE                      */}
             {/* ========================================================================= */}
-            <section id="home" className="relative pt-6 pb-14 sm:pt-10 sm:pb-20 bg-gradient-to-r from-[#FFFDF9] via-[#FFF9F2] to-[#FFF5EC] z-20 overflow-x-clip">
+            <section id="home" className="relative pt-6 pb-14 sm:pt-10 sm:pb-20 bg-gradient-to-r from-[#FFFDF9] via-[#FFF9F2] to-[#FFF5EC] z-20 overflow-x-hidden">
                 {/* Subtle warm cream background ambient glows */}
                 <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-orange-100/35 rounded-full blur-3xl pointer-events-none -z-10" />
                 <div className="absolute top-10 right-0 w-[600px] h-[600px] bg-[#FFEEDB]/40 rounded-full blur-3xl pointer-events-none -z-10" />
@@ -1003,7 +1003,7 @@ const Home = () => {
                                 </div>
 
                                 {/* VERTICAL RECTANGULAR REDMI-STYLE PHONE MOCKUP (Responsive positioning and legible typography for mobile & desktop) */}
-                                <div className="absolute -bottom-3 sm:-bottom-8 lg:-bottom-12 -left-2 xs:-left-3 sm:-left-8 lg:-left-14 w-[115px] xs:w-[135px] sm:w-[165px] lg:w-[175px] bg-[#11161F] p-1.5 sm:p-2 rounded-[18px] sm:rounded-[22px] shadow-2xl border border-slate-600/90 z-20 ring-1 ring-black/50">
+                                <div className="absolute -bottom-3 sm:-bottom-8 lg:-bottom-12 left-0 sm:-left-8 lg:-left-14 w-[115px] xs:w-[135px] sm:w-[165px] lg:w-[175px] bg-[#11161F] p-1.5 sm:p-2 rounded-[18px] sm:rounded-[22px] shadow-2xl border border-slate-600/90 z-20 ring-1 ring-black/50">
                                 
                                 {/* Redmi front punch-hole camera centered at top */}
                                 <div className="flex items-center justify-center pb-1">
@@ -1155,7 +1155,7 @@ const Home = () => {
             {/* ========================================================================= */}
             {/* 3. STATISTICS STRIP: 4 HORIZONTAL STAT CARDS WITH CIRCULAR ICONS          */}
             {/* ========================================================================= */}
-            <section className="py-8 sm:py-10 bg-white border-y border-orange-100/70 shadow-xs">
+            <section className="py-8 sm:py-10 bg-white border-y border-orange-100/70 shadow-xs overflow-x-hidden">
                 <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-12">
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:flex lg:flex-wrap items-center justify-between lg:justify-start gap-3 sm:gap-6 md:gap-10 lg:gap-16">
                         {STATISTICS.map((stat, idx) => {

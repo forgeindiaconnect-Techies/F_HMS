@@ -188,9 +188,10 @@ const ManagerStaff = () => {
                 if (existing) {
                     const cIn = existing.checkInTime ? new Date(existing.checkInTime).toTimeString().slice(0, 5) : '09:00';
                     const cOut = existing.checkOutTime ? new Date(existing.checkOutTime).toTimeString().slice(0, 5) : '18:00';
-                    const autoOt = (existing.overtimeHours !== undefined && existing.overtimeHours !== null) 
+                    const computedOt = calculateOvertimeHours(cIn, cOut, shiftHrs);
+                    const autoOt = (existing.overtimeHours !== undefined && existing.overtimeHours !== null && Number(existing.overtimeHours) > 0) 
                         ? Number(existing.overtimeHours) 
-                        : calculateOvertimeHours(cIn, cOut, shiftHrs);
+                        : computedOt;
                     map[emp._id] = {
                         _id: existing._id,
                         status: existing.status,

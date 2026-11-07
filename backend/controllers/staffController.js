@@ -369,13 +369,25 @@ export const bulkMarkAttendance = async (req, res) => {
             const checkInVal = r.checkIn || r.checkInTime;
             const checkOutVal = r.checkOut || r.checkOutTime;
 
+            let computedOt = Number(r.overtimeHours) || 0;
+            if (computedOt === 0 && checkInVal && checkOutVal) {
+                try {
+                    const inD = new Date(checkInVal);
+                    const outD = new Date(checkOutVal);
+                    const diffHrs = (outD.getTime() - inD.getTime()) / (1000 * 60 * 60);
+                    if (!isNaN(diffHrs) && diffHrs > 8) {
+                        computedOt = Math.round((diffHrs - 8) * 2) / 2;
+                    }
+                } catch (e) {}
+            }
+
             if (att) {
                 // Update existing record
                 att.status = r.status || att.status;
                 if (checkInVal) att.checkIn = new Date(checkInVal);
                 if (checkOutVal) att.checkOut = new Date(checkOutVal);
                 if (r.lateMinutes !== undefined) att.lateMinutes = Number(r.lateMinutes);
-                if (r.overtimeHours !== undefined) att.overtimeHours = Number(r.overtimeHours);
+                att.overtimeHours = (r.overtimeHours !== undefined && Number(r.overtimeHours) > 0) ? Number(r.overtimeHours) : computedOt;
                 if (r.workingHours !== undefined) att.workingHours = Number(r.workingHours);
                 if (r.notes !== undefined) att.notes = r.notes;
                 await att.save();
@@ -391,7 +403,7 @@ export const bulkMarkAttendance = async (req, res) => {
                     checkIn: checkInVal ? new Date(checkInVal) : undefined,
                     checkOut: checkOutVal ? new Date(checkOutVal) : undefined,
                     lateMinutes: Number(r.lateMinutes) || 0,
-                    overtimeHours: Number(r.overtimeHours) || 0,
+                    overtimeHours: (r.overtimeHours !== undefined && Number(r.overtimeHours) > 0) ? Number(r.overtimeHours) : computedOt,
                     workingHours: Number(r.workingHours) || (r.status === 'Present' ? 8 : (r.status === 'Half-day' ? 4 : 0)),
                     notes: r.notes || '',
                     createdBy: req.user._id
