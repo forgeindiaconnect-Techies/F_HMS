@@ -1157,18 +1157,18 @@ const ManagerStaff = () => {
                                                 <td className="px-6 py-4">
                                                     <input
                                                         type="time"
-                                                        value={entry.checkInTime || '09:00'}
+                                                        value={entry.checkInTime || ''}
                                                         onChange={(e) => handleAttendanceFieldChange(emp._id, 'checkInTime', e.target.value)}
-                                                        disabled={entry.status === 'Absent' || entry.status === 'Leave'}
+                                                        disabled={entry.status === 'Absent' || entry.status === 'Leave' || entry.status === 'Not Marked'}
                                                         className="px-2 py-1 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-mono disabled:opacity-40"
                                                     />
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <input
                                                         type="time"
-                                                        value={entry.checkOutTime || '18:00'}
+                                                        value={entry.checkOutTime || ''}
                                                         onChange={(e) => handleAttendanceFieldChange(emp._id, 'checkOutTime', e.target.value)}
-                                                        disabled={entry.status === 'Absent' || entry.status === 'Leave'}
+                                                        disabled={entry.status === 'Absent' || entry.status === 'Leave' || entry.status === 'Not Marked'}
                                                         className="px-2 py-1 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-mono disabled:opacity-40"
                                                     />
                                                 </td>

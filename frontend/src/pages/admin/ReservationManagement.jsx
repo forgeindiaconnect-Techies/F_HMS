@@ -60,6 +60,10 @@ const ReservationManagement = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!/^[6-9]\d{9}$/.test(formData.guestPhone)) {
+            toast.error('Please enter a valid 10-digit phone number starting with 6, 7, 8, or 9.');
+            return;
+        }
         try {
             await api.post('/reservations', formData);
             fetchData();
@@ -264,11 +268,18 @@ const ReservationManagement = () => {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                                 <input 
-                                    type="text" 
+                                    type="tel" 
                                     required
+                                    maxLength={10}
+                                    placeholder="10-digit mobile number"
                                     value={formData.guestPhone}
-                                    onChange={(e) => setFormData({...formData, guestPhone: e.target.value})}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
+                                    onChange={(e) => {
+                                        const val = e.target.value.replace(/\D/g, '');
+                                        if (val.length === 0 || (/^[6-9]/.test(val) && val.length <= 10)) {
+                                            setFormData({...formData, guestPhone: val});
+                                        }
+                                    }}
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all font-mono"
                                 />
                             </div>
                             

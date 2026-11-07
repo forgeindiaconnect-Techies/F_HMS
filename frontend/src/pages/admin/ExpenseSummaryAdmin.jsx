@@ -424,7 +424,7 @@ const ExpenseSummaryAdmin = () => {
     return (
         <div className="p-4 sm:p-8 max-w-[1600px] mx-auto space-y-6 font-sans">
             {/* Header - Static Sticky on Scroll */}
-            <div className="sticky top-0 z-20 bg-gray-50/95 dark:bg-slate-900/95 backdrop-blur-md py-3 -mt-3 mb-4 flex flex-col md:flex-row md:justify-between md:items-center gap-4 border-b border-slate-200/50 dark:border-slate-800/50">
+            <div className="sticky top-0 z-20 bg-gray-50/95 dark:bg-slate-900/95 backdrop-blur-md py-3 -mt-3 mb-4 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 border-b border-slate-200/50 dark:border-slate-800/50">
                 <div className="min-w-0">
                     <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1">
                         <Receipt size={14} /> Financial Operations & Expenses
@@ -436,7 +436,7 @@ const ExpenseSummaryAdmin = () => {
                         Comprehensive ledger for recurring rent, utility bills, supplier expenses, and staff salaries with strict liability and payment auditing.
                     </p>
                 </div>
-                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 shrink-0">
+                <div className="flex flex-wrap items-center gap-2.5 shrink-0 justify-start sm:justify-end">
                     <button 
                         onClick={handleGenerateRecurring}
                         className="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-3.5 sm:px-4 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm shadow-xs cursor-pointer whitespace-nowrap"
