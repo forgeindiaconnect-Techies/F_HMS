@@ -1,3 +1,4 @@
+import { sendStaffRoleCredentialsEmail } from '../utils/emailService.js';
 import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Branch from '../models/Branch.js';
@@ -218,6 +219,22 @@ export const createStaff = async (req, res) => {
         }
 
         const populatedUser = await User.findById(user._id).populate('branchId', 'name').select('-password');
+        // Send real-time credentials email to newly registered staff member
+        try {
+            const restDoc = restaurantId ? await (await import('../models/Restaurant.js')).default.findById(restaurantId).select('name') : null;
+            sendStaffRoleCredentialsEmail({
+                email: normalizedEmail,
+                name: name.trim(),
+                role: normalizedRole,
+                restaurantName: restDoc?.name || '',
+                branchName: populatedUser?.branchId?.name || '',
+                password: password ? String(password).trim() : 'Staff@123',
+                employeeId: empId
+            }).catch(e => console.error('Error dispatching staff credentials email:', e));
+        } catch (mailErr) {
+            console.error('Failed to prepare staff email:', mailErr);
+        }
+
         res.status(201).json(populatedUser);
     } catch (error) {
         console.error('Error in createStaff:', error);
@@ -1707,3 +1724,129 @@ export const updatePayrollConfig = async (req, res) => {
     }
 };
 
+
+
+// @desc    Staff self clock-in
+// @route   POST /api/staff/clock-in
+// @access  Private (All Authenticated Staff)
+export const clockIn = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const restaurantId = req.user.restaurantId || (await getUserRestaurantId(req.user));
+        const branchId = req.user.branchId || (await (await import('../models/Branch.js')).default.findOne({ restaurantId }).select('_id'))?._id;
+        
+        const now = new Date();
+        const dateString = now.toISOString().split('T')[0];
+
+        let att = await Attendance.findOne({
+            restaurantId,
+            employee: userId,
+            dateString
+        });
+
+        if (att) {
+            if (!att.checkIn) {
+                att.checkIn = now;
+            }
+            att.status = 'Present';
+            await att.save();
+        } else {
+            att = await Attendance.create({
+                restaurantId,
+                branchId,
+                employee: userId,
+                date: now,
+                dateString,
+                status: 'Present',
+                checkIn: now,
+                lateMinutes: 0,
+                overtimeHours: 0,
+                workingHours: 0,
+                createdBy: userId
+            });
+        }
+
+        res.json({ message: 'Clocked in successfully', attendance: att });
+    } catch (error) {
+        console.error('Clock in error:', error);
+        res.status(500).json({ message: error.message || 'Error clocking in' });
+    }
+};
+
+// @desc    Staff self clock-out
+// @route   POST /api/staff/clock-out
+// @access  Private (All Authenticated Staff)
+export const clockOut = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const restaurantId = req.user.restaurantId || (await getUserRestaurantId(req.user));
+        const now = new Date();
+        const dateString = now.toISOString().split('T')[0];
+
+        let att = await Attendance.findOne({
+            restaurantId,
+            employee: userId,
+            dateString
+        });
+
+        if (!att) {
+            const branchId = req.user.branchId || (await (await import('../models/Branch.js')).default.findOne({ restaurantId }).select('_id'))?._id;
+            att = await Attendance.create({
+                restaurantId,
+                branchId,
+                employee: userId,
+                date: now,
+                dateString,
+                status: 'Present',
+                checkIn: now,
+                checkOut: now,
+                lateMinutes: 0,
+                overtimeHours: 0,
+                workingHours: 0,
+                createdBy: userId
+            });
+        } else {
+            att.checkOut = now;
+            if (att.checkIn) {
+                const diffMs = now.getTime() - new Date(att.checkIn).getTime();
+                const diffHrs = Math.max(0, diffMs / (1000 * 60 * 60));
+                att.workingHours = Math.round(diffHrs * 10) / 10;
+
+                const userDoc = await User.findById(userId).select('salaryConfig');
+                const dailyShift = userDoc?.salaryConfig?.dailyWorkHours || 8;
+                if (diffHrs > dailyShift) {
+                    att.overtimeHours = Math.round((diffHrs - dailyShift) * 2) / 2;
+                }
+            }
+            await att.save();
+        }
+
+        res.json({ message: 'Clocked out successfully', attendance: att });
+    } catch (error) {
+        console.error('Clock out error:', error);
+        res.status(500).json({ message: error.message || 'Error clocking out' });
+    }
+};
+
+// @desc    Get staff member's own attendance for today
+// @route   GET /api/staff/my-attendance-today
+// @access  Private (All Authenticated Staff)
+export const getMyAttendanceToday = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const dateString = new Date().toISOString().split('T')[0];
+        const att = await Attendance.findOne({
+            employee: userId,
+            dateString
+        });
+
+        res.json({
+            status: att ? att.status : 'Not Clocked In',
+            checkIn: att?.checkIn || null,
+            checkOut: att?.checkOut || null,
+            overtimeHours: att?.overtimeHours || 0
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

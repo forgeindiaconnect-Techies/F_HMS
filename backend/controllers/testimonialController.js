@@ -233,6 +233,9 @@ export const updateTestimonialStatus = async (req, res) => {
         }
 
         testimonial.status = status;
+        if (req.body.rating !== undefined && Number(req.body.rating) >= 1 && Number(req.body.rating) <= 5) {
+            testimonial.rating = Number(req.body.rating);
+        }
         if (status === 'Approved') {
             testimonial.approvedAt = new Date();
             testimonial.rejectionReason = '';

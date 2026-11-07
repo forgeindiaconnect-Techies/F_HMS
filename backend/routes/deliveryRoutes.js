@@ -5,7 +5,7 @@ import {
     getWithdrawalRequests, getEarningsHistory, getDeliveryPartners,
     addDeliveryPartner, updatePartnerVerificationStatus, assignDeliveryPartner,
     autoAssignDeliveryPartner, getDeliveryAnalytics, submitDeliveryRating,
-    updateDeliverySettings, togglePartnerActiveStatus, addSupportMessage
+    updateDeliverySettings, togglePartnerActiveStatus, getDeliverySettings, addSupportMessage
 } from '../controllers/deliveryController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -56,6 +56,7 @@ router.route('/analytics')
     .get(protect, getDeliveryAnalytics);
 
 router.route('/settings')
+    .get(protect, getDeliverySettings)
     .put(protect, updateDeliverySettings);
 
 // Customer feedback

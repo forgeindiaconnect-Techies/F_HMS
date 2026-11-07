@@ -115,8 +115,17 @@ export const requestRestock = async (req, res) => {
 // @access  Private
 export const markAsRead = async (req, res) => {
     try {
-        const notification = await Notification.findOne({ _id: req.params.id, restaurantId: req.user.restaurantId });
-        
+        const query = {
+            _id: req.params.id,
+            $or: [
+                { userId: req.user._id },
+                { restaurantId: req.user.restaurantId }
+            ]
+        };
+        let notification = await Notification.findOne(query);
+        if (!notification) {
+            notification = await Notification.findById(req.params.id);
+        }
         if (notification) {
             notification.read = true;
             await notification.save();
@@ -134,10 +143,12 @@ export const markAsRead = async (req, res) => {
 // @access  Private
 export const markAllAsRead = async (req, res) => {
     try {
-        await Notification.updateMany(
-            { restaurantId: req.user.restaurantId, read: false },
-            { $set: { read: true } }
-        );
+        const conditions = [];
+        if (req.user._id) conditions.push({ userId: req.user._id });
+        if (req.user.restaurantId) conditions.push({ restaurantId: req.user.restaurantId });
+
+        const filter = conditions.length > 0 ? { $or: conditions, read: false } : { read: false };
+        await Notification.updateMany(filter, { $set: { read: true } });
         res.json({ message: 'All notifications marked as read' });
     } catch (error) {
         res.status(400).json({ message: error.message });

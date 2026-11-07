@@ -41,19 +41,15 @@ const ManagerSidebar = () => {
     const currentFullPath = location.pathname + location.search;
 
     const isItemActive = (itemPath) => {
-        if (itemPath.includes('?')) {
-            const [targetPath, targetQuery] = itemPath.split('?');
-            const targetParams = new URLSearchParams(targetQuery);
-            const currentParams = new URLSearchParams(location.search);
-            if (location.pathname !== targetPath) return false;
-            for (const [key, val] of targetParams.entries()) {
-                if (currentParams.get(key) !== val) return false;
-            }
-            return true;
-        }
+        const currentTab = new URLSearchParams(location.search).get('tab') || 'shifts';
         if (itemPath === '/manager/staff') {
-            const tab = new URLSearchParams(location.search).get('tab');
-            return location.pathname === '/manager/staff' && (!tab || tab === 'shifts' || tab === 'monitoring' || tab === 'attendance');
+            return location.pathname === '/manager/staff' && (currentTab === 'shifts' || currentTab === 'monitoring' || currentTab === 'attendance');
+        }
+        if (itemPath === '/manager/staff?tab=leaves') {
+            return location.pathname === '/manager/staff' && currentTab === 'leaves';
+        }
+        if (itemPath === '/manager/staff?tab=payroll') {
+            return location.pathname === '/manager/staff' && currentTab === 'payroll';
         }
         if (itemPath === '/manager') {
             return location.pathname === '/manager' && (!location.search || location.search === '');
@@ -110,7 +106,7 @@ const ManagerSidebar = () => {
         {/* Mobile Overlay */}
         {isOpen && (
             <div 
-                className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 md:hidden" 
+                className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-40 md:hidden" 
                 onClick={() => setIsOpen(false)}
             />
         )}

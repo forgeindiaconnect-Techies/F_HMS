@@ -418,7 +418,12 @@ const PlatformRestaurants = () => {
                                             <div className="flex items-center gap-3">
                                                 <div className="w-11 h-11 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
                                                     {restaurant.logo ? (
-                                                        <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-cover" />
+                                                        <img 
+                                                            src={restaurant.logo.startsWith('http') || restaurant.logo.startsWith('data:') ? restaurant.logo : `https://f-hms-1.onrender.com${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`} 
+                                                            alt={restaurant.name} 
+                                                            className="w-full h-full object-cover" 
+                                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                        />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-base">
                                                             {restaurant.name.charAt(0)}
@@ -652,7 +657,12 @@ const PlatformRestaurants = () => {
                             <div className="flex items-center gap-4 border-b border-gray-100 pb-4">
                                 <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
                                     {viewingRestaurant.logo ? (
-                                        <img src={viewingRestaurant.logo} alt={viewingRestaurant.name} className="w-full h-full object-cover" />
+                                        <img 
+                                            src={viewingRestaurant.logo.startsWith('http') || viewingRestaurant.logo.startsWith('data:') ? viewingRestaurant.logo : `https://f-hms-1.onrender.com${viewingRestaurant.logo.startsWith('/') ? '' : '/'}${viewingRestaurant.logo}`} 
+                                            alt={viewingRestaurant.name} 
+                                            className="w-full h-full object-cover" 
+                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                        />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center bg-blue-100 text-blue-600 font-black text-2xl">
                                             {viewingRestaurant.name.charAt(0)}

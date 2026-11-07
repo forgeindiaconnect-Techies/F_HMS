@@ -18,7 +18,7 @@ const menuItemSchema = new mongoose.Schema({
     },
     image: {
         type: String,
-        default: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop',
+        default: '',
     },
     rating: {
         type: Number,

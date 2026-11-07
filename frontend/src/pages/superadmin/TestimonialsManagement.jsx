@@ -40,6 +40,22 @@ const TestimonialsManagement = () => {
         fetchTestimonials();
     }, [statusFilter]);
 
+    const handleUpdateRating = async (id, newRating) => {
+        try {
+            const item = testimonials.find(t => t._id === id);
+            const res = await api.put(`/testimonials/admin/${id}/status`, {
+                status: item?.status || 'Approved',
+                rating: newRating
+            });
+            if (res.data?.success) {
+                toast.success(`Rating updated to ${newRating} stars!`);
+                fetchTestimonials();
+            }
+        } catch (e) {
+            toast.error('Failed to update rating');
+        }
+    };
+
     const handleUpdateStatus = async (id, status, reason = '') => {
         try {
             setActionLoading(true);

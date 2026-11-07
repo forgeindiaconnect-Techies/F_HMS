@@ -186,15 +186,17 @@ const ManagerStaff = () => {
                 const existing = list.find(r => (r.employee?._id || r.employee) === emp._id);
                 const shiftHrs = emp.salaryConfig?.dailyWorkHours || 8;
                 if (existing) {
-                    const cIn = existing.checkInTime ? new Date(existing.checkInTime).toTimeString().slice(0, 5) : '09:00';
-                    const cOut = existing.checkOutTime ? new Date(existing.checkOutTime).toTimeString().slice(0, 5) : '18:00';
-                    const computedOt = calculateOvertimeHours(cIn, cOut, shiftHrs);
+                    const rawIn = existing.checkIn || existing.checkInTime;
+                    const rawOut = existing.checkOut || existing.checkOutTime;
+                    const cIn = rawIn ? new Date(rawIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
+                    const cOut = rawOut ? new Date(rawOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
+                    const computedOt = (cIn && cOut) ? calculateOvertimeHours(cIn, cOut, shiftHrs) : 0;
                     const autoOt = (existing.overtimeHours !== undefined && existing.overtimeHours !== null && Number(existing.overtimeHours) > 0) 
                         ? Number(existing.overtimeHours) 
                         : computedOt;
                     map[emp._id] = {
                         _id: existing._id,
-                        status: existing.status,
+                        status: existing.status || 'Present',
                         checkInTime: cIn,
                         checkOutTime: cOut,
                         lateMinutes: existing.lateMinutes || 0,
@@ -205,13 +207,12 @@ const ManagerStaff = () => {
                         isSaved: true
                     };
                 } else {
-                    const autoOt = calculateOvertimeHours('09:00', '18:00', shiftHrs);
                     map[emp._id] = {
-                        status: 'Present',
-                        checkInTime: '09:00',
-                        checkOutTime: '18:00',
+                        status: 'Not Marked',
+                        checkInTime: '',
+                        checkOutTime: '',
                         lateMinutes: 0,
-                        overtimeHours: autoOt,
+                        overtimeHours: 0,
                         notes: '',
                         isSaved: false
                     };
@@ -1091,9 +1092,14 @@ const ManagerStaff = () => {
                                 <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
                                     {staffList.map((emp) => {
                                         const shiftHrs = emp.salaryConfig?.dailyWorkHours || 8;
-                                        const defaultOt = calculateOvertimeHours('09:00', '18:00', shiftHrs);
-                                        const entry = attendanceMap[emp._id] || { status: 'Present', checkInTime: '09:00', checkOutTime: '18:00', overtimeHours: defaultOt };
                                         const savedRecord = attendanceRecords.find(r => (r.employee?._id || r.employee) === emp._id);
+                                        const entry = attendanceMap[emp._id] || (savedRecord ? {
+                                            status: savedRecord.status,
+                                            checkInTime: savedRecord.checkIn ? new Date(savedRecord.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '',
+                                            checkOutTime: savedRecord.checkOut ? new Date(savedRecord.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '',
+                                            overtimeHours: savedRecord.overtimeHours || 0,
+                                            isSaved: true
+                                        } : { status: 'Not Marked', checkInTime: '', checkOutTime: '', overtimeHours: 0, isSaved: false });
 
                                         return (
                                             <tr key={emp._id} className="hover:bg-gray-50/50 dark:hover:bg-slate-800/40 transition-colors">
@@ -1179,9 +1185,11 @@ const ManagerStaff = () => {
                                                         >
                                                             <Edit2 size={13} /> Correct Log
                                                         </button>
-                                                    ) : (
-                                                        <span className="text-xs text-amber-500 font-medium">Unsaved</span>
-                                                    )}
+                                                    ) : entry.isSaved ? (
+                                                            <span className="text-xs text-emerald-600 font-bold flex items-center gap-1"><Check size={12}/> Clocked In</span>
+                                                        ) : (
+                                                            <span className="text-xs text-slate-400 font-medium">Not Clocked In</span>
+                                                        )}
                                                 </td>
                                             </tr>
                                         );

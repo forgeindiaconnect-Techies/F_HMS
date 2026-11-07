@@ -679,3 +679,54 @@ export const sendManualUnfreezeEmail = async ({ email, name, restaurantName, pla
     `;
     return await sendEmail({ to: email, toName: name, subject, html });
 };
+
+
+/**
+ * 11. Send Real-Time Role-Based Credentials Email on Staff Creation
+ */
+export const sendStaffRoleCredentialsEmail = async ({ email, name, role, restaurantName, branchName, password, employeeId }) => {
+    const roleRoutes = {
+        'Chef': '/chef',
+        'Waiter': '/waiter',
+        'Cashier': '/cashier',
+        'DeliveryPartner': '/delivery-partner/dashboard',
+        'BranchManager': '/manager'
+    };
+    const targetDashboard = roleRoutes[role] || '/login';
+    const loginLink = `${portalBaseUrl}${targetDashboard}`;
+
+    const subject = `🎉 Welcome to ${restaurantName || 'FoodNest'} - Your ${role} Account Credentials`;
+    const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Welcome to ${restaurantName || 'Our Team'}! 🎉</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Your Staff Account has been Created as <strong>${role}</strong></p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || 'Staff Member'},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Your account has been set up on the <strong>${restaurantName || 'FoodNest'}</strong> management system. Below are your official login credentials:
+                </p>
+                <div style="background-color: #f1f5f9; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #2563eb;">
+                    <p style="margin: 0 0 8px 0; font-size: 13px; color: #1e293b;"><strong>Role:</strong> ${role}</p>
+                    ${employeeId ? `<p style="margin: 0 0 8px 0; font-size: 13px; color: #1e293b;"><strong>Employee ID:</strong> ${employeeId}</p>` : ''}
+                    ${branchName ? `<p style="margin: 0 0 8px 0; font-size: 13px; color: #1e293b;"><strong>Assigned Branch:</strong> ${branchName}</p>` : ''}
+                    <p style="margin: 0 0 8px 0; font-size: 13px; color: #1e293b;"><strong>Login Email:</strong> <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">${email}</code></p>
+                    <p style="margin: 0; font-size: 13px; color: #1e293b;"><strong>Initial Password:</strong> <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">${password || 'Staff@123'}</code></p>
+                </div>
+                <p style="color: #64748b; font-size: 13px; line-height: 1.5;">
+                    Please log in using the button below and clock in for your shift using the live shift clock widget.
+                </p>
+                <div style="text-align: center; margin-top: 25px;">
+                    <a href="${loginLink}" style="background-color: #2563eb; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Sign In to ${role} Dashboard
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${new Date().getFullYear()} ${restaurantName || 'FoodNest'}. All rights reserved.
+            </div>
+        </div>
+    `;
+    return await sendEmail({ to: email, toName: name, subject, html });
+};

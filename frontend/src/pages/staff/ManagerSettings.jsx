@@ -46,22 +46,22 @@ const ManagerSettings = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
                                             <label className="text-sm font-bold text-gray-700">First Name</label>
-                                            <input type="text" defaultValue="Sarah" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 focus:bg-white transition-colors" />
+                                            <input type="text" defaultValue={(user?.name || 'Branch Manager').split(' ')[0]} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 focus:bg-white transition-colors font-semibold" />
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="text-sm font-bold text-gray-700">Last Name</label>
-                                            <input type="text" defaultValue="Jenkins" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 focus:bg-white transition-colors" />
+                                            <input type="text" defaultValue={(user?.name || '').split(' ').slice(1).join(' ') || 'Manager'} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 focus:bg-white transition-colors font-semibold" />
                                         </div>
                                     </div>
                                     
                                     <div className="space-y-1.5">
                                         <label className="text-sm font-bold text-gray-700">Email Address</label>
-                                        <input type="email" value={user?.email || "manager@branch.com"} disabled className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 focus:bg-white transition-colors opacity-70 cursor-not-allowed font-mono" />
+                                        <input type="email" value={user?.email || "manager@foodnest.com"} disabled className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 focus:bg-white transition-colors opacity-70 cursor-not-allowed font-mono" />
                                     </div>
                                     
                                     <div className="space-y-1.5">
                                         <label className="text-sm font-bold text-gray-700">Phone Number</label>
-                                        <input type="tel" defaultValue="+1 (555) 019-2834" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 focus:bg-white transition-colors" />
+                                        <input type="tel" maxLength={10} defaultValue={user?.phoneNumber || user?.phone || "9876543210"} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 focus:bg-white transition-colors font-mono" />
                                     </div>
                                 </div>
                             </div>
@@ -72,7 +72,7 @@ const ManagerSettings = () => {
                                 <div className="space-y-4">
                                     <div className="space-y-1.5">
                                         <label className="text-sm font-bold text-gray-700">Current Branch</label>
-                                        <input type="text" defaultValue="Downtown Main" disabled className="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-500 cursor-not-allowed" />
+                                        <input type="text" defaultValue={user?.branchId?.name || restaurant?.name || "Main Branch"} disabled className="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-600 font-semibold cursor-not-allowed" />
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-sm font-bold text-gray-700">Role</label>

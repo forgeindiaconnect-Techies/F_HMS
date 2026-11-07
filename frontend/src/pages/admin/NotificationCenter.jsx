@@ -184,9 +184,11 @@ const NotificationCenter = () => {
     const handleMarkAllAsRead = async () => {
         try {
             await api.put('/notifications/read-all');
-            setNotifications(notifications.map(n => ({ ...n, read: true })));
+            setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+            toast.success('All notifications marked as read');
+            window.dispatchEvent(new Event('notifications-updated'));
         } catch (error) {
-            setNotifications(notifications.map(n => ({ ...n, read: true })));
+            setNotifications(prev => prev.map(n => ({ ...n, read: true })));
         }
     };
 
@@ -271,15 +273,7 @@ const NotificationCenter = () => {
                     >
                         Alerts
                     </button>
-                    {!isManager && (
-                        <button 
-                            onClick={() => setFilter('WhatsApp')}
-                            className={`px-4 py-1.5 font-bold rounded-md text-sm transition-colors flex items-center gap-1.5 cursor-pointer ${filter === 'WhatsApp' ? 'bg-[#075E54] text-white shadow-sm' : 'hover:bg-white dark:hover:bg-slate-800 text-emerald-700 dark:text-emerald-400'}`}
-                        >
-                            <Phone size={13} className={filter === 'WhatsApp' ? 'text-emerald-300' : 'text-emerald-600'} />
-                            <span>WhatsApp Alerts ({waAlerts.length})</span>
-                        </button>
-                    )}
+                    
                 </div>
 
                 <div className="flex items-center gap-3">

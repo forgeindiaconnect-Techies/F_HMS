@@ -69,6 +69,21 @@ const DeliveryManagement = () => {
         }
     };
 
+    const fetchSettings = async () => {
+        try {
+            const res = await api.get('/delivery/settings');
+            if (res.data && Object.keys(res.data).length > 0) {
+                setSettings(prev => ({
+                    ...prev,
+                    ...res.data,
+                    deliveryOperatingHours: res.data.deliveryOperatingHours || prev.deliveryOperatingHours || { start: '09:00', end: '22:00' }
+                }));
+            }
+        } catch (err) {
+            console.error('Failed to fetch delivery settings', err);
+        }
+    };
+
     const fetchActiveOrders = async () => {
         try {
             const res = await api.get('/orders');
@@ -164,7 +179,9 @@ const DeliveryManagement = () => {
         e.preventDefault();
         try {
             await api.put('/delivery/settings', settings);
-            toast.success('Delivery settings updated successfully');
+            toast.success('Delivery operating hours and settings saved successfully!');
+            fetchSettings();
+            if (typeof fetchRestaurant === 'function') fetchRestaurant();
         } catch (error) {
             toast.error('Failed to save settings');
         }

@@ -9,82 +9,8 @@ const ManagerSales = () => {
     const [dateRange, setDateRange] = useState('Today');
 
     const handleDownload = () => {
-        if (exportFormat === 'PDF') {
-            // Load jsPDF from CDN
-            const script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-            script.onload = () => {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-
-                // Styles
-                doc.setFont('Helvetica', 'bold');
-                doc.setFontSize(22);
-                doc.setTextColor(22, 163, 74); // green-600
-                doc.text('FoodNest Sales Report', 14, 20);
-
-                doc.setFont('Helvetica', 'normal');
-                doc.setFontSize(10);
-                doc.setTextColor(100, 100, 100);
-                doc.text(`Date Range: ${dateRange} | Generated: ${new Date().toLocaleString()}`, 14, 26);
-
-                doc.setDrawColor(230, 230, 230);
-                doc.line(14, 30, 196, 30);
-
-                // Stats Section
-                doc.setFont('Helvetica', 'bold');
-                doc.setFontSize(11);
-                doc.setTextColor(60, 60, 60);
-                doc.text('Gross Sales: Rs. 4,850.00', 14, 38);
-                doc.text('Net Sales: Rs. 4,250.00', 14, 44);
-                doc.text('Total Tax (8%): Rs. 340.00', 14, 50);
-
-                // Table
-                let y = 62;
-                doc.line(14, y, 196, y);
-                doc.setFont('Helvetica', 'bold');
-                doc.setTextColor(30, 30, 30);
-                doc.text('Time', 16, y + 5);
-                doc.text('Order ID', 40, y + 5);
-                doc.text('Type', 80, y + 5);
-                doc.text('Payment Method', 115, y + 5);
-                doc.text('Amount', 165, y + 5);
-                doc.line(14, y + 8, 196, y + 8);
-
-                y += 13;
-                doc.setFont('Helvetica', 'normal');
-                doc.setTextColor(80, 80, 80);
-
-                const txns = [
-                    { time: '17:42', id: '#ORD-112', type: 'Dine-In', amount: 'Rs. 145.50', payment: 'Credit Card' },
-                    { time: '17:35', id: '#ORD-111', type: 'Takeaway', amount: 'Rs. 32.00', payment: 'Cash' },
-                    { time: '17:15', id: '#ORD-110', type: 'Dine-In', amount: 'Rs. 85.20', payment: 'Credit Card' },
-                    { time: '16:50', id: '#ORD-109', type: 'Delivery', amount: 'Rs. 55.00', payment: 'Online' },
-                    { time: '16:30', id: '#ORD-108', type: 'Dine-In', amount: 'Rs. 210.00', payment: 'Credit Card' },
-                    { time: '16:10', id: '#ORD-107', type: 'Takeaway', amount: 'Rs. 18.50', payment: 'Cash' },
-                ];
-
-                txns.forEach(tx => {
-                    doc.text(tx.time, 16, y);
-                    doc.text(tx.id, 40, y);
-                    doc.text(tx.type, 80, y);
-                    doc.text(tx.payment, 115, y);
-                    doc.text(tx.amount, 165, y);
-                    doc.line(14, y + 3, 196, y + 3);
-                    y += 10;
-                });
-
-                doc.save(`Sales_Report_${dateRange.replace(' ', '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
-                setShowExportModal(false);
-                toast.success('PDF report downloaded successfully!');
-            };
-            script.onerror = () => {
-                toast.error('Failed to load PDF export library.');
-            };
-            document.body.appendChild(script);
-        } else {
-            // CSV or Excel download simulation
-            const headers = ['Time', 'Order ID', 'Type', 'Payment Method', 'Amount'];
+        try {
+            const headers = ['Time', 'Order ID', 'Type', 'Payment Method', 'Amount (INR)'];
             const rows = [
                 ['17:42', '#ORD-112', 'Dine-In', 'Credit Card', '145.50'],
                 ['17:35', '#ORD-111', 'Takeaway', 'Cash', '32.00'],
@@ -94,19 +20,31 @@ const ManagerSales = () => {
                 ['16:10', '#ORD-107', 'Takeaway', 'Cash', '18.50']
             ];
 
-            const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            if (exportFormat === 'PDF') {
+                window.print();
+                setShowExportModal(false);
+                toast.success('Print / PDF dialogue opened successfully!');
+                return;
+            }
+
+            // Clean CSV and Excel export with UTF-8 BOM
+            const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+            const mimeType = exportFormat === 'Excel' ? 'application/vnd.ms-excel;charset=utf-8;' : 'text/csv;charset=utf-8;';
+            const blob = new Blob([csvContent], { type: mimeType });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            const ext = exportFormat.toLowerCase() === 'excel' ? 'xlsx' : 'csv';
-            link.setAttribute('download', `Sales_Report_${dateRange.replace(' ', '_')}_${new Date().toISOString().split('T')[0]}.${ext}`);
+            const ext = exportFormat.toLowerCase() === 'excel' ? 'csv' : 'csv';
+            link.setAttribute('download', `Sales_Report_${dateRange.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.${ext}`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
 
             setShowExportModal(false);
             toast.success(`${exportFormat} report downloaded successfully!`);
+        } catch (err) {
+            console.error('Export error:', err);
+            toast.error('Failed to export sales report');
         }
     };
 

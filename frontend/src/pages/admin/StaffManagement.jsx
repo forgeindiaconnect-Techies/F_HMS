@@ -1181,7 +1181,14 @@ const StaffManagement = () => {
                                     {staffList.map(emp => {
                                         const shiftHrs = emp.salaryConfig?.dailyWorkHours || 8;
                                         const defaultOt = calculateOvertimeHours('09:00', '18:00', shiftHrs);
-                                        const current = attendanceMap[emp._id] || { status: 'Present', checkInTime: '09:00', checkOutTime: '18:00', overtimeHours: defaultOt };
+                                        const savedRecord = attendanceRecords.find(r => (r.employee?._id || r.employee) === emp._id);
+                                        const current = attendanceMap[emp._id] || (savedRecord ? {
+                                            status: savedRecord.status,
+                                            checkInTime: savedRecord.checkIn ? new Date(savedRecord.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '',
+                                            checkOutTime: savedRecord.checkOut ? new Date(savedRecord.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '',
+                                            overtimeHours: savedRecord.overtimeHours || 0,
+                                            isSaved: true
+                                        } : { status: 'Not Marked', checkInTime: '', checkOutTime: '', overtimeHours: 0, isSaved: false });
                                         const existingRecord = attendanceRecords.find(r => (r.employee?._id || r.employee) === emp._id);
                                         return (
                                             <tr key={emp._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors">
@@ -1262,9 +1269,11 @@ const StaffManagement = () => {
                                                         >
                                                             <History size={13} /> Correct
                                                         </button>
-                                                    ) : (
-                                                        <span className="text-xs text-slate-400">Unsaved</span>
-                                                    )}
+                                                    ) : current.isSaved ? (
+                                                            <span className="text-xs text-emerald-600 font-bold flex items-center gap-1"><Check size={12}/> Clocked In</span>
+                                                        ) : (
+                                                            <span className="text-xs text-slate-400 font-medium">Not Clocked In</span>
+                                                        )}
                                                 </td>
                                             </tr>
                                         );

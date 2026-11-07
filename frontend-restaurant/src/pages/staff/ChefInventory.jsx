@@ -3,8 +3,23 @@ import { AlertTriangle, Trash2, Send, Plus } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
+import { useEffect } from 'react';
+
 const ChefInventory = () => {
     const { api } = useAuth();
+    const [recentRequests, setRecentRequests] = useState([]);
+
+    const fetchRecentRequests = async () => {
+        try {
+            const res = await api.get('/notifications');
+            const kitchenNotes = (res.data || []).filter(n => n.type === 'Alert' || n.type === 'Info' || n.desc?.toLowerCase().includes('kitchen') || n.title?.toLowerCase().includes('restock'));
+            setRecentRequests(kitchenNotes.slice(0, 8));
+        } catch (e) {}
+    };
+
+    useEffect(() => {
+        fetchRecentRequests();
+    }, []);
     
     const [wastageForm, setWastageForm] = useState({
         ingredientName: '',
@@ -43,6 +58,7 @@ const ChefInventory = () => {
             await api.post('/notifications/restock', restockForm);
             toast.success('Restock request sent to management!');
             setRestockForm({ ingredientNeeded: '', urgency: 'Urgent', notes: '' });
+            fetchRecentRequests();
         } catch (error) {
             console.error('Failed to request restock', error);
             toast.error('Failed to send restock request. Please try again.');
@@ -216,6 +232,70 @@ const ChefInventory = () => {
                     </div>
                 </form>
 
+            </div>
+
+            {/* Sent Restock & Wastage Requests Log for Kitchen Staff */}
+            <div className="bg-white dark:bg-[#1e2330] rounded-2xl border border-slate-200 dark:border-[#2a3040] shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-slate-200 dark:border-[#2a3040] bg-slate-50 dark:bg-[#1a1e2a] flex justify-between items-center">
+                    <div>
+                        <h3 className="font-bold text-slate-800 dark:text-gray-200 text-base flex items-center gap-2">
+                            <Send size={18} className="text-indigo-600" /> Restock Requests Sent to Management
+                        </h3>
+                        <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">Track real-time status and manager actions on kitchen requisitions.</p>
+                    </div>
+                    <button 
+                        onClick={fetchRecentRequests} 
+                        className="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                    >
+                        Refresh Log
+                    </button>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-50/70 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold uppercase tracking-wider">
+                            <tr>
+                                <th className="p-3">Request Summary</th>
+                                <th className="p-3">Urgency</th>
+                                <th className="p-3">Details / Notes</th>
+                                <th className="p-3">Sent Time</th>
+                                <th className="p-3 text-right">Manager Action</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium text-slate-700 dark:text-slate-300">
+                            {recentRequests.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="p-6 text-center text-slate-400">
+                                        No active restock requests sent. Submit requests above to track status.
+                                    </td>
+                                </tr>
+                            ) : (
+                                recentRequests.map(req => (
+                                    <tr key={req._id}>
+                                        <td className="p-3 font-bold text-slate-900 dark:text-white">{req.title}</td>
+                                        <td className="p-3">
+                                            <span className={`px-2 py-0.5 rounded-full font-bold uppercase text-[10px] ${req.type === 'Alert' ? 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'}`}>
+                                                {req.type === 'Alert' ? 'Urgent' : 'Normal'}
+                                            </span>
+                                        </td>
+                                        <td className="p-3 max-w-xs truncate text-slate-500 dark:text-slate-400">{req.desc || '-'}</td>
+                                        <td className="p-3 text-slate-400">{req.createdAt ? new Date(req.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Today'}</td>
+                                        <td className="p-3 text-right font-bold">
+                                            {req.read ? (
+                                                <span className="text-emerald-600 dark:text-emerald-400 flex items-center justify-end gap-1">
+                                                    ✓ Acknowledged by Manager
+                                                </span>
+                                            ) : (
+                                                <span className="text-amber-500 flex items-center justify-end gap-1">
+                                                    ⏳ Pending Review
+                                                </span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );

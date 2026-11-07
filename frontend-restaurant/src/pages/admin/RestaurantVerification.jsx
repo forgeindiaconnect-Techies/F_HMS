@@ -562,9 +562,7 @@ const RestaurantVerification = () => {
                             <label className="text-xs font-black text-gray-500 uppercase tracking-wider block">Restaurant Logo (Image / PDF)</label>
                             {(verification?.documents?.logo?.filePath || restaurant?.logo) && (() => {
                                 const rawPath = verification?.documents?.logo?.filePath || restaurant?.logo;
-                                const docUrl = (rawPath.startsWith('http') || rawPath.startsWith('data:'))
-                                    ? rawPath
-                                    : `${api.defaults.baseURL.replace('/api', '')}${rawPath.startsWith('/') ? '' : '/'}${rawPath}`;
+                                const docUrl = resolveDocUrl(rawPath);
                                 const isPdf = docUrl.includes('application/pdf') || docUrl.toLowerCase().endsWith('.pdf');
                                 return isPdf ? (
                                     <div className="mb-3 p-3 bg-red-50 text-red-600 rounded-xl font-bold text-xs flex items-center gap-2 border border-red-100 max-w-xs shadow-sm">

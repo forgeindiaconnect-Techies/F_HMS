@@ -102,7 +102,10 @@ const ReservationManagement = () => {
     const activeBookings = filteredReservations.filter(r => r.status === 'Confirmed' || r.status === 'Seated').length;
 
     // Filter available tables based on selected branch
-    const availableTables = tables.filter(t => t.branch === formData.branch);
+    const availableTables = tables.filter(t => {
+        const tBranch = t.branchId?._id || t.branchId || t.branch;
+        return (!formData.branch || String(tBranch) === String(formData.branch));
+    });
 
     return (
         <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-6 relative">
@@ -121,20 +124,26 @@ const ReservationManagement = () => {
                 </button>
             </div>
 
-            {/* Controls */}
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap gap-4 justify-between items-center">
-                <div className="flex gap-2 items-center bg-gray-50 p-1 rounded-lg border border-gray-200">
+            {/* Controls - Grouped Neatly Without Gap */}
+            <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-xl shadow-xs border border-gray-100 dark:border-slate-700/60 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <div className="flex items-center gap-2 bg-gray-50 dark:bg-slate-700/50 px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-600 shrink-0">
+                    <CalendarCheck size={16} className="text-gray-400 dark:text-slate-400 shrink-0" />
                     <input 
                         type="date" 
                         value={date} 
                         onChange={(e) => setDate(e.target.value)}
-                        className="px-3 py-1.5 bg-transparent rounded-md text-sm text-gray-800 font-bold focus:outline-none"
+                        className="bg-transparent text-sm text-gray-800 dark:text-white font-semibold focus:outline-none cursor-pointer"
                     />
                 </div>
-                
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                    <input type="text" placeholder="Search name or phone..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+                <div className="relative flex-1 sm:max-w-md">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={17} />
+                    <input 
+                        type="text" 
+                        placeholder="Search name or phone..." 
+                        value={searchQuery} 
+                        onChange={(e) => setSearchQuery(e.target.value)} 
+                        className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-lg text-sm text-gray-800 dark:text-white focus:outline-none focus:border-green-500 transition-all" 
+                    />
                 </div>
             </div>
 
@@ -181,7 +190,7 @@ const ReservationManagement = () => {
                                                         {res.status}
                                                     </span>
                                                     <p className="text-sm font-bold text-gray-700 mt-1">
-                                                        {res.table ? `Table ${res.table.number}` : 'Unassigned'}
+                                                        {res.table ? `Table ${res.table.tableNumber || res.table.number || ''}` : 'Unassigned'}
                                                     </p>
                                                 </div>
                                                 
@@ -320,7 +329,7 @@ const ReservationManagement = () => {
                                     >
                                         <option value="">Unassigned</option>
                                         {availableTables.map(t => (
-                                            <option key={t._id} value={t._id}>Table {t.number} ({t.capacity} seats)</option>
+                                            <option key={t._id} value={t._id}>Table {t.tableNumber || t.number} ({t.capacity} seats)</option>
                                         ))}
                                     </select>
                                 </div>

@@ -77,7 +77,10 @@ export const updateReservationStatus = async (req, res) => {
             return res.status(404).json({ message: 'Reservation not found' });
         }
 
-        reservation.status = status;
+        if (status) reservation.status = status;
+        if (req.body.table !== undefined) {
+            reservation.table = req.body.table || undefined;
+        }
         await reservation.save();
 
         res.json(reservation);

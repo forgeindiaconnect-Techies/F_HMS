@@ -24,7 +24,10 @@ import {
     correctPayrollRecord,
     getPayrollReports,
     getPayrollConfig,
-    updatePayrollConfig
+    updatePayrollConfig,
+    clockIn,
+    clockOut,
+    getMyAttendanceToday
 } from '../controllers/staffController.js';
 import { protect, authorize, checkSubscription, checkBillingModule } from '../middleware/authMiddleware.js';
 
@@ -33,6 +36,11 @@ const router = express.Router();
 router.use(protect);
 router.use(checkSubscription);
 router.use(checkBillingModule('staffManagement'));
+
+// ── Staff Clock In / Clock Out (Self-Service) ──────────────────────────
+router.post('/clock-in', clockIn);
+router.post('/clock-out', clockOut);
+router.get('/my-attendance-today', getMyAttendanceToday);
 
 // ── Attendance Routes ────────────────────────────────────────────────────────
 router.post('/attendance/bulk', authorize('RestaurantAdmin', 'BranchManager'), bulkMarkAttendance);

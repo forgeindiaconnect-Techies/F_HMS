@@ -158,7 +158,30 @@ const ManagerReports = () => {
                                         <p className="text-xs text-gray-500 mt-1">Period: {new Date(startDate).toLocaleDateString()} to {new Date(endDate).toLocaleDateString()}</p>
                                     </div>
                                     <div className="flex gap-2 no-print">
-                                        <button onClick={handlePrint} className="bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5">
+                                        <button 
+                                            onClick={() => {
+                                                if (!reportData?.data || reportData.data.length === 0) {
+                                                    toast.error('No report data to export');
+                                                    return;
+                                                }
+                                                const headers = Object.keys(reportData.data[0]);
+                                                const rows = reportData.data.map(item => headers.map(h => JSON.stringify(item[h] ?? '')).join(','));
+                                                const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+                                                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                                                const url = URL.createObjectURL(blob);
+                                                const a = document.createElement('a');
+                                                a.href = url;
+                                                a.download = `Branch_Report_${reportType}_${new Date().toISOString().split('T')[0]}.csv`;
+                                                document.body.appendChild(a);
+                                                a.click();
+                                                document.body.removeChild(a);
+                                                toast.success('Report exported to CSV successfully!');
+                                            }}
+                                            className="bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
+                                        >
+                                            <FileDown size={14} /> Export CSV
+                                        </button>
+                                        <button onClick={handlePrint} className="bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer">
                                             <Printer size={14} /> Print
                                         </button>
                                     </div>

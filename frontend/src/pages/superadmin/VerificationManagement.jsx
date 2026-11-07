@@ -190,12 +190,13 @@ const VerificationManagement = () => {
         if (filePath.startsWith('http://') || filePath.startsWith('https://') || filePath.startsWith('data:')) {
             return filePath;
         }
-        const apiBase = api?.defaults?.baseURL || import.meta.env.VITE_API_URL || 'https://f-hms-1.onrender.com/api';
+        let base = import.meta.env.VITE_API_URL || 'https://f-hms-1.onrender.com';
+        if (!base.startsWith('http')) base = 'https://f-hms-1.onrender.com';
         try {
-            const origin = new URL(apiBase).origin;
+            const origin = new URL(base).origin;
             return `${origin}${filePath.startsWith('/') ? '' : '/'}${filePath}`;
         } catch (e) {
-            return filePath;
+            return `https://f-hms-1.onrender.com${filePath.startsWith('/') ? '' : '/'}${filePath}`;
         }
     };
 

@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Clock, Play, Square, Coffee, CheckCircle, AlertCircle, ShieldCheck, UserCheck, Timer } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+import { useAuth } from '../context/AuthContext';
+
+
 const StaffShiftClockWidget = ({ userRole = 'Staff', userName = 'Staff Member', compact = false }) => {
+    const { api } = useAuth();
     // Unique key per user to store shift state
     const userStorageKey = `staff_shift_clock_${userName.replace(/\s+/g, '_')}`;
 
@@ -37,6 +41,42 @@ const StaffShiftClockWidget = ({ userRole = 'Staff', userName = 'Staff Member', 
             console.error("Failed to save shift state", e);
         }
     }, [shiftState, userStorageKey]);
+
+    // Fetch real-time attendance from backend on mount
+    useEffect(() => {
+        if (!api) return;
+        api.get('/staff/my-attendance-today')
+            .then(res => {
+                if (res.data?.status === 'Present') {
+                    setShiftState(prev => ({
+                        ...prev,
+                        status: res.data.checkOut ? 'ClockedOut' : 'ClockedIn',
+                        clockInTime: res.data.checkIn || prev.clockInTime,
+                        lastClockInTime: res.data.checkIn || prev.lastClockInTime,
+                        lastClockOutTime: res.data.checkOut || prev.lastClockOutTime
+                    }));
+                }
+            })
+            .catch(() => {});
+    }, []);
+
+    // Fetch real-time attendance from backend on mount
+    useEffect(() => {
+        if (!api) return;
+        api.get('/staff/my-attendance-today')
+            .then(res => {
+                if (res.data?.status === 'Present') {
+                    setShiftState(prev => ({
+                        ...prev,
+                        status: res.data.checkOut ? 'ClockedOut' : 'ClockedIn',
+                        clockInTime: res.data.checkIn || prev.clockInTime,
+                        lastClockInTime: res.data.checkIn || prev.lastClockInTime,
+                        lastClockOutTime: res.data.checkOut || prev.lastClockOutTime
+                    }));
+                }
+            })
+            .catch(() => {});
+    }, []);
 
     // Live second ticker timer
     useEffect(() => {
@@ -75,8 +115,13 @@ const StaffShiftClockWidget = ({ userRole = 'Staff', userName = 'Staff Member', 
     };
 
     // Clock In Handler
-    const handleClockIn = () => {
+    const handleClockIn = async () => {
         const nowIso = new Date().toISOString();
+        try {
+            if (api) await api.post('/staff/clock-in');
+        } catch (e) {
+            console.error('Error clocking in via API:', e);
+        }
         const newState = {
             ...shiftState,
             status: 'ClockedIn',
@@ -118,9 +163,14 @@ const StaffShiftClockWidget = ({ userRole = 'Staff', userName = 'Staff Member', 
     };
 
     // Clock Out Handler
-    const handleClockOut = () => {
+    const handleClockOut = async () => {
         const nowIso = new Date().toISOString();
         const finalShiftSec = elapsedSeconds;
+        try {
+            if (api) await api.post('/staff/clock-out');
+        } catch (e) {
+            console.error('Error clocking out via API:', e);
+        }
         const newState = {
             ...shiftState,
             status: 'ClockedOut',

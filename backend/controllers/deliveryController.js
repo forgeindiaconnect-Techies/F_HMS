@@ -722,3 +722,24 @@ export const addSupportMessage = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+
+// @desc    Get delivery settings for the restaurant
+// @route   GET /api/delivery/settings
+// @access  Private (Admin / Manager)
+export const getDeliverySettings = async (req, res) => {
+    try {
+        let restaurantId = req.user.restaurantId;
+        if (!restaurantId && (req.user.role === 'RestaurantAdmin' || req.user.role === 'Admin')) {
+            const rest = await Restaurant.findOne({ ownerId: req.user._id });
+            if (rest) restaurantId = rest._id;
+        }
+        const restaurant = await Restaurant.findById(restaurantId);
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+        res.json(restaurant.deliverySettings || {});
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

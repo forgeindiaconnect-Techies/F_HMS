@@ -109,7 +109,6 @@ const Sidebar = () => {
                 { name: 'Billing Management', path: '/admin/billing-management', icon: Receipt, moduleKey: 'posBilling' },
                 { name: 'Material Management', path: '/admin/inventory', icon: PackageSearch, moduleKey: 'inventoryManagement' },
                 { name: 'Staff Management', path: '/admin/staff', icon: UserCheck, moduleKey: 'staffManagement' },
-                { name: 'Leave Management', path: '/admin/staff?tab=leaves', icon: CalendarDays, moduleKey: 'staffManagement' },
                 { name: 'Branch Management', path: '/admin/branches', icon: Store, moduleKey: 'staffManagement' },
                 { name: 'Menu Management', path: '/admin/menu', icon: UtensilsCrossed, moduleKey: 'menuManagement' },
                 { name: 'Customer Management', path: '/admin/customers', icon: Users, moduleKey: 'customerManagement' },

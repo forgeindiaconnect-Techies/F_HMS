@@ -720,7 +720,7 @@ const ChefDashboard = () => {
             {/* 3. KDS Orders Display Container */}
             {viewMode === 'grid' ? (
                 /* GRID VIEW */
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4">
                     {sortedOrders.length === 0 ? (
                         <div className="col-span-full py-20 sm:py-28 flex flex-col items-center justify-center text-slate-400 bg-white dark:bg-slate-900/40 rounded-2xl sm:rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-4 text-center">
                             <CheckCircle size={44} className="text-slate-300 dark:text-slate-800 mb-3 sm:mb-4" />
@@ -815,13 +815,13 @@ const ChefDashboard = () => {
                                     </div>
 
                                     {/* Ticket Items Checklist Body */}
-                                    <div className="flex-1 p-3.5 sm:p-5 space-y-3 sm:space-y-3.5">
+                                    <div className="flex-1 p-2.5 sm:p-3 space-y-2 sm:space-y-2.5">
                                         <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pb-1 border-b border-slate-200 dark:border-slate-800">
                                             <span>Dish Checklist ({doneItemsCount}/{totalItemsCount})</span>
                                             <span className="text-orange-600 dark:text-orange-400 font-mono">{progressPercent}% Ready</span>
                                         </div>
 
-                                        <div className="space-y-1.5 sm:space-y-2 max-h-72 overflow-y-auto custom-scrollbar pr-1">
+                                        <div className="space-y-1 sm:space-y-1.5 max-h-48 overflow-y-auto custom-scrollbar pr-1">
                                             {order.orderItems?.map((item, idx) => {
                                                 const isItemDone = completedItems[`${order._id}-${idx}`];
                                                 
@@ -882,7 +882,7 @@ const ChefDashboard = () => {
                                     </div>
 
                                     {/* Action Buttons Footer */}
-                                    <div className="p-3 sm:p-4 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/60 shrink-0 space-y-2">
+                                    <div className="p-2 sm:p-2.5 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/60 shrink-0 flex items-center justify-between gap-2">
                                         {(!order.status || order.status === 'Pending' || order.status === 'Accepted') && (
                                             <button 
                                                 onClick={() => updateStatus(order._id, 'Preparing')} 

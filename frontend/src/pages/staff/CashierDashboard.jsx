@@ -1544,10 +1544,10 @@ const CashierDashboard = () => {
                                         <button
                                             type="button"
                                             onClick={() => handlePrintReceipt(activeBill)}
-                                            className="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 font-bold px-2.5 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 flex items-center gap-1 cursor-pointer shadow-xs transition-all active:scale-95"
-                                            title="Print Customer Bill Preview"
+                                            className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-black px-3 py-1.5 rounded-xl shadow-md shadow-emerald-700/20 flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
+                                            title="Generate Official Tax Invoice / Bill"
                                         >
-                                            <Printer size={13} /> Print Bill
+                                            <Receipt size={14} /> Generate Invoice
                                         </button>
                                         <button 
                                             type="button"
