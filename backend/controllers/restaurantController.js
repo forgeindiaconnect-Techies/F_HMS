@@ -656,7 +656,7 @@ export const getRestaurantPublicConfig = async (req, res) => {
         if (!id || !mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: 'Invalid restaurant ID' });
         }
-        const restaurant = await Restaurant.findById(id).select('name logo restaurantConfig posConfig billingConfig status isDeleted isActive approvalStatus');
+        const restaurant = await Restaurant.findById(id).select('name logo restaurantConfig posConfig billingConfig deliverySettings status isDeleted isActive approvalStatus');
         if (!restaurant) {
             return res.status(404).json({ message: 'Restaurant not found' });
         }
@@ -672,6 +672,7 @@ export const getRestaurantPublicConfig = async (req, res) => {
         res.json({
             restaurantName: restaurant.name,
             logo: restaurant.logo,
+            deliverySettings: restaurant.deliverySettings || { enabled: true },
             qrOrdering: {
                 enabled: config.qrOrdering?.enabled ?? true,
                 allowSelfDineIn: config.qrOrdering?.allowSelfDineIn ?? true,
@@ -693,7 +694,9 @@ export const getRestaurantPublicConfig = async (req, res) => {
                 kitchenMode: config.orderKitchen?.kitchenMode || restaurant.kitchenMode || 'KDS',
                 kotEnabled: config.orderKitchen?.kotEnabled ?? true,
                 kdsEnabled: config.orderKitchen?.kdsEnabled ?? true,
-                kotPrintEnabled: config.orderKitchen?.kotPrintEnabled ?? true
+                kotPrintEnabled: config.orderKitchen?.kotPrintEnabled ?? true,
+                selfPickup: config.orderKitchen?.selfPickup ?? true,
+                homeDelivery: config.orderKitchen?.homeDelivery ?? true
             }
         });
     } catch (error) {

@@ -33,6 +33,7 @@ const Checkout = () => {
     const [checkoutStep, setCheckoutStep] = useState(1);
     const [restaurantsList, setRestaurantsList] = useState([]);
     const [selectedRestaurantId, setSelectedRestaurantId] = useState('');
+    const [publicConfig, setPublicConfig] = useState(null);
 
     // Fetch live restaurants list so delivery radius, fees & hours validate properly
     useEffect(() => {
@@ -62,6 +63,17 @@ const Checkout = () => {
     const selectedRestaurantObj = restaurantsList.find(r => String(r._id) === targetResId) || (restaurantsList.length > 0 ? restaurantsList[0] : null);
     const selectedRestaurantName = selectedRestaurantObj ? selectedRestaurantObj.name : (cartRestName || 'Restaurant');
 
+    // Fetch live public-config (paymentMethods, deliverySettings, orderKitchen) for target restaurant
+    useEffect(() => {
+        const resolvedId = selectedRestaurantObj?._id || (targetResId && /^[0-9a-fA-F]{24}$/.test(targetResId) ? targetResId : '');
+        if (!api || !resolvedId) return;
+        api.get(`/restaurants/${resolvedId}/public-config`)
+            .then(res => {
+                if (res?.data) setPublicConfig(res.data);
+            })
+            .catch(() => {});
+    }, [api, selectedRestaurantObj?._id, targetResId]);
+
     let subscriptionDiscount = 0;
     if (subscriptionPlan === 'Weekly Subscription') {
         subscriptionDiscount = cartTotal * 0.10;
@@ -72,18 +84,20 @@ const Checkout = () => {
     const [customerCoords, setCustomerCoords] = useState({ latitude: 13.0827, longitude: 80.2707 }); // Customer location
     const [actualDistance, setActualDistance] = useState(3.2);
 
+    // Evaluate delivery availability & fee upfront (even before Proceed or clicking Home Delivery)
     useEffect(() => {
-        if (orderType !== 'Delivery' || !selectedRestaurantObj) {
+        if (!selectedRestaurantObj && !publicConfig) {
             setCalculatedDeliveryFee(0);
             setDeliveryValidation({ isValid: true, error: '' });
             return;
         }
 
-        const settings = selectedRestaurantObj.deliverySettings || {};
-        
-        if (settings.enabled === false) {
+        const settings = selectedRestaurantObj?.deliverySettings || publicConfig?.deliverySettings || {};
+        const deliveryDisabledByConfig = publicConfig?.orderKitchen?.homeDelivery === false || selectedRestaurantObj?.restaurantConfig?.orderKitchen?.homeDelivery === false;
+
+        if (settings.enabled === false || deliveryDisabledByConfig) {
             setCalculatedDeliveryFee(0);
-            setDeliveryValidation({ isValid: false, error: 'Home Delivery is currently disabled by this restaurant.' });
+            setDeliveryValidation({ isValid: false, error: 'Home Delivery is currently unavailable for this restaurant.' });
             return;
         }
 
@@ -144,10 +158,37 @@ const Checkout = () => {
             fee = 0;
         }
 
-        setCalculatedDeliveryFee(fee);
+        setCalculatedDeliveryFee(orderType === 'Delivery' ? fee : 0);
         setDeliveryValidation({ isValid: true, error: '' });
 
-    }, [selectedRestaurantObj, orderType, cartTotal, customerCoords]);
+    }, [selectedRestaurantObj, publicConfig, orderType, cartTotal, customerCoords]);
+
+    const isSelfPickupAvailable = publicConfig?.orderKitchen?.selfPickup !== false && selectedRestaurantObj?.restaurantConfig?.orderKitchen?.selfPickup !== false;
+    const isHomeDeliveryAvailable = (selectedRestaurantObj?.deliverySettings?.enabled !== false && publicConfig?.deliverySettings?.enabled !== false && publicConfig?.orderKitchen?.homeDelivery !== false && selectedRestaurantObj?.restaurantConfig?.orderKitchen?.homeDelivery !== false) && deliveryValidation.isValid;
+
+    const pmRaw = publicConfig?.paymentMethods || selectedRestaurantObj?.restaurantConfig?.paymentMethods || { cash: true, upi: true, card: true, onlineGateway: true };
+    const paymentOptionsList = [
+        { id: 'Card', label: 'Card', enabled: pmRaw.card !== false || pmRaw.onlineGateway !== false },
+        { id: 'UPI', label: 'UPI', enabled: pmRaw.upi !== false || pmRaw.onlineGateway !== false },
+        { id: 'Cash on Delivery', label: 'Cash on Delivery', enabled: pmRaw.cash !== false }
+    ];
+    const enabledPaymentOptions = paymentOptionsList.filter(p => p.enabled);
+    const unavailablePaymentOptions = paymentOptionsList.filter(p => !p.enabled);
+
+    // Keep selected orderType & paymentMethod synchronized with live restaurant availability
+    useEffect(() => {
+        if (orderType === 'Delivery' && !isHomeDeliveryAvailable && isSelfPickupAvailable) {
+            setOrderType('Self-Pickup');
+        } else if (orderType === 'Self-Pickup' && !isSelfPickupAvailable && isHomeDeliveryAvailable) {
+            setOrderType('Delivery');
+        }
+    }, [orderType, isSelfPickupAvailable, isHomeDeliveryAvailable]);
+
+    useEffect(() => {
+        if (enabledPaymentOptions.length > 0 && !enabledPaymentOptions.some(p => p.id === paymentMethod)) {
+            setPaymentMethod(enabledPaymentOptions[0].id);
+        }
+    }, [pmRaw.card, pmRaw.upi, pmRaw.cash, pmRaw.onlineGateway, paymentMethod]);
 
     useEffect(() => {
         if (restaurantId && !selectedRestaurantId) {
@@ -358,32 +399,56 @@ const Checkout = () => {
                     {/* Order Type Tabs */}
                     <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6">
                         <h2 className="text-xl font-bold text-gray-900 font-sans">How would you like your order?</h2>
-                        <div className="flex gap-4">
-                            <button
-                                type="button"
-                                onClick={() => setOrderType('Self-Pickup')}
-                                className={`flex-1 py-3 px-4 rounded-2xl font-bold text-sm border transition-all flex items-center justify-center gap-2 ${
-                                    orderType === 'Self-Pickup'
-                                    ? 'bg-orange-50 border-orange-500 text-orange-600 font-black'
-                                    : 'bg-white border-gray-250 text-gray-500 hover:bg-gray-50'
-                                }`}
-                            >
-                                <Utensils size={18} /> Self-Pickup
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setOrderType('Delivery')}
-                                className={`flex-1 py-3 px-4 rounded-2xl font-bold text-sm border transition-all flex items-center justify-center gap-2 ${
-                                    orderType === 'Delivery'
-                                    ? 'bg-orange-50 border-orange-500 text-orange-600 font-black'
-                                    : 'bg-white border-gray-250 text-gray-500 hover:bg-gray-50'
-                                }`}
-                            >
-                                <MapPin size={18} /> Home Delivery
-                            </button>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {isSelfPickupAvailable ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setOrderType('Self-Pickup')}
+                                    className={`py-3 px-4 rounded-2xl font-bold text-sm border transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                                        orderType === 'Self-Pickup'
+                                        ? 'bg-orange-50 border-orange-500 text-orange-600 font-black'
+                                        : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    <Utensils size={18} /> Self-Pickup
+                                </button>
+                            ) : (
+                                <div className="py-3 px-4 rounded-2xl font-bold text-sm border border-dashed border-gray-200 bg-gray-50 text-gray-400 flex items-center justify-center gap-2 select-none">
+                                    <Utensils size={18} />
+                                    <span>Self-Pickup</span>
+                                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">Unavailable</span>
+                                </div>
+                            )}
+
+                            {isHomeDeliveryAvailable ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setOrderType('Delivery')}
+                                    className={`py-3 px-4 rounded-2xl font-bold text-sm border transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                                        orderType === 'Delivery'
+                                        ? 'bg-orange-50 border-orange-500 text-orange-600 font-black'
+                                        : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    <MapPin size={18} /> Home Delivery
+                                </button>
+                            ) : (
+                                <div className="py-3 px-4 rounded-2xl font-bold text-sm border border-dashed border-gray-200 bg-gray-50 text-gray-400 flex items-center justify-center gap-2 select-none" title={deliveryValidation.error || 'Home Delivery is unavailable'}>
+                                    <MapPin size={18} />
+                                    <span>Home Delivery</span>
+                                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">Unavailable</span>
+                                </div>
+                            )}
                         </div>
 
-                        {orderType === 'Self-Pickup' ? (
+                        {!isHomeDeliveryAvailable && deliveryValidation.error && (
+                            <div className="p-3.5 bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold rounded-2xl flex items-center gap-2">
+                                <AlertTriangle size={16} className="shrink-0 text-amber-600" />
+                                <span>Home Delivery Unavailable: {deliveryValidation.error}</span>
+                            </div>
+                        )}
+
+                        {orderType === 'Self-Pickup' && isSelfPickupAvailable ? (
                             <div className="flex items-center gap-4 p-4 border border-orange-200 bg-orange-50 rounded-2xl">
                                 <div className="w-12 h-12 rounded-full bg-orange-500 text-white flex items-center justify-center shrink-0">
                                     <Utensils size={24} />
@@ -393,7 +458,7 @@ const Checkout = () => {
                                     <p className="text-sm text-gray-600 font-medium">Your order will be prepared and ready for you to pick up from the restaurant counter.</p>
                                 </div>
                             </div>
-                        ) : (
+                        ) : orderType === 'Delivery' && isHomeDeliveryAvailable ? (
                             <div className="space-y-4 text-left">
                                 <div className="flex items-center gap-4 p-4 border border-orange-200 bg-orange-50 rounded-2xl">
                                     <div className="w-12 h-12 rounded-full bg-orange-500 text-white flex items-center justify-center shrink-0">
@@ -423,16 +488,9 @@ const Checkout = () => {
                                             <span className="font-bold text-gray-900">₹{selectedRestaurantObj.deliverySettings?.baseFee || 30}</span>
                                         </div>
                                         <div className="flex justify-between text-orange-600 font-black">
-                                            <span>Dynamic Fee (Simulated Distance: {mockDistance} km):</span>
+                                            <span>Dynamic Fee (Distance: {actualDistance} km):</span>
                                             <span>₹{calculatedDeliveryFee}</span>
                                         </div>
-                                    </div>
-                                )}
-
-                                {!deliveryValidation.isValid && (
-                                    <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-xs font-bold rounded-2xl flex items-center gap-2">
-                                        <AlertTriangle size={16} className="shrink-0" />
-                                        <span>{deliveryValidation.error}</span>
                                     </div>
                                 )}
 
@@ -448,7 +506,31 @@ const Checkout = () => {
                                     ></textarea>
                                 </div>
                             </div>
-                        )}
+                        ) : null}
+
+                        {/* Payment Method Availability Preview BEFORE Proceed Button */}
+                        <div className="pt-4 border-t border-gray-100 space-y-2.5 text-left">
+                            <span className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Accepted Payment Methods</span>
+                            <div className="flex flex-wrap gap-2">
+                                {paymentOptionsList.map((pm) => (
+                                    <span
+                                        key={pm.id}
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border ${
+                                            pm.enabled
+                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                                : 'bg-gray-50 text-gray-400 border-gray-200 line-through'
+                                        }`}
+                                    >
+                                        <span>{pm.label}</span>
+                                        <span className={`text-[10px] font-black uppercase px-1.5 py-0.2 rounded-full ${
+                                            pm.enabled ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-700 no-underline'
+                                        }`}>
+                                            {pm.enabled ? 'Available' : 'Unavailable'}
+                                        </span>
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
                     </div>
 
                     {/* Help banner for Step 1 */}
@@ -523,22 +605,35 @@ const Checkout = () => {
                             </div>
 
                             {/* Payment Method Selector */}
-                            <div className="grid grid-cols-3 gap-4">
-                                {['Card', 'UPI', 'Cash on Delivery'].map((method) => (
-                                    <button
-                                        key={method}
-                                        type="button"
-                                        onClick={() => setPaymentMethod(method)}
-                                        className={`py-3.5 px-4 rounded-xl border text-sm font-bold transition-all cursor-pointer ${
-                                            paymentMethod === method
-                                                ? 'border-orange-500 bg-orange-50 text-orange-600 shadow-sm shadow-orange-500/10'
-                                                : 'border-gray-200 hover:border-gray-300 text-gray-600'
-                                        }`}
-                                    >
-                                        {method}
-                                    </button>
-                                ))}
-                            </div>
+                            {enabledPaymentOptions.length === 0 ? (
+                                <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs font-bold text-rose-700">
+                                    No payment methods are currently available for this restaurant.
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    <div className={`grid grid-cols-1 ${enabledPaymentOptions.length === 2 ? 'sm:grid-cols-2' : enabledPaymentOptions.length >= 3 ? 'sm:grid-cols-3' : ''} gap-4`}>
+                                        {enabledPaymentOptions.map((methodObj) => (
+                                            <button
+                                                key={methodObj.id}
+                                                type="button"
+                                                onClick={() => setPaymentMethod(methodObj.id)}
+                                                className={`py-3.5 px-4 rounded-xl border text-sm font-bold transition-all cursor-pointer ${
+                                                    paymentMethod === methodObj.id
+                                                        ? 'border-orange-500 bg-orange-50 text-orange-600 shadow-sm shadow-orange-500/10'
+                                                        : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                                                }`}
+                                            >
+                                                {methodObj.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    {unavailablePaymentOptions.length > 0 && (
+                                        <p className="text-xs text-gray-400 font-semibold">
+                                            Unavailable: {unavailablePaymentOptions.map(p => p.label).join(', ')}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
 
                             {/* Payment Details Container */}
                             {paymentMethod === 'UPI' && (
@@ -714,10 +809,11 @@ const Checkout = () => {
                         {checkoutStep === 1 ? (
                             <button 
                                 type="button" 
+                                disabled={(!isSelfPickupAvailable && !isHomeDeliveryAvailable) || (orderType === 'Delivery' && !isHomeDeliveryAvailable) || (orderType === 'Self-Pickup' && !isSelfPickupAvailable) || enabledPaymentOptions.length === 0}
                                 onClick={() => setCheckoutStep(2)}
-                                className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 rounded-xl mt-8 transition-all flex justify-center items-center gap-2 shadow-lg shadow-orange-600/20 active:scale-[0.98] cursor-pointer"
+                                className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 disabled:text-gray-500 text-white font-bold py-4 rounded-xl mt-8 transition-all flex justify-center items-center gap-2 shadow-lg shadow-orange-600/20 active:scale-[0.98] cursor-pointer disabled:cursor-not-allowed disabled:shadow-none"
                             >
-                                Proceed <ChevronRight size={18} />
+                                {(!isSelfPickupAvailable && !isHomeDeliveryAvailable) || enabledPaymentOptions.length === 0 ? 'Ordering Unavailable' : <>Proceed <ChevronRight size={18} /></>}
                             </button>
                         ) : (
                             <div className="space-y-3 mt-8">

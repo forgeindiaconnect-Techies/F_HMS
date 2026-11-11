@@ -159,7 +159,7 @@ const OUTLET_PRESETS = [
 ];
 
 const Settings = () => {
-    const { api, fetchRestaurant } = useAuth();
+    const { api, user, restaurant, fetchRestaurant } = useAuth();
     const [searchParams] = useSearchParams();
     const initialTab = searchParams.get('tab') || 'operations';
     const [loading, setLoading] = useState(true);
@@ -466,21 +466,21 @@ const Settings = () => {
     const displayLogo = logoPreview || currentLogo;
 
     return (
-        <div className="max-w-5xl">
+        <div className="max-w-6xl w-full md:h-[calc(100vh-8.5rem)] md:flex md:flex-col">
             {/* Header */}
-            <div className="mb-8">
-                <h2 className="text-2xl font-bold text-gray-800" style={{ fontFamily: 'Poppins, sans-serif' }}>System Settings</h2>
-                <p className="text-gray-500 text-sm mt-1">Manage global preferences and configurations for FoodNest.</p>
+            <div className="mb-5 shrink-0">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>System Settings</h2>
+                <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Manage global preferences and configurations for FoodNest.</p>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-8">
+            <div className="flex flex-col md:flex-row gap-6 md:flex-1 md:min-h-0">
                 {/* Settings Navigation */}
-                <div className="w-full md:w-64 shrink-0">
+                <div className="w-full md:w-64 shrink-0 md:overflow-y-auto custom-scrollbar">
                     <nav className="flex flex-col gap-1">
                         <button 
                             type="button"
                             onClick={() => setActiveTab('operations')}
-                            className={`flex items-center justify-between px-4 py-3 rounded-xl font-medium transition-all text-sm ${activeTab === 'operations' ? 'bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-800 font-bold border border-emerald-200 shadow-xs dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800' : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
+                            className={`flex items-center justify-between px-4 py-3 rounded-xl font-medium transition-all text-sm cursor-pointer ${activeTab === 'operations' ? 'bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-800 font-bold border border-emerald-200 shadow-xs dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800' : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
                         >
                             <div className="flex items-center gap-3">
                                 <Sparkles size={18} className={activeTab === 'operations' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500'} />
@@ -491,14 +491,14 @@ const Settings = () => {
                         <button 
                             type="button"
                             onClick={() => setActiveTab('profile')}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-sm ${activeTab === 'profile' ? 'bg-green-50 text-green-700 font-bold' : 'text-gray-600 hover:bg-gray-50'}`}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-sm cursor-pointer ${activeTab === 'profile' ? 'bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 font-bold' : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
                         >
                             <User size={18} /> Profile
                         </button>
                         <button 
                             type="button"
                             onClick={() => setActiveTab('pos-customization')}
-                            className={`flex items-center justify-between px-4 py-3 rounded-xl font-medium transition-all text-sm ${activeTab === 'pos-customization' ? 'bg-gradient-to-r from-rose-50 to-orange-50 text-rose-700 font-bold border border-rose-200 shadow-xs' : 'text-gray-600 hover:bg-gray-50'}`}
+                            className={`flex items-center justify-between px-4 py-3 rounded-xl font-medium transition-all text-sm cursor-pointer ${activeTab === 'pos-customization' ? 'bg-gradient-to-r from-rose-50 to-orange-50 dark:from-rose-950/40 dark:to-orange-950/30 text-rose-700 dark:text-rose-300 font-bold border border-rose-200 dark:border-rose-800 shadow-xs' : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
                         >
                             <div className="flex items-center gap-3">
                                 <Sliders size={18} className={activeTab === 'pos-customization' ? 'text-rose-600' : 'text-gray-500'} />
@@ -509,14 +509,14 @@ const Settings = () => {
                         <button 
                             type="button"
                             onClick={() => setActiveTab('appearance')}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-sm ${activeTab === 'appearance' ? 'bg-green-50 text-green-700 font-bold' : 'text-gray-600 hover:bg-gray-50'}`}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-sm cursor-pointer ${activeTab === 'appearance' ? 'bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 font-bold' : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
                         >
                             <Sun size={18} /> Appearance & Theme
                         </button>
                         <button 
                             type="button"
                             onClick={() => setActiveTab('security')}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-sm ${activeTab === 'security' ? 'bg-green-50 text-green-700 font-bold' : 'text-gray-600 hover:bg-gray-50'}`}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors text-sm cursor-pointer ${activeTab === 'security' ? 'bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 font-bold' : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
                         >
                             <Lock size={18} /> Security & Password
                         </button>
@@ -524,9 +524,9 @@ const Settings = () => {
                 </div>
 
                 {/* Settings Form Area */}
-                <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-6 md:p-8">
+                <div className="flex-1 min-w-0 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-5 sm:p-6 md:p-8 md:overflow-y-auto overflow-x-hidden custom-scrollbar">
                     {activeTab === 'operations' ? (
-                        <div className="space-y-8 min-w-0 pr-1.5 flex-1">
+                        <div className="space-y-8 min-w-0 w-full">
                             {/* Top Banner with Setup Wizard Launch CTA */}
                             <div className="bg-gradient-to-r from-emerald-950 via-teal-900 to-slate-900 text-white p-6 sm:p-7 rounded-2xl shadow-md border border-emerald-800/60 relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
@@ -1118,13 +1118,13 @@ const Settings = () => {
                             </div>
 
                             {/* Save Action Footer */}
-                            <div className="pt-6 border-t border-gray-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-                                <div className="text-xs text-gray-500 flex items-center gap-2">
+                            <div className="pt-6 border-t border-gray-100 dark:border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                                <div className="text-xs text-gray-500 dark:text-slate-400 flex items-center gap-2 min-w-0 flex-1">
                                     <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
                                     <span>Saved settings persist to your restaurant record and apply immediately across all staff dashboards.</span>
                                 </div>
 
-                                <div className="flex items-center gap-3 w-full sm:w-auto">
+                                <div className="flex flex-wrap sm:flex-nowrap items-center justify-end gap-3 shrink-0">
                                     <button
                                         type="button"
                                         onClick={() => {
@@ -1138,7 +1138,7 @@ const Settings = () => {
                                             });
                                             toast.success('Reset form to recommended settings');
                                         }}
-                                        className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 font-bold text-xs hover:bg-gray-50 dark:hover:bg-slate-800 transition cursor-pointer"
+                                        className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 font-bold text-xs hover:bg-gray-50 dark:hover:bg-slate-800 transition cursor-pointer whitespace-nowrap shrink-0"
                                     >
                                         Recommended Defaults
                                     </button>
@@ -1146,7 +1146,7 @@ const Settings = () => {
                                         type="button"
                                         onClick={handleSaveRestaurantConfig}
                                         disabled={savingConfig}
-                                        className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-sm shadow-md shadow-emerald-900/10 cursor-pointer disabled:opacity-70 flex-1 sm:flex-none"
+                                        className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-sm shadow-md shadow-emerald-900/10 cursor-pointer disabled:opacity-70 whitespace-nowrap shrink-0"
                                     >
                                         {savingConfig ? (
                                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -1159,7 +1159,7 @@ const Settings = () => {
                             </div>
                         </div>
                     ) : activeTab === 'pos-customization' ? (
-                        <div className="space-y-8 min-w-0 pr-1.5 flex-1">
+                        <div className="space-y-8 min-w-0 w-full">
                             {/* Header Banner */}
                             <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-rose-950 text-white p-6 sm:p-7 rounded-2xl shadow-md border border-slate-800 relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-80 h-80 bg-rose-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
@@ -1548,13 +1548,13 @@ const Settings = () => {
                             </div>
 
                             {/* Save Action Footer */}
-                            <div className="pt-6 border-t border-gray-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-                                <div className="text-xs text-gray-500 flex items-center gap-2">
-                                    <CheckCircle2 size={15} className="text-emerald-500" />
+                            <div className="pt-6 border-t border-gray-100 dark:border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                                <div className="text-xs text-gray-500 dark:text-slate-400 flex items-center gap-2 min-w-0 flex-1">
+                                    <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
                                     <span>Changes will immediately apply to Cashier POS, Tables, KDS and Admin consoles.</span>
                                 </div>
 
-                                <div className="flex items-center gap-3 w-full sm:w-auto">
+                                <div className="flex flex-wrap sm:flex-nowrap items-center justify-end gap-3 shrink-0">
                                     <button
                                         type="button"
                                         onClick={() => {
@@ -1562,7 +1562,7 @@ const Settings = () => {
                                             setPosConfig(defaultPreset.config);
                                             toast.success('Reset to format defaults');
                                         }}
-                                        className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 font-bold text-xs hover:bg-gray-50 dark:hover:bg-slate-800 transition"
+                                        className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 font-bold text-xs hover:bg-gray-50 dark:hover:bg-slate-800 transition cursor-pointer whitespace-nowrap shrink-0"
                                     >
                                         Reset to Defaults
                                     </button>
@@ -1570,7 +1570,7 @@ const Settings = () => {
                                         type="button"
                                         onClick={() => handleSavePosConfig()}
                                         disabled={savingPos}
-                                        className="bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-700 hover:to-orange-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-sm shadow-md shadow-rose-900/10 cursor-pointer disabled:opacity-70 flex-1 sm:flex-none"
+                                        className="bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-700 hover:to-orange-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-sm shadow-md shadow-rose-900/10 cursor-pointer disabled:opacity-70 whitespace-nowrap shrink-0"
                                     >
                                         {savingPos ? (
                                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -1582,52 +1582,20 @@ const Settings = () => {
                                 </div>
                             </div>
                         </div>
-                    ) : activeTab === 'profile' ? (
-                        <div className="space-y-6 min-w-0 pr-1.5 flex-1">
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>My Account Profile</h3>
-                                <p className="text-gray-500 text-xs">View registered account credentials, role permissions and restaurant ownership.</p>
-                            </div>
-
-                            <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm max-w-2xl space-y-4">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="p-4 bg-gray-50 rounded-xl">
-                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Full Name</span>
-                                        <span className="text-sm font-black text-gray-900 mt-1 block">{user?.name || 'Administrator'}</span>
-                                    </div>
-                                    <div className="p-4 bg-gray-50 rounded-xl">
-                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Registered Account Email</span>
-                                        <span className="text-sm font-mono font-bold text-indigo-700 mt-1 block break-all">{user?.email || restaurant?.email || 'N/A'}</span>
-                                    </div>
-                                    <div className="p-4 bg-gray-50 rounded-xl">
-                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Assigned Role</span>
-                                        <span className="text-sm font-bold text-gray-900 mt-1 block">{user?.role || 'RestaurantAdmin'}</span>
-                                    </div>
-                                    <div className="p-4 bg-gray-50 rounded-xl">
-                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Registered Phone</span>
-                                        <span className="text-sm font-mono font-bold text-gray-900 mt-1 block">{user?.phoneNumber || restaurant?.phoneNumber || 'N/A'}</span>
-                                    </div>
-                                    <div className="p-4 bg-gray-50 rounded-xl">
-                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Restaurant Entity</span>
-                                        <span className="text-sm font-bold text-gray-900 mt-1 block">{restaurant?.name || 'My Restaurant'}</span>
-                                    </div>
-                                    <div className="p-4 bg-gray-50 rounded-xl">
-                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Subscription Plan</span>
-                                        <span className="text-sm font-bold text-emerald-700 mt-1 block">{restaurant?.subscription?.plan || 'Starter'} ({restaurant?.subscription?.status || 'Active'})</span>
-                                    </div>
-                                </div>
-                            </div>
+                    ) : activeTab === 'appearance' ? (
+                        <div className="space-y-6 min-w-0 w-full">
+                            <ThemeSettingCard />
                         </div>
                     ) : activeTab === 'security' ? (
-                        <form onSubmit={handlePasswordChangeSubmit} className="space-y-6 min-w-0 pr-1.5 flex-1">
+                        <form onSubmit={handlePasswordChangeSubmit} className="space-y-6 min-w-0 w-full">
                             <div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>Change Account Password</h3>
-                                <p className="text-gray-500 text-xs">Update your login password securely for your admin account.</p>
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>Change Account Password</h3>
+                                <p className="text-gray-500 dark:text-slate-400 text-xs">Update your login password securely for your admin account.</p>
                             </div>
 
                             <div className="space-y-4 max-w-md pt-2">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
                                         Current Password <span className="text-gray-400 font-normal text-xs">(Leave blank if forgotten)</span>
                                     </label>
                                     <div className="relative">
@@ -1636,7 +1604,7 @@ const Settings = () => {
                                             value={passwordData.currentPassword}
                                             onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
                                             placeholder="Enter current password or leave blank"
-                                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all pr-10"
+                                            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:border-green-500 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-green-100 transition-all pr-10"
                                         />
                                         <button
                                             type="button"
@@ -1649,7 +1617,7 @@ const Settings = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">New Password</label>
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">New Password</label>
                                     <div className="relative">
                                         <input
                                             type={showNewPassword ? 'text' : 'password'}
@@ -1658,7 +1626,7 @@ const Settings = () => {
                                             required
                                             minLength={6}
                                             placeholder="Enter new password (min. 6 characters)"
-                                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all pr-10"
+                                            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:border-green-500 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-green-100 transition-all pr-10"
                                         />
                                         <button
                                             type="button"
@@ -1671,23 +1639,23 @@ const Settings = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Confirm New Password</label>
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Confirm New Password</label>
                                     <input
                                         type="password"
                                         value={passwordData.confirmPassword}
                                         onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                                         required
                                         placeholder="Re-enter new password"
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all"
+                                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:border-green-500 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-green-100 transition-all"
                                     />
                                 </div>
                             </div>
 
-                            <div className="pt-6 border-t border-gray-100 flex justify-end">
+                            <div className="pt-6 border-t border-gray-100 dark:border-slate-800 flex justify-end">
                                 <button
                                     type="submit"
                                     disabled={changingPassword}
-                                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm shadow-md shadow-green-900/10 disabled:opacity-70"
+                                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm shadow-md shadow-green-900/10 disabled:opacity-70 cursor-pointer"
                                 >
                                     {changingPassword ? (
                                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -1699,18 +1667,49 @@ const Settings = () => {
                             </div>
                         </form>
                     ) : (
-                    <form onSubmit={handleSubmit}>
-                        
-                        {activeTab === 'profile' && (
-                            <>
-                                <h3 className="text-lg font-bold text-gray-900 mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>Profile Information</h3>
+                    <form onSubmit={handleSubmit} className="space-y-8 min-w-0 w-full">
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>My Account Profile</h3>
+                            <p className="text-gray-500 dark:text-slate-400 text-xs mb-4">View registered account credentials, role permissions and restaurant ownership.</p>
+                            <div className="bg-gray-50/70 dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 space-y-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
+                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Full Name</span>
+                                        <span className="text-sm font-black text-gray-900 dark:text-white mt-1 block">{user?.name || 'Administrator'}</span>
+                                    </div>
+                                    <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
+                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Registered Account Email</span>
+                                        <span className="text-sm font-mono font-bold text-indigo-700 dark:text-indigo-400 mt-1 block break-all">{user?.email || restaurant?.email || formData.contactEmail || 'N/A'}</span>
+                                    </div>
+                                    <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
+                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Assigned Role</span>
+                                        <span className="text-sm font-bold text-gray-900 dark:text-white mt-1 block">{user?.role || 'RestaurantAdmin'}</span>
+                                    </div>
+                                    <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
+                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Registered Phone</span>
+                                        <span className="text-sm font-mono font-bold text-gray-900 dark:text-white mt-1 block">{user?.phoneNumber || restaurant?.phone || formData.phone || 'N/A'}</span>
+                                    </div>
+                                    <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
+                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Restaurant Entity</span>
+                                        <span className="text-sm font-bold text-gray-900 dark:text-white mt-1 block">{restaurant?.name || formData.name || 'My Restaurant'}</span>
+                                    </div>
+                                    <div className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800">
+                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Subscription Plan</span>
+                                        <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400 mt-1 block">{subscription?.plan || restaurant?.subscription?.plan || 'Starter'} ({subscription?.status || restaurant?.subscription?.status || 'Active'})</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="border-t border-gray-100 dark:border-slate-800 pt-6">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>Restaurant Profile Information</h3>
 
                                 {/* Logo Upload Section */}
                                 <div className="mb-8">
-                                    <label className="block text-sm font-semibold text-gray-700 mb-3">Restaurant Logo</label>
-                                    <div className="flex items-center gap-5">
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-3">Restaurant Logo</label>
+                                    <div className="flex items-center gap-5 flex-wrap">
                                         {/* Logo Preview */}
-                                        <div className="relative w-24 h-24 rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0">
+                                        <div className="relative w-24 h-24 rounded-2xl border-2 border-dashed border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 flex items-center justify-center overflow-hidden shrink-0">
                                             {displayLogo ? (
                                                 <>
                                                     <img
@@ -1747,7 +1746,7 @@ const Settings = () => {
                                             <div className="flex items-center gap-2">
                                                 <label
                                                     htmlFor="logo-upload"
-                                                    className="cursor-pointer inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm px-4 py-2.5 rounded-xl transition-all"
+                                                    className="cursor-pointer inline-flex items-center gap-2 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-200 font-semibold text-sm px-4 py-2.5 rounded-xl transition-all"
                                                 >
                                                     <Upload size={15} />
                                                     {logoPreview ? 'Change Logo' : (currentLogo ? 'Replace Logo' : 'Upload Logo')}
@@ -1776,59 +1775,60 @@ const Settings = () => {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Restaurant Name</label>
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Restaurant Name</label>
                                         <input 
                                             type="text" 
                                             name="name"
                                             value={formData.name}
                                             onChange={handleChange}
                                             required
-                                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all"
+                                            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:border-green-500 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-green-100 transition-all"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Contact Email</label>
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Contact Email</label>
                                         <input 
                                             type="email" 
                                             name="contactEmail"
                                             value={formData.contactEmail}
                                             onChange={handleChange}
                                             required
-                                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all"
+                                            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:border-green-500 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-green-100 transition-all"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Phone Number</label>
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Phone Number</label>
                                         <input 
                                             type="text" 
                                             name="phone"
                                             value={formData.phone}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all"
-                                            placeholder="e.g. +1 234 567 890"
+                                            maxLength={10}
+                                            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:border-green-500 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-green-100 transition-all"
+                                            placeholder="10-digit phone number"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Address</label>
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Address</label>
                                         <input 
                                             type="text" 
                                             name="address"
                                             value={formData.address}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100 transition-all"
+                                            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:border-green-500 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-green-100 transition-all"
                                             placeholder="e.g. 123 Main St, City"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="mt-10 border-t border-gray-100 pt-8">
-                                    <h3 className="text-lg font-bold text-gray-900 mb-4" style={{ fontFamily: 'Poppins, sans-serif' }}>Subscription Plan</h3>
-                                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+                                <div className="mt-10 border-t border-gray-100 dark:border-slate-800 pt-8">
+                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4" style={{ fontFamily: 'Poppins, sans-serif' }}>Subscription Plan</h3>
+                                    <div className="bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-xl p-5">
                                         <div className="flex items-start justify-between gap-4 flex-wrap">
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Current Plan</p>
                                                 <div className="flex items-center gap-3 flex-wrap">
-                                                    <p className="text-2xl font-black text-gray-900">{subscription?.plan || 'Basic'}</p>
+                                                    <p className="text-2xl font-black text-gray-900 dark:text-white">{subscription?.plan || 'Basic'}</p>
                                                     {subscription?.status && (
                                                         <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border ${
                                                             subscription.status === 'Active'
@@ -1852,15 +1852,15 @@ const Settings = () => {
                                                 {/* Dates grid */}
                                                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
                                                     {subscription?.billingCycle && (
-                                                        <div className="bg-white border border-gray-100 rounded-lg px-3 py-2.5">
+                                                        <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-lg px-3 py-2.5">
                                                             <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Billing Cycle</p>
-                                                            <p className="text-sm font-bold text-gray-700 capitalize">{subscription.billingCycle}</p>
+                                                            <p className="text-sm font-bold text-gray-700 dark:text-slate-200 capitalize">{subscription.billingCycle}</p>
                                                         </div>
                                                     )}
                                                     {subscription?.startDate && (
-                                                        <div className="bg-white border border-gray-100 rounded-lg px-3 py-2.5">
+                                                        <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-lg px-3 py-2.5">
                                                             <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Start Date</p>
-                                                            <p className="text-sm font-bold text-gray-700">
+                                                            <p className="text-sm font-bold text-gray-700 dark:text-slate-200">
                                                                 {new Date(subscription.startDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                             </p>
                                                         </div>
@@ -1869,17 +1869,17 @@ const Settings = () => {
                                                         <div className={`rounded-lg px-3 py-2.5 border ${
                                                             new Date(subscription.expiryDate) < new Date()
                                                                 ? 'bg-red-50 border-red-200'
-                                                                : 'bg-white border-gray-100'
+                                                                : 'bg-white dark:bg-slate-900 border-gray-100 dark:border-slate-800'
                                                         }`}>
                                                             <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
                                                                 {new Date(subscription.expiryDate) < new Date() ? '⚠ Expired On' : 'Renews On'}
                                                             </p>
-                                                            <p className={`text-sm font-bold ${new Date(subscription.expiryDate) < new Date() ? 'text-red-600' : 'text-gray-700'}`}>
+                                                            <p className={`text-sm font-bold ${new Date(subscription.expiryDate) < new Date() ? 'text-red-600' : 'text-gray-700 dark:text-slate-200'}`}>
                                                                 {new Date(subscription.expiryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                             </p>
                                                         </div>
                                                     ) : (
-                                                        <div className="bg-white border border-gray-100 rounded-lg px-3 py-2.5">
+                                                        <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-lg px-3 py-2.5">
                                                             <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Renews On</p>
                                                             <p className="text-sm font-bold text-gray-400 italic">Not set</p>
                                                         </div>
@@ -1893,15 +1893,13 @@ const Settings = () => {
                                         </div>
                                     </div>
                                 </div>
+                        </div>
 
-                            </>
-                        )}
-
-                        <div className="pt-6 border-t border-gray-100 flex justify-end">
+                        <div className="pt-6 border-t border-gray-100 dark:border-slate-800 flex justify-end">
                             <button 
                                 type="submit" 
                                 disabled={saving}
-                                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm shadow-md shadow-green-900/10 disabled:opacity-70"
+                                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm shadow-md shadow-green-900/10 disabled:opacity-70 cursor-pointer"
                             >
                                 {saving ? (
                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>

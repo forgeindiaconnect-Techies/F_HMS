@@ -27,6 +27,12 @@ const WaiterDashboard = () => {
     const [statusFilter, setStatusFilter] = useState('All');
     const [serviceRequests, setServiceRequests] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
+
+    useEffect(() => {
+        const onWaiterSearch = (e) => setSearchQuery(e.detail || '');
+        window.addEventListener('waiter-search', onWaiterSearch);
+        return () => window.removeEventListener('waiter-search', onWaiterSearch);
+    }, []);
     const [fabOpen, setFabOpen] = useState(false);
     const [notificationsOpen, setNotificationsOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
@@ -334,10 +340,13 @@ const WaiterDashboard = () => {
     }
 
     if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
+        const q = searchQuery.toLowerCase().trim();
         filteredTables = filteredTables.filter(t => 
             t.id.toLowerCase().includes(q) || 
-            t.status.toLowerCase().includes(q)
+            String(t.rawId || '').toLowerCase().includes(q) ||
+            t.status.toLowerCase().includes(q) ||
+            (t.orders?._id && t.orders._id.toLowerCase().includes(q)) ||
+            (t.orders?.customerName && t.orders.customerName.toLowerCase().includes(q))
         );
     }
 

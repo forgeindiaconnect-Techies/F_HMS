@@ -34,6 +34,7 @@ const ChefKOTManagement = () => {
     const { api, user, restaurant } = useAuth();
     const [kots, setKots] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [summary, setSummary] = useState({
         totalToday: 0,
         pendingCount: 0,
@@ -111,7 +112,8 @@ const ChefKOTManagement = () => {
         } catch (e) {}
     };
 
-    const fetchKOTData = async () => {
+    const fetchKOTData = async (isManual = false) => {
+        if (isManual) setRefreshing(true);
         try {
             const params = {};
             if (selectedStatus !== 'All') params.status = selectedStatus;
@@ -126,10 +128,17 @@ const ChefKOTManagement = () => {
             if (summaryRes.data) {
                 setSummary(prev => ({ ...prev, ...summaryRes.data }));
             }
+            if (isManual) {
+                toast.success('KOT queue refreshed', { id: 'chef-kot-refresh' });
+            }
         } catch (error) {
             console.error('Failed to fetch KOT data', error);
+            if (isManual) {
+                toast.error('Failed to refresh KOT queue');
+            }
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     };
 
@@ -240,13 +249,13 @@ const ChefKOTManagement = () => {
             {/* -------------------------------------------------- */}
             {/* TOP BAR / STATS OVERVIEW */}
             {/* -------------------------------------------------- */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 shadow-xs flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 sm:gap-6">
-                <div>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 shadow-xs flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+                <div className="min-w-0">
                     <div className="flex items-center gap-3">
                         <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-lg shadow-orange-500/20 shrink-0">
                             <Receipt size={22} />
                         </div>
-                        <div>
+                        <div className="min-w-0">
                             <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
                                 Kitchen Order Tickets (KOT)
                             </h1>
@@ -257,50 +266,58 @@ const ChefKOTManagement = () => {
                     </div>
                 </div>
 
-                {/* Live Stats Pills */}
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                    <div className="px-3 sm:px-4 py-1.5 sm:py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl sm:rounded-2xl">
-                        <span className="text-[10px] font-black uppercase text-amber-600 dark:text-amber-400 block tracking-wider">Preparing</span>
-                        <span className="text-lg sm:text-xl font-black text-amber-900 dark:text-amber-200">{summary.preparingCount}</span>
-                    </div>
-                    <div className="px-3 sm:px-4 py-1.5 sm:py-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl sm:rounded-2xl">
-                        <span className="text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400 block tracking-wider">Prepared</span>
-                        <span className="text-lg sm:text-xl font-black text-emerald-900 dark:text-emerald-200">{summary.readyCount}</span>
-                    </div>
-                    <div className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 rounded-xl sm:rounded-2xl">
-                        <span className="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 block tracking-wider">Total Today</span>
-                        <span className="text-lg sm:text-xl font-black text-blue-900 dark:text-blue-200">{summary.totalToday}</span>
-                    </div>
-                    <div className="px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl sm:rounded-2xl flex items-center gap-2">
-                        <Clock size={15} className="text-slate-400 shrink-0" />
-                        <div>
-                            <span className="text-[10px] font-bold uppercase text-slate-400 block">Avg Prep</span>
-                            <span className="text-xs sm:text-sm font-black text-slate-800 dark:text-slate-200">{summary.avgPrepMinutes}m</span>
+                {/* Live Stats Pills & Actions */}
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-2.5 w-full xl:w-auto justify-between xl:justify-end shrink-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <div className="px-3 py-1.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl whitespace-nowrap">
+                            <span className="text-[10px] font-black uppercase text-amber-600 dark:text-amber-400 block tracking-wider">Preparing</span>
+                            <span className="text-lg font-black text-amber-900 dark:text-amber-200">{summary.preparingCount}</span>
+                        </div>
+                        <div className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl whitespace-nowrap">
+                            <span className="text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400 block tracking-wider">Prepared</span>
+                            <span className="text-lg font-black text-emerald-900 dark:text-emerald-200">{summary.readyCount}</span>
+                        </div>
+                        <div className="px-3 py-1.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 rounded-xl whitespace-nowrap">
+                            <span className="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 block tracking-wider">Total Today</span>
+                            <span className="text-lg font-black text-blue-900 dark:text-blue-200">{summary.totalToday}</span>
+                        </div>
+                        <div className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center gap-2 whitespace-nowrap">
+                            <Clock size={15} className="text-slate-400 shrink-0" />
+                            <div>
+                                <span className="text-[10px] font-bold uppercase text-slate-400 block">Avg Prep</span>
+                                <span className="text-xs sm:text-sm font-black text-slate-800 dark:text-slate-200">{summary.avgPrepMinutes}m</span>
+                            </div>
                         </div>
                     </div>
-                    {/* Kitchen KOT Auto-Print Toggle */}
-                    <button
-                        type="button"
-                        onClick={toggleAutoPrintKOT}
-                        className={`text-xs font-bold px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl flex items-center gap-1.5 transition-all cursor-pointer border ${
-                            autoPrintKOTEnabled 
-                                ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700' 
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'
-                        }`}
-                        title="Toggle automatic printing of incoming KOT tickets in kitchen"
-                    >
-                        <Printer size={15} className={autoPrintKOTEnabled ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'} />
-                        <span className="hidden sm:inline">Auto-Print:</span>
-                        <span>{autoPrintKOTEnabled ? 'ON' : 'OFF'}</span>
-                    </button>
 
-                    <button
-                        onClick={fetchKOTData}
-                        className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
-                        title="Refresh Tickets"
-                    >
-                        <RefreshCw size={17} className={loading ? 'animate-spin' : ''} />
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                        {/* Kitchen KOT Auto-Print Toggle */}
+                        <button
+                            type="button"
+                            onClick={toggleAutoPrintKOT}
+                            className={`text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer border whitespace-nowrap shrink-0 ${
+                                autoPrintKOTEnabled 
+                                    ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700' 
+                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'
+                            }`}
+                            title="Toggle automatic printing of incoming KOT tickets in kitchen"
+                        >
+                            <Printer size={15} className={autoPrintKOTEnabled ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'} />
+                            <span className="hidden sm:inline">Auto-Print:</span>
+                            <span>{autoPrintKOTEnabled ? 'ON' : 'OFF'}</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => fetchKOTData(true)}
+                            disabled={refreshing}
+                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-colors cursor-pointer disabled:opacity-60 border border-slate-200 dark:border-slate-700 shrink-0"
+                            title="Refresh Tickets"
+                        >
+                            <RefreshCw size={15} className={(loading || refreshing) ? 'animate-spin' : ''} />
+                            <span>Refresh</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 

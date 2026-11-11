@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { MapPin, Star, Clock, Info, ShoppingBag, Plus, Minus, CheckCircle, Store, AlertCircle, ArrowLeft } from 'lucide-react';
+import { MapPin, Star, Clock, Info, ShoppingBag, Plus, Minus, CheckCircle, Store, AlertCircle, ArrowLeft, Heart } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { getItemImage } from '../../utils/imageHelper';
 import api, { getApiUrl } from '../../utils/axiosInstance';
@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 const RestaurantDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { cartItems, addToCart, removeFromCart, clearCart, cartTotal, cartCount } = useCart();
+    const { cartItems, addToCart, removeFromCart, clearCart, cartTotal, cartCount, wishlist, toggleWishlist, setIsWishlistOpen } = useCart();
     
     const [restaurant, setRestaurant] = useState(null);
     const [branches, setBranches] = useState([]);
@@ -347,9 +347,20 @@ const RestaurantDetails = () => {
                 <div className="mt-8 flex flex-col lg:flex-row gap-8 items-start">
                     {/* Left Categories Sidebar (Desktop) */}
                     <div className="lg:w-56 shrink-0 hidden lg:block">
-                        <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-slate-800 sticky top-24">
-                            <h3 className="font-bold text-gray-900 dark:text-white mb-4 px-2">Menu</h3>
-                            <div className="space-y-1 min-w-0 pr-1.5 flex-1">
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-slate-800 sticky top-24 space-y-4">
+                            <div className="flex items-center justify-between px-2">
+                                <h3 className="font-bold text-gray-900 dark:text-white">Menu</h3>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsWishlistOpen(true)}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/50 text-xs font-bold hover:bg-rose-100 transition-colors cursor-pointer"
+                                    title="View Wishlist"
+                                >
+                                    <Heart size={12} className="fill-rose-500 text-rose-500" />
+                                    <span>{wishlist?.length || 0}</span>
+                                </button>
+                            </div>
+                            <div className="space-y-1 min-w-0 flex-1">
                                 {categories.map(cat => (
                                     <a href={`#category-${cat}`} key={cat} className="block px-4 py-2.5 rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-red-600 dark:hover:text-red-400 transition-colors font-medium text-sm">
                                         {cat}
@@ -361,18 +372,51 @@ const RestaurantDetails = () => {
 
                     {/* Menu Items (Appears First) */}
                     <div className="flex-1 w-full space-y-10 order-1">
+                        <div className="flex items-center justify-between bg-white dark:bg-slate-900 rounded-2xl px-4 py-3 border border-gray-100 dark:border-slate-800 shadow-2xs">
+                            <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-gray-800 dark:text-white">
+                                <ShoppingBag size={16} className="text-[#FF5A1F]" />
+                                <span>Restaurant Menu ({menu.length} Dishes)</span>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsWishlistOpen(true)}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/50 text-xs font-extrabold transition-colors cursor-pointer"
+                            >
+                                <Heart size={14} className={wishlist?.length > 0 ? 'fill-rose-500 text-rose-500' : ''} />
+                                <span>Wishlist ({wishlist?.length || 0})</span>
+                            </button>
+                        </div>
+
                         {categories.map(category => (
                             <div key={category} id={`category-${category}`} className="scroll-mt-24">
                                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">{category}</h2>
                                 <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden divide-y divide-gray-50 dark:divide-slate-800">
-                                    {menu.filter(item => item.category === category).map(item => (
+                                    {menu.filter(item => item.category === category).map(item => {
+                                        const isFav = wishlist?.some(w => (w._id || w.id) === (item._id || item.id));
+                                        return (
                                         <div 
                                              key={item._id} 
                                              className="p-4 sm:p-6 flex gap-4 sm:gap-6 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors group rounded-2xl"
                                          >
                                              <div className="flex-1">
-                                                 <div className="flex items-start justify-between mb-1">
+                                                 <div className="flex items-start justify-between gap-2 mb-1">
                                                      <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">{item.name}</h3>
+                                                     <button
+                                                         type="button"
+                                                         onClick={() => {
+                                                             toggleWishlist(item);
+                                                             toast.success(isFav ? `${item.name} removed from wishlist` : `${item.name} added to wishlist!`);
+                                                         }}
+                                                         className={`p-1.5 rounded-full border transition-all cursor-pointer shrink-0 ${
+                                                             isFav
+                                                                 ? 'bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-950/40 dark:border-rose-800'
+                                                                 : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-400 hover:text-rose-500 hover:border-rose-200'
+                                                         }`}
+                                                         title={isFav ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                                                         aria-label="Toggle Wishlist"
+                                                     >
+                                                         <Heart size={15} className={isFav ? 'fill-rose-500 text-rose-500' : ''} />
+                                                     </button>
                                                  </div>
                                                  <div className="font-extrabold text-red-600 dark:text-red-400 mb-1.5">₹{item.price}</div>
                                                  <p className="text-gray-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed line-clamp-2">{item.description}</p>
@@ -393,7 +437,8 @@ const RestaurantDetails = () => {
                                                  </div>
                                              )}
                                          </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         ))}

@@ -5,7 +5,7 @@ import {
     Crown, Sparkles, Plus, Trash2, 
     ChevronRight, LogOut, Wallet, Star, ShieldAlert,
     MapPin, Phone, Lock, Clock, Gift, User,
-    Bike, Store, BellRing, MoreVertical
+    Bike, Store, BellRing, Menu, X
 } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { getApiUrl } from '../../utils/axiosInstance';
@@ -41,7 +41,7 @@ const CustomerDashboard = () => {
     const [isDetectingLocation, setIsDetectingLocation] = useState(false);
     const [showOnlyLocalOutlets, setShowOnlyLocalOutlets] = useState(true);
     const [outletSearchFilter, setOutletSearchFilter] = useState('');
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(() => (typeof window !== 'undefined' ? window.innerWidth >= 1024 : true));
     
     // Add Funds Modal States
     const [isAddFundsOpen, setIsAddFundsOpen] = useState(false);
@@ -564,7 +564,7 @@ const CustomerDashboard = () => {
                                     }`}
                                 >
                                     {/* Order Meta */}
-                                    <div className="flex items-center justify-between gap-1.5 border-b border-gray-100 pb-2 mb-2.5">
+                                    <div className="flex items-center justify-between gap-1.5 border-b border-gray-100 pb-2 mb-2.5 flex-wrap">
                                         <div className="flex items-center gap-1.5 min-w-0">
                                             <span className="font-mono font-black text-[11px] text-gray-900 bg-gray-100 px-2 py-0.5 rounded-md shrink-0">
                                                 #{getShortId(order._id)}
@@ -572,6 +572,12 @@ const CustomerDashboard = () => {
                                             <span className="text-xs font-bold text-gray-800 truncate max-w-[120px] sm:max-w-[160px]">
                                                 {order.restaurantId?.name || 'Restaurant Outlet'}
                                             </span>
+                                            {order.createdAt && (
+                                                <span className="text-[10px] font-semibold text-gray-500 flex items-center gap-1 shrink-0">
+                                                    <Calendar size={10} />
+                                                    {new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                </span>
+                                            )}
                                         </div>
                                         {(() => {
                                             const isSelfPickupOrder = order.orderType === 'Self-Pickup' || order.orderType === 'Takeaway' || order.source === 'Self-Pickup' || String(order.orderType || '').toLowerCase().includes('pickup');
@@ -688,21 +694,38 @@ const CustomerDashboard = () => {
                 </div>
             )}
 
+            {/* Mobile & Desktop Hamburger Drawer Control Header */}
+            <div className="flex items-center justify-between bg-white rounded-2xl px-4 py-3 border border-slate-200/80 shadow-xs lg:hidden">
+                <button
+                    type="button"
+                    onClick={() => setIsSidebarOpen(prev => !prev)}
+                    className="p-2 rounded-xl bg-orange-50 text-[#FF5A1F] hover:bg-orange-100 transition-all cursor-pointer flex items-center gap-2 font-bold text-xs border border-orange-200/80"
+                    aria-label="Toggle Navigation Sidebar"
+                >
+                    {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}
+                    <span>{tabsList.find(t => t.id === activeTab)?.name || 'Dashboard Menu'}</span>
+                </button>
+                <span className="text-[11px] font-bold text-slate-400">
+                    {tabsList.length} Sections
+                </span>
+            </div>
+
             {/* Portal Layout Container with Toggleable Sidebar */}
             <div className={`grid grid-cols-1 ${isSidebarOpen ? 'lg:grid-cols-4' : 'lg:grid-cols-1'} gap-6 items-start transition-all duration-300`}>
                 
-                {/* Sidebar Navigation Options (Always Vertical) */}
+                {/* Sidebar Navigation Options */}
                 {isSidebarOpen ? (
                     <div className="bg-white rounded-2xl p-2.5 sm:p-4 shadow-xs border border-slate-200/80 transition-all duration-300 animate-in fade-in">
                         <div className="flex items-center justify-between px-3 py-1.5 mb-2 border-b border-slate-100 pb-2">
                             <p className="text-[11px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest">Customer Account</p>
                             <button
+                                type="button"
                                 onClick={() => setIsSidebarOpen(false)}
-                                title="Hide Sidebar Menu"
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-                                aria-label="Hide Sidebar"
+                                title="Collapse Sidebar Menu"
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-[#FF5A1F] hover:bg-orange-50 transition-colors cursor-pointer"
+                                aria-label="Collapse Sidebar"
                             >
-                                <MoreVertical size={16} />
+                                <X size={17} />
                             </button>
                         </div>
                         <div className="flex flex-col gap-1.5 w-full">
@@ -711,7 +734,11 @@ const CustomerDashboard = () => {
                                 return (
                                     <button
                                         key={tab.id}
-                                        onClick={() => setActiveTab(tab.id)}
+                                        type="button"
+                                        onClick={() => {
+                                            setActiveTab(tab.id);
+                                            if (window.innerWidth < 1024) setIsSidebarOpen(false);
+                                        }}
                                         className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-[15px] font-bold transition-all cursor-pointer w-full text-left ${
                                             isActive
                                             ? 'bg-orange-50 text-[#FF5A1F] border border-orange-200/80 shadow-xs'
@@ -728,18 +755,20 @@ const CustomerDashboard = () => {
                         </div>
                     </div>
                 ) : (
-                    /* Floating / Collapsed Quick Sidebar Opener Button */
-                    <div className="flex items-center justify-between bg-white rounded-2xl px-4 py-3 border border-slate-200/80 shadow-xs">
+                    /* Collapsed Quick Hamburger Bar (Desktop) */
+                    <div className="hidden lg:flex items-center justify-between bg-white rounded-2xl px-4 py-3 border border-slate-200/80 shadow-xs">
                         <div className="flex items-center gap-3">
                             <button
+                                type="button"
                                 onClick={() => setIsSidebarOpen(true)}
                                 className="p-2 rounded-xl bg-orange-50 text-[#FF5A1F] hover:bg-orange-100 transition-all cursor-pointer flex items-center gap-2 font-bold text-xs shadow-xs border border-orange-200/80"
-                                title="Show Navigation Menu"
+                                title="Open Sidebar Menu"
+                                aria-label="Open Sidebar Menu"
                             >
-                                <MoreVertical size={16} />
-                                <span>Show Menu</span>
+                                <Menu size={18} />
+                                <span>Sections</span>
                             </button>
-                            <span className="text-xs font-bold text-slate-500 hidden sm:inline">
+                            <span className="text-xs font-bold text-slate-500">
                                 Currently viewing: <strong className="text-slate-800">{tabsList.find(t => t.id === activeTab)?.name || 'Dashboard'}</strong>
                             </span>
                         </div>
@@ -747,6 +776,7 @@ const CustomerDashboard = () => {
                             {tabsList.map(tab => (
                                 <button
                                     key={tab.id}
+                                    type="button"
                                     onClick={() => setActiveTab(tab.id)}
                                     title={tab.name}
                                     className={`p-2 rounded-xl transition-all cursor-pointer ${
@@ -1153,6 +1183,24 @@ const CustomerDashboard = () => {
                                                                          {food.category}
                                                                      </span>
                                                                  )}
+                                                                 <button
+                                                                     type="button"
+                                                                     onClick={(e) => {
+                                                                         e.stopPropagation();
+                                                                         const isFavNow = wishlist?.some(w => (w._id || w.id) === (food._id || food.id));
+                                                                         toggleWishlist(food);
+                                                                         toast.success(isFavNow ? 'Removed from wishlist' : 'Added to wishlist!');
+                                                                     }}
+                                                                     className={`absolute top-2 right-2 p-1.5 rounded-full backdrop-blur-xs transition-colors cursor-pointer ${
+                                                                         wishlist?.some(w => (w._id || w.id) === (food._id || food.id))
+                                                                             ? 'bg-rose-500 text-white shadow-xs'
+                                                                             : 'bg-white/90 text-slate-600 hover:text-rose-500 shadow-xs'
+                                                                     }`}
+                                                                     aria-label="Wishlist"
+                                                                     title="Save to Wishlist"
+                                                                 >
+                                                                     <Heart size={13} className={wishlist?.some(w => (w._id || w.id) === (food._id || food.id)) ? 'fill-white' : ''} />
+                                                                 </button>
                                                              </div>
 
                                                              <div className="space-y-1">
@@ -1209,8 +1257,14 @@ const CustomerDashboard = () => {
                                     safeOrders.map(order => (
                                         <div key={order._id} className="border border-gray-100 hover:border-orange-100 p-3.5 sm:p-5 rounded-xl sm:rounded-2xl transition-all space-y-3 sm:space-y-4 bg-white shadow-xs">
                                             <div className="flex justify-between items-center flex-wrap gap-2 border-b border-gray-50 pb-2.5 sm:pb-3">
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-2 flex-wrap">
                                                     <span className="font-extrabold text-xs sm:text-sm text-gray-900 font-mono">#{getShortId(order._id)}</span>
+                                                    {order.createdAt && (
+                                                        <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-lg">
+                                                            <Calendar size={11} className="text-slate-500" />
+                                                            {new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                        </span>
+                                                    )}
                                                     {(() => {
                                                         const isSelfPickupOrder = order.orderType === 'Self-Pickup' || order.orderType === 'Takeaway' || order.source === 'Self-Pickup' || String(order.orderType || '').toLowerCase().includes('pickup');
                                                         const isSelfDineInOrder = !isSelfPickupOrder && (order.serviceType === 'Self Dine-In (KFC Style)' || String(order.serviceType || '').toLowerCase().includes('self dine-in'));

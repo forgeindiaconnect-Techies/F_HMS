@@ -125822,6 +125822,16 @@ var init_Branch = __esm({
         phone: String,
         email: String
       },
+      operatingHours: {
+        open: {
+          type: String,
+          default: "08:00"
+        },
+        close: {
+          type: String,
+          default: "22:00"
+        }
+      },
       manager: {
         type: import_mongoose7.default.Schema.Types.ObjectId,
         ref: "User"
@@ -128852,7 +128862,7 @@ var getRestaurantPublicConfig = async (req, res) => {
     if (!id || !import_mongoose13.default.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid restaurant ID" });
     }
-    const restaurant = await Restaurant_default.findById(id).select("name logo restaurantConfig posConfig billingConfig status isDeleted isActive approvalStatus");
+    const restaurant = await Restaurant_default.findById(id).select("name logo restaurantConfig posConfig billingConfig deliverySettings status isDeleted isActive approvalStatus");
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant not found" });
     }
@@ -128866,6 +128876,7 @@ var getRestaurantPublicConfig = async (req, res) => {
     res.json({
       restaurantName: restaurant.name,
       logo: restaurant.logo,
+      deliverySettings: restaurant.deliverySettings || { enabled: true },
       qrOrdering: {
         enabled: config.qrOrdering?.enabled ?? true,
         allowSelfDineIn: config.qrOrdering?.allowSelfDineIn ?? true,
@@ -128887,7 +128898,9 @@ var getRestaurantPublicConfig = async (req, res) => {
         kitchenMode: config.orderKitchen?.kitchenMode || restaurant.kitchenMode || "KDS",
         kotEnabled: config.orderKitchen?.kotEnabled ?? true,
         kdsEnabled: config.orderKitchen?.kdsEnabled ?? true,
-        kotPrintEnabled: config.orderKitchen?.kotPrintEnabled ?? true
+        kotPrintEnabled: config.orderKitchen?.kotPrintEnabled ?? true,
+        selfPickup: config.orderKitchen?.selfPickup ?? true,
+        homeDelivery: config.orderKitchen?.homeDelivery ?? true
       }
     });
   } catch (error) {
@@ -129677,17 +129690,32 @@ var createBranch2 = async (req, res) => {
   }
 };
 var updateBranch = async (req, res) => {
-  const { name, location, contact, isActive } = req.body;
+  const { name, location, contact, operatingHours, openingTime, closingTime, isActive } = req.body;
   try {
     const branch = await Branch_default.findById(req.params.id);
     if (branch) {
       if (branch.restaurantId.toString() !== req.user.restaurantId.toString()) {
         return res.status(403).json({ message: "Not authorized to update this branch" });
       }
-      branch.name = name || branch.name;
-      branch.location = location || branch.location;
-      branch.contact = contact || branch.contact;
-      if (isActive !== void 0) branch.isActive = isActive;
+      if (req.user.role === "BranchManager") {
+        const userBranchId = req.user.branchId?._id || req.user.branchId;
+        const matchesAssignedBranch = userBranchId && userBranchId.toString() === branch._id.toString();
+        const matchesManagerField = branch.manager && branch.manager.toString() === req.user._id.toString();
+        if (userBranchId && !matchesAssignedBranch && !matchesManagerField) {
+          return res.status(403).json({ message: "Branch managers can only update their own branch details" });
+        }
+      }
+      if (name !== void 0) branch.name = name;
+      if (location !== void 0) branch.location = { ...branch.location?.toObject?.() || branch.location || {}, ...location };
+      if (contact !== void 0) branch.contact = { ...branch.contact?.toObject?.() || branch.contact || {}, ...contact };
+      if (operatingHours !== void 0 || openingTime !== void 0 || closingTime !== void 0) {
+        const existingHours = branch.operatingHours?.toObject?.() || branch.operatingHours || {};
+        branch.operatingHours = {
+          open: operatingHours?.open ?? openingTime ?? existingHours.open ?? "08:00",
+          close: operatingHours?.close ?? closingTime ?? existingHours.close ?? "22:00"
+        };
+      }
+      if (isActive !== void 0 && ["RestaurantAdmin", "SuperAdmin"].includes(req.user.role)) branch.isActive = isActive;
       const updatedBranch = await branch.save();
       const populatedBranch = await Branch_default.findById(updatedBranch._id).populate("manager", "name email");
       res.json(populatedBranch);
@@ -129720,7 +129748,7 @@ var router3 = import_express3.default.Router();
 router3.use(protect);
 router3.use(checkSubscription);
 router3.route("/").get(authorize("RestaurantAdmin", "SuperAdmin", "BranchManager", "Waiter", "Cashier"), getBranches2).post(authorize("RestaurantAdmin", "SuperAdmin"), createBranch2);
-router3.route("/:id").put(authorize("RestaurantAdmin", "SuperAdmin"), updateBranch).delete(authorize("RestaurantAdmin", "SuperAdmin"), deleteBranch);
+router3.route("/:id").put(authorize("RestaurantAdmin", "SuperAdmin", "BranchManager"), updateBranch).delete(authorize("RestaurantAdmin", "SuperAdmin"), deleteBranch);
 var branchRoutes_default = router3;
 
 // routes/orderRoutes.js

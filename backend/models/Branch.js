@@ -21,6 +21,16 @@ const branchSchema = new mongoose.Schema({
         phone: String,
         email: String,
     },
+    operatingHours: {
+        open: {
+            type: String,
+            default: '08:00',
+        },
+        close: {
+            type: String,
+            default: '22:00',
+        },
+    },
     manager: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

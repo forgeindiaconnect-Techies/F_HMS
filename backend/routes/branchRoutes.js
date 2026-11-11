@@ -13,7 +13,7 @@ router.route('/')
     .post(authorize('RestaurantAdmin', 'SuperAdmin'), createBranch);
 
 router.route('/:id')
-    .put(authorize('RestaurantAdmin', 'SuperAdmin'), updateBranch)
+    .put(authorize('RestaurantAdmin', 'SuperAdmin', 'BranchManager'), updateBranch)
     .delete(authorize('RestaurantAdmin', 'SuperAdmin'), deleteBranch);
 
 export default router;

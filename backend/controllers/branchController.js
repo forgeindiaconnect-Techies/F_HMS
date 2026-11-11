@@ -88,7 +88,7 @@ export const createBranch = async (req, res) => {
 // @route   PUT /api/branches/:id
 // @access  Private
 export const updateBranch = async (req, res) => {
-    const { name, location, contact, isActive } = req.body;
+    const { name, location, contact, operatingHours, openingTime, closingTime, isActive } = req.body;
 
     try {
         const branch = await Branch.findById(req.params.id);
@@ -99,10 +99,26 @@ export const updateBranch = async (req, res) => {
                 return res.status(403).json({ message: 'Not authorized to update this branch' });
             }
 
-            branch.name = name || branch.name;
-            branch.location = location || branch.location;
-            branch.contact = contact || branch.contact;
-            if (isActive !== undefined) branch.isActive = isActive;
+            if (req.user.role === 'BranchManager') {
+                const userBranchId = req.user.branchId?._id || req.user.branchId;
+                const matchesAssignedBranch = userBranchId && userBranchId.toString() === branch._id.toString();
+                const matchesManagerField = branch.manager && branch.manager.toString() === req.user._id.toString();
+                if (userBranchId && !matchesAssignedBranch && !matchesManagerField) {
+                    return res.status(403).json({ message: 'Branch managers can only update their own branch details' });
+                }
+            }
+
+            if (name !== undefined) branch.name = name;
+            if (location !== undefined) branch.location = { ...(branch.location?.toObject?.() || branch.location || {}), ...location };
+            if (contact !== undefined) branch.contact = { ...(branch.contact?.toObject?.() || branch.contact || {}), ...contact };
+            if (operatingHours !== undefined || openingTime !== undefined || closingTime !== undefined) {
+                const existingHours = branch.operatingHours?.toObject?.() || branch.operatingHours || {};
+                branch.operatingHours = {
+                    open: operatingHours?.open ?? openingTime ?? existingHours.open ?? '08:00',
+                    close: operatingHours?.close ?? closingTime ?? existingHours.close ?? '22:00',
+                };
+            }
+            if (isActive !== undefined && ['RestaurantAdmin', 'SuperAdmin'].includes(req.user.role)) branch.isActive = isActive;
 
             const updatedBranch = await branch.save();
             const populatedBranch = await Branch.findById(updatedBranch._id).populate('manager', 'name email');

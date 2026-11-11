@@ -14,6 +14,12 @@ const WaiterFloorPlan = () => {
     const [activeTable, setActiveTable] = useState(null);
     const [panelOpen, setPanelOpen] = useState(false);
 
+    useEffect(() => {
+        const onWaiterSearch = (e) => setSearchQuery(e.detail || '');
+        window.addEventListener('waiter-search', onWaiterSearch);
+        return () => window.removeEventListener('waiter-search', onWaiterSearch);
+    }, []);
+
     const [assignedIds, setAssignedIds] = useState(() => {
         try {
             return JSON.parse(localStorage.getItem(`waiter_assigned_tables_${user?._id}`) || '[]');
@@ -75,8 +81,14 @@ const WaiterFloorPlan = () => {
     });
 
     const filteredTables = tables.filter(t => {
+        const q = searchQuery.trim().toLowerCase();
         const matchesStatus = statusFilter === 'All' || t.status === statusFilter;
-        const matchesSearch = !searchQuery.trim() || t.id.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesSearch = !q || 
+            t.id.toLowerCase().includes(q) ||
+            String(t.rawId || '').toLowerCase().includes(q) ||
+            t.status.toLowerCase().includes(q) ||
+            (t.orders?._id && t.orders._id.toLowerCase().includes(q)) ||
+            (t.orders?.customerName && t.orders.customerName.toLowerCase().includes(q));
         return matchesStatus && matchesSearch;
     });
 

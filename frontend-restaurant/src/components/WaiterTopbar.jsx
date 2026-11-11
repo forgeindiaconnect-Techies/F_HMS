@@ -1,4 +1,4 @@
-import { Bell, User, Search, LogOut, Menu, Settings } from 'lucide-react';
+import { Bell, User, Search, LogOut, Menu, Settings, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
@@ -8,8 +8,14 @@ const WaiterTopbar = () => {
     const [showNotifs, setShowNotifs] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [showProfile, setShowProfile] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
     const notifRef = useRef(null);
     const profileRef = useRef(null);
+
+    const handleSearchChange = (val) => {
+        setSearchTerm(val);
+        window.dispatchEvent(new CustomEvent('waiter-search', { detail: val }));
+    };
 
     useEffect(() => {
         fetchNotifications();
@@ -56,16 +62,38 @@ const WaiterTopbar = () => {
                 >
                     <Menu size={24} />
                 </button>
-                <div className="relative group hidden md:block">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Search size={16} className="text-gray-400 group-focus-within:text-green-500 transition-colors" />
-                    </div>
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        handleSearchChange(searchTerm);
+                    }}
+                    className="relative group flex items-center"
+                >
+                    <button
+                        type="submit"
+                        aria-label="Search tables or orders"
+                        className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 group-focus-within:text-green-500 hover:text-green-600 transition-colors cursor-pointer"
+                    >
+                        <Search size={16} />
+                    </button>
                     <input 
                         type="text" 
+                        value={searchTerm}
+                        onChange={(e) => handleSearchChange(e.target.value)}
                         placeholder="Search table or order..." 
-                        className="pl-9 pr-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all w-64 font-medium"
+                        className="pl-9 pr-8 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all w-40 sm:w-64 font-medium"
                     />
-                </div>
+                    {searchTerm && (
+                        <button
+                            type="button"
+                            onClick={() => handleSearchChange('')}
+                            className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 cursor-pointer"
+                            aria-label="Clear search"
+                        >
+                            <X size={14} />
+                        </button>
+                    )}
+                </form>
             </div>
             
             <div className="flex items-center gap-2 sm:gap-4">

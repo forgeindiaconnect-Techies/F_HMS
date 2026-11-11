@@ -327,17 +327,18 @@ const CashierDashboard = () => {
         return (
             <button
                 key={bill._id}
+                type="button"
                 onClick={() => handleSelectBill(bill)}
-                className={`w-full text-left p-3.5 sm:p-4 rounded-2xl border-2 transition-all flex flex-col gap-2.5 cursor-pointer ${
+                className={`w-full items-stretch text-left p-3.5 sm:p-4 rounded-2xl border-2 transition-all flex flex-col gap-2.5 cursor-pointer ${
                     isSelected
-                    ? 'border-emerald-500 bg-emerald-50/90 dark:bg-emerald-950/40 shadow-lg ring-2 ring-emerald-500/25 scale-[1.01]'
+                    ? 'border-emerald-500 bg-emerald-50/90 dark:bg-emerald-950/40 shadow-md ring-2 ring-emerald-500/20'
                     : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-emerald-400 hover:shadow-md'
                 }`}
             >
                 {/* Top Row: Table Name & Status Badge */}
-                <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-base font-black text-slate-900 dark:text-white truncate">
+                <div className="w-full flex items-center justify-between gap-2 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate">
                             {tableTitle}
                         </span>
                         {bill.serviceType === 'Self Dine-In (KFC Style)' && (
@@ -346,19 +347,19 @@ const CashierDashboard = () => {
                             </span>
                         )}
                     </div>
-                    <span className={`px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wide shrink-0 ${getStatusBadge(bill.status)}`}>
+                    <span className={`px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wide shrink-0 whitespace-nowrap ${getStatusBadge(bill.status)}`}>
                         {bill.status || 'Pending'}
                     </span>
                 </div>
 
                 {/* Second Row: KOT Tag & Order Ref & Customer */}
-                <div className="flex items-center justify-between text-xs gap-1.5 flex-wrap">
-                    <div className="flex items-center gap-1.5">
-                        <span className="font-mono font-black text-[11px] bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-2.5 py-0.5 rounded-lg shadow-xs flex items-center gap-1">
+                <div className="w-full flex items-center justify-between text-xs gap-1.5 flex-wrap">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="font-mono font-black text-[11px] bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-2 py-0.5 rounded-lg shadow-xs flex items-center gap-1 whitespace-nowrap">
                             <span>🎟️</span>
                             <span>{displayKot}</span>
                         </span>
-                        <span className="font-mono text-[11px] text-slate-400 dark:text-slate-500 font-bold">
+                        <span className="font-mono text-[11px] text-slate-400 dark:text-slate-500 font-bold whitespace-nowrap">
                             #{bill._id.substring(bill._id.length - 6).toUpperCase()}
                         </span>
                     </div>
@@ -371,14 +372,14 @@ const CashierDashboard = () => {
 
                 {/* Items Summary Snippet */}
                 {bill.orderItems && bill.orderItems.length > 0 && (
-                    <div className="text-[11px] text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-950/70 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 truncate">
+                    <div className="w-full text-[11px] text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-950/70 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 truncate">
                         <span className="font-black text-slate-900 dark:text-white">{itemCount} items: </span>
                         <span>{itemsPreview}{moreCount}</span>
                     </div>
                 )}
 
                 {/* Bottom Row: Grand Total & Time */}
-                <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 dark:border-slate-800">
+                <div className="w-full flex items-center justify-between pt-1.5 border-t border-slate-100 dark:border-slate-800">
                     <div className="flex items-baseline gap-1.5">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total:</span>
                         <span className="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400 font-mono">
@@ -386,7 +387,7 @@ const CashierDashboard = () => {
                         </span>
                     </div>
                     {timeFormatted && (
-                        <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
+                        <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1 whitespace-nowrap">
                             <Clock size={12} /> {timeFormatted}
                         </span>
                     )}
@@ -1385,7 +1386,7 @@ const CashierDashboard = () => {
                     </div>
 
                     {/* Queue Tabs */}
-                    <div className="flex bg-slate-100/95 dark:bg-slate-800/95 p-1.5 rounded-2xl mb-3 shrink-0 gap-1.5 border border-slate-200 dark:border-slate-700/80 shadow-xs">
+                    <div className="grid grid-cols-3 bg-slate-100/95 dark:bg-slate-800/95 p-1 rounded-2xl mb-3 shrink-0 gap-1 border border-slate-200 dark:border-slate-700/80 shadow-xs">
                         {[
                             { id: 'Pending', label: 'Billing', count: filteredQueue.length, icon: Receipt },
                             { id: 'Self-Pickup', label: 'Pickup', count: filteredPickup.length, icon: ShoppingBag },
@@ -1396,29 +1397,28 @@ const CashierDashboard = () => {
                             return (
                                 <button 
                                     key={t.id}
+                                    type="button"
                                     onClick={() => { 
                                         setActiveTab(t.id); 
                                         if (t.id === 'Pending') setActiveBill(filteredQueue[0] || null);
                                         else if (t.id === 'Self-Pickup') setActiveBill(filteredPickup[0] || null);
                                         else if (t.id === 'Paid') setActiveBill(filteredHistory[0] || null);
                                     }}
-                                    className={`flex-1 py-2 px-2 text-xs font-black rounded-xl transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer select-none active:scale-95 ${
+                                    className={`min-w-0 py-2 px-1.5 text-[11px] sm:text-xs font-black rounded-xl transition-all duration-150 flex items-center justify-center gap-1 cursor-pointer select-none whitespace-nowrap active:scale-95 ${
                                         isActive 
-                                        ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/30 ring-2 ring-emerald-500/20 font-black' 
-                                        : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 font-extrabold border-2 border-slate-200 dark:border-slate-700/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-600'
+                                        ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-sm font-black' 
+                                        : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 font-extrabold border border-slate-200 dark:border-slate-700/80'
                                     }`}
                                 >
-                                    <IconComponent size={13} className={isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400'} />
-                                    <span>{t.label}</span>
-                                    {t.count > 0 && (
-                                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold leading-none ${
-                                            isActive 
-                                            ? 'bg-white text-emerald-700 shadow-xs' 
-                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600'
-                                        }`}>
-                                            {t.count}
-                                        </span>
-                                    )}
+                                    <IconComponent size={13} className={`shrink-0 ${isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
+                                    <span className="truncate">{t.label}</span>
+                                    <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold leading-none shrink-0 ${
+                                        isActive 
+                                        ? 'bg-white text-emerald-700' 
+                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600'
+                                    }`}>
+                                        {t.count}
+                                    </span>
                                 </button>
                             );
                         })}
