@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
 import { 
     LayoutDashboard, Store, CreditCard, Percent, TrendingUp, 
-    Users, MessageSquare, SlidersHorizontal, Settings, BarChart3, 
+    Users, MessageSquare, SlidersHorizontal, Settings, 
     Bell, ShieldCheck, LogOut, User, Menu, X, ChevronRight, ArrowLeft,
     CalendarCheck, Receipt, MessageSquareQuote, Sparkles
 } from 'lucide-react';
@@ -75,7 +75,6 @@ const SuperAdminLayout = () => {
             { name: 'Support Tickets',     href: '/super-admin/support',       icon: MessageSquare,   roles: ['SuperAdmin', 'SupportAgent'] },
             { name: 'Features',            href: '/super-admin/features',      icon: SlidersHorizontal, roles: ['SuperAdmin'] },
             { name: 'System Settings',     href: '/super-admin/settings',      icon: Settings,        roles: ['SuperAdmin'] },
-            { name: 'Reports & Analytics', href: '/super-admin/reports',       icon: BarChart3,       roles: ['SuperAdmin'] },
             { name: 'Notifications',       href: '/super-admin/notifications', icon: Bell,            roles: ['SuperAdmin'] },
             { name: 'Verifications',       href: '/super-admin/verifications', icon: ShieldCheck,     roles: ['SuperAdmin'] },
             { name: 'Testimonials',        href: '/super-admin/testimonials',  icon: MessageSquareQuote, roles: ['SuperAdmin'] },

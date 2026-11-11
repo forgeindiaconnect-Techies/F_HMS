@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Percent, PercentCircle, Search, Edit2, Check, X, ShieldAlert, Award, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const CommissionManagement = () => {
     const { api } = useAuth();
@@ -11,6 +12,7 @@ const CommissionManagement = () => {
     const [editingId, setEditingId] = useState(null);
     const [editingRate, setEditingRate] = useState(0);
     const [deletingId, setDeletingId] = useState(null);
+    const [confirmDelete, setConfirmDelete] = useState(null);
 
     const fetchRestaurants = async () => {
         try {
@@ -51,10 +53,13 @@ const CommissionManagement = () => {
         }
     };
 
-    const handleDeleteRestaurant = async (id, name) => {
-        if (!window.confirm(`Are you sure you want to permanently delete restaurant "${name}"? This action cannot be undone.`)) {
-            return;
-        }
+    const handleDeleteRestaurant = (id, name) => {
+        setConfirmDelete({ id, name });
+    };
+
+    const handleConfirmDeleteRestaurant = async () => {
+        if (!confirmDelete) return;
+        const { id, name } = confirmDelete;
         setDeletingId(id);
         try {
             await api.delete(`/super-admin/restaurants/${id}`);
@@ -241,6 +246,16 @@ const CommissionManagement = () => {
                     </table>
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={Boolean(confirmDelete)}
+                onClose={() => setConfirmDelete(null)}
+                onConfirm={handleConfirmDeleteRestaurant}
+                title="Delete Restaurant"
+                message={`Are you sure you want to permanently delete restaurant "${confirmDelete?.name}"? This action cannot be undone.`}
+                confirmText="Delete Restaurant"
+                isDestructive={true}
+            />
         </div>
     );
 };

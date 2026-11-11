@@ -10,6 +10,7 @@ import {
     activateBillingDemo,
     resendActivationInvitation,
     activateAccountWithToken,
+    setBillingDemoCredentials,
     deleteBillingDemoRequest
 } from '../controllers/billingDemoController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
@@ -46,6 +47,9 @@ router.route('/admin/:id/verify-payment')
 
 router.route('/admin/:id/activate')
     .post(protect, authorize('SuperAdmin'), activateBillingDemo);
+
+router.route('/admin/:id/credentials')
+    .put(protect, authorize('SuperAdmin'), setBillingDemoCredentials);
 
 router.route('/admin/:id/resend-invitation')
     .post(protect, authorize('SuperAdmin'), resendActivationInvitation);

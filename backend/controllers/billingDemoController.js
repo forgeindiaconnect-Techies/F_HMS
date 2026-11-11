@@ -2,6 +2,7 @@ import BillingDemoRequest from '../models/BillingDemoRequest.js';
 import Restaurant from '../models/Restaurant.js';
 import User from '../models/User.js';
 import Branch from '../models/Branch.js';
+import { sendWelcomeEmail } from '../utils/emailService.js';
 
 // @desc    Create new Billing Demo Walkthrough Request (Public)
 // @route   POST /api/billing-demos
@@ -130,7 +131,25 @@ export const getBillingDemoRequests = async (req, res) => {
 
         const requests = await BillingDemoRequest.find(query)
             .sort({ createdAt: -1 })
-            .populate('restaurantId', 'name contactEmail phone subscription approvalStatus billingConfig logo address');
+            .populate('restaurantId', 'name contactEmail phone ownerId subscription approvalStatus billingConfig logo address')
+            .lean();
+
+        const ownerIds = [...new Set(requests.map(r => r.restaurantId?.ownerId).filter(Boolean).map(String))];
+        const owners = ownerIds.length > 0
+            ? await User.find({ _id: { $in: ownerIds } }).select('name email phoneNumber isActive').lean()
+            : [];
+        const ownerMap = new Map(owners.map(o => [String(o._id), o]));
+
+        const enrichedRequests = requests.map(r => {
+            const ownerIdStr = r.restaurantId?.ownerId ? String(r.restaurantId.ownerId) : null;
+            const owner = ownerIdStr ? ownerMap.get(ownerIdStr) : null;
+            return {
+                ...r,
+                ownerCredentials: owner
+                    ? { email: owner.email, name: owner.name, phoneNumber: owner.phoneNumber, isActive: owner.isActive }
+                    : null
+            };
+        });
 
         // Summary counts
         const all = await BillingDemoRequest.find().lean();
@@ -147,7 +166,7 @@ export const getBillingDemoRequests = async (req, res) => {
         res.json({
             success: true,
             counts,
-            data: requests
+            data: enrichedRequests
         });
     } catch (error) {
         console.error('Error fetching billing demo requests:', error);
@@ -409,10 +428,17 @@ export const verifyDemoPayment = async (req, res) => {
 // @access  Private/SuperAdmin
 export const activateBillingDemo = async (req, res) => {
     try {
+        const { ownerEmail: providedEmail, ownerPassword: providedPassword } = req.body || {};
         const request = await BillingDemoRequest.findById(req.params.id);
         if (!request) {
             return res.status(404).json({ message: 'Demo request not found' });
         }
+
+        if (providedPassword && String(providedPassword).trim().length < 6) {
+            return res.status(400).json({ message: 'Owner password must be at least 6 characters.' });
+        }
+
+        const normalizedProvidedEmail = providedEmail ? String(providedEmail).trim().toLowerCase() : '';
 
         let restaurant = null;
         let ownerUser = null;
@@ -440,27 +466,39 @@ export const activateBillingDemo = async (req, res) => {
         // 3. If still no restaurant exists, create a new active Restaurant & Owner user automatically!
         if (!restaurant) {
             const cleanDigits = request.phoneNumber.replace(/\D/g, '') || '9876543210';
-            const ownerEmail = `owner_${cleanDigits}@restosys.com`;
+            const ownerEmail = normalizedProvidedEmail || `owner_${cleanDigits}@restosys.com`;
             ownerUser = await User.findOne({
                 $or: [{ email: ownerEmail }, { phoneNumber: request.phoneNumber }]
             });
 
             if (!ownerUser) {
-                // Generate a random temporary hash that cannot be guessed
-                const tempPassword = cryptoModule.default.randomBytes(24).toString('base64');
+                const initialPassword = providedPassword ? String(providedPassword).trim() : cryptoModule.default.randomBytes(24).toString('base64');
                 ownerUser = await User.create({
                     name: request.fullName,
                     email: ownerEmail,
                     phoneNumber: request.phoneNumber,
-                    password: tempPassword,
+                    password: initialPassword,
                     role: 'RestaurantAdmin',
                     isActive: true,
-                    activationToken: activationToken,
-                    activationExpires: tokenExpires
+                    activationToken: providedPassword ? null : activationToken,
+                    activationExpires: providedPassword ? null : tokenExpires
                 });
             } else {
-                ownerUser.activationToken = activationToken;
-                ownerUser.activationExpires = tokenExpires;
+                if (normalizedProvidedEmail && ownerUser.email !== normalizedProvidedEmail) {
+                    const emailTaken = await User.findOne({ email: normalizedProvidedEmail, _id: { $ne: ownerUser._id } }).lean();
+                    if (emailTaken) {
+                        return res.status(400).json({ message: `Email ${normalizedProvidedEmail} is already in use by another account.` });
+                    }
+                    ownerUser.email = normalizedProvidedEmail;
+                }
+                if (providedPassword) {
+                    ownerUser.password = String(providedPassword).trim();
+                    ownerUser.activationToken = null;
+                    ownerUser.activationExpires = null;
+                } else {
+                    ownerUser.activationToken = activationToken;
+                    ownerUser.activationExpires = tokenExpires;
+                }
                 await ownerUser.save();
             }
 
@@ -469,6 +507,7 @@ export const activateBillingDemo = async (req, res) => {
 
             restaurant = await Restaurant.create({
                 name: request.restaurantName,
+                contactEmail: ownerUser.email,
                 phone: request.phoneNumber,
                 address: request.city || 'Primary City',
                 ownerId: ownerUser._id,
@@ -499,8 +538,22 @@ export const activateBillingDemo = async (req, res) => {
         } else if (restaurant.ownerId && !ownerUser) {
             ownerUser = await User.findById(restaurant.ownerId);
             if (ownerUser) {
-                ownerUser.activationToken = activationToken;
-                ownerUser.activationExpires = tokenExpires;
+                if (normalizedProvidedEmail && ownerUser.email !== normalizedProvidedEmail) {
+                    const emailTaken = await User.findOne({ email: normalizedProvidedEmail, _id: { $ne: ownerUser._id } }).lean();
+                    if (emailTaken) {
+                        return res.status(400).json({ message: `Email ${normalizedProvidedEmail} is already in use by another account.` });
+                    }
+                    ownerUser.email = normalizedProvidedEmail;
+                    restaurant.contactEmail = normalizedProvidedEmail;
+                }
+                if (providedPassword) {
+                    ownerUser.password = String(providedPassword).trim();
+                    ownerUser.activationToken = null;
+                    ownerUser.activationExpires = null;
+                } else {
+                    ownerUser.activationToken = activationToken;
+                    ownerUser.activationExpires = tokenExpires;
+                }
                 await ownerUser.save();
             }
         }
@@ -572,19 +625,40 @@ export const activateBillingDemo = async (req, res) => {
         };
         await request.save();
 
-        const activationUrl = `${req.protocol}://${req.get('host')}/activate-account?token=${activationToken}`;
+        const portalBase = process.env.RESTAURANT_FRONTEND_URL || process.env.FRONTEND_URL || 'https://f-hms-restaurant.vercel.app';
+        const activationUrl = `${portalBase}/activate-account?token=${activationToken}`;
+
+        if (providedPassword && ownerUser?.email) {
+            sendWelcomeEmail({
+                email: ownerUser.email,
+                name: ownerUser.name,
+                restaurantName: restaurant.name,
+                plan: restaurant.billingConfig?.customPlanName || 'Custom Plan'
+            }).catch((err) => console.error('Billing demo welcome email error:', err.message));
+        }
 
         res.json({
             success: true,
-            message: `Custom SaaS setup activated for "${restaurant.name}"! Invitation link generated.`,
+            message: providedPassword
+                ? `Custom SaaS setup activated for "${restaurant.name}"! Login credentials configured for ${ownerUser?.email}.`
+                : `Custom SaaS setup activated for "${restaurant.name}"! Invitation link generated.`,
             data: {
-                request,
+                request: {
+                    ...request.toObject(),
+                    restaurantId: restaurant,
+                    ownerCredentials: ownerUser
+                        ? { email: ownerUser.email, name: ownerUser.name, phoneNumber: ownerUser.phoneNumber, isActive: ownerUser.isActive }
+                        : null
+                },
                 restaurant: {
                     _id: restaurant._id,
                     name: restaurant.name,
                     phone: restaurant.phone,
                     billingConfig: restaurant.billingConfig
                 },
+                ownerCredentials: ownerUser
+                    ? { email: ownerUser.email, name: ownerUser.name, isActive: ownerUser.isActive }
+                    : null,
                 invitation: {
                     email: ownerUser ? ownerUser.email : null,
                     phoneNumber: request.phoneNumber,
@@ -705,6 +779,134 @@ export const activateAccountWithToken = async (req, res) => {
     } catch (error) {
         console.error('Error activating account with token:', error);
         res.status(500).json({ message: error.message || 'Server error activating account' });
+    }
+};
+
+// @desc    Set or update login credentials for a configured custom-billing restaurant owner (Super Admin)
+// @route   PUT /api/billing-demos/admin/:id/credentials
+// @access  Private/SuperAdmin
+export const setBillingDemoCredentials = async (req, res) => {
+    try {
+        const { email, password } = req.body || {};
+        if (!email || !String(email).trim()) {
+            return res.status(400).json({ message: 'Owner login email is required.' });
+        }
+        const normalizedEmail = String(email).trim().toLowerCase();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+            return res.status(400).json({ message: 'Please enter a valid email address.' });
+        }
+
+        const request = await BillingDemoRequest.findById(req.params.id);
+        if (!request) {
+            return res.status(404).json({ message: 'Demo request not found' });
+        }
+
+        let restaurant = request.restaurantId ? await Restaurant.findById(request.restaurantId) : null;
+        if (!restaurant) {
+            restaurant = await Restaurant.findOne({
+                $or: [
+                    { name: { $regex: new RegExp(`^${request.restaurantName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } },
+                    { phone: request.phoneNumber }
+                ]
+            });
+        }
+
+        let ownerUser = restaurant?.ownerId ? await User.findById(restaurant.ownerId) : null;
+
+        if (ownerUser) {
+            if (ownerUser.email !== normalizedEmail) {
+                const existing = await User.findOne({ email: normalizedEmail, _id: { $ne: ownerUser._id } }).lean();
+                if (existing) {
+                    return res.status(400).json({ message: `Email ${normalizedEmail} is already assigned to another user.` });
+                }
+                ownerUser.email = normalizedEmail;
+            }
+            if (password && String(password).trim()) {
+                if (String(password).trim().length < 6) {
+                    return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
+                }
+                ownerUser.password = String(password).trim();
+            }
+            ownerUser.isActive = true;
+            ownerUser.activationToken = null;
+            ownerUser.activationExpires = null;
+            await ownerUser.save();
+        } else {
+            if (!password || String(password).trim().length < 6) {
+                return res.status(400).json({ message: 'Initial password (at least 6 characters) is required when creating new owner credentials.' });
+            }
+            const existing = await User.findOne({ email: normalizedEmail }).lean();
+            if (existing) {
+                return res.status(400).json({ message: `Email ${normalizedEmail} is already registered.` });
+            }
+            ownerUser = await User.create({
+                name: request.fullName,
+                email: normalizedEmail,
+                phoneNumber: request.phoneNumber,
+                password: String(password).trim(),
+                role: 'RestaurantAdmin',
+                isActive: true
+            });
+        }
+
+        if (!restaurant) {
+            const durationMonths = request.customPlan?.durationMonths || 12;
+            const expiryDate = new Date(Date.now() + durationMonths * 30 * 24 * 60 * 60 * 1000);
+            restaurant = await Restaurant.create({
+                name: request.restaurantName,
+                contactEmail: normalizedEmail,
+                phone: request.phoneNumber,
+                address: request.city || 'Primary City',
+                ownerId: ownerUser._id,
+                approvalStatus: 'Approved',
+                verificationStatus: 'Verified',
+                isActive: true,
+                subscription: {
+                    status: 'Active',
+                    plan: request.customPlan?.planName || 'Custom SaaS',
+                    billingCycle: request.customPlan?.billingCycle || 'yearly',
+                    trialActive: false,
+                    startDate: new Date(),
+                    expiryDate
+                }
+            });
+            await Branch.create({
+                restaurantId: restaurant._id,
+                name: `${restaurant.name} - Main Outlet`,
+                location: { address: request.city || 'Main Street' },
+                contact: { phone: request.phoneNumber },
+                isActive: true
+            });
+        } else {
+            restaurant.ownerId = ownerUser._id;
+            restaurant.contactEmail = normalizedEmail;
+            await restaurant.save();
+        }
+
+        if (String(ownerUser.restaurantId || '') !== String(restaurant._id)) {
+            ownerUser.restaurantId = restaurant._id;
+            await ownerUser.save();
+        }
+
+        if (String(request.restaurantId || '') !== String(restaurant._id)) {
+            request.restaurantId = restaurant._id;
+            await request.save();
+        }
+
+        res.json({
+            success: true,
+            message: `Credentials updated successfully! Customer can log in using ${ownerUser.email}.`,
+            ownerCredentials: {
+                email: ownerUser.email,
+                name: ownerUser.name,
+                phoneNumber: ownerUser.phoneNumber,
+                isActive: ownerUser.isActive
+            },
+            restaurantId: restaurant
+        });
+    } catch (error) {
+        console.error('Error setting billing demo credentials:', error);
+        res.status(500).json({ message: error.message || 'Server error updating credentials' });
     }
 };
 

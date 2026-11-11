@@ -16,6 +16,8 @@ const PlatformRestaurants = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
     const [addFormSubmitting, setAddFormSubmitting] = useState(false);
+    const [freezeTarget, setFreezeTarget] = useState(null);
+    const [freezeReason, setFreezeReason] = useState('Administrative review hold');
     const [addFormData, setAddFormData] = useState({
         name: '',
         ownerName: '',
@@ -81,16 +83,24 @@ const PlatformRestaurants = () => {
 
     // Handle Restaurant Approval
     
-    const handleFreezeRestaurant = async (id, name) => {
-        const reason = window.prompt(`Enter reason to freeze dashboard for ${name}:`, 'Administrative review hold');
-        if (!reason) return;
+    const handleFreezeRestaurant = (id, name) => {
+        setFreezeReason('Administrative review hold');
+        setFreezeTarget({ id, name });
+    };
+
+    const handleConfirmFreezeRestaurant = async (e) => {
+        e.preventDefault();
+        if (!freezeTarget) return;
+        const { id, name } = freezeTarget;
+        const cleanReason = freezeReason.trim() || 'Administrative review hold';
         try {
-            await api.post(`/super-admin/restaurants/${id}/freeze`, { reason });
+            await api.post(`/super-admin/restaurants/${id}/freeze`, { reason: cleanReason });
             toast.success(`Dashboard for ${name} has been frozen.`);
-            setRestaurants(prev => prev.map(r => r._id === id ? { ...r, subscription: { ...r.subscription, status: 'Frozen', manualFreeze: true, freezeReason: reason } } : r));
+            setRestaurants(prev => prev.map(r => r._id === id ? { ...r, subscription: { ...r.subscription, status: 'Frozen', manualFreeze: true, freezeReason: cleanReason } } : r));
             if (viewingRestaurant?._id === id) {
-                setViewingRestaurant(prev => ({ ...prev, subscription: { ...prev.subscription, status: 'Frozen', manualFreeze: true, freezeReason: reason } }));
+                setViewingRestaurant(prev => ({ ...prev, subscription: { ...prev.subscription, status: 'Frozen', manualFreeze: true, freezeReason: cleanReason } }));
             }
+            setFreezeTarget(null);
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to freeze restaurant.');
         }
@@ -989,6 +999,39 @@ const PlatformRestaurants = () => {
                 {...confirmModal} 
                 onClose={() => setConfirmModal({...confirmModal, isOpen: false})} 
             />
+
+            {freezeTarget && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+                    <form onSubmit={handleConfirmFreezeRestaurant} className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="font-bold text-slate-900 dark:text-white text-base">
+                                Freeze Dashboard: {freezeTarget.name}
+                            </h3>
+                            <button type="button" onClick={() => setFreezeTarget(null)} className="p-1 text-slate-400 hover:text-slate-600 cursor-pointer">
+                                <X size={18} />
+                            </button>
+                        </div>
+                        <div>
+                            <label className="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1.5">Freeze Reason</label>
+                            <input
+                                type="text"
+                                value={freezeReason}
+                                onChange={(e) => setFreezeReason(e.target.value)}
+                                required
+                                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold outline-none focus:ring-2 focus:ring-rose-500/30"
+                            />
+                        </div>
+                        <div className="flex gap-2.5 pt-2">
+                            <button type="button" onClick={() => setFreezeTarget(null)} className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold cursor-pointer">
+                                Cancel
+                            </button>
+                            <button type="submit" className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black cursor-pointer">
+                                Confirm Freeze
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
         </div>
     );
 };

@@ -5,6 +5,7 @@ import {
     Trash2, Clock, CheckCircle2, AlertCircle, RefreshCw, Sparkles, Building2, ExternalLink
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const InquiriesManagement = () => {
     const { api } = useAuth();
@@ -13,6 +14,7 @@ const InquiriesManagement = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [subjectFilter, setSubjectFilter] = useState('ALL');
+    const [confirmDelete, setConfirmDelete] = useState(null);
 
     const fetchInquiries = async () => {
         setLoading(true);
@@ -46,10 +48,13 @@ const InquiriesManagement = () => {
         }
     };
 
-    const handleDeleteInquiry = async (id, name) => {
-        if (!window.confirm(`Are you sure you want to delete lead from "${name}"?`)) {
-            return;
-        }
+    const handleDeleteInquiry = (id, name) => {
+        setConfirmDelete({ id, name });
+    };
+
+    const handleConfirmDeleteInquiry = async () => {
+        if (!confirmDelete) return;
+        const { id } = confirmDelete;
         try {
             await api.delete(`/inquiries/admin/${id}`);
             setInquiries(inquiries.filter(inq => inq._id !== id));
@@ -297,6 +302,16 @@ const InquiriesManagement = () => {
                     </table>
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={Boolean(confirmDelete)}
+                onClose={() => setConfirmDelete(null)}
+                onConfirm={handleConfirmDeleteInquiry}
+                title="Delete Walkthrough Lead"
+                message={`Are you sure you want to delete lead from "${confirmDelete?.name}"?`}
+                confirmText="Delete Lead"
+                isDestructive={true}
+            />
         </div>
     );
 };

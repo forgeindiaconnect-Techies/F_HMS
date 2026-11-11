@@ -5,6 +5,7 @@ import {
     Trash2, Eye, Search, Filter, RefreshCw, Check, X, ShieldAlert 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const TestimonialsManagement = () => {
     const { api } = useAuth();
@@ -18,6 +19,7 @@ const TestimonialsManagement = () => {
     const [activeActionModal, setActiveActionModal] = useState(null); // { type: 'reject' | 'preview', item }
     const [rejectionReason, setRejectionReason] = useState('');
     const [actionLoading, setActionLoading] = useState(false);
+    const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
     const fetchTestimonials = async () => {
         try {
@@ -78,9 +80,13 @@ const TestimonialsManagement = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to permanently delete this testimonial?')) return;
+    const handleDelete = (id) => {
+        setConfirmDeleteId(id);
+    };
 
+    const handleConfirmDelete = async () => {
+        if (!confirmDeleteId) return;
+        const id = confirmDeleteId;
         try {
             const res = await api.delete(`/testimonials/admin/${id}`);
             if (res.data?.success) {
@@ -458,6 +464,15 @@ const TestimonialsManagement = () => {
                 </div>
             )}
 
+            <ConfirmModal
+                isOpen={Boolean(confirmDeleteId)}
+                onClose={() => setConfirmDeleteId(null)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Testimonial"
+                message="Are you sure you want to permanently delete this testimonial?"
+                confirmText="Delete Testimonial"
+                isDestructive={true}
+            />
         </div>
     );
 };

@@ -140002,6 +140002,7 @@ var BillingDemoRequest_default = BillingDemoRequest;
 init_Restaurant();
 init_User();
 init_Branch();
+init_emailService();
 var createBillingDemoRequest = async (req, res) => {
   try {
     const { fullName, phoneNumber, restaurantName, city, outletFormat } = req.body;
@@ -140105,7 +140106,18 @@ var getBillingDemoRequests = async (req, res) => {
         { notes: regex }
       ];
     }
-    const requests = await BillingDemoRequest_default.find(query).sort({ createdAt: -1 }).populate("restaurantId", "name contactEmail phone subscription approvalStatus billingConfig logo address");
+    const requests = await BillingDemoRequest_default.find(query).sort({ createdAt: -1 }).populate("restaurantId", "name contactEmail phone ownerId subscription approvalStatus billingConfig logo address").lean();
+    const ownerIds = [...new Set(requests.map((r) => r.restaurantId?.ownerId).filter(Boolean).map(String))];
+    const owners = ownerIds.length > 0 ? await User_default.find({ _id: { $in: ownerIds } }).select("name email phoneNumber isActive").lean() : [];
+    const ownerMap = new Map(owners.map((o) => [String(o._id), o]));
+    const enrichedRequests = requests.map((r) => {
+      const ownerIdStr = r.restaurantId?.ownerId ? String(r.restaurantId.ownerId) : null;
+      const owner = ownerIdStr ? ownerMap.get(ownerIdStr) : null;
+      return {
+        ...r,
+        ownerCredentials: owner ? { email: owner.email, name: owner.name, phoneNumber: owner.phoneNumber, isActive: owner.isActive } : null
+      };
+    });
     const all = await BillingDemoRequest_default.find().lean();
     const counts = {
       total: all.length,
@@ -140119,7 +140131,7 @@ var getBillingDemoRequests = async (req, res) => {
     res.json({
       success: true,
       counts,
-      data: requests
+      data: enrichedRequests
     });
   } catch (error) {
     console.error("Error fetching billing demo requests:", error);
@@ -140325,10 +140337,15 @@ var verifyDemoPayment = async (req, res) => {
 };
 var activateBillingDemo = async (req, res) => {
   try {
+    const { ownerEmail: providedEmail, ownerPassword: providedPassword } = req.body || {};
     const request = await BillingDemoRequest_default.findById(req.params.id);
     if (!request) {
       return res.status(404).json({ message: "Demo request not found" });
     }
+    if (providedPassword && String(providedPassword).trim().length < 6) {
+      return res.status(400).json({ message: "Owner password must be at least 6 characters." });
+    }
+    const normalizedProvidedEmail = providedEmail ? String(providedEmail).trim().toLowerCase() : "";
     let restaurant = null;
     let ownerUser = null;
     if (request.restaurantId) {
@@ -140347,31 +140364,45 @@ var activateBillingDemo = async (req, res) => {
     const tokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1e3);
     if (!restaurant) {
       const cleanDigits = request.phoneNumber.replace(/\D/g, "") || "9876543210";
-      const ownerEmail = `owner_${cleanDigits}@restosys.com`;
+      const ownerEmail = normalizedProvidedEmail || `owner_${cleanDigits}@restosys.com`;
       ownerUser = await User_default.findOne({
         $or: [{ email: ownerEmail }, { phoneNumber: request.phoneNumber }]
       });
       if (!ownerUser) {
-        const tempPassword = cryptoModule.default.randomBytes(24).toString("base64");
+        const initialPassword = providedPassword ? String(providedPassword).trim() : cryptoModule.default.randomBytes(24).toString("base64");
         ownerUser = await User_default.create({
           name: request.fullName,
           email: ownerEmail,
           phoneNumber: request.phoneNumber,
-          password: tempPassword,
+          password: initialPassword,
           role: "RestaurantAdmin",
           isActive: true,
-          activationToken,
-          activationExpires: tokenExpires
+          activationToken: providedPassword ? null : activationToken,
+          activationExpires: providedPassword ? null : tokenExpires
         });
       } else {
-        ownerUser.activationToken = activationToken;
-        ownerUser.activationExpires = tokenExpires;
+        if (normalizedProvidedEmail && ownerUser.email !== normalizedProvidedEmail) {
+          const emailTaken = await User_default.findOne({ email: normalizedProvidedEmail, _id: { $ne: ownerUser._id } }).lean();
+          if (emailTaken) {
+            return res.status(400).json({ message: `Email ${normalizedProvidedEmail} is already in use by another account.` });
+          }
+          ownerUser.email = normalizedProvidedEmail;
+        }
+        if (providedPassword) {
+          ownerUser.password = String(providedPassword).trim();
+          ownerUser.activationToken = null;
+          ownerUser.activationExpires = null;
+        } else {
+          ownerUser.activationToken = activationToken;
+          ownerUser.activationExpires = tokenExpires;
+        }
         await ownerUser.save();
       }
       const durationMonths = request.customPlan?.durationMonths || 12;
       const expiryDate = new Date(Date.now() + durationMonths * 30 * 24 * 60 * 60 * 1e3);
       restaurant = await Restaurant_default.create({
         name: request.restaurantName,
+        contactEmail: ownerUser.email,
         phone: request.phoneNumber,
         address: request.city || "Primary City",
         ownerId: ownerUser._id,
@@ -140399,8 +140430,22 @@ var activateBillingDemo = async (req, res) => {
     } else if (restaurant.ownerId && !ownerUser) {
       ownerUser = await User_default.findById(restaurant.ownerId);
       if (ownerUser) {
-        ownerUser.activationToken = activationToken;
-        ownerUser.activationExpires = tokenExpires;
+        if (normalizedProvidedEmail && ownerUser.email !== normalizedProvidedEmail) {
+          const emailTaken = await User_default.findOne({ email: normalizedProvidedEmail, _id: { $ne: ownerUser._id } }).lean();
+          if (emailTaken) {
+            return res.status(400).json({ message: `Email ${normalizedProvidedEmail} is already in use by another account.` });
+          }
+          ownerUser.email = normalizedProvidedEmail;
+          restaurant.contactEmail = normalizedProvidedEmail;
+        }
+        if (providedPassword) {
+          ownerUser.password = String(providedPassword).trim();
+          ownerUser.activationToken = null;
+          ownerUser.activationExpires = null;
+        } else {
+          ownerUser.activationToken = activationToken;
+          ownerUser.activationExpires = tokenExpires;
+        }
         await ownerUser.save();
       }
     }
@@ -140464,18 +140509,32 @@ var activateBillingDemo = async (req, res) => {
       activatedAt: /* @__PURE__ */ new Date()
     };
     await request.save();
-    const activationUrl = `${req.protocol}://${req.get("host")}/activate-account?token=${activationToken}`;
+    const portalBase = process.env.RESTAURANT_FRONTEND_URL || process.env.FRONTEND_URL || "https://f-hms-restaurant.vercel.app";
+    const activationUrl = `${portalBase}/activate-account?token=${activationToken}`;
+    if (providedPassword && ownerUser?.email) {
+      sendWelcomeEmail({
+        email: ownerUser.email,
+        name: ownerUser.name,
+        restaurantName: restaurant.name,
+        plan: restaurant.billingConfig?.customPlanName || "Custom Plan"
+      }).catch((err) => console.error("Billing demo welcome email error:", err.message));
+    }
     res.json({
       success: true,
-      message: `Custom SaaS setup activated for "${restaurant.name}"! Invitation link generated.`,
+      message: providedPassword ? `Custom SaaS setup activated for "${restaurant.name}"! Login credentials configured for ${ownerUser?.email}.` : `Custom SaaS setup activated for "${restaurant.name}"! Invitation link generated.`,
       data: {
-        request,
+        request: {
+          ...request.toObject(),
+          restaurantId: restaurant,
+          ownerCredentials: ownerUser ? { email: ownerUser.email, name: ownerUser.name, phoneNumber: ownerUser.phoneNumber, isActive: ownerUser.isActive } : null
+        },
         restaurant: {
           _id: restaurant._id,
           name: restaurant.name,
           phone: restaurant.phone,
           billingConfig: restaurant.billingConfig
         },
+        ownerCredentials: ownerUser ? { email: ownerUser.email, name: ownerUser.name, isActive: ownerUser.isActive } : null,
         invitation: {
           email: ownerUser ? ownerUser.email : null,
           phoneNumber: request.phoneNumber,
@@ -140574,6 +140633,122 @@ var activateAccountWithToken = async (req, res) => {
     res.status(500).json({ message: error.message || "Server error activating account" });
   }
 };
+var setBillingDemoCredentials = async (req, res) => {
+  try {
+    const { email, password } = req.body || {};
+    if (!email || !String(email).trim()) {
+      return res.status(400).json({ message: "Owner login email is required." });
+    }
+    const normalizedEmail = String(email).trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return res.status(400).json({ message: "Please enter a valid email address." });
+    }
+    const request = await BillingDemoRequest_default.findById(req.params.id);
+    if (!request) {
+      return res.status(404).json({ message: "Demo request not found" });
+    }
+    let restaurant = request.restaurantId ? await Restaurant_default.findById(request.restaurantId) : null;
+    if (!restaurant) {
+      restaurant = await Restaurant_default.findOne({
+        $or: [
+          { name: { $regex: new RegExp(`^${request.restaurantName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } },
+          { phone: request.phoneNumber }
+        ]
+      });
+    }
+    let ownerUser = restaurant?.ownerId ? await User_default.findById(restaurant.ownerId) : null;
+    if (ownerUser) {
+      if (ownerUser.email !== normalizedEmail) {
+        const existing = await User_default.findOne({ email: normalizedEmail, _id: { $ne: ownerUser._id } }).lean();
+        if (existing) {
+          return res.status(400).json({ message: `Email ${normalizedEmail} is already assigned to another user.` });
+        }
+        ownerUser.email = normalizedEmail;
+      }
+      if (password && String(password).trim()) {
+        if (String(password).trim().length < 6) {
+          return res.status(400).json({ message: "Password must be at least 6 characters long." });
+        }
+        ownerUser.password = String(password).trim();
+      }
+      ownerUser.isActive = true;
+      ownerUser.activationToken = null;
+      ownerUser.activationExpires = null;
+      await ownerUser.save();
+    } else {
+      if (!password || String(password).trim().length < 6) {
+        return res.status(400).json({ message: "Initial password (at least 6 characters) is required when creating new owner credentials." });
+      }
+      const existing = await User_default.findOne({ email: normalizedEmail }).lean();
+      if (existing) {
+        return res.status(400).json({ message: `Email ${normalizedEmail} is already registered.` });
+      }
+      ownerUser = await User_default.create({
+        name: request.fullName,
+        email: normalizedEmail,
+        phoneNumber: request.phoneNumber,
+        password: String(password).trim(),
+        role: "RestaurantAdmin",
+        isActive: true
+      });
+    }
+    if (!restaurant) {
+      const durationMonths = request.customPlan?.durationMonths || 12;
+      const expiryDate = new Date(Date.now() + durationMonths * 30 * 24 * 60 * 60 * 1e3);
+      restaurant = await Restaurant_default.create({
+        name: request.restaurantName,
+        contactEmail: normalizedEmail,
+        phone: request.phoneNumber,
+        address: request.city || "Primary City",
+        ownerId: ownerUser._id,
+        approvalStatus: "Approved",
+        verificationStatus: "Verified",
+        isActive: true,
+        subscription: {
+          status: "Active",
+          plan: request.customPlan?.planName || "Custom SaaS",
+          billingCycle: request.customPlan?.billingCycle || "yearly",
+          trialActive: false,
+          startDate: /* @__PURE__ */ new Date(),
+          expiryDate
+        }
+      });
+      await Branch_default.create({
+        restaurantId: restaurant._id,
+        name: `${restaurant.name} - Main Outlet`,
+        location: { address: request.city || "Main Street" },
+        contact: { phone: request.phoneNumber },
+        isActive: true
+      });
+    } else {
+      restaurant.ownerId = ownerUser._id;
+      restaurant.contactEmail = normalizedEmail;
+      await restaurant.save();
+    }
+    if (String(ownerUser.restaurantId || "") !== String(restaurant._id)) {
+      ownerUser.restaurantId = restaurant._id;
+      await ownerUser.save();
+    }
+    if (String(request.restaurantId || "") !== String(restaurant._id)) {
+      request.restaurantId = restaurant._id;
+      await request.save();
+    }
+    res.json({
+      success: true,
+      message: `Credentials updated successfully! Customer can log in using ${ownerUser.email}.`,
+      ownerCredentials: {
+        email: ownerUser.email,
+        name: ownerUser.name,
+        phoneNumber: ownerUser.phoneNumber,
+        isActive: ownerUser.isActive
+      },
+      restaurantId: restaurant
+    });
+  } catch (error) {
+    console.error("Error setting billing demo credentials:", error);
+    res.status(500).json({ message: error.message || "Server error updating credentials" });
+  }
+};
 var deleteBillingDemoRequest = async (req, res) => {
   try {
     const request = await BillingDemoRequest_default.findById(req.params.id);
@@ -140601,6 +140776,7 @@ router27.route("/admin/:id/config").put(protect, authorize("SuperAdmin"), update
 router27.route("/admin/:id/proposal").post(protect, authorize("SuperAdmin"), createCustomProposal);
 router27.route("/admin/:id/verify-payment").post(protect, authorize("SuperAdmin"), verifyDemoPayment);
 router27.route("/admin/:id/activate").post(protect, authorize("SuperAdmin"), activateBillingDemo);
+router27.route("/admin/:id/credentials").put(protect, authorize("SuperAdmin"), setBillingDemoCredentials);
 router27.route("/admin/:id/resend-invitation").post(protect, authorize("SuperAdmin"), resendActivationInvitation);
 var billingDemoRoutes_default = router27;
 

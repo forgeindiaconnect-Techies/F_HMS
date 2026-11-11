@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { MessageSquare, Clock, CheckCircle, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const SupportTickets = () => {
     const { api } = useAuth();
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState(null);
+    const [confirmDelete, setConfirmDelete] = useState(null);
 
     useEffect(() => {
         const fetchTickets = async () => {
@@ -33,10 +35,13 @@ const SupportTickets = () => {
         }
     };
 
-    const handleDeleteTicket = async (id, subject) => {
-        if (!window.confirm(`Are you sure you want to permanently delete the ticket "${subject}"? This action cannot be undone.`)) {
-            return;
-        }
+    const handleDeleteTicket = (id, subject) => {
+        setConfirmDelete({ id, subject });
+    };
+
+    const handleConfirmDeleteTicket = async () => {
+        if (!confirmDelete) return;
+        const { id } = confirmDelete;
         setDeletingId(id);
         try {
             await api.delete(`/super-admin/tickets/${id}`);
@@ -125,6 +130,16 @@ const SupportTickets = () => {
                     </table>
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={Boolean(confirmDelete)}
+                onClose={() => setConfirmDelete(null)}
+                onConfirm={handleConfirmDeleteTicket}
+                title="Delete Support Ticket"
+                message={`Are you sure you want to permanently delete the ticket "${confirmDelete?.subject}"? This action cannot be undone.`}
+                confirmText="Delete Ticket"
+                isDestructive={true}
+            />
         </div>
     );
 };

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Users, Search, ShieldOff, ShieldCheck, UserCog, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const ROLE_COLORS = {
     SuperAdmin: 'bg-red-100 text-red-700 border-red-200',
@@ -23,6 +24,7 @@ const UserManagement = () => {
     const [roleFilter, setRoleFilter] = useState('All');
     const [togglingId, setTogglingId] = useState(null);
     const [deletingId, setDeletingId] = useState(null);
+    const [confirmDeleteUser, setConfirmDeleteUser] = useState(null);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -52,10 +54,13 @@ const UserManagement = () => {
         }
     };
 
-    const handleDeleteUser = async (userId, userName) => {
-        if (!window.confirm(`Are you sure you want to permanently delete user "${userName}"? This action cannot be undone.`)) {
-            return;
-        }
+    const handleDeleteUser = (userId, userName) => {
+        setConfirmDeleteUser({ userId, userName });
+    };
+
+    const handleConfirmDeleteUser = async () => {
+        if (!confirmDeleteUser) return;
+        const { userId, userName } = confirmDeleteUser;
         setDeletingId(userId);
         try {
             await api.delete(`/super-admin/users/${userId}`);
@@ -221,6 +226,16 @@ const UserManagement = () => {
                     </table>
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={Boolean(confirmDeleteUser)}
+                onClose={() => setConfirmDeleteUser(null)}
+                onConfirm={handleConfirmDeleteUser}
+                title="Delete User"
+                message={`Are you sure you want to permanently delete user "${confirmDeleteUser?.userName}"? This action cannot be undone.`}
+                confirmText="Delete User"
+                isDestructive={true}
+            />
         </div>
     );
 };

@@ -3,12 +3,14 @@ import { useAuth } from '../../context/AuthContext';
 import { 
     CalendarCheck, Search, Filter, Phone, Mail, MessageSquare, 
     Trash2, Clock, CheckCircle2, AlertCircle, RefreshCw, Sparkles, 
-    Building2, ExternalLink, Sliders, Eye, Check, X, ShieldCheck, 
+    Building2, ExternalLink, Sliders, Eye, EyeOff, Check, X, ShieldCheck, 
     Store, Receipt, Utensils, QrCode, Package, Users, BarChart3, 
     Percent, DollarSign, CreditCard, Tag, ArrowRight, FileText, 
-    ChevronRight, ChevronDown, CheckSquare, Square, Flame, Zap, Award
+    ChevronRight, ChevronDown, CheckSquare, Square, Flame, Zap, Award,
+    KeyRound, Copy
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const MODULE_DEFINITIONS = [
     { key: 'posBilling', label: 'POS Billing', icon: Receipt, desc: 'High-speed counter punch, invoice generation & print slips', group: 'Core Billing' },
@@ -89,6 +91,20 @@ const BillingDemoRequestsManagement = () => {
     const [editingConfig, setEditingConfig] = useState(null);
     const [savingConfig, setSavingConfig] = useState(false);
     const [activatingId, setActivatingId] = useState(null);
+    const [activateModalRequest, setActivateModalRequest] = useState(null);
+    const [activateEmail, setActivateEmail] = useState('');
+    const [activatePassword, setActivatePassword] = useState('');
+    const [showActivatePassword, setShowActivatePassword] = useState(false);
+
+    // Credentials modal states
+    const [credentialsModalRequest, setCredentialsModalRequest] = useState(null);
+    const [credEmail, setCredEmail] = useState('');
+    const [credPassword, setCredPassword] = useState('');
+    const [showCredPassword, setShowCredPassword] = useState(false);
+    const [savingCredentials, setSavingCredentials] = useState(false);
+
+    // Delete confirm modal state
+    const [deleteConfirmRequest, setDeleteConfirmRequest] = useState(null);
 
     const fetchRequests = async () => {
         setLoading(true);
@@ -196,21 +212,54 @@ const BillingDemoRequestsManagement = () => {
         }
     };
 
-    const handleActivateConfiguration = async (request) => {
-        if (!window.confirm(`Activate custom billing setup for "${request.restaurantName}"? This will enable their customized dashboard with selected modules.`)) {
+    const buildDefaultOwnerEmail = (reqItem) => {
+        if (reqItem?.ownerCredentials?.email) return reqItem.ownerCredentials.email;
+        if (reqItem?.restaurantId?.contactEmail) return reqItem.restaurantId.contactEmail;
+        const cleanDigits = (reqItem?.phoneNumber || '').replace(/\D/g, '') || '9876543210';
+        return `owner_${cleanDigits}@restosys.com`;
+    };
+
+    const generateRandomPassword = () => {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#';
+        let out = '';
+        for (let i = 0; i < 10; i++) out += chars[Math.floor(Math.random() * chars.length)];
+        return out;
+    };
+
+    const handleActivateConfiguration = (request) => {
+        setActivateModalRequest(request);
+        setActivateEmail(buildDefaultOwnerEmail(request));
+        setActivatePassword('');
+        setShowActivatePassword(false);
+    };
+
+    const handleConfirmActivation = async (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        if (!activateModalRequest) return;
+        const target = activateModalRequest;
+        if (activatePassword && activatePassword.trim().length < 6) {
+            toast.error('Password must be at least 6 characters long.');
             return;
         }
-        setActivatingId(request._id);
+        setActivatingId(target._id);
         try {
-            const res = await api.post(`/billing-demos/admin/${request._id}/activate`);
-            setRequests(requests.map(r => r._id === request._id ? { ...r, status: 'Activated', activatedAt: new Date(), restaurantId: res.data.data.restaurant } : r));
-            toast.success(res.data.message || `Custom billing activated for ${request.restaurantName}!`);
-            if (configModalRequest?._id === request._id) {
-                setConfigModalRequest(null);
-            }
-            if (previewModalRequest?._id === request._id) {
-                setPreviewModalRequest(null);
-            }
+            const payload = {};
+            if (activateEmail && activateEmail.trim()) payload.ownerEmail = activateEmail.trim();
+            if (activatePassword && activatePassword.trim()) payload.ownerPassword = activatePassword.trim();
+            const res = await api.post(`/billing-demos/admin/${target._id}/activate`, payload);
+            const updatedReq = res.data?.data?.request;
+            const ownerCreds = res.data?.data?.ownerCredentials || updatedReq?.ownerCredentials || null;
+            setRequests(requests.map(r => r._id === target._id ? {
+                ...r,
+                status: 'Activated',
+                activatedAt: new Date(),
+                restaurantId: res.data?.data?.restaurant || r.restaurantId,
+                ownerCredentials: ownerCreds
+            } : r));
+            toast.success(res.data.message || `Custom billing activated for ${target.restaurantName}!`);
+            setActivateModalRequest(null);
+            if (configModalRequest?._id === target._id) setConfigModalRequest(null);
+            if (previewModalRequest?._id === target._id) setPreviewModalRequest(null);
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to activate custom billing');
         } finally {
@@ -218,8 +267,51 @@ const BillingDemoRequestsManagement = () => {
         }
     };
 
-    const handleDeleteRequest = async (id, name) => {
-        if (!window.confirm(`Permanently delete demo request for "${name}"?`)) return;
+    const handleOpenCredentialsModal = (request) => {
+        setCredentialsModalRequest(request);
+        setCredEmail(buildDefaultOwnerEmail(request));
+        setCredPassword('');
+        setShowCredPassword(false);
+    };
+
+    const handleSaveCredentials = async (e) => {
+        e.preventDefault();
+        if (!credentialsModalRequest) return;
+        if (!credEmail.trim()) {
+            toast.error('Please enter the owner login email.');
+            return;
+        }
+        if (credPassword && credPassword.trim().length < 6) {
+            toast.error('Password must be at least 6 characters.');
+            return;
+        }
+        setSavingCredentials(true);
+        try {
+            const res = await api.put(`/billing-demos/admin/${credentialsModalRequest._id}/credentials`, {
+                email: credEmail.trim(),
+                ...(credPassword.trim() ? { password: credPassword.trim() } : {})
+            });
+            setRequests(requests.map(r => r._id === credentialsModalRequest._id ? {
+                ...r,
+                restaurantId: res.data?.restaurantId || r.restaurantId,
+                ownerCredentials: res.data?.ownerCredentials || { email: credEmail.trim() }
+            } : r));
+            toast.success(res.data?.message || 'Customer login credentials saved!');
+            setCredentialsModalRequest(null);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to save customer credentials.');
+        } finally {
+            setSavingCredentials(false);
+        }
+    };
+
+    const handleDeleteRequest = (id, name) => {
+        setDeleteConfirmRequest({ id, name });
+    };
+
+    const handleConfirmDeleteRequest = async () => {
+        if (!deleteConfirmRequest) return;
+        const { id } = deleteConfirmRequest;
         try {
             await api.delete(`/billing-demos/admin/${id}`);
             setRequests(requests.filter(r => r._id !== id));
@@ -419,6 +511,11 @@ const BillingDemoRequestsManagement = () => {
                                                         <ShieldCheck size={10} /> Linked Store
                                                     </span>
                                                 )}
+                                                {req.ownerCredentials?.email && (
+                                                    <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold mt-1 truncate max-w-[180px]" title={req.ownerCredentials.email}>
+                                                        Login: {req.ownerCredentials.email}
+                                                    </div>
+                                                )}
                                             </td>
 
                                             {/* Contact Details */}
@@ -502,6 +599,17 @@ const BillingDemoRequestsManagement = () => {
                                                     >
                                                         <Sliders size={13} className="text-rose-500" />
                                                         <span>Configure</span>
+                                                    </button>
+
+                                                    {/* Manage Login Credentials */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleOpenCredentialsModal(req)}
+                                                        className="px-2.5 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 hover:bg-amber-100 border border-amber-200 dark:border-amber-800 font-bold text-xs flex items-center gap-1 transition cursor-pointer"
+                                                        title="Set or Update Customer Login Credentials"
+                                                    >
+                                                        <KeyRound size={12} />
+                                                        <span>Credentials</span>
                                                     </button>
 
                                                     {/* Preview Dashboard */}
@@ -1032,6 +1140,218 @@ const BillingDemoRequestsManagement = () => {
                     </div>
                 </div>
             )}
+
+            {/* ========================================================================= */}
+            {/* MODAL 4: ACTIVATE CUSTOM BILLING & SET CREDENTIALS */}
+            {/* ========================================================================= */}
+            {activateModalRequest && (
+                <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-xs flex items-center justify-center p-4">
+                    <form onSubmit={handleConfirmActivation} className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 sm:p-7 border border-gray-200 dark:border-slate-800 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <div className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase text-emerald-600 tracking-wider">
+                                    <CheckCircle2 size={12} />
+                                    <span>Activate Custom Dashboard</span>
+                                </div>
+                                <h3 className="font-black text-lg text-gray-900 dark:text-white mt-0.5">
+                                    Activate &quot;{activateModalRequest.restaurantName}&quot;
+                                </h3>
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                    Enable their customized modules and optionally assign owner login credentials now.
+                                </p>
+                            </div>
+                            <button type="button" onClick={() => setActivateModalRequest(null)} className="text-gray-400 hover:text-gray-600 p-1 rounded-xl">
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <div className="space-y-3">
+                            <div>
+                                <label className="text-[11px] font-bold text-gray-700 dark:text-slate-300 block mb-1">
+                                    Owner Login Email
+                                </label>
+                                <input
+                                    type="email"
+                                    value={activateEmail}
+                                    onChange={(e) => setActivateEmail(e.target.value)}
+                                    placeholder="owner@restaurant.com"
+                                    required
+                                    className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-xs font-semibold outline-none focus:ring-2 focus:ring-emerald-500/30"
+                                />
+                            </div>
+                            <div>
+                                <div className="flex items-center justify-between mb-1">
+                                    <label className="text-[11px] font-bold text-gray-700 dark:text-slate-300">
+                                        Set Initial Password <span className="text-gray-400 font-normal">(min 6 chars)</span>
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setActivatePassword(generateRandomPassword());
+                                            setShowActivatePassword(true);
+                                        }}
+                                        className="text-[10px] font-bold text-indigo-600 hover:underline cursor-pointer"
+                                    >
+                                        Generate Password
+                                    </button>
+                                </div>
+                                <div className="relative">
+                                    <input
+                                        type={showActivatePassword ? 'text' : 'password'}
+                                        value={activatePassword}
+                                        onChange={(e) => setActivatePassword(e.target.value)}
+                                        placeholder="Enter password (optional if keeping existing)"
+                                        className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-xs font-semibold outline-none focus:ring-2 focus:ring-emerald-500/30"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowActivatePassword(v => !v)}
+                                        className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 cursor-pointer"
+                                    >
+                                        {showActivatePassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-2.5 pt-2 border-t border-gray-100 dark:border-slate-800">
+                            <button
+                                type="button"
+                                onClick={() => setActivateModalRequest(null)}
+                                className="flex-1 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 text-gray-700 dark:text-slate-300 font-bold text-xs cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={activatingId === activateModalRequest._id}
+                                className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer disabled:opacity-60"
+                            >
+                                {activatingId === activateModalRequest._id ? <RefreshCw size={13} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                                <span>Activate Now</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
+
+            {/* ========================================================================= */}
+            {/* MODAL 5: CUSTOMER LOGIN CREDENTIALS MODAL */}
+            {/* ========================================================================= */}
+            {credentialsModalRequest && (
+                <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-xs flex items-center justify-center p-4">
+                    <form onSubmit={handleSaveCredentials} className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 sm:p-7 border border-gray-200 dark:border-slate-800 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <div className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase text-amber-600 tracking-wider">
+                                    <KeyRound size={12} />
+                                    <span>Customer Portal Login</span>
+                                </div>
+                                <h3 className="font-black text-lg text-gray-900 dark:text-white mt-0.5">
+                                    Credentials for &quot;{credentialsModalRequest.restaurantName}&quot;
+                                </h3>
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                    Set or update the email and password this customer uses to sign into the Restaurant Portal.
+                                </p>
+                            </div>
+                            <button type="button" onClick={() => setCredentialsModalRequest(null)} className="text-gray-400 hover:text-gray-600 p-1 rounded-xl">
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <div className="space-y-3">
+                            <div>
+                                <label className="text-[11px] font-bold text-gray-700 dark:text-slate-300 block mb-1">
+                                    Owner Login Email
+                                </label>
+                                <input
+                                    type="email"
+                                    value={credEmail}
+                                    onChange={(e) => setCredEmail(e.target.value)}
+                                    placeholder="owner@restaurant.com"
+                                    required
+                                    className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-xs font-semibold outline-none focus:ring-2 focus:ring-amber-500/30"
+                                />
+                            </div>
+                            <div>
+                                <div className="flex items-center justify-between mb-1">
+                                    <label className="text-[11px] font-bold text-gray-700 dark:text-slate-300">
+                                        New Password <span className="text-gray-400 font-normal">(min 6 chars)</span>
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setCredPassword(generateRandomPassword());
+                                            setShowCredPassword(true);
+                                        }}
+                                        className="text-[10px] font-bold text-indigo-600 hover:underline cursor-pointer"
+                                    >
+                                        Generate Password
+                                    </button>
+                                </div>
+                                <div className="relative">
+                                    <input
+                                        type={showCredPassword ? 'text' : 'password'}
+                                        value={credPassword}
+                                        onChange={(e) => setCredPassword(e.target.value)}
+                                        placeholder={credentialsModalRequest.ownerCredentials ? 'Enter new password to reset (leave blank to keep current)' : 'Enter password (required, min 6 chars)'}
+                                        required={!credentialsModalRequest.ownerCredentials}
+                                        className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-xs font-semibold outline-none focus:ring-2 focus:ring-amber-500/30"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCredPassword(v => !v)}
+                                        className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 cursor-pointer"
+                                    >
+                                        {showCredPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                                    </button>
+                                </div>
+                            </div>
+                            {(credEmail || credPassword) && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const text = `Portal Login: https://f-hms-restaurant.vercel.app/staff/login\nEmail: ${credEmail}${credPassword ? `\nPassword: ${credPassword}` : ''}`;
+                                        navigator.clipboard?.writeText(text);
+                                        toast.success('Login details copied to clipboard!');
+                                    }}
+                                    className="text-[11px] font-bold text-slate-600 hover:text-slate-900 dark:text-slate-300 flex items-center gap-1.5 cursor-pointer"
+                                >
+                                    <Copy size={12} /> Copy Login Details for Customer
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="flex gap-2.5 pt-2 border-t border-gray-100 dark:border-slate-800">
+                            <button
+                                type="button"
+                                onClick={() => setCredentialsModalRequest(null)}
+                                className="flex-1 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 text-gray-700 dark:text-slate-300 font-bold text-xs cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={savingCredentials}
+                                className="flex-1 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer disabled:opacity-60"
+                            >
+                                {savingCredentials ? <RefreshCw size={13} className="animate-spin" /> : <KeyRound size={13} />}
+                                <span>Save Credentials</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
+
+            <ConfirmModal
+                isOpen={Boolean(deleteConfirmRequest)}
+                onClose={() => setDeleteConfirmRequest(null)}
+                onConfirm={handleConfirmDeleteRequest}
+                title="Delete Demo Request"
+                message={`Are you sure you want to permanently delete the billing demo request for "${deleteConfirmRequest?.name}"?`}
+                confirmText="Delete Request"
+                isDestructive={true}
+            />
         </div>
     );
 };

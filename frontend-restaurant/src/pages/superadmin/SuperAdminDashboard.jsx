@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Store, Users, CreditCard, ShoppingBag, TrendingUp, AlertCircle, ArrowRight, X, MessageSquare, Trash2, ShieldCheck, CheckCircle, Bell, Receipt, Search, Eye, Sparkles, Filter, Check, Calendar, ChevronRight } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const SuperAdminDashboard = () => {
     const { api } = useAuth();
@@ -24,6 +25,7 @@ const SuperAdminDashboard = () => {
     const [viewingRestaurant, setViewingRestaurant] = useState(null);
     const [restSearchQuery, setRestSearchQuery] = useState('');
     const [planFilter, setPlanFilter] = useState('All');
+    const [confirmDeleteInquiry, setConfirmDeleteInquiry] = useState(null);
 
     const calculateRemainingDays = (expiryDate) => {
         if (!expiryDate) return 'No expiry date set';
@@ -99,10 +101,13 @@ const SuperAdminDashboard = () => {
         }
     };
 
-    const handleDeleteInquiry = async (id, name) => {
-        if (!window.confirm(`Are you sure you want to permanently delete the inquiry from "${name}"? This action cannot be undone.`)) {
-            return;
-        }
+    const handleDeleteInquiry = (id, name) => {
+        setConfirmDeleteInquiry({ id, name });
+    };
+
+    const handleConfirmDeleteInquiry = async () => {
+        if (!confirmDeleteInquiry) return;
+        const { id } = confirmDeleteInquiry;
         try {
             await api.delete(`/inquiries/admin/${id}`);
             setInquiries(inquiries.filter(inq => inq._id !== id));
@@ -921,6 +926,15 @@ const SuperAdminDashboard = () => {
                     </div>
                 </div>
             )}
+            <ConfirmModal
+                isOpen={Boolean(confirmDeleteInquiry)}
+                onClose={() => setConfirmDeleteInquiry(null)}
+                onConfirm={handleConfirmDeleteInquiry}
+                title="Delete Inquiry"
+                message={`Are you sure you want to permanently delete the inquiry from "${confirmDeleteInquiry?.name}"? This action cannot be undone.`}
+                confirmText="Delete Inquiry"
+                isDestructive={true}
+            />
         </div>
     );
 };

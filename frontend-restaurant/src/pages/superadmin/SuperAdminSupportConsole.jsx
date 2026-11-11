@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { 
-    MessageSquare, Users, BookOpen, Megaphone, Search, Filter,
-    CheckCircle, ShieldAlert, Clock, Play, UserPlus, Trash, Edit, Star, Lock
+    MessageSquare, Megaphone, Search
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -13,8 +12,6 @@ const SuperAdminSupportConsole = () => {
     
     const [activeTab, setActiveTab] = useState('tickets');
     const [tickets, setTickets] = useState([]);
-    const [agents, setAgents] = useState([]);
-    const [kbArticles, setKbArticles] = useState([]);
     const [announcements, setAnnouncements] = useState([]);
     
     const [loading, setLoading] = useState(true);
@@ -24,26 +21,11 @@ const SuperAdminSupportConsole = () => {
     const [priorityFilter, setPriorityFilter] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Promote Agent Form State
-    const [newAgentEmail, setNewAgentEmail] = useState('');
-    const [promoting, setPromoting] = useState(false);
-
-    // Knowledge Base Form State
-    const [kbTitle, setKbTitle] = useState('');
-    const [kbContent, setKbContent] = useState('');
-    const [kbCategory, setKbCategory] = useState('Getting Started');
-    const [submittingKb, setSubmittingKb] = useState(false);
-
     // Announcement Form State
     const [annTitle, setAnnTitle] = useState('');
     const [annContent, setAnnContent] = useState('');
     const [annType, setAnnType] = useState('Scheduled Maintenance');
     const [submittingAnn, setSubmittingAnn] = useState(false);
-
-    const categories = [
-        'Getting Started', 'Subscription', 'Orders', 'POS', 'QR Digital Menu',
-        'Kitchen', 'Inventory', 'Payments', 'Delivery', 'Troubleshooting', 'FAQs'
-    ];
 
     const fetchTickets = useCallback(async () => {
         try {
@@ -58,24 +40,6 @@ const SuperAdminSupportConsole = () => {
         }
     }, [api, statusFilter, priorityFilter, searchQuery]);
 
-    const fetchAgents = useCallback(async () => {
-        try {
-            const res = await api.get('/support/agents');
-            setAgents(res.data);
-        } catch (error) {
-            console.error('Failed to fetch support agents:', error);
-        }
-    }, [api]);
-
-    const fetchKbArticles = useCallback(async () => {
-        try {
-            const res = await api.get('/support/knowledge-base');
-            setKbArticles(res.data);
-        } catch (error) {
-            console.error('Failed to fetch articles:', error);
-        }
-    }, [api]);
-
     const fetchAnnouncements = useCallback(async () => {
         try {
             const res = await api.get('/support/announcements');
@@ -88,25 +52,13 @@ const SuperAdminSupportConsole = () => {
     const loadData = useCallback(async () => {
         setLoading(true);
         if (activeTab === 'tickets') await fetchTickets();
-        else if (activeTab === 'agents') await fetchAgents();
-        else if (activeTab === 'kb') await fetchKbArticles();
         else if (activeTab === 'announcements') await fetchAnnouncements();
         setLoading(false);
-    }, [activeTab, fetchTickets, fetchAgents, fetchKbArticles, fetchAnnouncements]);
+    }, [activeTab, fetchTickets, fetchAnnouncements]);
 
     useEffect(() => {
         loadData();
     }, [loadData]);
-
-    const handleAssignAgent = async (ticketId, agentId) => {
-        try {
-            await api.put(`/support/tickets/${ticketId}`, { assignedAgentId: agentId || null });
-            toast.success('Ticket assignment updated successfully!');
-            fetchTickets();
-        } catch (error) {
-            toast.error('Failed to assign agent.');
-        }
-    };
 
     const handleUpdateStatus = async (ticketId, newStatus) => {
         try {
@@ -115,76 +67,6 @@ const SuperAdminSupportConsole = () => {
             fetchTickets();
         } catch (error) {
             toast.error('Failed to update ticket status.');
-        }
-    };
-
-    const handlePromoteAgent = async (e) => {
-        e.preventDefault();
-        if (!newAgentEmail) return;
-        setPromoting(true);
-        try {
-            // Find user by email or try to register it
-            // We can resolve it by getting users and setting role, or simply calling POST /api/support/agents
-            // Let's call the promote agent endpoint on the backend
-            // But we need the userId. We'll search users or call endpoint
-            const usersRes = await api.get('/users');
-            const foundUser = usersRes.data.find(u => u.email.toLowerCase() === newAgentEmail.toLowerCase());
-            
-            if (!foundUser) {
-                toast.error('No user found with this email. Users must register first.');
-                return;
-            }
-
-            await api.post('/support/agents', { userId: foundUser._id, isActive: true });
-            toast.success(`${foundUser.name} promoted to Support Agent successfully!`);
-            setNewAgentEmail('');
-            fetchAgents();
-        } catch (error) {
-            toast.error('Failed to promote user to support agent.');
-        } finally {
-            setPromoting(false);
-        }
-    };
-
-    const handleAgentStatusToggle = async (userId, currentActive) => {
-        try {
-            await api.post('/support/agents', { userId, isActive: !currentActive });
-            toast.success('Agent status updated.');
-            fetchAgents();
-        } catch (error) {
-            toast.error('Failed to update agent status.');
-        }
-    };
-
-    const handleCreateKbArticle = async (e) => {
-        e.preventDefault();
-        if (!kbTitle || !kbContent) return;
-        setSubmittingKb(true);
-        try {
-            await api.post('/support/knowledge-base', {
-                title: kbTitle,
-                content: kbContent,
-                category: kbCategory
-            });
-            toast.success('Knowledge base article published!');
-            setKbTitle('');
-            setKbContent('');
-            fetchKbArticles();
-        } catch (error) {
-            toast.error('Failed to create help article.');
-        } finally {
-            setSubmittingKb(false);
-        }
-    };
-
-    const handleDeleteKbArticle = async (articleId) => {
-        if (!window.confirm('Delete this article?')) return;
-        try {
-            await api.delete(`/support/knowledge-base/${articleId}`);
-            toast.success('Article deleted.');
-            fetchKbArticles();
-        } catch (error) {
-            toast.error('Failed to delete article.');
         }
     };
 
@@ -224,14 +106,14 @@ const SuperAdminSupportConsole = () => {
             {/* Header */}
             <div>
                 <h2 className="text-2xl font-black text-gray-900 font-sans">Support Operations Console</h2>
-                <p className="text-xs text-gray-400 font-semibold mt-0.5">Manage SLA support tickets, platform agents, articles, and global maintenance schedules.</p>
+                <p className="text-xs text-gray-400 font-semibold mt-0.5">Manage SLA support tickets and global maintenance schedules.</p>
             </div>
 
             {/* Navigation Tabs */}
             <div className="flex gap-2 border-b border-gray-100 pb-3">
                 <button
                     onClick={() => setActiveTab('tickets')}
-                    className={`px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 ${
+                    className={`px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
                         activeTab === 'tickets' 
                         ? 'bg-slate-900 text-white' 
                         : 'text-gray-500 hover:bg-gray-50'
@@ -240,28 +122,8 @@ const SuperAdminSupportConsole = () => {
                     <MessageSquare size={14} /> Tickets Queue
                 </button>
                 <button
-                    onClick={() => setActiveTab('agents')}
-                    className={`px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 ${
-                        activeTab === 'agents' 
-                        ? 'bg-slate-900 text-white' 
-                        : 'text-gray-500 hover:bg-gray-50'
-                    }`}
-                >
-                    <Users size={14} /> Support Agents
-                </button>
-                <button
-                    onClick={() => setActiveTab('kb')}
-                    className={`px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 ${
-                        activeTab === 'kb' 
-                        ? 'bg-slate-900 text-white' 
-                        : 'text-gray-500 hover:bg-gray-50'
-                    }`}
-                >
-                    <BookOpen size={14} /> Manage Knowledge Base
-                </button>
-                <button
                     onClick={() => setActiveTab('announcements')}
-                    className={`px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 ${
+                    className={`px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
                         activeTab === 'announcements' 
                         ? 'bg-slate-900 text-white' 
                         : 'text-gray-500 hover:bg-gray-50'
@@ -328,7 +190,6 @@ const SuperAdminSupportConsole = () => {
                                             <th className="p-4">Restaurant</th>
                                             <th className="p-4">Subject</th>
                                             <th className="p-4">Priority / Status</th>
-                                            <th className="p-4">Assigned Agent</th>
                                             <th className="p-4">Change Status</th>
                                         </tr>
                                     </thead>
@@ -359,18 +220,6 @@ const SuperAdminSupportConsole = () => {
                                                 </td>
                                                 <td className="p-4">
                                                     <select 
-                                                        value={t.assignedAgentId?._id || ''}
-                                                        onChange={(e) => handleAssignAgent(t._id, e.target.value)}
-                                                        className="px-2.5 py-1 bg-gray-50 border border-gray-200 rounded-xl outline-none font-bold text-gray-700"
-                                                    >
-                                                        <option value="">Unassigned</option>
-                                                        {agents.map(a => (
-                                                            <option key={a.userId?._id} value={a.userId?._id}>{a.userId?.name}</option>
-                                                        ))}
-                                                    </select>
-                                                </td>
-                                                <td className="p-4">
-                                                    <select 
                                                         value={t.status}
                                                         onChange={(e) => handleUpdateStatus(t._id, e.target.value)}
                                                         className="px-2.5 py-1 bg-gray-50 border border-gray-200 rounded-xl outline-none font-bold text-gray-700"
@@ -387,178 +236,6 @@ const SuperAdminSupportConsole = () => {
                                         ))}
                                     </tbody>
                                 </table>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {activeTab === 'agents' && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Promotion Form */}
-                    <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm h-fit space-y-4">
-                        <div>
-                            <h3 className="font-extrabold text-gray-900 text-sm">Promote Support Agent</h3>
-                            <p className="text-[10px] text-gray-400 font-semibold">Convert platform staff/users into support team members</p>
-                        </div>
-                        <form onSubmit={handlePromoteAgent} className="space-y-4 pt-2">
-                            <div className="space-y-1.5 min-w-0 pr-1.5 flex-1">
-                                <label className="text-xs font-bold text-gray-600">Registered Staff Email</label>
-                                <input 
-                                    type="email"
-                                    value={newAgentEmail}
-                                    onChange={(e) => setNewAgentEmail(e.target.value)}
-                                    placeholder="agent@platform.com"
-                                    className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 text-xs font-semibold"
-                                    required
-                                />
-                            </div>
-                            <button 
-                                type="submit"
-                                disabled={promoting}
-                                className="w-full py-3 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-xl shadow-sm transition-colors flex items-center justify-center gap-1.5"
-                            >
-                                <UserPlus size={14} /> Promote User
-                            </button>
-                        </form>
-                    </div>
-
-                    {/* Agents list */}
-                    <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-6 space-y-4">
-                        <div>
-                            <h3 className="font-extrabold text-gray-900 text-sm">On-Duty Support Agents</h3>
-                            <p className="text-[10px] text-gray-400 font-semibold">Availability, workload stats, and resolved queues</p>
-                        </div>
-
-                        {loading ? (
-                            <div className="text-center py-4">Loading agents...</div>
-                        ) : agents.length === 0 ? (
-                            <div className="text-center py-4 text-xs font-bold text-gray-400">No support agents configured. Promote a staff user.</div>
-                        ) : (
-                            <div className="divide-y divide-gray-50">
-                                {agents.map((agent) => (
-                                    <div key={agent._id} className="py-4 flex items-center justify-between gap-4 text-xs">
-                                        <div className="space-y-0.5 min-w-0 pr-1.5 flex-1">
-                                            <h4 className="font-bold text-gray-950">{agent.userId?.name}</h4>
-                                            <span className="text-[10px] text-gray-400">{agent.userId?.email}</span>
-                                        </div>
-                                        <div className="flex gap-6 items-center text-center">
-                                            <div>
-                                                <span className="text-[10px] text-gray-400 block font-semibold uppercase">Workload</span>
-                                                <span className="font-extrabold text-slate-800">{agent.workload} active</span>
-                                            </div>
-                                            <div>
-                                                <span className="text-[10px] text-gray-400 block font-semibold uppercase">Resolved</span>
-                                                <span className="font-extrabold text-green-600">{agent.totalResolved} resolved</span>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <button
-                                                onClick={() => handleAgentStatusToggle(agent.userId?._id, agent.isActive)}
-                                                className={`px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all ${
-                                                    agent.isActive 
-                                                    ? 'bg-green-50 text-green-700 hover:bg-green-100' 
-                                                    : 'bg-red-50 text-red-700 hover:bg-red-100'
-                                                }`}
-                                            >
-                                                {agent.isActive ? 'Active / On-Duty' : 'Inactive / Off-Duty'}
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {activeTab === 'kb' && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Add Article Form */}
-                    <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm h-fit space-y-4">
-                        <div>
-                            <h3 className="font-extrabold text-gray-900 text-sm">Publish KB Article</h3>
-                            <p className="text-[10px] text-gray-400 font-semibold">Add new documentation or FAQs entry</p>
-                        </div>
-                        <form onSubmit={handleCreateKbArticle} className="space-y-4 pt-2">
-                            <div className="space-y-1.5 min-w-0 pr-1.5 flex-1">
-                                <label className="text-xs font-bold text-gray-600">Category</label>
-                                <select 
-                                    value={kbCategory}
-                                    onChange={(e) => setKbCategory(e.target.value)}
-                                    className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 text-xs font-semibold"
-                                >
-                                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                                </select>
-                            </div>
-                            <div className="space-y-1.5 min-w-0 pr-1.5 flex-1">
-                                <label className="text-xs font-bold text-gray-600">Title</label>
-                                <input 
-                                    type="text"
-                                    value={kbTitle}
-                                    onChange={(e) => setKbTitle(e.target.value)}
-                                    placeholder="POS Billing config..."
-                                    className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 text-xs font-semibold"
-                                    required
-                                />
-                            </div>
-                            <div className="space-y-1.5 min-w-0 pr-1.5 flex-1">
-                                <label className="text-xs font-bold text-gray-600">Article Content</label>
-                                <textarea 
-                                    value={kbContent}
-                                    onChange={(e) => setKbContent(e.target.value)}
-                                    placeholder="Detailed help content..."
-                                    rows={6}
-                                    className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 text-xs font-semibold"
-                                    required
-                                />
-                            </div>
-                            <button 
-                                type="submit"
-                                disabled={submittingKb}
-                                className="w-full py-3 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-xl shadow-sm transition-colors flex items-center justify-center gap-1.5"
-                            >
-                                <BookOpen size={14} /> Publish Article
-                            </button>
-                        </form>
-                    </div>
-
-                    {/* Articles list */}
-                    <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-6 space-y-4">
-                        <div>
-                            <h3 className="font-extrabold text-gray-900 text-sm">Published Documentation</h3>
-                            <p className="text-[10px] text-gray-400 font-semibold">View and manage support documentation</p>
-                        </div>
-
-                        {loading ? (
-                            <div className="text-center py-4">Loading articles...</div>
-                        ) : kbArticles.length === 0 ? (
-                            <div className="text-center py-4 text-xs font-bold text-gray-400">No help articles published yet.</div>
-                        ) : (
-                            <div className="divide-y divide-gray-50">
-                                {kbArticles.map((art) => (
-                                    <div key={art._id} className="py-4 flex items-center justify-between gap-4 text-xs">
-                                        <div className="space-y-1 flex-1 pr-6">
-                                            <span className="text-[8px] font-black uppercase text-green-600 bg-green-50 px-2 py-0.5 rounded-md border border-green-100">
-                                                {art.category}
-                                            </span>
-                                            <h4 className="font-extrabold text-gray-800 mt-1">{art.title}</h4>
-                                            <p className="text-[10px] text-gray-400 line-clamp-1">{art.content}</p>
-                                        </div>
-                                        <div className="shrink-0 flex items-center gap-3">
-                                            <div className="text-right text-[10px] font-semibold text-gray-400 pr-2">
-                                                <span>{art.views} views</span>
-                                            </div>
-                                            <button
-                                                onClick={() => handleDeleteKbArticle(art._id)}
-                                                className="p-2 border border-red-100 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-                                                title="Delete Article"
-                                            >
-                                                <Trash size={12} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
                             </div>
                         )}
                     </div>
