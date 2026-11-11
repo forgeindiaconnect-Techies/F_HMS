@@ -98,7 +98,6 @@ import UserManagement from './pages/superadmin/UserManagement';
 import FeatureManagement from './pages/superadmin/FeatureManagement';
 import SystemSettings from './pages/superadmin/SystemSettings';
 import NotificationManagement from './pages/superadmin/NotificationManagement';
-import InquiriesManagement from './pages/superadmin/InquiriesManagement';
 import BillingDemoRequestsManagement from './pages/superadmin/BillingDemoRequestsManagement';
 
 import PublicLayout from './layouts/PublicLayout';
@@ -210,7 +209,7 @@ function App() {
         {/* Super Admin Routes */}
         <Route path="/super-admin" element={<ProtectedRoute allowedRoles={['SuperAdmin', 'SupportAgent']}><SuperAdminLayout /></ProtectedRoute>}>
           <Route index element={<SuperAdminDashboard />} />
-          <Route path="inquiries" element={<InquiriesManagement />} />
+          <Route path="inquiries" element={<BillingDemoRequestsManagement defaultTab="leads" />} />
           <Route path="billing-demos" element={<BillingDemoRequestsManagement />} />
           <Route path="restaurants" element={<PlatformRestaurants />} />
           <Route path="free-trials" element={<FreeTrialManagement />} />

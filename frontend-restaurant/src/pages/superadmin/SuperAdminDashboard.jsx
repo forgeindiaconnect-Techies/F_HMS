@@ -588,6 +588,9 @@ const SuperAdminDashboard = () => {
                     </div>
                     <p className="text-xs sm:text-sm text-gray-500 mt-1">Walkthrough demo bookings and sales inquiries submitted from landing pages.</p>
                 </div>
+                <Link to="/super-admin/billing-demos?tab=leads" className="flex items-center gap-2 text-xs sm:text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors bg-blue-50 hover:bg-blue-100 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl self-start sm:self-auto">
+                    Manage All Leads &amp; Demos <ArrowRight size={16} />
+                </Link>
             </div>
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">

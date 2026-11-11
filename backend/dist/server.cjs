@@ -140316,9 +140316,12 @@ var createBillingDemoRequest = async (req, res) => {
     const cleanRestName = restaurantName.trim();
     const cleanCity = city ? city.trim() : "N/A";
     const cleanOutlet = outletFormat ? outletFormat.trim() : "Fine Dine & Resto-Bar";
+    const escapedRestName = cleanRestName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const exactRestNameRegex = new RegExp(`^${escapedRestName}$`, "i");
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1e3);
     const existingPending = await BillingDemoRequest_default.findOne({
       phoneNumber: cleanPhone,
+      restaurantName: { $regex: exactRestNameRegex },
       status: { $in: ["Pending", "Demo Scheduled"] },
       createdAt: { $gte: twentyFourHoursAgo }
     });
@@ -140331,10 +140334,7 @@ var createBillingDemoRequest = async (req, res) => {
       });
     }
     const existingRestaurant = await Restaurant_default.findOne({
-      $or: [
-        { name: { $regex: new RegExp(`^${cleanRestName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } },
-        { phone: cleanPhone }
-      ]
+      name: { $regex: exactRestNameRegex }
     });
     const newDemoRequest = new BillingDemoRequest_default({
       fullName: cleanName,
@@ -140404,10 +140404,13 @@ var getBillingDemoRequests = async (req, res) => {
     const owners = ownerIds.length > 0 ? await User_default.find({ _id: { $in: ownerIds } }).select("name email phoneNumber isActive").lean() : [];
     const ownerMap = new Map(owners.map((o) => [String(o._id), o]));
     const enrichedRequests = requests.map((r) => {
-      const ownerIdStr = r.restaurantId?.ownerId ? String(r.restaurantId.ownerId) : null;
+      const linkedMatchesName = r.restaurantId && (r.restaurantId.name || "").trim().toLowerCase() === (r.restaurantName || "").trim().toLowerCase();
+      const validRest = linkedMatchesName ? r.restaurantId : null;
+      const ownerIdStr = validRest?.ownerId ? String(validRest.ownerId) : null;
       const owner = ownerIdStr ? ownerMap.get(ownerIdStr) : null;
       return {
         ...r,
+        restaurantId: validRest,
         ownerCredentials: owner ? { email: owner.email, name: owner.name, phoneNumber: owner.phoneNumber, isActive: owner.isActive } : null
       };
     });
@@ -140639,17 +140642,18 @@ var activateBillingDemo = async (req, res) => {
       return res.status(400).json({ message: "Owner password must be at least 6 characters." });
     }
     const normalizedProvidedEmail = providedEmail ? String(providedEmail).trim().toLowerCase() : "";
+    const exactRestNameRegex = new RegExp(`^${(request.restaurantName || "").trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
     let restaurant = null;
     let ownerUser = null;
     if (request.restaurantId) {
-      restaurant = await Restaurant_default.findById(request.restaurantId);
+      const linked = await Restaurant_default.findById(request.restaurantId);
+      if (linked && (linked.name || "").trim().toLowerCase() === (request.restaurantName || "").trim().toLowerCase()) {
+        restaurant = linked;
+      }
     }
     if (!restaurant) {
       restaurant = await Restaurant_default.findOne({
-        $or: [
-          { name: { $regex: new RegExp(`^${request.restaurantName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } },
-          { phone: request.phoneNumber }
-        ]
+        name: { $regex: exactRestNameRegex }
       });
     }
     const cryptoModule = await import("crypto");
@@ -140657,10 +140661,9 @@ var activateBillingDemo = async (req, res) => {
     const tokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1e3);
     if (!restaurant) {
       const cleanDigits = request.phoneNumber.replace(/\D/g, "") || "9876543210";
-      const ownerEmail = normalizedProvidedEmail || `owner_${cleanDigits}@restosys.com`;
-      ownerUser = await User_default.findOne({
-        $or: [{ email: ownerEmail }, { phoneNumber: request.phoneNumber }]
-      });
+      const slug = (request.restaurantName || "store").toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 12) || "store";
+      const ownerEmail = normalizedProvidedEmail || `${slug}_${cleanDigits.slice(-4)}@restosys.com`;
+      ownerUser = await User_default.findOne({ email: ownerEmail });
       if (!ownerUser) {
         const initialPassword = providedPassword ? String(providedPassword).trim() : cryptoModule.default.randomBytes(24).toString("base64");
         ownerUser = await User_default.create({
@@ -140674,12 +140677,10 @@ var activateBillingDemo = async (req, res) => {
           activationExpires: providedPassword ? null : tokenExpires
         });
       } else {
-        if (normalizedProvidedEmail && ownerUser.email !== normalizedProvidedEmail) {
-          const emailTaken = await User_default.findOne({ email: normalizedProvidedEmail, _id: { $ne: ownerUser._id } }).lean();
-          if (emailTaken) {
-            return res.status(400).json({ message: `Email ${normalizedProvidedEmail} is already in use by another account.` });
-          }
-          ownerUser.email = normalizedProvidedEmail;
+        if (ownerUser.restaurantId) {
+          return res.status(400).json({
+            message: `Email ${ownerEmail} is already assigned to another restaurant. Please set a unique owner email for "${request.restaurantName}".`
+          });
         }
         if (providedPassword) {
           ownerUser.password = String(providedPassword).trim();
@@ -140689,6 +140690,7 @@ var activateBillingDemo = async (req, res) => {
           ownerUser.activationToken = activationToken;
           ownerUser.activationExpires = tokenExpires;
         }
+        ownerUser.name = request.fullName || ownerUser.name;
         await ownerUser.save();
       }
       const durationMonths = request.customPlan?.durationMonths || 12;
@@ -140940,13 +140942,17 @@ var setBillingDemoCredentials = async (req, res) => {
     if (!request) {
       return res.status(404).json({ message: "Demo request not found" });
     }
-    let restaurant = request.restaurantId ? await Restaurant_default.findById(request.restaurantId) : null;
+    const exactRestNameRegex = new RegExp(`^${(request.restaurantName || "").trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
+    let restaurant = null;
+    if (request.restaurantId) {
+      const linked = await Restaurant_default.findById(request.restaurantId);
+      if (linked && (linked.name || "").trim().toLowerCase() === (request.restaurantName || "").trim().toLowerCase()) {
+        restaurant = linked;
+      }
+    }
     if (!restaurant) {
       restaurant = await Restaurant_default.findOne({
-        $or: [
-          { name: { $regex: new RegExp(`^${request.restaurantName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } },
-          { phone: request.phoneNumber }
-        ]
+        name: { $regex: exactRestNameRegex }
       });
     }
     let ownerUser = restaurant?.ownerId ? await User_default.findById(restaurant.ownerId) : null;
@@ -140964,6 +140970,7 @@ var setBillingDemoCredentials = async (req, res) => {
         }
         ownerUser.password = String(password).trim();
       }
+      ownerUser.name = request.fullName || ownerUser.name;
       ownerUser.isActive = true;
       ownerUser.activationToken = null;
       ownerUser.activationExpires = null;
@@ -140974,7 +140981,7 @@ var setBillingDemoCredentials = async (req, res) => {
       }
       const existing = await User_default.findOne({ email: normalizedEmail }).lean();
       if (existing) {
-        return res.status(400).json({ message: `Email ${normalizedEmail} is already registered.` });
+        return res.status(400).json({ message: `Email ${normalizedEmail} is already registered to another account. Please use a unique login email.` });
       }
       ownerUser = await User_default.create({
         name: request.fullName,

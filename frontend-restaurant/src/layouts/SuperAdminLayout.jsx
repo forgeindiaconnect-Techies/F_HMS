@@ -63,10 +63,9 @@ const SuperAdminLayout = () => {
 
     const getNavigation = () => {
         const fullNavigation = [
-            { name: 'Overview',            href: '/super-admin',               icon: LayoutDashboard, roles: ['SuperAdmin'] },
-            { name: 'Leads & Walkthroughs', href: '/super-admin/inquiries',     icon: CalendarCheck,   roles: ['SuperAdmin'] },
-            { name: 'Billing Demo Requests', href: '/super-admin/billing-demos', icon: Receipt,        roles: ['SuperAdmin'] },
-            { name: 'Restaurants',         href: '/super-admin/restaurants',   icon: Store,           roles: ['SuperAdmin'] },
+            { name: 'Overview',              href: '/super-admin',               icon: LayoutDashboard, roles: ['SuperAdmin'] },
+            { name: 'Leads & Billing Demos', href: '/super-admin/billing-demos', icon: CalendarCheck,   roles: ['SuperAdmin'] },
+            { name: 'Restaurants',           href: '/super-admin/restaurants',   icon: Store,           roles: ['SuperAdmin'] },
             { name: 'Free Trial Requests', href: '/super-admin/free-trials',   icon: Sparkles,        roles: ['SuperAdmin'] },
             { name: 'Plans',               href: '/super-admin/plans',         icon: CreditCard,      roles: ['SuperAdmin'] },
             { name: 'Commissions',         href: '/super-admin/commissions',   icon: Percent,         roles: ['SuperAdmin'] },

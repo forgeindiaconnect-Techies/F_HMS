@@ -30,10 +30,14 @@ export const createBillingDemoRequest = async (req, res) => {
         const cleanCity = city ? city.trim() : 'N/A';
         const cleanOutlet = outletFormat ? outletFormat.trim() : 'Fine Dine & Resto-Bar';
 
-        // Check for duplicate pending requests within the last 24 hours to prevent spamming
+        const escapedRestName = cleanRestName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const exactRestNameRegex = new RegExp(`^${escapedRestName}$`, 'i');
+
+        // Check for duplicate pending requests for the SAME phone & restaurant name within 24 hours
         const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
         const existingPending = await BillingDemoRequest.findOne({
             phoneNumber: cleanPhone,
+            restaurantName: { $regex: exactRestNameRegex },
             status: { $in: ['Pending', 'Demo Scheduled'] },
             createdAt: { $gte: twentyFourHoursAgo }
         });
@@ -47,12 +51,9 @@ export const createBillingDemoRequest = async (req, res) => {
             });
         }
 
-        // Check if there is an existing restaurant matching this name or phone to automatically link
+        // Only auto-link if an existing restaurant has the exact same name (never link a different restaurant just by shared test phone)
         const existingRestaurant = await Restaurant.findOne({
-            $or: [
-                { name: { $regex: new RegExp(`^${cleanRestName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } },
-                { phone: cleanPhone }
-            ]
+            name: { $regex: exactRestNameRegex }
         });
 
         const newDemoRequest = new BillingDemoRequest({
@@ -141,10 +142,14 @@ export const getBillingDemoRequests = async (req, res) => {
         const ownerMap = new Map(owners.map(o => [String(o._id), o]));
 
         const enrichedRequests = requests.map(r => {
-            const ownerIdStr = r.restaurantId?.ownerId ? String(r.restaurantId.ownerId) : null;
+            const linkedMatchesName = r.restaurantId &&
+                (r.restaurantId.name || '').trim().toLowerCase() === (r.restaurantName || '').trim().toLowerCase();
+            const validRest = linkedMatchesName ? r.restaurantId : null;
+            const ownerIdStr = validRest?.ownerId ? String(validRest.ownerId) : null;
             const owner = ownerIdStr ? ownerMap.get(ownerIdStr) : null;
             return {
                 ...r,
+                restaurantId: validRest,
                 ownerCredentials: owner
                     ? { email: owner.email, name: owner.name, phoneNumber: owner.phoneNumber, isActive: owner.isActive }
                     : null
@@ -440,21 +445,23 @@ export const activateBillingDemo = async (req, res) => {
 
         const normalizedProvidedEmail = providedEmail ? String(providedEmail).trim().toLowerCase() : '';
 
+        const exactRestNameRegex = new RegExp(`^${(request.restaurantName || '').trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+
         let restaurant = null;
         let ownerUser = null;
 
-        // 1. If already linked to a restaurant, activate it on that restaurant
+        // 1. If already linked to a restaurant, ensure it actually matches this request's restaurant name
         if (request.restaurantId) {
-            restaurant = await Restaurant.findById(request.restaurantId);
+            const linked = await Restaurant.findById(request.restaurantId);
+            if (linked && (linked.name || '').trim().toLowerCase() === (request.restaurantName || '').trim().toLowerCase()) {
+                restaurant = linked;
+            }
         }
 
-        // 2. If not linked, check by name or phone
+        // 2. If not linked (or detached from a stale phone-matched store), check ONLY by exact restaurant name
         if (!restaurant) {
             restaurant = await Restaurant.findOne({
-                $or: [
-                    { name: { $regex: new RegExp(`^${request.restaurantName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } },
-                    { phone: request.phoneNumber }
-                ]
+                name: { $regex: exactRestNameRegex }
             });
         }
 
@@ -466,10 +473,9 @@ export const activateBillingDemo = async (req, res) => {
         // 3. If still no restaurant exists, create a new active Restaurant & Owner user automatically!
         if (!restaurant) {
             const cleanDigits = request.phoneNumber.replace(/\D/g, '') || '9876543210';
-            const ownerEmail = normalizedProvidedEmail || `owner_${cleanDigits}@restosys.com`;
-            ownerUser = await User.findOne({
-                $or: [{ email: ownerEmail }, { phoneNumber: request.phoneNumber }]
-            });
+            const slug = (request.restaurantName || 'store').toLowerCase().replace(/[^a-z0-9]+/g, '').slice(0, 12) || 'store';
+            const ownerEmail = normalizedProvidedEmail || `${slug}_${cleanDigits.slice(-4)}@restosys.com`;
+            ownerUser = await User.findOne({ email: ownerEmail });
 
             if (!ownerUser) {
                 const initialPassword = providedPassword ? String(providedPassword).trim() : cryptoModule.default.randomBytes(24).toString('base64');
@@ -484,12 +490,10 @@ export const activateBillingDemo = async (req, res) => {
                     activationExpires: providedPassword ? null : tokenExpires
                 });
             } else {
-                if (normalizedProvidedEmail && ownerUser.email !== normalizedProvidedEmail) {
-                    const emailTaken = await User.findOne({ email: normalizedProvidedEmail, _id: { $ne: ownerUser._id } }).lean();
-                    if (emailTaken) {
-                        return res.status(400).json({ message: `Email ${normalizedProvidedEmail} is already in use by another account.` });
-                    }
-                    ownerUser.email = normalizedProvidedEmail;
+                if (ownerUser.restaurantId) {
+                    return res.status(400).json({
+                        message: `Email ${ownerEmail} is already assigned to another restaurant. Please set a unique owner email for "${request.restaurantName}".`
+                    });
                 }
                 if (providedPassword) {
                     ownerUser.password = String(providedPassword).trim();
@@ -499,6 +503,7 @@ export const activateBillingDemo = async (req, res) => {
                     ownerUser.activationToken = activationToken;
                     ownerUser.activationExpires = tokenExpires;
                 }
+                ownerUser.name = request.fullName || ownerUser.name;
                 await ownerUser.save();
             }
 
@@ -801,13 +806,18 @@ export const setBillingDemoCredentials = async (req, res) => {
             return res.status(404).json({ message: 'Demo request not found' });
         }
 
-        let restaurant = request.restaurantId ? await Restaurant.findById(request.restaurantId) : null;
+        const exactRestNameRegex = new RegExp(`^${(request.restaurantName || '').trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+
+        let restaurant = null;
+        if (request.restaurantId) {
+            const linked = await Restaurant.findById(request.restaurantId);
+            if (linked && (linked.name || '').trim().toLowerCase() === (request.restaurantName || '').trim().toLowerCase()) {
+                restaurant = linked;
+            }
+        }
         if (!restaurant) {
             restaurant = await Restaurant.findOne({
-                $or: [
-                    { name: { $regex: new RegExp(`^${request.restaurantName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } },
-                    { phone: request.phoneNumber }
-                ]
+                name: { $regex: exactRestNameRegex }
             });
         }
 
@@ -827,6 +837,7 @@ export const setBillingDemoCredentials = async (req, res) => {
                 }
                 ownerUser.password = String(password).trim();
             }
+            ownerUser.name = request.fullName || ownerUser.name;
             ownerUser.isActive = true;
             ownerUser.activationToken = null;
             ownerUser.activationExpires = null;
@@ -837,7 +848,7 @@ export const setBillingDemoCredentials = async (req, res) => {
             }
             const existing = await User.findOne({ email: normalizedEmail }).lean();
             if (existing) {
-                return res.status(400).json({ message: `Email ${normalizedEmail} is already registered.` });
+                return res.status(400).json({ message: `Email ${normalizedEmail} is already registered to another account. Please use a unique login email.` });
             }
             ownerUser = await User.create({
                 name: request.fullName,

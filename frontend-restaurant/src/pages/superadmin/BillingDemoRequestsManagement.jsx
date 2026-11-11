@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { 
     CalendarCheck, Search, Filter, Phone, Mail, MessageSquare, 
@@ -73,11 +74,37 @@ const OUTLET_FORMAT_PRESETS = [
     }
 ];
 
-const BillingDemoRequestsManagement = () => {
+const BillingDemoRequestsManagement = ({ defaultTab = 'demos' }) => {
     const { api } = useAuth();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const initialTab = searchParams.get('tab') === 'leads' || defaultTab === 'leads' ? 'leads' : 'demos';
+    const [activeSection, setActiveSection] = useState(initialTab);
+
     const [requests, setRequests] = useState([]);
     const [counts, setCounts] = useState({ total: 0, pending: 0, scheduled: 0, activated: 0 });
+    const [inquiries, setInquiries] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Sync section tab with route/prop
+    useEffect(() => {
+        const paramTab = searchParams.get('tab');
+        if (paramTab === 'leads' || defaultTab === 'leads') {
+            setActiveSection('leads');
+        } else if (paramTab === 'demos') {
+            setActiveSection('demos');
+        }
+    }, [searchParams, defaultTab]);
+
+    const switchSectionTab = (tab) => {
+        setActiveSection(tab);
+        setSearchParams(tab === 'leads' ? { tab: 'leads' } : {});
+    };
+
+    // Inquiry Filters & Delete Modal
+    const [inquirySearch, setInquirySearch] = useState('');
+    const [inquiryStatusFilter, setInquiryStatusFilter] = useState('ALL');
+    const [inquirySubjectFilter, setInquirySubjectFilter] = useState('ALL');
+    const [deleteConfirmInquiry, setDeleteConfirmInquiry] = useState(null);
     
     // Filters & Search
     const [searchQuery, setSearchQuery] = useState('');
@@ -109,14 +136,22 @@ const BillingDemoRequestsManagement = () => {
     const fetchRequests = async () => {
         setLoading(true);
         try {
-            const res = await api.get('/billing-demos/admin');
-            if (res.data) {
-                setRequests(res.data.data || []);
-                setCounts(res.data.counts || {});
+            const [demoRes, inqRes] = await Promise.allSettled([
+                api.get('/billing-demos/admin'),
+                api.get('/inquiries/admin')
+            ]);
+            if (demoRes.status === 'fulfilled' && demoRes.value.data) {
+                setRequests(demoRes.value.data.data || []);
+                setCounts(demoRes.value.data.counts || {});
+            } else {
+                toast.error('Failed to load demo requests');
+            }
+            if (inqRes.status === 'fulfilled') {
+                setInquiries(Array.isArray(inqRes.value.data) ? inqRes.value.data : []);
             }
         } catch (err) {
-            console.error('Failed to load billing demo requests', err);
-            toast.error('Failed to load demo requests');
+            console.error('Failed to load leads & demo requests', err);
+            toast.error('Failed to load leads & demo requests');
         } finally {
             setLoading(false);
         }
@@ -127,6 +162,52 @@ const BillingDemoRequestsManagement = () => {
             fetchRequests();
         }
     }, [api]);
+
+    const handleUpdateInquiryStatus = async (id, currentStatus) => {
+        const nextStatus = currentStatus === 'New' ? 'In Progress' : currentStatus === 'In Progress' ? 'Resolved' : 'New';
+        try {
+            await api.put(`/inquiries/admin/${id}`, { status: nextStatus });
+            setInquiries(prev => prev.map(inq =>
+                inq._id === id ? { ...inq, status: nextStatus } : inq
+            ));
+            toast.success(`Lead status updated to ${nextStatus}!`);
+        } catch (error) {
+            toast.error('Failed to update lead status');
+        }
+    };
+
+    const handleConfirmDeleteInquiry = async () => {
+        if (!deleteConfirmInquiry) return;
+        const { id } = deleteConfirmInquiry;
+        try {
+            await api.delete(`/inquiries/admin/${id}`);
+            setInquiries(prev => prev.filter(inq => inq._id !== id));
+            toast.success('Walkthrough lead deleted successfully');
+        } catch (error) {
+            toast.error('Failed to delete walkthrough lead');
+        }
+    };
+
+    const filteredInquiries = useMemo(() => {
+        return inquiries.filter(inq => {
+            const q = inquirySearch.toLowerCase();
+            const matchesSearch = !q ||
+                (inq.name || '').toLowerCase().includes(q) ||
+                (inq.restaurantName || '').toLowerCase().includes(q) ||
+                (inq.phone || '').toLowerCase().includes(q) ||
+                (inq.message || '').toLowerCase().includes(q);
+            const matchesStatus = inquiryStatusFilter === 'ALL' || inq.status === inquiryStatusFilter;
+            const matchesSubject = inquirySubjectFilter === 'ALL' || inq.subject === inquirySubjectFilter;
+            return matchesSearch && matchesStatus && matchesSubject;
+        });
+    }, [inquiries, inquirySearch, inquiryStatusFilter, inquirySubjectFilter]);
+
+    const inquiryStats = useMemo(() => ({
+        total: inquiries.length,
+        demoWalkthroughs: inquiries.filter(i => i.subject === 'Demo').length,
+        newLeads: inquiries.filter(i => i.status === 'New').length,
+        resolved: inquiries.filter(i => i.status === 'Resolved').length
+    }), [inquiries]);
 
     const handleUpdateStatus = async (id, newStatus) => {
         try {
@@ -216,7 +297,8 @@ const BillingDemoRequestsManagement = () => {
         if (reqItem?.ownerCredentials?.email) return reqItem.ownerCredentials.email;
         if (reqItem?.restaurantId?.contactEmail) return reqItem.restaurantId.contactEmail;
         const cleanDigits = (reqItem?.phoneNumber || '').replace(/\D/g, '') || '9876543210';
-        return `owner_${cleanDigits}@restosys.com`;
+        const slug = (reqItem?.restaurantName || 'store').toLowerCase().replace(/[^a-z0-9]+/g, '').slice(0, 12) || 'store';
+        return `${slug}_${cleanDigits.slice(-4)}@restosys.com`;
     };
 
     const generateRandomPassword = () => {
@@ -358,31 +440,74 @@ const BillingDemoRequestsManagement = () => {
 
     return (
         <div className="space-y-6 max-w-7xl mx-auto pb-16 font-sans">
-            {/* Header with Title and Action Stats */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm">
-                <div className="space-y-1">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs font-bold border border-rose-200 dark:border-rose-800">
-                        <Sparkles size={13} />
-                        <span>Walkthrough &amp; Custom Onboarding Hub</span>
+            {/* Header with Title, Section Switcher, and Refresh */}
+            <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-5">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div className="space-y-1">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs font-bold border border-rose-200 dark:border-rose-800">
+                            <Sparkles size={13} />
+                            <span>Walkthrough &amp; Custom Onboarding Hub</span>
+                        </div>
+                        <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+                            Leads, Walkthroughs &amp; Billing Demos
+                        </h1>
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                            Manage outlet format billing demo requests, customize POS modules &amp; credentials, and handle general walkthrough leads in one place.
+                        </p>
                     </div>
-                    <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">
-                        Billing Demo Requests
-                    </h1>
-                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                        Manage walkthrough leads, customize individual billing modules per restaurant format, preview dashboards, and activate custom setups.
-                    </p>
+
+                    <button
+                        onClick={fetchRequests}
+                        disabled={loading}
+                        className="self-start md:self-auto px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 text-xs font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-slate-700 transition cursor-pointer shrink-0"
+                    >
+                        <RefreshCw size={14} className={loading ? 'animate-spin text-rose-500' : ''} />
+                        <span>Refresh All</span>
+                    </button>
                 </div>
 
-                <button
-                    onClick={fetchRequests}
-                    disabled={loading}
-                    className="self-start md:self-auto px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 text-xs font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-slate-700 transition cursor-pointer"
-                >
-                    <RefreshCw size={14} className={loading ? 'animate-spin text-rose-500' : ''} />
-                    <span>Refresh Requests</span>
-                </button>
+                {/* Merged Navigation Tabs */}
+                <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-gray-100 dark:border-slate-800">
+                    <button
+                        type="button"
+                        onClick={() => switchSectionTab('demos')}
+                        className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all cursor-pointer ${
+                            activeSection === 'demos'
+                                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs'
+                                : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
+                        }`}
+                    >
+                        <Receipt size={15} />
+                        <span>Outlet Format &amp; Billing Demos</span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            activeSection === 'demos' ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900' : 'bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300'
+                        }`}>
+                            {requests.length}
+                        </span>
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => switchSectionTab('leads')}
+                        className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all cursor-pointer ${
+                            activeSection === 'leads'
+                                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs'
+                                : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
+                        }`}
+                    >
+                        <CalendarCheck size={15} />
+                        <span>General Walkthrough Leads</span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            activeSection === 'leads' ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900' : 'bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300'
+                        }`}>
+                            {inquiries.length}
+                        </span>
+                    </button>
+                </div>
             </div>
 
+            {activeSection === 'demos' && (
+            <>
             {/* Quick Status KPI Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
                 <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-xs">
@@ -663,6 +788,201 @@ const BillingDemoRequestsManagement = () => {
                     </div>
                 )}
             </div>
+            </>
+            )}
+
+            {activeSection === 'leads' && (
+                <div className="space-y-6">
+                    {/* Quick KPI Stats */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Leads</p>
+                            <h3 className="text-2xl font-black text-gray-900 dark:text-white mt-1">{inquiryStats.total}</h3>
+                        </div>
+                        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-purple-100 dark:border-purple-900/30 shadow-sm bg-purple-50/20">
+                            <p className="text-xs font-bold text-purple-600 uppercase tracking-wider flex items-center gap-1.5">
+                                <Sparkles size={13} /> Walkthrough Demos
+                            </p>
+                            <h3 className="text-2xl font-black text-purple-700 dark:text-purple-400 mt-1">{inquiryStats.demoWalkthroughs}</h3>
+                        </div>
+                        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-blue-100 dark:border-blue-900/30 shadow-sm bg-blue-50/20">
+                            <p className="text-xs font-bold text-blue-600 uppercase tracking-wider flex items-center gap-1.5">
+                                <Clock size={13} /> New / Pending Action
+                            </p>
+                            <h3 className="text-2xl font-black text-blue-700 dark:text-blue-400 mt-1">{inquiryStats.newLeads}</h3>
+                        </div>
+                        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-green-100 dark:border-green-900/30 shadow-sm bg-green-50/20">
+                            <p className="text-xs font-bold text-green-600 uppercase tracking-wider flex items-center gap-1.5">
+                                <CheckCircle2 size={13} /> Resolved / Contacted
+                            </p>
+                            <h3 className="text-2xl font-black text-green-700 dark:text-green-400 mt-1">{inquiryStats.resolved}</h3>
+                        </div>
+                    </div>
+
+                    {/* Filters & Search */}
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+                        <div className="relative w-full md:w-96">
+                            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Search by restaurant, name, phone, or message..."
+                                value={inquirySearch}
+                                onChange={(e) => setInquirySearch(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 text-xs bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 dark:text-white"
+                            />
+                        </div>
+                        <div className="flex items-center gap-2 w-full md:w-auto">
+                            <select
+                                value={inquiryStatusFilter}
+                                onChange={(e) => setInquiryStatusFilter(e.target.value)}
+                                className="px-3 py-2 text-xs font-bold rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer"
+                            >
+                                <option value="ALL">All Statuses</option>
+                                <option value="New">Status: New</option>
+                                <option value="In Progress">Status: In Progress</option>
+                                <option value="Resolved">Status: Resolved</option>
+                            </select>
+
+                            <select
+                                value={inquirySubjectFilter}
+                                onChange={(e) => setInquirySubjectFilter(e.target.value)}
+                                className="px-3 py-2 text-xs font-bold rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer"
+                            >
+                                <option value="ALL">All Types</option>
+                                <option value="Demo">Demo / Walkthrough</option>
+                                <option value="Sales">Sales</option>
+                                <option value="Support">Support</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* General Walkthrough Leads Table */}
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-gray-50/70 dark:bg-slate-800/50 border-b border-gray-100 dark:border-slate-800 text-[11px] text-gray-400 uppercase tracking-wider font-bold">
+                                        <th className="p-5">Lead / Contact Info</th>
+                                        <th className="p-5">Restaurant &amp; Outlet</th>
+                                        <th className="p-5">Request Type</th>
+                                        <th className="p-5">Walkthrough Details</th>
+                                        <th className="p-5">Date Received</th>
+                                        <th className="p-5">Status</th>
+                                        <th className="p-5 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
+                                    {filteredInquiries.map((inq) => {
+                                        const cleanPhone = (inq.phone || '').replace(/\D/g, '');
+                                        return (
+                                            <tr key={inq._id} className="hover:bg-gray-50/80 dark:hover:bg-slate-800/40 transition-colors text-sm">
+                                                <td className="p-5">
+                                                    <div>
+                                                        <span className="font-bold text-gray-900 dark:text-white block text-sm">
+                                                            {inq.name}
+                                                        </span>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <a
+                                                                href={`tel:${inq.phone}`}
+                                                                className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-md"
+                                                            >
+                                                                <Phone size={11} /> {inq.phone}
+                                                            </a>
+                                                            {cleanPhone && (
+                                                                <a
+                                                                    href={`https://wa.me/${cleanPhone}`}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded-md"
+                                                                >
+                                                                    WhatsApp
+                                                                </a>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="p-5">
+                                                    <div className="flex items-center gap-2">
+                                                        <Building2 size={16} className="text-gray-400 shrink-0" />
+                                                        <span className="font-bold text-gray-800 dark:text-gray-200">
+                                                            {inq.restaurantName || 'N/A'}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-5">
+                                                    <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border inline-flex items-center gap-1 ${
+                                                        inq.subject === 'Demo'
+                                                            ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300'
+                                                            : inq.subject === 'Sales'
+                                                            ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300'
+                                                            : 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-slate-800 dark:text-gray-300'
+                                                    }`}>
+                                                        {inq.subject === 'Demo' && <Sparkles size={12} />}
+                                                        {inq.subject || 'Demo'}
+                                                    </span>
+                                                </td>
+                                                <td className="p-5 max-w-sm">
+                                                    <p className="text-xs text-gray-700 dark:text-gray-300 font-medium leading-relaxed">
+                                                        {inq.message}
+                                                    </p>
+                                                </td>
+                                                <td className="p-5 whitespace-nowrap text-xs text-gray-500 font-medium">
+                                                    {inq.createdAt ? new Date(inq.createdAt).toLocaleString('en-IN', {
+                                                        month: 'short',
+                                                        day: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    }) : 'Recently'}
+                                                </td>
+                                                <td className="p-5 whitespace-nowrap">
+                                                    <span className={`px-2.5 py-1 text-xs font-bold rounded-lg border ${
+                                                        inq.status === 'Resolved'
+                                                            ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300'
+                                                            : inq.status === 'In Progress'
+                                                            ? 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300'
+                                                            : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300'
+                                                    }`}>
+                                                        {inq.status || 'New'}
+                                                    </span>
+                                                </td>
+                                                <td className="p-5 text-right whitespace-nowrap">
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleUpdateInquiryStatus(inq._id, inq.status)}
+                                                            className="px-3 py-1.5 text-xs font-bold bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl transition-all active:scale-95 cursor-pointer"
+                                                        >
+                                                            {inq.status === 'New' ? 'Mark In Progress' : inq.status === 'In Progress' ? 'Mark Resolved' : 'Reopen'}
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setDeleteConfirmInquiry({ id: inq._id, name: inq.name })}
+                                                            className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 rounded-xl transition-all active:scale-95 cursor-pointer"
+                                                            title="Delete Lead"
+                                                        >
+                                                            <Trash2 size={15} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+
+                                    {filteredInquiries.length === 0 && (
+                                        <tr>
+                                            <td colSpan="7" className="p-12 text-center">
+                                                <MessageSquare className="mx-auto text-gray-300 dark:text-slate-700 mb-3" size={40} />
+                                                <p className="text-gray-500 font-bold text-base">No general leads or walkthrough requests found</p>
+                                                <p className="text-xs text-gray-400 mt-1">Inbound inquiries submitted from marketing pages will appear here.</p>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* ========================================================================= */}
             {/* MODAL 1: VIEW DETAILS MODAL */}
@@ -1350,6 +1670,16 @@ const BillingDemoRequestsManagement = () => {
                 title="Delete Demo Request"
                 message={`Are you sure you want to permanently delete the billing demo request for "${deleteConfirmRequest?.name}"?`}
                 confirmText="Delete Request"
+                isDestructive={true}
+            />
+
+            <ConfirmModal
+                isOpen={Boolean(deleteConfirmInquiry)}
+                onClose={() => setDeleteConfirmInquiry(null)}
+                onConfirm={handleConfirmDeleteInquiry}
+                title="Delete Walkthrough Lead"
+                message={`Are you sure you want to delete lead from "${deleteConfirmInquiry?.name}"?`}
+                confirmText="Delete Lead"
                 isDestructive={true}
             />
         </div>
