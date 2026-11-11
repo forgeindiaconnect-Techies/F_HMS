@@ -767,18 +767,18 @@ const Home = () => {
                         {/* RIGHT COLUMN: ~57% WIDTH (Col 7 / 12 on lg/xl)                      */}
                         {/* HP LAPTOP MOCKUP & VERTICAL RECTANGULAR REDMI PHONE MOCKUP          */}
                         {/* ================================================================= */}
-                        <div className="lg:col-span-7 xl:col-span-7 relative flex items-center justify-center lg:justify-start pt-3 sm:pt-4 pb-10 sm:pb-14 px-2 xs:px-4 sm:px-0 sm:pl-8 lg:pl-10">
+                        <div className="lg:col-span-7 xl:col-span-7 relative flex items-center justify-center lg:justify-start pt-4 sm:pt-5 pb-14 sm:pb-18 lg:pb-22 pl-11 xs:pl-14 pr-2 sm:px-0 sm:pl-24 lg:pl-28 xl:pl-32">
 
                             {/* Leaves accent floating behind laptop on the left side matching reference */}
-                            <div className="absolute top-8 -left-6 sm:-left-10 pointer-events-none select-none z-0 hidden lg:block opacity-85">
+                            <div className="absolute top-6 left-2 xl:left-4 pointer-events-none select-none z-0 hidden lg:block opacity-85">
                                 <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="transform -rotate-45">
                                     <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
                                     <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
                                 </svg>
                             </div>
 
-                            {/* UNIFIED MOCKUP WRAPPER FOR BOTH LAPTOP & PHONE TO ENSURE ZERO CUT-OFF ON MOBILE */}
-                            <div className="relative w-full max-w-[290px] xs:max-w-[340px] sm:max-w-[480px] lg:max-w-[530px] xl:max-w-[550px] mx-auto lg:mx-0 z-10">
+                            {/* UNIFIED MOCKUP WRAPPER FOR BOTH LAPTOP & PHONE */}
+                            <div className="relative w-full max-w-[275px] xs:max-w-[310px] sm:max-w-[440px] lg:max-w-[480px] xl:max-w-[530px] mx-auto lg:mx-0 z-10">
                                 
                                 {/* SQUARE-SHAPED HP LAPTOP STRUCTURE */}
                                 <div className="relative w-full drop-shadow-2xl">
@@ -1189,18 +1189,18 @@ const Home = () => {
 
                                 </div>
 
-                                {/* VERTICAL RECTANGULAR REDMI-STYLE PHONE MOCKUP (Responsive positioning and legible typography for mobile & desktop) */}
-                                <div className="absolute -bottom-3 sm:-bottom-8 lg:-bottom-12 left-0 sm:-left-8 lg:-left-14 w-[115px] xs:w-[135px] sm:w-[165px] lg:w-[175px] bg-[#11161F] p-1.5 sm:p-2 rounded-[18px] sm:rounded-[22px] shadow-2xl border border-slate-600/90 z-20 ring-1 ring-black/50">
+                                {/* VERTICAL RECTANGULAR REDMI-STYLE PHONE MOCKUP (Tall vertical proportions, shifted left so all laptop sidebar buttons stay 100% visible) */}
+                                <div className="absolute -bottom-6 sm:-bottom-10 lg:-bottom-12 -left-10 xs:-left-12 sm:-left-24 lg:-left-32 xl:-left-36 w-[112px] xs:w-[122px] sm:w-[138px] lg:w-[144px] min-h-[245px] xs:min-h-[268px] sm:min-h-[300px] lg:min-h-[322px] bg-[#11161F] p-1.5 sm:p-2 rounded-[20px] sm:rounded-[24px] shadow-2xl border border-slate-600/90 z-20 ring-1 ring-black/50 flex flex-col">
                                 
                                 {/* Redmi front punch-hole camera centered at top */}
-                                <div className="flex items-center justify-center pb-1">
+                                <div className="flex items-center justify-center pb-1 sm:pb-1.5 shrink-0">
                                     <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-black ring-1 ring-slate-700 block" />
                                 </div>
                                 
-                                <div className="bg-white rounded-[15px] sm:rounded-[16px] p-2 sm:p-2.5 text-left space-y-1.5 sm:space-y-2 shadow-inner">
+                                <div className="flex-1 bg-white rounded-[15px] sm:rounded-[17px] p-2 sm:p-2.5 py-2.5 sm:py-3 text-left flex flex-col justify-between gap-1.5 sm:gap-2 shadow-inner">
                                     
                                     {/* Mobile App Header with FoodNest & user icon */}
-                                    <div className="flex justify-between items-center border-b border-slate-100 pb-1 sm:pb-1.5">
+                                    <div className="flex justify-between items-center border-b border-slate-100 pb-1.5 shrink-0">
                                         <div className="flex items-center gap-1 sm:gap-1.5">
                                             <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded bg-[#FF5A0A] text-white flex items-center justify-center text-[8px] sm:text-[9px] font-black shadow-xs">
                                                 F
@@ -1214,9 +1214,9 @@ const Home = () => {
                                         />
                                     </div>
 
-                                    {/* Mobile Order Items with Thumbnails matching screenshot */}
-                                    <div className="space-y-1 sm:space-y-1.5 text-[8px]">
-                                        <div className="p-1 sm:p-1.5 rounded-lg bg-orange-50/60 border border-orange-100/70 flex items-center justify-between gap-1">
+                                    {/* Mobile Order Items with Thumbnails matching tall phone height */}
+                                    <div className="flex-1 flex flex-col justify-evenly gap-1.5 sm:gap-2 text-[8px]">
+                                        <div className="p-1.5 sm:p-2 rounded-lg bg-orange-50/60 border border-orange-100/70 flex items-center justify-between gap-1">
                                             <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
                                                 <img 
                                                     src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?q=80&w=60&auto=format&fit=crop" 
@@ -1233,7 +1233,7 @@ const Home = () => {
                                             </span>
                                         </div>
 
-                                        <div className="p-1 sm:p-1.5 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between gap-1">
+                                        <div className="p-1.5 sm:p-2 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between gap-1">
                                             <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
                                                 <img 
                                                     src="https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=60&auto=format&fit=crop" 
@@ -1250,7 +1250,7 @@ const Home = () => {
                                             </span>
                                         </div>
 
-                                        <div className="p-1 sm:p-1.5 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between gap-1">
+                                        <div className="p-1.5 sm:p-2 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between gap-1">
                                             <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
                                                 <img 
                                                     src="https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?q=80&w=60&auto=format&fit=crop" 
@@ -1268,7 +1268,7 @@ const Home = () => {
                                         </div>
 
                                         {/* Additional item showing extended height */}
-                                        <div className="p-1 sm:p-1.5 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between gap-1">
+                                        <div className="p-1.5 sm:p-2 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between gap-1">
                                             <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
                                                 <img 
                                                     src="https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=60&auto=format&fit=crop" 
@@ -1287,7 +1287,7 @@ const Home = () => {
                                     </div>
 
                                     {/* Mobile Bottom Footer */}
-                                    <div className="pt-1 sm:pt-1.5 text-center border-t border-slate-100 flex items-center justify-center gap-1.5">
+                                    <div className="pt-1.5 text-center border-t border-slate-100 flex items-center justify-center gap-1.5 shrink-0">
                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
                                         <span className="text-[7.5px] sm:text-[8px] font-bold text-[#FF5A0A]">
                                             4 Active Orders
@@ -1297,7 +1297,7 @@ const Home = () => {
                                 </div>
 
                                 {/* Redmi slim bottom bezel bar */}
-                                <div className="h-1.5 flex items-center justify-center pt-0.5 sm:pt-1">
+                                <div className="h-1.5 flex items-center justify-center pt-0.5 sm:pt-1 shrink-0">
                                     <span className="w-8 sm:w-10 h-0.5 bg-slate-700/80 rounded-full" />
                                 </div>
                             </div>
