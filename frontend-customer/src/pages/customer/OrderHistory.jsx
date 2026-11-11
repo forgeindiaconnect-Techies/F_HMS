@@ -304,7 +304,7 @@ const OrderHistory = () => {
                                 <div className="flex justify-between"><span>Date / Time:</span><span className="text-gray-950 font-bold">{new Date(activeReceipt.createdAt).toLocaleString()}</span></div>
                                 <div className="flex justify-between"><span>Order Method:</span><span className="text-gray-950 font-bold">{activeReceipt.orderType}</span></div>
                                 <div className="flex justify-between"><span>Payment Method:</span><span className="text-gray-950 font-bold">{activeReceipt.paymentMethod || 'Card'}</span></div>
-                                <div className="flex justify-between"><span>Status:</span><span className="text-green-700 bg-green-50 px-2 py-0.5 rounded-full font-extrabold border border-green-150">Paid</span></div>
+                                <div className="flex justify-between"><span>Status:</span><span className="text-green-700 bg-green-50 px-2 py-0.5 rounded-full font-extrabold border border-green-100">Paid</span></div>
                             </div>
 
                             <div>

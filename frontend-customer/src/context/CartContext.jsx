@@ -97,9 +97,16 @@ export const CartProvider = ({ children }) => {
         const restName = typeof item.restaurantId === 'object' ? item.restaurantId?.name : (item.restaurantName || item.restaurantTitle);
 
         setCartItems(prev => {
-            const existing = prev.find(i => (i.id || i._id) === itemId);
+            // Multi-restaurant cart protection: warn and replace if switching restaurants cleanly
+            const currentRestId = prev[0]?.restaurantId ? String(typeof prev[0].restaurantId === 'object' ? prev[0].restaurantId._id : prev[0].restaurantId) : null;
+            const nextRestId = restId ? String(restId) : null;
+            const baseList = (currentRestId && nextRestId && currentRestId !== nextRestId)
+                ? []
+                : prev;
+
+            const existing = baseList.find(i => (i.id || i._id) === itemId);
             if (existing) {
-                return prev.map(i => (i.id || i._id) === itemId ? { 
+                return baseList.map(i => (i.id || i._id) === itemId ? { 
                     ...i, 
                     quantity: i.quantity + quantity, 
                     image: getItemImage(i),
@@ -107,7 +114,7 @@ export const CartProvider = ({ children }) => {
                     restaurantName: restName || i.restaurantName
                 } : i);
             }
-            return [...prev, { 
+            return [...baseList, { 
                 ...item, 
                 id: itemId, 
                 _id: itemId, 
@@ -125,14 +132,17 @@ export const CartProvider = ({ children }) => {
     };
 
     const updateQuantity = (id, delta) => {
-        setCartItems(prev => prev.map(item => {
-            const itemId = item.id || item._id;
-            if (itemId === id) {
-                const newQty = item.quantity + delta;
-                return newQty > 0 ? { ...item, quantity: newQty } : item;
-            }
-            return item;
-        }));
+        setCartItems(prev => prev
+            .map(item => {
+                const itemId = item.id || item._id;
+                if (itemId === id) {
+                    const newQty = item.quantity + delta;
+                    return newQty > 0 ? { ...item, quantity: newQty } : null;
+                }
+                return item;
+            })
+            .filter(Boolean)
+        );
     };
 
     const toggleWishlist = (item) => {

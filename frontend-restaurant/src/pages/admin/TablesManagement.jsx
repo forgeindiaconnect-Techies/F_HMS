@@ -56,7 +56,7 @@ const TablesManagement = () => {
 
     useEffect(() => {
         fetchData();
-        const interval = setInterval(fetchData, 4000); // Auto-update tables list every 4 seconds
+        const interval = setInterval(fetchData, 15000); // Refresh tables state every 15s
         return () => clearInterval(interval);
     }, []);
 
@@ -458,7 +458,7 @@ const TablesManagement = () => {
                             <h3 className="text-2xl font-black text-emerald-800 tracking-wider">TABLE {selectedTable.tableNumber}</h3>
                             <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest mt-0.5">FoodNest QR Ordering</p>
                             
-                            <div className="bg-white p-4 rounded-xl border border-gray-150 mt-4 shadow-sm inline-block">
+                            <div className="bg-white p-4 rounded-xl border border-gray-100 mt-4 shadow-sm inline-block">
                                 <QRCodeSVG
                                     id={`table-qr-svg-${selectedTable?._id || selectedTable?.tableNumber}`}
                                     value={getQrUrl(selectedTable)}

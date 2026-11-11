@@ -109,7 +109,7 @@ const ManagerReservations = () => {
                         </h3>
                         
                         {pendingRequests.length === 0 ? (
-                            <div className="bg-white rounded-2xl p-12 border border-gray-150 text-center shadow-sm">
+                            <div className="bg-white rounded-2xl p-12 border border-gray-100 text-center shadow-sm">
                                 <p className="text-gray-400 font-medium">No pending reservation requests.</p>
                             </div>
                         ) : (

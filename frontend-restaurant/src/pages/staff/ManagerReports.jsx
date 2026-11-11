@@ -68,7 +68,7 @@ const ManagerReports = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 {/* Configuration Panel */}
-                <div className="bg-white rounded-2xl p-6 border border-gray-150 shadow-sm space-y-4 h-fit">
+                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm space-y-4 h-fit">
                     <h3 className="font-bold text-gray-900 text-lg mb-2 flex items-center gap-2">
                         <FileText size={20} className="text-green-600" /> Configure Report
                     </h3>
@@ -133,7 +133,7 @@ const ManagerReports = () => {
                 </div>
 
                 {/* Report Output Screen */}
-                <div className="lg:col-span-3 bg-white rounded-2xl border border-gray-150 shadow-sm p-6 flex flex-col min-h-[450px]">
+                <div className="lg:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col min-h-[450px]">
                     {loading ? (
                         <div className="flex-1 flex flex-col justify-center items-center text-gray-400 space-y-2">
                             <RefreshCw className="animate-spin text-green-600" size={32} />
@@ -188,11 +188,11 @@ const ManagerReports = () => {
                                 </div>
 
                                 {/* Dynamic Tables */}
-                                <div className="overflow-x-auto border border-gray-150 rounded-xl">
+                                <div className="overflow-x-auto border border-gray-100 rounded-xl">
                                     <table className="w-full text-left text-sm">
                                         {reportType === '1' && (
                                             <>
-                                                <thead className="bg-gray-50/70 border-b border-gray-150 text-gray-500 font-bold">
+                                                <thead className="bg-gray-50/70 border-b border-gray-100 text-gray-500 font-bold">
                                                     <tr>
                                                         <th className="p-3">Date</th>
                                                         <th className="p-3 text-center">Orders Processed</th>
@@ -202,18 +202,21 @@ const ManagerReports = () => {
                                                 <tbody className="divide-y divide-gray-100 font-semibold text-gray-700">
                                                     {reportData.data.map((row, idx) => (
                                                         <tr key={idx}>
-                                                            <td className="p-3">{row._id}</td>
-                                                            <td className="p-3 text-center">{row.orderCount}</td>
-                                                            <td className="p-3 text-right text-green-700">₹{(row.totalRevenue || 0).toFixed(2)}</td>
+                                                            <td className="p-3">{row.date || row._id}</td>
+                                                            <td className="p-3 text-center">{row.totalOrders ?? row.orderCount ?? 0}</td>
+                                                            <td className="p-3 text-right text-green-700">₹{(row.netSales ?? row.totalRevenue ?? 0).toFixed(2)}</td>
                                                         </tr>
                                                     ))}
+                                                    {reportData.data.length === 0 && (
+                                                        <tr><td colSpan={3} className="p-6 text-center text-gray-400">No sales records in selected range.</td></tr>
+                                                    )}
                                                 </tbody>
                                             </>
                                         )}
 
                                         {reportType === '2' && (
                                             <>
-                                                <thead className="bg-gray-50/70 border-b border-gray-150 text-gray-500 font-bold">
+                                                <thead className="bg-gray-50/70 border-b border-gray-100 text-gray-500 font-bold">
                                                     <tr>
                                                         <th className="p-3">Item Name</th>
                                                         <th className="p-3 text-center">Quantity Sold</th>
@@ -234,7 +237,7 @@ const ManagerReports = () => {
 
                                         {reportType === '3' && (
                                             <>
-                                                <thead className="bg-gray-50/70 border-b border-gray-150 text-gray-500 font-bold">
+                                                <thead className="bg-gray-50/70 border-b border-gray-100 text-gray-500 font-bold">
                                                     <tr>
                                                         <th className="p-3">Staff Name</th>
                                                         <th className="p-3 text-center">Orders Handled</th>
@@ -255,7 +258,7 @@ const ManagerReports = () => {
 
                                         {reportType === '4' && (
                                             <>
-                                                <thead className="bg-gray-50/70 border-b border-gray-150 text-gray-500 font-bold">
+                                                <thead className="bg-gray-50/70 border-b border-gray-100 text-gray-500 font-bold">
                                                     <tr>
                                                         <th className="p-3">Date</th>
                                                         <th className="p-3 text-right">Taxable Sales</th>

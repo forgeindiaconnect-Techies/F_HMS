@@ -27,7 +27,7 @@ const WaiterPendingServes = () => {
 
     useEffect(() => {
         fetchPendingOrders();
-        const interval = setInterval(fetchPendingOrders, 3000);
+        const interval = setInterval(fetchPendingOrders, 15000);
         return () => clearInterval(interval);
     }, [api]);
 

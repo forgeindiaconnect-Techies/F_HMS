@@ -7,7 +7,7 @@ const VerificationBlockedOverlay = () => {
     const { user, restaurant } = useAuth();
     
     const status = restaurant?.verificationStatus || 'Pending';
-    const isAdmin = user?.role === 'RestaurantAdmin';
+    const isAdmin = ['RestaurantAdmin', 'Admin'].includes(user?.role);
 
     // Status styling maps
     const config = {

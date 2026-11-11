@@ -2495,8 +2495,8 @@ const StaffManagement = () => {
                         </div>
 
                         {/* Table of Calculated Items */}
-                        <div className="flex-1 overflow-y-auto border border-slate-100 dark:border-slate-800 rounded-2xl">
-                            <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
+                        <div className="flex-1 overflow-auto border border-slate-100 dark:border-slate-800 rounded-2xl">
+                            <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300 min-w-[640px]">
                                 <thead className="bg-slate-50 dark:bg-slate-800/80 sticky top-0 uppercase font-bold text-slate-400 border-b border-slate-100 dark:border-slate-700/60">
                                     <tr>
                                         <th className="py-3 px-4">Employee</th>

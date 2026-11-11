@@ -70,8 +70,10 @@ const CustomerAuthPage = () => {
         setLoading(false);
 
         if (result.success) {
-            const target = location.state?.from || '/menu';
-            navigate(target, { replace: true });
+            const fromLoc = location.state?.from;
+            const targetPath = typeof fromLoc === 'string' ? fromLoc : (fromLoc?.pathname || '/menu');
+            const targetState = typeof fromLoc === 'object' ? fromLoc?.state : undefined;
+            navigate(targetPath, { replace: true, state: targetState });
         } else {
             setAuthError(result.message);
         }

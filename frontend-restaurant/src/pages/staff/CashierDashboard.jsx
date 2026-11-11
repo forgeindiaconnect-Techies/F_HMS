@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
     Receipt, CreditCard, Banknote, QrCode, 
     Calculator, Split, Printer, CheckCircle, 
@@ -10,6 +10,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 import { getApiUrl } from '../../utils/axiosInstance';
+import { createReconnectingWebSocket } from '../../utils/wsClient';
 import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 import KOTPrintModal from '../../components/KOTPrintModal';
 import CashierSettingsModal from '../../components/CashierSettingsModal';
@@ -22,6 +23,10 @@ import {
 const CashierDashboard = () => {
     const { api, restaurant } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const [openingFloat, setOpeningFloat] = useState(() => Number(localStorage.getItem('cashier_opening_float') || 2000));
+    const [closingCashInput, setClosingCashInput] = useState('');
+    const [closingRegister, setClosingRegister] = useState(false);
     const [queue, setQueue] = useState([]);
     const [selfPickupQueue, setSelfPickupQueue] = useState([]);
     const [history, setHistory] = useState([]);
@@ -45,6 +50,7 @@ const CashierDashboard = () => {
     const [readySoundEnabled, setReadySoundEnabled] = useState(() => localStorage.getItem('resto_cashier_ready_sound') !== 'false');
     const [searchQuery, setSearchQuery] = useState('');
     const seenPrintedOrdersRef = useRef(new Set());
+    const audioCtxRef = useRef(null);
 
     useEffect(() => {
         const handleSearch = (e) => {
@@ -99,8 +105,16 @@ const CashierDashboard = () => {
         try {
             const { data } = await api.get('/orders');
             if (Array.isArray(data)) {
-                const pendingOrders = data.filter(o => !isSelfOrder(o) && o.status !== 'Completed' && ['Served', 'Billing Requested', 'Delivered', 'Ready', 'Billing', 'Preparing', 'Pending'].includes(o.status));
-                const pickupOrders = data.filter(o => isSelfOrder(o) && o.status !== 'Completed');
+                const READY_TO_BILL_STATUSES = ['Served', 'Billing Requested', 'Delivered', 'Ready', 'Ready for Pickup', 'Picked Up', 'Ready for Dispatch', 'Billing'];
+                const ALL_BILLABLE_STATUSES = [...READY_TO_BILL_STATUSES, 'Preparing', 'Pending', 'Accepted'];
+                const pendingOrders = data
+                    .filter(o => !isSelfOrder(o) && !['Completed', 'Cancelled', 'Refunded'].includes(o.status) && ALL_BILLABLE_STATUSES.includes(o.status))
+                    .sort((a, b) => {
+                        const aReady = READY_TO_BILL_STATUSES.includes(a.status) ? 0 : 1;
+                        const bReady = READY_TO_BILL_STATUSES.includes(b.status) ? 0 : 1;
+                        return aReady - bReady;
+                    });
+                const pickupOrders = data.filter(o => isSelfOrder(o) && !['Completed', 'Cancelled', 'Refunded'].includes(o.status));
                 const paidOrders = data.filter(o => o.status === 'Completed');
 
                 setQueue(pendingOrders);
@@ -126,27 +140,18 @@ const CashierDashboard = () => {
 
     useEffect(() => {
         fetchOrders();
-        const interval = setInterval(fetchOrders, 10000);
+        const interval = setInterval(fetchOrders, 20000);
 
-        let ws;
-        const connectWS = () => {
-            try {
-                let baseURL = getApiUrl();
-                let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
-                ws = new WebSocket(wsURL);
-
-                ws.onopen = () => {
-                    ws.send(JSON.stringify({
-                        type: 'register',
-                        role: 'cashier'
-                    }));
-                };
-
-                ws.onmessage = (event) => {
-                    try {
-                        const msg = JSON.parse(event.data);
-                        if (['new_order', 'order_updated', 'new_notification', 'order_status_updated'].includes(msg.type)) {
-                            fetchOrders();
+        const cleanupWS = createReconnectingWebSocket({
+            apiUrl: getApiUrl(),
+            buildRegistrationPayload: () => ({
+                type: 'register',
+                role: 'cashier',
+                ...(restaurant?._id ? { restaurantId: restaurant._id } : {})
+            }),
+            onMessage: (msg) => {
+                if (['new_order', 'order_updated', 'new_notification', 'order_status_updated'].includes(msg.type)) {
+                    fetchOrders();
 
                             const orderData = msg.data?.orderData || msg.data;
                             if (msg.type === 'new_order' && orderData && orderData._id) {
@@ -184,18 +189,25 @@ const CashierDashboard = () => {
                                     
                                     if (readySoundEnabled) {
                                         try {
-                                            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                                            const osc = audioCtx.createOscillator();
-                                            const gain = audioCtx.createGain();
-                                            osc.type = 'sine';
-                                            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-                                            osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.4);
-                                            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-                                            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-                                            osc.connect(gain);
-                                            gain.connect(audioCtx.destination);
-                                            osc.start();
-                                            osc.stop(audioCtx.currentTime + 0.4);
+                                            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                                            if (!audioCtxRef.current && AudioCtx) {
+                                                audioCtxRef.current = new AudioCtx();
+                                            }
+                                            const audioCtx = audioCtxRef.current;
+                                            if (audioCtx) {
+                                                if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+                                                const osc = audioCtx.createOscillator();
+                                                const gain = audioCtx.createGain();
+                                                osc.type = 'sine';
+                                                osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                                                osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.4);
+                                                gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                                                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                                                osc.connect(gain);
+                                                gain.connect(audioCtx.destination);
+                                                osc.start();
+                                                osc.stop(audioCtx.currentTime + 0.4);
+                                            }
                                         } catch (e) {}
                                     }
 
@@ -208,26 +220,22 @@ const CashierDashboard = () => {
                                 }
                             }
                         }
-                    } catch (e) {}
-                };
-
-                ws.onclose = () => {
-                    setTimeout(connectWS, 5000);
-                };
-            } catch (e) {}
-        };
-
-        connectWS();
+            }
+        });
 
         return () => {
             clearInterval(interval);
-            if (ws) ws.close();
+            cleanupWS();
+            if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
+                audioCtxRef.current.close().catch(() => {});
+                audioCtxRef.current = null;
+            }
         };
-    }, [api]);
+    }, [api, restaurant?._id]);
 
     // Pathname check to dynamically switch states on sidebar clicks
     useEffect(() => {
-        const path = window.location.pathname;
+        const path = location.pathname;
         if (path.includes('/cashier/history') || path.includes('/cashier/refunds') || path.includes('/cashier/summary')) {
             setActiveTab('Paid');
         } else {
@@ -245,7 +253,7 @@ const CashierDashboard = () => {
         } else {
             setIsMerging(false);
         }
-    }, [window.location.pathname]);
+    }, [location.pathname]);
 
     // Calculate subtotal, discount, tax, delivery fee, tip, totals
     const billItems = activeBill && Array.isArray(activeBill.orderItems) ? activeBill.orderItems : [];
@@ -650,7 +658,7 @@ const CashierDashboard = () => {
         return acc;
     }, { cash: 0, card: 0, upi: 0, online: 0, total: 0 });
 
-    const path = window.location.pathname;
+    const path = location.pathname;
     let currentView = 'billing';
     if (path.includes('/cashier/invoices')) currentView = 'invoices';
     else if (path.includes('/cashier/split')) currentView = 'split';
@@ -716,7 +724,7 @@ const CashierDashboard = () => {
                                         onClick={() => { setActiveBill(bill); setSplitParts(2); }}
                                         className="p-5 rounded-2xl border-2 border-gray-100 dark:border-slate-800 hover:border-purple-500 bg-white dark:bg-slate-900 transition-all text-left space-y-2 group hover:scale-[1.02]"
                                     >
-                                        <p className="font-bold text-gray-950 dark:text-white group-hover:text-purple-650">Table {bill.tableNumber || 'Any'}</p>
+                                        <p className="font-bold text-gray-950 dark:text-white group-hover:text-purple-600">Table {bill.tableNumber || 'Any'}</p>
                                         <p className="text-[10px] text-gray-400 font-mono">#{bill._id.substring(bill._id.length - 6).toUpperCase()}</p>
                                         <p className="text-sm font-black text-green-700 dark:text-green-400 mt-2">₹{Number(bill.totalPrice || 0).toFixed(2)}</p>
                                     </button>
@@ -754,9 +762,9 @@ const CashierDashboard = () => {
                             <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                                 <label className="text-xs text-gray-400 font-bold block">Number of Split Parts</label>
                                 <div className="flex items-center gap-3">
-                                    <button type="button" onClick={() => setSplitParts(Math.max(1, splitParts - 1))} className="w-10 h-10 border dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-805 text-gray-850 dark:text-white font-bold flex items-center justify-center">-</button>
+                                    <button type="button" onClick={() => setSplitParts(Math.max(1, splitParts - 1))} className="w-10 h-10 border dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-white font-bold flex items-center justify-center">-</button>
                                     <span className="font-black text-lg text-gray-900 dark:text-white">{splitParts}</span>
-                                    <button type="button" onClick={() => setSplitParts(splitParts + 1)} className="w-10 h-10 border dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-805 text-gray-850 dark:text-white font-bold flex items-center justify-center">+</button>
+                                    <button type="button" onClick={() => setSplitParts(splitParts + 1)} className="w-10 h-10 border dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-white font-bold flex items-center justify-center">+</button>
                                 </div>
                             </div>
 
@@ -813,7 +821,7 @@ const CashierDashboard = () => {
                                 <select 
                                     value={mergeTargetId} 
                                     onChange={(e) => setMergeTargetId(e.target.value)}
-                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-805 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-900 dark:text-white font-semibold focus:outline-none"
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-900 dark:text-white font-semibold focus:outline-none"
                                 >
                                     <option value="">Select Table</option>
                                     {queue.filter(q => q._id !== activeBill?._id).map(q => (
@@ -825,7 +833,7 @@ const CashierDashboard = () => {
 
                         {sourceBill && targetBill && (
                             <div className="p-4 bg-orange-50/50 dark:bg-orange-950/10 border border-orange-200 dark:border-orange-900/50 rounded-xl space-y-4 text-xs">
-                                <h4 className="font-bold text-orange-850 dark:orange-300">Merge Preview Summary</h4>
+                                <h4 className="font-bold text-orange-800 dark:text-orange-300">Merge Preview Summary</h4>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                         <p className="font-bold text-gray-400">Source Table {sourceBill.tableNumber}</p>
@@ -847,7 +855,7 @@ const CashierDashboard = () => {
                     <div className="lg:col-span-1 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
                         <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                             <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">Confirm Merge</h3>
-                            <p className="text-xs text-gray-450 leading-relaxed">Merging combines all items from the Source table into the Target table. The Source table will then be freed up.</p>
+                            <p className="text-xs text-gray-400 leading-relaxed">Merging combines all items from the Source table into the Target table. The Source table will then be freed up.</p>
                         </div>
                         <button
                             onClick={handleMergeBill}
@@ -880,7 +888,7 @@ const CashierDashboard = () => {
                                     onClick={() => { setActiveBill(bill); setDiscount(10); }}
                                     className="p-5 rounded-2xl border-2 border-gray-100 dark:border-slate-800 hover:border-purple-500 bg-white dark:bg-slate-900 transition-all text-left space-y-2 group hover:scale-[1.02]"
                                 >
-                                    <p className="font-bold text-gray-955 dark:text-white group-hover:text-purple-600">Table {bill.tableNumber || 'Any'}</p>
+                                    <p className="font-bold text-gray-950 dark:text-white group-hover:text-purple-600">Table {bill.tableNumber || 'Any'}</p>
                                     <p className="text-xs text-gray-400 font-bold">Subtotal: ₹{Number(bill.totalPrice || 0).toFixed(2)}</p>
                                 </button>
                             ))}
@@ -907,8 +915,8 @@ const CashierDashboard = () => {
                                             onClick={() => setDiscount(p)}
                                             className={`py-3.5 rounded-xl border text-xs font-bold text-center transition-all ${
                                                 discount === p
-                                                ? 'bg-purple-650 border-purple-700 text-white shadow-sm'
-                                                : 'bg-gray-50 dark:bg-slate-805 border-gray-205 dark:border-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100'
+                                                ? 'bg-purple-600 border-purple-700 text-white shadow-sm'
+                                                : 'bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100'
                                             }`}
                                         >
                                             {p}% OFF
@@ -931,7 +939,7 @@ const CashierDashboard = () => {
                         <div className="lg:col-span-1 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
                             <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                                 <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">Apply and Settle</h3>
-                                <p className="text-xs text-gray-450 leading-relaxed">Applying a discount updates the invoice grand total before settling the payment.</p>
+                                <p className="text-xs text-gray-400 leading-relaxed">Applying a discount updates the invoice grand total before settling the payment.</p>
                             </div>
                             <button
                                 onClick={handleSettle}
@@ -1003,7 +1011,7 @@ const CashierDashboard = () => {
                                             className={`p-5 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 transition-all ${
                                                 paymentMethod === m.id
                                                 ? 'border-green-500 bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 font-bold'
-                                                : 'border-gray-100 dark:border-slate-800 text-gray-650 dark:text-gray-305 hover:bg-gray-50'
+                                                : 'border-gray-100 dark:border-slate-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50'
                                             }`}
                                         >
                                             {m.icon}
@@ -1026,7 +1034,7 @@ const CashierDashboard = () => {
                         <div className="lg:col-span-1 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
                             <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                                 <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">Finalize Transaction</h3>
-                                <p className="text-xs text-gray-455 leading-relaxed">Ensure payment has been successfully authorized at the card reader or that physical cash is correctly counted before recording register settlement.</p>
+                                <p className="text-xs text-gray-400 leading-relaxed">Ensure payment has been successfully authorized at the card reader or that physical cash is correctly counted before recording register settlement.</p>
                             </div>
                             <button
                                 onClick={handleSettle}
@@ -1052,7 +1060,7 @@ const CashierDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     {[
                         { label: 'Total Shift Revenue', value: `₹${cashSummary.total.toFixed(2)}`, desc: 'All payment channels combined', color: 'text-purple-600 dark:text-purple-400' },
-                        { label: 'Cash Collection', value: `₹${cashSummary.cash.toFixed(2)}`, desc: 'Physical currency in drawer', color: 'text-emerald-605 dark:text-emerald-400' },
+                        { label: 'Cash Collection', value: `₹${cashSummary.cash.toFixed(2)}`, desc: 'Physical currency in drawer', color: 'text-emerald-600 dark:text-emerald-400' },
                         { label: 'Card Collection', value: `₹${cashSummary.card.toFixed(2)}`, desc: 'Processed via card terminals', color: 'text-blue-600 dark:text-blue-400' },
                         { label: 'UPI & Digital', value: `₹${(cashSummary.upi + cashSummary.online).toFixed(2)}`, desc: 'Direct online transfers', color: 'text-orange-600 dark:text-orange-400' },
                     ].map((stat, idx) => (
@@ -1068,9 +1076,22 @@ const CashierDashboard = () => {
                     <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-4">
                         <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">Shift Drawer Activity Logs</h3>
                         <div className="divide-y divide-gray-100 dark:divide-slate-800 text-xs">
-                            <div className="py-3 flex justify-between">
+                            <div className="py-3 flex justify-between items-center gap-3">
                                 <span className="font-semibold text-gray-600 dark:text-gray-400">Opening Register Float</span>
-                                <span className="font-bold text-gray-900 dark:text-white">₹2,000.00</span>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-gray-400 font-bold">₹</span>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={openingFloat}
+                                        onChange={(e) => {
+                                            const val = Math.max(0, Number(e.target.value) || 0);
+                                            setOpeningFloat(val);
+                                            localStorage.setItem('cashier_opening_float', String(val));
+                                        }}
+                                        className="w-24 px-2 py-1 text-right font-bold text-gray-900 dark:text-white bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg"
+                                    />
+                                </div>
                             </div>
                             <div className="py-3 flex justify-between">
                                 <span className="font-semibold text-gray-600 dark:text-gray-400">Total Cash Sales Added</span>
@@ -1078,22 +1099,66 @@ const CashierDashboard = () => {
                             </div>
                             <div className="py-3 flex justify-between">
                                 <span className="font-semibold text-gray-600 dark:text-gray-400">Cash Paid Out / Drops</span>
-                                <span className="font-bold text-red-650">-₹0.00</span>
+                                <span className="font-bold text-rose-600">-₹0.00</span>
                             </div>
                             <div className="py-3 flex justify-between border-t dark:border-slate-800 font-bold text-sm">
                                 <span className="text-gray-800 dark:text-white">Expected Cash in Drawer</span>
-                                <span className="text-green-700 dark:text-green-400">₹{(2000 + cashSummary.cash).toFixed(2)}</span>
+                                <span className="text-green-700 dark:text-green-400">₹{(openingFloat + cashSummary.cash).toFixed(2)}</span>
                             </div>
                         </div>
                     </div>
                     
                     <div className="lg:col-span-1 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
-                        <div>
-                            <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider mb-2">Shift Reconciliation</h3>
-                            <p className="text-xs text-gray-450 leading-relaxed">Reconcile physical cash counts with the expected drawer total before closing your register session.</p>
+                        <div className="space-y-3">
+                            <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">Shift Reconciliation</h3>
+                            <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed">Reconcile physical cash counts with the expected drawer total before closing your register session.</p>
+                            <div>
+                                <label className="text-[11px] font-bold text-gray-500 uppercase block mb-1">Actual Physical Cash (₹)</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    placeholder={(openingFloat + cashSummary.cash).toFixed(2)}
+                                    value={closingCashInput}
+                                    onChange={(e) => setClosingCashInput(e.target.value)}
+                                    className="w-full px-3 py-2 text-sm font-bold text-gray-900 dark:text-white bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl"
+                                />
+                            </div>
+                            {closingCashInput !== '' && (
+                                <div className="flex justify-between text-xs font-bold">
+                                    <span className="text-gray-500">Variance:</span>
+                                    <span className={(Number(closingCashInput) - (openingFloat + cashSummary.cash)) >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
+                                        ₹{(Number(closingCashInput) - (openingFloat + cashSummary.cash)).toFixed(2)}
+                                    </span>
+                                </div>
+                            )}
                         </div>
-                        <button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-all text-xs shadow-md">
-                            Close Register & End Shift
+                        <button
+                            type="button"
+                            disabled={closingRegister}
+                            onClick={async () => {
+                                setClosingRegister(true);
+                                try {
+                                    await api.post('/staff/clock-out').catch(() => {});
+                                    const expected = openingFloat + cashSummary.cash;
+                                    const counted = closingCashInput !== '' ? Number(closingCashInput) : expected;
+                                    localStorage.setItem('cashier_last_close', JSON.stringify({
+                                        closedAt: new Date().toISOString(),
+                                        openingFloat,
+                                        cashSales: cashSummary.cash,
+                                        expectedCash: expected,
+                                        countedCash: counted,
+                                        variance: counted - expected
+                                    }));
+                                    toast.success(`Register closed! Expected ₹${expected.toFixed(2)} · Counted ₹${counted.toFixed(2)}`);
+                                } catch (err) {
+                                    toast.error('Failed to close register shift');
+                                } finally {
+                                    setClosingRegister(false);
+                                }
+                            }}
+                            className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-bold py-3 rounded-xl transition-all text-xs shadow-md cursor-pointer"
+                        >
+                            {closingRegister ? 'Closing Register...' : 'Close Register & End Shift'}
                         </button>
                     </div>
                 </div>
@@ -1110,13 +1175,13 @@ const CashierDashboard = () => {
                 </div>
 
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
-                    <div className="p-4 border-b border-gray-100 dark:border-slate-850 flex justify-between items-center bg-gray-50/50 dark:bg-slate-950/20">
+                    <div className="p-4 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-950/20">
                         <span className="font-bold text-gray-900 dark:text-white">Settled Transactions ({history.length})</span>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse text-xs">
                             <thead>
-                                <tr className="bg-gray-50 dark:bg-slate-955/40 text-gray-550 border-b border-gray-100 dark:border-slate-800 font-bold uppercase tracking-wider">
+                                <tr className="bg-gray-50 dark:bg-slate-950/40 text-gray-500 border-b border-gray-100 dark:border-slate-800 font-bold uppercase tracking-wider">
                                     <th className="p-4">Invoice ID</th>
                                     <th className="p-4">Time</th>
                                     <th className="p-4">Table / Type</th>
@@ -1127,7 +1192,7 @@ const CashierDashboard = () => {
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
                                 {history.map(bill => (
-                                    <tr key={bill._id} className="hover:bg-gray-50/50 dark:hover:bg-slate-850/30 transition-colors text-gray-900 dark:text-gray-300">
+                                    <tr key={bill._id} className="hover:bg-gray-50/50 dark:hover:bg-slate-800/30 transition-colors text-gray-900 dark:text-gray-300">
                                         <td className="p-4 font-mono font-bold">#{bill._id.toUpperCase()}</td>
                                         <td className="p-4">{new Date(bill.paidAt || bill.updatedAt).toLocaleString()}</td>
                                         <td className="p-4 font-semibold">{isSelfOrder(bill) ? '📦 Self-Pickup' : (bill.orderType === 'Dine In' ? `Table ${bill.tableNumber || 'Any'}` : bill.orderType)}</td>
@@ -1161,13 +1226,13 @@ const CashierDashboard = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
-                        <div className="p-4 border-b border-gray-100 dark:border-slate-850 bg-gray-50/50 dark:bg-slate-950/20 font-bold text-gray-900 dark:text-white">
+                        <div className="p-4 border-b border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950/20 font-bold text-gray-900 dark:text-white">
                             Select Invoice for Refund
                         </div>
                         <div className="overflow-x-auto text-xs">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-gray-50 dark:bg-slate-955/40 text-gray-550 border-b border-gray-100 dark:border-slate-800 font-bold uppercase tracking-wider">
+                                    <tr className="bg-gray-50 dark:bg-slate-950/40 text-gray-500 border-b border-gray-100 dark:border-slate-800 font-bold uppercase tracking-wider">
                                         <th className="p-4">Invoice ID</th>
                                         <th className="p-4">Table / Type</th>
                                         <th className="p-4">Payment Method</th>
@@ -1177,7 +1242,7 @@ const CashierDashboard = () => {
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
                                     {history.map(bill => (
-                                        <tr key={bill._id} className="hover:bg-gray-50/50 dark:hover:bg-slate-850/30 transition-colors text-gray-900 dark:text-gray-300">
+                                        <tr key={bill._id} className="hover:bg-gray-50/50 dark:hover:bg-slate-800/30 transition-colors text-gray-900 dark:text-gray-300">
                                             <td className="p-4 font-mono font-bold">#{bill._id.toUpperCase()}</td>
                                             <td className="p-4 font-semibold">{bill.orderType === 'Dine In' ? `Table ${bill.tableNumber || 'Any'}` : bill.orderType}</td>
                                             <td className="p-4">{bill.paymentMethod}</td>
@@ -1198,7 +1263,7 @@ const CashierDashboard = () => {
 
                     <div className="lg:col-span-1 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-4">
                         <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">Refund Policy & Auditing</h3>
-                        <p className="text-xs text-gray-450 leading-relaxed">Processing a refund returns order status to <strong>Refunded</strong> in reports. Ensure drawer float calculations reconcile with physical cash changes before issuing refunds in cash.</p>
+                        <p className="text-xs text-gray-400 leading-relaxed">Processing a refund returns order status to <strong>Refunded</strong> in reports. Ensure drawer float calculations reconcile with physical cash changes before issuing refunds in cash.</p>
                         <div className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 rounded-xl text-[11px] text-amber-800 dark:text-amber-300 font-semibold">
                             ⚠️ All refund logs are linked directly to your active Cashier user credentials.
                         </div>
@@ -1218,13 +1283,13 @@ const CashierDashboard = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
-                        <div className="p-4 border-b border-gray-100 dark:border-slate-850 bg-gray-50/50 dark:bg-slate-950/20 font-bold text-gray-900 dark:text-white">
+                        <div className="p-4 border-b border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950/20 font-bold text-gray-900 dark:text-white">
                             All Active Orders
                         </div>
                         <div className="overflow-x-auto text-xs">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-gray-50 dark:bg-slate-955/40 text-gray-550 border-b border-gray-100 dark:border-slate-800 font-bold uppercase tracking-wider">
+                                    <tr className="bg-gray-50 dark:bg-slate-950/40 text-gray-500 border-b border-gray-100 dark:border-slate-800 font-bold uppercase tracking-wider">
                                         <th className="p-4">Order ID</th>
                                         <th className="p-4">Type</th>
                                         <th className="p-4">Status</th>
@@ -1234,7 +1299,7 @@ const CashierDashboard = () => {
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
                                     {queue.map(bill => (
-                                        <tr key={bill._id} className="hover:bg-gray-50/50 dark:hover:bg-slate-850/30 transition-colors text-gray-900 dark:text-gray-300">
+                                        <tr key={bill._id} className="hover:bg-gray-50/50 dark:hover:bg-slate-800/30 transition-colors text-gray-900 dark:text-gray-300">
                                             <td className="p-4 font-mono font-bold">
                                                 #{bill._id.substring(bill._id.length - 6).toUpperCase()}
                                                 {bill.kotNumbers && bill.kotNumbers.length > 0 && (
@@ -1270,7 +1335,7 @@ const CashierDashboard = () => {
 
                     <div className="lg:col-span-1 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm space-y-4">
                         <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">Thermal Printer Settings</h3>
-                        <p className="text-xs text-gray-450 leading-relaxed">Invoice prints are formatted for standard 80mm POS thermal receipt printers. Use the browser print setup to configure default margins and layouts.</p>
+                        <p className="text-xs text-gray-400 leading-relaxed">Invoice prints are formatted for standard 80mm POS thermal receipt printers. Use the browser print setup to configure default margins and layouts.</p>
                     </div>
                 </div>
             </div>
@@ -1340,7 +1405,7 @@ const CashierDashboard = () => {
                                     className={`flex-1 py-2 px-2 text-xs font-black rounded-xl transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer select-none active:scale-95 ${
                                         isActive 
                                         ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/30 ring-2 ring-emerald-500/20 font-black' 
-                                        : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-850 font-extrabold border-2 border-slate-200 dark:border-slate-700/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-600'
+                                        : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 font-extrabold border-2 border-slate-200 dark:border-slate-700/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-600'
                                     }`}
                                 >
                                     <IconComponent size={13} className={isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400'} />
@@ -1583,7 +1648,7 @@ const CashierDashboard = () => {
                                 )}
 
                                 {/* Scrollable Items Table Container */}
-                                <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar border border-slate-200 dark:border-slate-800 rounded-xl mt-3 bg-slate-50/50 dark:bg-slate-950/40">
+                                <div className="flex-1 min-h-0 overflow-auto custom-scrollbar border border-slate-200 dark:border-slate-800 rounded-xl mt-3 bg-slate-50/50 dark:bg-slate-950/40">
                                     <table className="w-full text-xs">
                                         <thead className="sticky top-0 bg-slate-100 dark:bg-slate-900/95 backdrop-blur-sm z-10 border-b border-slate-200 dark:border-slate-800">
                                             <tr className="text-left text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
@@ -1730,7 +1795,7 @@ const CashierDashboard = () => {
                                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
                                                     Payment Method
                                                 </span>
-                                                <div className={`grid grid-cols-${Math.max(1, Math.min(availableMethods.length, 3))} gap-1.5`}>
+                                                <div className={`grid gap-1.5 ${availableMethods.length <= 1 ? 'grid-cols-1' : availableMethods.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
                                                     {availableMethods.map(m => (
                                                         <button
                                                             key={m.id}

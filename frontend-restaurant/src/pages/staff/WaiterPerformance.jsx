@@ -37,11 +37,43 @@ const WaiterPerformance = () => {
         fetchPerformance();
     }, [api, tipsEnabled]);
 
-    const servedOrders = orders.filter(o => ['Served', 'Completed', 'Delivered', 'Picked Up'].includes(o.status));
-    const totalTips = myTips.reduce((sum, t) => sum + (t.amount || 0), 0);
-    const settledTips = myTips.filter(t => t.status === 'Settled').reduce((sum, t) => sum + (t.amount || 0), 0);
-    const pendingTips = myTips.filter(t => t.status === 'Pending').reduce((sum, t) => sum + (t.amount || 0), 0);
-    const avgServeTimeMinutes = servedOrders.length > 0 ? 12 : 0;
+    const periodStart = (() => {
+        const now = new Date();
+        if (period === 'Today') return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        if (period === 'This Week') {
+            const d = new Date(now);
+            d.setDate(now.getDate() - 7);
+            d.setHours(0, 0, 0, 0);
+            return d;
+        }
+        return new Date(now.getFullYear(), now.getMonth(), 1);
+    })();
+
+    const periodOrders = orders.filter(o => new Date(o.createdAt) >= periodStart);
+    const periodTips = myTips.filter(t => new Date(t.createdAt) >= periodStart);
+
+    const servedOrders = periodOrders.filter(o => ['Served', 'Completed', 'Delivered', 'Picked Up'].includes(o.status));
+    const totalTips = periodTips.reduce((sum, t) => sum + (t.amount || 0), 0);
+    const settledTips = periodTips.filter(t => t.status === 'Settled').reduce((sum, t) => sum + (t.amount || 0), 0);
+    const pendingTips = periodTips.filter(t => t.status === 'Pending').reduce((sum, t) => sum + (t.amount || 0), 0);
+
+    const avgServeTimeMinutes = servedOrders.length > 0
+        ? Math.round(
+            servedOrders.reduce((sum, o) => {
+                const startMs = new Date(o.createdAt).getTime();
+                const endMs = new Date(o.updatedAt || o.createdAt).getTime();
+                return sum + Math.max(0, (endMs - startMs) / 60000);
+            }, 0) / servedOrders.length
+        )
+        : 0;
+
+    const ratedOrders = periodOrders.filter(o => Number(o.rating) > 0);
+    const avgRating = ratedOrders.length > 0
+        ? (ratedOrders.reduce((s, o) => s + Number(o.rating), 0) / ratedOrders.length).toFixed(1)
+        : null;
+
+    const nonCancelledCount = periodOrders.filter(o => o.status !== 'Cancelled' && o.status !== 'Refunded').length;
+    const accuracyPct = periodOrders.length > 0 ? ((nonCancelledCount / periodOrders.length) * 100).toFixed(1) : '100.0';
 
     return (
         <div className="w-full max-w-[1600px] mx-auto space-y-6 pb-12">
@@ -104,8 +136,12 @@ const WaiterPerformance = () => {
                         <span>Customer Rating</span>
                         <Star size={18} className="fill-amber-400 text-amber-400" />
                     </div>
-                    <div className="text-3xl font-black text-slate-900 dark:text-white">5.0 <span className="text-sm font-bold text-slate-400">/ 5.0</span></div>
-                    <p className="text-xs text-amber-600 font-bold">Excellent customer satisfaction</p>
+                    <div className="text-3xl font-black text-slate-900 dark:text-white">
+                        {avgRating ? <>{avgRating} <span className="text-sm font-bold text-slate-400">/ 5.0</span></> : 'N/A'}
+                    </div>
+                    <p className="text-xs text-amber-600 font-bold">
+                        {ratedOrders.length > 0 ? `Based on ${ratedOrders.length} rated order${ratedOrders.length > 1 ? 's' : ''}` : 'No customer ratings yet'}
+                    </p>
                 </div>
 
                 {tipsEnabled ? (
@@ -125,7 +161,7 @@ const WaiterPerformance = () => {
                             <span>Service Accuracy</span>
                             <CheckCircle2 size={18} className="text-blue-600" />
                         </div>
-                        <div className="text-3xl font-black text-slate-900 dark:text-white">99.4%</div>
+                        <div className="text-3xl font-black text-slate-900 dark:text-white">{accuracyPct}%</div>
                         <p className="text-xs text-slate-400 font-medium">Tips disabled by restaurant admin</p>
                     </div>
                 )}
@@ -162,7 +198,7 @@ const WaiterPerformance = () => {
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
                                     {myTips.map(t => (
-                                        <tr key={t._id} className="hover:bg-slate-50 dark:hover:bg-slate-850">
+                                        <tr key={t._id} className="hover:bg-slate-50 dark:hover:bg-slate-800">
                                             <td className="py-3 text-slate-500">
                                                 {new Date(t.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </td>

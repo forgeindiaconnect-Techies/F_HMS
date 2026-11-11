@@ -8,10 +8,27 @@ import {
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getApiUrl } from '../../utils/axiosInstance';
+import { createReconnectingWebSocket } from '../../utils/wsClient';
 import toast from 'react-hot-toast';
 import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 import KOTPrintModal from '../../components/KOTPrintModal';
 import { generateThermalKOTHtml, printKOTViaIframe } from '../../utils/receiptGenerator';
+
+const CookingStopwatch = ({ createdAt, isOverdue, getTimerColorClass }) => {
+    const [nowMs, setNowMs] = useState(() => Date.now());
+    useEffect(() => {
+        const timer = setInterval(() => setNowMs(Date.now()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+    const mins = Math.max(0, Math.floor((nowMs - new Date(createdAt).getTime()) / 60000));
+    const secs = Math.max(0, Math.floor((nowMs - new Date(createdAt).getTime()) / 1000) % 60);
+    return (
+        <div className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl font-mono font-black text-[11px] sm:text-xs border flex items-center gap-1 sm:gap-1.5 shadow-xs shrink-0 ${getTimerColorClass(mins)}`}>
+            <Timer size={13} className={isOverdue ? 'animate-spin' : ''} />
+            <span>{mins.toString().padStart(2, '0')}:{secs.toString().padStart(2, '0')}</span>
+        </div>
+    );
+};
 
 const ChefDashboard = () => {
     const { api, user, restaurant } = useAuth();
@@ -33,6 +50,30 @@ const ChefDashboard = () => {
     const [printModalKOT, setPrintModalKOT] = useState(null);
     const [autoPrintKOTEnabled, setAutoPrintKOTEnabled] = useState(() => localStorage.getItem('resto_chef_kot_autoprint') !== 'false');
     const seenTicketIdsRef = useRef(new Set());
+    const audioCtxRef = useRef(null);
+
+    const playChefChime = () => {
+        try {
+            const Ctx = window.AudioContext || window.webkitAudioContext;
+            if (!Ctx) return;
+            if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+                audioCtxRef.current = new Ctx();
+            }
+            const audioCtx = audioCtxRef.current;
+            if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.4);
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.4);
+        } catch (e) {}
+    };
     
     // Priorities and item completion checklists (local ticket overrides)
     const [manualPriority, setManualPriority] = useState({}); // orderId -> boolean
@@ -78,102 +119,55 @@ const ChefDashboard = () => {
 
     useEffect(() => {
         fetchOrders();
-        const pollInterval = setInterval(fetchOrders, 4000);
-        
-        // Ticking stopwatch timer every second
+        const pollInterval = setInterval(fetchOrders, 20000);
+        // Update priority/overdue minute checks every 30s (seconds are isolated inside CookingStopwatch)
         const timeInterval = setInterval(() => {
             setCurrentTime(new Date());
-        }, 1000);
+        }, 30000);
 
-        // Real-time WebSocket setup
-        let ws;
-        const connectWS = () => {
-            try {
-                let baseURL = getApiUrl();
-                let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
-                ws = new WebSocket(wsURL);
-
-                ws.onopen = () => {
-                    const rawRestId = user?.restaurantId;
-                    const cleanRestId = (rawRestId && typeof rawRestId === 'object') ? (rawRestId._id || rawRestId.id) : rawRestId;
-                    ws.send(JSON.stringify({
-                        type: 'register',
-                        restaurantId: cleanRestId || null,
-                        role: 'kitchen'
-                    }));
-                };
-
-                ws.onmessage = (event) => {
-                    try {
-                        const msg = JSON.parse(event.data);
-                        if (msg.type === 'new_order' || msg.type === 'order_updated' || msg.type === 'order_status_updated') {
-                            if (msg.data && msg.data._id) {
-                                setOrders(prev => {
-                                    const exists = prev.some(o => o._id === msg.data._id);
-                                    if (exists) {
-                                        return prev.map(o => o._id === msg.data._id ? msg.data : o);
-                                    }
-                                    return [msg.data, ...prev];
-                                });
-                            }
-                            fetchOrders();
-
-                            // Trigger modal popup and chime ONLY for actual new, unhandled orders
-                            if (msg.type === 'new_order' && msg.data && msg.data._id) {
-                                const orderData = msg.data;
-                                const isPendingStatus = !orderData.status || orderData.status === 'Pending' || orderData.status === 'Placed';
-                                
-                                if (isPendingStatus && !seenTicketIdsRef.current.has(orderData._id)) {
-                                    seenTicketIdsRef.current.add(orderData._id);
-                                    setNewTicketModalOrder(orderData);
-                                    if (autoPrintKOTEnabled) {
-                                        autoPrintKitchenKOT(orderData);
-                                    }
-
-                                    const ticketNum = String(orderData._id).substring(String(orderData._id).length - 5).toUpperCase();
-
-                                    try {
-                                        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                                        const osc = audioCtx.createOscillator();
-                                        const gain = audioCtx.createGain();
-                                        osc.type = 'sine';
-                                        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-                                        osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.4);
-                                        gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-                                        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-                                        osc.connect(gain);
-                                        gain.connect(audioCtx.destination);
-                                        osc.start();
-                                        osc.stop(audioCtx.currentTime + 0.4);
-                                    } catch (e) {}
-
-                                    toast.success(`🔔 NEW ORDER RECEIVED! Ticket #${ticketNum}`, {
-                                        id: `new-order-${orderData._id}`, // Deduplicate toast notification
-                                        duration: 8000,
-                                        position: 'top-right'
-                                    });
-                                }
-                            }
-                        }
-                    } catch (e) {
-                        console.error('Error parsing websocket message in ChefDashboard', e);
+        const cleanupWs = createReconnectingWebSocket({
+            apiUrl: getApiUrl(),
+            buildRegistrationPayload: () => {
+                const rawRestId = user?.restaurantId;
+                const cleanRestId = (rawRestId && typeof rawRestId === 'object') ? (rawRestId._id || rawRestId.id) : rawRestId;
+                return { restaurantId: cleanRestId || null, role: 'kitchen' };
+            },
+            onMessage: (msg) => {
+                if (msg.type === 'new_order' || msg.type === 'order_updated' || msg.type === 'order_status_updated') {
+                    if (msg.data && msg.data._id) {
+                        setOrders(prev => {
+                            const exists = prev.some(o => o._id === msg.data._id);
+                            if (exists) return prev.map(o => o._id === msg.data._id ? msg.data : o);
+                            return [msg.data, ...prev];
+                        });
                     }
-                };
+                    fetchOrders();
 
-                ws.onclose = () => {
-                    setTimeout(connectWS, 5000);
-                };
-            } catch (err) {
-                console.error('WebSocket error in ChefDashboard', err);
+                    if (msg.type === 'new_order' && msg.data && msg.data._id) {
+                        const orderData = msg.data;
+                        const isPendingStatus = !orderData.status || orderData.status === 'Pending' || orderData.status === 'Placed';
+                        if (isPendingStatus && !seenTicketIdsRef.current.has(orderData._id)) {
+                            seenTicketIdsRef.current.add(orderData._id);
+                            setNewTicketModalOrder(orderData);
+                            if (autoPrintKOTEnabled) autoPrintKitchenKOT(orderData);
+
+                            const ticketNum = String(orderData._id).substring(String(orderData._id).length - 5).toUpperCase();
+                            playChefChime();
+                            toast.success(`🔔 NEW ORDER RECEIVED! Ticket #${ticketNum}`, {
+                                id: `new-order-${orderData._id}`,
+                                duration: 8000,
+                                position: 'top-right'
+                            });
+                        }
+                    }
+                }
             }
-        };
-
-        connectWS();
+        });
 
         return () => {
             clearInterval(pollInterval);
             clearInterval(timeInterval);
-            if (ws) ws.close();
+            cleanupWs();
         };
     }, [api, user]);
 
@@ -801,11 +795,12 @@ const ChefDashboard = () => {
                                             </div>
                                         </div>
 
-                                        {/* Cooking Timer Stopwatch */}
-                                        <div className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl font-mono font-black text-[11px] sm:text-xs border flex items-center gap-1 sm:gap-1.5 shadow-xs shrink-0 ${getTimerColorClass(timeDiffMinutes)}`}>
-                                            <Timer size={13} className={isOverdue ? 'animate-spin' : ''} />
-                                            <span>{timeDiffMinutes.toString().padStart(2, '0')}:{timeDiffSeconds.toString().padStart(2, '0')}</span>
-                                        </div>
+                                        {/* Cooking Timer Stopwatch (isolated 1s tick) */}
+                                        <CookingStopwatch
+                                            createdAt={order.createdAt}
+                                            isOverdue={isOverdue}
+                                            getTimerColorClass={getTimerColorClass}
+                                        />
                                     </div>
 
                                     {/* Prep Checklist Progress Bar */}

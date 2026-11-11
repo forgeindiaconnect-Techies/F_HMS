@@ -5,7 +5,7 @@ import {
     selfSubscribe, logoUpload, getMyBillingHistory, upgradeSubscription, 
     downgradeSubscription, renewSubscription,
     createRazorpaySubscriptionOrder, verifyRazorpaySubscriptionPayment,
-    generateRazorpaySubscriptionQR, confirmSubscriptionQRPayment, requestFreeTrial,
+    generateRazorpaySubscriptionQR, confirmSubscriptionQRPayment, recordFailedSubscriptionPayment, requestFreeTrial,
     getRestaurantConfig, updateRestaurantConfig, getRestaurantPublicConfig
 } from '../controllers/restaurantController.js';
 import { submitVerification, getMyVerification, getAllVerifications, getVerificationById, reviewVerification, verificationUpload, deleteVerification, updateBrandAssets } from '../controllers/verificationController.js';
@@ -88,8 +88,14 @@ router.route('/mine/razorpay-verify')
 router.route('/mine/razorpay-qr')
     .post(protect, authorize('RestaurantAdmin', 'SuperAdmin', 'Admin'), generateRazorpaySubscriptionQR);
 
+router.route('/mine/razorpay-qr-status/:qrId')
+    .get(protect, authorize('RestaurantAdmin', 'SuperAdmin', 'Admin'), confirmSubscriptionQRPayment);
+
 router.route('/mine/confirm-qr-payment')
     .post(protect, authorize('RestaurantAdmin', 'SuperAdmin', 'Admin'), confirmSubscriptionQRPayment);
+
+router.route('/mine/razorpay-failed')
+    .post(protect, authorize('RestaurantAdmin', 'SuperAdmin', 'Admin'), recordFailedSubscriptionPayment);
 
 router.route('/trial-request')
     .post(protect, authorize('RestaurantAdmin', 'Admin'), requestFreeTrial);

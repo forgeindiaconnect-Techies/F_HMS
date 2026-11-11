@@ -79,7 +79,7 @@ const WaiterTopbar = () => {
                     </button>
                     {showNotifs && (
                         <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-gray-100 dark:border-slate-800 overflow-hidden z-50">
-                            <div className="p-3 border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-850">
+                            <div className="p-3 border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800">
                                 <h3 className="font-bold text-gray-900 dark:text-white">Notifications</h3>
                             </div>
                             <div className="max-h-80 overflow-y-auto custom-scrollbar">

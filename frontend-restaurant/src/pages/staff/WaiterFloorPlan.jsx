@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Utensils, Star, Search, Plus, CheckCircle2, ChevronRight, X, Send, Receipt, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const WaiterFloorPlan = () => {
+    const navigate = useNavigate();
     const { api, user } = useAuth();
     const [dbTables, setDbTables] = useState([]);
     const [activeOrders, setActiveOrders] = useState([]);
-    const [menu, setMenu] = useState([]);
     const [statusFilter, setStatusFilter] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTable, setActiveTable] = useState(null);
     const [panelOpen, setPanelOpen] = useState(false);
-    const [cart, setCart] = useState([]);
 
     const [assignedIds, setAssignedIds] = useState(() => {
         try {
@@ -24,14 +24,13 @@ const WaiterFloorPlan = () => {
 
     const fetchData = async () => {
         try {
-            const [tablesRes, ordersRes, menuRes] = await Promise.all([
+            const [tablesRes, ordersRes] = await Promise.all([
                 api.get('/tables').catch(() => ({ data: [] })),
-                api.get('/orders').catch(() => ({ data: [] })),
-                api.get('/menu').catch(() => ({ data: [] }))
+                api.get('/orders').catch(() => ({ data: [] }))
             ]);
-            setDbTables(tablesRes.data);
-            setActiveOrders(ordersRes.data.filter(o => o.orderType === 'Dine In' && !['Served', 'Completed'].includes(o.status)));
-            setMenu(menuRes.data);
+            setDbTables(Array.isArray(tablesRes.data) ? tablesRes.data : []);
+            const ordersArr = Array.isArray(ordersRes.data) ? ordersRes.data : (ordersRes.data?.orders || []);
+            setActiveOrders(ordersArr.filter(o => o.orderType === 'Dine In' && !['Completed', 'Cancelled', 'Refunded'].includes(o.status)));
         } catch (error) {
             console.error('Failed to fetch floor data', error);
         }
@@ -39,7 +38,7 @@ const WaiterFloorPlan = () => {
 
     useEffect(() => {
         fetchData();
-        const interval = setInterval(fetchData, 3000);
+        const interval = setInterval(fetchData, 10000);
         return () => clearInterval(interval);
     }, [api]);
 
@@ -50,20 +49,20 @@ const WaiterFloorPlan = () => {
             toast.success(`Unassigned Table ${tableId}`);
         } else {
             updated = [...assignedIds, tableId];
-            toast.success(`Assigned Table ${tableId} to your duty list! ⭐`);
+            toast.success(`Assigned Table ${tableId} to your duty list!`);
         }
         setAssignedIds(updated);
         localStorage.setItem(`waiter_assigned_tables_${user?._id}`, JSON.stringify(updated));
     };
 
-    const tables = dbTables.length > 0 ? dbTables.map(t => {
+    const tables = dbTables.map(t => {
         const order = activeOrders.find(o => String(o.tableNumber) === String(t.tableNumber));
         let displayStatus = t.status || 'Available';
         if (order) {
             displayStatus = 'Occupied';
-            if (order.status === 'Served') displayStatus = 'Billing';
+            if (order.status === 'Served' || order.status === 'Billing Requested') displayStatus = 'Billing';
             else if (order.status === 'Ready') displayStatus = 'Needs Attention';
-            else if (order.status === 'In Kitchen' || order.status === 'Preparing') displayStatus = 'Waiting for Food';
+            else if (order.status === 'Pending' || order.status === 'Preparing') displayStatus = 'Waiting for Food';
         }
         return { 
             id: `Table ${t.tableNumber}`, 
@@ -73,21 +72,32 @@ const WaiterFloorPlan = () => {
             orders: order, 
             dbId: t._id 
         };
-    }) : [1,2,3,4,5,6,7,8,9,10,11,12].map(num => ({
-        id: `Table ${num}`,
-        rawId: String(num),
-        status: num === 5 ? 'Needs Attention' : num === 7 ? 'Billing' : num === 3 ? 'Waiting for Food' : num === 8 ? 'Reserved' : 'Available',
-        seats: 4
-    }));
+    });
 
-    const filteredTables = statusFilter === 'All' 
-        ? tables 
-        : tables.filter(t => t.status === statusFilter);
+    const filteredTables = tables.filter(t => {
+        const matchesStatus = statusFilter === 'All' || t.status === statusFilter;
+        const matchesSearch = !searchQuery.trim() || t.id.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesStatus && matchesSearch;
+    });
 
     const openTablePanel = (t) => {
         setActiveTable(t);
-        setCart([]);
         setPanelOpen(true);
+    };
+
+    const handleRequestBill = async () => {
+        if (!activeTable?.orders?._id) {
+            toast.error(`No active order found on ${activeTable?.id}`);
+            return;
+        }
+        try {
+            await api.put(`/orders/${activeTable.orders._id}/status`, { status: 'Billing Requested' });
+            toast.success(`Bill requested for ${activeTable.id} & sent to Cashier!`);
+            setPanelOpen(false);
+            fetchData();
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to request bill');
+        }
     };
 
     const getTableStyle = (status) => {
@@ -181,18 +191,47 @@ const WaiterFloorPlan = () => {
                                 <X size={18} />
                             </button>
                         </div>
-                        <div className="py-4">
-                            <p className="text-xs font-semibold text-slate-500">Current Status: <span className="font-bold text-slate-900">{activeTable?.status}</span></p>
+                        <div className="py-4 space-y-3 overflow-y-auto max-h-[60vh]">
+                        <p className="text-xs font-semibold text-slate-500">Current Status: <span className="font-bold text-slate-900">{activeTable?.status}</span> · {activeTable?.seats} Seats</p>
+                        {activeTable?.orders ? (
+                            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-2">
+                                <div className="flex justify-between text-xs font-bold">
+                                    <span className="text-slate-700">Order #{String(activeTable.orders._id).slice(-5).toUpperCase()}</span>
+                                    <span className="text-emerald-600">₹{Number(activeTable.orders.totalPrice || 0).toFixed(2)}</span>
+                                </div>
+                                <p className="text-[11px] font-bold text-slate-500">Status: {activeTable.orders.status}</p>
+                                <div className="divide-y divide-slate-200/70 pt-1">
+                                    {(activeTable.orders.orderItems || []).map((it, idx) => (
+                                        <div key={idx} className="py-1.5 flex justify-between text-xs text-slate-700">
+                                            <span>{it.qty || it.quantity || 1}× {it.name}</span>
+                                            <span className="font-semibold">₹{((it.price || 0) * (it.qty || it.quantity || 1)).toFixed(0)}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="bg-slate-50 rounded-2xl p-4 text-xs text-slate-500 font-medium">
+                                Table is currently idle. Use POS Desk below to open an order for {activeTable?.id}.
+                            </div>
+                        )}
                         </div>
                     </div>
 
-                    <div className="space-y-2 min-w-0 pr-1.5 flex-1">
-                        <button onClick={() => { toast.success(`Order initiated for ${activeTable?.id}`); setPanelOpen(false); }} className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs flex items-center justify-center gap-2">
-                            <Plus size={16} /> Take New Order
+                    <div className="space-y-2">
+                        <button
+                            onClick={() => { setPanelOpen(false); navigate(`/waiter?table=${encodeURIComponent(activeTable?.rawId || '')}`); }}
+                            className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                            <Plus size={16} /> Open POS &amp; Take Order
                         </button>
-                        <button onClick={() => { toast.success(`Bill generated for ${activeTable?.id}`); setPanelOpen(false); }} className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl text-xs flex items-center justify-center gap-2">
-                            <Receipt size={16} /> Generate Bill
-                        </button>
+                        {activeTable?.orders && (
+                            <button
+                                onClick={handleRequestBill}
+                                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                <Receipt size={16} /> Request Bill for Cashier
+                            </button>
+                        )}
                     </div>
                 </div>
             )}

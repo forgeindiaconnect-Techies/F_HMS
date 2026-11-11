@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import FreeTrialManagement from './pages/superadmin/FreeTrialManagement';
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './layouts/DashboardLayout';
 import DashboardHome from './pages/admin/DashboardHome';
@@ -212,6 +213,7 @@ function App() {
           <Route path="inquiries" element={<InquiriesManagement />} />
           <Route path="billing-demos" element={<BillingDemoRequestsManagement />} />
           <Route path="restaurants" element={<PlatformRestaurants />} />
+          <Route path="free-trials" element={<FreeTrialManagement />} />
           <Route path="plans" element={<PlanManagement />} />
           <Route path="commissions" element={<CommissionManagement />} />
           <Route path="revenue" element={<RevenueAnalytics />} />

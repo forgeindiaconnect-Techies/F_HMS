@@ -11,8 +11,8 @@ const WaiterPriorityActions = () => {
     const [activeOrders, setActiveOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchData = async () => {
-        setLoading(true);
+    const fetchData = async (isInitial = false) => {
+        if (isInitial) setLoading(true);
         try {
             const [ordersRes, requestsRes] = await Promise.all([
                 api.get('/orders').catch(() => ({ data: [] })),
@@ -22,7 +22,7 @@ const WaiterPriorityActions = () => {
             const reqsData = Array.isArray(requestsRes.data) ? requestsRes.data : [];
 
             // Include all active orders that are not completed or cancelled
-            setActiveOrders(ordersData.filter(o => !['Completed', 'Cancelled', 'Delivered', 'Served', 'Picked Up'].includes(o.status)));
+            setActiveOrders(ordersData.filter(o => !['Completed', 'Cancelled', 'Delivered', 'Served', 'Picked Up', 'Refunded'].includes(o.status)));
             setServiceRequests(reqsData);
         } catch (error) {
             console.error('Failed to fetch priority actions data', error);
@@ -32,11 +32,15 @@ const WaiterPriorityActions = () => {
     };
 
     useEffect(() => {
-        fetchData();
-        const interval = setInterval(fetchData, 3000);
-
+        let isUnmounted = false;
+        let reconnectTimer;
         let ws;
+
+        fetchData(true);
+        const interval = setInterval(() => fetchData(false), 15000);
+
         const connectWS = () => {
+            if (isUnmounted) return;
             try {
                 let baseURL = getApiUrl();
                 let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
@@ -45,10 +49,12 @@ const WaiterPriorityActions = () => {
                 ws.onopen = () => {
                     const rawRestId = user?.restaurantId;
                     const cleanRestId = (rawRestId && typeof rawRestId === 'object') ? (rawRestId._id || rawRestId.id) : rawRestId;
+                    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
                     ws.send(JSON.stringify({
                         type: 'register',
                         restaurantId: cleanRestId || null,
-                        role: 'waiter'
+                        role: 'waiter',
+                        token
                     }));
                 };
 
@@ -56,13 +62,15 @@ const WaiterPriorityActions = () => {
                     try {
                         const msg = JSON.parse(event.data);
                         if (['new_order', 'order_updated', 'order_status_updated', 'ready_to_serve', 'new_notification'].includes(msg.type)) {
-                            fetchData();
+                            fetchData(false);
                         }
                     } catch (e) {}
                 };
 
                 ws.onclose = () => {
-                    setTimeout(connectWS, 5000);
+                    if (!isUnmounted) {
+                        reconnectTimer = setTimeout(connectWS, 5000);
+                    }
                 };
             } catch (err) {}
         };
@@ -70,7 +78,9 @@ const WaiterPriorityActions = () => {
         connectWS();
 
         return () => {
+            isUnmounted = true;
             clearInterval(interval);
+            clearTimeout(reconnectTimer);
             if (ws) ws.close();
         };
     }, [api, user]);

@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bell, User, Menu, ArrowLeft, Crown, Zap, Star, X, CheckCircle2, Loader2, AlertCircle, ArrowUpRight, Check, QrCode, MapPin, ChevronDown, Store, Sun, Moon, MessageCircle, MessageSquare, Phone } from 'lucide-react';
+import { Bell, User, Menu, ArrowLeft, Crown, Zap, Star, X, Loader2, AlertCircle, ArrowUpRight, Check, Store, QrCode } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import dummyQrPayment from '../assets/dummy_qr_payment.png';
+import { buildDummyUpiQrUrl, confirmDummyQRSubscriptionPayment } from '../utils/subscriptionClient';
 /* ─── Plan styling helpers ───────────────────────────────────────── */
 const PLAN_META = {
     Basic:        { bg: 'bg-blue-100',   text: 'text-blue-700',   border: 'border-blue-300',   ring: 'ring-blue-400',   grad: 'from-blue-500 to-blue-600',   icon: Zap   },
@@ -20,194 +20,10 @@ const getPlanMeta = (name) => {
         { bg: 'bg-gray-100', text: 'text-gray-600', border: 'border-gray-300', ring: 'ring-gray-400', grad: 'from-gray-500 to-gray-600', icon: Star };
 };
 
-const UpiModal = ({ plan, planPrice, restaurantId, api, onClose, onSuccess }) => {
-    const [step, setStep] = useState('scan');
-    const [activating, setActivating] = useState(false);
-
-    useEffect(() => {
-        if (step !== 'scan') return;
-
-        let intervalId;
-        const checkStatus = async () => {
-            try {
-                const res = await api.get('/restaurants/mine');
-                if (res.data?.subscription?.plan === plan && res.data?.subscription?.status === 'Active') {
-                    setStep('processing');
-                    setTimeout(() => {
-                        setStep('success');
-                        setTimeout(() => onSuccess(), 2000);
-                    }, 2000);
-                }
-            } catch (error) {
-                console.error("Failed to check subscription status", error);
-            }
-        };
-
-        // Check immediately
-        checkStatus();
-        intervalId = setInterval(checkStatus, 2000);
-        return () => clearInterval(intervalId);
-    }, [step, plan, api, onSuccess]);
-
-    const getScanUrl = () => {
-        let base = api.defaults.baseURL;
-        if (base.startsWith('http') && !base.includes('localhost') && !base.includes('127.0.0.1')) {
-            try {
-                const urlObj = new URL(base);
-                return `${urlObj.origin}/api/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`;
-            } catch (e) {}
-        }
-        return `https://f-hms-1.onrender.com/api/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`;
-    };
-
-    const handleQrClick = async () => {
-        if (activating) return;
-        setActivating(true);
-        try {
-            // Direct API call to activate plan in backend DB
-            await api.get(`/plans/scan-activate?restaurantId=${restaurantId}&plan=${plan}`);
-            
-            // Also call /restaurants/subscribe for compatibility
-            try {
-                await api.put('/restaurants/subscribe', { plan, billingCycle: 'monthly' });
-            } catch (subErr) {
-                // Non-critical if scan-activate already updated restaurant
-            }
-
-            setStep('processing');
-            setTimeout(() => {
-                setStep('success');
-                setTimeout(() => {
-                    onSuccess();
-                }, 1500);
-            }, 1000);
-        } catch (err) {
-            console.error('Plan activation error:', err);
-            toast.error('Failed to activate subscription. Please try again.');
-            setActivating(false);
-        }
-    };
-
-    const scanUrl = getScanUrl();
-    const qrDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(scanUrl)}`;
-
-    return (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
-            <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95">
-
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100">
-                    <div>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Complete Payment</p>
-                        <h3 className="text-lg font-black text-gray-900">{plan} Plan</h3>
-                    </div>
-                    {step === 'scan' && (
-                        <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors">
-                            <X size={18} />
-                        </button>
-                    )}
-                </div>
-
-                {/* Price */}
-                {step === 'scan' && (
-                    <div className="text-center pt-5 pb-1">
-                        <div className="text-4xl font-black text-gray-900">₹{planPrice}</div>
-                        <p className="text-xs text-gray-400 mt-1 font-medium">per month · cancel anytime</p>
-                    </div>
-                )}
-
-                <div className="p-6 flex flex-col items-center justify-center min-h-[220px]">
-
-                    {/* STEP 1 — Scan QR */}
-                    {step === 'scan' && (
-                        <div className="w-full flex flex-col items-center gap-4 text-center">
-                            <button
-                                onClick={handleQrClick}
-                                disabled={activating}
-                                className="w-56 h-56 flex items-center justify-center rounded-2xl overflow-hidden bg-gray-50 border-2 border-gray-100 shadow-inner hover:border-green-400 hover:scale-[1.02] transition-all cursor-pointer disabled:opacity-60 relative group"
-                                title="Click to activate plan instantly"
-                            >
-                                <img src={qrDataUrl} alt="QR Code" className="w-full h-full object-contain p-4 bg-white" />
-                                {activating && (
-                                    <div className="absolute inset-0 bg-white/90 flex flex-col items-center justify-center rounded-2xl gap-2">
-                                        <Loader2 size={36} className="animate-spin text-green-500" />
-                                        <span className="text-xs font-bold text-gray-700">Activating...</span>
-                                    </div>
-                                )}
-                            </button>
-                            <div className="space-y-2">
-                                <p className="text-sm font-semibold text-gray-800">Scan QR Code with Phone OR Click Below</p>
-                                <button
-                                    type="button"
-                                    onClick={handleQrClick}
-                                    disabled={activating}
-                                    className="w-full py-3 px-6 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-extrabold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-50"
-                                >
-                                    {activating ? (
-                                        <>
-                                            <Loader2 size={16} className="animate-spin" />
-                                            Activating Plan...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <CheckCircle2 size={16} />
-                                            Confirm & Activate {plan} Plan
-                                        </>
-                                    )}
-                                </button>
-                                <p className="text-[11px] text-gray-400">Or scan QR with your phone to open activation page directly.</p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* STEP 2 — Processing */}
-                    {step === 'processing' && (
-                        <div className="flex flex-col items-center gap-4 py-6">
-                            <div className="relative">
-                                <Loader2 size={52} className="animate-spin text-green-500" />
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-6 h-6 bg-green-100 rounded-full" />
-                                </div>
-                            </div>
-                            <p className="font-bold text-gray-700">Verifying activation…</p>
-                            <p className="text-xs text-gray-400">Please wait, do not close this window</p>
-                        </div>
-                    )}
-
-                    {/* STEP 3 — Success */}
-                    {step === 'success' && (
-                        <div className="flex flex-col items-center gap-3 py-6">
-                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                                <CheckCircle2 size={40} className="text-green-500" />
-                            </div>
-                            <p className="font-black text-green-600 text-xl">Payment Successful!</p>
-                            <p className="text-sm text-gray-500 text-center">
-                                Your <span className="font-bold text-gray-800">{plan}</span> plan is now active 🎉
-                            </p>
-                            <p className="text-xs text-gray-400">Redirecting…</p>
-                        </div>
-                    )}
-                </div>
-
-                {step === 'scan' && (
-                    <div className="px-6 pb-5">
-                        <button 
-                            onClick={onClose} 
-                            className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors text-sm shadow-sm flex items-center justify-center"
-                        >
-                            Cancel Payment
-                        </button>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-};
-
 /* ─── Plan Upgrade Modal ────────────────────────────────────────── */
-const PlanUpgradeModal = ({ currentPlan, plans, api, restaurant, onClose, onUpgraded }) => {
-    const [selectedPlan, setSelectedPlan] = useState(null); // opens UPI modal
+const PlanUpgradeModal = ({ currentPlan, plans, api, restaurant, subscriptionState, onClose, onUpgraded }) => {
     const [subscribing, setSubscribing] = useState(null);
+    const [qrPlan, setQrPlan] = useState(null);
     const modalRef = useRef(null);
 
     // Close on outside click
@@ -217,29 +33,48 @@ const PlanUpgradeModal = ({ currentPlan, plans, api, restaurant, onClose, onUpgr
         return () => document.removeEventListener('mousedown', handler);
     }, [onClose]);
 
-    const handleUpgradeSuccess = async (planItem) => {
-        setSubscribing(planItem.name);
-        try {
-            await api.put('/restaurants/subscribe', { plan: planItem.name, billingCycle: 'monthly' });
-            onUpgraded(planItem.name);
-            onClose();
-            toast.success(`Successfully upgraded to ${planItem.name} Plan!`);
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-        } catch (err) {
-            console.error('Subscription update failed', err);
-            toast.error(err.response?.data?.message || 'Failed to update subscription');
-        } finally {
-            setSubscribing(null);
-            setSelectedPlan(null);
+    const handleUpgradeClick = (planItem) => {
+        if (subscriptionState?.isManualFrozen || restaurant?.subscription?.manualFreeze) {
+            toast.error('This restaurant is administratively frozen. Please contact Support.');
+            return;
         }
+        if (subscriptionState?.isPendingApproval) {
+            toast.error('Free trial request is pending Super Admin approval.');
+            return;
+        }
+        const price = planItem.monthlyPrice || planItem.price || 0;
+        const refId = `QR-UPG-${Date.now().toString().slice(-6)}`;
+        setQrPlan({
+            planItem,
+            price,
+            refId,
+            qrImageUrl: buildDummyUpiQrUrl({ amount: price, label: `${planItem.name} Upgrade` })
+        });
+    };
+
+    const handleConfirmQRUpgrade = async () => {
+        if (!qrPlan?.planItem || subscribing) return;
+        setSubscribing(qrPlan.planItem.name);
+        await confirmDummyQRSubscriptionPayment({
+            api,
+            planName: qrPlan.planItem.name,
+            billingCycle: 'monthly',
+            refId: qrPlan.refId,
+            onSuccess: async () => {
+                setSubscribing(null);
+                await onUpgraded(qrPlan.planItem.name);
+                onClose();
+            },
+            onFailure: () => {
+                setSubscribing(null);
+            }
+        });
     };
 
     const displayPlans = plans.length > 0 ? plans : [
-        { _id: 'p1', name: 'Basic',      monthlyPrice: 49,  features: ['1 Branch', 'Basic Reporting', 'Email Support'] },
-        { _id: 'p2', name: 'Pro',        monthlyPrice: 129, features: ['3 Branches', 'Advanced Analytics', 'Priority Support'] },
-        { _id: 'p3', name: 'Enterprise',   monthlyPrice: 299, features: ['Unlimited Branches', 'Custom Features', '24/7 Support'] },
+        { _id: 'p1', name: 'Basic',      monthlyPrice: 2999,  features: ['1 Branch', 'Basic Reporting', 'Email Support'] },
+        { _id: 'p2', name: 'Pro',        monthlyPrice: 5999,  features: ['3 Branches', 'Advanced Analytics', 'Priority Support'] },
+        { _id: 'p3', name: 'Enterprise', monthlyPrice: 12999, features: ['Unlimited Branches', 'Custom Features', '24/7 Support'] },
     ];
 
     return (
@@ -270,115 +105,143 @@ const PlanUpgradeModal = ({ currentPlan, plans, api, restaurant, onClose, onUpgr
                         </button>
                     </div>
 
-                    {/* Plans grid */}
-                    <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-5">
-                        {displayPlans.map((plan, idx) => {
-                            const meta  = getPlanMeta(plan.name);
-                            const Icon  = meta?.icon || Star;
-                            const price = plan.monthlyPrice || plan.price || 0;
-                            const isCurrent = plan.name === currentPlan;
-                            const isPopular  = idx === 1;
-
-                            return (
-                                <div
-                                    key={plan._id || idx}
-                                    className={`relative rounded-2xl border-2 p-6 flex flex-col transition-all
-                                        ${isCurrent
-                                            ? `${meta?.border || 'border-gray-300'} bg-gray-50`
-                                            : 'border-gray-100 hover:border-gray-300 hover:shadow-md'
-                                        }
-                                        ${isPopular && !isCurrent ? 'shadow-lg' : ''}
-                                    `}
+                    {qrPlan ? (
+                        <div className="p-8 flex flex-col items-center text-center space-y-5">
+                            <div className="p-4 bg-orange-50 rounded-2xl border border-orange-200">
+                                <div className="w-48 h-48 bg-white p-2 rounded-xl shadow-sm border border-gray-200 flex items-center justify-center">
+                                    <img src={qrPlan.qrImageUrl} alt="UPI QR Code" className="w-full h-full object-contain" />
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black text-gray-900">
+                                    Scan &amp; Pay ₹{qrPlan.price.toLocaleString('en-IN')} for {qrPlan.planItem.name}
+                                </h3>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Scan with any UPI app (GPay, PhonePe, Paytm) · Ref: {qrPlan.refId}
+                                </p>
+                            </div>
+                            <div className="flex w-full max-w-sm gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setQrPlan(null)}
+                                    disabled={subscribing !== null}
+                                    className="w-1/3 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs cursor-pointer"
                                 >
-                                    {/* Popular badge */}
-                                    {isPopular && (
-                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
-                                            Most Popular
-                                        </div>
-                                    )}
-
-                                    {/* Current badge */}
-                                    {isCurrent && (
-                                        <div className={`absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap ${meta?.bg} ${meta?.text}`}>
-                                            Current Plan
-                                        </div>
-                                    )}
-
-                                    {/* Plan icon */}
-                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${meta?.bg}`}>
-                                        <Icon size={20} className={meta?.text} />
-                                    </div>
-
-                                    <h3 className="text-lg font-black text-gray-900 mb-1">{plan.name}</h3>
-
-                                    <div className="mb-5">
-                                        <span className="text-3xl font-black text-gray-900">₹{price.toLocaleString('en-IN')}</span>
-                                        <span className="text-gray-400 text-sm">/mo</span>
-                                    </div>
-
-                                    <ul className="space-y-2 mb-6 flex-1">
-                                        {(plan.features || []).map((f, i) => (
-                                            <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                                                <Check size={14} className="text-green-500 mt-0.5 shrink-0" />
-                                                {f}
-                                            </li>
-                                        ))}
-                                    </ul>
-
-                                    {isCurrent ? (
-                                        <div className={`w-full py-2.5 rounded-xl font-bold text-center text-sm flex items-center justify-center gap-1.5 ${meta?.bg} ${meta?.text}`}>
-                                            <Check size={15} /> Active Plan
-                                        </div>
+                                    Back
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleConfirmQRUpgrade}
+                                    disabled={subscribing !== null}
+                                    className="w-2/3 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                                >
+                                    {subscribing ? (
+                                        <><Loader2 size={15} className="animate-spin" /> Confirming…</>
                                     ) : (
-                                        <button
-                                            onClick={() => setSelectedPlan(plan)}
-                                            disabled={subscribing !== null}
-                                            className={`w-full py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 transition-all
-                                                bg-gradient-to-r ${meta?.grad} text-white shadow-md hover:opacity-90 hover:shadow-lg
-                                                disabled:opacity-50 disabled:cursor-not-allowed
+                                        <><QrCode size={15} /> Confirm QR Payment &amp; Upgrade</>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Plans grid */}
+                            <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-5">
+                                {displayPlans.map((plan, idx) => {
+                                    const meta  = getPlanMeta(plan.name);
+                                    const Icon  = meta?.icon || Star;
+                                    const price = plan.monthlyPrice || plan.price || 0;
+                                    const isCurrent = plan.name === currentPlan;
+                                    const isPopular  = idx === 1;
+
+                                    return (
+                                        <div
+                                            key={plan._id || idx}
+                                            className={`relative rounded-2xl border-2 p-6 flex flex-col transition-all
+                                                ${isCurrent
+                                                    ? `${meta?.border || 'border-gray-300'} bg-gray-50`
+                                                    : 'border-gray-100 hover:border-gray-300 hover:shadow-md'
+                                                }
+                                                ${isPopular && !isCurrent ? 'shadow-lg' : ''}
                                             `}
                                         >
-                                            {subscribing === plan.name ? (
-                                                <><Loader2 size={14} className="animate-spin" /> Activating…</>
-                                            ) : (
-                                                <><ArrowUpRight size={14} /> Upgrade to {plan.name}</>
+                                            {/* Popular badge */}
+                                            {isPopular && (
+                                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
+                                                    Most Popular
+                                                </div>
                                             )}
-                                        </button>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
 
-                    <p className="text-center text-xs text-gray-400 pb-6">All plans include a 30-day money-back guarantee · Cancel anytime</p>
+                                            {/* Current badge */}
+                                            {isCurrent && (
+                                                <div className={`absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap ${meta?.bg} ${meta?.text}`}>
+                                                    Current Plan
+                                                </div>
+                                            )}
+
+                                            {/* Plan icon */}
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${meta?.bg}`}>
+                                                <Icon size={20} className={meta?.text} />
+                                            </div>
+
+                                            <h3 className="text-lg font-black text-gray-900 mb-1">{plan.name}</h3>
+
+                                            <div className="mb-5">
+                                                <span className="text-3xl font-black text-gray-900">₹{price.toLocaleString('en-IN')}</span>
+                                                <span className="text-gray-400 text-sm">/mo</span>
+                                            </div>
+
+                                            <ul className="space-y-2 mb-6 flex-1">
+                                                {(plan.features || []).map((f, i) => (
+                                                    <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                                                        <Check size={14} className="text-green-500 mt-0.5 shrink-0" />
+                                                        {f}
+                                                    </li>
+                                                ))}
+                                            </ul>
+
+                                            {isCurrent ? (
+                                                <div className={`w-full py-2.5 rounded-xl font-bold text-center text-sm flex items-center justify-center gap-1.5 ${meta?.bg} ${meta?.text}`}>
+                                                    <Check size={15} /> Active Plan
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleUpgradeClick(plan)}
+                                                    disabled={subscribing !== null}
+                                                    className={`w-full py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer
+                                                        bg-gradient-to-r ${meta?.grad} text-white shadow-md hover:opacity-90 hover:shadow-lg
+                                                        disabled:opacity-50 disabled:cursor-not-allowed
+                                                    `}
+                                                >
+                                                    <ArrowUpRight size={14} /> Upgrade to {plan.name}
+                                                </button>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            <p className="text-center text-xs text-gray-400 pb-6">Instant UPI QR Scanner · Quick plan activation</p>
+                        </>
+                    )}
                 </div>
             </div>
-
-            {/* UPI Modal on top */}
-            {selectedPlan && (
-                <UpiModal
-                    plan={selectedPlan.name}
-                    planPrice={(selectedPlan.monthlyPrice || selectedPlan.price || 0).toLocaleString('en-IN')}
-                    restaurantId={restaurant?._id}
-                    api={api}
-                    onClose={() => setSelectedPlan(null)}
-                    onSuccess={() => handleUpgradeSuccess(selectedPlan)}
-                />
-            )}
         </>
     );
 };
 
 /* ─── Topbar ────────────────────────────────────────────────────── */
 const Topbar = () => {
-    const { user, api, restaurant, fetchRestaurant } = useAuth();
+    const { user, api, restaurant, fetchRestaurant, subscriptionState } = useAuth();
     const [hasUnread, setHasUnread] = useState(false);
-    const [subscriptionPlan, setSubscriptionPlan] = useState(null);
     const [plans, setPlans] = useState([]);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [branches, setBranches] = useState([]);
     const [selectedBranch, setSelectedBranch] = useState(null);
     const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+
+    const subscriptionPlan = restaurant?.subscription?.plan || 'Trial';
+    const subStatus = restaurant?.subscription?.status || 'Active';
 
     useEffect(() => {
         const handleThemeToggle = () => {
@@ -403,26 +266,17 @@ const Topbar = () => {
         return () => clearInterval(intervalId);
     }, []);
 
-    const [subStatus, setSubStatus] = useState('Active');
-
-    // Fetch restaurant subscription plan + all available plans + branches
+    // Fetch available plans + branches (restaurant subscription comes from AuthContext)
     useEffect(() => {
-        const isAdmin = user?.role === 'RestaurantAdmin' || user?.role === 'Admin' || user?.role === 'BranchManager';
-        if (!isAdmin) return;
+        const isBranchStaff = user?.role === 'RestaurantAdmin' || user?.role === 'Admin' || user?.role === 'BranchManager';
+        if (!isBranchStaff) return;
 
         const fetchData = async () => {
             try {
-                const [restaurantRes, plansRes, branchesRes] = await Promise.allSettled([
-                    api.get('/restaurants/mine'),
+                const [plansRes, branchesRes] = await Promise.allSettled([
                     api.get('/plans'),
                     api.get('/branches')
                 ]);
-                if (restaurantRes.status === 'fulfilled') {
-                    const plan = restaurantRes.value.data?.subscription?.plan;
-                    const st = restaurantRes.value.data?.subscription?.status || 'Active';
-                    if (plan) setSubscriptionPlan(plan);
-                    setSubStatus(st);
-                }
                 if (plansRes.status === 'fulfilled' && plansRes.value.data?.length > 0) {
                     setPlans(plansRes.value.data);
                 }
@@ -518,7 +372,7 @@ const Topbar = () => {
                                 {meta && isAdmin && (
                                     <>
                                         <span className="text-gray-300 dark:text-slate-600">·</span>
-                                        {['Frozen', 'Expired', 'Cancelled', 'Inactive'].includes(subStatus) ? (
+                                        {subscriptionState?.isFrozen || ['Frozen', 'Expired', 'Cancelled', 'Inactive'].includes(subStatus) ? (
                                             <button
                                                 onClick={() => setShowUpgradeModal(true)}
                                                 title="Subscription Over! Click to renew plan"
@@ -569,9 +423,10 @@ const Topbar = () => {
                     plans={plans}
                     api={api}
                     restaurant={restaurant}
+                    user={user}
+                    subscriptionState={subscriptionState}
                     onClose={() => setShowUpgradeModal(false)}
-                    onUpgraded={async (newPlan) => {
-                        setSubscriptionPlan(newPlan);
+                    onUpgraded={async () => {
                         if (fetchRestaurant) await fetchRestaurant();
                     }}
                 />

@@ -4,7 +4,7 @@ import Restaurant from '../models/Restaurant.js';
 import Branch from '../models/Branch.js';
 import mongoose from 'mongoose';
 import { validateKOTStatusTransition, getNextKotNumber, determineKitchenStation } from '../utils/kotHelper.js';
-import { broadcastToRestaurant } from '../config/websocket.js';
+import { broadcastToRestaurant, broadcastToCustomerOrder } from '../config/websocket.js';
 
 // Helper to extract clean ID
 const extractId = (id) => {
@@ -186,14 +186,21 @@ export const updateKOTStatus = async (req, res) => {
 
                     const parentOrder = await Order.findById(kot.orderId);
                     if (parentOrder) {
+                        let parentUpdated = false;
                         if (allServed && !['Served', 'Completed'].includes(parentOrder.status)) {
                             parentOrder.status = 'Served';
                             await parentOrder.save();
+                            parentUpdated = true;
                         } else if (allReadyOrBeyond && !['Ready', 'Ready for Pickup', 'Served', 'Completed'].includes(parentOrder.status)) {
                             parentOrder.status = (parentOrder.orderType === 'Self-Pickup' || parentOrder.serviceType?.includes('Self'))
                                 ? 'Ready for Pickup'
                                 : 'Ready';
                             await parentOrder.save();
+                            parentUpdated = true;
+                        }
+                        if (parentUpdated) {
+                            broadcastToRestaurant(kot.restaurantId, 'order_status_updated', parentOrder);
+                            broadcastToCustomerOrder(parentOrder._id, 'order_status_updated', parentOrder);
                         }
                     }
                 }

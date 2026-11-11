@@ -7,7 +7,8 @@ import { toast } from 'react-hot-toast';
 
 import VerificationBlockedOverlay from '../components/VerificationBlockedOverlay';
 import SubscriptionFreezeOverlay from '../components/SubscriptionFreezeOverlay';
-import { Sparkles, ArrowRight, X, CheckCircle, ShieldCheck, Zap, Lock } from 'lucide-react';
+import { buildDummyUpiQrUrl, confirmDummyQRSubscriptionPayment } from '../utils/subscriptionClient';
+import { Sparkles, ArrowRight, X, CheckCircle, ShieldCheck, Zap, Lock, QrCode } from 'lucide-react';
 
 // ─── Custom Billing Walkthrough Module Map ────────────────────────────────────
 const ROUTE_BILLING_MODULE_MAP = [
@@ -47,14 +48,13 @@ const ROUTE_FEATURE_MAP = [
     { path: '/admin/developer-config', featureKey: 'Advanced AI Insights',      fallbackMinPlan: 'Enterprise' },
     { path: '/admin/audit-logs',       featureKey: 'Business Health Score',     fallbackMinPlan: 'Enterprise' },
     { path: '/admin/bi',               featureKey: 'Sales Prediction',          fallbackMinPlan: 'Enterprise' },
-    { path: '/admin/support',          featureKey: 'Live Chat / Priority Support', fallbackMinPlan: 'Enterprise' },
 ];
 
 // Fallback static hierarchy used only when DB plans haven't loaded yet
 const PLAN_ORDER_FALLBACK = { Basic: 0, Starter: 0, Pro: 1, Professional: 1, Enterprise: 2 };
 
 const DashboardLayout = () => {
-    const { user, restaurant, api, fetchRestaurant } = useAuth();
+    const { user, restaurant, subscriptionState, api, fetchRestaurant } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -132,19 +132,17 @@ const DashboardLayout = () => {
     const isVerificationPage = location.pathname === '/admin/verification';
 
     const plan = restaurant?.subscription?.plan || 'Basic';
-    // Default to 'Active' so features aren't locked if subscription status isn't set yet
     const status = restaurant?.subscription?.status || 'Active';
 
-    // 1-Day Trial Expiration / Frozen Check
-    const isTrialExpired = restaurant?.subscription?.trialActive && 
-        restaurant?.subscription?.expiryDate && 
-        (new Date() > new Date(restaurant.subscription.expiryDate));
-        
-    const isFrozen = user?.role !== 'SuperAdmin' && (
-        status === 'Frozen' || 
-        status === 'Expired' || 
-        isTrialExpired
+    // Essential routes exempt from freeze so owners can pay, renew, or get support
+    const isEssentialPage = (
+        location.pathname === '/admin/billing' ||
+        location.pathname.startsWith('/admin/support') ||
+        location.pathname === '/admin/settings' ||
+        location.pathname === '/admin/verification'
     );
+
+    const isFrozen = !isEssentialPage && Boolean(subscriptionState?.isFrozen);
 
     // Custom Billing Configuration check
     const isCustomBilling = restaurant?.billingConfig?.isCustomBillingActive === true;
@@ -152,13 +150,11 @@ const DashboardLayout = () => {
     const matchedBillingModule = ROUTE_BILLING_MODULE_MAP.find(r => location.pathname.startsWith(r.path));
     const isCustomModuleBlocked = user?.role !== 'SuperAdmin' && isCustomBilling && matchedBillingModule && customModules[matchedBillingModule.moduleKey] === false;
 
-    // Find the first matching route in our feature map for the current path
-    const routeBlock = ROUTE_FEATURE_MAP.find(r => location.pathname.startsWith(r.path));
+    // Support is always accessible for all plans and accounts (matches backend authMiddleware)
+    const isSupportPath = location.pathname.startsWith('/admin/support');
+    const routeBlock = isSupportPath ? null : ROUTE_FEATURE_MAP.find(r => location.pathname.startsWith(r.path));
 
-    // isPathBlocked is true when:
-    // 1. Subscription is not Active, OR
-    // 2. The restaurant's plan does NOT have the required feature (checked against live DB)
-    const isPathBlocked = user?.role !== 'SuperAdmin' && (routeBlock
+    const isPathBlocked = user?.role !== 'SuperAdmin' && !isSupportPath && (routeBlock
         ? (status !== 'Active' || !planHasFeature(plan, routeBlock.featureKey, routeBlock.fallbackMinPlan))
         : false);
 
@@ -196,41 +192,40 @@ const DashboardLayout = () => {
     };
 
     const handleConfirmPayment = async () => {
-        if (!selectedPlanToBuy) return;
+        if (!selectedPlanToBuy || isSubmitting) return;
         setIsSubmitting(true);
         setPaymentStatus('processing');
 
-        try {
-            await api.post('/restaurants/mine/upgrade', {
-                planName: selectedPlanToBuy.name,
-                billingCycle: billingCycle
-            });
-
-            setPaymentStatus('success');
-            toast.success(`🎉 Subscription Activated! Upgraded to ${selectedPlanToBuy.name} Plan.`);
-
-            try {
-                const [, freshPlans] = await Promise.all([
-                    fetchRestaurant(),
-                    api.get('/plans')
-                ]);
-                if (freshPlans?.data) {
-                    setAllPlans(freshPlans.data);
-                    setPlans(freshPlans.data);
-                }
-            } catch (_) {}
-
-            setTimeout(() => {
-                setShowPlansModal(false);
-                window.location.reload();
-            }, 1000);
-        } catch (error) {
-            console.error("Upgrade payment error", error);
-            setPaymentStatus('failed');
-            toast.error(error.response?.data?.message || "Failed to activate subscription.");
-        } finally {
-            setIsSubmitting(false);
-        }
+        await confirmDummyQRSubscriptionPayment({
+            api,
+            planName: selectedPlanToBuy.name,
+            billingCycle,
+            refId: `QR-MOD-${Date.now().toString().slice(-6)}`,
+            onSuccess: async () => {
+                setPaymentStatus('success');
+                try {
+                    const [, freshPlans] = await Promise.all([
+                        fetchRestaurant(),
+                        api.get('/plans')
+                    ]);
+                    if (freshPlans?.data) {
+                        setAllPlans(freshPlans.data);
+                        setPlans(freshPlans.data);
+                    }
+                } catch (_) {}
+                setIsSubmitting(false);
+                setTimeout(() => {
+                    setShowPlansModal(false);
+                    setSelectedPlanToBuy(null);
+                    setPaymentStatus('idle');
+                }, 900);
+            },
+            onFailure: async () => {
+                setPaymentStatus('failed');
+                setIsSubmitting(false);
+                await fetchRestaurant();
+            }
+        });
     };
 
     return (
@@ -310,7 +305,6 @@ const DashboardLayout = () => {
                 </main>
             </div>
 
-
             {/* Plans Selection Overlay Modal */}
             {showPlansModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-md p-4 animate-in fade-in">
@@ -356,7 +350,7 @@ const DashboardLayout = () => {
 
                         {/* Modal Body: Either Plans Grid OR QR Code Checkout */}
                         {selectedPlanToBuy ? (
-                            /* Real-time Razorpay Payment Checkout Screen */
+                            /* Dummy UPI QR Scanner Checkout Screen */
                             <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1 flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in zoom-in-95">
                                 <button 
                                     onClick={() => setSelectedPlanToBuy(null)} 
@@ -367,7 +361,7 @@ const DashboardLayout = () => {
 
                                 <div className="space-y-1">
                                     <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-3.5 py-1 rounded-full border border-indigo-100 dark:border-indigo-900/50">
-                                        Official Razorpay API Payment
+                                        UPI QR Scanner Checkout
                                     </span>
                                     <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-2">
                                         {selectedPlanToBuy.name} Plan ({billingCycle})
@@ -379,32 +373,27 @@ const DashboardLayout = () => {
 
                                 {paymentStatus === 'idle' && (
                                     <div className="flex flex-col items-center gap-4">
-                                        <div 
-                                            onClick={handleConfirmPayment}
-                                            className="relative w-52 h-52 bg-white p-4 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 flex items-center justify-center cursor-pointer group hover:scale-105 transition-transform"
-                                            title="Click QR Code to Simulate Payment & Activate"
-                                        >
-                                            <img 
-                                                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi%3A%2F%2Fpay%3Fpa%3Dresto%40upi%26pn%3DFoodNest%26am%3D${billingCycle === 'yearly' ? (selectedPlanToBuy.yearlyPrice || selectedPlanToBuy.monthlyPrice) : selectedPlanToBuy.monthlyPrice}%26cu%3DINR&bgcolor=ffffff&color=1e1b4b`}
-                                                alt="Subscription QR Code" 
-                                                className="w-44 h-44 object-contain"
+                                        <div className="p-3 bg-white rounded-2xl border border-slate-200 shadow-sm">
+                                            <img
+                                                src={buildDummyUpiQrUrl({
+                                                    amount: (billingCycle === 'yearly' ? (selectedPlanToBuy.yearlyPrice || selectedPlanToBuy.monthlyPrice) : selectedPlanToBuy.monthlyPrice) || 0,
+                                                    label: `${selectedPlanToBuy.name} (${billingCycle})`
+                                                })}
+                                                alt="UPI QR Code"
+                                                className="w-40 h-40 object-contain"
                                             />
-                                            <div className="absolute inset-0 bg-indigo-600/20 group-hover:opacity-100 opacity-0 transition-opacity rounded-3xl flex items-center justify-center font-black text-indigo-900 text-xs bg-white/90 p-2 text-center">
-                                                Click QR to Simulate Payment →
-                                            </div>
                                         </div>
-
-                                        <div className="space-y-2 max-w-sm">
-                                            <div className="flex items-center justify-center gap-1.5 text-slate-400 dark:text-slate-500 text-xs font-semibold">
-                                                <ShieldCheck size={14} className="text-emerald-500" />
-                                                <span>Scan via GPay, PhonePe, Paytm, or click button below</span>
+                                        <div className="space-y-3 max-w-sm w-full">
+                                            <div className="flex items-center justify-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs font-semibold bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                                                <ShieldCheck size={16} className="text-emerald-500 shrink-0" />
+                                                <span>Scan with GPay, PhonePe or Paytm &amp; click Confirm below</span>
                                             </div>
                                             <button 
                                                 onClick={handleConfirmPayment}
                                                 disabled={isSubmitting}
-                                                className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 active:scale-98 text-white font-black text-sm rounded-2xl shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
+                                                className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black text-sm rounded-2xl shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
                                             >
-                                                Confirm Payment & Upgrade <ArrowRight size={16} />
+                                                <QrCode size={16} /> Confirm QR Payment &amp; Upgrade <ArrowRight size={16} />
                                             </button>
                                         </div>
                                     </div>

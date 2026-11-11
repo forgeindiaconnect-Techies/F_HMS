@@ -1,4 +1,6 @@
 import User from '../models/User.js';
+import Restaurant from '../models/Restaurant.js';
+import { findPlanDocument } from '../utils/subscriptionHelper.js';
 
 // @desc    Get all users for a restaurant
 // @route   GET /api/users
@@ -12,7 +14,8 @@ export const getUsers = async (req, res) => {
 
         const users = await User.find(query)
             .populate('branchId', 'name')
-            .select('-password');
+            .select('-password')
+            .lean();
         
         res.json(users);
     } catch (error) {
@@ -27,14 +30,30 @@ export const inviteUser = async (req, res) => {
     const { name, email, role, branchId } = req.body;
 
     try {
-        const userExists = await User.findOne({ email });
+        const userExists = await User.findOne({ email: String(email || '').trim().toLowerCase() });
         if (userExists) {
             return res.status(400).json({ message: 'A user with this email already exists' });
         }
 
-        const validRoles = ['RestaurantAdmin', 'BranchManager', 'Chef', 'Waiter', 'Cashier', 'Customer'];
+        const validRoles = ['RestaurantAdmin', 'BranchManager', 'Chef', 'Waiter', 'Cashier', 'DeliveryPartner', 'Customer'];
         if (!validRoles.includes(role)) {
             return res.status(400).json({ message: 'Invalid role' });
+        }
+
+        if (req.user.role !== 'SuperAdmin' && req.user.restaurantId && role !== 'Customer') {
+            const restaurant = await Restaurant.findById(req.user.restaurantId).select('subscription').lean();
+            const planName = restaurant?.subscription?.plan || 'Basic';
+            const planDoc = await findPlanDocument(planName);
+            const staffLimit = ['pro', 'professional', 'enterprise'].includes(planName.toLowerCase()) ? Infinity : (planDoc?.staffLimit || 5);
+            const currentStaff = await User.countDocuments({
+                restaurantId: req.user.restaurantId,
+                role: { $in: ['BranchManager', 'Chef', 'Waiter', 'Cashier', 'DeliveryPartner', 'Staff', 'Manager'] }
+            });
+            if (currentStaff >= staffLimit) {
+                return res.status(403).json({
+                    message: `Your "${planName}" plan is limited to ${staffLimit} staff members. Please upgrade to add more staff.`
+                });
+            }
         }
 
         const user = await User.create({

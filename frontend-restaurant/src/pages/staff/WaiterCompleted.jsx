@@ -44,13 +44,13 @@ const WaiterCompleted = () => {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-x-auto">
                 {loading ? (
                     <div className="py-12 text-center text-gray-400">Loading completed orders...</div>
                 ) : completed.length === 0 ? (
                     <div className="py-16 text-center text-gray-400 font-semibold text-sm">No completed orders yet today.</div>
                 ) : (
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full text-left border-collapse min-w-[640px]">
                         <thead>
                             <tr className="bg-gray-50 dark:bg-slate-950 border-b border-gray-100 dark:border-slate-800">
                                 <th className="p-4 text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Order ID</th>

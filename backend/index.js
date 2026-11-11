@@ -1,5 +1,4 @@
 import { initSubscriptionScheduler } from './services/subscriptionCronService.js';
-import { checkSubscriptionAccess } from './middleware/subscriptionMiddleware.js';
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -73,7 +72,12 @@ app.use(cors({
     optionsSuccessStatus: 204
 }));
 
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({
+    limit: '50mb',
+    verify: (req, res, buf) => {
+        req.rawBody = buf;
+    }
+}));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 
@@ -93,27 +97,27 @@ app.get('/api', (req, res) => {
     res.status(200).json({ status: 'ok', message: 'Restaurant SaaS API Root Service' });
 });
 
-// Routes
+// Routes (checkSubscriptionAccess runs inside routers after protect so req.user is guaranteed populated)
 app.use('/api/auth', authRoutes);
 app.use('/api/menu', menuRoutes);
 app.use('/api/categories', categoryRoutes);
-app.use('/api/inventory', checkSubscriptionAccess, inventoryRoutes);
+app.use('/api/inventory', inventoryRoutes);
 app.use('/api/suppliers', supplierRoutes);
 app.use('/api/offers', offerRoutes);
 app.use('/api/taxes', taxRoutes);
-app.use('/api/reports', checkSubscriptionAccess, reportRoutes);
+app.use('/api/reports', reportRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/restaurants', restaurantRoutes);
 app.use('/api/branches', branchRoutes);
 app.use('/api/customers', customerRoutes);
-app.use('/api/staff', checkSubscriptionAccess, staffRoutes);
+app.use('/api/staff', staffRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/reservations', reservationRoutes);
-app.use('/api/orders', checkSubscriptionAccess, orderRoutes);
-app.use('/api/analytics', checkSubscriptionAccess, analyticsRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/analytics', analyticsRoutes);
 app.use('/api/super-admin', superAdminRoutes);
-app.use('/api/tables', checkSubscriptionAccess, tableRoutes);
+app.use('/api/tables', tableRoutes);
 app.use('/api/plans', planRoutes);
 app.use('/api/service-requests', serviceRequestRoutes);
 app.use('/api/support', supportRoutes);
@@ -121,8 +125,8 @@ app.use('/api/delivery', deliveryRoutes);
 app.use('/api/auth/delivery', deliveryRoutes);
 app.use('/api/inquiries', inquiryRoutes);
 app.use('/api/billing-demos', billingDemoRoutes);
-app.use('/api/expenses', checkSubscriptionAccess, expenseRoutes);
-app.use('/api/kot', checkSubscriptionAccess, kotRoutes);
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/kot', kotRoutes);
 app.use('/api/tips', tipRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/customer-reviews', customerReviewRoutes);
@@ -139,7 +143,7 @@ app.get('/', (req, res) => {
 });
 
 // Serve frontend dist fallback ONLY if non-API route and dist exists
-const frontendDistPath = path.join(__dirname, '../frontend/dist');
+const frontendDistPath = path.join(__dirname, '../frontend-restaurant/dist');
 if (fs.existsSync(frontendDistPath)) {
     app.use(express.static(frontendDistPath));
     app.get(/(.*)/, (req, res, next) => {
@@ -168,42 +172,13 @@ server.listen(PORT, '0.0.0.0', () => {
             const count = await Plan.countDocuments();
             if (count === 0) {
                 await Plan.insertMany([
-                    { name: 'Basic', monthlyPrice: 2999, yearlyPrice: 2399, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'], isActive: true },
-                    { name: 'Pro', monthlyPrice: 5999, yearlyPrice: 4799, features: ['Up to 3 Branches', 'Kitchen Display System', 'Online Ordering', 'Advanced Analytics', 'Priority Support'], isActive: true },
-                    { name: 'Enterprise', monthlyPrice: 12999, yearlyPrice: 10399, features: ['Unlimited Branches', 'Custom APIs & Webhooks', 'Dedicated Account Manager', 'SLA Guarantee', 'White-label Branding'], isActive: true }
+                    { name: 'Basic', monthlyPrice: 2999, yearlyPrice: 2399, branchesLimit: 1, staffLimit: 5, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'], isActive: true },
+                    { name: 'Pro', monthlyPrice: 5999, yearlyPrice: 4799, branchesLimit: 3, staffLimit: 9999, features: ['Up to 3 Branches', 'Kitchen Display System', 'Online Ordering', 'Advanced Analytics', 'Priority Support'], isActive: true },
+                    { name: 'Enterprise', monthlyPrice: 12999, yearlyPrice: 10399, branchesLimit: 9999, staffLimit: 9999, features: ['Unlimited Branches', 'Custom APIs & Webhooks', 'Dedicated Account Manager', 'SLA Guarantee', 'White-label Branding'], isActive: true }
                 ]);
             }
-
-            // Ensure demo restaurant exists and isolate demo orders away from newly registered user accounts
-            let demoRestaurant = await Restaurant.findOne({ name: 'Pizza Palace' }) || await Restaurant.findOne({ isDemo: true });
-            if (!demoRestaurant) {
-                demoRestaurant = await Restaurant.create({
-                    name: 'Pizza Palace',
-                    isDemo: true,
-                    approvalStatus: 'Approved',
-                    subscription: { status: 'Active', plan: 'Pro' }
-                });
-            }
-            let demoBranch = await Branch.findOne({ restaurantId: demoRestaurant._id });
-            if (!demoBranch) {
-                demoBranch = await Branch.create({
-                    name: 'Downtown Branch',
-                    restaurantId: demoRestaurant._id
-                });
-            }
-
-            // Re-assign legacy demo orders attached to non-demo user restaurants so new user dashboards start 100% fresh
-            const userRestaurants = await Restaurant.find({ _id: { $ne: demoRestaurant._id }, isDemo: { $ne: true }, name: { $ne: 'Pizza Palace' } }).select('_id ownerId');
-            if (userRestaurants.length > 0) {
-                const userRestIds = userRestaurants.map(r => r._id);
-                // Move orders created before restaurant owner creation or without explicit customer user link to demo restaurant
-                await Order.updateMany(
-                    { restaurantId: { $in: userRestIds }, source: { $in: ['Walk-in', 'Self-Pickup', 'QR'] } },
-                    { $set: { restaurantId: demoRestaurant._id, branchId: demoBranch._id } }
-                );
-            }
         } catch (e) {
-            // Silently swallow seed error
+            console.error('Plan initialization warning:', e.message);
         }
     }).catch(err => {
         console.error('MongoDB Atlas connection error on startup:', err.message);

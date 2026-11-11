@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { 
     Coffee, CheckCircle2, Clock, Utensils, AlertTriangle, 
@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getApiUrl } from '../../utils/axiosInstance';
+import { createReconnectingWebSocket } from '../../utils/wsClient';
 import toast from 'react-hot-toast';
 import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 import ThemeSettingCard from '../../components/ThemeToggle';
@@ -39,13 +40,32 @@ const WaiterDashboard = () => {
     const [managerModalOpen, setManagerModalOpen] = useState(false);
     const [managerReason, setManagerReason] = useState('Table Assistance Needed');
     const [printModalKOT, setPrintModalKOT] = useState(null);
+    const audioCtxRef = useRef(null);
 
-    // Live Date & Time Clock
-    const [now, setNow] = useState(new Date());
-    useEffect(() => {
-        const timer = setInterval(() => setNow(new Date()), 1000);
-        return () => clearInterval(timer);
-    }, []);
+    const playWaiterChime = (startFreq, endFreq, duration = 0.35, wave = 'sine') => {
+        try {
+            const Ctx = window.AudioContext || window.webkitAudioContext;
+            if (!Ctx) return;
+            if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+                audioCtxRef.current = new Ctx();
+            }
+            const audioCtx = audioCtxRef.current;
+            if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = wave;
+            osc.frequency.setValueAtTime(startFreq, audioCtx.currentTime);
+            if (endFreq !== startFreq) {
+                osc.frequency.exponentialRampToValueAtTime(endFreq, audioCtx.currentTime + duration);
+            }
+            gain.gain.setValueAtTime(0.45, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        } catch (e) {}
+    };
 
     // Smooth Scroll to Section Hash
     useEffect(() => {
@@ -82,15 +102,19 @@ const WaiterDashboard = () => {
     const [partySize, setPartySize] = useState(2);
     const [orderNote, setOrderNote] = useState('');
 
+    // Fetch menu catalog once on mount (orders/tables/requests refresh in fetchData)
+    useEffect(() => {
+        api.get('/menu').then(res => setMenu(res.data || [])).catch(() => {});
+    }, [api]);
+
+    // Fetch live operational data
     const fetchData = async () => {
         try {
-            const [menuRes, ordersRes, tablesRes, requestsRes] = await Promise.all([
-                api.get('/menu'),
+            const [ordersRes, tablesRes, requestsRes] = await Promise.all([
                 api.get('/orders'),
                 api.get('/tables').catch(() => ({ data: [] })),
                 api.get('/service-requests').catch(() => ({ data: [] }))
             ]);
-            setMenu(menuRes.data);
             setAllOrders(ordersRes.data);
             setActiveOrders(ordersRes.data.filter(o => !['Delivered', 'Completed'].includes(o.status)));
             setDbTables(tablesRes.data);
@@ -148,129 +172,62 @@ const WaiterDashboard = () => {
     useEffect(() => {
         fetchData();
 
-        let ws;
-        const connectWS = () => {
-            let baseURL = getApiUrl();
-            let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
-            
-            ws = new WebSocket(wsURL);
-
-            ws.onopen = () => {
+        return createReconnectingWebSocket({
+            apiUrl: getApiUrl(),
+            buildRegistrationPayload: () => {
                 const rawRestId = user?.restaurantId;
                 const cleanRestId = (rawRestId && typeof rawRestId === 'object') ? (rawRestId._id || rawRestId.id) : rawRestId;
-                ws.send(JSON.stringify({
-                    type: 'register',
-                    restaurantId: cleanRestId || null,
-                    role: 'waiter'
-                }));
-            };
+                return { restaurantId: cleanRestId || null, role: 'waiter' };
+            },
+            onMessage: (msg) => {
+                if (['new_order', 'order_updated', 'order_status_updated', 'ready_to_serve', 'new_notification'].includes(msg.type)) {
+                    fetchData();
 
-            ws.onmessage = (event) => {
-                try {
-                    const msg = JSON.parse(event.data);
-                    if (['new_order', 'order_updated', 'order_status_updated', 'ready_to_serve', 'new_notification'].includes(msg.type)) {
-                        fetchData();
-
-                        // 1. New Order Placement Alert
-                        if (msg.type === 'new_order') {
-                            const orderData = msg.data?.orderData || msg.data;
-                            if (orderData && orderData.tableNumber) {
-                                try {
-                                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                                    const osc = audioCtx.createOscillator();
-                                    const gain = audioCtx.createGain();
-                                    osc.type = 'sine';
-                                    osc.frequency.setValueAtTime(784, audioCtx.currentTime); // G5
-                                    osc.frequency.exponentialRampToValueAtTime(523, audioCtx.currentTime + 0.3); // C5
-                                    gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-                                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                                    osc.connect(gain);
-                                    gain.connect(audioCtx.destination);
-                                    osc.start();
-                                    osc.stop(audioCtx.currentTime + 0.3);
-                                } catch (e) {}
-
-                                toast.success(`🔔 New Order at Table ${orderData.tableNumber}!`, {
-                                    duration: 6000,
-                                    position: 'top-right'
-                                });
-                            }
-                        }
-
-                        // 2. Food Ready from Kitchen Alert
-                        if ((msg.type === 'order_status_updated' || msg.type === 'ready_to_serve') && msg.data && (msg.data.status === 'Ready' || msg.data.status === 'Ready for Pickup')) {
-                            try {
-                                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                                const osc = audioCtx.createOscillator();
-                                const gain = audioCtx.createGain();
-                                osc.type = 'sine';
-                                osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
-                                osc.frequency.exponentialRampToValueAtTime(587.33, audioCtx.currentTime + 0.35); // D5
-                                gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-                                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
-                                osc.connect(gain);
-                                gain.connect(audioCtx.destination);
-                                osc.start();
-                                osc.stop(audioCtx.currentTime + 0.35);
-                            } catch (e) {}
-
-                            const hasTable = msg.data.tableNumber && msg.data.tableNumber !== 'Any' && msg.data.tableNumber !== 'Takeout';
-                            const ticketNum = String(msg.data._id).substring(String(msg.data._id).length - 5).toUpperCase();
-                            const isSelfDineIn = msg.data.serviceType === 'Self Dine-In (KFC Style)';
-
-                            toast.success(
-                                hasTable
-                                ? `🍽️ Food READY for Table ${msg.data.tableNumber} (Ticket #${ticketNum})${isSelfDineIn ? ' [Self Dine-In]' : ''}!`
-                                : `📦 Self-Pickup Ticket #${ticketNum} is READY in Kitchen! Collect & Transfer to Cashier Counter!`, {
-                                id: `waiter-ready-${msg.data._id}`,
-                                duration: 5000,
+                    if (msg.type === 'new_order') {
+                        const orderData = msg.data?.orderData || msg.data;
+                        if (orderData && orderData.tableNumber) {
+                            playWaiterChime(784, 523, 0.3, 'sine');
+                            toast.success(`🔔 New Order at Table ${orderData.tableNumber}!`, {
+                                duration: 6000,
                                 position: 'top-right'
                             });
                         }
-                    } else if (msg.type === 'new_service_request') {
-                        fetchData();
-                        setServiceRequests(prev => {
-                            if (prev.some(r => r._id === msg.data._id)) return prev;
-                            return [msg.data, ...prev];
-                        });
-                        try {
-                            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                            const osc = audioCtx.createOscillator();
-                            const gain = audioCtx.createGain();
-                            osc.type = 'triangle';
-                            osc.frequency.setValueAtTime(987.77, audioCtx.currentTime); // B5
-                            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-                            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-                            osc.connect(gain);
-                            gain.connect(audioCtx.destination);
-                            osc.start();
-                            osc.stop(audioCtx.currentTime + 0.4);
-                        } catch (e) {}
-                        toast(`🔔 Customer Request: ${msg.data.requestType} at Table ${msg.data.tableNumber}!`, { 
-                            duration: 7000,
-                            position: 'top-right' 
-                        });
-                    } else if (msg.type === 'service_request_updated') {
-                        fetchData();
-                        if (msg.data.status === 'Completed') {
-                            setServiceRequests(prev => prev.filter(r => r._id !== msg.data._id));
-                        }
                     }
-                } catch (e) {
-                    console.error("Error parsing websocket message", e);
+
+                    if ((msg.type === 'order_status_updated' || msg.type === 'ready_to_serve') && msg.data && (msg.data.status === 'Ready' || msg.data.status === 'Ready for Pickup')) {
+                        playWaiterChime(880, 587.33, 0.35, 'sine');
+                        const hasTable = msg.data.tableNumber && msg.data.tableNumber !== 'Any' && msg.data.tableNumber !== 'Takeout';
+                        const ticketNum = String(msg.data._id).substring(String(msg.data._id).length - 5).toUpperCase();
+                        const isSelfDineIn = msg.data.serviceType === 'Self Dine-In (KFC Style)';
+
+                        toast.success(
+                            hasTable
+                            ? `🍽️ Food READY for Table ${msg.data.tableNumber} (Ticket #${ticketNum})${isSelfDineIn ? ' [Self Dine-In]' : ''}!`
+                            : `📦 Self-Pickup Ticket #${ticketNum} is READY in Kitchen! Collect & Transfer to Cashier Counter!`, {
+                            id: `waiter-ready-${msg.data._id}`,
+                            duration: 5000,
+                            position: 'top-right'
+                        });
+                    }
+                } else if (msg.type === 'new_service_request') {
+                    fetchData();
+                    setServiceRequests(prev => {
+                        if (prev.some(r => r._id === msg.data._id)) return prev;
+                        return [msg.data, ...prev];
+                    });
+                    playWaiterChime(987.77, 987.77, 0.4, 'triangle');
+                    toast(`🔔 Customer Request: ${msg.data.requestType} at Table ${msg.data.tableNumber}!`, { 
+                        duration: 7000,
+                        position: 'top-right' 
+                    });
+                } else if (msg.type === 'service_request_updated') {
+                    fetchData();
+                    if (msg.data.status === 'Completed') {
+                        setServiceRequests(prev => prev.filter(r => r._id !== msg.data._id));
+                    }
                 }
-            };
-
-            ws.onclose = () => {
-                setTimeout(connectWS, 5000);
-            };
-        };
-
-        connectWS();
-
-        return () => {
-            if (ws) ws.close();
-        };
+            }
+        });
     }, [api, user]);
 
     const handleToggleAssignment = (tableId) => {
@@ -356,6 +313,16 @@ const WaiterDashboard = () => {
             timeAgo: order ? 'Active' : 'Empty'
         };
     });
+
+    // Auto-open table passed via ?table= query param from Floor Plan
+    useEffect(() => {
+        const tableParam = new URLSearchParams(location.search).get('table');
+        if (!tableParam || tables.length === 0) return;
+        const matched = tables.find(t => String(t.rawId) === String(tableParam));
+        if (matched && (!activeTable || String(activeTable.rawId) !== String(tableParam))) {
+            openTablePanel(matched);
+        }
+    }, [location.search, dbTables.length]);
 
     // Apply Filter, Search & Assigned Tables
     let filteredTables = statusFilter === 'All' 
@@ -619,16 +586,16 @@ const WaiterDashboard = () => {
     const getTableBadgeStyle = (status) => {
         switch (status) {
             case 'Available': 
-                return 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:border-emerald-400 hover:shadow-emerald-150';
+                return 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:border-emerald-400 hover:shadow-emerald-100';
             case 'Waiting for Food': 
             case 'Occupied': 
-                return 'bg-amber-50 border-amber-200 text-amber-800 hover:border-amber-400 hover:shadow-amber-150';
+                return 'bg-amber-50 border-amber-200 text-amber-800 hover:border-amber-400 hover:shadow-amber-100';
             case 'Billing': 
-                return 'bg-blue-50 border-blue-200 text-blue-800 hover:border-blue-400 hover:shadow-blue-150';
+                return 'bg-blue-50 border-blue-200 text-blue-800 hover:border-blue-400 hover:shadow-blue-100';
             case 'Reserved': 
-                return 'bg-purple-50 border-purple-200 text-purple-800 hover:border-purple-400 hover:shadow-purple-150';
+                return 'bg-purple-50 border-purple-200 text-purple-800 hover:border-purple-400 hover:shadow-purple-100';
             case 'Needs Attention': 
-                return 'bg-rose-50 border-rose-200 text-rose-800 hover:border-rose-400 hover:shadow-rose-150';
+                return 'bg-rose-50 border-rose-200 text-rose-800 hover:border-rose-400 hover:shadow-rose-100';
             default: 
                 return 'bg-slate-50 border-slate-200 text-slate-700';
         }

@@ -1,4 +1,5 @@
 import { sendTrialApprovedEmail, sendTrialRejectedEmail, sendTrialStartedEmail, sendManualFreezeEmail, sendManualUnfreezeEmail } from '../utils/emailService.js';
+import { broadcastToRestaurant } from '../config/websocket.js';
 import Restaurant from '../models/Restaurant.js';
 import User from '../models/User.js';
 import Order from '../models/Order.js';
@@ -91,12 +92,12 @@ export const getRestaurants = async (req, res) => {
                     name: restName,
                     ownerId: admin._id,
                     subscription: {
-                        status: 'Active',
+                        status: 'Pending Approval',
                         plan: 'Basic',
                         billingCycle: 'monthly',
-                        trialActive: true,
-                        startDate: new Date(),
-                        expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+                        trialActive: false,
+                        paymentStatus: 'Trial',
+                        trialRequestDate: new Date()
                     },
                     approvalStatus: 'Pending',
                     verificationStatus: 'Pending',
@@ -428,7 +429,7 @@ export const updateApprovalStatus = async (req, res) => {
             if (req.body.approvalStatus === 'Approved') {
                 restaurant.verificationStatus = 'Verified';
                 if (!restaurant.subscription) restaurant.subscription = {};
-                restaurant.subscription.status = 'Active';
+                // Do not unlock expired or pending-trial accounts without trial approval or paid dates
 
                 try {
                     const RestaurantVerification = (await import('../models/RestaurantVerification.js')).default;
@@ -776,25 +777,29 @@ export const approveTrialRequest = async (req, res) => {
         const now = new Date();
         const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 full days from exact approval timestamp
 
-        restaurant.subscription = {
-            ...restaurant.subscription,
-            status: 'Active',
-            trialActive: true,
-            trialStartDate: now,
-            trialEndDate: trialEnd,
-            expiryDate: trialEnd,
-            approvedBy: req.user._id,
-            approvedAt: now,
-            paymentStatus: 'Trial',
-            manualFreeze: false,
-            freezeReason: '',
-            rejectionReason: '',
-            reminderSent24h: false
-        };
+        if (!restaurant.subscription) restaurant.subscription = {};
+        restaurant.subscription.status = 'Active';
+        restaurant.subscription.trialActive = true;
+        restaurant.subscription.trialStartDate = now;
+        restaurant.subscription.trialEndDate = trialEnd;
+        restaurant.subscription.expiryDate = trialEnd;
+        restaurant.subscription.approvedBy = req.user._id;
+        restaurant.subscription.approvedAt = now;
+        restaurant.subscription.paymentStatus = 'Trial';
+        restaurant.subscription.manualFreeze = false;
+        restaurant.subscription.freezeReason = '';
+        restaurant.subscription.rejectionReason = '';
+        restaurant.subscription.reminderSent24h = false;
+
         restaurant.approvalStatus = 'Approved';
         restaurant.isActive = true;
 
         await restaurant.save();
+
+        broadcastToRestaurant(restaurant._id, 'subscription_updated', {
+            restaurantId: String(restaurant._id),
+            subscription: restaurant.subscription
+        });
 
         // Create in-app notification for owner
         try {
@@ -852,16 +857,19 @@ export const rejectTrialRequest = async (req, res) => {
 
         const rejectionReason = reason || 'Documentation criteria or verification requirements not met.';
 
-        restaurant.subscription = {
-            ...restaurant.subscription,
-            status: 'Rejected',
-            trialActive: false,
-            rejectedAt: new Date(),
-            rejectionReason
-        };
+        if (!restaurant.subscription) restaurant.subscription = {};
+        restaurant.subscription.status = 'Rejected';
+        restaurant.subscription.trialActive = false;
+        restaurant.subscription.rejectedAt = new Date();
+        restaurant.subscription.rejectionReason = rejectionReason;
         restaurant.approvalStatus = 'Rejected';
 
         await restaurant.save();
+
+        broadcastToRestaurant(restaurant._id, 'subscription_updated', {
+            restaurantId: String(restaurant._id),
+            subscription: restaurant.subscription
+        });
 
         // Email Owner: Trigger 3 (Rejected)
         const ownerEmail = restaurant.ownerId?.email;
@@ -898,15 +906,18 @@ export const manualFreezeRestaurant = async (req, res) => {
         const freezeReason = reason || 'Administrative freeze placed by Super Admin.';
         const frozenAt = new Date();
 
-        restaurant.subscription = {
-            ...restaurant.subscription,
-            status: 'Frozen',
-            manualFreeze: true,
-            freezeReason,
-            frozenAt
-        };
+        if (!restaurant.subscription) restaurant.subscription = {};
+        restaurant.subscription.status = 'Frozen';
+        restaurant.subscription.manualFreeze = true;
+        restaurant.subscription.freezeReason = freezeReason;
+        restaurant.subscription.frozenAt = frozenAt;
 
         await restaurant.save();
+
+        broadcastToRestaurant(restaurant._id, 'subscription_updated', {
+            restaurantId: String(restaurant._id),
+            subscription: restaurant.subscription
+        });
 
         // Email Owner: Trigger 9 (Manually frozen)
         const ownerEmail = restaurant.ownerId?.email;
@@ -973,6 +984,11 @@ export const manualUnfreezeRestaurant = async (req, res) => {
         restaurant.subscription.freezeReason = '';
 
         await restaurant.save();
+
+        broadcastToRestaurant(restaurant._id, 'subscription_updated', {
+            restaurantId: String(restaurant._id),
+            subscription: restaurant.subscription
+        });
 
         // Email Owner: Trigger 10 (Manually unfrozen)
         const ownerEmail = restaurant.ownerId?.email;

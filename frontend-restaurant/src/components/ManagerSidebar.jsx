@@ -63,6 +63,7 @@ const ManagerSidebar = () => {
             items: [
                 { name: 'Branch Overview', path: '/manager', icon: Store },
                 { name: 'Daily Orders', path: '/manager/orders', icon: ShoppingBag },
+                { name: 'Reservations', path: '/manager/reservations', icon: CalendarDays },
                 { name: 'Table Status', path: '/manager/tables', icon: QrCode },
             ]
         },
@@ -88,6 +89,7 @@ const ManagerSidebar = () => {
             title: 'Feedback & Analytics',
             items: [
                 { name: 'Customer Feedback', path: '/manager/feedback', icon: MessageSquare },
+                { name: 'Sales Overview', path: '/manager/sales', icon: CreditCard },
                 { name: 'Branch Analytics', path: '/manager/analytics', icon: PieChart },
                 { name: 'Reports', path: '/manager/reports', icon: FileText },
             ]

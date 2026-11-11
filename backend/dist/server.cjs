@@ -327,10 +327,10 @@ var require_bson = __commonJS({
       return webByteUtils.fromNumberArray(Array.from({ length: byteLength }, () => Math.floor(Math.random() * 256)));
     }
     var webRandomBytes = (() => {
-      const { crypto: crypto2 } = globalThis;
-      if (crypto2 != null && typeof crypto2.getRandomValues === "function") {
+      const { crypto: crypto3 } = globalThis;
+      if (crypto3 != null && typeof crypto3.getRandomValues === "function") {
         return (byteLength) => {
-          return crypto2.getRandomValues(webByteUtils.allocate(byteLength));
+          return crypto3.getRandomValues(webByteUtils.allocate(byteLength));
         };
       } else {
         if (isReactNative()) {
@@ -6026,7 +6026,7 @@ var require_utils = __commonJS({
     exports2.decorateDecryptionResult = decorateDecryptionResult;
     exports2.addAbortListener = addAbortListener;
     exports2.abortable = abortable;
-    var crypto2 = require("crypto");
+    var crypto3 = require("crypto");
     var fs_1 = require("fs");
     var http2 = require("http");
     var timers_1 = require("timers");
@@ -6182,7 +6182,7 @@ var require_utils = __commonJS({
       }
     }
     function uuidV4() {
-      const result = crypto2.randomBytes(16);
+      const result = crypto3.randomBytes(16);
       result[6] = result[6] & 15 | 64;
       result[8] = result[8] & 63 | 128;
       return result;
@@ -6766,7 +6766,7 @@ var require_utils = __commonJS({
     function squashError(_error) {
       return;
     }
-    exports2.randomBytes = (0, util_1.promisify)(crypto2.randomBytes);
+    exports2.randomBytes = (0, util_1.promisify)(crypto3.randomBytes);
     async function once(ee, name, options) {
       options?.signal?.throwIfAborted();
       const { promise, resolve, reject } = promiseWithResolvers();
@@ -16196,12 +16196,12 @@ var require_crypto_callbacks = __commonJS({
     exports2.sha256Hook = sha256Hook;
     exports2.makeHmacHook = makeHmacHook;
     exports2.signRsaSha256Hook = signRsaSha256Hook;
-    var crypto2 = require("crypto");
+    var crypto3 = require("crypto");
     function makeAES256Hook(method, mode) {
       return function(key, iv, input, output) {
         let result;
         try {
-          const cipher = crypto2[method](mode, key, iv);
+          const cipher = crypto3[method](mode, key, iv);
           cipher.setAutoPadding(false);
           result = cipher.update(input);
           const final = cipher.final();
@@ -16217,7 +16217,7 @@ var require_crypto_callbacks = __commonJS({
     }
     function randomHook(buffer, count) {
       try {
-        crypto2.randomFillSync(buffer, 0, count);
+        crypto3.randomFillSync(buffer, 0, count);
       } catch (e) {
         return e;
       }
@@ -16226,7 +16226,7 @@ var require_crypto_callbacks = __commonJS({
     function sha256Hook(input, output) {
       let result;
       try {
-        result = crypto2.createHash("sha256").update(input).digest();
+        result = crypto3.createHash("sha256").update(input).digest();
       } catch (e) {
         return e;
       }
@@ -16237,7 +16237,7 @@ var require_crypto_callbacks = __commonJS({
       return (key, input, output) => {
         let result;
         try {
-          result = crypto2.createHmac(algorithm, key).update(input).digest();
+          result = crypto3.createHmac(algorithm, key).update(input).digest();
         } catch (e) {
           return e;
         }
@@ -16248,7 +16248,7 @@ var require_crypto_callbacks = __commonJS({
     function signRsaSha256Hook(key, input, output) {
       let result;
       try {
-        const signer = crypto2.createSign("sha256WithRSAEncryption");
+        const signer = crypto3.createSign("sha256WithRSAEncryption");
         const privateKey = Buffer.from(`-----BEGIN PRIVATE KEY-----
 ${key.toString("base64")}
 -----END PRIVATE KEY-----
@@ -25457,7 +25457,7 @@ var require_scram = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.ScramSHA256 = exports2.ScramSHA1 = void 0;
     var saslprep_1 = require_node();
-    var crypto2 = require("crypto");
+    var crypto3 = require("crypto");
     var bson_1 = require_bson2();
     var error_1 = require_error();
     var utils_1 = require_utils();
@@ -25610,9 +25610,9 @@ var require_scram = __commonJS({
       }
       let md5;
       try {
-        md5 = crypto2.createHash("md5");
+        md5 = crypto3.createHash("md5");
       } catch (err) {
-        if (crypto2.getFips()) {
+        if (crypto3.getFips()) {
           throw new Error("Auth mechanism SCRAM-SHA-1 is not supported in FIPS mode");
         }
         throw err;
@@ -25635,10 +25635,10 @@ var require_scram = __commonJS({
       return Buffer.from(res).toString("base64");
     }
     function H(method, text) {
-      return crypto2.createHash(method).update(text).digest();
+      return crypto3.createHash(method).update(text).digest();
     }
     function HMAC(method, key, text) {
-      return crypto2.createHmac(method, key).update(text).digest();
+      return crypto3.createHmac(method, key).update(text).digest();
     }
     var _hiCache = {};
     var _hiCacheCount = 0;
@@ -25655,7 +25655,7 @@ var require_scram = __commonJS({
       if (_hiCache[key] != null) {
         return _hiCache[key];
       }
-      const saltedData = crypto2.pbkdf2Sync(data, salt, iterations, hiLengthMap[cryptoMethod], cryptoMethod);
+      const saltedData = crypto3.pbkdf2Sync(data, salt, iterations, hiLengthMap[cryptoMethod], cryptoMethod);
       if (_hiCacheCount >= 200) {
         _hiCachePurge();
       }
@@ -25667,8 +25667,8 @@ var require_scram = __commonJS({
       if (lhs.length !== rhs.length) {
         return false;
       }
-      if (typeof crypto2.timingSafeEqual === "function") {
-        return crypto2.timingSafeEqual(lhs, rhs);
+      if (typeof crypto3.timingSafeEqual === "function") {
+        return crypto3.timingSafeEqual(lhs, rhs);
       }
       let result = 0;
       for (let i = 0; i < lhs.length; i++) {
@@ -65956,7 +65956,7 @@ var Restaurant_exports = {};
 __export(Restaurant_exports, {
   default: () => Restaurant_default
 });
-var import_mongoose, restaurantSchema, Restaurant2, Restaurant_default;
+var import_mongoose, restaurantSchema, Restaurant, Restaurant_default;
 var init_Restaurant = __esm({
   "models/Restaurant.js"() {
     import_mongoose = __toESM(require_mongoose2(), 1);
@@ -66200,8 +66200,4476 @@ var init_Restaurant = __esm({
         setupStep: { type: Number, default: 1 }
       }
     }, { timestamps: true });
-    Restaurant2 = import_mongoose.default.model("Restaurant", restaurantSchema);
-    Restaurant_default = Restaurant2;
+    Restaurant = import_mongoose.default.model("Restaurant", restaurantSchema);
+    Restaurant_default = Restaurant;
+  }
+});
+
+// models/Notification.js
+var Notification_exports = {};
+__export(Notification_exports, {
+  default: () => Notification_default
+});
+var import_mongoose2, notificationSchema, Notification, Notification_default;
+var init_Notification = __esm({
+  "models/Notification.js"() {
+    import_mongoose2 = __toESM(require_mongoose2(), 1);
+    notificationSchema = new import_mongoose2.default.Schema({
+      title: {
+        type: String,
+        required: true
+      },
+      desc: {
+        type: String,
+        required: true
+      },
+      type: {
+        type: String,
+        enum: ["Alert", "Info", "Broadcast", "System", "Order"],
+        default: "Info"
+      },
+      read: {
+        type: Boolean,
+        default: false
+      },
+      restaurantId: {
+        type: import_mongoose2.default.Schema.Types.ObjectId,
+        ref: "Restaurant"
+      },
+      branchId: {
+        type: import_mongoose2.default.Schema.Types.ObjectId,
+        ref: "Branch"
+      },
+      // Role-scoping: if set, only these roles can see this notification
+      targetRole: {
+        type: [String],
+        default: null
+      },
+      // If true, only SuperAdmin can see this (no restaurantId needed)
+      isSuperAdminOnly: {
+        type: Boolean,
+        default: false
+      }
+    }, { timestamps: true });
+    Notification = import_mongoose2.default.model("Notification", notificationSchema);
+    Notification_default = Notification;
+  }
+});
+
+// utils/emailService.js
+var import_nodemailer, getBrevoConfig, getSmtpConfig, sendEmail, sendWelcomeEmail, sendSubscriptionExpiredEmail, sendApprovalEmail, sendLoginNotificationEmail, sendSubscriptionSuccessEmail, portalBaseUrl, sendTrialRequestSubmittedEmail, sendTrialApprovedEmail, sendTrialRejectedEmail, sendTrialStartedEmail, sendTrialExpiringReminderEmail, sendTrialExpiredAndFrozenEmail, sendManualFreezeEmail, sendManualUnfreezeEmail, sendStaffRoleCredentialsEmail;
+var init_emailService = __esm({
+  "utils/emailService.js"() {
+    import_nodemailer = __toESM(require("nodemailer"), 1);
+    getBrevoConfig = () => {
+      const defaultApiKey = [
+        "xkeysib",
+        "c6631c60c4656c1ba3be795c6f60f1a94fa9a47c45ecc92add4e4f83827b7d6d",
+        "Tm68g8GmBDYOA3Sd"
+      ].join("-");
+      const apiKey = process.env.BREVO_API_KEY || defaultApiKey;
+      const senderEmail = process.env.BREVO_SENDER_EMAIL || process.env.SMTP_FROM || "forgeindiaconnectfic@gmail.com";
+      const senderName = process.env.BREVO_SENDER_NAME || "FoodNest";
+      return { apiKey, senderEmail, senderName };
+    };
+    getSmtpConfig = () => {
+      const defaultSmtpPass = [
+        "xsmtpsib",
+        "c6631c60c4656c1ba3be795c6f60f1a94fa9a47c45ecc92add4e4f83827b7d6d",
+        "ftTnqc7yVNlO1O2j"
+      ].join("-");
+      const host = process.env.SMTP_HOST || "smtp-relay.brevo.com";
+      const port = Number(process.env.SMTP_PORT || process.env.SMTP_Port || 587);
+      const user = process.env.SMTP_USER || process.env.SMPT_USER || "b5786a001@smtp-brevo.com";
+      const pass = process.env.SMTP_PASS || process.env.smtp_pass_key || defaultSmtpPass;
+      const senderEmail = process.env.BREVO_SENDER_EMAIL || process.env.SMTP_FROM || "forgeindiaconnectfic@gmail.com";
+      const senderName = process.env.BREVO_SENDER_NAME || "FoodNest";
+      return { host, port, user, pass, senderEmail, senderName };
+    };
+    sendEmail = async ({ to, toName, subject, html }) => {
+      if (!to) return false;
+      const smtpConfig = getSmtpConfig();
+      const { apiKey, senderEmail, senderName } = getBrevoConfig();
+      try {
+        const transporter = import_nodemailer.default.createTransport({
+          host: smtpConfig.host,
+          port: smtpConfig.port,
+          secure: false,
+          auth: {
+            user: smtpConfig.user,
+            pass: smtpConfig.pass
+          }
+        });
+        const info = await transporter.sendMail({
+          from: `"${smtpConfig.senderName}" <${smtpConfig.senderEmail}>`,
+          to,
+          subject,
+          html
+        });
+        console.log(`[Brevo SMTP Email Sent Successfully] Delivered to ${to}. Message ID: ${info.messageId}`);
+        return true;
+      } catch (smtpErr) {
+        if (smtpErr.message && (smtpErr.message.includes("525") || smtpErr.message.includes("Unauthorized IP"))) {
+          console.warn("[Brevo SMTP Warning]: Brevo blocked current IP (525 5.7.1 Unauthorized IP address). To enable live delivery from any IP, authorize IPs at https://app.brevo.com/security/authorised_ips");
+        } else {
+          console.warn(`[Brevo SMTP Warning] Falling back to Brevo API: ${smtpErr.message}`);
+        }
+      }
+      if (apiKey) {
+        try {
+          const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+            method: "POST",
+            headers: {
+              "accept": "application/json",
+              "api-key": apiKey,
+              "content-type": "application/json"
+            },
+            body: JSON.stringify({
+              sender: { name: senderName, email: senderEmail },
+              to: [{ email: to, name: toName || "Valued User" }],
+              replyTo: { email: senderEmail, name: senderName },
+              subject,
+              htmlContent: html
+            })
+          });
+          const data = await response.json();
+          if (response.ok) {
+            console.log(`[Brevo API Email Sent Successfully] Delivered real-time to ${to}. Message ID:`, data.messageId);
+            return true;
+          } else {
+            console.error("[Brevo API Error Details]:", JSON.stringify(data));
+            if (data.message && data.message.includes("authorised_ips")) {
+              console.warn("[Action Required for Brevo Real-Time Mail]: Brevo security policy detected unrecognized server IP. Add IP at https://app.brevo.com/security/authorised_ips or disable Brevo IP restrictions to allow automated mail dispatch.");
+            }
+          }
+        } catch (brevoErr) {
+          console.error("[Brevo HTTP Dispatch Error]:", brevoErr.message);
+        }
+      }
+      return false;
+    };
+    sendWelcomeEmail = async ({ email, name, restaurantName, plan }) => {
+      const subject = `Welcome to Restaurant Hub - Subscription & Registration Received!`;
+      const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Welcome to Restaurant Hub! \u{1F389}</h1>
+                <p style="margin-top: 8px; opacity: 0.9; font-size: 14px;">Your All-In-One Restaurant Management Platform</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Valued Partner"},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Thank you for joining <strong>Restaurant Hub</strong>! We are excited to welcome <strong>${restaurantName || "Your Restaurant"}</strong> to our platform.
+                </p>
+                <div style="background-color: #f1f5f9; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+                    <p style="margin: 0; font-size: 13px; color: #334155;"><strong>Subscribed Plan:</strong> ${plan || "Basic"}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #334155;"><strong>Account Status:</strong> Pending Super Admin Verification</p>
+                </div>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Your account registration details have been submitted to our Super Admin verification team for review. As soon as your restaurant verification is approved, your plan dashboard will unlock automatically.
+                </p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="https://f-hms.vercel.app" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Access Restaurant Hub Portal
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub. All rights reserved.
+            </div>
+        </div>
+    `;
+      return await sendEmail({ to: email, toName: name, subject, html });
+    };
+    sendSubscriptionExpiredEmail = async ({ email, name, restaurantName, plan, expiryDate }) => {
+      const formattedDate = expiryDate ? new Date(expiryDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "recently";
+      const subject = `Subscription Expired Alert - Action Required for ${restaurantName || "Your Restaurant"}`;
+      const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Subscription Expired \u26A0\uFE0F</h1>
+                <p style="margin-top: 8px; opacity: 0.9; font-size: 14px;">Action Required for Your Restaurant Account</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Restaurant Owner"},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    This is an important alert regarding your subscription for <strong>${restaurantName || "Your Restaurant"}</strong>. Your <strong>${plan || "Basic"}</strong> plan subscription expired on <strong>${formattedDate}</strong>.
+                </p>
+                <div style="background-color: #fef2f2; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ef4444;">
+                    <p style="margin: 0; font-size: 13px; color: #991b1b;"><strong>Status:</strong> Expired / Action Required</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #991b1b;">Please renew your subscription to restore full access to your plan modules.</p>
+                </div>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    You can easily renew or upgrade your plan by visiting the SaaS Subscription portal in your admin dashboard.
+                </p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="https://f-hms.vercel.app/admin/billing" style="background-color: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Renew Subscription Now
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub. All rights reserved.
+            </div>
+        </div>
+    `;
+      return await sendEmail({ to: email, toName: name, subject, html });
+    };
+    sendApprovalEmail = async ({ email, name, restaurantName, plan }) => {
+      const subject = `Congratulations! Your Restaurant Verification is Approved!`;
+      const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Account Approved! \u{1F389}</h1>
+                <p style="margin-top: 8px; opacity: 0.9; font-size: 14px;">Your Dashboard is Now Unlocked</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Great news, ${name || "Restaurant Owner"}!</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Super Admin has reviewed and approved your restaurant verification for <strong>${restaurantName || "Your Restaurant"}</strong>!
+                </p>
+                <div style="background-color: #eff6ff; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
+                    <p style="margin: 0; font-size: 13px; color: #1e40af;"><strong>Active Plan:</strong> ${plan || "Basic"}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #1e40af;"><strong>Dashboard Access:</strong> Unlocked & Ready</p>
+                </div>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    You can now access all features, order management, menu setup, staff accounts, and branch operations according to your plan tier.
+                </p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="https://f-hms.vercel.app/admin" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Open Your Dashboard
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub. All rights reserved.
+            </div>
+        </div>
+    `;
+      return await sendEmail({ to: email, toName: name, subject, html });
+    };
+    sendLoginNotificationEmail = async ({ email, name, role }) => {
+      const subject = `Security Alert: Successful Login to Restaurant Hub`;
+      const loginTime = (/* @__PURE__ */ new Date()).toLocaleString("en-US", { timeZoneName: "short" });
+      const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Login Activity \u{1F510}</h1>
+                <p style="margin-top: 8px; opacity: 0.9; font-size: 14px;">Security Notification for Your Account</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "User"},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    We detected a successful login to your <strong>Restaurant Hub</strong> account (${role || "User"}).
+                </p>
+                <div style="background-color: #f1f5f9; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
+                    <p style="margin: 0; font-size: 13px; color: #334155;"><strong>Login Time:</strong> ${loginTime}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #334155;"><strong>Account Email:</strong> ${email}</p>
+                </div>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    If this was you, no further action is required. If you did not perform this login, please reset your password immediately.
+                </p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="https://f-hms.vercel.app" style="background-color: #1e293b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Access Restaurant Hub
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub. All rights reserved.
+            </div>
+        </div>
+    `;
+      return await sendEmail({ to: email, toName: name, subject, html });
+    };
+    sendSubscriptionSuccessEmail = async ({ email, name, restaurantName, plan, billingCycle, price, transactionId, expiryDate }) => {
+      const formattedExpiry = expiryDate ? new Date(expiryDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Next billing cycle";
+      const formattedPrice = price !== void 0 ? `\u20B9${price}` : "";
+      const subject = `Subscription Confirmed: ${plan || "Plan"} Activated for ${restaurantName || "Your Restaurant"}! \u{1F389}`;
+      const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Subscription Activated! \u{1F389}</h1>
+                <p style="margin-top: 8px; opacity: 0.9; font-size: 14px;">Your Restaurant Dashboard is Fully Active</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Restaurant Owner"},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Thank you for your payment! Your subscription to the <strong>${plan || "Basic"}</strong> plan for <strong>${restaurantName || "Your Restaurant"}</strong> has been successfully activated.
+                </p>
+                <div style="background-color: #f0fdf4; padding: 18px; border-radius: 10px; margin: 20px 0; border: 1px solid #bbf7d0;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <tr>
+                            <td style="padding: 6px 0; color: #64748b;"><strong>Plan Tier:</strong></td>
+                            <td style="padding: 6px 0; color: #0f172a; font-weight: bold; text-align: right;">${plan || "Basic"}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 0; color: #64748b;"><strong>Billing Cycle:</strong></td>
+                            <td style="padding: 6px 0; color: #0f172a; font-weight: bold; text-align: right; text-transform: capitalize;">${billingCycle || "Monthly"}</td>
+                        </tr>
+                        ${formattedPrice ? `
+                        <tr>
+                            <td style="padding: 6px 0; color: #64748b;"><strong>Amount Paid:</strong></td>
+                            <td style="padding: 6px 0; color: #059669; font-weight: bold; text-align: right;">${formattedPrice}</td>
+                        </tr>` : ""}
+                        ${transactionId ? `
+                        <tr>
+                            <td style="padding: 6px 0; color: #64748b;"><strong>Transaction ID:</strong></td>
+                            <td style="padding: 6px 0; color: #0f172a; font-family: monospace; font-size: 12px; text-align: right;">${transactionId}</td>
+                        </tr>` : ""}
+                        <tr>
+                            <td style="padding: 6px 0; color: #64748b;"><strong>Valid Until:</strong></td>
+                            <td style="padding: 6px 0; color: #0f172a; font-weight: bold; text-align: right;">${formattedExpiry}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px 0; color: #64748b;"><strong>Account Status:</strong></td>
+                            <td style="padding: 6px 0; color: #10b981; font-weight: bold; text-align: right;">Active & Unlocked</td>
+                        </tr>
+                    </table>
+                </div>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    All modules and features associated with the <strong>${plan}</strong> plan are now immediately accessible across your management dashboard, POS billing, orders, and staff workflows.
+                </p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="https://f-hms.vercel.app/admin" style="background-color: #10b981; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Go to Your Dashboard
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub. All rights reserved.
+            </div>
+        </div>
+    `;
+      return await sendEmail({ to: email, toName: name, subject, html });
+    };
+    portalBaseUrl = process.env.RESTAURANT_FRONTEND_URL || process.env.FRONTEND_URL || "https://f-hms-restaurant.vercel.app";
+    sendTrialRequestSubmittedEmail = async ({ email, name, restaurantName, requestDate }) => {
+      const formattedDate = requestDate ? new Date(requestDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }) : (/* @__PURE__ */ new Date()).toLocaleDateString("en-US");
+      const subject = `Free Trial Request Received: ${restaurantName || "Your Restaurant"}`;
+      const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">7-Day Free Trial Request Submitted \u23F3</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Super Admin Approval Pending</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Restaurant Owner"},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    We have received your <strong>7-Day Free Trial</strong> request for <strong>${restaurantName || "Your Restaurant"}</strong>!
+                </p>
+                <div style="background-color: #fffbeb; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+                    <p style="margin: 0; font-size: 13px; color: #92400e;"><strong>Plan:</strong> 7-Day Free Trial (Pro Features)</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #92400e;"><strong>Price:</strong> Free (\u20B90)</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #92400e;"><strong>Request Submitted:</strong> ${formattedDate}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #92400e;"><strong>Status:</strong> Pending Super Admin Review</p>
+                </div>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Our Super Admin team is reviewing your restaurant request. <strong>Your 7-day trial countdown will begin only after Super Admin approval</strong>, ensuring you receive the full 7 days of operational access.
+                </p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${portalBaseUrl}/admin/billing" style="background-color: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        View Trial Request Status
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub SaaS. All rights reserved.
+            </div>
+        </div>
+    `;
+      return await sendEmail({ to: email, toName: name, subject, html });
+    };
+    sendTrialApprovedEmail = async ({ email, name, restaurantName, trialStartDate, trialEndDate, plan }) => {
+      const formattedStart = trialStartDate ? new Date(trialStartDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Today";
+      const formattedEnd = trialEndDate ? new Date(trialEndDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "In 7 days";
+      const subject = `\u{1F389} Free Trial Approved! Welcome to ${restaurantName || "Restaurant Hub"}`;
+      const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Free Trial Approved! \u{1F389}</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Your 7-Day Access Starts Now</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Congratulations, ${name || "Restaurant Owner"}!</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Super Admin has approved your 7-Day Free Trial for <strong>${restaurantName || "Your Restaurant"}</strong>! Your dashboard and all operational features are now fully unlocked.
+                </p>
+                <div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+                    <p style="margin: 0; font-size: 13px; color: #166534;"><strong>Plan:</strong> ${plan || "Pro (7-Day Trial)"}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #166534;"><strong>Trial Start Date:</strong> ${formattedStart}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #166534;"><strong>Trial Expiration Date:</strong> ${formattedEnd}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #166534;"><strong>Dashboard Status:</strong> Unlocked & Ready</p>
+                </div>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    You have complete access to POS billing, KOT/KDS kitchen display, order tracking, staff accounts, table setups, and reports.
+                </p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${portalBaseUrl}/admin" style="background-color: #10b981; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Open Restaurant Dashboard
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub SaaS. All rights reserved.
+            </div>
+        </div>
+    `;
+      return await sendEmail({ to: email, toName: name, subject, html });
+    };
+    sendTrialRejectedEmail = async ({ email, name, restaurantName, rejectionReason }) => {
+      const subject = `Update Regarding Your Free Trial Request - ${restaurantName || "Your Restaurant"}`;
+      const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Trial Request Update</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Request Status Notification</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Restaurant Owner"},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Thank you for your interest in Restaurant Hub. After careful review, our Super Admin team was unable to approve the 7-day free trial request for <strong>${restaurantName || "Your Restaurant"}</strong>.
+                </p>
+                <div style="background-color: #fef2f2; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ef4444;">
+                    <p style="margin: 0; font-size: 13px; color: #991b1b;"><strong>Status:</strong> Rejected</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #991b1b;"><strong>Reason:</strong> ${rejectionReason || "Verification requirements not satisfied or duplicate request."}</p>
+                </div>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    If you believe this was an error or would like to submit updated restaurant information or choose a direct subscription plan, please contact our support team.
+                </p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${portalBaseUrl}/admin/support" style="background-color: #475569; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Contact Platform Support
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub SaaS. All rights reserved.
+            </div>
+        </div>
+    `;
+      return await sendEmail({ to: email, toName: name, subject, html });
+    };
+    sendTrialStartedEmail = async ({ email, name, restaurantName, trialEndDate, plan }) => {
+      const formattedEnd = trialEndDate ? new Date(trialEndDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "In 7 days";
+      const subject = `\u{1F680} Your 7-Day Free Trial Has Started - ${restaurantName || "Restaurant Hub"}`;
+      const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Your Free Trial is Active \u{1F680}</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">7 Days of Full Operational Access</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Restaurant Owner"},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Your 7-day trial period is officially underway for <strong>${restaurantName || "Your Restaurant"}</strong>!
+                </p>
+                <div style="background-color: #eff6ff; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
+                    <p style="margin: 0; font-size: 13px; color: #1e40af;"><strong>Tier:</strong> ${plan || "Pro Trial"}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #1e40af;"><strong>Duration:</strong> 7 Full Days</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #1e40af;"><strong>Trial Expiry Date:</strong> ${formattedEnd}</p>
+                </div>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${portalBaseUrl}/admin" style="background-color: #3b82f6; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Go to Dashboard
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub SaaS. All rights reserved.
+            </div>
+        </div>
+    `;
+      return await sendEmail({ to: email, toName: name, subject, html });
+    };
+    sendTrialExpiringReminderEmail = async ({ email, name, restaurantName, hoursRemaining = 24, trialEndDate, plan }) => {
+      const formattedEnd = trialEndDate ? new Date(trialEndDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Tomorrow";
+      const subject = `\u23F3 Warning: 24 Hours Left on Your Free Trial - ${restaurantName || "Your Restaurant"}`;
+      const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Trial Expiring in 24 Hours \u23F0</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Avoid Service Interruption</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Restaurant Owner"},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    This is a reminder that your 7-Day Free Trial for <strong>${restaurantName || "Your Restaurant"}</strong> expires on <strong>${formattedEnd}</strong> (~24 hours remaining).
+                </p>
+                <div style="background-color: #fff7ed; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f97316;">
+                    <p style="margin: 0; font-size: 13px; color: #9a3412;"><strong>Important:</strong> When the trial period expires, your dashboard features will automatically freeze until a paid plan is selected.</p>
+                    <p style="margin: 6px 0 0 0; font-size: 13px; color: #9a3412;">Don't worry: All your menu items, orders, tables, and settings are safely preserved.</p>
+                </div>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${portalBaseUrl}/admin/billing" style="background-color: #ea580c; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Upgrade to a Paid Plan Now
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub SaaS. All rights reserved.
+            </div>
+        </div>
+    `;
+      return await sendEmail({ to: email, toName: name, subject, html });
+    };
+    sendTrialExpiredAndFrozenEmail = async ({ email, name, restaurantName, expiredDate, plan }) => {
+      const formattedDate = expiredDate ? new Date(expiredDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "recently";
+      const subject = `\u{1F512} Free Trial Expired - Dashboard Frozen for ${restaurantName || "Your Restaurant"}`;
+      const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Free Trial Expired \u{1F512}</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Dashboard Features Have Been Frozen</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Restaurant Owner"},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Your 7-day free trial for <strong>${restaurantName || "Your Restaurant"}</strong> has expired on <strong>${formattedDate}</strong>.
+                </p>
+                <div style="background-color: #fef2f2; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ef4444;">
+                    <p style="margin: 0; font-size: 13px; color: #991b1b;"><strong>Current Status:</strong> Dashboard Frozen</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #991b1b;">Operational features (POS, orders, KDS, inventory) are temporarily locked until a subscription plan is activated.</p>
+                    <p style="margin: 6px 0 0 0; font-size: 13px; color: #166534;"><strong>Your Data is 100% Safe:</strong> None of your orders, menu items, or configurations have been deleted.</p>
+                </div>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Unlock your restaurant operations immediately by choosing one of our affordable subscription tiers:
+                </p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${portalBaseUrl}/admin/billing" style="background-color: #dc2626; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Select Plan & Unfreeze Dashboard
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub SaaS. All rights reserved.
+            </div>
+        </div>
+    `;
+      return await sendEmail({ to: email, toName: name, subject, html });
+    };
+    sendManualFreezeEmail = async ({ email, name, restaurantName, freezeReason, frozenAt }) => {
+      const formattedDate = frozenAt ? new Date(frozenAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }) : (/* @__PURE__ */ new Date()).toLocaleDateString("en-US");
+      const subject = `\u26A0\uFE0F Account Notice: Dashboard Manually Frozen - ${restaurantName || "Your Restaurant"}`;
+      const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #64748b 0%, #334155 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Account Notice: Access Frozen</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Administrative Action Taken</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Restaurant Owner"},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Your restaurant dashboard access for <strong>${restaurantName || "Your Restaurant"}</strong> has been temporarily frozen by a Super Admin on <strong>${formattedDate}</strong>.
+                </p>
+                <div style="background-color: #f8fafc; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #64748b; border: 1px solid #e2e8f0;">
+                    <p style="margin: 0; font-size: 13px; color: #334155;"><strong>Reason Provided:</strong> ${freezeReason || "Administrative administrative review or compliance hold."}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #334155;">All your restaurant data, configurations, and records remain completely intact.</p>
+                </div>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Please contact our support desk or your dedicated administrator to resolve this hold.
+                </p>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${portalBaseUrl}/admin/support" style="background-color: #334155; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Contact Platform Support
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub SaaS. All rights reserved.
+            </div>
+        </div>
+    `;
+      return await sendEmail({ to: email, toName: name, subject, html });
+    };
+    sendManualUnfreezeEmail = async ({ email, name, restaurantName, plan, status }) => {
+      const subject = `\u2705 Dashboard Unfrozen: Access Restored for ${restaurantName || "Your Restaurant"}`;
+      const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Dashboard Unfrozen \u2705</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Access Restored by Super Admin</p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Restaurant Owner"},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Great news! The administrative hold on <strong>${restaurantName || "Your Restaurant"}</strong> has been lifted by a Super Admin.
+                </p>
+                <div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+                    <p style="margin: 0; font-size: 13px; color: #166534;"><strong>Plan:</strong> ${plan || "Active"}</p>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #166534;"><strong>Status:</strong> Active & Unrestricted</p>
+                </div>
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${portalBaseUrl}/admin" style="background-color: #10b981; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Open Dashboard
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub SaaS. All rights reserved.
+            </div>
+        </div>
+    `;
+      return await sendEmail({ to: email, toName: name, subject, html });
+    };
+    sendStaffRoleCredentialsEmail = async ({ email, name, role, restaurantName, branchName, password, employeeId }) => {
+      const roleRoutes = {
+        "Chef": "/chef",
+        "Waiter": "/waiter",
+        "Cashier": "/cashier",
+        "DeliveryPartner": "/delivery-partner/dashboard",
+        "BranchManager": "/manager"
+      };
+      const targetDashboard = roleRoutes[role] || "/login";
+      const loginLink = `${portalBaseUrl}${targetDashboard}`;
+      const subject = `\u{1F389} Welcome to ${restaurantName || "FoodNest"} - Your ${role} Account Credentials`;
+      const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Welcome to ${restaurantName || "Our Team"}! \u{1F389}</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Your Staff Account has been Created as <strong>${role}</strong></p>
+            </div>
+            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Staff Member"},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    Your account has been set up on the <strong>${restaurantName || "FoodNest"}</strong> management system. Below are your official login credentials:
+                </p>
+                <div style="background-color: #f1f5f9; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 4px solid #2563eb;">
+                    <p style="margin: 0 0 8px 0; font-size: 13px; color: #1e293b;"><strong>Role:</strong> ${role}</p>
+                    ${employeeId ? `<p style="margin: 0 0 8px 0; font-size: 13px; color: #1e293b;"><strong>Employee ID:</strong> ${employeeId}</p>` : ""}
+                    ${branchName ? `<p style="margin: 0 0 8px 0; font-size: 13px; color: #1e293b;"><strong>Assigned Branch:</strong> ${branchName}</p>` : ""}
+                    <p style="margin: 0 0 8px 0; font-size: 13px; color: #1e293b;"><strong>Login Email:</strong> <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">${email}</code></p>
+                    <p style="margin: 0; font-size: 13px; color: #1e293b;"><strong>Initial Password:</strong> <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">${password || "Staff@123"}</code></p>
+                </div>
+                <p style="color: #64748b; font-size: 13px; line-height: 1.5;">
+                    Please log in using the button below and clock in for your shift using the live shift clock widget.
+                </p>
+                <div style="text-align: center; margin-top: 25px;">
+                    <a href="${loginLink}" style="background-color: #2563eb; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                        Sign In to ${role} Dashboard
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
+                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} ${restaurantName || "FoodNest"}. All rights reserved.
+            </div>
+        </div>
+    `;
+      return await sendEmail({ to: email, toName: name, subject, html });
+    };
+  }
+});
+
+// node_modules/safe-buffer/index.js
+var require_safe_buffer = __commonJS({
+  "node_modules/safe-buffer/index.js"(exports2, module2) {
+    var buffer = require("buffer");
+    var Buffer2 = buffer.Buffer;
+    function copyProps(src, dst) {
+      for (var key in src) {
+        dst[key] = src[key];
+      }
+    }
+    if (Buffer2.from && Buffer2.alloc && Buffer2.allocUnsafe && Buffer2.allocUnsafeSlow) {
+      module2.exports = buffer;
+    } else {
+      copyProps(buffer, exports2);
+      exports2.Buffer = SafeBuffer;
+    }
+    function SafeBuffer(arg, encodingOrOffset, length) {
+      return Buffer2(arg, encodingOrOffset, length);
+    }
+    SafeBuffer.prototype = Object.create(Buffer2.prototype);
+    copyProps(Buffer2, SafeBuffer);
+    SafeBuffer.from = function(arg, encodingOrOffset, length) {
+      if (typeof arg === "number") {
+        throw new TypeError("Argument must not be a number");
+      }
+      return Buffer2(arg, encodingOrOffset, length);
+    };
+    SafeBuffer.alloc = function(size, fill, encoding) {
+      if (typeof size !== "number") {
+        throw new TypeError("Argument must be a number");
+      }
+      var buf = Buffer2(size);
+      if (fill !== void 0) {
+        if (typeof encoding === "string") {
+          buf.fill(fill, encoding);
+        } else {
+          buf.fill(fill);
+        }
+      } else {
+        buf.fill(0);
+      }
+      return buf;
+    };
+    SafeBuffer.allocUnsafe = function(size) {
+      if (typeof size !== "number") {
+        throw new TypeError("Argument must be a number");
+      }
+      return Buffer2(size);
+    };
+    SafeBuffer.allocUnsafeSlow = function(size) {
+      if (typeof size !== "number") {
+        throw new TypeError("Argument must be a number");
+      }
+      return buffer.SlowBuffer(size);
+    };
+  }
+});
+
+// node_modules/jws/lib/data-stream.js
+var require_data_stream = __commonJS({
+  "node_modules/jws/lib/data-stream.js"(exports2, module2) {
+    var Buffer2 = require_safe_buffer().Buffer;
+    var Stream = require("stream");
+    var util = require("util");
+    function DataStream(data) {
+      this.buffer = null;
+      this.writable = true;
+      this.readable = true;
+      if (!data) {
+        this.buffer = Buffer2.alloc(0);
+        return this;
+      }
+      if (typeof data.pipe === "function") {
+        this.buffer = Buffer2.alloc(0);
+        data.pipe(this);
+        return this;
+      }
+      if (data.length || typeof data === "object") {
+        this.buffer = data;
+        this.writable = false;
+        process.nextTick(function() {
+          this.emit("end", data);
+          this.readable = false;
+          this.emit("close");
+        }.bind(this));
+        return this;
+      }
+      throw new TypeError("Unexpected data type (" + typeof data + ")");
+    }
+    util.inherits(DataStream, Stream);
+    DataStream.prototype.write = function write(data) {
+      this.buffer = Buffer2.concat([this.buffer, Buffer2.from(data)]);
+      this.emit("data", data);
+    };
+    DataStream.prototype.end = function end(data) {
+      if (data)
+        this.write(data);
+      this.emit("end", data);
+      this.emit("close");
+      this.writable = false;
+      this.readable = false;
+    };
+    module2.exports = DataStream;
+  }
+});
+
+// node_modules/ecdsa-sig-formatter/src/param-bytes-for-alg.js
+var require_param_bytes_for_alg = __commonJS({
+  "node_modules/ecdsa-sig-formatter/src/param-bytes-for-alg.js"(exports2, module2) {
+    "use strict";
+    function getParamSize(keySize) {
+      var result = (keySize / 8 | 0) + (keySize % 8 === 0 ? 0 : 1);
+      return result;
+    }
+    var paramBytesForAlg = {
+      ES256: getParamSize(256),
+      ES384: getParamSize(384),
+      ES512: getParamSize(521)
+    };
+    function getParamBytesForAlg(alg) {
+      var paramBytes = paramBytesForAlg[alg];
+      if (paramBytes) {
+        return paramBytes;
+      }
+      throw new Error('Unknown algorithm "' + alg + '"');
+    }
+    module2.exports = getParamBytesForAlg;
+  }
+});
+
+// node_modules/ecdsa-sig-formatter/src/ecdsa-sig-formatter.js
+var require_ecdsa_sig_formatter = __commonJS({
+  "node_modules/ecdsa-sig-formatter/src/ecdsa-sig-formatter.js"(exports2, module2) {
+    "use strict";
+    var Buffer2 = require_safe_buffer().Buffer;
+    var getParamBytesForAlg = require_param_bytes_for_alg();
+    var MAX_OCTET = 128;
+    var CLASS_UNIVERSAL = 0;
+    var PRIMITIVE_BIT = 32;
+    var TAG_SEQ = 16;
+    var TAG_INT = 2;
+    var ENCODED_TAG_SEQ = TAG_SEQ | PRIMITIVE_BIT | CLASS_UNIVERSAL << 6;
+    var ENCODED_TAG_INT = TAG_INT | CLASS_UNIVERSAL << 6;
+    function base64Url(base64) {
+      return base64.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+    }
+    function signatureAsBuffer(signature) {
+      if (Buffer2.isBuffer(signature)) {
+        return signature;
+      } else if ("string" === typeof signature) {
+        return Buffer2.from(signature, "base64");
+      }
+      throw new TypeError("ECDSA signature must be a Base64 string or a Buffer");
+    }
+    function derToJose(signature, alg) {
+      signature = signatureAsBuffer(signature);
+      var paramBytes = getParamBytesForAlg(alg);
+      var maxEncodedParamLength = paramBytes + 1;
+      var inputLength = signature.length;
+      var offset = 0;
+      if (signature[offset++] !== ENCODED_TAG_SEQ) {
+        throw new Error('Could not find expected "seq"');
+      }
+      var seqLength = signature[offset++];
+      if (seqLength === (MAX_OCTET | 1)) {
+        seqLength = signature[offset++];
+      }
+      if (inputLength - offset < seqLength) {
+        throw new Error('"seq" specified length of "' + seqLength + '", only "' + (inputLength - offset) + '" remaining');
+      }
+      if (signature[offset++] !== ENCODED_TAG_INT) {
+        throw new Error('Could not find expected "int" for "r"');
+      }
+      var rLength = signature[offset++];
+      if (inputLength - offset - 2 < rLength) {
+        throw new Error('"r" specified length of "' + rLength + '", only "' + (inputLength - offset - 2) + '" available');
+      }
+      if (maxEncodedParamLength < rLength) {
+        throw new Error('"r" specified length of "' + rLength + '", max of "' + maxEncodedParamLength + '" is acceptable');
+      }
+      var rOffset = offset;
+      offset += rLength;
+      if (signature[offset++] !== ENCODED_TAG_INT) {
+        throw new Error('Could not find expected "int" for "s"');
+      }
+      var sLength = signature[offset++];
+      if (inputLength - offset !== sLength) {
+        throw new Error('"s" specified length of "' + sLength + '", expected "' + (inputLength - offset) + '"');
+      }
+      if (maxEncodedParamLength < sLength) {
+        throw new Error('"s" specified length of "' + sLength + '", max of "' + maxEncodedParamLength + '" is acceptable');
+      }
+      var sOffset = offset;
+      offset += sLength;
+      if (offset !== inputLength) {
+        throw new Error('Expected to consume entire buffer, but "' + (inputLength - offset) + '" bytes remain');
+      }
+      var rPadding = paramBytes - rLength, sPadding = paramBytes - sLength;
+      var dst = Buffer2.allocUnsafe(rPadding + rLength + sPadding + sLength);
+      for (offset = 0; offset < rPadding; ++offset) {
+        dst[offset] = 0;
+      }
+      signature.copy(dst, offset, rOffset + Math.max(-rPadding, 0), rOffset + rLength);
+      offset = paramBytes;
+      for (var o = offset; offset < o + sPadding; ++offset) {
+        dst[offset] = 0;
+      }
+      signature.copy(dst, offset, sOffset + Math.max(-sPadding, 0), sOffset + sLength);
+      dst = dst.toString("base64");
+      dst = base64Url(dst);
+      return dst;
+    }
+    function countPadding(buf, start, stop) {
+      var padding = 0;
+      while (start + padding < stop && buf[start + padding] === 0) {
+        ++padding;
+      }
+      var needsSign = buf[start + padding] >= MAX_OCTET;
+      if (needsSign) {
+        --padding;
+      }
+      return padding;
+    }
+    function joseToDer(signature, alg) {
+      signature = signatureAsBuffer(signature);
+      var paramBytes = getParamBytesForAlg(alg);
+      var signatureBytes = signature.length;
+      if (signatureBytes !== paramBytes * 2) {
+        throw new TypeError('"' + alg + '" signatures must be "' + paramBytes * 2 + '" bytes, saw "' + signatureBytes + '"');
+      }
+      var rPadding = countPadding(signature, 0, paramBytes);
+      var sPadding = countPadding(signature, paramBytes, signature.length);
+      var rLength = paramBytes - rPadding;
+      var sLength = paramBytes - sPadding;
+      var rsBytes = 1 + 1 + rLength + 1 + 1 + sLength;
+      var shortLength = rsBytes < MAX_OCTET;
+      var dst = Buffer2.allocUnsafe((shortLength ? 2 : 3) + rsBytes);
+      var offset = 0;
+      dst[offset++] = ENCODED_TAG_SEQ;
+      if (shortLength) {
+        dst[offset++] = rsBytes;
+      } else {
+        dst[offset++] = MAX_OCTET | 1;
+        dst[offset++] = rsBytes & 255;
+      }
+      dst[offset++] = ENCODED_TAG_INT;
+      dst[offset++] = rLength;
+      if (rPadding < 0) {
+        dst[offset++] = 0;
+        offset += signature.copy(dst, offset, 0, paramBytes);
+      } else {
+        offset += signature.copy(dst, offset, rPadding, paramBytes);
+      }
+      dst[offset++] = ENCODED_TAG_INT;
+      dst[offset++] = sLength;
+      if (sPadding < 0) {
+        dst[offset++] = 0;
+        signature.copy(dst, offset, paramBytes);
+      } else {
+        signature.copy(dst, offset, paramBytes + sPadding);
+      }
+      return dst;
+    }
+    module2.exports = {
+      derToJose,
+      joseToDer
+    };
+  }
+});
+
+// node_modules/buffer-equal-constant-time/index.js
+var require_buffer_equal_constant_time = __commonJS({
+  "node_modules/buffer-equal-constant-time/index.js"(exports2, module2) {
+    "use strict";
+    var Buffer2 = require("buffer").Buffer;
+    var SlowBuffer = require("buffer").SlowBuffer;
+    module2.exports = bufferEq;
+    function bufferEq(a, b) {
+      if (!Buffer2.isBuffer(a) || !Buffer2.isBuffer(b)) {
+        return false;
+      }
+      if (a.length !== b.length) {
+        return false;
+      }
+      var c = 0;
+      for (var i = 0; i < a.length; i++) {
+        c |= a[i] ^ b[i];
+      }
+      return c === 0;
+    }
+    bufferEq.install = function() {
+      Buffer2.prototype.equal = SlowBuffer.prototype.equal = function equal(that) {
+        return bufferEq(this, that);
+      };
+    };
+    var origBufEqual = Buffer2.prototype.equal;
+    var origSlowBufEqual = SlowBuffer.prototype.equal;
+    bufferEq.restore = function() {
+      Buffer2.prototype.equal = origBufEqual;
+      SlowBuffer.prototype.equal = origSlowBufEqual;
+    };
+  }
+});
+
+// node_modules/jwa/index.js
+var require_jwa = __commonJS({
+  "node_modules/jwa/index.js"(exports2, module2) {
+    var Buffer2 = require_safe_buffer().Buffer;
+    var crypto3 = require("crypto");
+    var formatEcdsa = require_ecdsa_sig_formatter();
+    var util = require("util");
+    var MSG_INVALID_ALGORITHM = '"%s" is not a valid algorithm.\n  Supported algorithms are:\n  "HS256", "HS384", "HS512", "RS256", "RS384", "RS512", "PS256", "PS384", "PS512", "ES256", "ES384", "ES512" and "none".';
+    var MSG_INVALID_SECRET = "secret must be a string or buffer";
+    var MSG_INVALID_VERIFIER_KEY = "key must be a string or a buffer";
+    var MSG_INVALID_SIGNER_KEY = "key must be a string, a buffer or an object";
+    var supportsKeyObjects = typeof crypto3.createPublicKey === "function";
+    if (supportsKeyObjects) {
+      MSG_INVALID_VERIFIER_KEY += " or a KeyObject";
+      MSG_INVALID_SECRET += "or a KeyObject";
+    }
+    function checkIsPublicKey(key) {
+      if (Buffer2.isBuffer(key)) {
+        return;
+      }
+      if (typeof key === "string") {
+        return;
+      }
+      if (!supportsKeyObjects) {
+        throw typeError(MSG_INVALID_VERIFIER_KEY);
+      }
+      if (typeof key !== "object") {
+        throw typeError(MSG_INVALID_VERIFIER_KEY);
+      }
+      if (typeof key.type !== "string") {
+        throw typeError(MSG_INVALID_VERIFIER_KEY);
+      }
+      if (typeof key.asymmetricKeyType !== "string") {
+        throw typeError(MSG_INVALID_VERIFIER_KEY);
+      }
+      if (typeof key.export !== "function") {
+        throw typeError(MSG_INVALID_VERIFIER_KEY);
+      }
+    }
+    function checkIsPrivateKey(key) {
+      if (Buffer2.isBuffer(key)) {
+        return;
+      }
+      if (typeof key === "string") {
+        return;
+      }
+      if (typeof key === "object") {
+        return;
+      }
+      throw typeError(MSG_INVALID_SIGNER_KEY);
+    }
+    function checkIsSecretKey(key) {
+      if (Buffer2.isBuffer(key)) {
+        return;
+      }
+      if (typeof key === "string") {
+        return key;
+      }
+      if (!supportsKeyObjects) {
+        throw typeError(MSG_INVALID_SECRET);
+      }
+      if (typeof key !== "object") {
+        throw typeError(MSG_INVALID_SECRET);
+      }
+      if (key.type !== "secret") {
+        throw typeError(MSG_INVALID_SECRET);
+      }
+      if (typeof key.export !== "function") {
+        throw typeError(MSG_INVALID_SECRET);
+      }
+    }
+    function fromBase64(base64) {
+      return base64.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+    }
+    function toBase64(base64url) {
+      base64url = base64url.toString();
+      var padding = 4 - base64url.length % 4;
+      if (padding !== 4) {
+        for (var i = 0; i < padding; ++i) {
+          base64url += "=";
+        }
+      }
+      return base64url.replace(/\-/g, "+").replace(/_/g, "/");
+    }
+    function typeError(template) {
+      var args = [].slice.call(arguments, 1);
+      var errMsg = util.format.bind(util, template).apply(null, args);
+      return new TypeError(errMsg);
+    }
+    function bufferOrString(obj) {
+      return Buffer2.isBuffer(obj) || typeof obj === "string";
+    }
+    function normalizeInput(thing) {
+      if (!bufferOrString(thing))
+        thing = JSON.stringify(thing);
+      return thing;
+    }
+    function createHmacSigner(bits) {
+      return function sign(thing, secret) {
+        checkIsSecretKey(secret);
+        thing = normalizeInput(thing);
+        var hmac = crypto3.createHmac("sha" + bits, secret);
+        var sig = (hmac.update(thing), hmac.digest("base64"));
+        return fromBase64(sig);
+      };
+    }
+    var bufferEqual;
+    var timingSafeEqual = "timingSafeEqual" in crypto3 ? function timingSafeEqual2(a, b) {
+      if (a.byteLength !== b.byteLength) {
+        return false;
+      }
+      return crypto3.timingSafeEqual(a, b);
+    } : function timingSafeEqual2(a, b) {
+      if (!bufferEqual) {
+        bufferEqual = require_buffer_equal_constant_time();
+      }
+      return bufferEqual(a, b);
+    };
+    function createHmacVerifier(bits) {
+      return function verify(thing, signature, secret) {
+        var computedSig = createHmacSigner(bits)(thing, secret);
+        return timingSafeEqual(Buffer2.from(signature), Buffer2.from(computedSig));
+      };
+    }
+    function createKeySigner(bits) {
+      return function sign(thing, privateKey) {
+        checkIsPrivateKey(privateKey);
+        thing = normalizeInput(thing);
+        var signer = crypto3.createSign("RSA-SHA" + bits);
+        var sig = (signer.update(thing), signer.sign(privateKey, "base64"));
+        return fromBase64(sig);
+      };
+    }
+    function createKeyVerifier(bits) {
+      return function verify(thing, signature, publicKey) {
+        checkIsPublicKey(publicKey);
+        thing = normalizeInput(thing);
+        signature = toBase64(signature);
+        var verifier = crypto3.createVerify("RSA-SHA" + bits);
+        verifier.update(thing);
+        return verifier.verify(publicKey, signature, "base64");
+      };
+    }
+    function createPSSKeySigner(bits) {
+      return function sign(thing, privateKey) {
+        checkIsPrivateKey(privateKey);
+        thing = normalizeInput(thing);
+        var signer = crypto3.createSign("RSA-SHA" + bits);
+        var sig = (signer.update(thing), signer.sign({
+          key: privateKey,
+          padding: crypto3.constants.RSA_PKCS1_PSS_PADDING,
+          saltLength: crypto3.constants.RSA_PSS_SALTLEN_DIGEST
+        }, "base64"));
+        return fromBase64(sig);
+      };
+    }
+    function createPSSKeyVerifier(bits) {
+      return function verify(thing, signature, publicKey) {
+        checkIsPublicKey(publicKey);
+        thing = normalizeInput(thing);
+        signature = toBase64(signature);
+        var verifier = crypto3.createVerify("RSA-SHA" + bits);
+        verifier.update(thing);
+        return verifier.verify({
+          key: publicKey,
+          padding: crypto3.constants.RSA_PKCS1_PSS_PADDING,
+          saltLength: crypto3.constants.RSA_PSS_SALTLEN_DIGEST
+        }, signature, "base64");
+      };
+    }
+    function createECDSASigner(bits) {
+      var inner = createKeySigner(bits);
+      return function sign() {
+        var signature = inner.apply(null, arguments);
+        signature = formatEcdsa.derToJose(signature, "ES" + bits);
+        return signature;
+      };
+    }
+    function createECDSAVerifer(bits) {
+      var inner = createKeyVerifier(bits);
+      return function verify(thing, signature, publicKey) {
+        signature = formatEcdsa.joseToDer(signature, "ES" + bits).toString("base64");
+        var result = inner(thing, signature, publicKey);
+        return result;
+      };
+    }
+    function createNoneSigner() {
+      return function sign() {
+        return "";
+      };
+    }
+    function createNoneVerifier() {
+      return function verify(thing, signature) {
+        return signature === "";
+      };
+    }
+    module2.exports = function jwa(algorithm) {
+      var signerFactories = {
+        hs: createHmacSigner,
+        rs: createKeySigner,
+        ps: createPSSKeySigner,
+        es: createECDSASigner,
+        none: createNoneSigner
+      };
+      var verifierFactories = {
+        hs: createHmacVerifier,
+        rs: createKeyVerifier,
+        ps: createPSSKeyVerifier,
+        es: createECDSAVerifer,
+        none: createNoneVerifier
+      };
+      var match = algorithm.match(/^(RS|PS|ES|HS)(256|384|512)$|^(none)$/);
+      if (!match)
+        throw typeError(MSG_INVALID_ALGORITHM, algorithm);
+      var algo = (match[1] || match[3]).toLowerCase();
+      var bits = match[2];
+      return {
+        sign: signerFactories[algo](bits),
+        verify: verifierFactories[algo](bits)
+      };
+    };
+  }
+});
+
+// node_modules/jws/lib/tostring.js
+var require_tostring = __commonJS({
+  "node_modules/jws/lib/tostring.js"(exports2, module2) {
+    var Buffer2 = require("buffer").Buffer;
+    module2.exports = function toString(obj) {
+      if (typeof obj === "string")
+        return obj;
+      if (typeof obj === "number" || Buffer2.isBuffer(obj))
+        return obj.toString();
+      return JSON.stringify(obj);
+    };
+  }
+});
+
+// node_modules/jws/lib/sign-stream.js
+var require_sign_stream = __commonJS({
+  "node_modules/jws/lib/sign-stream.js"(exports2, module2) {
+    var Buffer2 = require_safe_buffer().Buffer;
+    var DataStream = require_data_stream();
+    var jwa = require_jwa();
+    var Stream = require("stream");
+    var toString = require_tostring();
+    var util = require("util");
+    function base64url(string, encoding) {
+      return Buffer2.from(string, encoding).toString("base64").replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+    }
+    function jwsSecuredInput(header, payload, encoding) {
+      encoding = encoding || "utf8";
+      var encodedHeader = base64url(toString(header), "binary");
+      var encodedPayload = base64url(toString(payload), encoding);
+      return util.format("%s.%s", encodedHeader, encodedPayload);
+    }
+    function jwsSign(opts) {
+      var header = opts.header;
+      var payload = opts.payload;
+      var secretOrKey = opts.secret || opts.privateKey;
+      var encoding = opts.encoding;
+      var algo = jwa(header.alg);
+      var securedInput = jwsSecuredInput(header, payload, encoding);
+      var signature = algo.sign(securedInput, secretOrKey);
+      return util.format("%s.%s", securedInput, signature);
+    }
+    function SignStream(opts) {
+      var secret = opts.secret;
+      secret = secret == null ? opts.privateKey : secret;
+      secret = secret == null ? opts.key : secret;
+      if (/^hs/i.test(opts.header.alg) === true && secret == null) {
+        throw new TypeError("secret must be a string or buffer or a KeyObject");
+      }
+      var secretStream = new DataStream(secret);
+      this.readable = true;
+      this.header = opts.header;
+      this.encoding = opts.encoding;
+      this.secret = this.privateKey = this.key = secretStream;
+      this.payload = new DataStream(opts.payload);
+      this.secret.once("close", function() {
+        if (!this.payload.writable && this.readable)
+          this.sign();
+      }.bind(this));
+      this.payload.once("close", function() {
+        if (!this.secret.writable && this.readable)
+          this.sign();
+      }.bind(this));
+    }
+    util.inherits(SignStream, Stream);
+    SignStream.prototype.sign = function sign() {
+      try {
+        var signature = jwsSign({
+          header: this.header,
+          payload: this.payload.buffer,
+          secret: this.secret.buffer,
+          encoding: this.encoding
+        });
+        this.emit("done", signature);
+        this.emit("data", signature);
+        this.emit("end");
+        this.readable = false;
+        return signature;
+      } catch (e) {
+        this.readable = false;
+        this.emit("error", e);
+        this.emit("close");
+      }
+    };
+    SignStream.sign = jwsSign;
+    module2.exports = SignStream;
+  }
+});
+
+// node_modules/jws/lib/verify-stream.js
+var require_verify_stream = __commonJS({
+  "node_modules/jws/lib/verify-stream.js"(exports2, module2) {
+    var Buffer2 = require_safe_buffer().Buffer;
+    var DataStream = require_data_stream();
+    var jwa = require_jwa();
+    var Stream = require("stream");
+    var toString = require_tostring();
+    var util = require("util");
+    var JWS_REGEX = /^[a-zA-Z0-9\-_]+?\.[a-zA-Z0-9\-_]+?\.([a-zA-Z0-9\-_]+)?$/;
+    function isObject(thing) {
+      return Object.prototype.toString.call(thing) === "[object Object]";
+    }
+    function safeJsonParse(thing) {
+      if (isObject(thing))
+        return thing;
+      try {
+        return JSON.parse(thing);
+      } catch (e) {
+        return void 0;
+      }
+    }
+    function headerFromJWS(jwsSig) {
+      var encodedHeader = jwsSig.split(".", 1)[0];
+      return safeJsonParse(Buffer2.from(encodedHeader, "base64").toString("binary"));
+    }
+    function securedInputFromJWS(jwsSig) {
+      return jwsSig.split(".", 2).join(".");
+    }
+    function signatureFromJWS(jwsSig) {
+      return jwsSig.split(".")[2];
+    }
+    function payloadFromJWS(jwsSig, encoding) {
+      encoding = encoding || "utf8";
+      var payload = jwsSig.split(".")[1];
+      return Buffer2.from(payload, "base64").toString(encoding);
+    }
+    function isValidJws(string) {
+      return JWS_REGEX.test(string) && !!headerFromJWS(string);
+    }
+    function jwsVerify(jwsSig, algorithm, secretOrKey) {
+      if (!algorithm) {
+        var err = new Error("Missing algorithm parameter for jws.verify");
+        err.code = "MISSING_ALGORITHM";
+        throw err;
+      }
+      jwsSig = toString(jwsSig);
+      var signature = signatureFromJWS(jwsSig);
+      var securedInput = securedInputFromJWS(jwsSig);
+      var algo = jwa(algorithm);
+      return algo.verify(securedInput, signature, secretOrKey);
+    }
+    function jwsDecode(jwsSig, opts) {
+      opts = opts || {};
+      jwsSig = toString(jwsSig);
+      if (!isValidJws(jwsSig))
+        return null;
+      var header = headerFromJWS(jwsSig);
+      if (!header)
+        return null;
+      var payload = payloadFromJWS(jwsSig);
+      if (header.typ === "JWT" || opts.json)
+        payload = JSON.parse(payload, opts.encoding);
+      return {
+        header,
+        payload,
+        signature: signatureFromJWS(jwsSig)
+      };
+    }
+    function VerifyStream(opts) {
+      opts = opts || {};
+      var secretOrKey = opts.secret;
+      secretOrKey = secretOrKey == null ? opts.publicKey : secretOrKey;
+      secretOrKey = secretOrKey == null ? opts.key : secretOrKey;
+      if (/^hs/i.test(opts.algorithm) === true && secretOrKey == null) {
+        throw new TypeError("secret must be a string or buffer or a KeyObject");
+      }
+      var secretStream = new DataStream(secretOrKey);
+      this.readable = true;
+      this.algorithm = opts.algorithm;
+      this.encoding = opts.encoding;
+      this.secret = this.publicKey = this.key = secretStream;
+      this.signature = new DataStream(opts.signature);
+      this.secret.once("close", function() {
+        if (!this.signature.writable && this.readable)
+          this.verify();
+      }.bind(this));
+      this.signature.once("close", function() {
+        if (!this.secret.writable && this.readable)
+          this.verify();
+      }.bind(this));
+    }
+    util.inherits(VerifyStream, Stream);
+    VerifyStream.prototype.verify = function verify() {
+      try {
+        var valid = jwsVerify(this.signature.buffer, this.algorithm, this.key.buffer);
+        var obj = jwsDecode(this.signature.buffer, this.encoding);
+        this.emit("done", valid, obj);
+        this.emit("data", valid);
+        this.emit("end");
+        this.readable = false;
+        return valid;
+      } catch (e) {
+        this.readable = false;
+        this.emit("error", e);
+        this.emit("close");
+      }
+    };
+    VerifyStream.decode = jwsDecode;
+    VerifyStream.isValid = isValidJws;
+    VerifyStream.verify = jwsVerify;
+    module2.exports = VerifyStream;
+  }
+});
+
+// node_modules/jws/index.js
+var require_jws = __commonJS({
+  "node_modules/jws/index.js"(exports2) {
+    var SignStream = require_sign_stream();
+    var VerifyStream = require_verify_stream();
+    var ALGORITHMS = [
+      "HS256",
+      "HS384",
+      "HS512",
+      "RS256",
+      "RS384",
+      "RS512",
+      "PS256",
+      "PS384",
+      "PS512",
+      "ES256",
+      "ES384",
+      "ES512"
+    ];
+    exports2.ALGORITHMS = ALGORITHMS;
+    exports2.sign = SignStream.sign;
+    exports2.verify = VerifyStream.verify;
+    exports2.decode = VerifyStream.decode;
+    exports2.isValid = VerifyStream.isValid;
+    exports2.createSign = function createSign(opts) {
+      return new SignStream(opts);
+    };
+    exports2.createVerify = function createVerify(opts) {
+      return new VerifyStream(opts);
+    };
+  }
+});
+
+// node_modules/jsonwebtoken/decode.js
+var require_decode = __commonJS({
+  "node_modules/jsonwebtoken/decode.js"(exports2, module2) {
+    var jws = require_jws();
+    module2.exports = function(jwt5, options) {
+      options = options || {};
+      var decoded = jws.decode(jwt5, options);
+      if (!decoded) {
+        return null;
+      }
+      var payload = decoded.payload;
+      if (typeof payload === "string") {
+        try {
+          var obj = JSON.parse(payload);
+          if (obj !== null && typeof obj === "object") {
+            payload = obj;
+          }
+        } catch (e) {
+        }
+      }
+      if (options.complete === true) {
+        return {
+          header: decoded.header,
+          payload,
+          signature: decoded.signature
+        };
+      }
+      return payload;
+    };
+  }
+});
+
+// node_modules/jsonwebtoken/lib/JsonWebTokenError.js
+var require_JsonWebTokenError = __commonJS({
+  "node_modules/jsonwebtoken/lib/JsonWebTokenError.js"(exports2, module2) {
+    var JsonWebTokenError = function(message, error) {
+      Error.call(this, message);
+      if (Error.captureStackTrace) {
+        Error.captureStackTrace(this, this.constructor);
+      }
+      this.name = "JsonWebTokenError";
+      this.message = message;
+      if (error) this.inner = error;
+    };
+    JsonWebTokenError.prototype = Object.create(Error.prototype);
+    JsonWebTokenError.prototype.constructor = JsonWebTokenError;
+    module2.exports = JsonWebTokenError;
+  }
+});
+
+// node_modules/jsonwebtoken/lib/NotBeforeError.js
+var require_NotBeforeError = __commonJS({
+  "node_modules/jsonwebtoken/lib/NotBeforeError.js"(exports2, module2) {
+    var JsonWebTokenError = require_JsonWebTokenError();
+    var NotBeforeError = function(message, date) {
+      JsonWebTokenError.call(this, message);
+      this.name = "NotBeforeError";
+      this.date = date;
+    };
+    NotBeforeError.prototype = Object.create(JsonWebTokenError.prototype);
+    NotBeforeError.prototype.constructor = NotBeforeError;
+    module2.exports = NotBeforeError;
+  }
+});
+
+// node_modules/jsonwebtoken/lib/TokenExpiredError.js
+var require_TokenExpiredError = __commonJS({
+  "node_modules/jsonwebtoken/lib/TokenExpiredError.js"(exports2, module2) {
+    var JsonWebTokenError = require_JsonWebTokenError();
+    var TokenExpiredError = function(message, expiredAt) {
+      JsonWebTokenError.call(this, message);
+      this.name = "TokenExpiredError";
+      this.expiredAt = expiredAt;
+    };
+    TokenExpiredError.prototype = Object.create(JsonWebTokenError.prototype);
+    TokenExpiredError.prototype.constructor = TokenExpiredError;
+    module2.exports = TokenExpiredError;
+  }
+});
+
+// node_modules/jsonwebtoken/lib/timespan.js
+var require_timespan = __commonJS({
+  "node_modules/jsonwebtoken/lib/timespan.js"(exports2, module2) {
+    var ms = require_ms();
+    module2.exports = function(time, iat) {
+      var timestamp = iat || Math.floor(Date.now() / 1e3);
+      if (typeof time === "string") {
+        var milliseconds = ms(time);
+        if (typeof milliseconds === "undefined") {
+          return;
+        }
+        return Math.floor(timestamp + milliseconds / 1e3);
+      } else if (typeof time === "number") {
+        return timestamp + time;
+      } else {
+        return;
+      }
+    };
+  }
+});
+
+// node_modules/semver/internal/constants.js
+var require_constants4 = __commonJS({
+  "node_modules/semver/internal/constants.js"(exports2, module2) {
+    "use strict";
+    var SEMVER_SPEC_VERSION = "2.0.0";
+    var MAX_LENGTH = 256;
+    var MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || /* istanbul ignore next */
+    9007199254740991;
+    var MAX_SAFE_COMPONENT_LENGTH = 16;
+    var MAX_SAFE_BUILD_LENGTH = MAX_LENGTH - 6;
+    var RELEASE_TYPES = [
+      "major",
+      "premajor",
+      "minor",
+      "preminor",
+      "patch",
+      "prepatch",
+      "prerelease"
+    ];
+    module2.exports = {
+      MAX_LENGTH,
+      MAX_SAFE_COMPONENT_LENGTH,
+      MAX_SAFE_BUILD_LENGTH,
+      MAX_SAFE_INTEGER,
+      RELEASE_TYPES,
+      SEMVER_SPEC_VERSION,
+      FLAG_INCLUDE_PRERELEASE: 1,
+      FLAG_LOOSE: 2
+    };
+  }
+});
+
+// node_modules/semver/internal/debug.js
+var require_debug = __commonJS({
+  "node_modules/semver/internal/debug.js"(exports2, module2) {
+    "use strict";
+    var debug = typeof process === "object" && process.env && process.env.NODE_DEBUG && /\bsemver\b/i.test(process.env.NODE_DEBUG) ? (...args) => console.error("SEMVER", ...args) : () => {
+    };
+    module2.exports = debug;
+  }
+});
+
+// node_modules/semver/internal/re.js
+var require_re = __commonJS({
+  "node_modules/semver/internal/re.js"(exports2, module2) {
+    "use strict";
+    var {
+      MAX_SAFE_COMPONENT_LENGTH,
+      MAX_SAFE_BUILD_LENGTH,
+      MAX_LENGTH
+    } = require_constants4();
+    var debug = require_debug();
+    exports2 = module2.exports = {};
+    var re = exports2.re = [];
+    var safeRe = exports2.safeRe = [];
+    var src = exports2.src = [];
+    var safeSrc = exports2.safeSrc = [];
+    var t = exports2.t = {};
+    var R = 0;
+    var LETTERDASHNUMBER = "[a-zA-Z0-9-]";
+    var safeRegexReplacements = [
+      ["\\s", 1],
+      ["\\d", MAX_LENGTH],
+      [LETTERDASHNUMBER, MAX_SAFE_BUILD_LENGTH]
+    ];
+    var makeSafeRegex = (value) => {
+      for (const [token, max] of safeRegexReplacements) {
+        value = value.split(`${token}*`).join(`${token}{0,${max}}`).split(`${token}+`).join(`${token}{1,${max}}`);
+      }
+      return value;
+    };
+    var createToken = (name, value, isGlobal) => {
+      const safe = makeSafeRegex(value);
+      const index = R++;
+      debug(name, index, value);
+      t[name] = index;
+      src[index] = value;
+      safeSrc[index] = safe;
+      re[index] = new RegExp(value, isGlobal ? "g" : void 0);
+      safeRe[index] = new RegExp(safe, isGlobal ? "g" : void 0);
+    };
+    createToken("NUMERICIDENTIFIER", "0|[1-9]\\d*");
+    createToken("NUMERICIDENTIFIERLOOSE", "\\d+");
+    createToken("NONNUMERICIDENTIFIER", `\\d*[a-zA-Z-]${LETTERDASHNUMBER}*`);
+    createToken("MAINVERSION", `(${src[t.NUMERICIDENTIFIER]})\\.(${src[t.NUMERICIDENTIFIER]})\\.(${src[t.NUMERICIDENTIFIER]})`);
+    createToken("MAINVERSIONLOOSE", `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.(${src[t.NUMERICIDENTIFIERLOOSE]})\\.(${src[t.NUMERICIDENTIFIERLOOSE]})`);
+    createToken("PRERELEASEIDENTIFIER", `(?:${src[t.NONNUMERICIDENTIFIER]}|${src[t.NUMERICIDENTIFIER]})`);
+    createToken("PRERELEASEIDENTIFIERLOOSE", `(?:${src[t.NONNUMERICIDENTIFIER]}|${src[t.NUMERICIDENTIFIERLOOSE]})`);
+    createToken("PRERELEASE", `(?:-(${src[t.PRERELEASEIDENTIFIER]}(?:\\.${src[t.PRERELEASEIDENTIFIER]})*))`);
+    createToken("PRERELEASELOOSE", `(?:-?(${src[t.PRERELEASEIDENTIFIERLOOSE]}(?:\\.${src[t.PRERELEASEIDENTIFIERLOOSE]})*))`);
+    createToken("BUILDIDENTIFIER", `${LETTERDASHNUMBER}+`);
+    createToken("BUILD", `(?:\\+(${src[t.BUILDIDENTIFIER]}(?:\\.${src[t.BUILDIDENTIFIER]})*))`);
+    createToken("FULLPLAIN", `v?${src[t.MAINVERSION]}${src[t.PRERELEASE]}?${src[t.BUILD]}?`);
+    createToken("FULL", `^${src[t.FULLPLAIN]}$`);
+    createToken("LOOSEPLAIN", `[v=\\s]*${src[t.MAINVERSIONLOOSE]}${src[t.PRERELEASELOOSE]}?${src[t.BUILD]}?`);
+    createToken("LOOSE", `^${src[t.LOOSEPLAIN]}$`);
+    createToken("GTLT", "((?:<|>)?=?)");
+    createToken("XRANGEIDENTIFIERLOOSE", `${src[t.NUMERICIDENTIFIERLOOSE]}|x|X|\\*`);
+    createToken("XRANGEIDENTIFIER", `${src[t.NUMERICIDENTIFIER]}|x|X|\\*`);
+    createToken("XRANGEPLAIN", `[v=\\s]*(${src[t.XRANGEIDENTIFIER]})(?:\\.(${src[t.XRANGEIDENTIFIER]})(?:\\.(${src[t.XRANGEIDENTIFIER]})(?:${src[t.PRERELEASE]})?${src[t.BUILD]}?)?)?`);
+    createToken("XRANGEPLAINLOOSE", `[v=\\s]*(${src[t.XRANGEIDENTIFIERLOOSE]})(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})(?:${src[t.PRERELEASELOOSE]})?${src[t.BUILD]}?)?)?`);
+    createToken("XRANGE", `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAIN]}$`);
+    createToken("XRANGELOOSE", `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAINLOOSE]}$`);
+    createToken("COERCEPLAIN", `${"(^|[^\\d])(\\d{1,"}${MAX_SAFE_COMPONENT_LENGTH}})(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?`);
+    createToken("COERCE", `${src[t.COERCEPLAIN]}(?:$|[^\\d])`);
+    createToken("COERCEFULL", src[t.COERCEPLAIN] + `(?:${src[t.PRERELEASE]})?(?:${src[t.BUILD]})?(?:$|[^\\d])`);
+    createToken("COERCERTL", src[t.COERCE], true);
+    createToken("COERCERTLFULL", src[t.COERCEFULL], true);
+    createToken("LONETILDE", "(?:~>?)");
+    createToken("TILDETRIM", `(\\s*)${src[t.LONETILDE]}\\s+`, true);
+    exports2.tildeTrimReplace = "$1~";
+    createToken("TILDE", `^${src[t.LONETILDE]}${src[t.XRANGEPLAIN]}$`);
+    createToken("TILDELOOSE", `^${src[t.LONETILDE]}${src[t.XRANGEPLAINLOOSE]}$`);
+    createToken("LONECARET", "(?:\\^)");
+    createToken("CARETTRIM", `(\\s*)${src[t.LONECARET]}\\s+`, true);
+    exports2.caretTrimReplace = "$1^";
+    createToken("CARET", `^${src[t.LONECARET]}${src[t.XRANGEPLAIN]}$`);
+    createToken("CARETLOOSE", `^${src[t.LONECARET]}${src[t.XRANGEPLAINLOOSE]}$`);
+    createToken("COMPARATORLOOSE", `^${src[t.GTLT]}\\s*(${src[t.LOOSEPLAIN]})$|^$`);
+    createToken("COMPARATOR", `^${src[t.GTLT]}\\s*(${src[t.FULLPLAIN]})$|^$`);
+    createToken("COMPARATORTRIM", `(\\s*)${src[t.GTLT]}\\s*(${src[t.LOOSEPLAIN]}|${src[t.XRANGEPLAIN]})`, true);
+    exports2.comparatorTrimReplace = "$1$2$3";
+    createToken("HYPHENRANGE", `^\\s*(${src[t.XRANGEPLAIN]})\\s+-\\s+(${src[t.XRANGEPLAIN]})\\s*$`);
+    createToken("HYPHENRANGELOOSE", `^\\s*(${src[t.XRANGEPLAINLOOSE]})\\s+-\\s+(${src[t.XRANGEPLAINLOOSE]})\\s*$`);
+    createToken("STAR", "(<|>)?=?\\s*\\*");
+    createToken("GTE0", "^\\s*>=\\s*0\\.0\\.0\\s*$");
+    createToken("GTE0PRE", "^\\s*>=\\s*0\\.0\\.0-0\\s*$");
+  }
+});
+
+// node_modules/semver/internal/parse-options.js
+var require_parse_options = __commonJS({
+  "node_modules/semver/internal/parse-options.js"(exports2, module2) {
+    "use strict";
+    var looseOption = Object.freeze({ loose: true });
+    var emptyOpts = Object.freeze({});
+    var parseOptions = (options) => {
+      if (!options) {
+        return emptyOpts;
+      }
+      if (typeof options !== "object") {
+        return looseOption;
+      }
+      return options;
+    };
+    module2.exports = parseOptions;
+  }
+});
+
+// node_modules/semver/internal/identifiers.js
+var require_identifiers = __commonJS({
+  "node_modules/semver/internal/identifiers.js"(exports2, module2) {
+    "use strict";
+    var numeric = /^[0-9]+$/;
+    var compareIdentifiers = (a, b) => {
+      if (typeof a === "number" && typeof b === "number") {
+        return a === b ? 0 : a < b ? -1 : 1;
+      }
+      const anum = numeric.test(a);
+      const bnum = numeric.test(b);
+      if (anum && bnum) {
+        a = +a;
+        b = +b;
+      }
+      return a === b ? 0 : anum && !bnum ? -1 : bnum && !anum ? 1 : a < b ? -1 : 1;
+    };
+    var rcompareIdentifiers = (a, b) => compareIdentifiers(b, a);
+    module2.exports = {
+      compareIdentifiers,
+      rcompareIdentifiers
+    };
+  }
+});
+
+// node_modules/semver/classes/semver.js
+var require_semver = __commonJS({
+  "node_modules/semver/classes/semver.js"(exports2, module2) {
+    "use strict";
+    var debug = require_debug();
+    var { MAX_LENGTH, MAX_SAFE_INTEGER } = require_constants4();
+    var { safeRe: re, t } = require_re();
+    var parseOptions = require_parse_options();
+    var { compareIdentifiers } = require_identifiers();
+    var isPrereleaseIdentifier = (prerelease, identifier) => {
+      const identifiers = identifier.split(".");
+      if (identifiers.length > prerelease.length) {
+        return false;
+      }
+      for (let i = 0; i < identifiers.length; i++) {
+        if (compareIdentifiers(prerelease[i], identifiers[i]) !== 0) {
+          return false;
+        }
+      }
+      return true;
+    };
+    var SemVer = class _SemVer {
+      constructor(version, options) {
+        options = parseOptions(options);
+        if (version instanceof _SemVer) {
+          if (version.loose === !!options.loose && version.includePrerelease === !!options.includePrerelease) {
+            return version;
+          } else {
+            version = version.version;
+          }
+        } else if (typeof version !== "string") {
+          throw new TypeError(`Invalid version. Must be a string. Got type "${typeof version}".`);
+        }
+        if (version.length > MAX_LENGTH) {
+          throw new TypeError(
+            `version is longer than ${MAX_LENGTH} characters`
+          );
+        }
+        debug("SemVer", version, options);
+        this.options = options;
+        this.loose = !!options.loose;
+        this.includePrerelease = !!options.includePrerelease;
+        const m = version.trim().match(options.loose ? re[t.LOOSE] : re[t.FULL]);
+        if (!m) {
+          throw new TypeError(`Invalid Version: ${version}`);
+        }
+        this.raw = version;
+        this.major = +m[1];
+        this.minor = +m[2];
+        this.patch = +m[3];
+        if (this.major > MAX_SAFE_INTEGER || this.major < 0) {
+          throw new TypeError("Invalid major version");
+        }
+        if (this.minor > MAX_SAFE_INTEGER || this.minor < 0) {
+          throw new TypeError("Invalid minor version");
+        }
+        if (this.patch > MAX_SAFE_INTEGER || this.patch < 0) {
+          throw new TypeError("Invalid patch version");
+        }
+        if (!m[4]) {
+          this.prerelease = [];
+        } else {
+          this.prerelease = m[4].split(".").map((id) => {
+            if (/^[0-9]+$/.test(id)) {
+              const num = +id;
+              if (num >= 0 && num < MAX_SAFE_INTEGER) {
+                return num;
+              }
+            }
+            return id;
+          });
+        }
+        this.build = m[5] ? m[5].split(".") : [];
+        this.format();
+      }
+      format() {
+        this.version = `${this.major}.${this.minor}.${this.patch}`;
+        if (this.prerelease.length) {
+          this.version += `-${this.prerelease.join(".")}`;
+        }
+        return this.version;
+      }
+      toString() {
+        return this.version;
+      }
+      compare(other) {
+        debug("SemVer.compare", this.version, this.options, other);
+        if (!(other instanceof _SemVer)) {
+          if (typeof other === "string" && other === this.version) {
+            return 0;
+          }
+          other = new _SemVer(other, this.options);
+        }
+        if (other.version === this.version) {
+          return 0;
+        }
+        return this.compareMain(other) || this.comparePre(other);
+      }
+      compareMain(other) {
+        if (!(other instanceof _SemVer)) {
+          other = new _SemVer(other, this.options);
+        }
+        if (this.major < other.major) {
+          return -1;
+        }
+        if (this.major > other.major) {
+          return 1;
+        }
+        if (this.minor < other.minor) {
+          return -1;
+        }
+        if (this.minor > other.minor) {
+          return 1;
+        }
+        if (this.patch < other.patch) {
+          return -1;
+        }
+        if (this.patch > other.patch) {
+          return 1;
+        }
+        return 0;
+      }
+      comparePre(other) {
+        if (!(other instanceof _SemVer)) {
+          other = new _SemVer(other, this.options);
+        }
+        if (this.prerelease.length && !other.prerelease.length) {
+          return -1;
+        } else if (!this.prerelease.length && other.prerelease.length) {
+          return 1;
+        } else if (!this.prerelease.length && !other.prerelease.length) {
+          return 0;
+        }
+        let i = 0;
+        do {
+          const a = this.prerelease[i];
+          const b = other.prerelease[i];
+          debug("prerelease compare", i, a, b);
+          if (a === void 0 && b === void 0) {
+            return 0;
+          } else if (b === void 0) {
+            return 1;
+          } else if (a === void 0) {
+            return -1;
+          } else if (a === b) {
+            continue;
+          } else {
+            return compareIdentifiers(a, b);
+          }
+        } while (++i);
+      }
+      compareBuild(other) {
+        if (!(other instanceof _SemVer)) {
+          other = new _SemVer(other, this.options);
+        }
+        let i = 0;
+        do {
+          const a = this.build[i];
+          const b = other.build[i];
+          debug("build compare", i, a, b);
+          if (a === void 0 && b === void 0) {
+            return 0;
+          } else if (b === void 0) {
+            return 1;
+          } else if (a === void 0) {
+            return -1;
+          } else if (a === b) {
+            continue;
+          } else {
+            return compareIdentifiers(a, b);
+          }
+        } while (++i);
+      }
+      // preminor will bump the version up to the next minor release, and immediately
+      // down to pre-release. premajor and prepatch work the same way.
+      inc(release, identifier, identifierBase) {
+        if (release.startsWith("pre")) {
+          if (!identifier && identifierBase === false) {
+            throw new Error("invalid increment argument: identifier is empty");
+          }
+          if (identifier) {
+            const match = `-${identifier}`.match(this.options.loose ? re[t.PRERELEASELOOSE] : re[t.PRERELEASE]);
+            if (!match || match[1] !== identifier) {
+              throw new Error(`invalid identifier: ${identifier}`);
+            }
+          }
+        }
+        switch (release) {
+          case "premajor":
+            this.prerelease.length = 0;
+            this.patch = 0;
+            this.minor = 0;
+            this.major++;
+            this.inc("pre", identifier, identifierBase);
+            break;
+          case "preminor":
+            this.prerelease.length = 0;
+            this.patch = 0;
+            this.minor++;
+            this.inc("pre", identifier, identifierBase);
+            break;
+          case "prepatch":
+            this.prerelease.length = 0;
+            this.inc("patch", identifier, identifierBase);
+            this.inc("pre", identifier, identifierBase);
+            break;
+          // If the input is a non-prerelease version, this acts the same as
+          // prepatch.
+          case "prerelease":
+            if (this.prerelease.length === 0) {
+              this.inc("patch", identifier, identifierBase);
+            }
+            this.inc("pre", identifier, identifierBase);
+            break;
+          case "release":
+            if (this.prerelease.length === 0) {
+              throw new Error(`version ${this.raw} is not a prerelease`);
+            }
+            this.prerelease.length = 0;
+            break;
+          case "major":
+            if (this.minor !== 0 || this.patch !== 0 || this.prerelease.length === 0) {
+              this.major++;
+            }
+            this.minor = 0;
+            this.patch = 0;
+            this.prerelease = [];
+            break;
+          case "minor":
+            if (this.patch !== 0 || this.prerelease.length === 0) {
+              this.minor++;
+            }
+            this.patch = 0;
+            this.prerelease = [];
+            break;
+          case "patch":
+            if (this.prerelease.length === 0) {
+              this.patch++;
+            }
+            this.prerelease = [];
+            break;
+          // This probably shouldn't be used publicly.
+          // 1.0.0 'pre' would become 1.0.0-0 which is the wrong direction.
+          case "pre": {
+            const base = Number(identifierBase) ? 1 : 0;
+            if (this.prerelease.length === 0) {
+              this.prerelease = [base];
+            } else {
+              let i = this.prerelease.length;
+              while (--i >= 0) {
+                if (typeof this.prerelease[i] === "number") {
+                  this.prerelease[i]++;
+                  i = -2;
+                }
+              }
+              if (i === -1) {
+                if (identifier === this.prerelease.join(".") && identifierBase === false) {
+                  throw new Error("invalid increment argument: identifier already exists");
+                }
+                this.prerelease.push(base);
+              }
+            }
+            if (identifier) {
+              let prerelease = [identifier, base];
+              if (identifierBase === false) {
+                prerelease = [identifier];
+              }
+              if (isPrereleaseIdentifier(this.prerelease, identifier)) {
+                const prereleaseBase = this.prerelease[identifier.split(".").length];
+                if (isNaN(prereleaseBase)) {
+                  this.prerelease = prerelease;
+                }
+              } else {
+                this.prerelease = prerelease;
+              }
+            }
+            break;
+          }
+          default:
+            throw new Error(`invalid increment argument: ${release}`);
+        }
+        this.raw = this.format();
+        if (this.build.length) {
+          this.raw += `+${this.build.join(".")}`;
+        }
+        return this;
+      }
+    };
+    module2.exports = SemVer;
+  }
+});
+
+// node_modules/semver/functions/parse.js
+var require_parse = __commonJS({
+  "node_modules/semver/functions/parse.js"(exports2, module2) {
+    "use strict";
+    var SemVer = require_semver();
+    var parse = (version, options, throwErrors = false) => {
+      if (version instanceof SemVer) {
+        return version;
+      }
+      try {
+        return new SemVer(version, options);
+      } catch (er) {
+        if (!throwErrors) {
+          return null;
+        }
+        throw er;
+      }
+    };
+    module2.exports = parse;
+  }
+});
+
+// node_modules/semver/functions/valid.js
+var require_valid = __commonJS({
+  "node_modules/semver/functions/valid.js"(exports2, module2) {
+    "use strict";
+    var parse = require_parse();
+    var valid = (version, options) => {
+      const v = parse(version, options);
+      return v ? v.version : null;
+    };
+    module2.exports = valid;
+  }
+});
+
+// node_modules/semver/functions/clean.js
+var require_clean = __commonJS({
+  "node_modules/semver/functions/clean.js"(exports2, module2) {
+    "use strict";
+    var parse = require_parse();
+    var clean = (version, options) => {
+      const s = parse(version.trim().replace(/^[=v]+/, ""), options);
+      return s ? s.version : null;
+    };
+    module2.exports = clean;
+  }
+});
+
+// node_modules/semver/functions/inc.js
+var require_inc = __commonJS({
+  "node_modules/semver/functions/inc.js"(exports2, module2) {
+    "use strict";
+    var SemVer = require_semver();
+    var inc = (version, release, options, identifier, identifierBase) => {
+      if (typeof options === "string") {
+        identifierBase = identifier;
+        identifier = options;
+        options = void 0;
+      }
+      try {
+        return new SemVer(
+          version instanceof SemVer ? version.version : version,
+          options
+        ).inc(release, identifier, identifierBase).version;
+      } catch (er) {
+        return null;
+      }
+    };
+    module2.exports = inc;
+  }
+});
+
+// node_modules/semver/functions/diff.js
+var require_diff = __commonJS({
+  "node_modules/semver/functions/diff.js"(exports2, module2) {
+    "use strict";
+    var parse = require_parse();
+    var diff = (version1, version2) => {
+      const v1 = parse(version1, null, true);
+      const v2 = parse(version2, null, true);
+      const comparison = v1.compare(v2);
+      if (comparison === 0) {
+        return null;
+      }
+      const v1Higher = comparison > 0;
+      const highVersion = v1Higher ? v1 : v2;
+      const lowVersion = v1Higher ? v2 : v1;
+      const highHasPre = !!highVersion.prerelease.length;
+      const lowHasPre = !!lowVersion.prerelease.length;
+      if (lowHasPre && !highHasPre) {
+        if (!lowVersion.patch && !lowVersion.minor) {
+          return "major";
+        }
+        if (lowVersion.compareMain(highVersion) === 0) {
+          if (lowVersion.minor && !lowVersion.patch) {
+            return "minor";
+          }
+          return "patch";
+        }
+      }
+      const prefix = highHasPre ? "pre" : "";
+      if (v1.major !== v2.major) {
+        return prefix + "major";
+      }
+      if (v1.minor !== v2.minor) {
+        return prefix + "minor";
+      }
+      if (v1.patch !== v2.patch) {
+        return prefix + "patch";
+      }
+      return "prerelease";
+    };
+    module2.exports = diff;
+  }
+});
+
+// node_modules/semver/functions/major.js
+var require_major = __commonJS({
+  "node_modules/semver/functions/major.js"(exports2, module2) {
+    "use strict";
+    var SemVer = require_semver();
+    var major = (a, loose) => new SemVer(a, loose).major;
+    module2.exports = major;
+  }
+});
+
+// node_modules/semver/functions/minor.js
+var require_minor = __commonJS({
+  "node_modules/semver/functions/minor.js"(exports2, module2) {
+    "use strict";
+    var SemVer = require_semver();
+    var minor = (a, loose) => new SemVer(a, loose).minor;
+    module2.exports = minor;
+  }
+});
+
+// node_modules/semver/functions/patch.js
+var require_patch = __commonJS({
+  "node_modules/semver/functions/patch.js"(exports2, module2) {
+    "use strict";
+    var SemVer = require_semver();
+    var patch = (a, loose) => new SemVer(a, loose).patch;
+    module2.exports = patch;
+  }
+});
+
+// node_modules/semver/functions/prerelease.js
+var require_prerelease = __commonJS({
+  "node_modules/semver/functions/prerelease.js"(exports2, module2) {
+    "use strict";
+    var parse = require_parse();
+    var prerelease = (version, options) => {
+      const parsed = parse(version, options);
+      return parsed && parsed.prerelease.length ? parsed.prerelease : null;
+    };
+    module2.exports = prerelease;
+  }
+});
+
+// node_modules/semver/functions/compare.js
+var require_compare = __commonJS({
+  "node_modules/semver/functions/compare.js"(exports2, module2) {
+    "use strict";
+    var SemVer = require_semver();
+    var compare = (a, b, loose) => new SemVer(a, loose).compare(new SemVer(b, loose));
+    module2.exports = compare;
+  }
+});
+
+// node_modules/semver/functions/rcompare.js
+var require_rcompare = __commonJS({
+  "node_modules/semver/functions/rcompare.js"(exports2, module2) {
+    "use strict";
+    var compare = require_compare();
+    var rcompare = (a, b, loose) => compare(b, a, loose);
+    module2.exports = rcompare;
+  }
+});
+
+// node_modules/semver/functions/compare-loose.js
+var require_compare_loose = __commonJS({
+  "node_modules/semver/functions/compare-loose.js"(exports2, module2) {
+    "use strict";
+    var compare = require_compare();
+    var compareLoose = (a, b) => compare(a, b, true);
+    module2.exports = compareLoose;
+  }
+});
+
+// node_modules/semver/functions/compare-build.js
+var require_compare_build = __commonJS({
+  "node_modules/semver/functions/compare-build.js"(exports2, module2) {
+    "use strict";
+    var SemVer = require_semver();
+    var compareBuild = (a, b, loose) => {
+      const versionA = new SemVer(a, loose);
+      const versionB = new SemVer(b, loose);
+      return versionA.compare(versionB) || versionA.compareBuild(versionB);
+    };
+    module2.exports = compareBuild;
+  }
+});
+
+// node_modules/semver/functions/sort.js
+var require_sort2 = __commonJS({
+  "node_modules/semver/functions/sort.js"(exports2, module2) {
+    "use strict";
+    var compareBuild = require_compare_build();
+    var sort = (list, loose) => list.sort((a, b) => compareBuild(a, b, loose));
+    module2.exports = sort;
+  }
+});
+
+// node_modules/semver/functions/rsort.js
+var require_rsort = __commonJS({
+  "node_modules/semver/functions/rsort.js"(exports2, module2) {
+    "use strict";
+    var compareBuild = require_compare_build();
+    var rsort = (list, loose) => list.sort((a, b) => compareBuild(b, a, loose));
+    module2.exports = rsort;
+  }
+});
+
+// node_modules/semver/functions/gt.js
+var require_gt = __commonJS({
+  "node_modules/semver/functions/gt.js"(exports2, module2) {
+    "use strict";
+    var compare = require_compare();
+    var gt = (a, b, loose) => compare(a, b, loose) > 0;
+    module2.exports = gt;
+  }
+});
+
+// node_modules/semver/functions/lt.js
+var require_lt = __commonJS({
+  "node_modules/semver/functions/lt.js"(exports2, module2) {
+    "use strict";
+    var compare = require_compare();
+    var lt = (a, b, loose) => compare(a, b, loose) < 0;
+    module2.exports = lt;
+  }
+});
+
+// node_modules/semver/functions/eq.js
+var require_eq = __commonJS({
+  "node_modules/semver/functions/eq.js"(exports2, module2) {
+    "use strict";
+    var compare = require_compare();
+    var eq = (a, b, loose) => compare(a, b, loose) === 0;
+    module2.exports = eq;
+  }
+});
+
+// node_modules/semver/functions/neq.js
+var require_neq = __commonJS({
+  "node_modules/semver/functions/neq.js"(exports2, module2) {
+    "use strict";
+    var compare = require_compare();
+    var neq = (a, b, loose) => compare(a, b, loose) !== 0;
+    module2.exports = neq;
+  }
+});
+
+// node_modules/semver/functions/gte.js
+var require_gte = __commonJS({
+  "node_modules/semver/functions/gte.js"(exports2, module2) {
+    "use strict";
+    var compare = require_compare();
+    var gte = (a, b, loose) => compare(a, b, loose) >= 0;
+    module2.exports = gte;
+  }
+});
+
+// node_modules/semver/functions/lte.js
+var require_lte = __commonJS({
+  "node_modules/semver/functions/lte.js"(exports2, module2) {
+    "use strict";
+    var compare = require_compare();
+    var lte = (a, b, loose) => compare(a, b, loose) <= 0;
+    module2.exports = lte;
+  }
+});
+
+// node_modules/semver/functions/cmp.js
+var require_cmp = __commonJS({
+  "node_modules/semver/functions/cmp.js"(exports2, module2) {
+    "use strict";
+    var eq = require_eq();
+    var neq = require_neq();
+    var gt = require_gt();
+    var gte = require_gte();
+    var lt = require_lt();
+    var lte = require_lte();
+    var cmp = (a, op, b, loose) => {
+      switch (op) {
+        case "===":
+          if (typeof a === "object") {
+            a = a.version;
+          }
+          if (typeof b === "object") {
+            b = b.version;
+          }
+          return a === b;
+        case "!==":
+          if (typeof a === "object") {
+            a = a.version;
+          }
+          if (typeof b === "object") {
+            b = b.version;
+          }
+          return a !== b;
+        case "":
+        case "=":
+        case "==":
+          return eq(a, b, loose);
+        case "!=":
+          return neq(a, b, loose);
+        case ">":
+          return gt(a, b, loose);
+        case ">=":
+          return gte(a, b, loose);
+        case "<":
+          return lt(a, b, loose);
+        case "<=":
+          return lte(a, b, loose);
+        default:
+          throw new TypeError(`Invalid operator: ${op}`);
+      }
+    };
+    module2.exports = cmp;
+  }
+});
+
+// node_modules/semver/functions/coerce.js
+var require_coerce = __commonJS({
+  "node_modules/semver/functions/coerce.js"(exports2, module2) {
+    "use strict";
+    var SemVer = require_semver();
+    var parse = require_parse();
+    var { safeRe: re, t } = require_re();
+    var coerce = (version, options) => {
+      if (version instanceof SemVer) {
+        return version;
+      }
+      if (typeof version === "number") {
+        version = String(version);
+      }
+      if (typeof version !== "string") {
+        return null;
+      }
+      options = options || {};
+      let match = null;
+      if (!options.rtl) {
+        match = version.match(options.includePrerelease ? re[t.COERCEFULL] : re[t.COERCE]);
+      } else {
+        const coerceRtlRegex = options.includePrerelease ? re[t.COERCERTLFULL] : re[t.COERCERTL];
+        let next;
+        while ((next = coerceRtlRegex.exec(version)) && (!match || match.index + match[0].length !== version.length)) {
+          if (!match || next.index + next[0].length !== match.index + match[0].length) {
+            match = next;
+          }
+          coerceRtlRegex.lastIndex = next.index + next[1].length + next[2].length;
+        }
+        coerceRtlRegex.lastIndex = -1;
+      }
+      if (match === null) {
+        return null;
+      }
+      const major = match[2];
+      const minor = match[3] || "0";
+      const patch = match[4] || "0";
+      const prerelease = options.includePrerelease && match[5] ? `-${match[5]}` : "";
+      const build = options.includePrerelease && match[6] ? `+${match[6]}` : "";
+      return parse(`${major}.${minor}.${patch}${prerelease}${build}`, options);
+    };
+    module2.exports = coerce;
+  }
+});
+
+// node_modules/semver/functions/truncate.js
+var require_truncate = __commonJS({
+  "node_modules/semver/functions/truncate.js"(exports2, module2) {
+    "use strict";
+    var parse = require_parse();
+    var constants = require_constants4();
+    var SemVer = require_semver();
+    var truncate = (version, truncation, options) => {
+      if (!constants.RELEASE_TYPES.includes(truncation)) {
+        return null;
+      }
+      const clonedVersion = cloneInputVersion(version, options);
+      return clonedVersion && doTruncation(clonedVersion, truncation);
+    };
+    var cloneInputVersion = (version, options) => {
+      const versionStringToParse = version instanceof SemVer ? version.version : version;
+      return parse(versionStringToParse, options);
+    };
+    var doTruncation = (version, truncation) => {
+      if (isPrerelease(truncation)) {
+        return version.version;
+      }
+      version.prerelease = [];
+      switch (truncation) {
+        case "major":
+          version.minor = 0;
+          version.patch = 0;
+          break;
+        case "minor":
+          version.patch = 0;
+          break;
+      }
+      return version.format();
+    };
+    var isPrerelease = (type) => {
+      return type.startsWith("pre");
+    };
+    module2.exports = truncate;
+  }
+});
+
+// node_modules/semver/internal/lrucache.js
+var require_lrucache = __commonJS({
+  "node_modules/semver/internal/lrucache.js"(exports2, module2) {
+    "use strict";
+    var LRUCache = class {
+      constructor() {
+        this.max = 1e3;
+        this.map = /* @__PURE__ */ new Map();
+      }
+      get(key) {
+        const value = this.map.get(key);
+        if (value === void 0) {
+          return void 0;
+        } else {
+          this.map.delete(key);
+          this.map.set(key, value);
+          return value;
+        }
+      }
+      delete(key) {
+        return this.map.delete(key);
+      }
+      set(key, value) {
+        const deleted = this.delete(key);
+        if (!deleted && value !== void 0) {
+          if (this.map.size >= this.max) {
+            const firstKey = this.map.keys().next().value;
+            this.delete(firstKey);
+          }
+          this.map.set(key, value);
+        }
+        return this;
+      }
+    };
+    module2.exports = LRUCache;
+  }
+});
+
+// node_modules/semver/classes/range.js
+var require_range = __commonJS({
+  "node_modules/semver/classes/range.js"(exports2, module2) {
+    "use strict";
+    var SPACE_CHARACTERS = /\s+/g;
+    var Range = class _Range {
+      constructor(range, options) {
+        options = parseOptions(options);
+        if (range instanceof _Range) {
+          if (range.loose === !!options.loose && range.includePrerelease === !!options.includePrerelease) {
+            return range;
+          } else {
+            return new _Range(range.raw, options);
+          }
+        }
+        if (range instanceof Comparator) {
+          this.raw = range.value;
+          this.set = [[range]];
+          this.formatted = void 0;
+          return this;
+        }
+        this.options = options;
+        this.loose = !!options.loose;
+        this.includePrerelease = !!options.includePrerelease;
+        this.raw = range.trim().replace(SPACE_CHARACTERS, " ");
+        this.set = this.raw.split("||").map((r) => this.parseRange(r.trim())).filter((c) => c.length);
+        if (!this.set.length) {
+          throw new TypeError(`Invalid SemVer Range: ${this.raw}`);
+        }
+        if (this.set.length > 1) {
+          const first = this.set[0];
+          this.set = this.set.filter((c) => !isNullSet(c[0]));
+          if (this.set.length === 0) {
+            this.set = [first];
+          } else if (this.set.length > 1) {
+            for (const c of this.set) {
+              if (c.length === 1 && isAny(c[0])) {
+                this.set = [c];
+                break;
+              }
+            }
+          }
+        }
+        this.formatted = void 0;
+      }
+      get range() {
+        if (this.formatted === void 0) {
+          this.formatted = "";
+          for (let i = 0; i < this.set.length; i++) {
+            if (i > 0) {
+              this.formatted += "||";
+            }
+            const comps = this.set[i];
+            for (let k = 0; k < comps.length; k++) {
+              if (k > 0) {
+                this.formatted += " ";
+              }
+              this.formatted += comps[k].toString().trim();
+            }
+          }
+        }
+        return this.formatted;
+      }
+      format() {
+        return this.range;
+      }
+      toString() {
+        return this.range;
+      }
+      parseRange(range) {
+        range = range.replace(BUILDSTRIPRE, "");
+        const memoOpts = (this.options.includePrerelease && FLAG_INCLUDE_PRERELEASE) | (this.options.loose && FLAG_LOOSE);
+        const memoKey = memoOpts + ":" + range;
+        const cached = cache.get(memoKey);
+        if (cached) {
+          return cached;
+        }
+        const loose = this.options.loose;
+        const hr = loose ? re[t.HYPHENRANGELOOSE] : re[t.HYPHENRANGE];
+        range = range.replace(hr, hyphenReplace(this.options.includePrerelease));
+        debug("hyphen replace", range);
+        range = range.replace(re[t.COMPARATORTRIM], comparatorTrimReplace);
+        debug("comparator trim", range);
+        range = range.replace(re[t.TILDETRIM], tildeTrimReplace);
+        debug("tilde trim", range);
+        range = range.replace(re[t.CARETTRIM], caretTrimReplace);
+        debug("caret trim", range);
+        let rangeList = range.split(" ").map((comp) => parseComparator(comp, this.options)).join(" ").split(/\s+/).map((comp) => replaceGTE0(comp, this.options));
+        if (loose) {
+          rangeList = rangeList.filter((comp) => {
+            debug("loose invalid filter", comp, this.options);
+            return !!comp.match(re[t.COMPARATORLOOSE]);
+          });
+        }
+        debug("range list", rangeList);
+        const rangeMap = /* @__PURE__ */ new Map();
+        const comparators = rangeList.map((comp) => new Comparator(comp, this.options));
+        for (const comp of comparators) {
+          if (isNullSet(comp)) {
+            return [comp];
+          }
+          rangeMap.set(comp.value, comp);
+        }
+        if (rangeMap.size > 1 && rangeMap.has("")) {
+          rangeMap.delete("");
+        }
+        const result = [...rangeMap.values()];
+        cache.set(memoKey, result);
+        return result;
+      }
+      intersects(range, options) {
+        if (!(range instanceof _Range)) {
+          throw new TypeError("a Range is required");
+        }
+        return this.set.some((thisComparators) => {
+          return isSatisfiable(thisComparators, options) && range.set.some((rangeComparators) => {
+            return isSatisfiable(rangeComparators, options) && thisComparators.every((thisComparator) => {
+              return rangeComparators.every((rangeComparator) => {
+                return thisComparator.intersects(rangeComparator, options);
+              });
+            });
+          });
+        });
+      }
+      // if ANY of the sets match ALL of its comparators, then pass
+      test(version) {
+        if (!version) {
+          return false;
+        }
+        if (typeof version === "string") {
+          try {
+            version = new SemVer(version, this.options);
+          } catch (er) {
+            return false;
+          }
+        }
+        for (let i = 0; i < this.set.length; i++) {
+          if (testSet(this.set[i], version, this.options)) {
+            return true;
+          }
+        }
+        return false;
+      }
+    };
+    module2.exports = Range;
+    var LRU = require_lrucache();
+    var cache = new LRU();
+    var parseOptions = require_parse_options();
+    var Comparator = require_comparator();
+    var debug = require_debug();
+    var SemVer = require_semver();
+    var {
+      safeRe: re,
+      src,
+      t,
+      comparatorTrimReplace,
+      tildeTrimReplace,
+      caretTrimReplace
+    } = require_re();
+    var { FLAG_INCLUDE_PRERELEASE, FLAG_LOOSE } = require_constants4();
+    var BUILDSTRIPRE = new RegExp(src[t.BUILD], "g");
+    var isNullSet = (c) => c.value === "<0.0.0-0";
+    var isAny = (c) => c.value === "";
+    var isSatisfiable = (comparators, options) => {
+      let result = true;
+      const remainingComparators = comparators.slice();
+      let testComparator = remainingComparators.pop();
+      while (result && remainingComparators.length) {
+        result = remainingComparators.every((otherComparator) => {
+          return testComparator.intersects(otherComparator, options);
+        });
+        testComparator = remainingComparators.pop();
+      }
+      return result;
+    };
+    var parseComparator = (comp, options) => {
+      comp = comp.replace(re[t.BUILD], "");
+      debug("comp", comp, options);
+      comp = replaceCarets(comp, options);
+      debug("caret", comp);
+      comp = replaceTildes(comp, options);
+      debug("tildes", comp);
+      comp = replaceXRanges(comp, options);
+      debug("xrange", comp);
+      comp = replaceStars(comp, options);
+      debug("stars", comp);
+      return comp;
+    };
+    var isX = (id) => !id || id.toLowerCase() === "x" || id === "*";
+    var invalidXRangeOrder = (M, m, p) => isX(M) && !isX(m) || isX(m) && p && !isX(p);
+    var replaceTildes = (comp, options) => {
+      return comp.trim().split(/\s+/).map((c) => replaceTilde(c, options)).join(" ");
+    };
+    var replaceTilde = (comp, options) => {
+      const r = options.loose ? re[t.TILDELOOSE] : re[t.TILDE];
+      const z = options.includePrerelease ? "-0" : "";
+      return comp.replace(r, (_, M, m, p, pr) => {
+        debug("tilde", comp, _, M, m, p, pr);
+        let ret;
+        if (isX(M)) {
+          ret = "";
+        } else if (isX(m)) {
+          ret = `>=${M}.0.0${z} <${+M + 1}.0.0-0`;
+        } else if (isX(p)) {
+          ret = `>=${M}.${m}.0${z} <${M}.${+m + 1}.0-0`;
+        } else if (pr) {
+          debug("replaceTilde pr", pr);
+          ret = `>=${M}.${m}.${p}-${pr} <${M}.${+m + 1}.0-0`;
+        } else {
+          ret = `>=${M}.${m}.${p} <${M}.${+m + 1}.0-0`;
+        }
+        debug("tilde return", ret);
+        return ret;
+      });
+    };
+    var replaceCarets = (comp, options) => {
+      return comp.trim().split(/\s+/).map((c) => replaceCaret(c, options)).join(" ");
+    };
+    var replaceCaret = (comp, options) => {
+      debug("caret", comp, options);
+      const r = options.loose ? re[t.CARETLOOSE] : re[t.CARET];
+      const z = options.includePrerelease ? "-0" : "";
+      return comp.replace(r, (_, M, m, p, pr) => {
+        debug("caret", comp, _, M, m, p, pr);
+        let ret;
+        if (isX(M)) {
+          ret = "";
+        } else if (isX(m)) {
+          ret = `>=${M}.0.0${z} <${+M + 1}.0.0-0`;
+        } else if (isX(p)) {
+          if (M === "0") {
+            ret = `>=${M}.${m}.0${z} <${M}.${+m + 1}.0-0`;
+          } else {
+            ret = `>=${M}.${m}.0${z} <${+M + 1}.0.0-0`;
+          }
+        } else if (pr) {
+          debug("replaceCaret pr", pr);
+          if (M === "0") {
+            if (m === "0") {
+              ret = `>=${M}.${m}.${p}-${pr} <${M}.${m}.${+p + 1}-0`;
+            } else {
+              ret = `>=${M}.${m}.${p}-${pr} <${M}.${+m + 1}.0-0`;
+            }
+          } else {
+            ret = `>=${M}.${m}.${p}-${pr} <${+M + 1}.0.0-0`;
+          }
+        } else {
+          debug("no pr");
+          if (M === "0") {
+            if (m === "0") {
+              ret = `>=${M}.${m}.${p} <${M}.${m}.${+p + 1}-0`;
+            } else {
+              ret = `>=${M}.${m}.${p} <${M}.${+m + 1}.0-0`;
+            }
+          } else {
+            ret = `>=${M}.${m}.${p} <${+M + 1}.0.0-0`;
+          }
+        }
+        debug("caret return", ret);
+        return ret;
+      });
+    };
+    var replaceXRanges = (comp, options) => {
+      debug("replaceXRanges", comp, options);
+      return comp.split(/\s+/).map((c) => replaceXRange(c, options)).join(" ");
+    };
+    var replaceXRange = (comp, options) => {
+      comp = comp.trim();
+      const r = options.loose ? re[t.XRANGELOOSE] : re[t.XRANGE];
+      return comp.replace(r, (ret, gtlt, M, m, p, pr) => {
+        debug("xRange", comp, ret, gtlt, M, m, p, pr);
+        if (invalidXRangeOrder(M, m, p)) {
+          return comp;
+        }
+        const xM = isX(M);
+        const xm = xM || isX(m);
+        const xp = xm || isX(p);
+        const anyX = xp;
+        if (gtlt === "=" && anyX) {
+          gtlt = "";
+        }
+        pr = options.includePrerelease ? "-0" : "";
+        if (xM) {
+          if (gtlt === ">" || gtlt === "<") {
+            ret = "<0.0.0-0";
+          } else {
+            ret = "*";
+          }
+        } else if (gtlt && anyX) {
+          if (xm) {
+            m = 0;
+          }
+          p = 0;
+          if (gtlt === ">") {
+            gtlt = ">=";
+            if (xm) {
+              M = +M + 1;
+              m = 0;
+              p = 0;
+            } else {
+              m = +m + 1;
+              p = 0;
+            }
+          } else if (gtlt === "<=") {
+            gtlt = "<";
+            if (xm) {
+              M = +M + 1;
+            } else {
+              m = +m + 1;
+            }
+          }
+          if (gtlt === "<") {
+            pr = "-0";
+          }
+          ret = `${gtlt + M}.${m}.${p}${pr}`;
+        } else if (xm) {
+          ret = `>=${M}.0.0${pr} <${+M + 1}.0.0-0`;
+        } else if (xp) {
+          ret = `>=${M}.${m}.0${pr} <${M}.${+m + 1}.0-0`;
+        }
+        debug("xRange return", ret);
+        return ret;
+      });
+    };
+    var replaceStars = (comp, options) => {
+      debug("replaceStars", comp, options);
+      return comp.trim().replace(re[t.STAR], "");
+    };
+    var replaceGTE0 = (comp, options) => {
+      debug("replaceGTE0", comp, options);
+      return comp.trim().replace(re[options.includePrerelease ? t.GTE0PRE : t.GTE0], "");
+    };
+    var hyphenReplace = (incPr) => ($0, from, fM, fm, fp, fpr, fb, to, tM, tm, tp, tpr) => {
+      if (isX(fM)) {
+        from = "";
+      } else if (isX(fm)) {
+        from = `>=${fM}.0.0${incPr ? "-0" : ""}`;
+      } else if (isX(fp)) {
+        from = `>=${fM}.${fm}.0${incPr ? "-0" : ""}`;
+      } else if (fpr) {
+        from = `>=${from}`;
+      } else {
+        from = `>=${from}${incPr ? "-0" : ""}`;
+      }
+      if (isX(tM)) {
+        to = "";
+      } else if (isX(tm)) {
+        to = `<${+tM + 1}.0.0-0`;
+      } else if (isX(tp)) {
+        to = `<${tM}.${+tm + 1}.0-0`;
+      } else if (tpr) {
+        to = `<=${tM}.${tm}.${tp}-${tpr}`;
+      } else if (incPr) {
+        to = `<${tM}.${tm}.${+tp + 1}-0`;
+      } else {
+        to = `<=${to}`;
+      }
+      return `${from} ${to}`.trim();
+    };
+    var testSet = (set, version, options) => {
+      for (let i = 0; i < set.length; i++) {
+        if (!set[i].test(version)) {
+          return false;
+        }
+      }
+      if (version.prerelease.length && !options.includePrerelease) {
+        for (let i = 0; i < set.length; i++) {
+          debug(set[i].semver);
+          if (set[i].semver === Comparator.ANY) {
+            continue;
+          }
+          if (set[i].semver.prerelease.length > 0) {
+            const allowed = set[i].semver;
+            if (allowed.major === version.major && allowed.minor === version.minor && allowed.patch === version.patch) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+      return true;
+    };
+  }
+});
+
+// node_modules/semver/classes/comparator.js
+var require_comparator = __commonJS({
+  "node_modules/semver/classes/comparator.js"(exports2, module2) {
+    "use strict";
+    var ANY = /* @__PURE__ */ Symbol("SemVer ANY");
+    var Comparator = class _Comparator {
+      static get ANY() {
+        return ANY;
+      }
+      constructor(comp, options) {
+        options = parseOptions(options);
+        if (comp instanceof _Comparator) {
+          if (comp.loose === !!options.loose) {
+            return comp;
+          } else {
+            comp = comp.value;
+          }
+        }
+        comp = comp.trim().split(/\s+/).join(" ");
+        debug("comparator", comp, options);
+        this.options = options;
+        this.loose = !!options.loose;
+        this.parse(comp);
+        if (this.semver === ANY) {
+          this.value = "";
+        } else {
+          this.value = this.operator + this.semver.version;
+        }
+        debug("comp", this);
+      }
+      parse(comp) {
+        const r = this.options.loose ? re[t.COMPARATORLOOSE] : re[t.COMPARATOR];
+        const m = comp.match(r);
+        if (!m) {
+          throw new TypeError(`Invalid comparator: ${comp}`);
+        }
+        this.operator = m[1] !== void 0 ? m[1] : "";
+        if (this.operator === "=") {
+          this.operator = "";
+        }
+        if (!m[2]) {
+          this.semver = ANY;
+        } else {
+          this.semver = new SemVer(m[2], this.options.loose);
+        }
+      }
+      toString() {
+        return this.value;
+      }
+      test(version) {
+        debug("Comparator.test", version, this.options.loose);
+        if (this.semver === ANY || version === ANY) {
+          return true;
+        }
+        if (typeof version === "string") {
+          try {
+            version = new SemVer(version, this.options);
+          } catch (er) {
+            return false;
+          }
+        }
+        return cmp(version, this.operator, this.semver, this.options);
+      }
+      intersects(comp, options) {
+        if (!(comp instanceof _Comparator)) {
+          throw new TypeError("a Comparator is required");
+        }
+        if (this.operator === "") {
+          if (this.value === "") {
+            return true;
+          }
+          return new Range(comp.value, options).test(this.value);
+        } else if (comp.operator === "") {
+          if (comp.value === "") {
+            return true;
+          }
+          return new Range(this.value, options).test(comp.semver);
+        }
+        options = parseOptions(options);
+        if (options.includePrerelease && (this.value === "<0.0.0-0" || comp.value === "<0.0.0-0")) {
+          return false;
+        }
+        if (!options.includePrerelease && (this.value.startsWith("<0.0.0") || comp.value.startsWith("<0.0.0"))) {
+          return false;
+        }
+        if (this.operator.startsWith(">") && comp.operator.startsWith(">")) {
+          return true;
+        }
+        if (this.operator.startsWith("<") && comp.operator.startsWith("<")) {
+          return true;
+        }
+        if (this.semver.version === comp.semver.version && this.operator.includes("=") && comp.operator.includes("=")) {
+          return true;
+        }
+        if (cmp(this.semver, "<", comp.semver, options) && this.operator.startsWith(">") && comp.operator.startsWith("<")) {
+          return true;
+        }
+        if (cmp(this.semver, ">", comp.semver, options) && this.operator.startsWith("<") && comp.operator.startsWith(">")) {
+          return true;
+        }
+        return false;
+      }
+    };
+    module2.exports = Comparator;
+    var parseOptions = require_parse_options();
+    var { safeRe: re, t } = require_re();
+    var cmp = require_cmp();
+    var debug = require_debug();
+    var SemVer = require_semver();
+    var Range = require_range();
+  }
+});
+
+// node_modules/semver/functions/satisfies.js
+var require_satisfies = __commonJS({
+  "node_modules/semver/functions/satisfies.js"(exports2, module2) {
+    "use strict";
+    var Range = require_range();
+    var satisfies = (version, range, options) => {
+      try {
+        range = new Range(range, options);
+      } catch (er) {
+        return false;
+      }
+      return range.test(version);
+    };
+    module2.exports = satisfies;
+  }
+});
+
+// node_modules/semver/ranges/to-comparators.js
+var require_to_comparators = __commonJS({
+  "node_modules/semver/ranges/to-comparators.js"(exports2, module2) {
+    "use strict";
+    var Range = require_range();
+    var toComparators = (range, options) => new Range(range, options).set.map((comp) => comp.map((c) => c.value).join(" ").trim().split(" "));
+    module2.exports = toComparators;
+  }
+});
+
+// node_modules/semver/ranges/max-satisfying.js
+var require_max_satisfying = __commonJS({
+  "node_modules/semver/ranges/max-satisfying.js"(exports2, module2) {
+    "use strict";
+    var SemVer = require_semver();
+    var Range = require_range();
+    var maxSatisfying = (versions, range, options) => {
+      let max = null;
+      let maxSV = null;
+      let rangeObj = null;
+      try {
+        rangeObj = new Range(range, options);
+      } catch (er) {
+        return null;
+      }
+      versions.forEach((v) => {
+        if (rangeObj.test(v)) {
+          if (!max || maxSV.compare(v) === -1) {
+            max = v;
+            maxSV = new SemVer(max, options);
+          }
+        }
+      });
+      return max;
+    };
+    module2.exports = maxSatisfying;
+  }
+});
+
+// node_modules/semver/ranges/min-satisfying.js
+var require_min_satisfying = __commonJS({
+  "node_modules/semver/ranges/min-satisfying.js"(exports2, module2) {
+    "use strict";
+    var SemVer = require_semver();
+    var Range = require_range();
+    var minSatisfying = (versions, range, options) => {
+      let min = null;
+      let minSV = null;
+      let rangeObj = null;
+      try {
+        rangeObj = new Range(range, options);
+      } catch (er) {
+        return null;
+      }
+      versions.forEach((v) => {
+        if (rangeObj.test(v)) {
+          if (!min || minSV.compare(v) === 1) {
+            min = v;
+            minSV = new SemVer(min, options);
+          }
+        }
+      });
+      return min;
+    };
+    module2.exports = minSatisfying;
+  }
+});
+
+// node_modules/semver/ranges/min-version.js
+var require_min_version = __commonJS({
+  "node_modules/semver/ranges/min-version.js"(exports2, module2) {
+    "use strict";
+    var SemVer = require_semver();
+    var Range = require_range();
+    var gt = require_gt();
+    var minVersion = (range, loose) => {
+      range = new Range(range, loose);
+      let minver = new SemVer("0.0.0");
+      if (range.test(minver)) {
+        return minver;
+      }
+      minver = new SemVer("0.0.0-0");
+      if (range.test(minver)) {
+        return minver;
+      }
+      minver = null;
+      for (let i = 0; i < range.set.length; ++i) {
+        const comparators = range.set[i];
+        let setMin = null;
+        comparators.forEach((comparator) => {
+          const compver = new SemVer(comparator.semver.version);
+          switch (comparator.operator) {
+            case ">":
+              if (compver.prerelease.length === 0) {
+                compver.patch++;
+              } else {
+                compver.prerelease.push(0);
+              }
+              compver.raw = compver.format();
+            /* fallthrough */
+            case "":
+            case ">=":
+              if (!setMin || gt(compver, setMin)) {
+                setMin = compver;
+              }
+              break;
+            case "<":
+            case "<=":
+              break;
+            /* istanbul ignore next */
+            default:
+              throw new Error(`Unexpected operation: ${comparator.operator}`);
+          }
+        });
+        if (setMin && (!minver || gt(minver, setMin))) {
+          minver = setMin;
+        }
+      }
+      if (minver && range.test(minver)) {
+        return minver;
+      }
+      return null;
+    };
+    module2.exports = minVersion;
+  }
+});
+
+// node_modules/semver/ranges/valid.js
+var require_valid2 = __commonJS({
+  "node_modules/semver/ranges/valid.js"(exports2, module2) {
+    "use strict";
+    var Range = require_range();
+    var validRange = (range, options) => {
+      try {
+        return new Range(range, options).range || "*";
+      } catch (er) {
+        return null;
+      }
+    };
+    module2.exports = validRange;
+  }
+});
+
+// node_modules/semver/ranges/outside.js
+var require_outside = __commonJS({
+  "node_modules/semver/ranges/outside.js"(exports2, module2) {
+    "use strict";
+    var SemVer = require_semver();
+    var Comparator = require_comparator();
+    var { ANY } = Comparator;
+    var Range = require_range();
+    var satisfies = require_satisfies();
+    var gt = require_gt();
+    var lt = require_lt();
+    var lte = require_lte();
+    var gte = require_gte();
+    var outside = (version, range, hilo, options) => {
+      version = new SemVer(version, options);
+      range = new Range(range, options);
+      let gtfn, ltefn, ltfn, comp, ecomp;
+      switch (hilo) {
+        case ">":
+          gtfn = gt;
+          ltefn = lte;
+          ltfn = lt;
+          comp = ">";
+          ecomp = ">=";
+          break;
+        case "<":
+          gtfn = lt;
+          ltefn = gte;
+          ltfn = gt;
+          comp = "<";
+          ecomp = "<=";
+          break;
+        default:
+          throw new TypeError('Must provide a hilo val of "<" or ">"');
+      }
+      if (satisfies(version, range, options)) {
+        return false;
+      }
+      for (let i = 0; i < range.set.length; ++i) {
+        const comparators = range.set[i];
+        let high = null;
+        let low = null;
+        comparators.forEach((comparator) => {
+          if (comparator.semver === ANY) {
+            comparator = new Comparator(">=0.0.0");
+          }
+          high = high || comparator;
+          low = low || comparator;
+          if (gtfn(comparator.semver, high.semver, options)) {
+            high = comparator;
+          } else if (ltfn(comparator.semver, low.semver, options)) {
+            low = comparator;
+          }
+        });
+        if (high.operator === comp || high.operator === ecomp) {
+          return false;
+        }
+        if ((!low.operator || low.operator === comp) && ltefn(version, low.semver)) {
+          return false;
+        } else if (low.operator === ecomp && ltfn(version, low.semver)) {
+          return false;
+        }
+      }
+      return true;
+    };
+    module2.exports = outside;
+  }
+});
+
+// node_modules/semver/ranges/gtr.js
+var require_gtr = __commonJS({
+  "node_modules/semver/ranges/gtr.js"(exports2, module2) {
+    "use strict";
+    var outside = require_outside();
+    var gtr = (version, range, options) => outside(version, range, ">", options);
+    module2.exports = gtr;
+  }
+});
+
+// node_modules/semver/ranges/ltr.js
+var require_ltr = __commonJS({
+  "node_modules/semver/ranges/ltr.js"(exports2, module2) {
+    "use strict";
+    var outside = require_outside();
+    var ltr = (version, range, options) => outside(version, range, "<", options);
+    module2.exports = ltr;
+  }
+});
+
+// node_modules/semver/ranges/intersects.js
+var require_intersects = __commonJS({
+  "node_modules/semver/ranges/intersects.js"(exports2, module2) {
+    "use strict";
+    var Range = require_range();
+    var intersects = (r1, r2, options) => {
+      r1 = new Range(r1, options);
+      r2 = new Range(r2, options);
+      return r1.intersects(r2, options);
+    };
+    module2.exports = intersects;
+  }
+});
+
+// node_modules/semver/ranges/simplify.js
+var require_simplify = __commonJS({
+  "node_modules/semver/ranges/simplify.js"(exports2, module2) {
+    "use strict";
+    var satisfies = require_satisfies();
+    var compare = require_compare();
+    module2.exports = (versions, range, options) => {
+      const set = [];
+      let first = null;
+      let prev = null;
+      const v = versions.sort((a, b) => compare(a, b, options));
+      for (const version of v) {
+        const included = satisfies(version, range, options);
+        if (included) {
+          prev = version;
+          if (!first) {
+            first = version;
+          }
+        } else {
+          if (prev) {
+            set.push([first, prev]);
+          }
+          prev = null;
+          first = null;
+        }
+      }
+      if (first) {
+        set.push([first, null]);
+      }
+      const ranges = [];
+      for (const [min, max] of set) {
+        if (min === max) {
+          ranges.push(min);
+        } else if (!max && min === v[0]) {
+          ranges.push("*");
+        } else if (!max) {
+          ranges.push(`>=${min}`);
+        } else if (min === v[0]) {
+          ranges.push(`<=${max}`);
+        } else {
+          ranges.push(`${min} - ${max}`);
+        }
+      }
+      const simplified = ranges.join(" || ");
+      const original = typeof range.raw === "string" ? range.raw : String(range);
+      return simplified.length < original.length ? simplified : range;
+    };
+  }
+});
+
+// node_modules/semver/ranges/subset.js
+var require_subset = __commonJS({
+  "node_modules/semver/ranges/subset.js"(exports2, module2) {
+    "use strict";
+    var Range = require_range();
+    var Comparator = require_comparator();
+    var { ANY } = Comparator;
+    var satisfies = require_satisfies();
+    var compare = require_compare();
+    var subset = (sub, dom, options = {}) => {
+      if (sub === dom) {
+        return true;
+      }
+      sub = new Range(sub, options);
+      dom = new Range(dom, options);
+      let sawNonNull = false;
+      OUTER: for (const simpleSub of sub.set) {
+        for (const simpleDom of dom.set) {
+          const isSub = simpleSubset(simpleSub, simpleDom, options);
+          sawNonNull = sawNonNull || isSub !== null;
+          if (isSub) {
+            continue OUTER;
+          }
+        }
+        if (sawNonNull) {
+          return false;
+        }
+      }
+      return true;
+    };
+    var minimumVersionWithPreRelease = [new Comparator(">=0.0.0-0")];
+    var minimumVersion = [new Comparator(">=0.0.0")];
+    var simpleSubset = (sub, dom, options) => {
+      if (sub === dom) {
+        return true;
+      }
+      if (sub.length === 1 && sub[0].semver === ANY) {
+        if (dom.length === 1 && dom[0].semver === ANY) {
+          return true;
+        } else if (options.includePrerelease) {
+          sub = minimumVersionWithPreRelease;
+        } else {
+          sub = minimumVersion;
+        }
+      }
+      if (dom.length === 1 && dom[0].semver === ANY) {
+        if (options.includePrerelease) {
+          return true;
+        } else {
+          dom = minimumVersion;
+        }
+      }
+      const eqSet = /* @__PURE__ */ new Set();
+      let gt, lt;
+      for (const c of sub) {
+        if (c.operator === ">" || c.operator === ">=") {
+          gt = higherGT(gt, c, options);
+        } else if (c.operator === "<" || c.operator === "<=") {
+          lt = lowerLT(lt, c, options);
+        } else {
+          eqSet.add(c.semver);
+        }
+      }
+      if (eqSet.size > 1) {
+        return null;
+      }
+      let gtltComp;
+      if (gt && lt) {
+        gtltComp = compare(gt.semver, lt.semver, options);
+        if (gtltComp > 0) {
+          return null;
+        } else if (gtltComp === 0 && (gt.operator !== ">=" || lt.operator !== "<=")) {
+          return null;
+        }
+      }
+      for (const eq of eqSet) {
+        if (gt && !satisfies(eq, String(gt), options)) {
+          return null;
+        }
+        if (lt && !satisfies(eq, String(lt), options)) {
+          return null;
+        }
+        for (const c of dom) {
+          if (!satisfies(eq, String(c), options)) {
+            return false;
+          }
+        }
+        return true;
+      }
+      let higher, lower;
+      let hasDomLT, hasDomGT;
+      let needDomLTPre = lt && !options.includePrerelease && lt.semver.prerelease.length ? lt.semver : false;
+      let needDomGTPre = gt && !options.includePrerelease && gt.semver.prerelease.length ? gt.semver : false;
+      if (needDomLTPre && needDomLTPre.prerelease.length === 1 && lt.operator === "<" && needDomLTPre.prerelease[0] === 0) {
+        needDomLTPre = false;
+      }
+      for (const c of dom) {
+        hasDomGT = hasDomGT || c.operator === ">" || c.operator === ">=";
+        hasDomLT = hasDomLT || c.operator === "<" || c.operator === "<=";
+        if (gt) {
+          if (needDomGTPre) {
+            if (c.semver.prerelease && c.semver.prerelease.length && c.semver.major === needDomGTPre.major && c.semver.minor === needDomGTPre.minor && c.semver.patch === needDomGTPre.patch) {
+              needDomGTPre = false;
+            }
+          }
+          if (c.operator === ">" || c.operator === ">=") {
+            higher = higherGT(gt, c, options);
+            if (higher === c && higher !== gt) {
+              return false;
+            }
+          } else if (gt.operator === ">=" && !c.test(gt.semver)) {
+            return false;
+          }
+        }
+        if (lt) {
+          if (needDomLTPre) {
+            if (c.semver.prerelease && c.semver.prerelease.length && c.semver.major === needDomLTPre.major && c.semver.minor === needDomLTPre.minor && c.semver.patch === needDomLTPre.patch) {
+              needDomLTPre = false;
+            }
+          }
+          if (c.operator === "<" || c.operator === "<=") {
+            lower = lowerLT(lt, c, options);
+            if (lower === c && lower !== lt) {
+              return false;
+            }
+          } else if (lt.operator === "<=" && !c.test(lt.semver)) {
+            return false;
+          }
+        }
+        if (!c.operator && (lt || gt) && gtltComp !== 0) {
+          return false;
+        }
+      }
+      if (gt && hasDomLT && !lt && gtltComp !== 0) {
+        return false;
+      }
+      if (lt && hasDomGT && !gt && gtltComp !== 0) {
+        return false;
+      }
+      if (needDomGTPre || needDomLTPre) {
+        return false;
+      }
+      return true;
+    };
+    var higherGT = (a, b, options) => {
+      if (!a) {
+        return b;
+      }
+      const comp = compare(a.semver, b.semver, options);
+      return comp > 0 ? a : comp < 0 ? b : b.operator === ">" && a.operator === ">=" ? b : a;
+    };
+    var lowerLT = (a, b, options) => {
+      if (!a) {
+        return b;
+      }
+      const comp = compare(a.semver, b.semver, options);
+      return comp < 0 ? a : comp > 0 ? b : b.operator === "<" && a.operator === "<=" ? b : a;
+    };
+    module2.exports = subset;
+  }
+});
+
+// node_modules/semver/index.js
+var require_semver2 = __commonJS({
+  "node_modules/semver/index.js"(exports2, module2) {
+    "use strict";
+    var internalRe = require_re();
+    var constants = require_constants4();
+    var SemVer = require_semver();
+    var identifiers = require_identifiers();
+    var parse = require_parse();
+    var valid = require_valid();
+    var clean = require_clean();
+    var inc = require_inc();
+    var diff = require_diff();
+    var major = require_major();
+    var minor = require_minor();
+    var patch = require_patch();
+    var prerelease = require_prerelease();
+    var compare = require_compare();
+    var rcompare = require_rcompare();
+    var compareLoose = require_compare_loose();
+    var compareBuild = require_compare_build();
+    var sort = require_sort2();
+    var rsort = require_rsort();
+    var gt = require_gt();
+    var lt = require_lt();
+    var eq = require_eq();
+    var neq = require_neq();
+    var gte = require_gte();
+    var lte = require_lte();
+    var cmp = require_cmp();
+    var coerce = require_coerce();
+    var truncate = require_truncate();
+    var Comparator = require_comparator();
+    var Range = require_range();
+    var satisfies = require_satisfies();
+    var toComparators = require_to_comparators();
+    var maxSatisfying = require_max_satisfying();
+    var minSatisfying = require_min_satisfying();
+    var minVersion = require_min_version();
+    var validRange = require_valid2();
+    var outside = require_outside();
+    var gtr = require_gtr();
+    var ltr = require_ltr();
+    var intersects = require_intersects();
+    var simplifyRange = require_simplify();
+    var subset = require_subset();
+    module2.exports = {
+      parse,
+      valid,
+      clean,
+      inc,
+      diff,
+      major,
+      minor,
+      patch,
+      prerelease,
+      compare,
+      rcompare,
+      compareLoose,
+      compareBuild,
+      sort,
+      rsort,
+      gt,
+      lt,
+      eq,
+      neq,
+      gte,
+      lte,
+      cmp,
+      coerce,
+      truncate,
+      Comparator,
+      Range,
+      satisfies,
+      toComparators,
+      maxSatisfying,
+      minSatisfying,
+      minVersion,
+      validRange,
+      outside,
+      gtr,
+      ltr,
+      intersects,
+      simplifyRange,
+      subset,
+      SemVer,
+      re: internalRe.re,
+      src: internalRe.src,
+      tokens: internalRe.t,
+      SEMVER_SPEC_VERSION: constants.SEMVER_SPEC_VERSION,
+      RELEASE_TYPES: constants.RELEASE_TYPES,
+      compareIdentifiers: identifiers.compareIdentifiers,
+      rcompareIdentifiers: identifiers.rcompareIdentifiers
+    };
+  }
+});
+
+// node_modules/jsonwebtoken/lib/asymmetricKeyDetailsSupported.js
+var require_asymmetricKeyDetailsSupported = __commonJS({
+  "node_modules/jsonwebtoken/lib/asymmetricKeyDetailsSupported.js"(exports2, module2) {
+    var semver = require_semver2();
+    module2.exports = semver.satisfies(process.version, ">=15.7.0");
+  }
+});
+
+// node_modules/jsonwebtoken/lib/rsaPssKeyDetailsSupported.js
+var require_rsaPssKeyDetailsSupported = __commonJS({
+  "node_modules/jsonwebtoken/lib/rsaPssKeyDetailsSupported.js"(exports2, module2) {
+    var semver = require_semver2();
+    module2.exports = semver.satisfies(process.version, ">=16.9.0");
+  }
+});
+
+// node_modules/jsonwebtoken/lib/validateAsymmetricKey.js
+var require_validateAsymmetricKey = __commonJS({
+  "node_modules/jsonwebtoken/lib/validateAsymmetricKey.js"(exports2, module2) {
+    var ASYMMETRIC_KEY_DETAILS_SUPPORTED = require_asymmetricKeyDetailsSupported();
+    var RSA_PSS_KEY_DETAILS_SUPPORTED = require_rsaPssKeyDetailsSupported();
+    var allowedAlgorithmsForKeys = {
+      "ec": ["ES256", "ES384", "ES512"],
+      "rsa": ["RS256", "PS256", "RS384", "PS384", "RS512", "PS512"],
+      "rsa-pss": ["PS256", "PS384", "PS512"]
+    };
+    var allowedCurves = {
+      ES256: "prime256v1",
+      ES384: "secp384r1",
+      ES512: "secp521r1"
+    };
+    module2.exports = function(algorithm, key) {
+      if (!algorithm || !key) return;
+      const keyType = key.asymmetricKeyType;
+      if (!keyType) return;
+      const allowedAlgorithms = allowedAlgorithmsForKeys[keyType];
+      if (!allowedAlgorithms) {
+        throw new Error(`Unknown key type "${keyType}".`);
+      }
+      if (!allowedAlgorithms.includes(algorithm)) {
+        throw new Error(`"alg" parameter for "${keyType}" key type must be one of: ${allowedAlgorithms.join(", ")}.`);
+      }
+      if (ASYMMETRIC_KEY_DETAILS_SUPPORTED) {
+        switch (keyType) {
+          case "ec":
+            const keyCurve = key.asymmetricKeyDetails.namedCurve;
+            const allowedCurve = allowedCurves[algorithm];
+            if (keyCurve !== allowedCurve) {
+              throw new Error(`"alg" parameter "${algorithm}" requires curve "${allowedCurve}".`);
+            }
+            break;
+          case "rsa-pss":
+            if (RSA_PSS_KEY_DETAILS_SUPPORTED) {
+              const length = parseInt(algorithm.slice(-3), 10);
+              const { hashAlgorithm, mgf1HashAlgorithm, saltLength } = key.asymmetricKeyDetails;
+              if (hashAlgorithm !== `sha${length}` || mgf1HashAlgorithm !== hashAlgorithm) {
+                throw new Error(`Invalid key for this operation, its RSA-PSS parameters do not meet the requirements of "alg" ${algorithm}.`);
+              }
+              if (saltLength !== void 0 && saltLength > length >> 3) {
+                throw new Error(`Invalid key for this operation, its RSA-PSS parameter saltLength does not meet the requirements of "alg" ${algorithm}.`);
+              }
+            }
+            break;
+        }
+      }
+    };
+  }
+});
+
+// node_modules/jsonwebtoken/lib/psSupported.js
+var require_psSupported = __commonJS({
+  "node_modules/jsonwebtoken/lib/psSupported.js"(exports2, module2) {
+    var semver = require_semver2();
+    module2.exports = semver.satisfies(process.version, "^6.12.0 || >=8.0.0");
+  }
+});
+
+// node_modules/jsonwebtoken/verify.js
+var require_verify = __commonJS({
+  "node_modules/jsonwebtoken/verify.js"(exports2, module2) {
+    var JsonWebTokenError = require_JsonWebTokenError();
+    var NotBeforeError = require_NotBeforeError();
+    var TokenExpiredError = require_TokenExpiredError();
+    var decode = require_decode();
+    var timespan = require_timespan();
+    var validateAsymmetricKey = require_validateAsymmetricKey();
+    var PS_SUPPORTED = require_psSupported();
+    var jws = require_jws();
+    var { KeyObject, createSecretKey, createPublicKey } = require("crypto");
+    var PUB_KEY_ALGS = ["RS256", "RS384", "RS512"];
+    var EC_KEY_ALGS = ["ES256", "ES384", "ES512"];
+    var RSA_KEY_ALGS = ["RS256", "RS384", "RS512"];
+    var HS_ALGS = ["HS256", "HS384", "HS512"];
+    if (PS_SUPPORTED) {
+      PUB_KEY_ALGS.splice(PUB_KEY_ALGS.length, 0, "PS256", "PS384", "PS512");
+      RSA_KEY_ALGS.splice(RSA_KEY_ALGS.length, 0, "PS256", "PS384", "PS512");
+    }
+    module2.exports = function(jwtString, secretOrPublicKey, options, callback) {
+      if (typeof options === "function" && !callback) {
+        callback = options;
+        options = {};
+      }
+      if (!options) {
+        options = {};
+      }
+      options = Object.assign({}, options);
+      let done;
+      if (callback) {
+        done = callback;
+      } else {
+        done = function(err, data) {
+          if (err) throw err;
+          return data;
+        };
+      }
+      if (options.clockTimestamp && typeof options.clockTimestamp !== "number") {
+        return done(new JsonWebTokenError("clockTimestamp must be a number"));
+      }
+      if (options.nonce !== void 0 && (typeof options.nonce !== "string" || options.nonce.trim() === "")) {
+        return done(new JsonWebTokenError("nonce must be a non-empty string"));
+      }
+      if (options.allowInvalidAsymmetricKeyTypes !== void 0 && typeof options.allowInvalidAsymmetricKeyTypes !== "boolean") {
+        return done(new JsonWebTokenError("allowInvalidAsymmetricKeyTypes must be a boolean"));
+      }
+      const clockTimestamp = options.clockTimestamp || Math.floor(Date.now() / 1e3);
+      if (!jwtString) {
+        return done(new JsonWebTokenError("jwt must be provided"));
+      }
+      if (typeof jwtString !== "string") {
+        return done(new JsonWebTokenError("jwt must be a string"));
+      }
+      const parts = jwtString.split(".");
+      if (parts.length !== 3) {
+        return done(new JsonWebTokenError("jwt malformed"));
+      }
+      let decodedToken;
+      try {
+        decodedToken = decode(jwtString, { complete: true });
+      } catch (err) {
+        return done(err);
+      }
+      if (!decodedToken) {
+        return done(new JsonWebTokenError("invalid token"));
+      }
+      const header = decodedToken.header;
+      let getSecret;
+      if (typeof secretOrPublicKey === "function") {
+        if (!callback) {
+          return done(new JsonWebTokenError("verify must be called asynchronous if secret or public key is provided as a callback"));
+        }
+        getSecret = secretOrPublicKey;
+      } else {
+        getSecret = function(header2, secretCallback) {
+          return secretCallback(null, secretOrPublicKey);
+        };
+      }
+      return getSecret(header, function(err, secretOrPublicKey2) {
+        if (err) {
+          return done(new JsonWebTokenError("error in secret or public key callback: " + err.message));
+        }
+        const hasSignature = parts[2].trim() !== "";
+        if (!hasSignature && secretOrPublicKey2) {
+          return done(new JsonWebTokenError("jwt signature is required"));
+        }
+        if (hasSignature && !secretOrPublicKey2) {
+          return done(new JsonWebTokenError("secret or public key must be provided"));
+        }
+        if (!hasSignature && !options.algorithms) {
+          return done(new JsonWebTokenError('please specify "none" in "algorithms" to verify unsigned tokens'));
+        }
+        if (secretOrPublicKey2 != null && !(secretOrPublicKey2 instanceof KeyObject)) {
+          try {
+            secretOrPublicKey2 = createPublicKey(secretOrPublicKey2);
+          } catch (_) {
+            try {
+              secretOrPublicKey2 = createSecretKey(typeof secretOrPublicKey2 === "string" ? Buffer.from(secretOrPublicKey2) : secretOrPublicKey2);
+            } catch (_2) {
+              return done(new JsonWebTokenError("secretOrPublicKey is not valid key material"));
+            }
+          }
+        }
+        if (!options.algorithms) {
+          if (secretOrPublicKey2.type === "secret") {
+            options.algorithms = HS_ALGS;
+          } else if (["rsa", "rsa-pss"].includes(secretOrPublicKey2.asymmetricKeyType)) {
+            options.algorithms = RSA_KEY_ALGS;
+          } else if (secretOrPublicKey2.asymmetricKeyType === "ec") {
+            options.algorithms = EC_KEY_ALGS;
+          } else {
+            options.algorithms = PUB_KEY_ALGS;
+          }
+        }
+        if (options.algorithms.indexOf(decodedToken.header.alg) === -1) {
+          return done(new JsonWebTokenError("invalid algorithm"));
+        }
+        if (header.alg.startsWith("HS") && secretOrPublicKey2.type !== "secret") {
+          return done(new JsonWebTokenError(`secretOrPublicKey must be a symmetric key when using ${header.alg}`));
+        } else if (/^(?:RS|PS|ES)/.test(header.alg) && secretOrPublicKey2.type !== "public") {
+          return done(new JsonWebTokenError(`secretOrPublicKey must be an asymmetric key when using ${header.alg}`));
+        }
+        if (!options.allowInvalidAsymmetricKeyTypes) {
+          try {
+            validateAsymmetricKey(header.alg, secretOrPublicKey2);
+          } catch (e) {
+            return done(e);
+          }
+        }
+        let valid;
+        try {
+          valid = jws.verify(jwtString, decodedToken.header.alg, secretOrPublicKey2);
+        } catch (e) {
+          return done(e);
+        }
+        if (!valid) {
+          return done(new JsonWebTokenError("invalid signature"));
+        }
+        const payload = decodedToken.payload;
+        if (typeof payload.nbf !== "undefined" && !options.ignoreNotBefore) {
+          if (typeof payload.nbf !== "number") {
+            return done(new JsonWebTokenError("invalid nbf value"));
+          }
+          if (payload.nbf > clockTimestamp + (options.clockTolerance || 0)) {
+            return done(new NotBeforeError("jwt not active", new Date(payload.nbf * 1e3)));
+          }
+        }
+        if (typeof payload.exp !== "undefined" && !options.ignoreExpiration) {
+          if (typeof payload.exp !== "number") {
+            return done(new JsonWebTokenError("invalid exp value"));
+          }
+          if (clockTimestamp >= payload.exp + (options.clockTolerance || 0)) {
+            return done(new TokenExpiredError("jwt expired", new Date(payload.exp * 1e3)));
+          }
+        }
+        if (options.audience) {
+          const audiences = Array.isArray(options.audience) ? options.audience : [options.audience];
+          const target = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
+          const match = target.some(function(targetAudience) {
+            return audiences.some(function(audience) {
+              return audience instanceof RegExp ? audience.test(targetAudience) : audience === targetAudience;
+            });
+          });
+          if (!match) {
+            return done(new JsonWebTokenError("jwt audience invalid. expected: " + audiences.join(" or ")));
+          }
+        }
+        if (options.issuer) {
+          const invalid_issuer = typeof options.issuer === "string" && payload.iss !== options.issuer || Array.isArray(options.issuer) && options.issuer.indexOf(payload.iss) === -1;
+          if (invalid_issuer) {
+            return done(new JsonWebTokenError("jwt issuer invalid. expected: " + options.issuer));
+          }
+        }
+        if (options.subject) {
+          if (payload.sub !== options.subject) {
+            return done(new JsonWebTokenError("jwt subject invalid. expected: " + options.subject));
+          }
+        }
+        if (options.jwtid) {
+          if (payload.jti !== options.jwtid) {
+            return done(new JsonWebTokenError("jwt jwtid invalid. expected: " + options.jwtid));
+          }
+        }
+        if (options.nonce) {
+          if (payload.nonce !== options.nonce) {
+            return done(new JsonWebTokenError("jwt nonce invalid. expected: " + options.nonce));
+          }
+        }
+        if (options.maxAge) {
+          if (typeof payload.iat !== "number") {
+            return done(new JsonWebTokenError("iat required when maxAge is specified"));
+          }
+          const maxAgeTimestamp = timespan(options.maxAge, payload.iat);
+          if (typeof maxAgeTimestamp === "undefined") {
+            return done(new JsonWebTokenError('"maxAge" should be a number of seconds or string representing a timespan eg: "1d", "20h", 60'));
+          }
+          if (clockTimestamp >= maxAgeTimestamp + (options.clockTolerance || 0)) {
+            return done(new TokenExpiredError("maxAge exceeded", new Date(maxAgeTimestamp * 1e3)));
+          }
+        }
+        if (options.complete === true) {
+          const signature = decodedToken.signature;
+          return done(null, {
+            header,
+            payload,
+            signature
+          });
+        }
+        return done(null, payload);
+      });
+    };
+  }
+});
+
+// node_modules/lodash.includes/index.js
+var require_lodash = __commonJS({
+  "node_modules/lodash.includes/index.js"(exports2, module2) {
+    var INFINITY = 1 / 0;
+    var MAX_SAFE_INTEGER = 9007199254740991;
+    var MAX_INTEGER = 17976931348623157e292;
+    var NAN = 0 / 0;
+    var argsTag = "[object Arguments]";
+    var funcTag = "[object Function]";
+    var genTag = "[object GeneratorFunction]";
+    var stringTag = "[object String]";
+    var symbolTag = "[object Symbol]";
+    var reTrim = /^\s+|\s+$/g;
+    var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
+    var reIsBinary = /^0b[01]+$/i;
+    var reIsOctal = /^0o[0-7]+$/i;
+    var reIsUint = /^(?:0|[1-9]\d*)$/;
+    var freeParseInt = parseInt;
+    function arrayMap(array, iteratee) {
+      var index = -1, length = array ? array.length : 0, result = Array(length);
+      while (++index < length) {
+        result[index] = iteratee(array[index], index, array);
+      }
+      return result;
+    }
+    function baseFindIndex(array, predicate, fromIndex, fromRight) {
+      var length = array.length, index = fromIndex + (fromRight ? 1 : -1);
+      while (fromRight ? index-- : ++index < length) {
+        if (predicate(array[index], index, array)) {
+          return index;
+        }
+      }
+      return -1;
+    }
+    function baseIndexOf(array, value, fromIndex) {
+      if (value !== value) {
+        return baseFindIndex(array, baseIsNaN, fromIndex);
+      }
+      var index = fromIndex - 1, length = array.length;
+      while (++index < length) {
+        if (array[index] === value) {
+          return index;
+        }
+      }
+      return -1;
+    }
+    function baseIsNaN(value) {
+      return value !== value;
+    }
+    function baseTimes(n, iteratee) {
+      var index = -1, result = Array(n);
+      while (++index < n) {
+        result[index] = iteratee(index);
+      }
+      return result;
+    }
+    function baseValues(object, props) {
+      return arrayMap(props, function(key) {
+        return object[key];
+      });
+    }
+    function overArg(func, transform) {
+      return function(arg) {
+        return func(transform(arg));
+      };
+    }
+    var objectProto = Object.prototype;
+    var hasOwnProperty = objectProto.hasOwnProperty;
+    var objectToString = objectProto.toString;
+    var propertyIsEnumerable = objectProto.propertyIsEnumerable;
+    var nativeKeys = overArg(Object.keys, Object);
+    var nativeMax = Math.max;
+    function arrayLikeKeys(value, inherited) {
+      var result = isArray(value) || isArguments(value) ? baseTimes(value.length, String) : [];
+      var length = result.length, skipIndexes = !!length;
+      for (var key in value) {
+        if ((inherited || hasOwnProperty.call(value, key)) && !(skipIndexes && (key == "length" || isIndex(key, length)))) {
+          result.push(key);
+        }
+      }
+      return result;
+    }
+    function baseKeys(object) {
+      if (!isPrototype(object)) {
+        return nativeKeys(object);
+      }
+      var result = [];
+      for (var key in Object(object)) {
+        if (hasOwnProperty.call(object, key) && key != "constructor") {
+          result.push(key);
+        }
+      }
+      return result;
+    }
+    function isIndex(value, length) {
+      length = length == null ? MAX_SAFE_INTEGER : length;
+      return !!length && (typeof value == "number" || reIsUint.test(value)) && (value > -1 && value % 1 == 0 && value < length);
+    }
+    function isPrototype(value) {
+      var Ctor = value && value.constructor, proto = typeof Ctor == "function" && Ctor.prototype || objectProto;
+      return value === proto;
+    }
+    function includes(collection, value, fromIndex, guard) {
+      collection = isArrayLike(collection) ? collection : values(collection);
+      fromIndex = fromIndex && !guard ? toInteger(fromIndex) : 0;
+      var length = collection.length;
+      if (fromIndex < 0) {
+        fromIndex = nativeMax(length + fromIndex, 0);
+      }
+      return isString(collection) ? fromIndex <= length && collection.indexOf(value, fromIndex) > -1 : !!length && baseIndexOf(collection, value, fromIndex) > -1;
+    }
+    function isArguments(value) {
+      return isArrayLikeObject(value) && hasOwnProperty.call(value, "callee") && (!propertyIsEnumerable.call(value, "callee") || objectToString.call(value) == argsTag);
+    }
+    var isArray = Array.isArray;
+    function isArrayLike(value) {
+      return value != null && isLength(value.length) && !isFunction(value);
+    }
+    function isArrayLikeObject(value) {
+      return isObjectLike(value) && isArrayLike(value);
+    }
+    function isFunction(value) {
+      var tag = isObject(value) ? objectToString.call(value) : "";
+      return tag == funcTag || tag == genTag;
+    }
+    function isLength(value) {
+      return typeof value == "number" && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+    }
+    function isObject(value) {
+      var type = typeof value;
+      return !!value && (type == "object" || type == "function");
+    }
+    function isObjectLike(value) {
+      return !!value && typeof value == "object";
+    }
+    function isString(value) {
+      return typeof value == "string" || !isArray(value) && isObjectLike(value) && objectToString.call(value) == stringTag;
+    }
+    function isSymbol(value) {
+      return typeof value == "symbol" || isObjectLike(value) && objectToString.call(value) == symbolTag;
+    }
+    function toFinite(value) {
+      if (!value) {
+        return value === 0 ? value : 0;
+      }
+      value = toNumber(value);
+      if (value === INFINITY || value === -INFINITY) {
+        var sign = value < 0 ? -1 : 1;
+        return sign * MAX_INTEGER;
+      }
+      return value === value ? value : 0;
+    }
+    function toInteger(value) {
+      var result = toFinite(value), remainder = result % 1;
+      return result === result ? remainder ? result - remainder : result : 0;
+    }
+    function toNumber(value) {
+      if (typeof value == "number") {
+        return value;
+      }
+      if (isSymbol(value)) {
+        return NAN;
+      }
+      if (isObject(value)) {
+        var other = typeof value.valueOf == "function" ? value.valueOf() : value;
+        value = isObject(other) ? other + "" : other;
+      }
+      if (typeof value != "string") {
+        return value === 0 ? value : +value;
+      }
+      value = value.replace(reTrim, "");
+      var isBinary = reIsBinary.test(value);
+      return isBinary || reIsOctal.test(value) ? freeParseInt(value.slice(2), isBinary ? 2 : 8) : reIsBadHex.test(value) ? NAN : +value;
+    }
+    function keys(object) {
+      return isArrayLike(object) ? arrayLikeKeys(object) : baseKeys(object);
+    }
+    function values(object) {
+      return object ? baseValues(object, keys(object)) : [];
+    }
+    module2.exports = includes;
+  }
+});
+
+// node_modules/lodash.isboolean/index.js
+var require_lodash2 = __commonJS({
+  "node_modules/lodash.isboolean/index.js"(exports2, module2) {
+    var boolTag = "[object Boolean]";
+    var objectProto = Object.prototype;
+    var objectToString = objectProto.toString;
+    function isBoolean(value) {
+      return value === true || value === false || isObjectLike(value) && objectToString.call(value) == boolTag;
+    }
+    function isObjectLike(value) {
+      return !!value && typeof value == "object";
+    }
+    module2.exports = isBoolean;
+  }
+});
+
+// node_modules/lodash.isinteger/index.js
+var require_lodash3 = __commonJS({
+  "node_modules/lodash.isinteger/index.js"(exports2, module2) {
+    var INFINITY = 1 / 0;
+    var MAX_INTEGER = 17976931348623157e292;
+    var NAN = 0 / 0;
+    var symbolTag = "[object Symbol]";
+    var reTrim = /^\s+|\s+$/g;
+    var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
+    var reIsBinary = /^0b[01]+$/i;
+    var reIsOctal = /^0o[0-7]+$/i;
+    var freeParseInt = parseInt;
+    var objectProto = Object.prototype;
+    var objectToString = objectProto.toString;
+    function isInteger(value) {
+      return typeof value == "number" && value == toInteger(value);
+    }
+    function isObject(value) {
+      var type = typeof value;
+      return !!value && (type == "object" || type == "function");
+    }
+    function isObjectLike(value) {
+      return !!value && typeof value == "object";
+    }
+    function isSymbol(value) {
+      return typeof value == "symbol" || isObjectLike(value) && objectToString.call(value) == symbolTag;
+    }
+    function toFinite(value) {
+      if (!value) {
+        return value === 0 ? value : 0;
+      }
+      value = toNumber(value);
+      if (value === INFINITY || value === -INFINITY) {
+        var sign = value < 0 ? -1 : 1;
+        return sign * MAX_INTEGER;
+      }
+      return value === value ? value : 0;
+    }
+    function toInteger(value) {
+      var result = toFinite(value), remainder = result % 1;
+      return result === result ? remainder ? result - remainder : result : 0;
+    }
+    function toNumber(value) {
+      if (typeof value == "number") {
+        return value;
+      }
+      if (isSymbol(value)) {
+        return NAN;
+      }
+      if (isObject(value)) {
+        var other = typeof value.valueOf == "function" ? value.valueOf() : value;
+        value = isObject(other) ? other + "" : other;
+      }
+      if (typeof value != "string") {
+        return value === 0 ? value : +value;
+      }
+      value = value.replace(reTrim, "");
+      var isBinary = reIsBinary.test(value);
+      return isBinary || reIsOctal.test(value) ? freeParseInt(value.slice(2), isBinary ? 2 : 8) : reIsBadHex.test(value) ? NAN : +value;
+    }
+    module2.exports = isInteger;
+  }
+});
+
+// node_modules/lodash.isnumber/index.js
+var require_lodash4 = __commonJS({
+  "node_modules/lodash.isnumber/index.js"(exports2, module2) {
+    var numberTag = "[object Number]";
+    var objectProto = Object.prototype;
+    var objectToString = objectProto.toString;
+    function isObjectLike(value) {
+      return !!value && typeof value == "object";
+    }
+    function isNumber(value) {
+      return typeof value == "number" || isObjectLike(value) && objectToString.call(value) == numberTag;
+    }
+    module2.exports = isNumber;
+  }
+});
+
+// node_modules/lodash.isplainobject/index.js
+var require_lodash5 = __commonJS({
+  "node_modules/lodash.isplainobject/index.js"(exports2, module2) {
+    var objectTag = "[object Object]";
+    function isHostObject(value) {
+      var result = false;
+      if (value != null && typeof value.toString != "function") {
+        try {
+          result = !!(value + "");
+        } catch (e) {
+        }
+      }
+      return result;
+    }
+    function overArg(func, transform) {
+      return function(arg) {
+        return func(transform(arg));
+      };
+    }
+    var funcProto = Function.prototype;
+    var objectProto = Object.prototype;
+    var funcToString = funcProto.toString;
+    var hasOwnProperty = objectProto.hasOwnProperty;
+    var objectCtorString = funcToString.call(Object);
+    var objectToString = objectProto.toString;
+    var getPrototype = overArg(Object.getPrototypeOf, Object);
+    function isObjectLike(value) {
+      return !!value && typeof value == "object";
+    }
+    function isPlainObject(value) {
+      if (!isObjectLike(value) || objectToString.call(value) != objectTag || isHostObject(value)) {
+        return false;
+      }
+      var proto = getPrototype(value);
+      if (proto === null) {
+        return true;
+      }
+      var Ctor = hasOwnProperty.call(proto, "constructor") && proto.constructor;
+      return typeof Ctor == "function" && Ctor instanceof Ctor && funcToString.call(Ctor) == objectCtorString;
+    }
+    module2.exports = isPlainObject;
+  }
+});
+
+// node_modules/lodash.isstring/index.js
+var require_lodash6 = __commonJS({
+  "node_modules/lodash.isstring/index.js"(exports2, module2) {
+    var stringTag = "[object String]";
+    var objectProto = Object.prototype;
+    var objectToString = objectProto.toString;
+    var isArray = Array.isArray;
+    function isObjectLike(value) {
+      return !!value && typeof value == "object";
+    }
+    function isString(value) {
+      return typeof value == "string" || !isArray(value) && isObjectLike(value) && objectToString.call(value) == stringTag;
+    }
+    module2.exports = isString;
+  }
+});
+
+// node_modules/lodash.once/index.js
+var require_lodash7 = __commonJS({
+  "node_modules/lodash.once/index.js"(exports2, module2) {
+    var FUNC_ERROR_TEXT = "Expected a function";
+    var INFINITY = 1 / 0;
+    var MAX_INTEGER = 17976931348623157e292;
+    var NAN = 0 / 0;
+    var symbolTag = "[object Symbol]";
+    var reTrim = /^\s+|\s+$/g;
+    var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
+    var reIsBinary = /^0b[01]+$/i;
+    var reIsOctal = /^0o[0-7]+$/i;
+    var freeParseInt = parseInt;
+    var objectProto = Object.prototype;
+    var objectToString = objectProto.toString;
+    function before(n, func) {
+      var result;
+      if (typeof func != "function") {
+        throw new TypeError(FUNC_ERROR_TEXT);
+      }
+      n = toInteger(n);
+      return function() {
+        if (--n > 0) {
+          result = func.apply(this, arguments);
+        }
+        if (n <= 1) {
+          func = void 0;
+        }
+        return result;
+      };
+    }
+    function once(func) {
+      return before(2, func);
+    }
+    function isObject(value) {
+      var type = typeof value;
+      return !!value && (type == "object" || type == "function");
+    }
+    function isObjectLike(value) {
+      return !!value && typeof value == "object";
+    }
+    function isSymbol(value) {
+      return typeof value == "symbol" || isObjectLike(value) && objectToString.call(value) == symbolTag;
+    }
+    function toFinite(value) {
+      if (!value) {
+        return value === 0 ? value : 0;
+      }
+      value = toNumber(value);
+      if (value === INFINITY || value === -INFINITY) {
+        var sign = value < 0 ? -1 : 1;
+        return sign * MAX_INTEGER;
+      }
+      return value === value ? value : 0;
+    }
+    function toInteger(value) {
+      var result = toFinite(value), remainder = result % 1;
+      return result === result ? remainder ? result - remainder : result : 0;
+    }
+    function toNumber(value) {
+      if (typeof value == "number") {
+        return value;
+      }
+      if (isSymbol(value)) {
+        return NAN;
+      }
+      if (isObject(value)) {
+        var other = typeof value.valueOf == "function" ? value.valueOf() : value;
+        value = isObject(other) ? other + "" : other;
+      }
+      if (typeof value != "string") {
+        return value === 0 ? value : +value;
+      }
+      value = value.replace(reTrim, "");
+      var isBinary = reIsBinary.test(value);
+      return isBinary || reIsOctal.test(value) ? freeParseInt(value.slice(2), isBinary ? 2 : 8) : reIsBadHex.test(value) ? NAN : +value;
+    }
+    module2.exports = once;
+  }
+});
+
+// node_modules/jsonwebtoken/sign.js
+var require_sign = __commonJS({
+  "node_modules/jsonwebtoken/sign.js"(exports2, module2) {
+    var timespan = require_timespan();
+    var PS_SUPPORTED = require_psSupported();
+    var validateAsymmetricKey = require_validateAsymmetricKey();
+    var jws = require_jws();
+    var includes = require_lodash();
+    var isBoolean = require_lodash2();
+    var isInteger = require_lodash3();
+    var isNumber = require_lodash4();
+    var isPlainObject = require_lodash5();
+    var isString = require_lodash6();
+    var once = require_lodash7();
+    var { KeyObject, createSecretKey, createPrivateKey } = require("crypto");
+    var SUPPORTED_ALGS = ["RS256", "RS384", "RS512", "ES256", "ES384", "ES512", "HS256", "HS384", "HS512", "none"];
+    if (PS_SUPPORTED) {
+      SUPPORTED_ALGS.splice(3, 0, "PS256", "PS384", "PS512");
+    }
+    var sign_options_schema = {
+      expiresIn: { isValid: function(value) {
+        return isInteger(value) || isString(value) && value;
+      }, message: '"expiresIn" should be a number of seconds or string representing a timespan' },
+      notBefore: { isValid: function(value) {
+        return isInteger(value) || isString(value) && value;
+      }, message: '"notBefore" should be a number of seconds or string representing a timespan' },
+      audience: { isValid: function(value) {
+        return isString(value) || Array.isArray(value);
+      }, message: '"audience" must be a string or array' },
+      algorithm: { isValid: includes.bind(null, SUPPORTED_ALGS), message: '"algorithm" must be a valid string enum value' },
+      header: { isValid: isPlainObject, message: '"header" must be an object' },
+      encoding: { isValid: isString, message: '"encoding" must be a string' },
+      issuer: { isValid: isString, message: '"issuer" must be a string' },
+      subject: { isValid: isString, message: '"subject" must be a string' },
+      jwtid: { isValid: isString, message: '"jwtid" must be a string' },
+      noTimestamp: { isValid: isBoolean, message: '"noTimestamp" must be a boolean' },
+      keyid: { isValid: isString, message: '"keyid" must be a string' },
+      mutatePayload: { isValid: isBoolean, message: '"mutatePayload" must be a boolean' },
+      allowInsecureKeySizes: { isValid: isBoolean, message: '"allowInsecureKeySizes" must be a boolean' },
+      allowInvalidAsymmetricKeyTypes: { isValid: isBoolean, message: '"allowInvalidAsymmetricKeyTypes" must be a boolean' }
+    };
+    var registered_claims_schema = {
+      iat: { isValid: isNumber, message: '"iat" should be a number of seconds' },
+      exp: { isValid: isNumber, message: '"exp" should be a number of seconds' },
+      nbf: { isValid: isNumber, message: '"nbf" should be a number of seconds' }
+    };
+    function validate(schema, allowUnknown, object, parameterName) {
+      if (!isPlainObject(object)) {
+        throw new Error('Expected "' + parameterName + '" to be a plain object.');
+      }
+      Object.keys(object).forEach(function(key) {
+        const validator = schema[key];
+        if (!validator) {
+          if (!allowUnknown) {
+            throw new Error('"' + key + '" is not allowed in "' + parameterName + '"');
+          }
+          return;
+        }
+        if (!validator.isValid(object[key])) {
+          throw new Error(validator.message);
+        }
+      });
+    }
+    function validateOptions(options) {
+      return validate(sign_options_schema, false, options, "options");
+    }
+    function validatePayload(payload) {
+      return validate(registered_claims_schema, true, payload, "payload");
+    }
+    var options_to_payload = {
+      "audience": "aud",
+      "issuer": "iss",
+      "subject": "sub",
+      "jwtid": "jti"
+    };
+    var options_for_objects = [
+      "expiresIn",
+      "notBefore",
+      "noTimestamp",
+      "audience",
+      "issuer",
+      "subject",
+      "jwtid"
+    ];
+    module2.exports = function(payload, secretOrPrivateKey, options, callback) {
+      if (typeof options === "function") {
+        callback = options;
+        options = {};
+      } else {
+        options = options || {};
+      }
+      const isObjectPayload = typeof payload === "object" && !Buffer.isBuffer(payload);
+      const header = Object.assign({
+        alg: options.algorithm || "HS256",
+        typ: isObjectPayload ? "JWT" : void 0,
+        kid: options.keyid
+      }, options.header);
+      function failure(err) {
+        if (callback) {
+          return callback(err);
+        }
+        throw err;
+      }
+      if (!secretOrPrivateKey && options.algorithm !== "none") {
+        return failure(new Error("secretOrPrivateKey must have a value"));
+      }
+      if (secretOrPrivateKey != null && !(secretOrPrivateKey instanceof KeyObject)) {
+        try {
+          secretOrPrivateKey = createPrivateKey(secretOrPrivateKey);
+        } catch (_) {
+          try {
+            secretOrPrivateKey = createSecretKey(typeof secretOrPrivateKey === "string" ? Buffer.from(secretOrPrivateKey) : secretOrPrivateKey);
+          } catch (_2) {
+            return failure(new Error("secretOrPrivateKey is not valid key material"));
+          }
+        }
+      }
+      if (header.alg.startsWith("HS") && secretOrPrivateKey.type !== "secret") {
+        return failure(new Error(`secretOrPrivateKey must be a symmetric key when using ${header.alg}`));
+      } else if (/^(?:RS|PS|ES)/.test(header.alg)) {
+        if (secretOrPrivateKey.type !== "private") {
+          return failure(new Error(`secretOrPrivateKey must be an asymmetric key when using ${header.alg}`));
+        }
+        if (!options.allowInsecureKeySizes && !header.alg.startsWith("ES") && secretOrPrivateKey.asymmetricKeyDetails !== void 0 && //KeyObject.asymmetricKeyDetails is supported in Node 15+
+        secretOrPrivateKey.asymmetricKeyDetails.modulusLength < 2048) {
+          return failure(new Error(`secretOrPrivateKey has a minimum key size of 2048 bits for ${header.alg}`));
+        }
+      }
+      if (typeof payload === "undefined") {
+        return failure(new Error("payload is required"));
+      } else if (isObjectPayload) {
+        try {
+          validatePayload(payload);
+        } catch (error) {
+          return failure(error);
+        }
+        if (!options.mutatePayload) {
+          payload = Object.assign({}, payload);
+        }
+      } else {
+        const invalid_options = options_for_objects.filter(function(opt) {
+          return typeof options[opt] !== "undefined";
+        });
+        if (invalid_options.length > 0) {
+          return failure(new Error("invalid " + invalid_options.join(",") + " option for " + typeof payload + " payload"));
+        }
+      }
+      if (typeof payload.exp !== "undefined" && typeof options.expiresIn !== "undefined") {
+        return failure(new Error('Bad "options.expiresIn" option the payload already has an "exp" property.'));
+      }
+      if (typeof payload.nbf !== "undefined" && typeof options.notBefore !== "undefined") {
+        return failure(new Error('Bad "options.notBefore" option the payload already has an "nbf" property.'));
+      }
+      try {
+        validateOptions(options);
+      } catch (error) {
+        return failure(error);
+      }
+      if (!options.allowInvalidAsymmetricKeyTypes) {
+        try {
+          validateAsymmetricKey(header.alg, secretOrPrivateKey);
+        } catch (error) {
+          return failure(error);
+        }
+      }
+      const timestamp = payload.iat || Math.floor(Date.now() / 1e3);
+      if (options.noTimestamp) {
+        delete payload.iat;
+      } else if (isObjectPayload) {
+        payload.iat = timestamp;
+      }
+      if (typeof options.notBefore !== "undefined") {
+        try {
+          payload.nbf = timespan(options.notBefore, timestamp);
+        } catch (err) {
+          return failure(err);
+        }
+        if (typeof payload.nbf === "undefined") {
+          return failure(new Error('"notBefore" should be a number of seconds or string representing a timespan eg: "1d", "20h", 60'));
+        }
+      }
+      if (typeof options.expiresIn !== "undefined" && typeof payload === "object") {
+        try {
+          payload.exp = timespan(options.expiresIn, timestamp);
+        } catch (err) {
+          return failure(err);
+        }
+        if (typeof payload.exp === "undefined") {
+          return failure(new Error('"expiresIn" should be a number of seconds or string representing a timespan eg: "1d", "20h", 60'));
+        }
+      }
+      Object.keys(options_to_payload).forEach(function(key) {
+        const claim = options_to_payload[key];
+        if (typeof options[key] !== "undefined") {
+          if (typeof payload[claim] !== "undefined") {
+            return failure(new Error('Bad "options.' + key + '" option. The payload already has an "' + claim + '" property.'));
+          }
+          payload[claim] = options[key];
+        }
+      });
+      const encoding = options.encoding || "utf8";
+      if (typeof callback === "function") {
+        callback = callback && once(callback);
+        jws.createSign({
+          header,
+          privateKey: secretOrPrivateKey,
+          payload,
+          encoding
+        }).once("error", callback).once("done", function(signature) {
+          if (!options.allowInsecureKeySizes && /^(?:RS|PS)/.test(header.alg) && signature.length < 256) {
+            return callback(new Error(`secretOrPrivateKey has a minimum key size of 2048 bits for ${header.alg}`));
+          }
+          callback(null, signature);
+        });
+      } else {
+        let signature = jws.sign({ header, payload, secret: secretOrPrivateKey, encoding });
+        if (!options.allowInsecureKeySizes && /^(?:RS|PS)/.test(header.alg) && signature.length < 256) {
+          throw new Error(`secretOrPrivateKey has a minimum key size of 2048 bits for ${header.alg}`);
+        }
+        return signature;
+      }
+    };
+  }
+});
+
+// node_modules/jsonwebtoken/index.js
+var require_jsonwebtoken = __commonJS({
+  "node_modules/jsonwebtoken/index.js"(exports2, module2) {
+    module2.exports = {
+      decode: require_decode(),
+      verify: require_verify(),
+      sign: require_sign(),
+      JsonWebTokenError: require_JsonWebTokenError(),
+      NotBeforeError: require_NotBeforeError(),
+      TokenExpiredError: require_TokenExpiredError()
+    };
   }
 });
 
@@ -68028,12 +72496,12 @@ var User_exports = {};
 __export(User_exports, {
   default: () => User_default
 });
-var import_mongoose2, import_bcryptjs, userSchema, User, User_default;
+var import_mongoose3, import_bcryptjs, userSchema, User, User_default;
 var init_User = __esm({
   "models/User.js"() {
-    import_mongoose2 = __toESM(require_mongoose2(), 1);
+    import_mongoose3 = __toESM(require_mongoose2(), 1);
     import_bcryptjs = __toESM(require_bcryptjs(), 1);
-    userSchema = new import_mongoose2.default.Schema({
+    userSchema = new import_mongoose3.default.Schema({
       name: {
         type: String,
         required: true
@@ -68067,11 +72535,11 @@ var init_User = __esm({
         required: true
       },
       restaurantId: {
-        type: import_mongoose2.default.Schema.Types.ObjectId,
+        type: import_mongoose3.default.Schema.Types.ObjectId,
         ref: "Restaurant"
       },
       branchId: {
-        type: import_mongoose2.default.Schema.Types.ObjectId,
+        type: import_mongoose3.default.Schema.Types.ObjectId,
         ref: "Branch"
       },
       isActive: {
@@ -68097,8 +72565,8 @@ var init_User = __esm({
         overtimeRatePerHour: { type: Number, default: 0 },
         dailyWorkHours: { type: Number, default: 8 },
         monthlyWorkingDays: { type: Number, default: 26 },
-        allowances: { type: import_mongoose2.default.Schema.Types.Mixed, default: [] },
-        deductions: { type: import_mongoose2.default.Schema.Types.Mixed, default: [] }
+        allowances: { type: import_mongoose3.default.Schema.Types.Mixed, default: [] },
+        deductions: { type: import_mongoose3.default.Schema.Types.Mixed, default: [] }
       },
       bankDetails: {
         accountName: { type: String, default: "" },
@@ -68139,8 +72607,223 @@ var init_User = __esm({
       }
       return this.password === cleanEntered || this.password === enteredPassword;
     };
-    User = import_mongoose2.default.model("User", userSchema);
+    User = import_mongoose3.default.model("User", userSchema);
     User_default = User;
+  }
+});
+
+// models/Order.js
+var Order_exports = {};
+__export(Order_exports, {
+  default: () => Order_default
+});
+var import_mongoose4, orderSchema, Order, Order_default;
+var init_Order = __esm({
+  "models/Order.js"() {
+    import_mongoose4 = __toESM(require_mongoose2(), 1);
+    orderSchema = new import_mongoose4.default.Schema({
+      user: {
+        type: import_mongoose4.default.Schema.Types.ObjectId,
+        required: true,
+        ref: "User"
+      },
+      orderItems: [
+        {
+          name: { type: String, required: true },
+          qty: { type: Number, required: true },
+          image: { type: String, required: true },
+          price: { type: Number, required: true },
+          product: {
+            type: import_mongoose4.default.Schema.Types.ObjectId,
+            ref: "MenuItem"
+          }
+        }
+      ],
+      restaurantId: {
+        type: import_mongoose4.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true
+      },
+      branchId: {
+        type: import_mongoose4.default.Schema.Types.ObjectId,
+        ref: "Branch",
+        required: true
+      },
+      source: {
+        type: String,
+        enum: ["Walk-in", "QR", "Self-Pickup"],
+        default: "Walk-in"
+      },
+      orderType: {
+        type: String,
+        required: true,
+        enum: ["Dine In", "Self-Pickup", "Delivery", "Takeaway"],
+        default: "Dine In"
+      },
+      serviceType: {
+        type: String,
+        enum: ["Self Dine-In (KFC Style)", "Waiter Table Service", "Delivery", "Takeaway", "Self-Pickup", ""],
+        default: "Waiter Table Service"
+      },
+      customerName: {
+        type: String,
+        default: ""
+      },
+      customerPhone: {
+        type: String,
+        default: ""
+      },
+      tableNumber: {
+        type: String
+      },
+      notes: {
+        type: String
+      },
+      shippingAddress: {
+        address: { type: String },
+        city: { type: String },
+        postalCode: { type: String }
+      },
+      paymentMethod: {
+        type: String,
+        required: true,
+        default: "Card"
+      },
+      subscriptionPlan: {
+        type: String,
+        default: "One-time Order"
+      },
+      paymentResult: {
+        id: { type: String },
+        status: { type: String },
+        update_time: { type: String },
+        email_address: { type: String }
+      },
+      taxPrice: {
+        type: Number,
+        required: true,
+        default: 0
+      },
+      totalPrice: {
+        type: Number,
+        required: true,
+        default: 0
+      },
+      discountAmount: {
+        type: Number,
+        default: 0
+      },
+      tipAmount: {
+        type: Number,
+        default: 0
+      },
+      waiter: {
+        type: import_mongoose4.default.Schema.Types.ObjectId,
+        ref: "User"
+      },
+      isPaid: {
+        type: Boolean,
+        required: true,
+        default: false
+      },
+      paidAt: {
+        type: Date
+      },
+      status: {
+        type: String,
+        required: true,
+        enum: ["Pending", "Accepted", "Preparing", "Ready", "Ready for Pickup", "Picked Up", "Ready for Dispatch", "Served", "Billing Requested", "Out for Delivery", "Delivered", "Cancelled", "Completed", "Refunded"],
+        default: "Pending"
+      },
+      kitchenMode: {
+        type: String,
+        enum: ["KDS", "KOT_ONLY"],
+        default: "KDS"
+      },
+      statusHistory: [
+        {
+          status: { type: String, required: true },
+          timestamp: { type: Date, default: Date.now },
+          updatedBy: { type: import_mongoose4.default.Schema.Types.ObjectId, ref: "User" }
+        }
+      ],
+      pickupTime: {
+        type: Date
+      },
+      estimatedPrepMinutes: {
+        type: Number,
+        default: 20
+      },
+      estimatedReadyTime: {
+        type: Date
+      },
+      // Location Coordinates for Live OSRM Road Tracking
+      customerLocation: {
+        latitude: { type: Number, default: null },
+        longitude: { type: Number, default: null }
+      },
+      restaurantLocation: {
+        latitude: { type: Number, default: null },
+        longitude: { type: Number, default: null }
+      },
+      deliveryPartnerLocation: {
+        latitude: { type: Number, default: null },
+        longitude: { type: Number, default: null },
+        updatedAt: { type: Date, default: null }
+      },
+      // Delivery partner details
+      deliveryPartner: {
+        type: import_mongoose4.default.Schema.Types.ObjectId,
+        ref: "User"
+      },
+      deliveryStatus: {
+        type: String,
+        enum: ["None", "Pending Assignment", "Accepted", "Rejected", "Picked Up", "On the Way", "Delivered", "Cancelled"],
+        default: "None"
+      },
+      deliveryDistance: {
+        type: Number,
+        default: 0
+      },
+      deliveryCharge: {
+        type: Number,
+        default: 0
+      },
+      deliveryETA: {
+        type: Date
+      },
+      deliveryOtp: {
+        type: String,
+        default: null
+      },
+      deliveryRating: {
+        speed: { type: Number, default: 0 },
+        behaviour: { type: Number, default: 0 },
+        foodHandling: { type: Number, default: 0 },
+        overall: { type: Number, default: 0 },
+        review: { type: String, default: "" }
+      },
+      internalRating: {
+        type: Number,
+        default: 0
+      },
+      supportMessages: [
+        {
+          sender: { type: String, enum: ["DeliveryPartner", "Customer", "Restaurant", "System"], default: "DeliveryPartner" },
+          message: { type: String, required: true },
+          timestamp: { type: Date, default: Date.now }
+        }
+      ],
+      kotNumbers: [{
+        type: String
+      }],
+      kots: [{
+        type: import_mongoose4.default.Schema.Types.ObjectId,
+        ref: "KOT"
+      }]
+    }, { timestamps: true });
+    Order = import_mongoose4.default.model("Order", orderSchema);
+    Order_default = Order;
   }
 });
 
@@ -83910,7 +88593,7 @@ var require_eval = __commonJS({
 });
 
 // node_modules/es-errors/range.js
-var require_range = __commonJS({
+var require_range2 = __commonJS({
   "node_modules/es-errors/range.js"(exports2, module2) {
     "use strict";
     module2.exports = RangeError;
@@ -84000,7 +88683,7 @@ var require_isNaN = __commonJS({
 });
 
 // node_modules/math-intrinsics/sign.js
-var require_sign = __commonJS({
+var require_sign2 = __commonJS({
   "node_modules/math-intrinsics/sign.js"(exports2, module2) {
     "use strict";
     var $isNaN = require_isNaN();
@@ -84357,7 +89040,7 @@ var require_get_intrinsic = __commonJS({
     var $Object = require_es_object_atoms();
     var $Error = require_es_errors();
     var $EvalError = require_eval();
-    var $RangeError = require_range();
+    var $RangeError = require_range2();
     var $ReferenceError = require_ref();
     var $SyntaxError = require_syntax();
     var $TypeError = require_type2();
@@ -84368,7 +89051,7 @@ var require_get_intrinsic = __commonJS({
     var min = require_min();
     var pow = require_pow();
     var round = require_round();
-    var sign = require_sign();
+    var sign = require_sign2();
     var $Function = Function;
     var getEvalledConstructor = function(expressionSyntax) {
       try {
@@ -85502,7 +90185,7 @@ var require_stringify = __commonJS({
 });
 
 // node_modules/qs/lib/parse.js
-var require_parse = __commonJS({
+var require_parse2 = __commonJS({
   "node_modules/qs/lib/parse.js"(exports2, module2) {
     "use strict";
     var utils = require_utils6();
@@ -85834,7 +90517,7 @@ var require_lib8 = __commonJS({
   "node_modules/qs/lib/index.js"(exports2, module2) {
     "use strict";
     var stringify = require_stringify();
-    var parse = require_parse();
+    var parse = require_parse2();
     var formats = require_formats();
     module2.exports = {
       formats,
@@ -86444,14 +91127,14 @@ var require_etag = __commonJS({
   "node_modules/etag/index.js"(exports2, module2) {
     "use strict";
     module2.exports = etag;
-    var crypto2 = require("crypto");
+    var crypto3 = require("crypto");
     var Stats = require("fs").Stats;
     var toString = Object.prototype.toString;
     function entitytag(entity) {
       if (entity.length === 0) {
         return '"0-2jmj7l5rSw0yVb/vlWAYkK/YBwk"';
       }
-      var hash = crypto2.createHash("sha1").update(entity, "utf8").digest("base64").substring(0, 27);
+      var hash = crypto3.createHash("sha1").update(entity, "utf8").digest("base64").substring(0, 27);
       var len = typeof entity === "string" ? Buffer.byteLength(entity, "utf8") : entity.length;
       return '"' + len.toString(16) + "-" + hash + '"';
     }
@@ -109321,17 +114004,17 @@ var require_content_disposition = __commonJS({
 // node_modules/express/node_modules/cookie-signature/index.js
 var require_cookie_signature = __commonJS({
   "node_modules/express/node_modules/cookie-signature/index.js"(exports2) {
-    var crypto2 = require("crypto");
+    var crypto3 = require("crypto");
     exports2.sign = function(val, secret) {
       if ("string" != typeof val) throw new TypeError("Cookie value must be provided as a string.");
       if (null == secret) throw new TypeError("Secret key must be provided.");
-      return val + "." + crypto2.createHmac("sha256", secret).update(val).digest("base64").replace(/\=+$/, "");
+      return val + "." + crypto3.createHmac("sha256", secret).update(val).digest("base64").replace(/\=+$/, "");
     };
     exports2.unsign = function(input, secret) {
       if ("string" != typeof input) throw new TypeError("Signed cookie string must be provided.");
       if (null == secret) throw new TypeError("Secret key must be provided.");
       var tentativeValue = input.slice(0, input.lastIndexOf(".")), expectedInput = exports2.sign(tentativeValue, secret), expectedBuffer = Buffer.from(expectedInput), inputBuffer = Buffer.from(input);
-      return expectedBuffer.length === inputBuffer.length && crypto2.timingSafeEqual(expectedBuffer, inputBuffer) ? tentativeValue : false;
+      return expectedBuffer.length === inputBuffer.length && crypto3.timingSafeEqual(expectedBuffer, inputBuffer) ? tentativeValue : false;
     };
   }
 });
@@ -120259,7 +124942,7 @@ var require_main = __commonJS({
     var fs7 = require("fs");
     var path7 = require("path");
     var os = require("os");
-    var crypto2 = require("crypto");
+    var crypto3 = require("crypto");
     var packageJson = require_package3();
     var version = packageJson.version;
     var LINE = /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/mg;
@@ -120478,7 +125161,7 @@ var require_main = __commonJS({
       const authTag = ciphertext.subarray(-16);
       ciphertext = ciphertext.subarray(12, -16);
       try {
-        const aesgcm = crypto2.createDecipheriv("aes-256-gcm", key, nonce);
+        const aesgcm = crypto3.createDecipheriv("aes-256-gcm", key, nonce);
         aesgcm.setAuthTag(authTag);
         return `${aesgcm.update(ciphertext)}${aesgcm.final()}`;
       } catch (error) {
@@ -120990,11 +125673,11 @@ var require_cookie2 = __commonJS({
 // node_modules/cookie-signature/index.js
 var require_cookie_signature2 = __commonJS({
   "node_modules/cookie-signature/index.js"(exports2) {
-    var crypto2 = require("crypto");
+    var crypto3 = require("crypto");
     exports2.sign = function(val, secret) {
       if ("string" != typeof val) throw new TypeError("Cookie value must be provided as a string.");
       if ("string" != typeof secret) throw new TypeError("Secret string must be provided.");
-      return val + "." + crypto2.createHmac("sha256", secret).update(val).digest("base64").replace(/\=+$/, "");
+      return val + "." + crypto3.createHmac("sha256", secret).update(val).digest("base64").replace(/\=+$/, "");
     };
     exports2.unsign = function(val, secret) {
       if ("string" != typeof val) throw new TypeError("Signed cookie string must be provided.");
@@ -121003,7 +125686,7 @@ var require_cookie_signature2 = __commonJS({
       return sha1(mac) == sha1(val) ? str : false;
     };
     function sha1(str) {
-      return crypto2.createHash("sha1").update(str).digest("hex");
+      return crypto3.createHash("sha1").update(str).digest("hex");
     }
   }
 });
@@ -121100,4046 +125783,18 @@ var require_cookie_parser = __commonJS({
   }
 });
 
-// models/Order.js
-var Order_exports = {};
-__export(Order_exports, {
-  default: () => Order_default
-});
-var import_mongoose4, orderSchema, Order2, Order_default;
-var init_Order = __esm({
-  "models/Order.js"() {
-    import_mongoose4 = __toESM(require_mongoose2(), 1);
-    orderSchema = new import_mongoose4.default.Schema({
-      user: {
-        type: import_mongoose4.default.Schema.Types.ObjectId,
-        required: true,
-        ref: "User"
-      },
-      orderItems: [
-        {
-          name: { type: String, required: true },
-          qty: { type: Number, required: true },
-          image: { type: String, required: true },
-          price: { type: Number, required: true },
-          product: {
-            type: import_mongoose4.default.Schema.Types.ObjectId,
-            ref: "MenuItem"
-          }
-        }
-      ],
-      restaurantId: {
-        type: import_mongoose4.default.Schema.Types.ObjectId,
-        ref: "Restaurant",
-        required: true
-      },
-      branchId: {
-        type: import_mongoose4.default.Schema.Types.ObjectId,
-        ref: "Branch",
-        required: true
-      },
-      source: {
-        type: String,
-        enum: ["Walk-in", "QR", "Self-Pickup"],
-        default: "Walk-in"
-      },
-      orderType: {
-        type: String,
-        required: true,
-        enum: ["Dine In", "Self-Pickup", "Delivery", "Takeaway"],
-        default: "Dine In"
-      },
-      serviceType: {
-        type: String,
-        enum: ["Self Dine-In (KFC Style)", "Waiter Table Service", "Delivery", "Takeaway", "Self-Pickup", ""],
-        default: "Waiter Table Service"
-      },
-      customerName: {
-        type: String,
-        default: ""
-      },
-      customerPhone: {
-        type: String,
-        default: ""
-      },
-      tableNumber: {
-        type: String
-      },
-      notes: {
-        type: String
-      },
-      shippingAddress: {
-        address: { type: String },
-        city: { type: String },
-        postalCode: { type: String }
-      },
-      paymentMethod: {
-        type: String,
-        required: true,
-        default: "Card"
-      },
-      subscriptionPlan: {
-        type: String,
-        default: "One-time Order"
-      },
-      paymentResult: {
-        id: { type: String },
-        status: { type: String },
-        update_time: { type: String },
-        email_address: { type: String }
-      },
-      taxPrice: {
-        type: Number,
-        required: true,
-        default: 0
-      },
-      totalPrice: {
-        type: Number,
-        required: true,
-        default: 0
-      },
-      discountAmount: {
-        type: Number,
-        default: 0
-      },
-      tipAmount: {
-        type: Number,
-        default: 0
-      },
-      waiter: {
-        type: import_mongoose4.default.Schema.Types.ObjectId,
-        ref: "User"
-      },
-      isPaid: {
-        type: Boolean,
-        required: true,
-        default: false
-      },
-      paidAt: {
-        type: Date
-      },
-      status: {
-        type: String,
-        required: true,
-        enum: ["Pending", "Accepted", "Preparing", "Ready", "Ready for Pickup", "Picked Up", "Ready for Dispatch", "Served", "Billing Requested", "Out for Delivery", "Delivered", "Cancelled", "Completed"],
-        default: "Pending"
-      },
-      kitchenMode: {
-        type: String,
-        enum: ["KDS", "KOT_ONLY"],
-        default: "KDS"
-      },
-      statusHistory: [
-        {
-          status: { type: String, required: true },
-          timestamp: { type: Date, default: Date.now },
-          updatedBy: { type: import_mongoose4.default.Schema.Types.ObjectId, ref: "User" }
-        }
-      ],
-      pickupTime: {
-        type: Date
-      },
-      estimatedPrepMinutes: {
-        type: Number,
-        default: 20
-      },
-      estimatedReadyTime: {
-        type: Date
-      },
-      // Location Coordinates for Live OSRM Road Tracking
-      customerLocation: {
-        latitude: { type: Number, default: null },
-        longitude: { type: Number, default: null }
-      },
-      restaurantLocation: {
-        latitude: { type: Number, default: null },
-        longitude: { type: Number, default: null }
-      },
-      deliveryPartnerLocation: {
-        latitude: { type: Number, default: null },
-        longitude: { type: Number, default: null },
-        updatedAt: { type: Date, default: null }
-      },
-      // Delivery partner details
-      deliveryPartner: {
-        type: import_mongoose4.default.Schema.Types.ObjectId,
-        ref: "User"
-      },
-      deliveryStatus: {
-        type: String,
-        enum: ["None", "Pending Assignment", "Accepted", "Rejected", "Picked Up", "On the Way", "Delivered", "Cancelled"],
-        default: "None"
-      },
-      deliveryDistance: {
-        type: Number,
-        default: 0
-      },
-      deliveryCharge: {
-        type: Number,
-        default: 0
-      },
-      deliveryETA: {
-        type: Date
-      },
-      deliveryOtp: {
-        type: String,
-        default: null
-      },
-      deliveryRating: {
-        speed: { type: Number, default: 0 },
-        behaviour: { type: Number, default: 0 },
-        foodHandling: { type: Number, default: 0 },
-        overall: { type: Number, default: 0 },
-        review: { type: String, default: "" }
-      },
-      internalRating: {
-        type: Number,
-        default: 0
-      },
-      supportMessages: [
-        {
-          sender: { type: String, enum: ["DeliveryPartner", "Customer", "Restaurant", "System"], default: "DeliveryPartner" },
-          message: { type: String, required: true },
-          timestamp: { type: Date, default: Date.now }
-        }
-      ],
-      kotNumbers: [{
-        type: String
-      }],
-      kots: [{
-        type: import_mongoose4.default.Schema.Types.ObjectId,
-        ref: "KOT"
-      }]
-    }, { timestamps: true });
-    Order2 = import_mongoose4.default.model("Order", orderSchema);
-    Order_default = Order2;
-  }
-});
-
-// node_modules/safe-buffer/index.js
-var require_safe_buffer = __commonJS({
-  "node_modules/safe-buffer/index.js"(exports2, module2) {
-    var buffer = require("buffer");
-    var Buffer2 = buffer.Buffer;
-    function copyProps(src, dst) {
-      for (var key in src) {
-        dst[key] = src[key];
-      }
-    }
-    if (Buffer2.from && Buffer2.alloc && Buffer2.allocUnsafe && Buffer2.allocUnsafeSlow) {
-      module2.exports = buffer;
-    } else {
-      copyProps(buffer, exports2);
-      exports2.Buffer = SafeBuffer;
-    }
-    function SafeBuffer(arg, encodingOrOffset, length) {
-      return Buffer2(arg, encodingOrOffset, length);
-    }
-    SafeBuffer.prototype = Object.create(Buffer2.prototype);
-    copyProps(Buffer2, SafeBuffer);
-    SafeBuffer.from = function(arg, encodingOrOffset, length) {
-      if (typeof arg === "number") {
-        throw new TypeError("Argument must not be a number");
-      }
-      return Buffer2(arg, encodingOrOffset, length);
-    };
-    SafeBuffer.alloc = function(size, fill, encoding) {
-      if (typeof size !== "number") {
-        throw new TypeError("Argument must be a number");
-      }
-      var buf = Buffer2(size);
-      if (fill !== void 0) {
-        if (typeof encoding === "string") {
-          buf.fill(fill, encoding);
-        } else {
-          buf.fill(fill);
-        }
-      } else {
-        buf.fill(0);
-      }
-      return buf;
-    };
-    SafeBuffer.allocUnsafe = function(size) {
-      if (typeof size !== "number") {
-        throw new TypeError("Argument must be a number");
-      }
-      return Buffer2(size);
-    };
-    SafeBuffer.allocUnsafeSlow = function(size) {
-      if (typeof size !== "number") {
-        throw new TypeError("Argument must be a number");
-      }
-      return buffer.SlowBuffer(size);
-    };
-  }
-});
-
-// node_modules/jws/lib/data-stream.js
-var require_data_stream = __commonJS({
-  "node_modules/jws/lib/data-stream.js"(exports2, module2) {
-    var Buffer2 = require_safe_buffer().Buffer;
-    var Stream = require("stream");
-    var util = require("util");
-    function DataStream(data) {
-      this.buffer = null;
-      this.writable = true;
-      this.readable = true;
-      if (!data) {
-        this.buffer = Buffer2.alloc(0);
-        return this;
-      }
-      if (typeof data.pipe === "function") {
-        this.buffer = Buffer2.alloc(0);
-        data.pipe(this);
-        return this;
-      }
-      if (data.length || typeof data === "object") {
-        this.buffer = data;
-        this.writable = false;
-        process.nextTick(function() {
-          this.emit("end", data);
-          this.readable = false;
-          this.emit("close");
-        }.bind(this));
-        return this;
-      }
-      throw new TypeError("Unexpected data type (" + typeof data + ")");
-    }
-    util.inherits(DataStream, Stream);
-    DataStream.prototype.write = function write(data) {
-      this.buffer = Buffer2.concat([this.buffer, Buffer2.from(data)]);
-      this.emit("data", data);
-    };
-    DataStream.prototype.end = function end(data) {
-      if (data)
-        this.write(data);
-      this.emit("end", data);
-      this.emit("close");
-      this.writable = false;
-      this.readable = false;
-    };
-    module2.exports = DataStream;
-  }
-});
-
-// node_modules/ecdsa-sig-formatter/src/param-bytes-for-alg.js
-var require_param_bytes_for_alg = __commonJS({
-  "node_modules/ecdsa-sig-formatter/src/param-bytes-for-alg.js"(exports2, module2) {
-    "use strict";
-    function getParamSize(keySize) {
-      var result = (keySize / 8 | 0) + (keySize % 8 === 0 ? 0 : 1);
-      return result;
-    }
-    var paramBytesForAlg = {
-      ES256: getParamSize(256),
-      ES384: getParamSize(384),
-      ES512: getParamSize(521)
-    };
-    function getParamBytesForAlg(alg) {
-      var paramBytes = paramBytesForAlg[alg];
-      if (paramBytes) {
-        return paramBytes;
-      }
-      throw new Error('Unknown algorithm "' + alg + '"');
-    }
-    module2.exports = getParamBytesForAlg;
-  }
-});
-
-// node_modules/ecdsa-sig-formatter/src/ecdsa-sig-formatter.js
-var require_ecdsa_sig_formatter = __commonJS({
-  "node_modules/ecdsa-sig-formatter/src/ecdsa-sig-formatter.js"(exports2, module2) {
-    "use strict";
-    var Buffer2 = require_safe_buffer().Buffer;
-    var getParamBytesForAlg = require_param_bytes_for_alg();
-    var MAX_OCTET = 128;
-    var CLASS_UNIVERSAL = 0;
-    var PRIMITIVE_BIT = 32;
-    var TAG_SEQ = 16;
-    var TAG_INT = 2;
-    var ENCODED_TAG_SEQ = TAG_SEQ | PRIMITIVE_BIT | CLASS_UNIVERSAL << 6;
-    var ENCODED_TAG_INT = TAG_INT | CLASS_UNIVERSAL << 6;
-    function base64Url(base64) {
-      return base64.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-    }
-    function signatureAsBuffer(signature) {
-      if (Buffer2.isBuffer(signature)) {
-        return signature;
-      } else if ("string" === typeof signature) {
-        return Buffer2.from(signature, "base64");
-      }
-      throw new TypeError("ECDSA signature must be a Base64 string or a Buffer");
-    }
-    function derToJose(signature, alg) {
-      signature = signatureAsBuffer(signature);
-      var paramBytes = getParamBytesForAlg(alg);
-      var maxEncodedParamLength = paramBytes + 1;
-      var inputLength = signature.length;
-      var offset = 0;
-      if (signature[offset++] !== ENCODED_TAG_SEQ) {
-        throw new Error('Could not find expected "seq"');
-      }
-      var seqLength = signature[offset++];
-      if (seqLength === (MAX_OCTET | 1)) {
-        seqLength = signature[offset++];
-      }
-      if (inputLength - offset < seqLength) {
-        throw new Error('"seq" specified length of "' + seqLength + '", only "' + (inputLength - offset) + '" remaining');
-      }
-      if (signature[offset++] !== ENCODED_TAG_INT) {
-        throw new Error('Could not find expected "int" for "r"');
-      }
-      var rLength = signature[offset++];
-      if (inputLength - offset - 2 < rLength) {
-        throw new Error('"r" specified length of "' + rLength + '", only "' + (inputLength - offset - 2) + '" available');
-      }
-      if (maxEncodedParamLength < rLength) {
-        throw new Error('"r" specified length of "' + rLength + '", max of "' + maxEncodedParamLength + '" is acceptable');
-      }
-      var rOffset = offset;
-      offset += rLength;
-      if (signature[offset++] !== ENCODED_TAG_INT) {
-        throw new Error('Could not find expected "int" for "s"');
-      }
-      var sLength = signature[offset++];
-      if (inputLength - offset !== sLength) {
-        throw new Error('"s" specified length of "' + sLength + '", expected "' + (inputLength - offset) + '"');
-      }
-      if (maxEncodedParamLength < sLength) {
-        throw new Error('"s" specified length of "' + sLength + '", max of "' + maxEncodedParamLength + '" is acceptable');
-      }
-      var sOffset = offset;
-      offset += sLength;
-      if (offset !== inputLength) {
-        throw new Error('Expected to consume entire buffer, but "' + (inputLength - offset) + '" bytes remain');
-      }
-      var rPadding = paramBytes - rLength, sPadding = paramBytes - sLength;
-      var dst = Buffer2.allocUnsafe(rPadding + rLength + sPadding + sLength);
-      for (offset = 0; offset < rPadding; ++offset) {
-        dst[offset] = 0;
-      }
-      signature.copy(dst, offset, rOffset + Math.max(-rPadding, 0), rOffset + rLength);
-      offset = paramBytes;
-      for (var o = offset; offset < o + sPadding; ++offset) {
-        dst[offset] = 0;
-      }
-      signature.copy(dst, offset, sOffset + Math.max(-sPadding, 0), sOffset + sLength);
-      dst = dst.toString("base64");
-      dst = base64Url(dst);
-      return dst;
-    }
-    function countPadding(buf, start, stop) {
-      var padding = 0;
-      while (start + padding < stop && buf[start + padding] === 0) {
-        ++padding;
-      }
-      var needsSign = buf[start + padding] >= MAX_OCTET;
-      if (needsSign) {
-        --padding;
-      }
-      return padding;
-    }
-    function joseToDer(signature, alg) {
-      signature = signatureAsBuffer(signature);
-      var paramBytes = getParamBytesForAlg(alg);
-      var signatureBytes = signature.length;
-      if (signatureBytes !== paramBytes * 2) {
-        throw new TypeError('"' + alg + '" signatures must be "' + paramBytes * 2 + '" bytes, saw "' + signatureBytes + '"');
-      }
-      var rPadding = countPadding(signature, 0, paramBytes);
-      var sPadding = countPadding(signature, paramBytes, signature.length);
-      var rLength = paramBytes - rPadding;
-      var sLength = paramBytes - sPadding;
-      var rsBytes = 1 + 1 + rLength + 1 + 1 + sLength;
-      var shortLength = rsBytes < MAX_OCTET;
-      var dst = Buffer2.allocUnsafe((shortLength ? 2 : 3) + rsBytes);
-      var offset = 0;
-      dst[offset++] = ENCODED_TAG_SEQ;
-      if (shortLength) {
-        dst[offset++] = rsBytes;
-      } else {
-        dst[offset++] = MAX_OCTET | 1;
-        dst[offset++] = rsBytes & 255;
-      }
-      dst[offset++] = ENCODED_TAG_INT;
-      dst[offset++] = rLength;
-      if (rPadding < 0) {
-        dst[offset++] = 0;
-        offset += signature.copy(dst, offset, 0, paramBytes);
-      } else {
-        offset += signature.copy(dst, offset, rPadding, paramBytes);
-      }
-      dst[offset++] = ENCODED_TAG_INT;
-      dst[offset++] = sLength;
-      if (sPadding < 0) {
-        dst[offset++] = 0;
-        signature.copy(dst, offset, paramBytes);
-      } else {
-        signature.copy(dst, offset, paramBytes + sPadding);
-      }
-      return dst;
-    }
-    module2.exports = {
-      derToJose,
-      joseToDer
-    };
-  }
-});
-
-// node_modules/buffer-equal-constant-time/index.js
-var require_buffer_equal_constant_time = __commonJS({
-  "node_modules/buffer-equal-constant-time/index.js"(exports2, module2) {
-    "use strict";
-    var Buffer2 = require("buffer").Buffer;
-    var SlowBuffer = require("buffer").SlowBuffer;
-    module2.exports = bufferEq;
-    function bufferEq(a, b) {
-      if (!Buffer2.isBuffer(a) || !Buffer2.isBuffer(b)) {
-        return false;
-      }
-      if (a.length !== b.length) {
-        return false;
-      }
-      var c = 0;
-      for (var i = 0; i < a.length; i++) {
-        c |= a[i] ^ b[i];
-      }
-      return c === 0;
-    }
-    bufferEq.install = function() {
-      Buffer2.prototype.equal = SlowBuffer.prototype.equal = function equal(that) {
-        return bufferEq(this, that);
-      };
-    };
-    var origBufEqual = Buffer2.prototype.equal;
-    var origSlowBufEqual = SlowBuffer.prototype.equal;
-    bufferEq.restore = function() {
-      Buffer2.prototype.equal = origBufEqual;
-      SlowBuffer.prototype.equal = origSlowBufEqual;
-    };
-  }
-});
-
-// node_modules/jwa/index.js
-var require_jwa = __commonJS({
-  "node_modules/jwa/index.js"(exports2, module2) {
-    var Buffer2 = require_safe_buffer().Buffer;
-    var crypto2 = require("crypto");
-    var formatEcdsa = require_ecdsa_sig_formatter();
-    var util = require("util");
-    var MSG_INVALID_ALGORITHM = '"%s" is not a valid algorithm.\n  Supported algorithms are:\n  "HS256", "HS384", "HS512", "RS256", "RS384", "RS512", "PS256", "PS384", "PS512", "ES256", "ES384", "ES512" and "none".';
-    var MSG_INVALID_SECRET = "secret must be a string or buffer";
-    var MSG_INVALID_VERIFIER_KEY = "key must be a string or a buffer";
-    var MSG_INVALID_SIGNER_KEY = "key must be a string, a buffer or an object";
-    var supportsKeyObjects = typeof crypto2.createPublicKey === "function";
-    if (supportsKeyObjects) {
-      MSG_INVALID_VERIFIER_KEY += " or a KeyObject";
-      MSG_INVALID_SECRET += "or a KeyObject";
-    }
-    function checkIsPublicKey(key) {
-      if (Buffer2.isBuffer(key)) {
-        return;
-      }
-      if (typeof key === "string") {
-        return;
-      }
-      if (!supportsKeyObjects) {
-        throw typeError(MSG_INVALID_VERIFIER_KEY);
-      }
-      if (typeof key !== "object") {
-        throw typeError(MSG_INVALID_VERIFIER_KEY);
-      }
-      if (typeof key.type !== "string") {
-        throw typeError(MSG_INVALID_VERIFIER_KEY);
-      }
-      if (typeof key.asymmetricKeyType !== "string") {
-        throw typeError(MSG_INVALID_VERIFIER_KEY);
-      }
-      if (typeof key.export !== "function") {
-        throw typeError(MSG_INVALID_VERIFIER_KEY);
-      }
-    }
-    function checkIsPrivateKey(key) {
-      if (Buffer2.isBuffer(key)) {
-        return;
-      }
-      if (typeof key === "string") {
-        return;
-      }
-      if (typeof key === "object") {
-        return;
-      }
-      throw typeError(MSG_INVALID_SIGNER_KEY);
-    }
-    function checkIsSecretKey(key) {
-      if (Buffer2.isBuffer(key)) {
-        return;
-      }
-      if (typeof key === "string") {
-        return key;
-      }
-      if (!supportsKeyObjects) {
-        throw typeError(MSG_INVALID_SECRET);
-      }
-      if (typeof key !== "object") {
-        throw typeError(MSG_INVALID_SECRET);
-      }
-      if (key.type !== "secret") {
-        throw typeError(MSG_INVALID_SECRET);
-      }
-      if (typeof key.export !== "function") {
-        throw typeError(MSG_INVALID_SECRET);
-      }
-    }
-    function fromBase64(base64) {
-      return base64.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-    }
-    function toBase64(base64url) {
-      base64url = base64url.toString();
-      var padding = 4 - base64url.length % 4;
-      if (padding !== 4) {
-        for (var i = 0; i < padding; ++i) {
-          base64url += "=";
-        }
-      }
-      return base64url.replace(/\-/g, "+").replace(/_/g, "/");
-    }
-    function typeError(template) {
-      var args = [].slice.call(arguments, 1);
-      var errMsg = util.format.bind(util, template).apply(null, args);
-      return new TypeError(errMsg);
-    }
-    function bufferOrString(obj) {
-      return Buffer2.isBuffer(obj) || typeof obj === "string";
-    }
-    function normalizeInput(thing) {
-      if (!bufferOrString(thing))
-        thing = JSON.stringify(thing);
-      return thing;
-    }
-    function createHmacSigner(bits) {
-      return function sign(thing, secret) {
-        checkIsSecretKey(secret);
-        thing = normalizeInput(thing);
-        var hmac = crypto2.createHmac("sha" + bits, secret);
-        var sig = (hmac.update(thing), hmac.digest("base64"));
-        return fromBase64(sig);
-      };
-    }
-    var bufferEqual;
-    var timingSafeEqual = "timingSafeEqual" in crypto2 ? function timingSafeEqual2(a, b) {
-      if (a.byteLength !== b.byteLength) {
-        return false;
-      }
-      return crypto2.timingSafeEqual(a, b);
-    } : function timingSafeEqual2(a, b) {
-      if (!bufferEqual) {
-        bufferEqual = require_buffer_equal_constant_time();
-      }
-      return bufferEqual(a, b);
-    };
-    function createHmacVerifier(bits) {
-      return function verify(thing, signature, secret) {
-        var computedSig = createHmacSigner(bits)(thing, secret);
-        return timingSafeEqual(Buffer2.from(signature), Buffer2.from(computedSig));
-      };
-    }
-    function createKeySigner(bits) {
-      return function sign(thing, privateKey) {
-        checkIsPrivateKey(privateKey);
-        thing = normalizeInput(thing);
-        var signer = crypto2.createSign("RSA-SHA" + bits);
-        var sig = (signer.update(thing), signer.sign(privateKey, "base64"));
-        return fromBase64(sig);
-      };
-    }
-    function createKeyVerifier(bits) {
-      return function verify(thing, signature, publicKey) {
-        checkIsPublicKey(publicKey);
-        thing = normalizeInput(thing);
-        signature = toBase64(signature);
-        var verifier = crypto2.createVerify("RSA-SHA" + bits);
-        verifier.update(thing);
-        return verifier.verify(publicKey, signature, "base64");
-      };
-    }
-    function createPSSKeySigner(bits) {
-      return function sign(thing, privateKey) {
-        checkIsPrivateKey(privateKey);
-        thing = normalizeInput(thing);
-        var signer = crypto2.createSign("RSA-SHA" + bits);
-        var sig = (signer.update(thing), signer.sign({
-          key: privateKey,
-          padding: crypto2.constants.RSA_PKCS1_PSS_PADDING,
-          saltLength: crypto2.constants.RSA_PSS_SALTLEN_DIGEST
-        }, "base64"));
-        return fromBase64(sig);
-      };
-    }
-    function createPSSKeyVerifier(bits) {
-      return function verify(thing, signature, publicKey) {
-        checkIsPublicKey(publicKey);
-        thing = normalizeInput(thing);
-        signature = toBase64(signature);
-        var verifier = crypto2.createVerify("RSA-SHA" + bits);
-        verifier.update(thing);
-        return verifier.verify({
-          key: publicKey,
-          padding: crypto2.constants.RSA_PKCS1_PSS_PADDING,
-          saltLength: crypto2.constants.RSA_PSS_SALTLEN_DIGEST
-        }, signature, "base64");
-      };
-    }
-    function createECDSASigner(bits) {
-      var inner = createKeySigner(bits);
-      return function sign() {
-        var signature = inner.apply(null, arguments);
-        signature = formatEcdsa.derToJose(signature, "ES" + bits);
-        return signature;
-      };
-    }
-    function createECDSAVerifer(bits) {
-      var inner = createKeyVerifier(bits);
-      return function verify(thing, signature, publicKey) {
-        signature = formatEcdsa.joseToDer(signature, "ES" + bits).toString("base64");
-        var result = inner(thing, signature, publicKey);
-        return result;
-      };
-    }
-    function createNoneSigner() {
-      return function sign() {
-        return "";
-      };
-    }
-    function createNoneVerifier() {
-      return function verify(thing, signature) {
-        return signature === "";
-      };
-    }
-    module2.exports = function jwa(algorithm) {
-      var signerFactories = {
-        hs: createHmacSigner,
-        rs: createKeySigner,
-        ps: createPSSKeySigner,
-        es: createECDSASigner,
-        none: createNoneSigner
-      };
-      var verifierFactories = {
-        hs: createHmacVerifier,
-        rs: createKeyVerifier,
-        ps: createPSSKeyVerifier,
-        es: createECDSAVerifer,
-        none: createNoneVerifier
-      };
-      var match = algorithm.match(/^(RS|PS|ES|HS)(256|384|512)$|^(none)$/);
-      if (!match)
-        throw typeError(MSG_INVALID_ALGORITHM, algorithm);
-      var algo = (match[1] || match[3]).toLowerCase();
-      var bits = match[2];
-      return {
-        sign: signerFactories[algo](bits),
-        verify: verifierFactories[algo](bits)
-      };
-    };
-  }
-});
-
-// node_modules/jws/lib/tostring.js
-var require_tostring = __commonJS({
-  "node_modules/jws/lib/tostring.js"(exports2, module2) {
-    var Buffer2 = require("buffer").Buffer;
-    module2.exports = function toString(obj) {
-      if (typeof obj === "string")
-        return obj;
-      if (typeof obj === "number" || Buffer2.isBuffer(obj))
-        return obj.toString();
-      return JSON.stringify(obj);
-    };
-  }
-});
-
-// node_modules/jws/lib/sign-stream.js
-var require_sign_stream = __commonJS({
-  "node_modules/jws/lib/sign-stream.js"(exports2, module2) {
-    var Buffer2 = require_safe_buffer().Buffer;
-    var DataStream = require_data_stream();
-    var jwa = require_jwa();
-    var Stream = require("stream");
-    var toString = require_tostring();
-    var util = require("util");
-    function base64url(string, encoding) {
-      return Buffer2.from(string, encoding).toString("base64").replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-    }
-    function jwsSecuredInput(header, payload, encoding) {
-      encoding = encoding || "utf8";
-      var encodedHeader = base64url(toString(header), "binary");
-      var encodedPayload = base64url(toString(payload), encoding);
-      return util.format("%s.%s", encodedHeader, encodedPayload);
-    }
-    function jwsSign(opts) {
-      var header = opts.header;
-      var payload = opts.payload;
-      var secretOrKey = opts.secret || opts.privateKey;
-      var encoding = opts.encoding;
-      var algo = jwa(header.alg);
-      var securedInput = jwsSecuredInput(header, payload, encoding);
-      var signature = algo.sign(securedInput, secretOrKey);
-      return util.format("%s.%s", securedInput, signature);
-    }
-    function SignStream(opts) {
-      var secret = opts.secret;
-      secret = secret == null ? opts.privateKey : secret;
-      secret = secret == null ? opts.key : secret;
-      if (/^hs/i.test(opts.header.alg) === true && secret == null) {
-        throw new TypeError("secret must be a string or buffer or a KeyObject");
-      }
-      var secretStream = new DataStream(secret);
-      this.readable = true;
-      this.header = opts.header;
-      this.encoding = opts.encoding;
-      this.secret = this.privateKey = this.key = secretStream;
-      this.payload = new DataStream(opts.payload);
-      this.secret.once("close", function() {
-        if (!this.payload.writable && this.readable)
-          this.sign();
-      }.bind(this));
-      this.payload.once("close", function() {
-        if (!this.secret.writable && this.readable)
-          this.sign();
-      }.bind(this));
-    }
-    util.inherits(SignStream, Stream);
-    SignStream.prototype.sign = function sign() {
-      try {
-        var signature = jwsSign({
-          header: this.header,
-          payload: this.payload.buffer,
-          secret: this.secret.buffer,
-          encoding: this.encoding
-        });
-        this.emit("done", signature);
-        this.emit("data", signature);
-        this.emit("end");
-        this.readable = false;
-        return signature;
-      } catch (e) {
-        this.readable = false;
-        this.emit("error", e);
-        this.emit("close");
-      }
-    };
-    SignStream.sign = jwsSign;
-    module2.exports = SignStream;
-  }
-});
-
-// node_modules/jws/lib/verify-stream.js
-var require_verify_stream = __commonJS({
-  "node_modules/jws/lib/verify-stream.js"(exports2, module2) {
-    var Buffer2 = require_safe_buffer().Buffer;
-    var DataStream = require_data_stream();
-    var jwa = require_jwa();
-    var Stream = require("stream");
-    var toString = require_tostring();
-    var util = require("util");
-    var JWS_REGEX = /^[a-zA-Z0-9\-_]+?\.[a-zA-Z0-9\-_]+?\.([a-zA-Z0-9\-_]+)?$/;
-    function isObject(thing) {
-      return Object.prototype.toString.call(thing) === "[object Object]";
-    }
-    function safeJsonParse(thing) {
-      if (isObject(thing))
-        return thing;
-      try {
-        return JSON.parse(thing);
-      } catch (e) {
-        return void 0;
-      }
-    }
-    function headerFromJWS(jwsSig) {
-      var encodedHeader = jwsSig.split(".", 1)[0];
-      return safeJsonParse(Buffer2.from(encodedHeader, "base64").toString("binary"));
-    }
-    function securedInputFromJWS(jwsSig) {
-      return jwsSig.split(".", 2).join(".");
-    }
-    function signatureFromJWS(jwsSig) {
-      return jwsSig.split(".")[2];
-    }
-    function payloadFromJWS(jwsSig, encoding) {
-      encoding = encoding || "utf8";
-      var payload = jwsSig.split(".")[1];
-      return Buffer2.from(payload, "base64").toString(encoding);
-    }
-    function isValidJws(string) {
-      return JWS_REGEX.test(string) && !!headerFromJWS(string);
-    }
-    function jwsVerify(jwsSig, algorithm, secretOrKey) {
-      if (!algorithm) {
-        var err = new Error("Missing algorithm parameter for jws.verify");
-        err.code = "MISSING_ALGORITHM";
-        throw err;
-      }
-      jwsSig = toString(jwsSig);
-      var signature = signatureFromJWS(jwsSig);
-      var securedInput = securedInputFromJWS(jwsSig);
-      var algo = jwa(algorithm);
-      return algo.verify(securedInput, signature, secretOrKey);
-    }
-    function jwsDecode(jwsSig, opts) {
-      opts = opts || {};
-      jwsSig = toString(jwsSig);
-      if (!isValidJws(jwsSig))
-        return null;
-      var header = headerFromJWS(jwsSig);
-      if (!header)
-        return null;
-      var payload = payloadFromJWS(jwsSig);
-      if (header.typ === "JWT" || opts.json)
-        payload = JSON.parse(payload, opts.encoding);
-      return {
-        header,
-        payload,
-        signature: signatureFromJWS(jwsSig)
-      };
-    }
-    function VerifyStream(opts) {
-      opts = opts || {};
-      var secretOrKey = opts.secret;
-      secretOrKey = secretOrKey == null ? opts.publicKey : secretOrKey;
-      secretOrKey = secretOrKey == null ? opts.key : secretOrKey;
-      if (/^hs/i.test(opts.algorithm) === true && secretOrKey == null) {
-        throw new TypeError("secret must be a string or buffer or a KeyObject");
-      }
-      var secretStream = new DataStream(secretOrKey);
-      this.readable = true;
-      this.algorithm = opts.algorithm;
-      this.encoding = opts.encoding;
-      this.secret = this.publicKey = this.key = secretStream;
-      this.signature = new DataStream(opts.signature);
-      this.secret.once("close", function() {
-        if (!this.signature.writable && this.readable)
-          this.verify();
-      }.bind(this));
-      this.signature.once("close", function() {
-        if (!this.secret.writable && this.readable)
-          this.verify();
-      }.bind(this));
-    }
-    util.inherits(VerifyStream, Stream);
-    VerifyStream.prototype.verify = function verify() {
-      try {
-        var valid = jwsVerify(this.signature.buffer, this.algorithm, this.key.buffer);
-        var obj = jwsDecode(this.signature.buffer, this.encoding);
-        this.emit("done", valid, obj);
-        this.emit("data", valid);
-        this.emit("end");
-        this.readable = false;
-        return valid;
-      } catch (e) {
-        this.readable = false;
-        this.emit("error", e);
-        this.emit("close");
-      }
-    };
-    VerifyStream.decode = jwsDecode;
-    VerifyStream.isValid = isValidJws;
-    VerifyStream.verify = jwsVerify;
-    module2.exports = VerifyStream;
-  }
-});
-
-// node_modules/jws/index.js
-var require_jws = __commonJS({
-  "node_modules/jws/index.js"(exports2) {
-    var SignStream = require_sign_stream();
-    var VerifyStream = require_verify_stream();
-    var ALGORITHMS = [
-      "HS256",
-      "HS384",
-      "HS512",
-      "RS256",
-      "RS384",
-      "RS512",
-      "PS256",
-      "PS384",
-      "PS512",
-      "ES256",
-      "ES384",
-      "ES512"
-    ];
-    exports2.ALGORITHMS = ALGORITHMS;
-    exports2.sign = SignStream.sign;
-    exports2.verify = VerifyStream.verify;
-    exports2.decode = VerifyStream.decode;
-    exports2.isValid = VerifyStream.isValid;
-    exports2.createSign = function createSign(opts) {
-      return new SignStream(opts);
-    };
-    exports2.createVerify = function createVerify(opts) {
-      return new VerifyStream(opts);
-    };
-  }
-});
-
-// node_modules/jsonwebtoken/decode.js
-var require_decode = __commonJS({
-  "node_modules/jsonwebtoken/decode.js"(exports2, module2) {
-    var jws = require_jws();
-    module2.exports = function(jwt4, options) {
-      options = options || {};
-      var decoded = jws.decode(jwt4, options);
-      if (!decoded) {
-        return null;
-      }
-      var payload = decoded.payload;
-      if (typeof payload === "string") {
-        try {
-          var obj = JSON.parse(payload);
-          if (obj !== null && typeof obj === "object") {
-            payload = obj;
-          }
-        } catch (e) {
-        }
-      }
-      if (options.complete === true) {
-        return {
-          header: decoded.header,
-          payload,
-          signature: decoded.signature
-        };
-      }
-      return payload;
-    };
-  }
-});
-
-// node_modules/jsonwebtoken/lib/JsonWebTokenError.js
-var require_JsonWebTokenError = __commonJS({
-  "node_modules/jsonwebtoken/lib/JsonWebTokenError.js"(exports2, module2) {
-    var JsonWebTokenError = function(message, error) {
-      Error.call(this, message);
-      if (Error.captureStackTrace) {
-        Error.captureStackTrace(this, this.constructor);
-      }
-      this.name = "JsonWebTokenError";
-      this.message = message;
-      if (error) this.inner = error;
-    };
-    JsonWebTokenError.prototype = Object.create(Error.prototype);
-    JsonWebTokenError.prototype.constructor = JsonWebTokenError;
-    module2.exports = JsonWebTokenError;
-  }
-});
-
-// node_modules/jsonwebtoken/lib/NotBeforeError.js
-var require_NotBeforeError = __commonJS({
-  "node_modules/jsonwebtoken/lib/NotBeforeError.js"(exports2, module2) {
-    var JsonWebTokenError = require_JsonWebTokenError();
-    var NotBeforeError = function(message, date) {
-      JsonWebTokenError.call(this, message);
-      this.name = "NotBeforeError";
-      this.date = date;
-    };
-    NotBeforeError.prototype = Object.create(JsonWebTokenError.prototype);
-    NotBeforeError.prototype.constructor = NotBeforeError;
-    module2.exports = NotBeforeError;
-  }
-});
-
-// node_modules/jsonwebtoken/lib/TokenExpiredError.js
-var require_TokenExpiredError = __commonJS({
-  "node_modules/jsonwebtoken/lib/TokenExpiredError.js"(exports2, module2) {
-    var JsonWebTokenError = require_JsonWebTokenError();
-    var TokenExpiredError = function(message, expiredAt) {
-      JsonWebTokenError.call(this, message);
-      this.name = "TokenExpiredError";
-      this.expiredAt = expiredAt;
-    };
-    TokenExpiredError.prototype = Object.create(JsonWebTokenError.prototype);
-    TokenExpiredError.prototype.constructor = TokenExpiredError;
-    module2.exports = TokenExpiredError;
-  }
-});
-
-// node_modules/jsonwebtoken/lib/timespan.js
-var require_timespan = __commonJS({
-  "node_modules/jsonwebtoken/lib/timespan.js"(exports2, module2) {
-    var ms = require_ms();
-    module2.exports = function(time, iat) {
-      var timestamp = iat || Math.floor(Date.now() / 1e3);
-      if (typeof time === "string") {
-        var milliseconds = ms(time);
-        if (typeof milliseconds === "undefined") {
-          return;
-        }
-        return Math.floor(timestamp + milliseconds / 1e3);
-      } else if (typeof time === "number") {
-        return timestamp + time;
-      } else {
-        return;
-      }
-    };
-  }
-});
-
-// node_modules/semver/internal/constants.js
-var require_constants4 = __commonJS({
-  "node_modules/semver/internal/constants.js"(exports2, module2) {
-    "use strict";
-    var SEMVER_SPEC_VERSION = "2.0.0";
-    var MAX_LENGTH = 256;
-    var MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || /* istanbul ignore next */
-    9007199254740991;
-    var MAX_SAFE_COMPONENT_LENGTH = 16;
-    var MAX_SAFE_BUILD_LENGTH = MAX_LENGTH - 6;
-    var RELEASE_TYPES = [
-      "major",
-      "premajor",
-      "minor",
-      "preminor",
-      "patch",
-      "prepatch",
-      "prerelease"
-    ];
-    module2.exports = {
-      MAX_LENGTH,
-      MAX_SAFE_COMPONENT_LENGTH,
-      MAX_SAFE_BUILD_LENGTH,
-      MAX_SAFE_INTEGER,
-      RELEASE_TYPES,
-      SEMVER_SPEC_VERSION,
-      FLAG_INCLUDE_PRERELEASE: 1,
-      FLAG_LOOSE: 2
-    };
-  }
-});
-
-// node_modules/semver/internal/debug.js
-var require_debug = __commonJS({
-  "node_modules/semver/internal/debug.js"(exports2, module2) {
-    "use strict";
-    var debug = typeof process === "object" && process.env && process.env.NODE_DEBUG && /\bsemver\b/i.test(process.env.NODE_DEBUG) ? (...args) => console.error("SEMVER", ...args) : () => {
-    };
-    module2.exports = debug;
-  }
-});
-
-// node_modules/semver/internal/re.js
-var require_re = __commonJS({
-  "node_modules/semver/internal/re.js"(exports2, module2) {
-    "use strict";
-    var {
-      MAX_SAFE_COMPONENT_LENGTH,
-      MAX_SAFE_BUILD_LENGTH,
-      MAX_LENGTH
-    } = require_constants4();
-    var debug = require_debug();
-    exports2 = module2.exports = {};
-    var re = exports2.re = [];
-    var safeRe = exports2.safeRe = [];
-    var src = exports2.src = [];
-    var safeSrc = exports2.safeSrc = [];
-    var t = exports2.t = {};
-    var R = 0;
-    var LETTERDASHNUMBER = "[a-zA-Z0-9-]";
-    var safeRegexReplacements = [
-      ["\\s", 1],
-      ["\\d", MAX_LENGTH],
-      [LETTERDASHNUMBER, MAX_SAFE_BUILD_LENGTH]
-    ];
-    var makeSafeRegex = (value) => {
-      for (const [token, max] of safeRegexReplacements) {
-        value = value.split(`${token}*`).join(`${token}{0,${max}}`).split(`${token}+`).join(`${token}{1,${max}}`);
-      }
-      return value;
-    };
-    var createToken = (name, value, isGlobal) => {
-      const safe = makeSafeRegex(value);
-      const index = R++;
-      debug(name, index, value);
-      t[name] = index;
-      src[index] = value;
-      safeSrc[index] = safe;
-      re[index] = new RegExp(value, isGlobal ? "g" : void 0);
-      safeRe[index] = new RegExp(safe, isGlobal ? "g" : void 0);
-    };
-    createToken("NUMERICIDENTIFIER", "0|[1-9]\\d*");
-    createToken("NUMERICIDENTIFIERLOOSE", "\\d+");
-    createToken("NONNUMERICIDENTIFIER", `\\d*[a-zA-Z-]${LETTERDASHNUMBER}*`);
-    createToken("MAINVERSION", `(${src[t.NUMERICIDENTIFIER]})\\.(${src[t.NUMERICIDENTIFIER]})\\.(${src[t.NUMERICIDENTIFIER]})`);
-    createToken("MAINVERSIONLOOSE", `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.(${src[t.NUMERICIDENTIFIERLOOSE]})\\.(${src[t.NUMERICIDENTIFIERLOOSE]})`);
-    createToken("PRERELEASEIDENTIFIER", `(?:${src[t.NONNUMERICIDENTIFIER]}|${src[t.NUMERICIDENTIFIER]})`);
-    createToken("PRERELEASEIDENTIFIERLOOSE", `(?:${src[t.NONNUMERICIDENTIFIER]}|${src[t.NUMERICIDENTIFIERLOOSE]})`);
-    createToken("PRERELEASE", `(?:-(${src[t.PRERELEASEIDENTIFIER]}(?:\\.${src[t.PRERELEASEIDENTIFIER]})*))`);
-    createToken("PRERELEASELOOSE", `(?:-?(${src[t.PRERELEASEIDENTIFIERLOOSE]}(?:\\.${src[t.PRERELEASEIDENTIFIERLOOSE]})*))`);
-    createToken("BUILDIDENTIFIER", `${LETTERDASHNUMBER}+`);
-    createToken("BUILD", `(?:\\+(${src[t.BUILDIDENTIFIER]}(?:\\.${src[t.BUILDIDENTIFIER]})*))`);
-    createToken("FULLPLAIN", `v?${src[t.MAINVERSION]}${src[t.PRERELEASE]}?${src[t.BUILD]}?`);
-    createToken("FULL", `^${src[t.FULLPLAIN]}$`);
-    createToken("LOOSEPLAIN", `[v=\\s]*${src[t.MAINVERSIONLOOSE]}${src[t.PRERELEASELOOSE]}?${src[t.BUILD]}?`);
-    createToken("LOOSE", `^${src[t.LOOSEPLAIN]}$`);
-    createToken("GTLT", "((?:<|>)?=?)");
-    createToken("XRANGEIDENTIFIERLOOSE", `${src[t.NUMERICIDENTIFIERLOOSE]}|x|X|\\*`);
-    createToken("XRANGEIDENTIFIER", `${src[t.NUMERICIDENTIFIER]}|x|X|\\*`);
-    createToken("XRANGEPLAIN", `[v=\\s]*(${src[t.XRANGEIDENTIFIER]})(?:\\.(${src[t.XRANGEIDENTIFIER]})(?:\\.(${src[t.XRANGEIDENTIFIER]})(?:${src[t.PRERELEASE]})?${src[t.BUILD]}?)?)?`);
-    createToken("XRANGEPLAINLOOSE", `[v=\\s]*(${src[t.XRANGEIDENTIFIERLOOSE]})(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})(?:${src[t.PRERELEASELOOSE]})?${src[t.BUILD]}?)?)?`);
-    createToken("XRANGE", `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAIN]}$`);
-    createToken("XRANGELOOSE", `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAINLOOSE]}$`);
-    createToken("COERCEPLAIN", `${"(^|[^\\d])(\\d{1,"}${MAX_SAFE_COMPONENT_LENGTH}})(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?`);
-    createToken("COERCE", `${src[t.COERCEPLAIN]}(?:$|[^\\d])`);
-    createToken("COERCEFULL", src[t.COERCEPLAIN] + `(?:${src[t.PRERELEASE]})?(?:${src[t.BUILD]})?(?:$|[^\\d])`);
-    createToken("COERCERTL", src[t.COERCE], true);
-    createToken("COERCERTLFULL", src[t.COERCEFULL], true);
-    createToken("LONETILDE", "(?:~>?)");
-    createToken("TILDETRIM", `(\\s*)${src[t.LONETILDE]}\\s+`, true);
-    exports2.tildeTrimReplace = "$1~";
-    createToken("TILDE", `^${src[t.LONETILDE]}${src[t.XRANGEPLAIN]}$`);
-    createToken("TILDELOOSE", `^${src[t.LONETILDE]}${src[t.XRANGEPLAINLOOSE]}$`);
-    createToken("LONECARET", "(?:\\^)");
-    createToken("CARETTRIM", `(\\s*)${src[t.LONECARET]}\\s+`, true);
-    exports2.caretTrimReplace = "$1^";
-    createToken("CARET", `^${src[t.LONECARET]}${src[t.XRANGEPLAIN]}$`);
-    createToken("CARETLOOSE", `^${src[t.LONECARET]}${src[t.XRANGEPLAINLOOSE]}$`);
-    createToken("COMPARATORLOOSE", `^${src[t.GTLT]}\\s*(${src[t.LOOSEPLAIN]})$|^$`);
-    createToken("COMPARATOR", `^${src[t.GTLT]}\\s*(${src[t.FULLPLAIN]})$|^$`);
-    createToken("COMPARATORTRIM", `(\\s*)${src[t.GTLT]}\\s*(${src[t.LOOSEPLAIN]}|${src[t.XRANGEPLAIN]})`, true);
-    exports2.comparatorTrimReplace = "$1$2$3";
-    createToken("HYPHENRANGE", `^\\s*(${src[t.XRANGEPLAIN]})\\s+-\\s+(${src[t.XRANGEPLAIN]})\\s*$`);
-    createToken("HYPHENRANGELOOSE", `^\\s*(${src[t.XRANGEPLAINLOOSE]})\\s+-\\s+(${src[t.XRANGEPLAINLOOSE]})\\s*$`);
-    createToken("STAR", "(<|>)?=?\\s*\\*");
-    createToken("GTE0", "^\\s*>=\\s*0\\.0\\.0\\s*$");
-    createToken("GTE0PRE", "^\\s*>=\\s*0\\.0\\.0-0\\s*$");
-  }
-});
-
-// node_modules/semver/internal/parse-options.js
-var require_parse_options = __commonJS({
-  "node_modules/semver/internal/parse-options.js"(exports2, module2) {
-    "use strict";
-    var looseOption = Object.freeze({ loose: true });
-    var emptyOpts = Object.freeze({});
-    var parseOptions = (options) => {
-      if (!options) {
-        return emptyOpts;
-      }
-      if (typeof options !== "object") {
-        return looseOption;
-      }
-      return options;
-    };
-    module2.exports = parseOptions;
-  }
-});
-
-// node_modules/semver/internal/identifiers.js
-var require_identifiers = __commonJS({
-  "node_modules/semver/internal/identifiers.js"(exports2, module2) {
-    "use strict";
-    var numeric = /^[0-9]+$/;
-    var compareIdentifiers = (a, b) => {
-      if (typeof a === "number" && typeof b === "number") {
-        return a === b ? 0 : a < b ? -1 : 1;
-      }
-      const anum = numeric.test(a);
-      const bnum = numeric.test(b);
-      if (anum && bnum) {
-        a = +a;
-        b = +b;
-      }
-      return a === b ? 0 : anum && !bnum ? -1 : bnum && !anum ? 1 : a < b ? -1 : 1;
-    };
-    var rcompareIdentifiers = (a, b) => compareIdentifiers(b, a);
-    module2.exports = {
-      compareIdentifiers,
-      rcompareIdentifiers
-    };
-  }
-});
-
-// node_modules/semver/classes/semver.js
-var require_semver = __commonJS({
-  "node_modules/semver/classes/semver.js"(exports2, module2) {
-    "use strict";
-    var debug = require_debug();
-    var { MAX_LENGTH, MAX_SAFE_INTEGER } = require_constants4();
-    var { safeRe: re, t } = require_re();
-    var parseOptions = require_parse_options();
-    var { compareIdentifiers } = require_identifiers();
-    var isPrereleaseIdentifier = (prerelease, identifier) => {
-      const identifiers = identifier.split(".");
-      if (identifiers.length > prerelease.length) {
-        return false;
-      }
-      for (let i = 0; i < identifiers.length; i++) {
-        if (compareIdentifiers(prerelease[i], identifiers[i]) !== 0) {
-          return false;
-        }
-      }
-      return true;
-    };
-    var SemVer = class _SemVer {
-      constructor(version, options) {
-        options = parseOptions(options);
-        if (version instanceof _SemVer) {
-          if (version.loose === !!options.loose && version.includePrerelease === !!options.includePrerelease) {
-            return version;
-          } else {
-            version = version.version;
-          }
-        } else if (typeof version !== "string") {
-          throw new TypeError(`Invalid version. Must be a string. Got type "${typeof version}".`);
-        }
-        if (version.length > MAX_LENGTH) {
-          throw new TypeError(
-            `version is longer than ${MAX_LENGTH} characters`
-          );
-        }
-        debug("SemVer", version, options);
-        this.options = options;
-        this.loose = !!options.loose;
-        this.includePrerelease = !!options.includePrerelease;
-        const m = version.trim().match(options.loose ? re[t.LOOSE] : re[t.FULL]);
-        if (!m) {
-          throw new TypeError(`Invalid Version: ${version}`);
-        }
-        this.raw = version;
-        this.major = +m[1];
-        this.minor = +m[2];
-        this.patch = +m[3];
-        if (this.major > MAX_SAFE_INTEGER || this.major < 0) {
-          throw new TypeError("Invalid major version");
-        }
-        if (this.minor > MAX_SAFE_INTEGER || this.minor < 0) {
-          throw new TypeError("Invalid minor version");
-        }
-        if (this.patch > MAX_SAFE_INTEGER || this.patch < 0) {
-          throw new TypeError("Invalid patch version");
-        }
-        if (!m[4]) {
-          this.prerelease = [];
-        } else {
-          this.prerelease = m[4].split(".").map((id) => {
-            if (/^[0-9]+$/.test(id)) {
-              const num = +id;
-              if (num >= 0 && num < MAX_SAFE_INTEGER) {
-                return num;
-              }
-            }
-            return id;
-          });
-        }
-        this.build = m[5] ? m[5].split(".") : [];
-        this.format();
-      }
-      format() {
-        this.version = `${this.major}.${this.minor}.${this.patch}`;
-        if (this.prerelease.length) {
-          this.version += `-${this.prerelease.join(".")}`;
-        }
-        return this.version;
-      }
-      toString() {
-        return this.version;
-      }
-      compare(other) {
-        debug("SemVer.compare", this.version, this.options, other);
-        if (!(other instanceof _SemVer)) {
-          if (typeof other === "string" && other === this.version) {
-            return 0;
-          }
-          other = new _SemVer(other, this.options);
-        }
-        if (other.version === this.version) {
-          return 0;
-        }
-        return this.compareMain(other) || this.comparePre(other);
-      }
-      compareMain(other) {
-        if (!(other instanceof _SemVer)) {
-          other = new _SemVer(other, this.options);
-        }
-        if (this.major < other.major) {
-          return -1;
-        }
-        if (this.major > other.major) {
-          return 1;
-        }
-        if (this.minor < other.minor) {
-          return -1;
-        }
-        if (this.minor > other.minor) {
-          return 1;
-        }
-        if (this.patch < other.patch) {
-          return -1;
-        }
-        if (this.patch > other.patch) {
-          return 1;
-        }
-        return 0;
-      }
-      comparePre(other) {
-        if (!(other instanceof _SemVer)) {
-          other = new _SemVer(other, this.options);
-        }
-        if (this.prerelease.length && !other.prerelease.length) {
-          return -1;
-        } else if (!this.prerelease.length && other.prerelease.length) {
-          return 1;
-        } else if (!this.prerelease.length && !other.prerelease.length) {
-          return 0;
-        }
-        let i = 0;
-        do {
-          const a = this.prerelease[i];
-          const b = other.prerelease[i];
-          debug("prerelease compare", i, a, b);
-          if (a === void 0 && b === void 0) {
-            return 0;
-          } else if (b === void 0) {
-            return 1;
-          } else if (a === void 0) {
-            return -1;
-          } else if (a === b) {
-            continue;
-          } else {
-            return compareIdentifiers(a, b);
-          }
-        } while (++i);
-      }
-      compareBuild(other) {
-        if (!(other instanceof _SemVer)) {
-          other = new _SemVer(other, this.options);
-        }
-        let i = 0;
-        do {
-          const a = this.build[i];
-          const b = other.build[i];
-          debug("build compare", i, a, b);
-          if (a === void 0 && b === void 0) {
-            return 0;
-          } else if (b === void 0) {
-            return 1;
-          } else if (a === void 0) {
-            return -1;
-          } else if (a === b) {
-            continue;
-          } else {
-            return compareIdentifiers(a, b);
-          }
-        } while (++i);
-      }
-      // preminor will bump the version up to the next minor release, and immediately
-      // down to pre-release. premajor and prepatch work the same way.
-      inc(release, identifier, identifierBase) {
-        if (release.startsWith("pre")) {
-          if (!identifier && identifierBase === false) {
-            throw new Error("invalid increment argument: identifier is empty");
-          }
-          if (identifier) {
-            const match = `-${identifier}`.match(this.options.loose ? re[t.PRERELEASELOOSE] : re[t.PRERELEASE]);
-            if (!match || match[1] !== identifier) {
-              throw new Error(`invalid identifier: ${identifier}`);
-            }
-          }
-        }
-        switch (release) {
-          case "premajor":
-            this.prerelease.length = 0;
-            this.patch = 0;
-            this.minor = 0;
-            this.major++;
-            this.inc("pre", identifier, identifierBase);
-            break;
-          case "preminor":
-            this.prerelease.length = 0;
-            this.patch = 0;
-            this.minor++;
-            this.inc("pre", identifier, identifierBase);
-            break;
-          case "prepatch":
-            this.prerelease.length = 0;
-            this.inc("patch", identifier, identifierBase);
-            this.inc("pre", identifier, identifierBase);
-            break;
-          // If the input is a non-prerelease version, this acts the same as
-          // prepatch.
-          case "prerelease":
-            if (this.prerelease.length === 0) {
-              this.inc("patch", identifier, identifierBase);
-            }
-            this.inc("pre", identifier, identifierBase);
-            break;
-          case "release":
-            if (this.prerelease.length === 0) {
-              throw new Error(`version ${this.raw} is not a prerelease`);
-            }
-            this.prerelease.length = 0;
-            break;
-          case "major":
-            if (this.minor !== 0 || this.patch !== 0 || this.prerelease.length === 0) {
-              this.major++;
-            }
-            this.minor = 0;
-            this.patch = 0;
-            this.prerelease = [];
-            break;
-          case "minor":
-            if (this.patch !== 0 || this.prerelease.length === 0) {
-              this.minor++;
-            }
-            this.patch = 0;
-            this.prerelease = [];
-            break;
-          case "patch":
-            if (this.prerelease.length === 0) {
-              this.patch++;
-            }
-            this.prerelease = [];
-            break;
-          // This probably shouldn't be used publicly.
-          // 1.0.0 'pre' would become 1.0.0-0 which is the wrong direction.
-          case "pre": {
-            const base = Number(identifierBase) ? 1 : 0;
-            if (this.prerelease.length === 0) {
-              this.prerelease = [base];
-            } else {
-              let i = this.prerelease.length;
-              while (--i >= 0) {
-                if (typeof this.prerelease[i] === "number") {
-                  this.prerelease[i]++;
-                  i = -2;
-                }
-              }
-              if (i === -1) {
-                if (identifier === this.prerelease.join(".") && identifierBase === false) {
-                  throw new Error("invalid increment argument: identifier already exists");
-                }
-                this.prerelease.push(base);
-              }
-            }
-            if (identifier) {
-              let prerelease = [identifier, base];
-              if (identifierBase === false) {
-                prerelease = [identifier];
-              }
-              if (isPrereleaseIdentifier(this.prerelease, identifier)) {
-                const prereleaseBase = this.prerelease[identifier.split(".").length];
-                if (isNaN(prereleaseBase)) {
-                  this.prerelease = prerelease;
-                }
-              } else {
-                this.prerelease = prerelease;
-              }
-            }
-            break;
-          }
-          default:
-            throw new Error(`invalid increment argument: ${release}`);
-        }
-        this.raw = this.format();
-        if (this.build.length) {
-          this.raw += `+${this.build.join(".")}`;
-        }
-        return this;
-      }
-    };
-    module2.exports = SemVer;
-  }
-});
-
-// node_modules/semver/functions/parse.js
-var require_parse2 = __commonJS({
-  "node_modules/semver/functions/parse.js"(exports2, module2) {
-    "use strict";
-    var SemVer = require_semver();
-    var parse = (version, options, throwErrors = false) => {
-      if (version instanceof SemVer) {
-        return version;
-      }
-      try {
-        return new SemVer(version, options);
-      } catch (er) {
-        if (!throwErrors) {
-          return null;
-        }
-        throw er;
-      }
-    };
-    module2.exports = parse;
-  }
-});
-
-// node_modules/semver/functions/valid.js
-var require_valid = __commonJS({
-  "node_modules/semver/functions/valid.js"(exports2, module2) {
-    "use strict";
-    var parse = require_parse2();
-    var valid = (version, options) => {
-      const v = parse(version, options);
-      return v ? v.version : null;
-    };
-    module2.exports = valid;
-  }
-});
-
-// node_modules/semver/functions/clean.js
-var require_clean = __commonJS({
-  "node_modules/semver/functions/clean.js"(exports2, module2) {
-    "use strict";
-    var parse = require_parse2();
-    var clean = (version, options) => {
-      const s = parse(version.trim().replace(/^[=v]+/, ""), options);
-      return s ? s.version : null;
-    };
-    module2.exports = clean;
-  }
-});
-
-// node_modules/semver/functions/inc.js
-var require_inc = __commonJS({
-  "node_modules/semver/functions/inc.js"(exports2, module2) {
-    "use strict";
-    var SemVer = require_semver();
-    var inc = (version, release, options, identifier, identifierBase) => {
-      if (typeof options === "string") {
-        identifierBase = identifier;
-        identifier = options;
-        options = void 0;
-      }
-      try {
-        return new SemVer(
-          version instanceof SemVer ? version.version : version,
-          options
-        ).inc(release, identifier, identifierBase).version;
-      } catch (er) {
-        return null;
-      }
-    };
-    module2.exports = inc;
-  }
-});
-
-// node_modules/semver/functions/diff.js
-var require_diff = __commonJS({
-  "node_modules/semver/functions/diff.js"(exports2, module2) {
-    "use strict";
-    var parse = require_parse2();
-    var diff = (version1, version2) => {
-      const v1 = parse(version1, null, true);
-      const v2 = parse(version2, null, true);
-      const comparison = v1.compare(v2);
-      if (comparison === 0) {
-        return null;
-      }
-      const v1Higher = comparison > 0;
-      const highVersion = v1Higher ? v1 : v2;
-      const lowVersion = v1Higher ? v2 : v1;
-      const highHasPre = !!highVersion.prerelease.length;
-      const lowHasPre = !!lowVersion.prerelease.length;
-      if (lowHasPre && !highHasPre) {
-        if (!lowVersion.patch && !lowVersion.minor) {
-          return "major";
-        }
-        if (lowVersion.compareMain(highVersion) === 0) {
-          if (lowVersion.minor && !lowVersion.patch) {
-            return "minor";
-          }
-          return "patch";
-        }
-      }
-      const prefix = highHasPre ? "pre" : "";
-      if (v1.major !== v2.major) {
-        return prefix + "major";
-      }
-      if (v1.minor !== v2.minor) {
-        return prefix + "minor";
-      }
-      if (v1.patch !== v2.patch) {
-        return prefix + "patch";
-      }
-      return "prerelease";
-    };
-    module2.exports = diff;
-  }
-});
-
-// node_modules/semver/functions/major.js
-var require_major = __commonJS({
-  "node_modules/semver/functions/major.js"(exports2, module2) {
-    "use strict";
-    var SemVer = require_semver();
-    var major = (a, loose) => new SemVer(a, loose).major;
-    module2.exports = major;
-  }
-});
-
-// node_modules/semver/functions/minor.js
-var require_minor = __commonJS({
-  "node_modules/semver/functions/minor.js"(exports2, module2) {
-    "use strict";
-    var SemVer = require_semver();
-    var minor = (a, loose) => new SemVer(a, loose).minor;
-    module2.exports = minor;
-  }
-});
-
-// node_modules/semver/functions/patch.js
-var require_patch = __commonJS({
-  "node_modules/semver/functions/patch.js"(exports2, module2) {
-    "use strict";
-    var SemVer = require_semver();
-    var patch = (a, loose) => new SemVer(a, loose).patch;
-    module2.exports = patch;
-  }
-});
-
-// node_modules/semver/functions/prerelease.js
-var require_prerelease = __commonJS({
-  "node_modules/semver/functions/prerelease.js"(exports2, module2) {
-    "use strict";
-    var parse = require_parse2();
-    var prerelease = (version, options) => {
-      const parsed = parse(version, options);
-      return parsed && parsed.prerelease.length ? parsed.prerelease : null;
-    };
-    module2.exports = prerelease;
-  }
-});
-
-// node_modules/semver/functions/compare.js
-var require_compare = __commonJS({
-  "node_modules/semver/functions/compare.js"(exports2, module2) {
-    "use strict";
-    var SemVer = require_semver();
-    var compare = (a, b, loose) => new SemVer(a, loose).compare(new SemVer(b, loose));
-    module2.exports = compare;
-  }
-});
-
-// node_modules/semver/functions/rcompare.js
-var require_rcompare = __commonJS({
-  "node_modules/semver/functions/rcompare.js"(exports2, module2) {
-    "use strict";
-    var compare = require_compare();
-    var rcompare = (a, b, loose) => compare(b, a, loose);
-    module2.exports = rcompare;
-  }
-});
-
-// node_modules/semver/functions/compare-loose.js
-var require_compare_loose = __commonJS({
-  "node_modules/semver/functions/compare-loose.js"(exports2, module2) {
-    "use strict";
-    var compare = require_compare();
-    var compareLoose = (a, b) => compare(a, b, true);
-    module2.exports = compareLoose;
-  }
-});
-
-// node_modules/semver/functions/compare-build.js
-var require_compare_build = __commonJS({
-  "node_modules/semver/functions/compare-build.js"(exports2, module2) {
-    "use strict";
-    var SemVer = require_semver();
-    var compareBuild = (a, b, loose) => {
-      const versionA = new SemVer(a, loose);
-      const versionB = new SemVer(b, loose);
-      return versionA.compare(versionB) || versionA.compareBuild(versionB);
-    };
-    module2.exports = compareBuild;
-  }
-});
-
-// node_modules/semver/functions/sort.js
-var require_sort2 = __commonJS({
-  "node_modules/semver/functions/sort.js"(exports2, module2) {
-    "use strict";
-    var compareBuild = require_compare_build();
-    var sort = (list, loose) => list.sort((a, b) => compareBuild(a, b, loose));
-    module2.exports = sort;
-  }
-});
-
-// node_modules/semver/functions/rsort.js
-var require_rsort = __commonJS({
-  "node_modules/semver/functions/rsort.js"(exports2, module2) {
-    "use strict";
-    var compareBuild = require_compare_build();
-    var rsort = (list, loose) => list.sort((a, b) => compareBuild(b, a, loose));
-    module2.exports = rsort;
-  }
-});
-
-// node_modules/semver/functions/gt.js
-var require_gt = __commonJS({
-  "node_modules/semver/functions/gt.js"(exports2, module2) {
-    "use strict";
-    var compare = require_compare();
-    var gt = (a, b, loose) => compare(a, b, loose) > 0;
-    module2.exports = gt;
-  }
-});
-
-// node_modules/semver/functions/lt.js
-var require_lt = __commonJS({
-  "node_modules/semver/functions/lt.js"(exports2, module2) {
-    "use strict";
-    var compare = require_compare();
-    var lt = (a, b, loose) => compare(a, b, loose) < 0;
-    module2.exports = lt;
-  }
-});
-
-// node_modules/semver/functions/eq.js
-var require_eq = __commonJS({
-  "node_modules/semver/functions/eq.js"(exports2, module2) {
-    "use strict";
-    var compare = require_compare();
-    var eq = (a, b, loose) => compare(a, b, loose) === 0;
-    module2.exports = eq;
-  }
-});
-
-// node_modules/semver/functions/neq.js
-var require_neq = __commonJS({
-  "node_modules/semver/functions/neq.js"(exports2, module2) {
-    "use strict";
-    var compare = require_compare();
-    var neq = (a, b, loose) => compare(a, b, loose) !== 0;
-    module2.exports = neq;
-  }
-});
-
-// node_modules/semver/functions/gte.js
-var require_gte = __commonJS({
-  "node_modules/semver/functions/gte.js"(exports2, module2) {
-    "use strict";
-    var compare = require_compare();
-    var gte = (a, b, loose) => compare(a, b, loose) >= 0;
-    module2.exports = gte;
-  }
-});
-
-// node_modules/semver/functions/lte.js
-var require_lte = __commonJS({
-  "node_modules/semver/functions/lte.js"(exports2, module2) {
-    "use strict";
-    var compare = require_compare();
-    var lte = (a, b, loose) => compare(a, b, loose) <= 0;
-    module2.exports = lte;
-  }
-});
-
-// node_modules/semver/functions/cmp.js
-var require_cmp = __commonJS({
-  "node_modules/semver/functions/cmp.js"(exports2, module2) {
-    "use strict";
-    var eq = require_eq();
-    var neq = require_neq();
-    var gt = require_gt();
-    var gte = require_gte();
-    var lt = require_lt();
-    var lte = require_lte();
-    var cmp = (a, op, b, loose) => {
-      switch (op) {
-        case "===":
-          if (typeof a === "object") {
-            a = a.version;
-          }
-          if (typeof b === "object") {
-            b = b.version;
-          }
-          return a === b;
-        case "!==":
-          if (typeof a === "object") {
-            a = a.version;
-          }
-          if (typeof b === "object") {
-            b = b.version;
-          }
-          return a !== b;
-        case "":
-        case "=":
-        case "==":
-          return eq(a, b, loose);
-        case "!=":
-          return neq(a, b, loose);
-        case ">":
-          return gt(a, b, loose);
-        case ">=":
-          return gte(a, b, loose);
-        case "<":
-          return lt(a, b, loose);
-        case "<=":
-          return lte(a, b, loose);
-        default:
-          throw new TypeError(`Invalid operator: ${op}`);
-      }
-    };
-    module2.exports = cmp;
-  }
-});
-
-// node_modules/semver/functions/coerce.js
-var require_coerce = __commonJS({
-  "node_modules/semver/functions/coerce.js"(exports2, module2) {
-    "use strict";
-    var SemVer = require_semver();
-    var parse = require_parse2();
-    var { safeRe: re, t } = require_re();
-    var coerce = (version, options) => {
-      if (version instanceof SemVer) {
-        return version;
-      }
-      if (typeof version === "number") {
-        version = String(version);
-      }
-      if (typeof version !== "string") {
-        return null;
-      }
-      options = options || {};
-      let match = null;
-      if (!options.rtl) {
-        match = version.match(options.includePrerelease ? re[t.COERCEFULL] : re[t.COERCE]);
-      } else {
-        const coerceRtlRegex = options.includePrerelease ? re[t.COERCERTLFULL] : re[t.COERCERTL];
-        let next;
-        while ((next = coerceRtlRegex.exec(version)) && (!match || match.index + match[0].length !== version.length)) {
-          if (!match || next.index + next[0].length !== match.index + match[0].length) {
-            match = next;
-          }
-          coerceRtlRegex.lastIndex = next.index + next[1].length + next[2].length;
-        }
-        coerceRtlRegex.lastIndex = -1;
-      }
-      if (match === null) {
-        return null;
-      }
-      const major = match[2];
-      const minor = match[3] || "0";
-      const patch = match[4] || "0";
-      const prerelease = options.includePrerelease && match[5] ? `-${match[5]}` : "";
-      const build = options.includePrerelease && match[6] ? `+${match[6]}` : "";
-      return parse(`${major}.${minor}.${patch}${prerelease}${build}`, options);
-    };
-    module2.exports = coerce;
-  }
-});
-
-// node_modules/semver/functions/truncate.js
-var require_truncate = __commonJS({
-  "node_modules/semver/functions/truncate.js"(exports2, module2) {
-    "use strict";
-    var parse = require_parse2();
-    var constants = require_constants4();
-    var SemVer = require_semver();
-    var truncate = (version, truncation, options) => {
-      if (!constants.RELEASE_TYPES.includes(truncation)) {
-        return null;
-      }
-      const clonedVersion = cloneInputVersion(version, options);
-      return clonedVersion && doTruncation(clonedVersion, truncation);
-    };
-    var cloneInputVersion = (version, options) => {
-      const versionStringToParse = version instanceof SemVer ? version.version : version;
-      return parse(versionStringToParse, options);
-    };
-    var doTruncation = (version, truncation) => {
-      if (isPrerelease(truncation)) {
-        return version.version;
-      }
-      version.prerelease = [];
-      switch (truncation) {
-        case "major":
-          version.minor = 0;
-          version.patch = 0;
-          break;
-        case "minor":
-          version.patch = 0;
-          break;
-      }
-      return version.format();
-    };
-    var isPrerelease = (type) => {
-      return type.startsWith("pre");
-    };
-    module2.exports = truncate;
-  }
-});
-
-// node_modules/semver/internal/lrucache.js
-var require_lrucache = __commonJS({
-  "node_modules/semver/internal/lrucache.js"(exports2, module2) {
-    "use strict";
-    var LRUCache = class {
-      constructor() {
-        this.max = 1e3;
-        this.map = /* @__PURE__ */ new Map();
-      }
-      get(key) {
-        const value = this.map.get(key);
-        if (value === void 0) {
-          return void 0;
-        } else {
-          this.map.delete(key);
-          this.map.set(key, value);
-          return value;
-        }
-      }
-      delete(key) {
-        return this.map.delete(key);
-      }
-      set(key, value) {
-        const deleted = this.delete(key);
-        if (!deleted && value !== void 0) {
-          if (this.map.size >= this.max) {
-            const firstKey = this.map.keys().next().value;
-            this.delete(firstKey);
-          }
-          this.map.set(key, value);
-        }
-        return this;
-      }
-    };
-    module2.exports = LRUCache;
-  }
-});
-
-// node_modules/semver/classes/range.js
-var require_range2 = __commonJS({
-  "node_modules/semver/classes/range.js"(exports2, module2) {
-    "use strict";
-    var SPACE_CHARACTERS = /\s+/g;
-    var Range = class _Range {
-      constructor(range, options) {
-        options = parseOptions(options);
-        if (range instanceof _Range) {
-          if (range.loose === !!options.loose && range.includePrerelease === !!options.includePrerelease) {
-            return range;
-          } else {
-            return new _Range(range.raw, options);
-          }
-        }
-        if (range instanceof Comparator) {
-          this.raw = range.value;
-          this.set = [[range]];
-          this.formatted = void 0;
-          return this;
-        }
-        this.options = options;
-        this.loose = !!options.loose;
-        this.includePrerelease = !!options.includePrerelease;
-        this.raw = range.trim().replace(SPACE_CHARACTERS, " ");
-        this.set = this.raw.split("||").map((r) => this.parseRange(r.trim())).filter((c) => c.length);
-        if (!this.set.length) {
-          throw new TypeError(`Invalid SemVer Range: ${this.raw}`);
-        }
-        if (this.set.length > 1) {
-          const first = this.set[0];
-          this.set = this.set.filter((c) => !isNullSet(c[0]));
-          if (this.set.length === 0) {
-            this.set = [first];
-          } else if (this.set.length > 1) {
-            for (const c of this.set) {
-              if (c.length === 1 && isAny(c[0])) {
-                this.set = [c];
-                break;
-              }
-            }
-          }
-        }
-        this.formatted = void 0;
-      }
-      get range() {
-        if (this.formatted === void 0) {
-          this.formatted = "";
-          for (let i = 0; i < this.set.length; i++) {
-            if (i > 0) {
-              this.formatted += "||";
-            }
-            const comps = this.set[i];
-            for (let k = 0; k < comps.length; k++) {
-              if (k > 0) {
-                this.formatted += " ";
-              }
-              this.formatted += comps[k].toString().trim();
-            }
-          }
-        }
-        return this.formatted;
-      }
-      format() {
-        return this.range;
-      }
-      toString() {
-        return this.range;
-      }
-      parseRange(range) {
-        range = range.replace(BUILDSTRIPRE, "");
-        const memoOpts = (this.options.includePrerelease && FLAG_INCLUDE_PRERELEASE) | (this.options.loose && FLAG_LOOSE);
-        const memoKey = memoOpts + ":" + range;
-        const cached = cache.get(memoKey);
-        if (cached) {
-          return cached;
-        }
-        const loose = this.options.loose;
-        const hr = loose ? re[t.HYPHENRANGELOOSE] : re[t.HYPHENRANGE];
-        range = range.replace(hr, hyphenReplace(this.options.includePrerelease));
-        debug("hyphen replace", range);
-        range = range.replace(re[t.COMPARATORTRIM], comparatorTrimReplace);
-        debug("comparator trim", range);
-        range = range.replace(re[t.TILDETRIM], tildeTrimReplace);
-        debug("tilde trim", range);
-        range = range.replace(re[t.CARETTRIM], caretTrimReplace);
-        debug("caret trim", range);
-        let rangeList = range.split(" ").map((comp) => parseComparator(comp, this.options)).join(" ").split(/\s+/).map((comp) => replaceGTE0(comp, this.options));
-        if (loose) {
-          rangeList = rangeList.filter((comp) => {
-            debug("loose invalid filter", comp, this.options);
-            return !!comp.match(re[t.COMPARATORLOOSE]);
-          });
-        }
-        debug("range list", rangeList);
-        const rangeMap = /* @__PURE__ */ new Map();
-        const comparators = rangeList.map((comp) => new Comparator(comp, this.options));
-        for (const comp of comparators) {
-          if (isNullSet(comp)) {
-            return [comp];
-          }
-          rangeMap.set(comp.value, comp);
-        }
-        if (rangeMap.size > 1 && rangeMap.has("")) {
-          rangeMap.delete("");
-        }
-        const result = [...rangeMap.values()];
-        cache.set(memoKey, result);
-        return result;
-      }
-      intersects(range, options) {
-        if (!(range instanceof _Range)) {
-          throw new TypeError("a Range is required");
-        }
-        return this.set.some((thisComparators) => {
-          return isSatisfiable(thisComparators, options) && range.set.some((rangeComparators) => {
-            return isSatisfiable(rangeComparators, options) && thisComparators.every((thisComparator) => {
-              return rangeComparators.every((rangeComparator) => {
-                return thisComparator.intersects(rangeComparator, options);
-              });
-            });
-          });
-        });
-      }
-      // if ANY of the sets match ALL of its comparators, then pass
-      test(version) {
-        if (!version) {
-          return false;
-        }
-        if (typeof version === "string") {
-          try {
-            version = new SemVer(version, this.options);
-          } catch (er) {
-            return false;
-          }
-        }
-        for (let i = 0; i < this.set.length; i++) {
-          if (testSet(this.set[i], version, this.options)) {
-            return true;
-          }
-        }
-        return false;
-      }
-    };
-    module2.exports = Range;
-    var LRU = require_lrucache();
-    var cache = new LRU();
-    var parseOptions = require_parse_options();
-    var Comparator = require_comparator();
-    var debug = require_debug();
-    var SemVer = require_semver();
-    var {
-      safeRe: re,
-      src,
-      t,
-      comparatorTrimReplace,
-      tildeTrimReplace,
-      caretTrimReplace
-    } = require_re();
-    var { FLAG_INCLUDE_PRERELEASE, FLAG_LOOSE } = require_constants4();
-    var BUILDSTRIPRE = new RegExp(src[t.BUILD], "g");
-    var isNullSet = (c) => c.value === "<0.0.0-0";
-    var isAny = (c) => c.value === "";
-    var isSatisfiable = (comparators, options) => {
-      let result = true;
-      const remainingComparators = comparators.slice();
-      let testComparator = remainingComparators.pop();
-      while (result && remainingComparators.length) {
-        result = remainingComparators.every((otherComparator) => {
-          return testComparator.intersects(otherComparator, options);
-        });
-        testComparator = remainingComparators.pop();
-      }
-      return result;
-    };
-    var parseComparator = (comp, options) => {
-      comp = comp.replace(re[t.BUILD], "");
-      debug("comp", comp, options);
-      comp = replaceCarets(comp, options);
-      debug("caret", comp);
-      comp = replaceTildes(comp, options);
-      debug("tildes", comp);
-      comp = replaceXRanges(comp, options);
-      debug("xrange", comp);
-      comp = replaceStars(comp, options);
-      debug("stars", comp);
-      return comp;
-    };
-    var isX = (id) => !id || id.toLowerCase() === "x" || id === "*";
-    var invalidXRangeOrder = (M, m, p) => isX(M) && !isX(m) || isX(m) && p && !isX(p);
-    var replaceTildes = (comp, options) => {
-      return comp.trim().split(/\s+/).map((c) => replaceTilde(c, options)).join(" ");
-    };
-    var replaceTilde = (comp, options) => {
-      const r = options.loose ? re[t.TILDELOOSE] : re[t.TILDE];
-      const z = options.includePrerelease ? "-0" : "";
-      return comp.replace(r, (_, M, m, p, pr) => {
-        debug("tilde", comp, _, M, m, p, pr);
-        let ret;
-        if (isX(M)) {
-          ret = "";
-        } else if (isX(m)) {
-          ret = `>=${M}.0.0${z} <${+M + 1}.0.0-0`;
-        } else if (isX(p)) {
-          ret = `>=${M}.${m}.0${z} <${M}.${+m + 1}.0-0`;
-        } else if (pr) {
-          debug("replaceTilde pr", pr);
-          ret = `>=${M}.${m}.${p}-${pr} <${M}.${+m + 1}.0-0`;
-        } else {
-          ret = `>=${M}.${m}.${p} <${M}.${+m + 1}.0-0`;
-        }
-        debug("tilde return", ret);
-        return ret;
-      });
-    };
-    var replaceCarets = (comp, options) => {
-      return comp.trim().split(/\s+/).map((c) => replaceCaret(c, options)).join(" ");
-    };
-    var replaceCaret = (comp, options) => {
-      debug("caret", comp, options);
-      const r = options.loose ? re[t.CARETLOOSE] : re[t.CARET];
-      const z = options.includePrerelease ? "-0" : "";
-      return comp.replace(r, (_, M, m, p, pr) => {
-        debug("caret", comp, _, M, m, p, pr);
-        let ret;
-        if (isX(M)) {
-          ret = "";
-        } else if (isX(m)) {
-          ret = `>=${M}.0.0${z} <${+M + 1}.0.0-0`;
-        } else if (isX(p)) {
-          if (M === "0") {
-            ret = `>=${M}.${m}.0${z} <${M}.${+m + 1}.0-0`;
-          } else {
-            ret = `>=${M}.${m}.0${z} <${+M + 1}.0.0-0`;
-          }
-        } else if (pr) {
-          debug("replaceCaret pr", pr);
-          if (M === "0") {
-            if (m === "0") {
-              ret = `>=${M}.${m}.${p}-${pr} <${M}.${m}.${+p + 1}-0`;
-            } else {
-              ret = `>=${M}.${m}.${p}-${pr} <${M}.${+m + 1}.0-0`;
-            }
-          } else {
-            ret = `>=${M}.${m}.${p}-${pr} <${+M + 1}.0.0-0`;
-          }
-        } else {
-          debug("no pr");
-          if (M === "0") {
-            if (m === "0") {
-              ret = `>=${M}.${m}.${p} <${M}.${m}.${+p + 1}-0`;
-            } else {
-              ret = `>=${M}.${m}.${p} <${M}.${+m + 1}.0-0`;
-            }
-          } else {
-            ret = `>=${M}.${m}.${p} <${+M + 1}.0.0-0`;
-          }
-        }
-        debug("caret return", ret);
-        return ret;
-      });
-    };
-    var replaceXRanges = (comp, options) => {
-      debug("replaceXRanges", comp, options);
-      return comp.split(/\s+/).map((c) => replaceXRange(c, options)).join(" ");
-    };
-    var replaceXRange = (comp, options) => {
-      comp = comp.trim();
-      const r = options.loose ? re[t.XRANGELOOSE] : re[t.XRANGE];
-      return comp.replace(r, (ret, gtlt, M, m, p, pr) => {
-        debug("xRange", comp, ret, gtlt, M, m, p, pr);
-        if (invalidXRangeOrder(M, m, p)) {
-          return comp;
-        }
-        const xM = isX(M);
-        const xm = xM || isX(m);
-        const xp = xm || isX(p);
-        const anyX = xp;
-        if (gtlt === "=" && anyX) {
-          gtlt = "";
-        }
-        pr = options.includePrerelease ? "-0" : "";
-        if (xM) {
-          if (gtlt === ">" || gtlt === "<") {
-            ret = "<0.0.0-0";
-          } else {
-            ret = "*";
-          }
-        } else if (gtlt && anyX) {
-          if (xm) {
-            m = 0;
-          }
-          p = 0;
-          if (gtlt === ">") {
-            gtlt = ">=";
-            if (xm) {
-              M = +M + 1;
-              m = 0;
-              p = 0;
-            } else {
-              m = +m + 1;
-              p = 0;
-            }
-          } else if (gtlt === "<=") {
-            gtlt = "<";
-            if (xm) {
-              M = +M + 1;
-            } else {
-              m = +m + 1;
-            }
-          }
-          if (gtlt === "<") {
-            pr = "-0";
-          }
-          ret = `${gtlt + M}.${m}.${p}${pr}`;
-        } else if (xm) {
-          ret = `>=${M}.0.0${pr} <${+M + 1}.0.0-0`;
-        } else if (xp) {
-          ret = `>=${M}.${m}.0${pr} <${M}.${+m + 1}.0-0`;
-        }
-        debug("xRange return", ret);
-        return ret;
-      });
-    };
-    var replaceStars = (comp, options) => {
-      debug("replaceStars", comp, options);
-      return comp.trim().replace(re[t.STAR], "");
-    };
-    var replaceGTE0 = (comp, options) => {
-      debug("replaceGTE0", comp, options);
-      return comp.trim().replace(re[options.includePrerelease ? t.GTE0PRE : t.GTE0], "");
-    };
-    var hyphenReplace = (incPr) => ($0, from, fM, fm, fp, fpr, fb, to, tM, tm, tp, tpr) => {
-      if (isX(fM)) {
-        from = "";
-      } else if (isX(fm)) {
-        from = `>=${fM}.0.0${incPr ? "-0" : ""}`;
-      } else if (isX(fp)) {
-        from = `>=${fM}.${fm}.0${incPr ? "-0" : ""}`;
-      } else if (fpr) {
-        from = `>=${from}`;
-      } else {
-        from = `>=${from}${incPr ? "-0" : ""}`;
-      }
-      if (isX(tM)) {
-        to = "";
-      } else if (isX(tm)) {
-        to = `<${+tM + 1}.0.0-0`;
-      } else if (isX(tp)) {
-        to = `<${tM}.${+tm + 1}.0-0`;
-      } else if (tpr) {
-        to = `<=${tM}.${tm}.${tp}-${tpr}`;
-      } else if (incPr) {
-        to = `<${tM}.${tm}.${+tp + 1}-0`;
-      } else {
-        to = `<=${to}`;
-      }
-      return `${from} ${to}`.trim();
-    };
-    var testSet = (set, version, options) => {
-      for (let i = 0; i < set.length; i++) {
-        if (!set[i].test(version)) {
-          return false;
-        }
-      }
-      if (version.prerelease.length && !options.includePrerelease) {
-        for (let i = 0; i < set.length; i++) {
-          debug(set[i].semver);
-          if (set[i].semver === Comparator.ANY) {
-            continue;
-          }
-          if (set[i].semver.prerelease.length > 0) {
-            const allowed = set[i].semver;
-            if (allowed.major === version.major && allowed.minor === version.minor && allowed.patch === version.patch) {
-              return true;
-            }
-          }
-        }
-        return false;
-      }
-      return true;
-    };
-  }
-});
-
-// node_modules/semver/classes/comparator.js
-var require_comparator = __commonJS({
-  "node_modules/semver/classes/comparator.js"(exports2, module2) {
-    "use strict";
-    var ANY = /* @__PURE__ */ Symbol("SemVer ANY");
-    var Comparator = class _Comparator {
-      static get ANY() {
-        return ANY;
-      }
-      constructor(comp, options) {
-        options = parseOptions(options);
-        if (comp instanceof _Comparator) {
-          if (comp.loose === !!options.loose) {
-            return comp;
-          } else {
-            comp = comp.value;
-          }
-        }
-        comp = comp.trim().split(/\s+/).join(" ");
-        debug("comparator", comp, options);
-        this.options = options;
-        this.loose = !!options.loose;
-        this.parse(comp);
-        if (this.semver === ANY) {
-          this.value = "";
-        } else {
-          this.value = this.operator + this.semver.version;
-        }
-        debug("comp", this);
-      }
-      parse(comp) {
-        const r = this.options.loose ? re[t.COMPARATORLOOSE] : re[t.COMPARATOR];
-        const m = comp.match(r);
-        if (!m) {
-          throw new TypeError(`Invalid comparator: ${comp}`);
-        }
-        this.operator = m[1] !== void 0 ? m[1] : "";
-        if (this.operator === "=") {
-          this.operator = "";
-        }
-        if (!m[2]) {
-          this.semver = ANY;
-        } else {
-          this.semver = new SemVer(m[2], this.options.loose);
-        }
-      }
-      toString() {
-        return this.value;
-      }
-      test(version) {
-        debug("Comparator.test", version, this.options.loose);
-        if (this.semver === ANY || version === ANY) {
-          return true;
-        }
-        if (typeof version === "string") {
-          try {
-            version = new SemVer(version, this.options);
-          } catch (er) {
-            return false;
-          }
-        }
-        return cmp(version, this.operator, this.semver, this.options);
-      }
-      intersects(comp, options) {
-        if (!(comp instanceof _Comparator)) {
-          throw new TypeError("a Comparator is required");
-        }
-        if (this.operator === "") {
-          if (this.value === "") {
-            return true;
-          }
-          return new Range(comp.value, options).test(this.value);
-        } else if (comp.operator === "") {
-          if (comp.value === "") {
-            return true;
-          }
-          return new Range(this.value, options).test(comp.semver);
-        }
-        options = parseOptions(options);
-        if (options.includePrerelease && (this.value === "<0.0.0-0" || comp.value === "<0.0.0-0")) {
-          return false;
-        }
-        if (!options.includePrerelease && (this.value.startsWith("<0.0.0") || comp.value.startsWith("<0.0.0"))) {
-          return false;
-        }
-        if (this.operator.startsWith(">") && comp.operator.startsWith(">")) {
-          return true;
-        }
-        if (this.operator.startsWith("<") && comp.operator.startsWith("<")) {
-          return true;
-        }
-        if (this.semver.version === comp.semver.version && this.operator.includes("=") && comp.operator.includes("=")) {
-          return true;
-        }
-        if (cmp(this.semver, "<", comp.semver, options) && this.operator.startsWith(">") && comp.operator.startsWith("<")) {
-          return true;
-        }
-        if (cmp(this.semver, ">", comp.semver, options) && this.operator.startsWith("<") && comp.operator.startsWith(">")) {
-          return true;
-        }
-        return false;
-      }
-    };
-    module2.exports = Comparator;
-    var parseOptions = require_parse_options();
-    var { safeRe: re, t } = require_re();
-    var cmp = require_cmp();
-    var debug = require_debug();
-    var SemVer = require_semver();
-    var Range = require_range2();
-  }
-});
-
-// node_modules/semver/functions/satisfies.js
-var require_satisfies = __commonJS({
-  "node_modules/semver/functions/satisfies.js"(exports2, module2) {
-    "use strict";
-    var Range = require_range2();
-    var satisfies = (version, range, options) => {
-      try {
-        range = new Range(range, options);
-      } catch (er) {
-        return false;
-      }
-      return range.test(version);
-    };
-    module2.exports = satisfies;
-  }
-});
-
-// node_modules/semver/ranges/to-comparators.js
-var require_to_comparators = __commonJS({
-  "node_modules/semver/ranges/to-comparators.js"(exports2, module2) {
-    "use strict";
-    var Range = require_range2();
-    var toComparators = (range, options) => new Range(range, options).set.map((comp) => comp.map((c) => c.value).join(" ").trim().split(" "));
-    module2.exports = toComparators;
-  }
-});
-
-// node_modules/semver/ranges/max-satisfying.js
-var require_max_satisfying = __commonJS({
-  "node_modules/semver/ranges/max-satisfying.js"(exports2, module2) {
-    "use strict";
-    var SemVer = require_semver();
-    var Range = require_range2();
-    var maxSatisfying = (versions, range, options) => {
-      let max = null;
-      let maxSV = null;
-      let rangeObj = null;
-      try {
-        rangeObj = new Range(range, options);
-      } catch (er) {
-        return null;
-      }
-      versions.forEach((v) => {
-        if (rangeObj.test(v)) {
-          if (!max || maxSV.compare(v) === -1) {
-            max = v;
-            maxSV = new SemVer(max, options);
-          }
-        }
-      });
-      return max;
-    };
-    module2.exports = maxSatisfying;
-  }
-});
-
-// node_modules/semver/ranges/min-satisfying.js
-var require_min_satisfying = __commonJS({
-  "node_modules/semver/ranges/min-satisfying.js"(exports2, module2) {
-    "use strict";
-    var SemVer = require_semver();
-    var Range = require_range2();
-    var minSatisfying = (versions, range, options) => {
-      let min = null;
-      let minSV = null;
-      let rangeObj = null;
-      try {
-        rangeObj = new Range(range, options);
-      } catch (er) {
-        return null;
-      }
-      versions.forEach((v) => {
-        if (rangeObj.test(v)) {
-          if (!min || minSV.compare(v) === 1) {
-            min = v;
-            minSV = new SemVer(min, options);
-          }
-        }
-      });
-      return min;
-    };
-    module2.exports = minSatisfying;
-  }
-});
-
-// node_modules/semver/ranges/min-version.js
-var require_min_version = __commonJS({
-  "node_modules/semver/ranges/min-version.js"(exports2, module2) {
-    "use strict";
-    var SemVer = require_semver();
-    var Range = require_range2();
-    var gt = require_gt();
-    var minVersion = (range, loose) => {
-      range = new Range(range, loose);
-      let minver = new SemVer("0.0.0");
-      if (range.test(minver)) {
-        return minver;
-      }
-      minver = new SemVer("0.0.0-0");
-      if (range.test(minver)) {
-        return minver;
-      }
-      minver = null;
-      for (let i = 0; i < range.set.length; ++i) {
-        const comparators = range.set[i];
-        let setMin = null;
-        comparators.forEach((comparator) => {
-          const compver = new SemVer(comparator.semver.version);
-          switch (comparator.operator) {
-            case ">":
-              if (compver.prerelease.length === 0) {
-                compver.patch++;
-              } else {
-                compver.prerelease.push(0);
-              }
-              compver.raw = compver.format();
-            /* fallthrough */
-            case "":
-            case ">=":
-              if (!setMin || gt(compver, setMin)) {
-                setMin = compver;
-              }
-              break;
-            case "<":
-            case "<=":
-              break;
-            /* istanbul ignore next */
-            default:
-              throw new Error(`Unexpected operation: ${comparator.operator}`);
-          }
-        });
-        if (setMin && (!minver || gt(minver, setMin))) {
-          minver = setMin;
-        }
-      }
-      if (minver && range.test(minver)) {
-        return minver;
-      }
-      return null;
-    };
-    module2.exports = minVersion;
-  }
-});
-
-// node_modules/semver/ranges/valid.js
-var require_valid2 = __commonJS({
-  "node_modules/semver/ranges/valid.js"(exports2, module2) {
-    "use strict";
-    var Range = require_range2();
-    var validRange = (range, options) => {
-      try {
-        return new Range(range, options).range || "*";
-      } catch (er) {
-        return null;
-      }
-    };
-    module2.exports = validRange;
-  }
-});
-
-// node_modules/semver/ranges/outside.js
-var require_outside = __commonJS({
-  "node_modules/semver/ranges/outside.js"(exports2, module2) {
-    "use strict";
-    var SemVer = require_semver();
-    var Comparator = require_comparator();
-    var { ANY } = Comparator;
-    var Range = require_range2();
-    var satisfies = require_satisfies();
-    var gt = require_gt();
-    var lt = require_lt();
-    var lte = require_lte();
-    var gte = require_gte();
-    var outside = (version, range, hilo, options) => {
-      version = new SemVer(version, options);
-      range = new Range(range, options);
-      let gtfn, ltefn, ltfn, comp, ecomp;
-      switch (hilo) {
-        case ">":
-          gtfn = gt;
-          ltefn = lte;
-          ltfn = lt;
-          comp = ">";
-          ecomp = ">=";
-          break;
-        case "<":
-          gtfn = lt;
-          ltefn = gte;
-          ltfn = gt;
-          comp = "<";
-          ecomp = "<=";
-          break;
-        default:
-          throw new TypeError('Must provide a hilo val of "<" or ">"');
-      }
-      if (satisfies(version, range, options)) {
-        return false;
-      }
-      for (let i = 0; i < range.set.length; ++i) {
-        const comparators = range.set[i];
-        let high = null;
-        let low = null;
-        comparators.forEach((comparator) => {
-          if (comparator.semver === ANY) {
-            comparator = new Comparator(">=0.0.0");
-          }
-          high = high || comparator;
-          low = low || comparator;
-          if (gtfn(comparator.semver, high.semver, options)) {
-            high = comparator;
-          } else if (ltfn(comparator.semver, low.semver, options)) {
-            low = comparator;
-          }
-        });
-        if (high.operator === comp || high.operator === ecomp) {
-          return false;
-        }
-        if ((!low.operator || low.operator === comp) && ltefn(version, low.semver)) {
-          return false;
-        } else if (low.operator === ecomp && ltfn(version, low.semver)) {
-          return false;
-        }
-      }
-      return true;
-    };
-    module2.exports = outside;
-  }
-});
-
-// node_modules/semver/ranges/gtr.js
-var require_gtr = __commonJS({
-  "node_modules/semver/ranges/gtr.js"(exports2, module2) {
-    "use strict";
-    var outside = require_outside();
-    var gtr = (version, range, options) => outside(version, range, ">", options);
-    module2.exports = gtr;
-  }
-});
-
-// node_modules/semver/ranges/ltr.js
-var require_ltr = __commonJS({
-  "node_modules/semver/ranges/ltr.js"(exports2, module2) {
-    "use strict";
-    var outside = require_outside();
-    var ltr = (version, range, options) => outside(version, range, "<", options);
-    module2.exports = ltr;
-  }
-});
-
-// node_modules/semver/ranges/intersects.js
-var require_intersects = __commonJS({
-  "node_modules/semver/ranges/intersects.js"(exports2, module2) {
-    "use strict";
-    var Range = require_range2();
-    var intersects = (r1, r2, options) => {
-      r1 = new Range(r1, options);
-      r2 = new Range(r2, options);
-      return r1.intersects(r2, options);
-    };
-    module2.exports = intersects;
-  }
-});
-
-// node_modules/semver/ranges/simplify.js
-var require_simplify = __commonJS({
-  "node_modules/semver/ranges/simplify.js"(exports2, module2) {
-    "use strict";
-    var satisfies = require_satisfies();
-    var compare = require_compare();
-    module2.exports = (versions, range, options) => {
-      const set = [];
-      let first = null;
-      let prev = null;
-      const v = versions.sort((a, b) => compare(a, b, options));
-      for (const version of v) {
-        const included = satisfies(version, range, options);
-        if (included) {
-          prev = version;
-          if (!first) {
-            first = version;
-          }
-        } else {
-          if (prev) {
-            set.push([first, prev]);
-          }
-          prev = null;
-          first = null;
-        }
-      }
-      if (first) {
-        set.push([first, null]);
-      }
-      const ranges = [];
-      for (const [min, max] of set) {
-        if (min === max) {
-          ranges.push(min);
-        } else if (!max && min === v[0]) {
-          ranges.push("*");
-        } else if (!max) {
-          ranges.push(`>=${min}`);
-        } else if (min === v[0]) {
-          ranges.push(`<=${max}`);
-        } else {
-          ranges.push(`${min} - ${max}`);
-        }
-      }
-      const simplified = ranges.join(" || ");
-      const original = typeof range.raw === "string" ? range.raw : String(range);
-      return simplified.length < original.length ? simplified : range;
-    };
-  }
-});
-
-// node_modules/semver/ranges/subset.js
-var require_subset = __commonJS({
-  "node_modules/semver/ranges/subset.js"(exports2, module2) {
-    "use strict";
-    var Range = require_range2();
-    var Comparator = require_comparator();
-    var { ANY } = Comparator;
-    var satisfies = require_satisfies();
-    var compare = require_compare();
-    var subset = (sub, dom, options = {}) => {
-      if (sub === dom) {
-        return true;
-      }
-      sub = new Range(sub, options);
-      dom = new Range(dom, options);
-      let sawNonNull = false;
-      OUTER: for (const simpleSub of sub.set) {
-        for (const simpleDom of dom.set) {
-          const isSub = simpleSubset(simpleSub, simpleDom, options);
-          sawNonNull = sawNonNull || isSub !== null;
-          if (isSub) {
-            continue OUTER;
-          }
-        }
-        if (sawNonNull) {
-          return false;
-        }
-      }
-      return true;
-    };
-    var minimumVersionWithPreRelease = [new Comparator(">=0.0.0-0")];
-    var minimumVersion = [new Comparator(">=0.0.0")];
-    var simpleSubset = (sub, dom, options) => {
-      if (sub === dom) {
-        return true;
-      }
-      if (sub.length === 1 && sub[0].semver === ANY) {
-        if (dom.length === 1 && dom[0].semver === ANY) {
-          return true;
-        } else if (options.includePrerelease) {
-          sub = minimumVersionWithPreRelease;
-        } else {
-          sub = minimumVersion;
-        }
-      }
-      if (dom.length === 1 && dom[0].semver === ANY) {
-        if (options.includePrerelease) {
-          return true;
-        } else {
-          dom = minimumVersion;
-        }
-      }
-      const eqSet = /* @__PURE__ */ new Set();
-      let gt, lt;
-      for (const c of sub) {
-        if (c.operator === ">" || c.operator === ">=") {
-          gt = higherGT(gt, c, options);
-        } else if (c.operator === "<" || c.operator === "<=") {
-          lt = lowerLT(lt, c, options);
-        } else {
-          eqSet.add(c.semver);
-        }
-      }
-      if (eqSet.size > 1) {
-        return null;
-      }
-      let gtltComp;
-      if (gt && lt) {
-        gtltComp = compare(gt.semver, lt.semver, options);
-        if (gtltComp > 0) {
-          return null;
-        } else if (gtltComp === 0 && (gt.operator !== ">=" || lt.operator !== "<=")) {
-          return null;
-        }
-      }
-      for (const eq of eqSet) {
-        if (gt && !satisfies(eq, String(gt), options)) {
-          return null;
-        }
-        if (lt && !satisfies(eq, String(lt), options)) {
-          return null;
-        }
-        for (const c of dom) {
-          if (!satisfies(eq, String(c), options)) {
-            return false;
-          }
-        }
-        return true;
-      }
-      let higher, lower;
-      let hasDomLT, hasDomGT;
-      let needDomLTPre = lt && !options.includePrerelease && lt.semver.prerelease.length ? lt.semver : false;
-      let needDomGTPre = gt && !options.includePrerelease && gt.semver.prerelease.length ? gt.semver : false;
-      if (needDomLTPre && needDomLTPre.prerelease.length === 1 && lt.operator === "<" && needDomLTPre.prerelease[0] === 0) {
-        needDomLTPre = false;
-      }
-      for (const c of dom) {
-        hasDomGT = hasDomGT || c.operator === ">" || c.operator === ">=";
-        hasDomLT = hasDomLT || c.operator === "<" || c.operator === "<=";
-        if (gt) {
-          if (needDomGTPre) {
-            if (c.semver.prerelease && c.semver.prerelease.length && c.semver.major === needDomGTPre.major && c.semver.minor === needDomGTPre.minor && c.semver.patch === needDomGTPre.patch) {
-              needDomGTPre = false;
-            }
-          }
-          if (c.operator === ">" || c.operator === ">=") {
-            higher = higherGT(gt, c, options);
-            if (higher === c && higher !== gt) {
-              return false;
-            }
-          } else if (gt.operator === ">=" && !c.test(gt.semver)) {
-            return false;
-          }
-        }
-        if (lt) {
-          if (needDomLTPre) {
-            if (c.semver.prerelease && c.semver.prerelease.length && c.semver.major === needDomLTPre.major && c.semver.minor === needDomLTPre.minor && c.semver.patch === needDomLTPre.patch) {
-              needDomLTPre = false;
-            }
-          }
-          if (c.operator === "<" || c.operator === "<=") {
-            lower = lowerLT(lt, c, options);
-            if (lower === c && lower !== lt) {
-              return false;
-            }
-          } else if (lt.operator === "<=" && !c.test(lt.semver)) {
-            return false;
-          }
-        }
-        if (!c.operator && (lt || gt) && gtltComp !== 0) {
-          return false;
-        }
-      }
-      if (gt && hasDomLT && !lt && gtltComp !== 0) {
-        return false;
-      }
-      if (lt && hasDomGT && !gt && gtltComp !== 0) {
-        return false;
-      }
-      if (needDomGTPre || needDomLTPre) {
-        return false;
-      }
-      return true;
-    };
-    var higherGT = (a, b, options) => {
-      if (!a) {
-        return b;
-      }
-      const comp = compare(a.semver, b.semver, options);
-      return comp > 0 ? a : comp < 0 ? b : b.operator === ">" && a.operator === ">=" ? b : a;
-    };
-    var lowerLT = (a, b, options) => {
-      if (!a) {
-        return b;
-      }
-      const comp = compare(a.semver, b.semver, options);
-      return comp < 0 ? a : comp > 0 ? b : b.operator === "<" && a.operator === "<=" ? b : a;
-    };
-    module2.exports = subset;
-  }
-});
-
-// node_modules/semver/index.js
-var require_semver2 = __commonJS({
-  "node_modules/semver/index.js"(exports2, module2) {
-    "use strict";
-    var internalRe = require_re();
-    var constants = require_constants4();
-    var SemVer = require_semver();
-    var identifiers = require_identifiers();
-    var parse = require_parse2();
-    var valid = require_valid();
-    var clean = require_clean();
-    var inc = require_inc();
-    var diff = require_diff();
-    var major = require_major();
-    var minor = require_minor();
-    var patch = require_patch();
-    var prerelease = require_prerelease();
-    var compare = require_compare();
-    var rcompare = require_rcompare();
-    var compareLoose = require_compare_loose();
-    var compareBuild = require_compare_build();
-    var sort = require_sort2();
-    var rsort = require_rsort();
-    var gt = require_gt();
-    var lt = require_lt();
-    var eq = require_eq();
-    var neq = require_neq();
-    var gte = require_gte();
-    var lte = require_lte();
-    var cmp = require_cmp();
-    var coerce = require_coerce();
-    var truncate = require_truncate();
-    var Comparator = require_comparator();
-    var Range = require_range2();
-    var satisfies = require_satisfies();
-    var toComparators = require_to_comparators();
-    var maxSatisfying = require_max_satisfying();
-    var minSatisfying = require_min_satisfying();
-    var minVersion = require_min_version();
-    var validRange = require_valid2();
-    var outside = require_outside();
-    var gtr = require_gtr();
-    var ltr = require_ltr();
-    var intersects = require_intersects();
-    var simplifyRange = require_simplify();
-    var subset = require_subset();
-    module2.exports = {
-      parse,
-      valid,
-      clean,
-      inc,
-      diff,
-      major,
-      minor,
-      patch,
-      prerelease,
-      compare,
-      rcompare,
-      compareLoose,
-      compareBuild,
-      sort,
-      rsort,
-      gt,
-      lt,
-      eq,
-      neq,
-      gte,
-      lte,
-      cmp,
-      coerce,
-      truncate,
-      Comparator,
-      Range,
-      satisfies,
-      toComparators,
-      maxSatisfying,
-      minSatisfying,
-      minVersion,
-      validRange,
-      outside,
-      gtr,
-      ltr,
-      intersects,
-      simplifyRange,
-      subset,
-      SemVer,
-      re: internalRe.re,
-      src: internalRe.src,
-      tokens: internalRe.t,
-      SEMVER_SPEC_VERSION: constants.SEMVER_SPEC_VERSION,
-      RELEASE_TYPES: constants.RELEASE_TYPES,
-      compareIdentifiers: identifiers.compareIdentifiers,
-      rcompareIdentifiers: identifiers.rcompareIdentifiers
-    };
-  }
-});
-
-// node_modules/jsonwebtoken/lib/asymmetricKeyDetailsSupported.js
-var require_asymmetricKeyDetailsSupported = __commonJS({
-  "node_modules/jsonwebtoken/lib/asymmetricKeyDetailsSupported.js"(exports2, module2) {
-    var semver = require_semver2();
-    module2.exports = semver.satisfies(process.version, ">=15.7.0");
-  }
-});
-
-// node_modules/jsonwebtoken/lib/rsaPssKeyDetailsSupported.js
-var require_rsaPssKeyDetailsSupported = __commonJS({
-  "node_modules/jsonwebtoken/lib/rsaPssKeyDetailsSupported.js"(exports2, module2) {
-    var semver = require_semver2();
-    module2.exports = semver.satisfies(process.version, ">=16.9.0");
-  }
-});
-
-// node_modules/jsonwebtoken/lib/validateAsymmetricKey.js
-var require_validateAsymmetricKey = __commonJS({
-  "node_modules/jsonwebtoken/lib/validateAsymmetricKey.js"(exports2, module2) {
-    var ASYMMETRIC_KEY_DETAILS_SUPPORTED = require_asymmetricKeyDetailsSupported();
-    var RSA_PSS_KEY_DETAILS_SUPPORTED = require_rsaPssKeyDetailsSupported();
-    var allowedAlgorithmsForKeys = {
-      "ec": ["ES256", "ES384", "ES512"],
-      "rsa": ["RS256", "PS256", "RS384", "PS384", "RS512", "PS512"],
-      "rsa-pss": ["PS256", "PS384", "PS512"]
-    };
-    var allowedCurves = {
-      ES256: "prime256v1",
-      ES384: "secp384r1",
-      ES512: "secp521r1"
-    };
-    module2.exports = function(algorithm, key) {
-      if (!algorithm || !key) return;
-      const keyType = key.asymmetricKeyType;
-      if (!keyType) return;
-      const allowedAlgorithms = allowedAlgorithmsForKeys[keyType];
-      if (!allowedAlgorithms) {
-        throw new Error(`Unknown key type "${keyType}".`);
-      }
-      if (!allowedAlgorithms.includes(algorithm)) {
-        throw new Error(`"alg" parameter for "${keyType}" key type must be one of: ${allowedAlgorithms.join(", ")}.`);
-      }
-      if (ASYMMETRIC_KEY_DETAILS_SUPPORTED) {
-        switch (keyType) {
-          case "ec":
-            const keyCurve = key.asymmetricKeyDetails.namedCurve;
-            const allowedCurve = allowedCurves[algorithm];
-            if (keyCurve !== allowedCurve) {
-              throw new Error(`"alg" parameter "${algorithm}" requires curve "${allowedCurve}".`);
-            }
-            break;
-          case "rsa-pss":
-            if (RSA_PSS_KEY_DETAILS_SUPPORTED) {
-              const length = parseInt(algorithm.slice(-3), 10);
-              const { hashAlgorithm, mgf1HashAlgorithm, saltLength } = key.asymmetricKeyDetails;
-              if (hashAlgorithm !== `sha${length}` || mgf1HashAlgorithm !== hashAlgorithm) {
-                throw new Error(`Invalid key for this operation, its RSA-PSS parameters do not meet the requirements of "alg" ${algorithm}.`);
-              }
-              if (saltLength !== void 0 && saltLength > length >> 3) {
-                throw new Error(`Invalid key for this operation, its RSA-PSS parameter saltLength does not meet the requirements of "alg" ${algorithm}.`);
-              }
-            }
-            break;
-        }
-      }
-    };
-  }
-});
-
-// node_modules/jsonwebtoken/lib/psSupported.js
-var require_psSupported = __commonJS({
-  "node_modules/jsonwebtoken/lib/psSupported.js"(exports2, module2) {
-    var semver = require_semver2();
-    module2.exports = semver.satisfies(process.version, "^6.12.0 || >=8.0.0");
-  }
-});
-
-// node_modules/jsonwebtoken/verify.js
-var require_verify = __commonJS({
-  "node_modules/jsonwebtoken/verify.js"(exports2, module2) {
-    var JsonWebTokenError = require_JsonWebTokenError();
-    var NotBeforeError = require_NotBeforeError();
-    var TokenExpiredError = require_TokenExpiredError();
-    var decode = require_decode();
-    var timespan = require_timespan();
-    var validateAsymmetricKey = require_validateAsymmetricKey();
-    var PS_SUPPORTED = require_psSupported();
-    var jws = require_jws();
-    var { KeyObject, createSecretKey, createPublicKey } = require("crypto");
-    var PUB_KEY_ALGS = ["RS256", "RS384", "RS512"];
-    var EC_KEY_ALGS = ["ES256", "ES384", "ES512"];
-    var RSA_KEY_ALGS = ["RS256", "RS384", "RS512"];
-    var HS_ALGS = ["HS256", "HS384", "HS512"];
-    if (PS_SUPPORTED) {
-      PUB_KEY_ALGS.splice(PUB_KEY_ALGS.length, 0, "PS256", "PS384", "PS512");
-      RSA_KEY_ALGS.splice(RSA_KEY_ALGS.length, 0, "PS256", "PS384", "PS512");
-    }
-    module2.exports = function(jwtString, secretOrPublicKey, options, callback) {
-      if (typeof options === "function" && !callback) {
-        callback = options;
-        options = {};
-      }
-      if (!options) {
-        options = {};
-      }
-      options = Object.assign({}, options);
-      let done;
-      if (callback) {
-        done = callback;
-      } else {
-        done = function(err, data) {
-          if (err) throw err;
-          return data;
-        };
-      }
-      if (options.clockTimestamp && typeof options.clockTimestamp !== "number") {
-        return done(new JsonWebTokenError("clockTimestamp must be a number"));
-      }
-      if (options.nonce !== void 0 && (typeof options.nonce !== "string" || options.nonce.trim() === "")) {
-        return done(new JsonWebTokenError("nonce must be a non-empty string"));
-      }
-      if (options.allowInvalidAsymmetricKeyTypes !== void 0 && typeof options.allowInvalidAsymmetricKeyTypes !== "boolean") {
-        return done(new JsonWebTokenError("allowInvalidAsymmetricKeyTypes must be a boolean"));
-      }
-      const clockTimestamp = options.clockTimestamp || Math.floor(Date.now() / 1e3);
-      if (!jwtString) {
-        return done(new JsonWebTokenError("jwt must be provided"));
-      }
-      if (typeof jwtString !== "string") {
-        return done(new JsonWebTokenError("jwt must be a string"));
-      }
-      const parts = jwtString.split(".");
-      if (parts.length !== 3) {
-        return done(new JsonWebTokenError("jwt malformed"));
-      }
-      let decodedToken;
-      try {
-        decodedToken = decode(jwtString, { complete: true });
-      } catch (err) {
-        return done(err);
-      }
-      if (!decodedToken) {
-        return done(new JsonWebTokenError("invalid token"));
-      }
-      const header = decodedToken.header;
-      let getSecret;
-      if (typeof secretOrPublicKey === "function") {
-        if (!callback) {
-          return done(new JsonWebTokenError("verify must be called asynchronous if secret or public key is provided as a callback"));
-        }
-        getSecret = secretOrPublicKey;
-      } else {
-        getSecret = function(header2, secretCallback) {
-          return secretCallback(null, secretOrPublicKey);
-        };
-      }
-      return getSecret(header, function(err, secretOrPublicKey2) {
-        if (err) {
-          return done(new JsonWebTokenError("error in secret or public key callback: " + err.message));
-        }
-        const hasSignature = parts[2].trim() !== "";
-        if (!hasSignature && secretOrPublicKey2) {
-          return done(new JsonWebTokenError("jwt signature is required"));
-        }
-        if (hasSignature && !secretOrPublicKey2) {
-          return done(new JsonWebTokenError("secret or public key must be provided"));
-        }
-        if (!hasSignature && !options.algorithms) {
-          return done(new JsonWebTokenError('please specify "none" in "algorithms" to verify unsigned tokens'));
-        }
-        if (secretOrPublicKey2 != null && !(secretOrPublicKey2 instanceof KeyObject)) {
-          try {
-            secretOrPublicKey2 = createPublicKey(secretOrPublicKey2);
-          } catch (_) {
-            try {
-              secretOrPublicKey2 = createSecretKey(typeof secretOrPublicKey2 === "string" ? Buffer.from(secretOrPublicKey2) : secretOrPublicKey2);
-            } catch (_2) {
-              return done(new JsonWebTokenError("secretOrPublicKey is not valid key material"));
-            }
-          }
-        }
-        if (!options.algorithms) {
-          if (secretOrPublicKey2.type === "secret") {
-            options.algorithms = HS_ALGS;
-          } else if (["rsa", "rsa-pss"].includes(secretOrPublicKey2.asymmetricKeyType)) {
-            options.algorithms = RSA_KEY_ALGS;
-          } else if (secretOrPublicKey2.asymmetricKeyType === "ec") {
-            options.algorithms = EC_KEY_ALGS;
-          } else {
-            options.algorithms = PUB_KEY_ALGS;
-          }
-        }
-        if (options.algorithms.indexOf(decodedToken.header.alg) === -1) {
-          return done(new JsonWebTokenError("invalid algorithm"));
-        }
-        if (header.alg.startsWith("HS") && secretOrPublicKey2.type !== "secret") {
-          return done(new JsonWebTokenError(`secretOrPublicKey must be a symmetric key when using ${header.alg}`));
-        } else if (/^(?:RS|PS|ES)/.test(header.alg) && secretOrPublicKey2.type !== "public") {
-          return done(new JsonWebTokenError(`secretOrPublicKey must be an asymmetric key when using ${header.alg}`));
-        }
-        if (!options.allowInvalidAsymmetricKeyTypes) {
-          try {
-            validateAsymmetricKey(header.alg, secretOrPublicKey2);
-          } catch (e) {
-            return done(e);
-          }
-        }
-        let valid;
-        try {
-          valid = jws.verify(jwtString, decodedToken.header.alg, secretOrPublicKey2);
-        } catch (e) {
-          return done(e);
-        }
-        if (!valid) {
-          return done(new JsonWebTokenError("invalid signature"));
-        }
-        const payload = decodedToken.payload;
-        if (typeof payload.nbf !== "undefined" && !options.ignoreNotBefore) {
-          if (typeof payload.nbf !== "number") {
-            return done(new JsonWebTokenError("invalid nbf value"));
-          }
-          if (payload.nbf > clockTimestamp + (options.clockTolerance || 0)) {
-            return done(new NotBeforeError("jwt not active", new Date(payload.nbf * 1e3)));
-          }
-        }
-        if (typeof payload.exp !== "undefined" && !options.ignoreExpiration) {
-          if (typeof payload.exp !== "number") {
-            return done(new JsonWebTokenError("invalid exp value"));
-          }
-          if (clockTimestamp >= payload.exp + (options.clockTolerance || 0)) {
-            return done(new TokenExpiredError("jwt expired", new Date(payload.exp * 1e3)));
-          }
-        }
-        if (options.audience) {
-          const audiences = Array.isArray(options.audience) ? options.audience : [options.audience];
-          const target = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
-          const match = target.some(function(targetAudience) {
-            return audiences.some(function(audience) {
-              return audience instanceof RegExp ? audience.test(targetAudience) : audience === targetAudience;
-            });
-          });
-          if (!match) {
-            return done(new JsonWebTokenError("jwt audience invalid. expected: " + audiences.join(" or ")));
-          }
-        }
-        if (options.issuer) {
-          const invalid_issuer = typeof options.issuer === "string" && payload.iss !== options.issuer || Array.isArray(options.issuer) && options.issuer.indexOf(payload.iss) === -1;
-          if (invalid_issuer) {
-            return done(new JsonWebTokenError("jwt issuer invalid. expected: " + options.issuer));
-          }
-        }
-        if (options.subject) {
-          if (payload.sub !== options.subject) {
-            return done(new JsonWebTokenError("jwt subject invalid. expected: " + options.subject));
-          }
-        }
-        if (options.jwtid) {
-          if (payload.jti !== options.jwtid) {
-            return done(new JsonWebTokenError("jwt jwtid invalid. expected: " + options.jwtid));
-          }
-        }
-        if (options.nonce) {
-          if (payload.nonce !== options.nonce) {
-            return done(new JsonWebTokenError("jwt nonce invalid. expected: " + options.nonce));
-          }
-        }
-        if (options.maxAge) {
-          if (typeof payload.iat !== "number") {
-            return done(new JsonWebTokenError("iat required when maxAge is specified"));
-          }
-          const maxAgeTimestamp = timespan(options.maxAge, payload.iat);
-          if (typeof maxAgeTimestamp === "undefined") {
-            return done(new JsonWebTokenError('"maxAge" should be a number of seconds or string representing a timespan eg: "1d", "20h", 60'));
-          }
-          if (clockTimestamp >= maxAgeTimestamp + (options.clockTolerance || 0)) {
-            return done(new TokenExpiredError("maxAge exceeded", new Date(maxAgeTimestamp * 1e3)));
-          }
-        }
-        if (options.complete === true) {
-          const signature = decodedToken.signature;
-          return done(null, {
-            header,
-            payload,
-            signature
-          });
-        }
-        return done(null, payload);
-      });
-    };
-  }
-});
-
-// node_modules/lodash.includes/index.js
-var require_lodash = __commonJS({
-  "node_modules/lodash.includes/index.js"(exports2, module2) {
-    var INFINITY = 1 / 0;
-    var MAX_SAFE_INTEGER = 9007199254740991;
-    var MAX_INTEGER = 17976931348623157e292;
-    var NAN = 0 / 0;
-    var argsTag = "[object Arguments]";
-    var funcTag = "[object Function]";
-    var genTag = "[object GeneratorFunction]";
-    var stringTag = "[object String]";
-    var symbolTag = "[object Symbol]";
-    var reTrim = /^\s+|\s+$/g;
-    var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
-    var reIsBinary = /^0b[01]+$/i;
-    var reIsOctal = /^0o[0-7]+$/i;
-    var reIsUint = /^(?:0|[1-9]\d*)$/;
-    var freeParseInt = parseInt;
-    function arrayMap(array, iteratee) {
-      var index = -1, length = array ? array.length : 0, result = Array(length);
-      while (++index < length) {
-        result[index] = iteratee(array[index], index, array);
-      }
-      return result;
-    }
-    function baseFindIndex(array, predicate, fromIndex, fromRight) {
-      var length = array.length, index = fromIndex + (fromRight ? 1 : -1);
-      while (fromRight ? index-- : ++index < length) {
-        if (predicate(array[index], index, array)) {
-          return index;
-        }
-      }
-      return -1;
-    }
-    function baseIndexOf(array, value, fromIndex) {
-      if (value !== value) {
-        return baseFindIndex(array, baseIsNaN, fromIndex);
-      }
-      var index = fromIndex - 1, length = array.length;
-      while (++index < length) {
-        if (array[index] === value) {
-          return index;
-        }
-      }
-      return -1;
-    }
-    function baseIsNaN(value) {
-      return value !== value;
-    }
-    function baseTimes(n, iteratee) {
-      var index = -1, result = Array(n);
-      while (++index < n) {
-        result[index] = iteratee(index);
-      }
-      return result;
-    }
-    function baseValues(object, props) {
-      return arrayMap(props, function(key) {
-        return object[key];
-      });
-    }
-    function overArg(func, transform) {
-      return function(arg) {
-        return func(transform(arg));
-      };
-    }
-    var objectProto = Object.prototype;
-    var hasOwnProperty = objectProto.hasOwnProperty;
-    var objectToString = objectProto.toString;
-    var propertyIsEnumerable = objectProto.propertyIsEnumerable;
-    var nativeKeys = overArg(Object.keys, Object);
-    var nativeMax = Math.max;
-    function arrayLikeKeys(value, inherited) {
-      var result = isArray(value) || isArguments(value) ? baseTimes(value.length, String) : [];
-      var length = result.length, skipIndexes = !!length;
-      for (var key in value) {
-        if ((inherited || hasOwnProperty.call(value, key)) && !(skipIndexes && (key == "length" || isIndex(key, length)))) {
-          result.push(key);
-        }
-      }
-      return result;
-    }
-    function baseKeys(object) {
-      if (!isPrototype(object)) {
-        return nativeKeys(object);
-      }
-      var result = [];
-      for (var key in Object(object)) {
-        if (hasOwnProperty.call(object, key) && key != "constructor") {
-          result.push(key);
-        }
-      }
-      return result;
-    }
-    function isIndex(value, length) {
-      length = length == null ? MAX_SAFE_INTEGER : length;
-      return !!length && (typeof value == "number" || reIsUint.test(value)) && (value > -1 && value % 1 == 0 && value < length);
-    }
-    function isPrototype(value) {
-      var Ctor = value && value.constructor, proto = typeof Ctor == "function" && Ctor.prototype || objectProto;
-      return value === proto;
-    }
-    function includes(collection, value, fromIndex, guard) {
-      collection = isArrayLike(collection) ? collection : values(collection);
-      fromIndex = fromIndex && !guard ? toInteger(fromIndex) : 0;
-      var length = collection.length;
-      if (fromIndex < 0) {
-        fromIndex = nativeMax(length + fromIndex, 0);
-      }
-      return isString(collection) ? fromIndex <= length && collection.indexOf(value, fromIndex) > -1 : !!length && baseIndexOf(collection, value, fromIndex) > -1;
-    }
-    function isArguments(value) {
-      return isArrayLikeObject(value) && hasOwnProperty.call(value, "callee") && (!propertyIsEnumerable.call(value, "callee") || objectToString.call(value) == argsTag);
-    }
-    var isArray = Array.isArray;
-    function isArrayLike(value) {
-      return value != null && isLength(value.length) && !isFunction(value);
-    }
-    function isArrayLikeObject(value) {
-      return isObjectLike(value) && isArrayLike(value);
-    }
-    function isFunction(value) {
-      var tag = isObject(value) ? objectToString.call(value) : "";
-      return tag == funcTag || tag == genTag;
-    }
-    function isLength(value) {
-      return typeof value == "number" && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
-    }
-    function isObject(value) {
-      var type = typeof value;
-      return !!value && (type == "object" || type == "function");
-    }
-    function isObjectLike(value) {
-      return !!value && typeof value == "object";
-    }
-    function isString(value) {
-      return typeof value == "string" || !isArray(value) && isObjectLike(value) && objectToString.call(value) == stringTag;
-    }
-    function isSymbol(value) {
-      return typeof value == "symbol" || isObjectLike(value) && objectToString.call(value) == symbolTag;
-    }
-    function toFinite(value) {
-      if (!value) {
-        return value === 0 ? value : 0;
-      }
-      value = toNumber(value);
-      if (value === INFINITY || value === -INFINITY) {
-        var sign = value < 0 ? -1 : 1;
-        return sign * MAX_INTEGER;
-      }
-      return value === value ? value : 0;
-    }
-    function toInteger(value) {
-      var result = toFinite(value), remainder = result % 1;
-      return result === result ? remainder ? result - remainder : result : 0;
-    }
-    function toNumber(value) {
-      if (typeof value == "number") {
-        return value;
-      }
-      if (isSymbol(value)) {
-        return NAN;
-      }
-      if (isObject(value)) {
-        var other = typeof value.valueOf == "function" ? value.valueOf() : value;
-        value = isObject(other) ? other + "" : other;
-      }
-      if (typeof value != "string") {
-        return value === 0 ? value : +value;
-      }
-      value = value.replace(reTrim, "");
-      var isBinary = reIsBinary.test(value);
-      return isBinary || reIsOctal.test(value) ? freeParseInt(value.slice(2), isBinary ? 2 : 8) : reIsBadHex.test(value) ? NAN : +value;
-    }
-    function keys(object) {
-      return isArrayLike(object) ? arrayLikeKeys(object) : baseKeys(object);
-    }
-    function values(object) {
-      return object ? baseValues(object, keys(object)) : [];
-    }
-    module2.exports = includes;
-  }
-});
-
-// node_modules/lodash.isboolean/index.js
-var require_lodash2 = __commonJS({
-  "node_modules/lodash.isboolean/index.js"(exports2, module2) {
-    var boolTag = "[object Boolean]";
-    var objectProto = Object.prototype;
-    var objectToString = objectProto.toString;
-    function isBoolean(value) {
-      return value === true || value === false || isObjectLike(value) && objectToString.call(value) == boolTag;
-    }
-    function isObjectLike(value) {
-      return !!value && typeof value == "object";
-    }
-    module2.exports = isBoolean;
-  }
-});
-
-// node_modules/lodash.isinteger/index.js
-var require_lodash3 = __commonJS({
-  "node_modules/lodash.isinteger/index.js"(exports2, module2) {
-    var INFINITY = 1 / 0;
-    var MAX_INTEGER = 17976931348623157e292;
-    var NAN = 0 / 0;
-    var symbolTag = "[object Symbol]";
-    var reTrim = /^\s+|\s+$/g;
-    var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
-    var reIsBinary = /^0b[01]+$/i;
-    var reIsOctal = /^0o[0-7]+$/i;
-    var freeParseInt = parseInt;
-    var objectProto = Object.prototype;
-    var objectToString = objectProto.toString;
-    function isInteger(value) {
-      return typeof value == "number" && value == toInteger(value);
-    }
-    function isObject(value) {
-      var type = typeof value;
-      return !!value && (type == "object" || type == "function");
-    }
-    function isObjectLike(value) {
-      return !!value && typeof value == "object";
-    }
-    function isSymbol(value) {
-      return typeof value == "symbol" || isObjectLike(value) && objectToString.call(value) == symbolTag;
-    }
-    function toFinite(value) {
-      if (!value) {
-        return value === 0 ? value : 0;
-      }
-      value = toNumber(value);
-      if (value === INFINITY || value === -INFINITY) {
-        var sign = value < 0 ? -1 : 1;
-        return sign * MAX_INTEGER;
-      }
-      return value === value ? value : 0;
-    }
-    function toInteger(value) {
-      var result = toFinite(value), remainder = result % 1;
-      return result === result ? remainder ? result - remainder : result : 0;
-    }
-    function toNumber(value) {
-      if (typeof value == "number") {
-        return value;
-      }
-      if (isSymbol(value)) {
-        return NAN;
-      }
-      if (isObject(value)) {
-        var other = typeof value.valueOf == "function" ? value.valueOf() : value;
-        value = isObject(other) ? other + "" : other;
-      }
-      if (typeof value != "string") {
-        return value === 0 ? value : +value;
-      }
-      value = value.replace(reTrim, "");
-      var isBinary = reIsBinary.test(value);
-      return isBinary || reIsOctal.test(value) ? freeParseInt(value.slice(2), isBinary ? 2 : 8) : reIsBadHex.test(value) ? NAN : +value;
-    }
-    module2.exports = isInteger;
-  }
-});
-
-// node_modules/lodash.isnumber/index.js
-var require_lodash4 = __commonJS({
-  "node_modules/lodash.isnumber/index.js"(exports2, module2) {
-    var numberTag = "[object Number]";
-    var objectProto = Object.prototype;
-    var objectToString = objectProto.toString;
-    function isObjectLike(value) {
-      return !!value && typeof value == "object";
-    }
-    function isNumber(value) {
-      return typeof value == "number" || isObjectLike(value) && objectToString.call(value) == numberTag;
-    }
-    module2.exports = isNumber;
-  }
-});
-
-// node_modules/lodash.isplainobject/index.js
-var require_lodash5 = __commonJS({
-  "node_modules/lodash.isplainobject/index.js"(exports2, module2) {
-    var objectTag = "[object Object]";
-    function isHostObject(value) {
-      var result = false;
-      if (value != null && typeof value.toString != "function") {
-        try {
-          result = !!(value + "");
-        } catch (e) {
-        }
-      }
-      return result;
-    }
-    function overArg(func, transform) {
-      return function(arg) {
-        return func(transform(arg));
-      };
-    }
-    var funcProto = Function.prototype;
-    var objectProto = Object.prototype;
-    var funcToString = funcProto.toString;
-    var hasOwnProperty = objectProto.hasOwnProperty;
-    var objectCtorString = funcToString.call(Object);
-    var objectToString = objectProto.toString;
-    var getPrototype = overArg(Object.getPrototypeOf, Object);
-    function isObjectLike(value) {
-      return !!value && typeof value == "object";
-    }
-    function isPlainObject(value) {
-      if (!isObjectLike(value) || objectToString.call(value) != objectTag || isHostObject(value)) {
-        return false;
-      }
-      var proto = getPrototype(value);
-      if (proto === null) {
-        return true;
-      }
-      var Ctor = hasOwnProperty.call(proto, "constructor") && proto.constructor;
-      return typeof Ctor == "function" && Ctor instanceof Ctor && funcToString.call(Ctor) == objectCtorString;
-    }
-    module2.exports = isPlainObject;
-  }
-});
-
-// node_modules/lodash.isstring/index.js
-var require_lodash6 = __commonJS({
-  "node_modules/lodash.isstring/index.js"(exports2, module2) {
-    var stringTag = "[object String]";
-    var objectProto = Object.prototype;
-    var objectToString = objectProto.toString;
-    var isArray = Array.isArray;
-    function isObjectLike(value) {
-      return !!value && typeof value == "object";
-    }
-    function isString(value) {
-      return typeof value == "string" || !isArray(value) && isObjectLike(value) && objectToString.call(value) == stringTag;
-    }
-    module2.exports = isString;
-  }
-});
-
-// node_modules/lodash.once/index.js
-var require_lodash7 = __commonJS({
-  "node_modules/lodash.once/index.js"(exports2, module2) {
-    var FUNC_ERROR_TEXT = "Expected a function";
-    var INFINITY = 1 / 0;
-    var MAX_INTEGER = 17976931348623157e292;
-    var NAN = 0 / 0;
-    var symbolTag = "[object Symbol]";
-    var reTrim = /^\s+|\s+$/g;
-    var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
-    var reIsBinary = /^0b[01]+$/i;
-    var reIsOctal = /^0o[0-7]+$/i;
-    var freeParseInt = parseInt;
-    var objectProto = Object.prototype;
-    var objectToString = objectProto.toString;
-    function before(n, func) {
-      var result;
-      if (typeof func != "function") {
-        throw new TypeError(FUNC_ERROR_TEXT);
-      }
-      n = toInteger(n);
-      return function() {
-        if (--n > 0) {
-          result = func.apply(this, arguments);
-        }
-        if (n <= 1) {
-          func = void 0;
-        }
-        return result;
-      };
-    }
-    function once(func) {
-      return before(2, func);
-    }
-    function isObject(value) {
-      var type = typeof value;
-      return !!value && (type == "object" || type == "function");
-    }
-    function isObjectLike(value) {
-      return !!value && typeof value == "object";
-    }
-    function isSymbol(value) {
-      return typeof value == "symbol" || isObjectLike(value) && objectToString.call(value) == symbolTag;
-    }
-    function toFinite(value) {
-      if (!value) {
-        return value === 0 ? value : 0;
-      }
-      value = toNumber(value);
-      if (value === INFINITY || value === -INFINITY) {
-        var sign = value < 0 ? -1 : 1;
-        return sign * MAX_INTEGER;
-      }
-      return value === value ? value : 0;
-    }
-    function toInteger(value) {
-      var result = toFinite(value), remainder = result % 1;
-      return result === result ? remainder ? result - remainder : result : 0;
-    }
-    function toNumber(value) {
-      if (typeof value == "number") {
-        return value;
-      }
-      if (isSymbol(value)) {
-        return NAN;
-      }
-      if (isObject(value)) {
-        var other = typeof value.valueOf == "function" ? value.valueOf() : value;
-        value = isObject(other) ? other + "" : other;
-      }
-      if (typeof value != "string") {
-        return value === 0 ? value : +value;
-      }
-      value = value.replace(reTrim, "");
-      var isBinary = reIsBinary.test(value);
-      return isBinary || reIsOctal.test(value) ? freeParseInt(value.slice(2), isBinary ? 2 : 8) : reIsBadHex.test(value) ? NAN : +value;
-    }
-    module2.exports = once;
-  }
-});
-
-// node_modules/jsonwebtoken/sign.js
-var require_sign2 = __commonJS({
-  "node_modules/jsonwebtoken/sign.js"(exports2, module2) {
-    var timespan = require_timespan();
-    var PS_SUPPORTED = require_psSupported();
-    var validateAsymmetricKey = require_validateAsymmetricKey();
-    var jws = require_jws();
-    var includes = require_lodash();
-    var isBoolean = require_lodash2();
-    var isInteger = require_lodash3();
-    var isNumber = require_lodash4();
-    var isPlainObject = require_lodash5();
-    var isString = require_lodash6();
-    var once = require_lodash7();
-    var { KeyObject, createSecretKey, createPrivateKey } = require("crypto");
-    var SUPPORTED_ALGS = ["RS256", "RS384", "RS512", "ES256", "ES384", "ES512", "HS256", "HS384", "HS512", "none"];
-    if (PS_SUPPORTED) {
-      SUPPORTED_ALGS.splice(3, 0, "PS256", "PS384", "PS512");
-    }
-    var sign_options_schema = {
-      expiresIn: { isValid: function(value) {
-        return isInteger(value) || isString(value) && value;
-      }, message: '"expiresIn" should be a number of seconds or string representing a timespan' },
-      notBefore: { isValid: function(value) {
-        return isInteger(value) || isString(value) && value;
-      }, message: '"notBefore" should be a number of seconds or string representing a timespan' },
-      audience: { isValid: function(value) {
-        return isString(value) || Array.isArray(value);
-      }, message: '"audience" must be a string or array' },
-      algorithm: { isValid: includes.bind(null, SUPPORTED_ALGS), message: '"algorithm" must be a valid string enum value' },
-      header: { isValid: isPlainObject, message: '"header" must be an object' },
-      encoding: { isValid: isString, message: '"encoding" must be a string' },
-      issuer: { isValid: isString, message: '"issuer" must be a string' },
-      subject: { isValid: isString, message: '"subject" must be a string' },
-      jwtid: { isValid: isString, message: '"jwtid" must be a string' },
-      noTimestamp: { isValid: isBoolean, message: '"noTimestamp" must be a boolean' },
-      keyid: { isValid: isString, message: '"keyid" must be a string' },
-      mutatePayload: { isValid: isBoolean, message: '"mutatePayload" must be a boolean' },
-      allowInsecureKeySizes: { isValid: isBoolean, message: '"allowInsecureKeySizes" must be a boolean' },
-      allowInvalidAsymmetricKeyTypes: { isValid: isBoolean, message: '"allowInvalidAsymmetricKeyTypes" must be a boolean' }
-    };
-    var registered_claims_schema = {
-      iat: { isValid: isNumber, message: '"iat" should be a number of seconds' },
-      exp: { isValid: isNumber, message: '"exp" should be a number of seconds' },
-      nbf: { isValid: isNumber, message: '"nbf" should be a number of seconds' }
-    };
-    function validate(schema, allowUnknown, object, parameterName) {
-      if (!isPlainObject(object)) {
-        throw new Error('Expected "' + parameterName + '" to be a plain object.');
-      }
-      Object.keys(object).forEach(function(key) {
-        const validator = schema[key];
-        if (!validator) {
-          if (!allowUnknown) {
-            throw new Error('"' + key + '" is not allowed in "' + parameterName + '"');
-          }
-          return;
-        }
-        if (!validator.isValid(object[key])) {
-          throw new Error(validator.message);
-        }
-      });
-    }
-    function validateOptions(options) {
-      return validate(sign_options_schema, false, options, "options");
-    }
-    function validatePayload(payload) {
-      return validate(registered_claims_schema, true, payload, "payload");
-    }
-    var options_to_payload = {
-      "audience": "aud",
-      "issuer": "iss",
-      "subject": "sub",
-      "jwtid": "jti"
-    };
-    var options_for_objects = [
-      "expiresIn",
-      "notBefore",
-      "noTimestamp",
-      "audience",
-      "issuer",
-      "subject",
-      "jwtid"
-    ];
-    module2.exports = function(payload, secretOrPrivateKey, options, callback) {
-      if (typeof options === "function") {
-        callback = options;
-        options = {};
-      } else {
-        options = options || {};
-      }
-      const isObjectPayload = typeof payload === "object" && !Buffer.isBuffer(payload);
-      const header = Object.assign({
-        alg: options.algorithm || "HS256",
-        typ: isObjectPayload ? "JWT" : void 0,
-        kid: options.keyid
-      }, options.header);
-      function failure(err) {
-        if (callback) {
-          return callback(err);
-        }
-        throw err;
-      }
-      if (!secretOrPrivateKey && options.algorithm !== "none") {
-        return failure(new Error("secretOrPrivateKey must have a value"));
-      }
-      if (secretOrPrivateKey != null && !(secretOrPrivateKey instanceof KeyObject)) {
-        try {
-          secretOrPrivateKey = createPrivateKey(secretOrPrivateKey);
-        } catch (_) {
-          try {
-            secretOrPrivateKey = createSecretKey(typeof secretOrPrivateKey === "string" ? Buffer.from(secretOrPrivateKey) : secretOrPrivateKey);
-          } catch (_2) {
-            return failure(new Error("secretOrPrivateKey is not valid key material"));
-          }
-        }
-      }
-      if (header.alg.startsWith("HS") && secretOrPrivateKey.type !== "secret") {
-        return failure(new Error(`secretOrPrivateKey must be a symmetric key when using ${header.alg}`));
-      } else if (/^(?:RS|PS|ES)/.test(header.alg)) {
-        if (secretOrPrivateKey.type !== "private") {
-          return failure(new Error(`secretOrPrivateKey must be an asymmetric key when using ${header.alg}`));
-        }
-        if (!options.allowInsecureKeySizes && !header.alg.startsWith("ES") && secretOrPrivateKey.asymmetricKeyDetails !== void 0 && //KeyObject.asymmetricKeyDetails is supported in Node 15+
-        secretOrPrivateKey.asymmetricKeyDetails.modulusLength < 2048) {
-          return failure(new Error(`secretOrPrivateKey has a minimum key size of 2048 bits for ${header.alg}`));
-        }
-      }
-      if (typeof payload === "undefined") {
-        return failure(new Error("payload is required"));
-      } else if (isObjectPayload) {
-        try {
-          validatePayload(payload);
-        } catch (error) {
-          return failure(error);
-        }
-        if (!options.mutatePayload) {
-          payload = Object.assign({}, payload);
-        }
-      } else {
-        const invalid_options = options_for_objects.filter(function(opt) {
-          return typeof options[opt] !== "undefined";
-        });
-        if (invalid_options.length > 0) {
-          return failure(new Error("invalid " + invalid_options.join(",") + " option for " + typeof payload + " payload"));
-        }
-      }
-      if (typeof payload.exp !== "undefined" && typeof options.expiresIn !== "undefined") {
-        return failure(new Error('Bad "options.expiresIn" option the payload already has an "exp" property.'));
-      }
-      if (typeof payload.nbf !== "undefined" && typeof options.notBefore !== "undefined") {
-        return failure(new Error('Bad "options.notBefore" option the payload already has an "nbf" property.'));
-      }
-      try {
-        validateOptions(options);
-      } catch (error) {
-        return failure(error);
-      }
-      if (!options.allowInvalidAsymmetricKeyTypes) {
-        try {
-          validateAsymmetricKey(header.alg, secretOrPrivateKey);
-        } catch (error) {
-          return failure(error);
-        }
-      }
-      const timestamp = payload.iat || Math.floor(Date.now() / 1e3);
-      if (options.noTimestamp) {
-        delete payload.iat;
-      } else if (isObjectPayload) {
-        payload.iat = timestamp;
-      }
-      if (typeof options.notBefore !== "undefined") {
-        try {
-          payload.nbf = timespan(options.notBefore, timestamp);
-        } catch (err) {
-          return failure(err);
-        }
-        if (typeof payload.nbf === "undefined") {
-          return failure(new Error('"notBefore" should be a number of seconds or string representing a timespan eg: "1d", "20h", 60'));
-        }
-      }
-      if (typeof options.expiresIn !== "undefined" && typeof payload === "object") {
-        try {
-          payload.exp = timespan(options.expiresIn, timestamp);
-        } catch (err) {
-          return failure(err);
-        }
-        if (typeof payload.exp === "undefined") {
-          return failure(new Error('"expiresIn" should be a number of seconds or string representing a timespan eg: "1d", "20h", 60'));
-        }
-      }
-      Object.keys(options_to_payload).forEach(function(key) {
-        const claim = options_to_payload[key];
-        if (typeof options[key] !== "undefined") {
-          if (typeof payload[claim] !== "undefined") {
-            return failure(new Error('Bad "options.' + key + '" option. The payload already has an "' + claim + '" property.'));
-          }
-          payload[claim] = options[key];
-        }
-      });
-      const encoding = options.encoding || "utf8";
-      if (typeof callback === "function") {
-        callback = callback && once(callback);
-        jws.createSign({
-          header,
-          privateKey: secretOrPrivateKey,
-          payload,
-          encoding
-        }).once("error", callback).once("done", function(signature) {
-          if (!options.allowInsecureKeySizes && /^(?:RS|PS)/.test(header.alg) && signature.length < 256) {
-            return callback(new Error(`secretOrPrivateKey has a minimum key size of 2048 bits for ${header.alg}`));
-          }
-          callback(null, signature);
-        });
-      } else {
-        let signature = jws.sign({ header, payload, secret: secretOrPrivateKey, encoding });
-        if (!options.allowInsecureKeySizes && /^(?:RS|PS)/.test(header.alg) && signature.length < 256) {
-          throw new Error(`secretOrPrivateKey has a minimum key size of 2048 bits for ${header.alg}`);
-        }
-        return signature;
-      }
-    };
-  }
-});
-
-// node_modules/jsonwebtoken/index.js
-var require_jsonwebtoken = __commonJS({
-  "node_modules/jsonwebtoken/index.js"(exports2, module2) {
-    module2.exports = {
-      decode: require_decode(),
-      verify: require_verify(),
-      sign: require_sign2(),
-      JsonWebTokenError: require_JsonWebTokenError(),
-      NotBeforeError: require_NotBeforeError(),
-      TokenExpiredError: require_TokenExpiredError()
-    };
-  }
-});
-
 // models/Branch.js
 var Branch_exports = {};
 __export(Branch_exports, {
   default: () => Branch_default
 });
-var import_mongoose6, branchSchema, Branch2, Branch_default;
+var import_mongoose7, branchSchema, Branch, Branch_default;
 var init_Branch = __esm({
   "models/Branch.js"() {
-    import_mongoose6 = __toESM(require_mongoose2(), 1);
-    branchSchema = new import_mongoose6.default.Schema({
+    import_mongoose7 = __toESM(require_mongoose2(), 1);
+    branchSchema = new import_mongoose7.default.Schema({
       restaurantId: {
-        type: import_mongoose6.default.Schema.Types.ObjectId,
+        type: import_mongoose7.default.Schema.Types.ObjectId,
         ref: "Restaurant",
         required: true
       },
@@ -125159,7 +125814,7 @@ var init_Branch = __esm({
         email: String
       },
       manager: {
-        type: import_mongoose6.default.Schema.Types.ObjectId,
+        type: import_mongoose7.default.Schema.Types.ObjectId,
         ref: "User"
       },
       isActive: {
@@ -125167,59 +125822,8 @@ var init_Branch = __esm({
         default: true
       }
     }, { timestamps: true });
-    Branch2 = import_mongoose6.default.model("Branch", branchSchema);
-    Branch_default = Branch2;
-  }
-});
-
-// models/Notification.js
-var Notification_exports = {};
-__export(Notification_exports, {
-  default: () => Notification_default
-});
-var import_mongoose7, notificationSchema, Notification, Notification_default;
-var init_Notification = __esm({
-  "models/Notification.js"() {
-    import_mongoose7 = __toESM(require_mongoose2(), 1);
-    notificationSchema = new import_mongoose7.default.Schema({
-      title: {
-        type: String,
-        required: true
-      },
-      desc: {
-        type: String,
-        required: true
-      },
-      type: {
-        type: String,
-        enum: ["Alert", "Info", "Broadcast", "System", "Order"],
-        default: "Info"
-      },
-      read: {
-        type: Boolean,
-        default: false
-      },
-      restaurantId: {
-        type: import_mongoose7.default.Schema.Types.ObjectId,
-        ref: "Restaurant"
-      },
-      branchId: {
-        type: import_mongoose7.default.Schema.Types.ObjectId,
-        ref: "Branch"
-      },
-      // Role-scoping: if set, only these roles can see this notification
-      targetRole: {
-        type: [String],
-        default: null
-      },
-      // If true, only SuperAdmin can see this (no restaurantId needed)
-      isSuperAdminOnly: {
-        type: Boolean,
-        default: false
-      }
-    }, { timestamps: true });
-    Notification = import_mongoose7.default.model("Notification", notificationSchema);
-    Notification_default = Notification;
+    Branch = import_mongoose7.default.model("Branch", branchSchema);
+    Branch_default = Branch;
   }
 });
 
@@ -125284,15 +125888,11 @@ var init_RestaurantVerification = __esm({
 });
 
 // models/Plan.js
-var Plan_exports = {};
-__export(Plan_exports, {
-  default: () => Plan_default
-});
-var import_mongoose9, planSchema, Plan, Plan_default;
+var import_mongoose10, planSchema, Plan, Plan_default;
 var init_Plan = __esm({
   "models/Plan.js"() {
-    import_mongoose9 = __toESM(require_mongoose2(), 1);
-    planSchema = new import_mongoose9.default.Schema({
+    import_mongoose10 = __toESM(require_mongoose2(), 1);
+    planSchema = new import_mongoose10.default.Schema({
       name: {
         type: String,
         required: true,
@@ -125324,8 +125924,301 @@ var init_Plan = __esm({
     }, {
       timestamps: true
     });
-    Plan = import_mongoose9.default.model("Plan", planSchema);
+    Plan = import_mongoose10.default.model("Plan", planSchema);
     Plan_default = Plan;
+  }
+});
+
+// utils/subscriptionHelper.js
+var subscriptionHelper_exports = {};
+__export(subscriptionHelper_exports, {
+  DEFAULT_PLAN_CATALOG: () => DEFAULT_PLAN_CATALOG,
+  applyPaidSubscriptionActivation: () => applyPaidSubscriptionActivation,
+  calculateProratedUpgrade: () => calculateProratedUpgrade,
+  evaluateSubscriptionAccess: () => evaluateSubscriptionAccess,
+  findPlanDocument: () => findPlanDocument,
+  getRazorpayCredentials: () => getRazorpayCredentials,
+  getRazorpayInstance: () => getRazorpayInstance,
+  normalizePlanName: () => normalizePlanName,
+  resolvePlanPrice: () => resolvePlanPrice,
+  verifyRazorpaySignature: () => verifyRazorpaySignature
+});
+var import_crypto, import_razorpay, DEFAULT_PLAN_CATALOG, normalizePlanName, findPlanDocument, resolvePlanPrice, calculateProratedUpgrade, getRazorpayCredentials, getRazorpayInstance, verifyRazorpaySignature, evaluateSubscriptionAccess, applyPaidSubscriptionActivation;
+var init_subscriptionHelper = __esm({
+  "utils/subscriptionHelper.js"() {
+    import_crypto = __toESM(require("crypto"), 1);
+    import_razorpay = __toESM(require("razorpay"), 1);
+    init_Plan();
+    init_Restaurant();
+    init_User();
+    init_Notification();
+    init_emailService();
+    DEFAULT_PLAN_CATALOG = {
+      Basic: {
+        name: "Basic",
+        monthlyPrice: 2999,
+        yearlyPrice: 2399,
+        branchesLimit: 1,
+        staffLimit: 5
+      },
+      Starter: {
+        name: "Starter",
+        monthlyPrice: 2999,
+        yearlyPrice: 2399,
+        branchesLimit: 1,
+        staffLimit: 5
+      },
+      Pro: {
+        name: "Pro",
+        monthlyPrice: 5999,
+        yearlyPrice: 4799,
+        branchesLimit: 3,
+        staffLimit: 9999
+      },
+      Professional: {
+        name: "Professional",
+        monthlyPrice: 5999,
+        yearlyPrice: 4799,
+        branchesLimit: 3,
+        staffLimit: 9999
+      },
+      Enterprise: {
+        name: "Enterprise",
+        monthlyPrice: 12999,
+        yearlyPrice: 10399,
+        branchesLimit: 9999,
+        staffLimit: 9999
+      }
+    };
+    normalizePlanName = (planName) => {
+      if (!planName) return "Basic";
+      const raw = String(planName).trim();
+      const lower = raw.toLowerCase();
+      if (lower.includes("trial") || lower.includes("free")) return "Basic";
+      if (lower === "basic" || lower === "starter") return "Basic";
+      if (lower === "pro" || lower === "professional") return "Pro";
+      if (lower === "enterprise") return "Enterprise";
+      return raw.charAt(0).toUpperCase() + raw.slice(1);
+    };
+    findPlanDocument = async (planName) => {
+      if (!planName) return null;
+      const raw = String(planName).trim();
+      const normalized = normalizePlanName(raw);
+      const aliases = Array.from(/* @__PURE__ */ new Set([
+        raw,
+        normalized,
+        ...normalized === "Basic" ? ["Basic", "Starter"] : [],
+        ...normalized === "Pro" ? ["Pro", "Professional"] : []
+      ]));
+      for (const candidate of aliases) {
+        const escaped = candidate.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const found = await Plan_default.findOne({ name: { $regex: `^${escaped}$`, $options: "i" } }).lean();
+        if (found) return found;
+      }
+      return null;
+    };
+    resolvePlanPrice = async (planName, billingCycle = "monthly") => {
+      const normalized = normalizePlanName(planName);
+      const planDoc = await findPlanDocument(planName);
+      const fallback = DEFAULT_PLAN_CATALOG[normalized] || DEFAULT_PLAN_CATALOG.Basic;
+      const isYearly = billingCycle === "yearly";
+      const price = planDoc ? Number(isYearly ? planDoc.yearlyPrice ?? planDoc.monthlyPrice ?? fallback.yearlyPrice : planDoc.monthlyPrice ?? fallback.monthlyPrice) : Number(isYearly ? fallback.yearlyPrice : fallback.monthlyPrice);
+      return {
+        planName: planDoc?.name || normalized,
+        planDoc,
+        price: Math.max(0, price)
+      };
+    };
+    calculateProratedUpgrade = async (restaurant, targetPlanName, billingCycle = "monthly") => {
+      const { planName: resolvedName, planDoc, price: targetPrice } = await resolvePlanPrice(targetPlanName, billingCycle);
+      const sub = restaurant?.subscription || {};
+      const currentPlanName = sub.plan || "Basic";
+      const currentCycle = sub.billingCycle || "monthly";
+      const isCurrentlyPaidActive = sub.status === "Active" && sub.paymentStatus === "Paid" && !sub.trialActive;
+      let remainingCredit = 0;
+      if (isCurrentlyPaidActive) {
+        const { price: currentPrice } = await resolvePlanPrice(currentPlanName, currentCycle);
+        const now = /* @__PURE__ */ new Date();
+        const expiryRaw = sub.subscriptionEndDate || sub.expiryDate;
+        const expiry = expiryRaw ? new Date(expiryRaw) : now;
+        const totalDuration = currentCycle === "yearly" ? 365 : 30;
+        const remainingDays = Math.max(0, Math.ceil((expiry - now) / (1e3 * 60 * 60 * 24)));
+        remainingCredit = Math.floor(currentPrice / totalDuration * remainingDays);
+      }
+      const chargeAmount = Math.max(1, targetPrice - remainingCredit);
+      return {
+        planName: resolvedName,
+        planDoc,
+        billingCycle: billingCycle === "yearly" ? "yearly" : "monthly",
+        targetPrice,
+        remainingCredit,
+        chargeAmount
+      };
+    };
+    getRazorpayCredentials = () => {
+      const keyId = process.env.RAZORPAY_KEY_ID?.trim();
+      const keySecret = process.env.RAZORPAY_KEY_SECRET?.trim();
+      if (!keyId || !keySecret) {
+        const err = new Error("Razorpay payment gateway credentials are not configured on the server.");
+        err.statusCode = 503;
+        throw err;
+      }
+      return { keyId, keySecret };
+    };
+    getRazorpayInstance = () => {
+      const { keyId, keySecret } = getRazorpayCredentials();
+      return {
+        keyId,
+        keySecret,
+        instance: new import_razorpay.default({ key_id: keyId, key_secret: keySecret })
+      };
+    };
+    verifyRazorpaySignature = ({ orderId, paymentId, signature }) => {
+      if (!orderId || !paymentId || !signature) return false;
+      const { keySecret } = getRazorpayCredentials();
+      const body = `${orderId}|${paymentId}`;
+      const expectedSignature = import_crypto.default.createHmac("sha256", keySecret).update(body).digest("hex");
+      return expectedSignature === signature;
+    };
+    evaluateSubscriptionAccess = async (restaurant, { notifyOnExpire = true } = {}) => {
+      if (!restaurant) return { isFrozen: false };
+      if (restaurant.isDemo) return { isFrozen: false };
+      const sub = restaurant.subscription || {};
+      const now = /* @__PURE__ */ new Date();
+      if (sub.manualFreeze || sub.status === "Frozen") {
+        return {
+          isFrozen: true,
+          manualFreeze: true,
+          subscriptionStatus: "Frozen",
+          freezeReason: sub.freezeReason || "Administrative freeze placed by Super Admin.",
+          message: "Your restaurant dashboard has been frozen by administration. Please contact support."
+        };
+      }
+      if (sub.status === "Pending Approval") {
+        return {
+          isFrozen: true,
+          isPendingApproval: true,
+          subscriptionStatus: "Pending Approval",
+          message: "Your 7-Day Free Trial request is pending Super Admin approval. Operational features will unlock once approved."
+        };
+      }
+      if (sub.status === "Rejected") {
+        return {
+          isFrozen: true,
+          isRejected: true,
+          rejectionReason: sub.rejectionReason || "Trial request was not approved.",
+          subscriptionStatus: "Rejected",
+          message: "Your free trial request was rejected. Please select an active subscription plan to unlock your dashboard."
+        };
+      }
+      const trialEnd = sub.trialEndDate || sub.expiryDate;
+      if (sub.trialActive && trialEnd && now > new Date(trialEnd)) {
+        const transitioned = await Restaurant_default.findOneAndUpdate(
+          { _id: restaurant._id, "subscription.status": "Active", "subscription.trialActive": true },
+          { $set: { "subscription.status": "Expired", "subscription.trialActive": false } },
+          { new: true }
+        );
+        restaurant.subscription.status = "Expired";
+        restaurant.subscription.trialActive = false;
+        if (transitioned && notifyOnExpire) {
+          Notification_default.create({
+            title: "7-Day Free Trial Expired",
+            desc: "Your 7-day free trial has ended and your dashboard has been frozen. Please subscribe to restore access.",
+            type: "System",
+            restaurantId: restaurant._id
+          }).catch((e) => console.error("[Subscription Notif Error]:", e.message));
+          User_default.findById(restaurant.ownerId).select("email name").lean().then((owner) => {
+            if (owner?.email) {
+              return sendTrialExpiredAndFrozenEmail({
+                email: owner.email,
+                name: owner.name,
+                restaurantName: restaurant.name,
+                expiredDate: trialEnd,
+                plan: sub.plan
+              });
+            }
+          }).catch((e) => console.error("[Auto-Expire Email Error]:", e.message));
+        }
+        return {
+          isFrozen: true,
+          isExpired: true,
+          subscriptionStatus: "Expired",
+          message: "Your 7-day free trial has expired and dashboard features are frozen. Please upgrade your subscription plan to continue."
+        };
+      }
+      const paidEnd = sub.subscriptionEndDate || sub.expiryDate;
+      if (!sub.trialActive && paidEnd && now > new Date(paidEnd)) {
+        const transitioned = await Restaurant_default.findOneAndUpdate(
+          { _id: restaurant._id, "subscription.status": { $in: ["Active", "Expiring Soon"] } },
+          { $set: { "subscription.status": "Expired" } },
+          { new: true }
+        );
+        restaurant.subscription.status = "Expired";
+        if (transitioned && notifyOnExpire) {
+          Notification_default.create({
+            title: "Subscription Expired",
+            desc: `Your ${sub.plan || "subscription"} plan has expired and operational features are frozen. Please renew to restore access.`,
+            type: "System",
+            restaurantId: restaurant._id
+          }).catch((e) => console.error("[Subscription Notif Error]:", e.message));
+          User_default.findById(restaurant.ownerId).select("email name").lean().then((owner) => {
+            if (owner?.email) {
+              return sendSubscriptionExpiredEmail({
+                email: owner.email,
+                name: owner.name,
+                restaurantName: restaurant.name,
+                plan: sub.plan,
+                expiryDate: paidEnd
+              });
+            }
+          }).catch((e) => console.error("[Paid-Expire Email Error]:", e.message));
+        }
+        return {
+          isFrozen: true,
+          isExpired: true,
+          subscriptionStatus: "Expired",
+          message: "Your subscription plan has expired. Please renew your plan to restore full operational access."
+        };
+      }
+      if (["Expired", "Inactive", "Suspended", "Cancelled"].includes(sub.status) || sub.paymentStatus === "Failed") {
+        return {
+          isFrozen: true,
+          isExpired: true,
+          subscriptionStatus: sub.status || "Expired",
+          message: sub.paymentStatus === "Failed" ? "Last subscription payment failed. Please complete payment to unlock your dashboard." : "An active subscription plan or approved free trial is required to access operational features."
+        };
+      }
+      return { isFrozen: false };
+    };
+    applyPaidSubscriptionActivation = (restaurant, { planName, billingCycle = "monthly", targetPrice }) => {
+      const now = /* @__PURE__ */ new Date();
+      const cycle = billingCycle === "yearly" ? "yearly" : "monthly";
+      const newExpiry = new Date(now);
+      newExpiry.setDate(newExpiry.getDate() + (cycle === "yearly" ? 365 : 30));
+      if (!restaurant.subscription) {
+        restaurant.subscription = {};
+      }
+      restaurant.subscription.status = "Active";
+      restaurant.subscription.plan = planName;
+      restaurant.subscription.billingCycle = cycle;
+      restaurant.subscription.trialActive = false;
+      restaurant.subscription.paymentStatus = "Paid";
+      restaurant.subscription.manualFreeze = false;
+      restaurant.subscription.freezeReason = "";
+      restaurant.subscription.rejectionReason = "";
+      restaurant.subscription.subscriptionStartDate = now;
+      restaurant.subscription.subscriptionEndDate = newExpiry;
+      restaurant.subscription.startDate = now;
+      restaurant.subscription.expiryDate = newExpiry;
+      restaurant.subscription.price = Number(targetPrice || 0);
+      restaurant.subscription.downgradeScheduledPlan = "";
+      restaurant.subscription.downgradeScheduledDate = null;
+      restaurant.isActive = true;
+      if (restaurant.approvalStatus === "Pending" || restaurant.approvalStatus === "Rejected") {
+        restaurant.approvalStatus = "Approved";
+      }
+      return newExpiry;
+    };
   }
 });
 
@@ -125356,7 +126249,7 @@ var init_MenuItem = __esm({
       },
       image: {
         type: String,
-        default: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop"
+        default: ""
       },
       rating: {
         type: Number,
@@ -125563,820 +126456,81 @@ var init_Category = __esm({
 
 // services/subscriptionCronService.js
 init_Restaurant();
-init_User();
-
-// utils/emailService.js
-var import_nodemailer = __toESM(require("nodemailer"), 1);
-var getBrevoConfig = () => {
-  const defaultApiKey = [
-    "xkeysib",
-    "c6631c60c4656c1ba3be795c6f60f1a94fa9a47c45ecc92add4e4f83827b7d6d",
-    "Tm68g8GmBDYOA3Sd"
-  ].join("-");
-  const apiKey = process.env.BREVO_API_KEY || defaultApiKey;
-  const senderEmail = process.env.BREVO_SENDER_EMAIL || process.env.SMTP_FROM || "forgeindiaconnectfic@gmail.com";
-  const senderName = process.env.BREVO_SENDER_NAME || "FoodNest";
-  return { apiKey, senderEmail, senderName };
-};
-var getSmtpConfig = () => {
-  const defaultSmtpPass = [
-    "xsmtpsib",
-    "c6631c60c4656c1ba3be795c6f60f1a94fa9a47c45ecc92add4e4f83827b7d6d",
-    "ftTnqc7yVNlO1O2j"
-  ].join("-");
-  const host = process.env.SMTP_HOST || "smtp-relay.brevo.com";
-  const port = Number(process.env.SMTP_PORT || process.env.SMTP_Port || 587);
-  const user = process.env.SMTP_USER || process.env.SMPT_USER || "b5786a001@smtp-brevo.com";
-  const pass = process.env.SMTP_PASS || process.env.smtp_pass_key || defaultSmtpPass;
-  const senderEmail = process.env.BREVO_SENDER_EMAIL || process.env.SMTP_FROM || "forgeindiaconnectfic@gmail.com";
-  const senderName = process.env.BREVO_SENDER_NAME || "FoodNest";
-  return { host, port, user, pass, senderEmail, senderName };
-};
-var sendEmail = async ({ to, toName, subject, html }) => {
-  if (!to) return false;
-  const smtpConfig = getSmtpConfig();
-  const { apiKey, senderEmail, senderName } = getBrevoConfig();
-  try {
-    const transporter = import_nodemailer.default.createTransport({
-      host: smtpConfig.host,
-      port: smtpConfig.port,
-      secure: false,
-      auth: {
-        user: smtpConfig.user,
-        pass: smtpConfig.pass
-      }
-    });
-    const info = await transporter.sendMail({
-      from: `"${smtpConfig.senderName}" <${smtpConfig.senderEmail}>`,
-      to,
-      subject,
-      html
-    });
-    console.log(`[Brevo SMTP Email Sent Successfully] Delivered to ${to}. Message ID: ${info.messageId}`);
-    return true;
-  } catch (smtpErr) {
-    if (smtpErr.message && (smtpErr.message.includes("525") || smtpErr.message.includes("Unauthorized IP"))) {
-      console.warn("[Brevo SMTP Warning]: Brevo blocked current IP (525 5.7.1 Unauthorized IP address). To enable live delivery from any IP, authorize IPs at https://app.brevo.com/security/authorised_ips");
-    } else {
-      console.warn(`[Brevo SMTP Warning] Falling back to Brevo API: ${smtpErr.message}`);
-    }
-  }
-  if (apiKey) {
-    try {
-      const response = await fetch("https://api.brevo.com/v3/smtp/email", {
-        method: "POST",
-        headers: {
-          "accept": "application/json",
-          "api-key": apiKey,
-          "content-type": "application/json"
-        },
-        body: JSON.stringify({
-          sender: { name: senderName, email: senderEmail },
-          to: [{ email: to, name: toName || "Valued User" }],
-          replyTo: { email: senderEmail, name: senderName },
-          subject,
-          htmlContent: html
-        })
-      });
-      const data = await response.json();
-      if (response.ok) {
-        console.log(`[Brevo API Email Sent Successfully] Delivered real-time to ${to}. Message ID:`, data.messageId);
-        return true;
-      } else {
-        console.error("[Brevo API Error Details]:", JSON.stringify(data));
-        if (data.message && data.message.includes("authorised_ips")) {
-          console.warn("[Action Required for Brevo Real-Time Mail]: Brevo security policy detected unrecognized server IP. Add IP at https://app.brevo.com/security/authorised_ips or disable Brevo IP restrictions to allow automated mail dispatch.");
-        }
-      }
-    } catch (brevoErr) {
-      console.error("[Brevo HTTP Dispatch Error]:", brevoErr.message);
-    }
-  }
-  return false;
-};
-var sendWelcomeEmail = async ({ email, name, restaurantName, plan }) => {
-  const subject = `Welcome to Restaurant Hub - Subscription & Registration Received!`;
-  const html = `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
-            <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Welcome to Restaurant Hub! \u{1F389}</h1>
-                <p style="margin-top: 8px; opacity: 0.9; font-size: 14px;">Your All-In-One Restaurant Management Platform</p>
-            </div>
-            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Valued Partner"},</h2>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    Thank you for joining <strong>Restaurant Hub</strong>! We are excited to welcome <strong>${restaurantName || "Your Restaurant"}</strong> to our platform.
-                </p>
-                <div style="background-color: #f1f5f9; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
-                    <p style="margin: 0; font-size: 13px; color: #334155;"><strong>Subscribed Plan:</strong> ${plan || "Basic"}</p>
-                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #334155;"><strong>Account Status:</strong> Pending Super Admin Verification</p>
-                </div>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    Your account registration details have been submitted to our Super Admin verification team for review. As soon as your restaurant verification is approved, your plan dashboard will unlock automatically.
-                </p>
-                <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://f-hms.vercel.app" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
-                        Access Restaurant Hub Portal
-                    </a>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
-                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub. All rights reserved.
-            </div>
-        </div>
-    `;
-  return await sendEmail({ to: email, toName: name, subject, html });
-};
-var sendSubscriptionExpiredEmail = async ({ email, name, restaurantName, plan, expiryDate }) => {
-  const formattedDate = expiryDate ? new Date(expiryDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "recently";
-  const subject = `Subscription Expired Alert - Action Required for ${restaurantName || "Your Restaurant"}`;
-  const html = `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
-            <div style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Subscription Expired \u26A0\uFE0F</h1>
-                <p style="margin-top: 8px; opacity: 0.9; font-size: 14px;">Action Required for Your Restaurant Account</p>
-            </div>
-            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Restaurant Owner"},</h2>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    This is an important alert regarding your subscription for <strong>${restaurantName || "Your Restaurant"}</strong>. Your <strong>${plan || "Basic"}</strong> plan subscription expired on <strong>${formattedDate}</strong>.
-                </p>
-                <div style="background-color: #fef2f2; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ef4444;">
-                    <p style="margin: 0; font-size: 13px; color: #991b1b;"><strong>Status:</strong> Expired / Action Required</p>
-                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #991b1b;">Please renew your subscription to restore full access to your plan modules.</p>
-                </div>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    You can easily renew or upgrade your plan by visiting the SaaS Subscription portal in your admin dashboard.
-                </p>
-                <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://f-hms.vercel.app/admin/billing" style="background-color: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
-                        Renew Subscription Now
-                    </a>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
-                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub. All rights reserved.
-            </div>
-        </div>
-    `;
-  return await sendEmail({ to: email, toName: name, subject, html });
-};
-var sendApprovalEmail = async ({ email, name, restaurantName, plan }) => {
-  const subject = `Congratulations! Your Restaurant Verification is Approved!`;
-  const html = `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
-            <div style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Account Approved! \u{1F389}</h1>
-                <p style="margin-top: 8px; opacity: 0.9; font-size: 14px;">Your Dashboard is Now Unlocked</p>
-            </div>
-            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Great news, ${name || "Restaurant Owner"}!</h2>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    Super Admin has reviewed and approved your restaurant verification for <strong>${restaurantName || "Your Restaurant"}</strong>!
-                </p>
-                <div style="background-color: #eff6ff; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
-                    <p style="margin: 0; font-size: 13px; color: #1e40af;"><strong>Active Plan:</strong> ${plan || "Basic"}</p>
-                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #1e40af;"><strong>Dashboard Access:</strong> Unlocked & Ready</p>
-                </div>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    You can now access all features, order management, menu setup, staff accounts, and branch operations according to your plan tier.
-                </p>
-                <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://f-hms.vercel.app/admin" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
-                        Open Your Dashboard
-                    </a>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
-                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub. All rights reserved.
-            </div>
-        </div>
-    `;
-  return await sendEmail({ to: email, toName: name, subject, html });
-};
-var sendLoginNotificationEmail = async ({ email, name, role }) => {
-  const subject = `Security Alert: Successful Login to Restaurant Hub`;
-  const loginTime = (/* @__PURE__ */ new Date()).toLocaleString("en-US", { timeZoneName: "short" });
-  const html = `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
-            <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Login Activity \u{1F510}</h1>
-                <p style="margin-top: 8px; opacity: 0.9; font-size: 14px;">Security Notification for Your Account</p>
-            </div>
-            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "User"},</h2>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    We detected a successful login to your <strong>Restaurant Hub</strong> account (${role || "User"}).
-                </p>
-                <div style="background-color: #f1f5f9; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
-                    <p style="margin: 0; font-size: 13px; color: #334155;"><strong>Login Time:</strong> ${loginTime}</p>
-                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #334155;"><strong>Account Email:</strong> ${email}</p>
-                </div>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    If this was you, no further action is required. If you did not perform this login, please reset your password immediately.
-                </p>
-                <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://f-hms.vercel.app" style="background-color: #1e293b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
-                        Access Restaurant Hub
-                    </a>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
-                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub. All rights reserved.
-            </div>
-        </div>
-    `;
-  return await sendEmail({ to: email, toName: name, subject, html });
-};
-var sendSubscriptionSuccessEmail = async ({ email, name, restaurantName, plan, billingCycle, price, transactionId, expiryDate }) => {
-  const formattedExpiry = expiryDate ? new Date(expiryDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Next billing cycle";
-  const formattedPrice = price !== void 0 ? `\u20B9${price}` : "";
-  const subject = `Subscription Confirmed: ${plan || "Plan"} Activated for ${restaurantName || "Your Restaurant"}! \u{1F389}`;
-  const html = `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
-            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Subscription Activated! \u{1F389}</h1>
-                <p style="margin-top: 8px; opacity: 0.9; font-size: 14px;">Your Restaurant Dashboard is Fully Active</p>
-            </div>
-            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Restaurant Owner"},</h2>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    Thank you for your payment! Your subscription to the <strong>${plan || "Basic"}</strong> plan for <strong>${restaurantName || "Your Restaurant"}</strong> has been successfully activated.
-                </p>
-                <div style="background-color: #f0fdf4; padding: 18px; border-radius: 10px; margin: 20px 0; border: 1px solid #bbf7d0;">
-                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-                        <tr>
-                            <td style="padding: 6px 0; color: #64748b;"><strong>Plan Tier:</strong></td>
-                            <td style="padding: 6px 0; color: #0f172a; font-weight: bold; text-align: right;">${plan || "Basic"}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 6px 0; color: #64748b;"><strong>Billing Cycle:</strong></td>
-                            <td style="padding: 6px 0; color: #0f172a; font-weight: bold; text-align: right; text-transform: capitalize;">${billingCycle || "Monthly"}</td>
-                        </tr>
-                        ${formattedPrice ? `
-                        <tr>
-                            <td style="padding: 6px 0; color: #64748b;"><strong>Amount Paid:</strong></td>
-                            <td style="padding: 6px 0; color: #059669; font-weight: bold; text-align: right;">${formattedPrice}</td>
-                        </tr>` : ""}
-                        ${transactionId ? `
-                        <tr>
-                            <td style="padding: 6px 0; color: #64748b;"><strong>Transaction ID:</strong></td>
-                            <td style="padding: 6px 0; color: #0f172a; font-family: monospace; font-size: 12px; text-align: right;">${transactionId}</td>
-                        </tr>` : ""}
-                        <tr>
-                            <td style="padding: 6px 0; color: #64748b;"><strong>Valid Until:</strong></td>
-                            <td style="padding: 6px 0; color: #0f172a; font-weight: bold; text-align: right;">${formattedExpiry}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 6px 0; color: #64748b;"><strong>Account Status:</strong></td>
-                            <td style="padding: 6px 0; color: #10b981; font-weight: bold; text-align: right;">Active & Unlocked</td>
-                        </tr>
-                    </table>
-                </div>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    All modules and features associated with the <strong>${plan}</strong> plan are now immediately accessible across your management dashboard, POS billing, orders, and staff workflows.
-                </p>
-                <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://f-hms.vercel.app/admin" style="background-color: #10b981; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
-                        Go to Your Dashboard
-                    </a>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
-                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub. All rights reserved.
-            </div>
-        </div>
-    `;
-  return await sendEmail({ to: email, toName: name, subject, html });
-};
-var portalBaseUrl = process.env.FRONTEND_URL || "https://f-hms-ten.vercel.app";
-var sendTrialRequestSubmittedEmail2 = async ({ email, name, restaurantName, requestDate }) => {
-  const formattedDate = requestDate ? new Date(requestDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }) : (/* @__PURE__ */ new Date()).toLocaleDateString("en-US");
-  const subject = `Free Trial Request Received: ${restaurantName || "Your Restaurant"}`;
-  const html = `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
-            <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">7-Day Free Trial Request Submitted \u23F3</h1>
-                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Super Admin Approval Pending</p>
-            </div>
-            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Restaurant Owner"},</h2>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    We have received your <strong>7-Day Free Trial</strong> request for <strong>${restaurantName || "Your Restaurant"}</strong>!
-                </p>
-                <div style="background-color: #fffbeb; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
-                    <p style="margin: 0; font-size: 13px; color: #92400e;"><strong>Plan:</strong> 7-Day Free Trial (Pro Features)</p>
-                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #92400e;"><strong>Price:</strong> Free (\u20B90)</p>
-                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #92400e;"><strong>Request Submitted:</strong> ${formattedDate}</p>
-                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #92400e;"><strong>Status:</strong> Pending Super Admin Review</p>
-                </div>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    Our Super Admin team is reviewing your restaurant request. <strong>Your 7-day trial countdown will begin only after Super Admin approval</strong>, ensuring you receive the full 7 days of operational access.
-                </p>
-                <div style="text-align: center; margin-top: 30px;">
-                    <a href="${portalBaseUrl}/admin/billing" style="background-color: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
-                        View Trial Request Status
-                    </a>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
-                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub SaaS. All rights reserved.
-            </div>
-        </div>
-    `;
-  return await sendEmail({ to: email, toName: name, subject, html });
-};
-var sendTrialApprovedEmail = async ({ email, name, restaurantName, trialStartDate, trialEndDate, plan }) => {
-  const formattedStart = trialStartDate ? new Date(trialStartDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Today";
-  const formattedEnd = trialEndDate ? new Date(trialEndDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "In 7 days";
-  const subject = `\u{1F389} Free Trial Approved! Welcome to ${restaurantName || "Restaurant Hub"}`;
-  const html = `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
-            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Free Trial Approved! \u{1F389}</h1>
-                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Your 7-Day Access Starts Now</p>
-            </div>
-            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Congratulations, ${name || "Restaurant Owner"}!</h2>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    Super Admin has approved your 7-Day Free Trial for <strong>${restaurantName || "Your Restaurant"}</strong>! Your dashboard and all operational features are now fully unlocked.
-                </p>
-                <div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
-                    <p style="margin: 0; font-size: 13px; color: #166534;"><strong>Plan:</strong> ${plan || "Pro (7-Day Trial)"}</p>
-                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #166534;"><strong>Trial Start Date:</strong> ${formattedStart}</p>
-                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #166534;"><strong>Trial Expiration Date:</strong> ${formattedEnd}</p>
-                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #166534;"><strong>Dashboard Status:</strong> Unlocked & Ready</p>
-                </div>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    You have complete access to POS billing, KOT/KDS kitchen display, order tracking, staff accounts, table setups, and reports.
-                </p>
-                <div style="text-align: center; margin-top: 30px;">
-                    <a href="${portalBaseUrl}/admin" style="background-color: #10b981; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
-                        Open Restaurant Dashboard
-                    </a>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
-                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub SaaS. All rights reserved.
-            </div>
-        </div>
-    `;
-  return await sendEmail({ to: email, toName: name, subject, html });
-};
-var sendTrialRejectedEmail = async ({ email, name, restaurantName, rejectionReason }) => {
-  const subject = `Update Regarding Your Free Trial Request - ${restaurantName || "Your Restaurant"}`;
-  const html = `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
-            <div style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Trial Request Update</h1>
-                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Request Status Notification</p>
-            </div>
-            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Restaurant Owner"},</h2>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    Thank you for your interest in Restaurant Hub. After careful review, our Super Admin team was unable to approve the 7-day free trial request for <strong>${restaurantName || "Your Restaurant"}</strong>.
-                </p>
-                <div style="background-color: #fef2f2; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ef4444;">
-                    <p style="margin: 0; font-size: 13px; color: #991b1b;"><strong>Status:</strong> Rejected</p>
-                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #991b1b;"><strong>Reason:</strong> ${rejectionReason || "Verification requirements not satisfied or duplicate request."}</p>
-                </div>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    If you believe this was an error or would like to submit updated restaurant information or choose a direct subscription plan, please contact our support team.
-                </p>
-                <div style="text-align: center; margin-top: 30px;">
-                    <a href="${portalBaseUrl}/admin/support" style="background-color: #475569; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
-                        Contact Platform Support
-                    </a>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
-                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub SaaS. All rights reserved.
-            </div>
-        </div>
-    `;
-  return await sendEmail({ to: email, toName: name, subject, html });
-};
-var sendTrialStartedEmail = async ({ email, name, restaurantName, trialEndDate, plan }) => {
-  const formattedEnd = trialEndDate ? new Date(trialEndDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "In 7 days";
-  const subject = `\u{1F680} Your 7-Day Free Trial Has Started - ${restaurantName || "Restaurant Hub"}`;
-  const html = `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
-            <div style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Your Free Trial is Active \u{1F680}</h1>
-                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">7 Days of Full Operational Access</p>
-            </div>
-            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Restaurant Owner"},</h2>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    Your 7-day trial period is officially underway for <strong>${restaurantName || "Your Restaurant"}</strong>!
-                </p>
-                <div style="background-color: #eff6ff; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
-                    <p style="margin: 0; font-size: 13px; color: #1e40af;"><strong>Tier:</strong> ${plan || "Pro Trial"}</p>
-                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #1e40af;"><strong>Duration:</strong> 7 Full Days</p>
-                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #1e40af;"><strong>Trial Expiry Date:</strong> ${formattedEnd}</p>
-                </div>
-                <div style="text-align: center; margin-top: 30px;">
-                    <a href="${portalBaseUrl}/admin" style="background-color: #3b82f6; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
-                        Go to Dashboard
-                    </a>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
-                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub SaaS. All rights reserved.
-            </div>
-        </div>
-    `;
-  return await sendEmail({ to: email, toName: name, subject, html });
-};
-var sendTrialExpiringReminderEmail = async ({ email, name, restaurantName, hoursRemaining = 24, trialEndDate, plan }) => {
-  const formattedEnd = trialEndDate ? new Date(trialEndDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Tomorrow";
-  const subject = `\u23F3 Warning: 24 Hours Left on Your Free Trial - ${restaurantName || "Your Restaurant"}`;
-  const html = `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
-            <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Trial Expiring in 24 Hours \u23F0</h1>
-                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Avoid Service Interruption</p>
-            </div>
-            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Restaurant Owner"},</h2>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    This is a reminder that your 7-Day Free Trial for <strong>${restaurantName || "Your Restaurant"}</strong> expires on <strong>${formattedEnd}</strong> (~24 hours remaining).
-                </p>
-                <div style="background-color: #fff7ed; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f97316;">
-                    <p style="margin: 0; font-size: 13px; color: #9a3412;"><strong>Important:</strong> When the trial period expires, your dashboard features will automatically freeze until a paid plan is selected.</p>
-                    <p style="margin: 6px 0 0 0; font-size: 13px; color: #9a3412;">Don't worry: All your menu items, orders, tables, and settings are safely preserved.</p>
-                </div>
-                <div style="text-align: center; margin-top: 30px;">
-                    <a href="${portalBaseUrl}/admin/billing" style="background-color: #ea580c; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
-                        Upgrade to a Paid Plan Now
-                    </a>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
-                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub SaaS. All rights reserved.
-            </div>
-        </div>
-    `;
-  return await sendEmail({ to: email, toName: name, subject, html });
-};
-var sendTrialExpiredAndFrozenEmail = async ({ email, name, restaurantName, expiredDate, plan }) => {
-  const formattedDate = expiredDate ? new Date(expiredDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "recently";
-  const subject = `\u{1F512} Free Trial Expired - Dashboard Frozen for ${restaurantName || "Your Restaurant"}`;
-  const html = `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
-            <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Free Trial Expired \u{1F512}</h1>
-                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Dashboard Features Have Been Frozen</p>
-            </div>
-            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Restaurant Owner"},</h2>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    Your 7-day free trial for <strong>${restaurantName || "Your Restaurant"}</strong> has expired on <strong>${formattedDate}</strong>.
-                </p>
-                <div style="background-color: #fef2f2; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ef4444;">
-                    <p style="margin: 0; font-size: 13px; color: #991b1b;"><strong>Current Status:</strong> Dashboard Frozen</p>
-                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #991b1b;">Operational features (POS, orders, KDS, inventory) are temporarily locked until a subscription plan is activated.</p>
-                    <p style="margin: 6px 0 0 0; font-size: 13px; color: #166534;"><strong>Your Data is 100% Safe:</strong> None of your orders, menu items, or configurations have been deleted.</p>
-                </div>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    Unlock your restaurant operations immediately by choosing one of our affordable subscription tiers:
-                </p>
-                <div style="text-align: center; margin-top: 30px;">
-                    <a href="${portalBaseUrl}/admin/billing" style="background-color: #dc2626; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
-                        Select Plan & Unfreeze Dashboard
-                    </a>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
-                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub SaaS. All rights reserved.
-            </div>
-        </div>
-    `;
-  return await sendEmail({ to: email, toName: name, subject, html });
-};
-var sendManualFreezeEmail = async ({ email, name, restaurantName, freezeReason, frozenAt }) => {
-  const formattedDate = frozenAt ? new Date(frozenAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }) : (/* @__PURE__ */ new Date()).toLocaleDateString("en-US");
-  const subject = `\u26A0\uFE0F Account Notice: Dashboard Manually Frozen - ${restaurantName || "Your Restaurant"}`;
-  const html = `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
-            <div style="background: linear-gradient(135deg, #64748b 0%, #334155 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Account Notice: Access Frozen</h1>
-                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Administrative Action Taken</p>
-            </div>
-            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Restaurant Owner"},</h2>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    Your restaurant dashboard access for <strong>${restaurantName || "Your Restaurant"}</strong> has been temporarily frozen by a Super Admin on <strong>${formattedDate}</strong>.
-                </p>
-                <div style="background-color: #f8fafc; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #64748b; border: 1px solid #e2e8f0;">
-                    <p style="margin: 0; font-size: 13px; color: #334155;"><strong>Reason Provided:</strong> ${freezeReason || "Administrative administrative review or compliance hold."}</p>
-                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #334155;">All your restaurant data, configurations, and records remain completely intact.</p>
-                </div>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    Please contact our support desk or your dedicated administrator to resolve this hold.
-                </p>
-                <div style="text-align: center; margin-top: 30px;">
-                    <a href="${portalBaseUrl}/admin/support" style="background-color: #334155; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
-                        Contact Platform Support
-                    </a>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
-                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub SaaS. All rights reserved.
-            </div>
-        </div>
-    `;
-  return await sendEmail({ to: email, toName: name, subject, html });
-};
-var sendManualUnfreezeEmail = async ({ email, name, restaurantName, plan, status }) => {
-  const subject = `\u2705 Dashboard Unfrozen: Access Restored for ${restaurantName || "Your Restaurant"}`;
-  const html = `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
-            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; border-radius: 12px; text-align: center; color: white;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: 800;">Dashboard Unfrozen \u2705</h1>
-                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">Access Restored by Super Admin</p>
-            </div>
-            <div style="background: white; padding: 30px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${name || "Restaurant Owner"},</h2>
-                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
-                    Great news! The administrative hold on <strong>${restaurantName || "Your Restaurant"}</strong> has been lifted by a Super Admin.
-                </p>
-                <div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
-                    <p style="margin: 0; font-size: 13px; color: #166534;"><strong>Plan:</strong> ${plan || "Active"}</p>
-                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #166534;"><strong>Status:</strong> Active & Unrestricted</p>
-                </div>
-                <div style="text-align: center; margin-top: 30px;">
-                    <a href="${portalBaseUrl}/admin" style="background-color: #10b981; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
-                        Open Dashboard
-                    </a>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 12px;">
-                &copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Restaurant Hub SaaS. All rights reserved.
-            </div>
-        </div>
-    `;
-  return await sendEmail({ to: email, toName: name, subject, html });
-};
-
-// services/subscriptionCronService.js
-var runSubscriptionAudit = async () => {
-  try {
-    const now = /* @__PURE__ */ new Date();
-    const oneDayFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1e3);
-    const expiringTrials = await Restaurant_default.find({
-      "subscription.trialActive": true,
-      "subscription.status": "Active",
-      "subscription.trialEndDate": { $lte: oneDayFromNow, $gt: now },
-      "subscription.reminderSent24h": { $ne: true }
-    }).populate("ownerId");
-    for (const rest of expiringTrials) {
-      try {
-        const ownerEmail = rest.ownerId?.email;
-        const ownerName = rest.ownerId?.name || rest.name;
-        if (ownerEmail) {
-          await sendTrialExpiringReminderEmail({
-            email: ownerEmail,
-            name: ownerName,
-            restaurantName: rest.name,
-            hoursRemaining: 24,
-            trialEndDate: rest.subscription.trialEndDate,
-            plan: rest.subscription.plan
-          });
-        }
-        rest.subscription.reminderSent24h = true;
-        await rest.save();
-        console.log(`[Subscription Cron] Sent 24h expiration reminder to ${rest.name} (${ownerEmail})`);
-      } catch (err) {
-        console.error(`[Subscription Cron Error] 24h reminder failed for ${rest.name}:`, err.message);
-      }
-    }
-    const expiredTrials = await Restaurant_default.find({
-      "subscription.trialActive": true,
-      "subscription.status": "Active",
-      "subscription.trialEndDate": { $lte: now }
-    }).populate("ownerId");
-    for (const rest of expiredTrials) {
-      try {
-        rest.subscription.status = "Expired";
-        rest.subscription.trialActive = false;
-        await rest.save();
-        const ownerEmail = rest.ownerId?.email;
-        const ownerName = rest.ownerId?.name || rest.name;
-        if (ownerEmail) {
-          await sendTrialExpiredAndFrozenEmail({
-            email: ownerEmail,
-            name: ownerName,
-            restaurantName: rest.name,
-            expiredDate: rest.subscription.trialEndDate,
-            plan: rest.subscription.plan
-          });
-        }
-        console.log(`[Subscription Cron] Frozen expired free trial for ${rest.name}`);
-      } catch (err) {
-        console.error(`[Subscription Cron Error] Freeze failed for ${rest.name}:`, err.message);
-      }
-    }
-    const expiredPaidSubscriptions = await Restaurant_default.find({
-      "subscription.status": "Active",
-      "subscription.paymentStatus": "Paid",
-      "subscription.subscriptionEndDate": { $lte: now }
-    });
-    for (const rest of expiredPaidSubscriptions) {
-      try {
-        rest.subscription.status = "Expired";
-        await rest.save();
-        console.log(`[Subscription Cron] Expired paid subscription for ${rest.name}`);
-      } catch (err) {
-        console.error(`[Subscription Cron Error] Paid expiry failed for ${rest.name}:`, err.message);
-      }
-    }
-  } catch (globalErr) {
-    console.error("[Subscription Cron Global Error]:", globalErr.message);
-  }
-};
-var initSubscriptionScheduler = () => {
-  setTimeout(() => {
-    runSubscriptionAudit();
-  }, 1e4);
-  setInterval(() => {
-    runSubscriptionAudit();
-  }, 10 * 60 * 1e3);
-  console.log("[Subscription Scheduler] Initialized: Audits running every 10 minutes");
-};
-
-// middleware/subscriptionMiddleware.js
-init_Restaurant();
-init_User();
-var checkSubscriptionAccess = async (req, res, next) => {
-  try {
-    const user = req.user;
-    if (!user) return next();
-    if (user.role === "SuperAdmin" || user.role === "Customer") {
-      return next();
-    }
-    const restaurantId = user.restaurantId || req.params.restaurantId || req.headers["x-restaurant-id"];
-    if (!restaurantId) {
-      return next();
-    }
-    const restaurant = await Restaurant_default.findById(restaurantId);
-    if (!restaurant) {
-      return next();
-    }
-    if (restaurant.isDemo) {
-      return next();
-    }
-    const sub = restaurant.subscription || {};
-    const now = /* @__PURE__ */ new Date();
-    if (sub.manualFreeze || sub.status === "Frozen") {
-      return res.status(403).json({
-        isFrozen: true,
-        manualFreeze: true,
-        subscriptionStatus: "Frozen",
-        freezeReason: sub.freezeReason || "Administrative freeze placed by Super Admin.",
-        message: "Your restaurant dashboard has been frozen by administration. Please contact support."
-      });
-    }
-    if (sub.status === "Pending Approval") {
-      return res.status(403).json({
-        isFrozen: true,
-        isPendingApproval: true,
-        subscriptionStatus: "Pending Approval",
-        message: "Your 7-Day Free Trial request is pending Super Admin approval. Operational features will unlock once approved."
-      });
-    }
-    if (sub.status === "Rejected") {
-      return res.status(403).json({
-        isFrozen: true,
-        isRejected: true,
-        rejectionReason: sub.rejectionReason || "Trial request was not approved.",
-        subscriptionStatus: "Rejected",
-        message: "Your free trial request was rejected. Please select an active subscription plan to unlock your dashboard."
-      });
-    }
-    if (sub.trialActive) {
-      if (sub.trialEndDate && now > new Date(sub.trialEndDate)) {
-        restaurant.subscription.status = "Expired";
-        restaurant.subscription.trialActive = false;
-        await restaurant.save();
-        try {
-          const owner = await User_default.findById(restaurant.ownerId || user._id);
-          if (owner?.email) {
-            sendTrialExpiredAndFrozenEmail({
-              email: owner.email,
-              name: owner.name,
-              restaurantName: restaurant.name,
-              expiredDate: sub.trialEndDate,
-              plan: sub.plan
-            }).catch((e) => console.error("[Auto-Expire Email Error]:", e.message));
-          }
-        } catch (e) {
-          console.error("[Auto-Expire Lookup Error]:", e.message);
-        }
-        return res.status(403).json({
-          isFrozen: true,
-          isExpired: true,
-          subscriptionStatus: "Expired",
-          message: "Your 7-day free trial has expired and dashboard features are frozen. Please upgrade your subscription plan to continue."
-        });
-      }
-    }
-    if (sub.subscriptionEndDate && now > new Date(sub.subscriptionEndDate)) {
-      if (sub.status !== "Expired") {
-        restaurant.subscription.status = "Expired";
-        await restaurant.save();
-      }
-      return res.status(403).json({
-        isFrozen: true,
-        isExpired: true,
-        subscriptionStatus: "Expired",
-        message: "Your subscription plan has expired. Please renew your plan to restore full operational access."
-      });
-    }
-    if (sub.status === "Expired" || sub.status === "Inactive") {
-      return res.status(403).json({
-        isFrozen: true,
-        isExpired: true,
-        subscriptionStatus: sub.status,
-        message: "An active subscription plan or approved free trial is required to access operational features."
-      });
-    }
-    next();
-  } catch (error) {
-    console.error("[Subscription Middleware Error]:", error.message);
-    next();
-  }
-};
-
-// index.js
-var import_express32 = __toESM(require_express2(), 1);
-var import_dotenv = __toESM(require_main(), 1);
-var import_cors = __toESM(require_lib9(), 1);
-var import_cookie_parser = __toESM(require_cookie_parser(), 1);
-var import_fs6 = __toESM(require("fs"), 1);
-var import_path6 = __toESM(require("path"), 1);
-var import_http = __toESM(require("http"), 1);
-
-// config/db.js
-var import_mongoose3 = __toESM(require_mongoose2(), 1);
-var connectDB = async () => {
-  const fallbackUri = "mongodb+srv://ruthralekhaantigraviity_db_user:bPtyhG4yQzSPcGgR@cluster0.3vd0qmf.mongodb.net/?appName=Cluster0";
-  const uri = process.env.MONGO_URI || fallbackUri;
-  let retries = 5;
-  while (retries > 0) {
-    try {
-      const conn = await import_mongoose3.default.connect(uri, {
-        serverSelectionTimeoutMS: 5e3,
-        connectTimeoutMS: 1e4
-      });
-      console.log(`MongoDB Connected: ${conn.connection.host}`);
-      return;
-    } catch (error) {
-      console.error(`MongoDB Connection Error: ${error.message}. Retrying in 3s... (${retries} left)`);
-      retries -= 1;
-      await new Promise((res) => setTimeout(res, 3e3));
-    }
-  }
-  console.error("Failed to connect to MongoDB after multiple retries.");
-};
-var db_default = connectDB;
+init_Notification();
+init_emailService();
 
 // config/websocket.js
 var import_ws = require("ws");
+var import_jsonwebtoken = __toESM(require_jsonwebtoken(), 1);
+init_User();
 var wss;
 var clients = /* @__PURE__ */ new Map();
+var extractId = (id) => {
+  if (!id) return "";
+  if (typeof id === "object") return String(id._id || id.id || "");
+  const str = String(id).trim();
+  return str === "undefined" || str === "null" || str === "[object Object]" ? "" : str;
+};
 var initWebSocket = (server2) => {
   wss = new import_ws.WebSocketServer({ server: server2 });
   wss.on("connection", (ws) => {
-    console.log("New WebSocket Connection");
     ws.on("message", async (message) => {
       try {
         const data = JSON.parse(message);
         if (data.type === "register") {
+          let restaurantId = extractId(data.restaurantId);
+          let role = data.role ? String(data.role).trim() : null;
+          let userId = null;
+          if (data.token) {
+            try {
+              const decoded = import_jsonwebtoken.default.verify(data.token, process.env.JWT_SECRET || "supersecretjwtkey123");
+              const authUser = await User_default.findById(decoded.id).select("_id role restaurantId branchId isActive").lean();
+              if (authUser && authUser.isActive !== false) {
+                userId = String(authUser._id);
+                role = authUser.role;
+                if (authUser.restaurantId) {
+                  restaurantId = extractId(authUser.restaurantId);
+                }
+              }
+            } catch (jwtErr) {
+              restaurantId = "";
+              role = "guest";
+            }
+          }
           clients.set(ws, {
-            restaurantId: data.restaurantId || null,
-            role: data.role || null,
-            orderId: data.orderId || null
+            restaurantId: restaurantId || null,
+            role,
+            orderId: extractId(data.orderId) || null,
+            userId
           });
-          console.log(`Registered connection: role=${data.role}, restaurantId=${data.restaurantId}`);
         } else if (data.type === "delivery_location_update" || data.type === "deliveryLocationUpdate") {
           const { orderId, latitude, longitude } = data;
+          const clientInfo = clients.get(ws);
           if (orderId && latitude != null && longitude != null) {
+            const lat = Number(latitude);
+            const lng = Number(longitude);
+            if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
             try {
-              const Order3 = (await Promise.resolve().then(() => (init_Order(), Order_exports))).default;
-              const order = await Order3.findById(orderId);
+              const Order2 = (await Promise.resolve().then(() => (init_Order(), Order_exports))).default;
+              const order = await Order2.findById(orderId);
               if (order) {
+                if (clientInfo?.restaurantId && String(clientInfo.restaurantId) !== String(order.restaurantId)) {
+                  return;
+                }
+                if (clientInfo?.userId && order.deliveryPartner && String(order.deliveryPartner) !== String(clientInfo.userId) && !["RestaurantAdmin", "BranchManager", "SuperAdmin"].includes(clientInfo.role)) {
+                  return;
+                }
                 const updatedAt = /* @__PURE__ */ new Date();
                 order.deliveryPartnerLocation = {
-                  latitude: Number(latitude),
-                  longitude: Number(longitude),
+                  latitude: lat,
+                  longitude: lng,
                   updatedAt
                 };
                 await order.save();
                 const payload = {
                   orderId: String(order._id),
-                  latitude: Number(latitude),
-                  longitude: Number(longitude),
+                  latitude: lat,
+                  longitude: lng,
                   updatedAt,
                   deliveryStatus: order.deliveryStatus,
                   status: order.status
@@ -126395,24 +126549,18 @@ var initWebSocket = (server2) => {
     });
     ws.on("close", () => {
       clients.delete(ws);
-      console.log("WebSocket Connection Closed");
     });
   });
-};
-var extractId = (id) => {
-  if (!id) return "";
-  if (typeof id === "object") return String(id._id || id.id || id);
-  return String(id);
 };
 var broadcastToRestaurant = (restaurantId, eventType, payload) => {
   if (!wss) return;
   const targetRestId = extractId(restaurantId);
+  if (!targetRestId) return;
   const message = JSON.stringify({ type: eventType, data: payload });
   clients.forEach((clientInfo, ws) => {
     if (ws.readyState === 1) {
       const clientRestId = extractId(clientInfo?.restaurantId);
-      const isStaffOrKitchen = ["kitchen", "chef", "waiter", "cashier", "admin", "manager", "restaurantadmin"].includes(String(clientInfo?.role || "").toLowerCase());
-      if (!targetRestId || !clientRestId || clientRestId === targetRestId || isStaffOrKitchen) {
+      if (clientRestId && clientRestId === targetRestId) {
         try {
           ws.send(message);
         } catch (e) {
@@ -126425,11 +126573,12 @@ var broadcastToRestaurant = (restaurantId, eventType, payload) => {
 var broadcastToCustomerOrder = (orderId, eventType, payload) => {
   if (!wss) return;
   const targetOrderId = extractId(orderId);
+  if (!targetOrderId) return;
   const message = JSON.stringify({ type: eventType, data: payload });
   clients.forEach((clientInfo, ws) => {
     if (ws.readyState === 1) {
       const clientOrderId = extractId(clientInfo?.orderId);
-      if (!targetOrderId || !clientOrderId || clientOrderId === targetOrderId || clientOrderId === "[object Object]") {
+      if (clientOrderId && clientOrderId === targetOrderId) {
         try {
           ws.send(message);
         } catch (e) {
@@ -126439,6 +126588,173 @@ var broadcastToCustomerOrder = (orderId, eventType, payload) => {
     }
   });
 };
+
+// services/subscriptionCronService.js
+var isAuditRunning = false;
+var runSubscriptionAudit = async () => {
+  if (isAuditRunning) return;
+  isAuditRunning = true;
+  try {
+    const now = /* @__PURE__ */ new Date();
+    const oneDayFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1e3);
+    const expiringTrials = await Restaurant_default.find({
+      isDemo: { $ne: true },
+      "subscription.trialActive": true,
+      "subscription.status": "Active",
+      "subscription.trialEndDate": { $lte: oneDayFromNow, $gt: now },
+      "subscription.reminderSent24h": { $ne: true }
+    }).populate("ownerId", "email name");
+    for (const rest of expiringTrials) {
+      try {
+        const ownerEmail = rest.ownerId?.email;
+        const ownerName = rest.ownerId?.name || rest.name;
+        if (ownerEmail) {
+          await sendTrialExpiringReminderEmail({
+            email: ownerEmail,
+            name: ownerName,
+            restaurantName: rest.name,
+            hoursRemaining: 24,
+            trialEndDate: rest.subscription.trialEndDate,
+            plan: rest.subscription.plan
+          });
+        }
+        rest.subscription.reminderSent24h = true;
+        await rest.save();
+      } catch (err) {
+        console.error(`[Subscription Cron Error] 24h reminder failed for ${rest.name}:`, err.message);
+      }
+    }
+    const expiredTrials = await Restaurant_default.find({
+      isDemo: { $ne: true },
+      "subscription.trialActive": true,
+      "subscription.status": "Active",
+      "subscription.trialEndDate": { $lte: now }
+    }).populate("ownerId", "email name");
+    for (const rest of expiredTrials) {
+      try {
+        const transitioned = await Restaurant_default.findOneAndUpdate(
+          { _id: rest._id, "subscription.status": "Active", "subscription.trialActive": true },
+          { $set: { "subscription.status": "Expired", "subscription.trialActive": false } },
+          { new: true }
+        );
+        if (!transitioned) continue;
+        await Notification_default.create({
+          title: "7-Day Free Trial Expired",
+          desc: "Your 7-day free trial has ended and dashboard access is frozen. Subscribe to restore access.",
+          type: "System",
+          restaurantId: rest._id
+        }).catch(() => {
+        });
+        broadcastToRestaurant(rest._id, "subscription_updated", {
+          restaurantId: String(rest._id),
+          subscription: transitioned.subscription
+        });
+        const ownerEmail = rest.ownerId?.email;
+        const ownerName = rest.ownerId?.name || rest.name;
+        if (ownerEmail) {
+          await sendTrialExpiredAndFrozenEmail({
+            email: ownerEmail,
+            name: ownerName,
+            restaurantName: rest.name,
+            expiredDate: rest.subscription.trialEndDate,
+            plan: rest.subscription.plan
+          });
+        }
+      } catch (err) {
+        console.error(`[Subscription Cron Error] Trial freeze failed for ${rest.name}:`, err.message);
+      }
+    }
+    const expiredPaidSubscriptions = await Restaurant_default.find({
+      isDemo: { $ne: true },
+      "subscription.trialActive": { $ne: true },
+      "subscription.status": { $in: ["Active", "Expiring Soon"] },
+      $or: [
+        { "subscription.subscriptionEndDate": { $lte: now } },
+        { "subscription.subscriptionEndDate": null, "subscription.expiryDate": { $lte: now } }
+      ]
+    }).populate("ownerId", "email name");
+    for (const rest of expiredPaidSubscriptions) {
+      try {
+        const transitioned = await Restaurant_default.findOneAndUpdate(
+          { _id: rest._id, "subscription.status": { $in: ["Active", "Expiring Soon"] } },
+          { $set: { "subscription.status": "Expired" } },
+          { new: true }
+        );
+        if (!transitioned) continue;
+        await Notification_default.create({
+          title: "Subscription Expired",
+          desc: `Your ${rest.subscription?.plan || "subscription"} plan has expired and dashboard access is frozen. Please renew to restore access.`,
+          type: "System",
+          restaurantId: rest._id
+        }).catch(() => {
+        });
+        broadcastToRestaurant(rest._id, "subscription_updated", {
+          restaurantId: String(rest._id),
+          subscription: transitioned.subscription
+        });
+        const ownerEmail = rest.ownerId?.email;
+        const ownerName = rest.ownerId?.name || rest.name;
+        if (ownerEmail) {
+          await sendSubscriptionExpiredEmail({
+            email: ownerEmail,
+            name: ownerName,
+            restaurantName: rest.name,
+            plan: rest.subscription?.plan,
+            expiryDate: rest.subscription?.subscriptionEndDate || rest.subscription?.expiryDate
+          });
+        }
+      } catch (err) {
+        console.error(`[Subscription Cron Error] Paid expiry failed for ${rest.name}:`, err.message);
+      }
+    }
+  } catch (globalErr) {
+    console.error("[Subscription Cron Global Error]:", globalErr.message);
+  } finally {
+    isAuditRunning = false;
+  }
+};
+var initSubscriptionScheduler = () => {
+  setTimeout(() => {
+    runSubscriptionAudit();
+  }, 1e4);
+  setInterval(() => {
+    runSubscriptionAudit();
+  }, 10 * 60 * 1e3);
+  console.log("[Subscription Scheduler] Initialized: Audits running every 10 minutes");
+};
+
+// index.js
+var import_express32 = __toESM(require_express2(), 1);
+var import_dotenv = __toESM(require_main(), 1);
+var import_cors = __toESM(require_lib9(), 1);
+var import_cookie_parser = __toESM(require_cookie_parser(), 1);
+var import_fs6 = __toESM(require("fs"), 1);
+var import_path6 = __toESM(require("path"), 1);
+var import_http = __toESM(require("http"), 1);
+
+// config/db.js
+var import_mongoose5 = __toESM(require_mongoose2(), 1);
+var connectDB = async () => {
+  const fallbackUri = "mongodb+srv://ruthralekhaantigraviity_db_user:bPtyhG4yQzSPcGgR@cluster0.3vd0qmf.mongodb.net/?appName=Cluster0";
+  const uri = process.env.MONGO_URI || fallbackUri;
+  let retries = 5;
+  while (retries > 0) {
+    try {
+      const conn = await import_mongoose5.default.connect(uri, {
+        serverSelectionTimeoutMS: 5e3,
+        connectTimeoutMS: 1e4
+      });
+      console.log(`MongoDB Connected: ${conn.connection.host}`);
+      return;
+    } catch (error) {
+      console.error(`MongoDB Connection Error: ${error.message}. Retrying in 3s... (${retries} left)`);
+      retries -= 1;
+      await new Promise((res) => setTimeout(res, 3e3));
+    }
+  }
+  console.error("Failed to connect to MongoDB after multiple retries.");
+};
+var db_default = connectDB;
 
 // middleware/errorMiddleware.js
 var notFound = (req, res, next) => {
@@ -126467,20 +126783,20 @@ var errorHandler = (err, req, res, next) => {
 var import_express = __toESM(require_express2(), 1);
 
 // controllers/authController.js
-var import_jsonwebtoken = __toESM(require_jsonwebtoken(), 1);
+var import_jsonwebtoken2 = __toESM(require_jsonwebtoken(), 1);
 var import_fs = __toESM(require("fs"), 1);
 var import_path = __toESM(require("path"), 1);
 init_User();
 
 // models/Role.js
-var import_mongoose5 = __toESM(require_mongoose2(), 1);
-var roleSchema = new import_mongoose5.default.Schema({
+var import_mongoose6 = __toESM(require_mongoose2(), 1);
+var roleSchema = new import_mongoose6.default.Schema({
   name: {
     type: String,
     required: true
   },
   restaurantId: {
-    type: import_mongoose5.default.Schema.Types.ObjectId,
+    type: import_mongoose6.default.Schema.Types.ObjectId,
     ref: "Restaurant",
     required: function() {
       return !this.isCoreRole;
@@ -126501,7 +126817,7 @@ var roleSchema = new import_mongoose5.default.Schema({
     default: {}
   }
 }, { timestamps: true });
-var Role = import_mongoose5.default.model("Role", roleSchema);
+var Role = import_mongoose6.default.model("Role", roleSchema);
 var Role_default = Role;
 
 // controllers/authController.js
@@ -126509,8 +126825,59 @@ init_Restaurant();
 init_Branch();
 init_Notification();
 init_RestaurantVerification();
+
+// models/SubscriptionPayment.js
+var import_mongoose9 = __toESM(require_mongoose2(), 1);
+var subscriptionPaymentSchema = new import_mongoose9.default.Schema({
+  restaurantId: {
+    type: import_mongoose9.default.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: true
+  },
+  planName: {
+    type: String,
+    required: true
+  },
+  amount: {
+    type: Number,
+    required: true
+  },
+  billingCycle: {
+    type: String,
+    enum: ["monthly", "yearly"],
+    required: true
+  },
+  paymentMethod: {
+    type: String,
+    required: true
+  },
+  transactionId: {
+    type: String,
+    required: true
+  },
+  status: {
+    type: String,
+    enum: ["Pending", "Completed", "Failed"],
+    default: "Completed"
+  },
+  effectiveDate: {
+    type: Date,
+    default: Date.now
+  },
+  expiryDate: {
+    type: Date
+  }
+}, {
+  timestamps: true
+});
+var SubscriptionPayment = import_mongoose9.default.model("SubscriptionPayment", subscriptionPaymentSchema);
+var SubscriptionPayment_default = SubscriptionPayment;
+
+// controllers/authController.js
+init_emailService();
+init_subscriptionHelper();
 var generateToken = (id) => {
-  return import_jsonwebtoken.default.sign({ id }, process.env.JWT_SECRET || "supersecretjwtkey123", {
+  return import_jsonwebtoken2.default.sign({ id }, process.env.JWT_SECRET || "supersecretjwtkey123", {
     expiresIn: "30d"
   });
 };
@@ -126540,6 +126907,18 @@ var registerUser = async (req, res) => {
       return r;
     };
     const role = normalizedRole(rawRole);
+    if (!["Customer", "RestaurantAdmin"].includes(role)) {
+      return res.status(403).json({
+        message: "Public registration is only permitted for Customers and Restaurant Owners."
+      });
+    }
+    const isRestaurantSignup = role === "RestaurantAdmin" || Boolean(req.body.restaurantName);
+    const qrPaymentRef = req.body.qrPaymentId || req.body.paymentReference || req.body.razorpayPaymentId || req.body.razorpay_payment_id;
+    const isPaidUpfront = Boolean(qrPaymentRef);
+    let verifiedPlanInfo = null;
+    if (isRestaurantSignup && isPaidUpfront) {
+      verifiedPlanInfo = await resolvePlanPrice(req.body.plan, req.body.billingCycle || "monthly");
+    }
     const user = await User_default.create({
       name: String(name).trim(),
       email: normalizedEmail,
@@ -126548,38 +126927,32 @@ var registerUser = async (req, res) => {
       role
     });
     let createdRestaurant = null;
-    if (role === "RestaurantAdmin" || role === "Admin" || req.body.restaurantName) {
+    if (isRestaurantSignup) {
       const files = req.files || {};
       const hasVerificationFiles = Object.keys(files).length > 0;
       const restaurantName = req.body.restaurantName || `${name}'s Restaurant`;
-      const sanitizePlan = (p) => {
-        if (!p) return "Basic";
-        const lower = String(p).trim().toLowerCase();
-        if (lower.includes("trial") || lower.includes("free")) return "Starter";
-        if (lower === "basic") return "Basic";
-        if (lower === "pro" || lower === "professional") return "Pro";
-        if (lower === "enterprise") return "Enterprise";
-        if (lower === "starter") return "Starter";
-        return p.charAt(0).toUpperCase() + p.slice(1);
-      };
-      const isPaidUpfront = Boolean(req.body.razorpayPaymentId);
-      const isTrial = !isPaidUpfront;
+      const resolvedPlan = verifiedPlanInfo?.planName || normalizePlanName(req.body.plan);
+      const billingCycle = req.body.billingCycle === "yearly" ? "yearly" : "monthly";
+      const now = /* @__PURE__ */ new Date();
+      const paidExpiry = new Date(now.getTime() + (billingCycle === "yearly" ? 365 : 30) * 24 * 60 * 60 * 1e3);
       const subData = isPaidUpfront ? {
         status: "Active",
-        plan: sanitizePlan(req.body.plan),
-        billingCycle: req.body.billingCycle || "monthly",
+        plan: resolvedPlan,
+        billingCycle,
         trialActive: false,
         paymentStatus: "Paid",
-        subscriptionStartDate: /* @__PURE__ */ new Date(),
-        subscriptionEndDate: new Date(Date.now() + (req.body.billingCycle === "yearly" ? 365 : 30) * 24 * 60 * 60 * 1e3),
-        startDate: /* @__PURE__ */ new Date(),
-        expiryDate: new Date(Date.now() + (req.body.billingCycle === "yearly" ? 365 : 30) * 24 * 60 * 60 * 1e3)
+        manualFreeze: false,
+        price: verifiedPlanInfo?.price || 0,
+        subscriptionStartDate: now,
+        subscriptionEndDate: paidExpiry,
+        startDate: now,
+        expiryDate: paidExpiry
       } : {
         status: "Pending Approval",
-        plan: sanitizePlan(req.body.plan) || "Basic",
-        billingCycle: req.body.billingCycle || "monthly",
+        plan: resolvedPlan || "Basic",
+        billingCycle,
         trialActive: false,
-        trialRequestDate: /* @__PURE__ */ new Date(),
+        trialRequestDate: now,
         paymentStatus: "Trial",
         manualFreeze: false
       };
@@ -126661,7 +127034,7 @@ var registerUser = async (req, res) => {
         const logoFile = files.logo[0];
         documents.logo = { filePath: getFileUrl2(logoFile) };
         try {
-          const fileBuffer = import_fs.default.readFileSync(logoFile.path);
+          const fileBuffer = await import_fs.default.promises.readFile(logoFile.path);
           const ext = import_path.default.extname(logoFile.originalname || logoFile.filename || "").toLowerCase();
           const mimeType = ext === ".pdf" ? "application/pdf" : logoFile.mimetype || "image/png";
           createdRestaurant.logo = `data:${mimeType};base64,${fileBuffer.toString("base64")}`;
@@ -126675,6 +127048,19 @@ var registerUser = async (req, res) => {
       }
       if (files.images && files.images.length > 0) {
         documents.images = files.images.map((img) => ({ filePath: getFileUrl2(img) }));
+      }
+      if (isPaidUpfront) {
+        await SubscriptionPayment_default.create({
+          restaurantId: createdRestaurant._id,
+          planName: createdRestaurant.subscription.plan,
+          amount: createdRestaurant.subscription.price || 0,
+          billingCycle: createdRestaurant.subscription.billingCycle,
+          paymentMethod: "UPI QR",
+          transactionId: String(qrPaymentRef),
+          status: "Completed",
+          effectiveDate: createdRestaurant.subscription.subscriptionStartDate,
+          expiryDate: createdRestaurant.subscription.subscriptionEndDate
+        }).catch((payErr) => console.error("Initial SubscriptionPayment log error:", payErr.message));
       }
       const verifStatus = hasVerificationFiles ? "Under Review" : "Pending";
       await RestaurantVerification_default.create({
@@ -126808,15 +127194,10 @@ var loginUser = async (req, res) => {
           }
         }
       }
-      if (user.restaurantId && user.role !== "SuperAdmin") {
+      if (user.restaurantId && !["SuperAdmin", "SupportAgent", "Customer"].includes(user.role)) {
         const restaurant = await Restaurant_default.findById(user.restaurantId);
         if (restaurant) {
-          if (restaurant.subscription.status === "Frozen" || restaurant.subscription.expiryDate && new Date(restaurant.subscription.expiryDate) < /* @__PURE__ */ new Date()) {
-            if (restaurant.subscription.status !== "Frozen") {
-              restaurant.subscription.status = "Frozen";
-              await restaurant.save();
-            }
-          }
+          await evaluateSubscriptionAccess(restaurant, { notifyOnExpire: true });
         }
       }
       const token = generateToken(user._id);
@@ -126976,23 +127357,15 @@ var testSendEmail = async (req, res) => {
 var createRazorpayRegistrationOrder = async (req, res) => {
   try {
     const { planName, billingCycle, restaurantName } = req.body;
-    const Plan2 = (await Promise.resolve().then(() => (init_Plan(), Plan_exports))).default;
-    const Razorpay2 = (await import("razorpay")).default;
-    const targetPlan = await Plan2.findOne({ name: planName });
-    const targetPrice = targetPlan ? billingCycle === "yearly" ? targetPlan.yearlyPrice : targetPlan.monthlyPrice : planName === "Pro" ? billingCycle === "yearly" ? 990 : 99 : billingCycle === "yearly" ? 1990 : 199;
+    const { planName: resolvedPlanName, price: targetPrice } = await resolvePlanPrice(planName, billingCycle || "monthly");
     const chargeAmount = Math.max(1, targetPrice);
-    const keyId = process.env.RAZORPAY_KEY_ID || "rzp_live_SlbQBi57McKtUc";
-    const keySecret = process.env.RAZORPAY_KEY_SECRET || "IgfxpfmQCMxSPaU0T4EyhcLU";
-    const instance = new Razorpay2({
-      key_id: keyId,
-      key_secret: keySecret
-    });
+    const { keyId, instance } = getRazorpayInstance();
     const razorpayOrder = await instance.orders.create({
       amount: Math.round(chargeAmount * 100),
       currency: "INR",
       receipt: `reg_${Date.now().toString().slice(-8)}`,
       notes: {
-        planName: planName || "Basic",
+        planName: resolvedPlanName,
         billingCycle: billingCycle || "monthly",
         restaurantName: restaurantName || ""
       }
@@ -127003,12 +127376,12 @@ var createRazorpayRegistrationOrder = async (req, res) => {
       amountPaise: Math.round(chargeAmount * 100),
       currency: "INR",
       keyId,
-      planName,
-      billingCycle
+      planName: resolvedPlanName,
+      billingCycle: billingCycle || "monthly"
     });
   } catch (error) {
     console.error("Razorpay Registration Order Creation Error:", error);
-    res.status(400).json({ message: error.message || "Failed to create Razorpay Order" });
+    res.status(error.statusCode || 400).json({ message: error.message || "Failed to create Razorpay Order" });
   }
 };
 var changePassword = async (req, res) => {
@@ -127039,24 +127412,73 @@ var changePassword = async (req, res) => {
 };
 
 // middleware/authMiddleware.js
-var import_jsonwebtoken2 = __toESM(require_jsonwebtoken(), 1);
+var import_jsonwebtoken3 = __toESM(require_jsonwebtoken(), 1);
 init_User();
 init_Restaurant();
 init_Branch();
 init_Plan();
-var protect = async (req, res, next) => {
-  let token;
-  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
-    token = req.headers.authorization.split(" ")[1];
-  } else if (req.cookies && req.cookies.jwt) {
-    token = req.cookies.jwt;
+
+// middleware/subscriptionMiddleware.js
+init_Restaurant();
+init_Branch();
+init_subscriptionHelper();
+var checkSubscriptionAccess = async (req, res, next) => {
+  try {
+    const user = req.user;
+    if (!user) return next();
+    if (["SuperAdmin", "SupportAgent", "Customer"].includes(user.role)) {
+      return next();
+    }
+    const url = req.originalUrl || "";
+    if (url.includes("/razorpay") || url.includes("/trial-request") || url.includes("/verification") || url.includes("/support") || url.includes("/notifications") || url.includes("/plans") || url.includes("/auth") || req.method === "GET" && url.includes("/restaurants/mine")) {
+      return next();
+    }
+    let restaurantId = user.restaurantId || req.params.restaurantId || req.headers["x-restaurant-id"];
+    if (!restaurantId && user.branchId) {
+      const branchDoc = await Branch_default.findById(user.branchId).select("restaurantId").lean();
+      if (branchDoc) restaurantId = branchDoc.restaurantId;
+    }
+    if (!restaurantId) {
+      return next();
+    }
+    const restaurant = req.restaurant || await Restaurant_default.findById(restaurantId);
+    if (!restaurant) {
+      return next();
+    }
+    req.restaurant = restaurant;
+    const verdict = await evaluateSubscriptionAccess(restaurant, { notifyOnExpire: true });
+    if (verdict.isFrozen) {
+      return res.status(403).json(verdict);
+    }
+    next();
+  } catch (error) {
+    console.error("[Subscription Middleware Error]:", error.message);
+    next();
   }
+};
+
+// middleware/authMiddleware.js
+var getJwtSecret = () => process.env.JWT_SECRET || "supersecretjwtkey123";
+var extractRequestToken = (req) => {
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+    return req.headers.authorization.split(" ")[1];
+  }
+  if (req.cookies) {
+    return req.cookies.jwt || req.cookies.jwt_staff || req.cookies.jwt_customer || null;
+  }
+  return null;
+};
+var protect = async (req, res, next) => {
+  const token = extractRequestToken(req);
   if (token) {
     try {
-      const decoded = import_jsonwebtoken2.default.verify(token, process.env.JWT_SECRET || "supersecretjwtkey123");
+      const decoded = import_jsonwebtoken3.default.verify(token, getJwtSecret());
       req.user = await User_default.findById(decoded.id).select("-password");
       if (!req.user) {
         return res.status(401).json({ message: "Not authorized, user not found" });
+      }
+      if (req.user.isActive === false || req.user.employmentStatus === "Terminated") {
+        return res.status(401).json({ message: "Account is deactivated or terminated" });
       }
       next();
     } catch (error) {
@@ -127067,16 +127489,14 @@ var protect = async (req, res, next) => {
   }
 };
 var optionalProtect = async (req, res, next) => {
-  let token;
-  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
-    token = req.headers.authorization.split(" ")[1];
-  } else if (req.cookies && req.cookies.jwt) {
-    token = req.cookies.jwt;
-  }
+  const token = extractRequestToken(req);
   if (token) {
     try {
-      const decoded = import_jsonwebtoken2.default.verify(token, process.env.JWT_SECRET || "supersecretjwtkey123");
-      req.user = await User_default.findById(decoded.id).select("-password");
+      const decoded = import_jsonwebtoken3.default.verify(token, getJwtSecret());
+      const user = await User_default.findById(decoded.id).select("-password");
+      if (user && user.isActive !== false && user.employmentStatus !== "Terminated") {
+        req.user = user;
+      }
     } catch (error) {
     }
   }
@@ -127089,10 +127509,20 @@ var authorize = (...roles) => {
         message: `User role ${req.user?.role || "Unknown"} is not authorized to access this route`
       });
     }
-    const userRole = String(req.user.role).trim().toLowerCase();
+    const userRole = String(req.user.role).trim().toLowerCase().replace(/\s+/g, "");
     const allowed = roles.some((role) => {
-      const r = String(role).trim().toLowerCase();
-      return userRole === r || userRole === r.replace(/\s+/g, "") || userRole.includes("superadmin") && r.includes("superadmin") || userRole.includes("admin") && r.includes("admin");
+      const r = String(role).trim().toLowerCase().replace(/\s+/g, "");
+      if (userRole === r) return true;
+      if ((r === "restaurantadmin" || r === "admin") && ["restaurantadmin", "admin", "owner"].includes(userRole)) {
+        return true;
+      }
+      if ((r === "branchmanager" || r === "manager") && ["branchmanager", "manager"].includes(userRole)) {
+        return true;
+      }
+      if ((r === "chef" || r === "kitchen") && ["chef", "kitchen"].includes(userRole)) {
+        return true;
+      }
+      return false;
     });
     if (!allowed) {
       return res.status(403).json({
@@ -127102,53 +127532,7 @@ var authorize = (...roles) => {
     next();
   };
 };
-var checkSubscription = async (req, res, next) => {
-  if (!req.user || !req.user.restaurantId || req.user.role === "DeliveryPartner") {
-    return next();
-  }
-  if (req.originalUrl.includes("/subscribe") || req.originalUrl.includes("/upgrade") || req.originalUrl.includes("/renew") || req.originalUrl.includes("/razorpay") || req.method === "GET" && req.originalUrl.includes("/mine")) {
-    return next();
-  }
-  try {
-    let rId = req.user.restaurantId || req.user.restaurant;
-    if (!rId && req.user.branchId) {
-      const branchDoc = await Branch_default.findById(req.user.branchId);
-      if (branchDoc) rId = branchDoc.restaurantId;
-    }
-    if (!rId) {
-      return next();
-    }
-    const restaurant = await Restaurant_default.findById(rId);
-    if (!restaurant) {
-      return next();
-    }
-    const now = /* @__PURE__ */ new Date();
-    const expiry = restaurant.subscription?.expiryDate ? new Date(restaurant.subscription.expiryDate) : null;
-    if (restaurant.subscription?.status === "Frozen" || expiry && now > expiry) {
-      try {
-        if (req.user && req.user.email) {
-          sendSubscriptionExpiredEmail({
-            email: req.user.email,
-            name: req.user.name,
-            restaurantName: restaurant.name,
-            plan: restaurant.subscription?.plan,
-            expiryDate: expiry
-          });
-        }
-      } catch (expErr) {
-        console.error("Expired email dispatch error:", expErr.message);
-      }
-      return res.status(402).json({
-        message: "Your subscription has expired or is frozen. Please renew your subscription to continue.",
-        requiresSubscription: true
-      });
-    }
-    req.restaurant = restaurant;
-    next();
-  } catch (error) {
-    res.status(500).json({ message: "Failed to verify subscription" });
-  }
-};
+var checkSubscription = checkSubscriptionAccess;
 var checkFeature = (featureName) => {
   const normalizeFeatureName = (name) => {
     return name.toLowerCase().replace(/management/g, "").replace(/[^a-z0-9]/g, "").trim();
@@ -127237,10 +127621,11 @@ init_RestaurantVerification();
 init_Restaurant();
 init_Notification();
 init_User();
+init_emailService();
 var import_multer = __toESM(require("multer"), 1);
 var import_path2 = __toESM(require("path"), 1);
 var import_fs2 = __toESM(require("fs"), 1);
-var import_mongoose10 = __toESM(require_mongoose2(), 1);
+var import_mongoose11 = __toESM(require_mongoose2(), 1);
 var uploadDir = "uploads/verification";
 if (!import_fs2.default.existsSync(uploadDir)) {
   import_fs2.default.mkdirSync(uploadDir, { recursive: true });
@@ -127287,9 +127672,9 @@ var verificationUpload = upload.fields([
 var getFileUrl = (file) => {
   return "/uploads/verification/" + file.filename;
 };
-var fileToDataUri = (file) => {
+var fileToDataUri = async (file) => {
   try {
-    const buf = import_fs2.default.readFileSync(file.path);
+    const buf = await import_fs2.default.promises.readFile(file.path);
     const ext = import_path2.default.extname(file.originalname || file.filename || "").toLowerCase();
     let mime = "image/png";
     if (ext === ".jpg" || ext === ".jpeg") mime = "image/jpeg";
@@ -127388,7 +127773,7 @@ var submitVerification = async (req, res) => {
       const logoFile = files.logo[0];
       documents.logo = { filePath: getFileUrl(logoFile) };
       try {
-        const fileBuffer = import_fs2.default.readFileSync(logoFile.path);
+        const fileBuffer = await import_fs2.default.promises.readFile(logoFile.path);
         const ext = import_path2.default.extname(logoFile.originalname || logoFile.filename || "").toLowerCase();
         const mimeType = ext === ".pdf" ? "application/pdf" : logoFile.mimetype || "image/png";
         restaurant.logo = `data:${mimeType};base64,${fileBuffer.toString("base64")}`;
@@ -127406,7 +127791,7 @@ var submitVerification = async (req, res) => {
       documents.images = req.body.showcaseImages.map((img) => ({ filePath: img }));
       await restaurant.save();
     } else if (files.images && files.images.length > 0) {
-      const newImages = files.images.map((img) => ({ filePath: fileToDataUri(img) }));
+      const newImages = await Promise.all(files.images.map(async (img) => ({ filePath: await fileToDataUri(img) })));
       documents.images = [...documents.images || [], ...newImages];
       const allImgPaths = documents.images.map((img) => img.filePath);
       restaurant.showcaseImages = allImgPaths;
@@ -127445,8 +127830,8 @@ var submitVerification = async (req, res) => {
         restaurant.state = parts[1];
       }
       try {
-        const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
-        const primaryBranch = await Branch3.findOne({ restaurantId: restaurant._id, isActive: true });
+        const Branch2 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+        const primaryBranch = await Branch2.findOne({ restaurantId: restaurant._id, isActive: true });
         if (primaryBranch) {
           primaryBranch.location = {
             ...primaryBranch.location || {},
@@ -127501,7 +127886,7 @@ var updateBrandAssets = async (req, res) => {
       const logoFile = files.logo[0];
       verification.documents.logo = { filePath: getFileUrl(logoFile) };
       try {
-        const fileBuffer = import_fs2.default.readFileSync(logoFile.path);
+        const fileBuffer = await import_fs2.default.promises.readFile(logoFile.path);
         const ext = import_path2.default.extname(logoFile.originalname || logoFile.filename || "").toLowerCase();
         const mimeType = ext === ".pdf" ? "application/pdf" : logoFile.mimetype || "image/png";
         restaurant.logo = `data:${mimeType};base64,${fileBuffer.toString("base64")}`;
@@ -127517,7 +127902,7 @@ var updateBrandAssets = async (req, res) => {
       if (!restaurant.bannerImage) restaurant.bannerImage = req.body.showcaseImages[0];
       verification.documents.images = req.body.showcaseImages.map((img) => ({ filePath: img }));
     } else if (files.images && files.images.length > 0) {
-      const newImages = files.images.map((img) => ({ filePath: fileToDataUri(img) }));
+      const newImages = await Promise.all(files.images.map(async (img) => ({ filePath: await fileToDataUri(img) })));
       verification.documents.images = [...verification.documents.images || [], ...newImages];
       const allImgPaths = verification.documents.images.map((img) => img.filePath);
       restaurant.showcaseImages = allImgPaths;
@@ -127554,7 +127939,7 @@ var getMyVerification = async (req, res) => {
 };
 var getAllVerifications = async (req, res) => {
   try {
-    if (import_mongoose10.default.connection.readyState !== 1) {
+    if (import_mongoose11.default.connection.readyState !== 1) {
       return res.json([]);
     }
     const allRestos = await Restaurant_default.find().lean();
@@ -127614,7 +127999,7 @@ var getVerificationById = async (req, res) => {
   try {
     const { id } = req.params;
     let verification = null;
-    if (import_mongoose10.default.Types.ObjectId.isValid(id)) {
+    if (import_mongoose11.default.Types.ObjectId.isValid(id)) {
       verification = await RestaurantVerification_default.findById(id).populate({
         path: "restaurantId",
         populate: { path: "ownerId", select: "name email" }
@@ -127627,7 +128012,7 @@ var getVerificationById = async (req, res) => {
       }).populate("history.actionBy", "name email");
     }
     if (!verification) {
-      const restaurant = import_mongoose10.default.Types.ObjectId.isValid(id) ? await Restaurant_default.findById(id).populate("ownerId", "name email") : null;
+      const restaurant = import_mongoose11.default.Types.ObjectId.isValid(id) ? await Restaurant_default.findById(id).populate("ownerId", "name email") : null;
       if (restaurant) {
         return res.json({
           _id: restaurant._id,
@@ -127654,7 +128039,7 @@ var reviewVerification = async (req, res) => {
       return res.status(400).json({ message: "Rejection reason is mandatory when status is Rejected" });
     }
     let verification = null;
-    if (import_mongoose10.default.Types.ObjectId.isValid(id)) {
+    if (import_mongoose11.default.Types.ObjectId.isValid(id)) {
       verification = await RestaurantVerification_default.findById(id);
     }
     if (!verification) {
@@ -127663,7 +128048,7 @@ var reviewVerification = async (req, res) => {
     let restaurant = null;
     if (verification) {
       restaurant = await Restaurant_default.findById(verification.restaurantId);
-    } else if (import_mongoose10.default.Types.ObjectId.isValid(id)) {
+    } else if (import_mongoose11.default.Types.ObjectId.isValid(id)) {
       restaurant = await Restaurant_default.findById(id);
     }
     if (!restaurant) {
@@ -127698,15 +128083,8 @@ var reviewVerification = async (req, res) => {
     restaurant.verificationStatus = status;
     if (status === "Verified") {
       restaurant.approvalStatus = "Approved";
-      const billingCycle = restaurant.subscription?.billingCycle || "monthly";
-      const expiry = /* @__PURE__ */ new Date();
-      if (billingCycle === "yearly") {
-        expiry.setDate(expiry.getDate() + 365);
-      } else {
-        expiry.setDate(expiry.getDate() + 30);
-      }
-      restaurant.subscription.status = "Active";
-      restaurant.subscription.expiryDate = expiry;
+      const currentSub = restaurant.subscription || {};
+      const expiry = currentSub.subscriptionEndDate || currentSub.trialEndDate || currentSub.expiryDate || /* @__PURE__ */ new Date();
       const verifiedAddr = verification.documents?.addressProof?.addressText;
       if (verifiedAddr && verifiedAddr.trim()) {
         const cleanAddress = verifiedAddr.trim();
@@ -127715,8 +128093,8 @@ var reviewVerification = async (req, res) => {
         if (parts.length > 0) restaurant.city = parts[0];
         if (parts.length > 1) restaurant.state = parts[1];
         try {
-          const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
-          const primaryBranch = await Branch3.findOne({ restaurantId: restaurant._id, isActive: true });
+          const Branch2 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+          const primaryBranch = await Branch2.findOne({ restaurantId: restaurant._id, isActive: true });
           if (primaryBranch) {
             primaryBranch.location = {
               ...primaryBranch.location || {},
@@ -127738,9 +128116,10 @@ var reviewVerification = async (req, res) => {
           verification.documents[f].rejectReason = "";
         }
       });
+      const validUntilStr = restaurant.subscription?.subscriptionEndDate || restaurant.subscription?.trialEndDate || restaurant.subscription?.expiryDate ? ` until ${new Date(restaurant.subscription.subscriptionEndDate || restaurant.subscription.trialEndDate || restaurant.subscription.expiryDate).toLocaleDateString()}` : "";
       await Notification_default.create({
         title: "Verification Approved",
-        desc: `Congratulations! Your restaurant verification has been approved. Your plan "${restaurant.subscription.plan}" is now active until ${expiry.toLocaleDateString()}.`,
+        desc: `Congratulations! Your restaurant KYC verification has been approved.${restaurant.subscription?.status === "Active" ? ` Your plan "${restaurant.subscription.plan}" is active${validUntilStr}.` : " Your subscription request status determines dashboard unlock."}`,
         type: "Alert",
         restaurantId: restaurant._id,
         targetRole: ["RestaurantAdmin", "Admin"]
@@ -127800,7 +128179,7 @@ var deleteVerification = async (req, res) => {
       return res.status(200).json({ success: true, message: "Verification record removed" });
     }
     let verification = null;
-    if (import_mongoose10.default.Types.ObjectId.isValid(id)) {
+    if (import_mongoose11.default.Types.ObjectId.isValid(id)) {
       verification = await RestaurantVerification_default.findById(id);
     }
     if (!verification) {
@@ -127817,7 +128196,7 @@ var deleteVerification = async (req, res) => {
       return res.status(200).json({ success: true, message: "Verification record deleted successfully" });
     }
     let restaurant = null;
-    if (import_mongoose10.default.Types.ObjectId.isValid(id)) {
+    if (import_mongoose11.default.Types.ObjectId.isValid(id)) {
       restaurant = await Restaurant_default.findById(id);
     }
     if (restaurant) {
@@ -127865,16 +128244,16 @@ init_Branch();
 init_Notification();
 
 // models/DeliveryPartner.js
-var import_mongoose11 = __toESM(require_mongoose2(), 1);
-var deliveryPartnerSchema = new import_mongoose11.default.Schema({
+var import_mongoose12 = __toESM(require_mongoose2(), 1);
+var deliveryPartnerSchema = new import_mongoose12.default.Schema({
   userId: {
-    type: import_mongoose11.default.Schema.Types.ObjectId,
+    type: import_mongoose12.default.Schema.Types.ObjectId,
     ref: "User",
     required: true,
     unique: true
   },
   restaurantId: {
-    type: import_mongoose11.default.Schema.Types.ObjectId,
+    type: import_mongoose12.default.Schema.Types.ObjectId,
     ref: "Restaurant",
     required: true
   },
@@ -127916,65 +128295,19 @@ var deliveryPartnerSchema = new import_mongoose11.default.Schema({
     longitude: { type: Number, default: 77.5946 }
   }
 }, { timestamps: true });
-var DeliveryPartner = import_mongoose11.default.model("DeliveryPartner", deliveryPartnerSchema);
+var DeliveryPartner = import_mongoose12.default.model("DeliveryPartner", deliveryPartnerSchema);
 var DeliveryPartner_default = DeliveryPartner;
-
-// models/SubscriptionPayment.js
-var import_mongoose12 = __toESM(require_mongoose2(), 1);
-var subscriptionPaymentSchema = new import_mongoose12.default.Schema({
-  restaurantId: {
-    type: import_mongoose12.default.Schema.Types.ObjectId,
-    ref: "Restaurant",
-    required: true
-  },
-  planName: {
-    type: String,
-    required: true
-  },
-  amount: {
-    type: Number,
-    required: true
-  },
-  billingCycle: {
-    type: String,
-    enum: ["monthly", "yearly"],
-    required: true
-  },
-  paymentMethod: {
-    type: String,
-    required: true
-  },
-  transactionId: {
-    type: String,
-    required: true
-  },
-  status: {
-    type: String,
-    enum: ["Pending", "Completed", "Failed"],
-    default: "Completed"
-  },
-  effectiveDate: {
-    type: Date,
-    default: Date.now
-  },
-  expiryDate: {
-    type: Date
-  }
-}, {
-  timestamps: true
-});
-var SubscriptionPayment = import_mongoose12.default.model("SubscriptionPayment", subscriptionPaymentSchema);
-var SubscriptionPayment_default = SubscriptionPayment;
 
 // controllers/restaurantController.js
 init_Plan();
 init_User();
 init_RestaurantVerification();
+init_emailService();
 var import_multer2 = __toESM(require("multer"), 1);
 var import_path3 = __toESM(require("path"), 1);
 var import_fs3 = __toESM(require("fs"), 1);
-var import_crypto = __toESM(require("crypto"), 1);
-var import_razorpay = __toESM(require("razorpay"), 1);
+var import_razorpay2 = __toESM(require("razorpay"), 1);
+init_subscriptionHelper();
 var logoUploadDir = "uploads/logos";
 if (!import_fs3.default.existsSync(logoUploadDir)) {
   import_fs3.default.mkdirSync(logoUploadDir, { recursive: true });
@@ -128019,18 +128352,36 @@ var getRestaurants = async (req, res) => {
       ]
     };
     let restaurants = await Restaurant_default.find(filter).populate("ownerId", "name email").sort({ createdAt: -1 }).lean();
-    const populatedRestaurants = await Promise.all(restaurants.map(async (rest) => {
+    if (restaurants.length === 0) {
+      return res.json([]);
+    }
+    const restIds = restaurants.map((r) => r._id);
+    const [partnerRestIds, allBranches, allVerifs] = await Promise.all([
+      DeliveryPartner_default.distinct("restaurantId", { restaurantId: { $in: restIds } }),
+      Branch_default.find({ restaurantId: { $in: restIds }, isActive: true }).lean(),
+      RestaurantVerification_default.find({ restaurantId: { $in: restIds } }).lean().catch(() => [])
+    ]);
+    const partnerSet = new Set(partnerRestIds.map((id) => String(id)));
+    const branchMap = /* @__PURE__ */ new Map();
+    for (const b of allBranches) {
+      const key = String(b.restaurantId);
+      if (!branchMap.has(key)) branchMap.set(key, []);
+      branchMap.get(key).push(b);
+    }
+    const verifMap = /* @__PURE__ */ new Map();
+    for (const v of allVerifs) {
+      verifMap.set(String(v.restaurantId), v);
+    }
+    const nameFixes = [];
+    const populatedRestaurants = restaurants.map((rest) => {
+      const restIdStr = String(rest._id);
       if (!rest.name || rest.name.trim() === "" || rest.name === "Unnamed") {
         const ownerName = rest.ownerId?.name || "Partner";
         rest.name = `${ownerName}'s Restaurant`;
-        try {
-          await Restaurant_default.findByIdAndUpdate(rest._id, { $set: { name: rest.name } });
-        } catch (err) {
-          console.error("Failed auto-repairing restaurant name:", err);
-        }
+        nameFixes.push(Restaurant_default.findByIdAndUpdate(rest._id, { $set: { name: rest.name } }).catch(() => {
+        }));
       }
-      const hasPartners = await DeliveryPartner_default.exists({ restaurantId: rest._id });
-      if (hasPartners) {
+      if (partnerSet.has(restIdStr)) {
         if (!rest.deliverySettings) {
           rest.deliverySettings = {
             deliveryType: "Both",
@@ -128049,23 +128400,19 @@ var getRestaurants = async (req, res) => {
           rest.deliverySettings.enabled = true;
         }
       }
-      const branches = await Branch_default.find({ restaurantId: rest._id, isActive: true }).lean();
+      const branches = branchMap.get(restIdStr) || [];
       rest.branches = branches;
       const primaryBranch = branches[0];
-      let verifAddress = "";
-      try {
-        const verif = await RestaurantVerification_default.findOne({ restaurantId: rest._id }).lean();
-        verifAddress = verif?.documents?.addressProof?.addressText || "";
-        if (!rest.logo && verif?.documents?.logo?.filePath) {
-          rest.logo = verif.documents.logo.filePath;
-        }
-        if ((!rest.showcaseImages || rest.showcaseImages.length === 0) && verif?.documents?.images?.length > 0) {
-          rest.showcaseImages = verif.documents.images.map((img) => img.filePath);
-        }
-        if (!rest.bannerImage && rest.showcaseImages?.length > 0) {
-          rest.bannerImage = rest.showcaseImages[0];
-        }
-      } catch (_) {
+      const verif = verifMap.get(restIdStr);
+      const verifAddress = verif?.documents?.addressProof?.addressText || "";
+      if (!rest.logo && verif?.documents?.logo?.filePath) {
+        rest.logo = verif.documents.logo.filePath;
+      }
+      if ((!rest.showcaseImages || rest.showcaseImages.length === 0) && verif?.documents?.images?.length > 0) {
+        rest.showcaseImages = verif.documents.images.map((img) => img.filePath);
+      }
+      if (!rest.bannerImage && rest.showcaseImages?.length > 0) {
+        rest.bannerImage = rest.showcaseImages[0];
       }
       const branchAddress = primaryBranch?.location?.address && primaryBranch.location.address !== "Primary Location" ? primaryBranch.location.address : "";
       const combinedAddr = rest.address || branchAddress || verifAddress || primaryBranch?.location?.address || "";
@@ -128091,7 +128438,8 @@ var getRestaurants = async (req, res) => {
       rest.country = primaryBranch?.location?.country || rest.country || "India";
       rest.verificationAddress = verifAddress;
       return rest;
-    }));
+    });
+    if (nameFixes.length > 0) Promise.allSettled(nameFixes);
     res.json(populatedRestaurants);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -128125,48 +128473,91 @@ var updateSubscription = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+var activateRestaurantPlanPayment = async ({
+  restaurant,
+  reqUser,
+  planName,
+  billingCycle = "monthly",
+  transactionId,
+  paymentMethod = "UPI QR"
+}) => {
+  const pricing = await calculateProratedUpgrade(
+    restaurant,
+    planName || restaurant.subscription?.plan || "Basic",
+    billingCycle || restaurant.subscription?.billingCycle || "monthly"
+  );
+  const expiryDate = applyPaidSubscriptionActivation(restaurant, {
+    planName: pricing.planName,
+    billingCycle: pricing.billingCycle,
+    targetPrice: pricing.targetPrice
+  });
+  const updatedRestaurant = await restaurant.save();
+  const txnId = transactionId || `QR-PAY-${Date.now().toString().slice(-8)}`;
+  await SubscriptionPayment_default.create({
+    restaurantId: restaurant._id,
+    planName: pricing.planName,
+    amount: pricing.chargeAmount,
+    billingCycle: pricing.billingCycle,
+    paymentMethod,
+    transactionId: txnId,
+    status: "Completed",
+    effectiveDate: /* @__PURE__ */ new Date(),
+    expiryDate
+  });
+  await Notification_default.create({
+    title: "Subscription Activated via UPI QR",
+    desc: `Your subscription to the ${pricing.planName} plan has been confirmed and activated (Txn ID: ${txnId}).`,
+    type: "System",
+    restaurantId: restaurant._id
+  }).catch(() => {
+  });
+  broadcastToRestaurant(restaurant._id, "subscription_updated", {
+    restaurantId: String(restaurant._id),
+    subscription: updatedRestaurant.subscription
+  });
+  try {
+    const owner = await User_default.findById(restaurant.ownerId || reqUser?._id).lean();
+    const targetEmail = owner?.email || reqUser?.email;
+    if (targetEmail) {
+      sendSubscriptionSuccessEmail({
+        email: targetEmail,
+        name: owner?.name || reqUser?.name,
+        restaurantName: restaurant.name,
+        plan: pricing.planName,
+        billingCycle: pricing.billingCycle,
+        price: pricing.chargeAmount,
+        transactionId: txnId,
+        expiryDate
+      }).catch((err) => console.error("Subscription email background error:", err.message));
+    }
+  } catch (e) {
+    console.error("Failed to send subscription confirmation email:", e.message);
+  }
+  return {
+    updatedRestaurant,
+    pricing,
+    txnId,
+    expiryDate
+  };
+};
 var selfSubscribe = async (req, res) => {
   try {
-    const { plan, billingCycle } = req.body;
+    const { plan, planName, billingCycle, transactionId } = req.body;
     const restaurant = await Restaurant_default.findById(req.user.restaurantId);
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant not found" });
     }
-    const expiryDate = /* @__PURE__ */ new Date();
-    if (billingCycle === "yearly") {
-      expiryDate.setDate(expiryDate.getDate() + 365);
-    } else {
-      expiryDate.setDate(expiryDate.getDate() + 30);
+    if (restaurant.subscription?.manualFreeze) {
+      return res.status(403).json({ message: "Dashboard is manually frozen by Super Admin. Please contact support." });
     }
-    restaurant.subscription = {
-      status: "Active",
-      plan: plan || "Basic",
+    const { updatedRestaurant } = await activateRestaurantPlanPayment({
+      restaurant,
+      reqUser: req.user,
+      planName: plan || planName || "Basic",
       billingCycle: billingCycle || "monthly",
-      trialActive: false,
-      startDate: /* @__PURE__ */ new Date(),
-      expiryDate
-    };
-    restaurant.isActive = true;
-    if (restaurant.approvalStatus === "Pending") {
-      restaurant.approvalStatus = "Approved";
-    }
-    const updatedRestaurant = await restaurant.save();
-    try {
-      const owner = await User_default.findById(restaurant.ownerId || req.user._id);
-      const targetEmail = owner?.email || req.user?.email;
-      if (targetEmail) {
-        sendSubscriptionSuccessEmail({
-          email: targetEmail,
-          name: owner?.name || req.user?.name,
-          restaurantName: restaurant.name,
-          plan: plan || "Basic",
-          billingCycle: billingCycle || "monthly",
-          expiryDate
-        }).catch((err) => console.error("Subscription email background error:", err.message));
-      }
-    } catch (e) {
-      console.error("Failed to send selfSubscribe email:", e.message);
-    }
+      transactionId,
+      paymentMethod: "UPI QR"
+    });
     res.json(updatedRestaurant);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -128202,42 +128593,29 @@ var getMyRestaurant = async (req, res) => {
     if (!restaurant) {
       return res.json(null);
     }
-    if (restaurant && restaurant.subscription?.expiryDate) {
-      const expiry = new Date(restaurant.subscription.expiryDate);
+    if (restaurant && restaurant.subscription) {
+      const expiryCheckDate = restaurant.subscription.subscriptionEndDate || restaurant.subscription.expiryDate;
       const now = /* @__PURE__ */ new Date();
-      if (restaurant.subscription.downgradeScheduledPlan && now >= new Date(restaurant.subscription.downgradeScheduledDate)) {
+      if (restaurant.subscription.downgradeScheduledPlan && restaurant.subscription.downgradeScheduledDate && now >= new Date(restaurant.subscription.downgradeScheduledDate)) {
         const targetPlan = restaurant.subscription.downgradeScheduledPlan;
-        restaurant.subscription.plan = targetPlan;
-        restaurant.subscription.price = targetPlan === "Pro" ? 99 : 49;
+        const { planName: resolvedTargetName, price: targetPrice } = await resolvePlanPrice(
+          targetPlan,
+          restaurant.subscription.billingCycle || "monthly"
+        );
+        restaurant.subscription.plan = resolvedTargetName;
+        restaurant.subscription.price = targetPrice;
         restaurant.subscription.downgradeScheduledPlan = "";
         restaurant.subscription.downgradeScheduledDate = null;
         await restaurant.save();
         await Notification_default.create({
           title: "Subscription Downgraded",
-          desc: `Your scheduled downgrade to the ${targetPlan} plan has been processed.`,
+          desc: `Your scheduled downgrade to the ${resolvedTargetName} plan has been processed.`,
           type: "System",
           restaurantId: restaurant._id
         });
       }
-      if (expiry < now) {
-        if (restaurant.subscription.status !== "Frozen" && restaurant.subscription.status !== "Cancelled") {
-          restaurant.subscription.status = "Frozen";
-          restaurant.subscription.trialActive = false;
-          await restaurant.save();
-          const existingNotif = await Notification_default.findOne({
-            restaurantId: restaurant._id,
-            title: "7-Day Free Trial Expired",
-            read: false
-          });
-          if (!existingNotif) {
-            await Notification_default.create({
-              title: "7-Day Free Trial Expired",
-              desc: "Your 7-day free trial has ended. Your dashboard has been frozen. Please subscribe to unlock full access.",
-              type: "System",
-              restaurantId: restaurant._id
-            });
-          }
-        }
+      if (expiryCheckDate || restaurant.subscription.trialEndDate) {
+        await evaluateSubscriptionAccess(restaurant, { notifyOnExpire: true });
       }
     }
     if (!restaurant.restaurantConfig) {
@@ -128433,8 +128811,8 @@ var updateMyRestaurant = async (req, res) => {
       }
       const updatedRestaurant = await restaurant.save();
       try {
-        const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
-        const branch = await Branch3.findOne({ restaurantId: restaurant._id });
+        const Branch2 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+        const branch = await Branch2.findOne({ restaurantId: restaurant._id });
         if (branch) {
           branch.location = {
             ...branch.location || {},
@@ -128671,9 +129049,28 @@ var getBranches = async (req, res) => {
 };
 var createBranch = async (req, res) => {
   try {
+    const targetRestId = req.params.id;
+    if (req.user.role !== "SuperAdmin" && String(req.user.restaurantId) !== String(targetRestId)) {
+      return res.status(403).json({ message: "Not authorized to create branches for another restaurant." });
+    }
+    const restaurant = await Restaurant_default.findById(targetRestId);
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found." });
+    }
+    const planName = restaurant.subscription?.plan || "Basic";
+    const planDoc = await findPlanDocument(planName);
+    let limit = planDoc?.branchesLimit || 1;
+    if (planName.toLowerCase() === "enterprise") limit = Infinity;
+    else if (["pro", "professional"].includes(planName.toLowerCase())) limit = Math.max(limit, 3);
+    const currentCount = await Branch_default.countDocuments({ restaurantId: targetRestId });
+    if (currentCount >= limit) {
+      return res.status(403).json({
+        message: `Your "${planName}" plan is limited to ${limit} branch(es). Please upgrade to add more branches.`
+      });
+    }
     const { name, location, contact, manager } = req.body;
     const branch = await Branch_default.create({
-      restaurant: req.params.id,
+      restaurantId: targetRestId,
       name,
       location,
       contact,
@@ -128748,92 +129145,31 @@ var getMyBillingHistory = async (req, res) => {
 };
 var upgradeSubscription = async (req, res) => {
   try {
-    const { planName, billingCycle } = req.body;
-    let restId = req.user.restaurantId || req.user.restaurant;
-    let restaurant;
-    if (restId) {
-      restaurant = await Restaurant_default.findById(restId);
-    }
-    if (!restaurant) {
-      restaurant = await Restaurant_default.findOne({ ownerId: req.user._id });
-    }
+    const { planName, billingCycle, transactionId } = req.body;
+    const restId = req.user.restaurantId || req.user.restaurant;
+    const restaurant = restId ? await Restaurant_default.findById(restId) : await Restaurant_default.findOne({ ownerId: req.user._id });
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant profile not found." });
     }
-    const targetPlan = await Plan_default.findOne({ name: planName });
-    const targetPrice = targetPlan ? billingCycle === "yearly" ? targetPlan.yearlyPrice : targetPlan.monthlyPrice : planName === "Pro" ? billingCycle === "yearly" ? 990 : 99 : billingCycle === "yearly" ? 1990 : 199;
-    const currentPlanName = restaurant.subscription?.plan || "Basic";
-    const currentPlan = await Plan_default.findOne({ name: currentPlanName });
-    const currentPrice = currentPlan ? restaurant.subscription?.billingCycle === "yearly" ? currentPlan.yearlyPrice : currentPlan.monthlyPrice : 0;
-    const now = /* @__PURE__ */ new Date();
-    const expiry = restaurant.subscription?.expiryDate ? new Date(restaurant.subscription.expiryDate) : now;
-    const totalDuration = restaurant.subscription?.billingCycle === "yearly" ? 365 : 30;
-    const remainingDays = Math.max(0, Math.ceil((expiry - now) / (1e3 * 60 * 60 * 24)));
-    const remainingCredit = Math.floor(currentPrice / totalDuration * remainingDays);
-    const chargeAmount = Math.max(0, targetPrice - remainingCredit);
-    const newExpiry = /* @__PURE__ */ new Date();
-    if (billingCycle === "yearly") {
-      newExpiry.setDate(newExpiry.getDate() + 365);
-    } else {
-      newExpiry.setDate(newExpiry.getDate() + 30);
+    if (restaurant.subscription?.manualFreeze) {
+      return res.status(403).json({ message: "Dashboard is under administrative freeze by Super Admin." });
     }
-    restaurant.subscription = {
-      status: "Active",
-      plan: planName,
-      billingCycle: billingCycle || "monthly",
-      trialActive: false,
-      expiryDate: newExpiry,
-      startDate: /* @__PURE__ */ new Date(),
-      price: targetPrice,
-      downgradeScheduledPlan: "",
-      downgradeScheduledDate: null
-    };
-    restaurant.isActive = true;
-    if (restaurant.approvalStatus === "Pending") {
-      restaurant.approvalStatus = "Approved";
-    }
-    await restaurant.save();
-    const transactionId = "TXN-UPG-" + Date.now().toString().slice(-8).toUpperCase();
-    await SubscriptionPayment_default.create({
-      restaurantId: restaurant._id,
-      planName,
-      amount: chargeAmount,
-      billingCycle: billingCycle || "monthly",
-      paymentMethod: "Card",
-      transactionId,
-      status: "Completed",
-      effectiveDate: /* @__PURE__ */ new Date(),
-      expiryDate: newExpiry
-    });
-    await Notification_default.create({
-      title: "Subscription Upgraded",
-      desc: `Your restaurant has been successfully upgraded to the ${planName} plan.`,
-      type: "System",
-      restaurantId: restaurant._id
-    });
-    try {
-      const owner = await User_default.findById(restaurant.ownerId || req.user._id);
-      const targetEmail = owner?.email || req.user?.email;
-      if (targetEmail) {
-        sendSubscriptionSuccessEmail({
-          email: targetEmail,
-          name: owner?.name || req.user?.name,
-          restaurantName: restaurant.name,
-          plan: planName,
-          billingCycle: billingCycle || "monthly",
-          price: chargeAmount,
-          transactionId,
-          expiryDate: newExpiry
-        }).catch((err) => console.error("Upgrade subscription email background error:", err.message));
-      }
-    } catch (e) {
-      console.error("Failed to send upgrade email:", e.message);
-    }
-    res.json({
-      message: `Your restaurant has been upgraded to ${planName}.`,
+    const { updatedRestaurant, pricing, txnId, expiryDate } = await activateRestaurantPlanPayment({
       restaurant,
-      chargeAmount,
-      transactionId
+      reqUser: req.user,
+      planName,
+      billingCycle,
+      transactionId,
+      paymentMethod: "UPI QR"
+    });
+    res.json({
+      paid: true,
+      status: "completed",
+      message: `Upgraded to ${pricing.planName} plan successfully!`,
+      restaurant: updatedRestaurant,
+      transactionId: txnId,
+      chargeAmount: pricing.chargeAmount,
+      expiryDate
     });
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -128873,57 +129209,31 @@ var downgradeSubscription = async (req, res) => {
 };
 var renewSubscription = async (req, res) => {
   try {
-    let restId = req.user.restaurantId || req.user.restaurant;
-    let restaurant;
-    if (restId) {
-      restaurant = await Restaurant_default.findById(restId);
-    }
-    if (!restaurant) {
-      restaurant = await Restaurant_default.findOne({ ownerId: req.user._id });
-    }
+    const { planName, billingCycle, transactionId } = req.body;
+    const restId = req.user.restaurantId || req.user.restaurant;
+    const restaurant = restId ? await Restaurant_default.findById(restId) : await Restaurant_default.findOne({ ownerId: req.user._id });
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant profile not found." });
     }
-    const planName = restaurant.subscription?.plan || "Basic";
-    const billingCycle = restaurant.subscription?.billingCycle || "monthly";
-    const plan = await Plan_default.findOne({ name: planName });
-    const price = plan ? billingCycle === "yearly" ? plan.yearlyPrice : plan.monthlyPrice : planName === "Pro" ? billingCycle === "yearly" ? 990 : 99 : billingCycle === "yearly" ? 1990 : 199;
-    let currentExpiry = restaurant.subscription.expiryDate ? new Date(restaurant.subscription.expiryDate) : /* @__PURE__ */ new Date();
-    if (currentExpiry < /* @__PURE__ */ new Date()) {
-      currentExpiry = /* @__PURE__ */ new Date();
+    if (restaurant.subscription?.manualFreeze) {
+      return res.status(403).json({ message: "Dashboard is under administrative freeze by Super Admin." });
     }
-    if (billingCycle === "yearly") {
-      currentExpiry.setDate(currentExpiry.getDate() + 365);
-    } else {
-      currentExpiry.setDate(currentExpiry.getDate() + 30);
-    }
-    restaurant.subscription.status = "Active";
-    restaurant.subscription.expiryDate = currentExpiry;
-    restaurant.subscription.price = price;
-    await restaurant.save();
-    const transactionId = "TXN-REN-" + Date.now().toString().slice(-8).toUpperCase();
-    await SubscriptionPayment_default.create({
-      restaurantId: restaurant._id,
+    const { updatedRestaurant, pricing, txnId, expiryDate } = await activateRestaurantPlanPayment({
+      restaurant,
+      reqUser: req.user,
       planName,
-      amount: price,
       billingCycle,
-      paymentMethod: "Card",
       transactionId,
-      status: "Completed",
-      effectiveDate: /* @__PURE__ */ new Date(),
-      expiryDate: currentExpiry
-    });
-    await Notification_default.create({
-      title: "Subscription Renewed",
-      desc: `Your subscription to the ${planName} plan has been renewed until ${currentExpiry.toLocaleDateString()}.`,
-      type: "System",
-      restaurantId: restaurant._id
+      paymentMethod: "UPI QR"
     });
     res.json({
-      message: `Subscription successfully renewed.`,
-      restaurant,
-      expiryDate: currentExpiry,
-      transactionId
+      paid: true,
+      status: "completed",
+      message: `Subscription to ${pricing.planName} plan renewed successfully!`,
+      restaurant: updatedRestaurant,
+      transactionId: txnId,
+      chargeAmount: pricing.chargeAmount,
+      expiryDate
     });
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -128933,108 +129243,89 @@ var createRazorpaySubscriptionOrder = async (req, res) => {
   try {
     const { planName, billingCycle } = req.body;
     let restId = req.user.restaurantId || req.user.restaurant;
-    let restaurant;
-    if (restId) {
-      restaurant = await Restaurant_default.findById(restId);
-    }
-    if (!restaurant) {
-      restaurant = await Restaurant_default.findOne({ ownerId: req.user._id });
-    }
+    let restaurant = restId ? await Restaurant_default.findById(restId) : await Restaurant_default.findOne({ ownerId: req.user._id });
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant profile not found." });
     }
-    const targetPlan = await Plan_default.findOne({ name: planName });
-    const targetPrice = targetPlan ? billingCycle === "yearly" ? targetPlan.yearlyPrice : targetPlan.monthlyPrice : planName === "Pro" ? billingCycle === "yearly" ? 990 : 99 : billingCycle === "yearly" ? 1990 : 199;
-    const currentPlanName = restaurant.subscription?.plan || "Basic";
-    const currentPlan = await Plan_default.findOne({ name: currentPlanName });
-    const currentPrice = currentPlan ? restaurant.subscription?.billingCycle === "yearly" ? currentPlan.yearlyPrice : currentPlan.monthlyPrice : 0;
-    const now = /* @__PURE__ */ new Date();
-    const expiry = restaurant.subscription?.expiryDate ? new Date(restaurant.subscription.expiryDate) : now;
-    const totalDuration = restaurant.subscription?.billingCycle === "yearly" ? 365 : 30;
-    const remainingDays = Math.max(0, Math.ceil((expiry - now) / (1e3 * 60 * 60 * 24)));
-    const remainingCredit = Math.floor(currentPrice / totalDuration * remainingDays);
-    const chargeAmount = Math.max(1, targetPrice - remainingCredit);
-    const keyId = (process.env.RAZORPAY_KEY_ID || "rzp_live_SlbQBi57McKtUc").trim();
-    const keySecret = (process.env.RAZORPAY_KEY_SECRET || "IgfxpfmQCMxSPaU0T4EyhcLU").trim();
-    const instance = new import_razorpay.default({
-      key_id: keyId,
-      key_secret: keySecret
-    });
+    if (restaurant.subscription?.manualFreeze) {
+      return res.status(403).json({
+        message: "Your dashboard is under an administrative freeze by Super Admin. Please contact support."
+      });
+    }
+    const pricing = await calculateProratedUpgrade(restaurant, planName, billingCycle || "monthly");
+    const { keyId, instance } = getRazorpayInstance();
     const razorpayOrder = await instance.orders.create({
-      amount: Math.round(chargeAmount * 100),
-      // in paise
+      amount: Math.round(pricing.chargeAmount * 100),
       currency: "INR",
       receipt: `sub_${restaurant._id.toString().slice(-6)}_${Date.now().toString().slice(-6)}`,
       notes: {
         restaurantId: restaurant._id.toString(),
-        planName,
-        billingCycle
+        planName: pricing.planName,
+        billingCycle: pricing.billingCycle
       }
     });
     res.json({
       orderId: razorpayOrder.id,
-      amount: chargeAmount,
-      amountPaise: Math.round(chargeAmount * 100),
+      amount: pricing.chargeAmount,
+      amountPaise: Math.round(pricing.chargeAmount * 100),
+      remainingCredit: pricing.remainingCredit,
+      targetPrice: pricing.targetPrice,
       currency: "INR",
       keyId,
-      planName,
-      billingCycle,
+      planName: pricing.planName,
+      billingCycle: pricing.billingCycle,
       restaurantName: restaurant.name
     });
   } catch (error) {
     console.error("Razorpay Subscription Order Creation Failed:", error);
-    res.status(400).json({ message: error.message || "Failed to create Razorpay Order" });
+    res.status(error.statusCode || 400).json({ message: error.message || "Failed to create Razorpay Order" });
   }
 };
 var verifyRazorpaySubscriptionPayment = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planName, billingCycle } = req.body;
     let restId = req.user.restaurantId || req.user.restaurant;
-    let restaurant;
-    if (restId) {
-      restaurant = await Restaurant_default.findById(restId);
-    }
-    if (!restaurant) {
-      restaurant = await Restaurant_default.findOne({ ownerId: req.user._id });
-    }
+    let restaurant = restId ? await Restaurant_default.findById(restId) : await Restaurant_default.findOne({ ownerId: req.user._id });
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant profile not found." });
+    }
+    if (restaurant.subscription?.manualFreeze) {
+      return res.status(403).json({
+        message: "Dashboard is under an administrative freeze by Super Admin. Please contact support."
+      });
     }
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return res.status(400).json({ message: "Missing Razorpay payment verification parameters" });
     }
-    const keySecret = (process.env.RAZORPAY_KEY_SECRET || "IgfxpfmQCMxSPaU0T4EyhcLU").trim();
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
-    const expectedSignature = import_crypto.default.createHmac("sha256", keySecret).update(body.toString()).digest("hex");
-    if (expectedSignature !== razorpay_signature) {
+    if (!verifyRazorpaySignature({ orderId: razorpay_order_id, paymentId: razorpay_payment_id, signature: razorpay_signature })) {
       return res.status(400).json({ message: "Razorpay payment signature verification failed!" });
     }
-    const targetPlan = await Plan_default.findOne({ name: planName });
-    const targetPrice = targetPlan ? billingCycle === "yearly" ? targetPlan.yearlyPrice : targetPlan.monthlyPrice : planName === "Pro" ? billingCycle === "yearly" ? 990 : 99 : billingCycle === "yearly" ? 1990 : 199;
-    const newExpiry = /* @__PURE__ */ new Date();
-    if (billingCycle === "yearly") {
-      newExpiry.setDate(newExpiry.getDate() + 365);
-    } else {
-      newExpiry.setDate(newExpiry.getDate() + 30);
+    const existingPayment = await SubscriptionPayment_default.findOne({ transactionId: razorpay_payment_id, status: "Completed" }).lean();
+    if (existingPayment) {
+      return res.json({
+        message: `Subscription already activated for transaction ${razorpay_payment_id}.`,
+        restaurant,
+        transactionId: razorpay_payment_id,
+        expiryDate: existingPayment.expiryDate
+      });
     }
-    restaurant.subscription = {
-      status: "Active",
-      plan: planName,
-      billingCycle: billingCycle || "monthly",
-      trialActive: false,
-      expiryDate: newExpiry,
-      startDate: /* @__PURE__ */ new Date(),
-      price: targetPrice,
-      downgradeScheduledPlan: "",
-      downgradeScheduledDate: null
-    };
+    const pricing = await calculateProratedUpgrade(
+      restaurant,
+      planName || restaurant.subscription?.plan || "Basic",
+      billingCycle || restaurant.subscription?.billingCycle || "monthly"
+    );
+    const newExpiry = applyPaidSubscriptionActivation(restaurant, {
+      planName: pricing.planName,
+      billingCycle: pricing.billingCycle,
+      targetPrice: pricing.targetPrice
+    });
     await restaurant.save();
     const txnId = razorpay_payment_id;
     await SubscriptionPayment_default.create({
       restaurantId: restaurant._id,
-      planName,
-      amount: targetPrice,
-      billingCycle: billingCycle || "monthly",
+      planName: pricing.planName,
+      amount: pricing.chargeAmount,
+      billingCycle: pricing.billingCycle,
       paymentMethod: "Razorpay",
       transactionId: txnId,
       status: "Completed",
@@ -129043,21 +129334,25 @@ var verifyRazorpaySubscriptionPayment = async (req, res) => {
     });
     await Notification_default.create({
       title: "Subscription Activated (Razorpay)",
-      desc: `Your subscription to the ${planName} plan has been successfully activated via Razorpay (Txn ID: ${txnId}).`,
+      desc: `Your subscription to the ${pricing.planName} plan has been verified and activated via Razorpay (Txn ID: ${txnId}).`,
       type: "System",
       restaurantId: restaurant._id
     });
+    broadcastToRestaurant(restaurant._id, "subscription_updated", {
+      restaurantId: String(restaurant._id),
+      subscription: restaurant.subscription
+    });
     try {
-      const owner = await User_default.findById(restaurant.ownerId || req.user._id);
+      const owner = await User_default.findById(restaurant.ownerId || req.user._id).lean();
       const targetEmail = owner?.email || req.user?.email;
       if (targetEmail) {
         sendSubscriptionSuccessEmail({
           email: targetEmail,
           name: owner?.name || req.user?.name,
           restaurantName: restaurant.name,
-          plan: planName,
-          billingCycle: billingCycle || "monthly",
-          price: targetPrice,
+          plan: pricing.planName,
+          billingCycle: pricing.billingCycle,
+          price: pricing.chargeAmount,
           transactionId: txnId,
           expiryDate: newExpiry
         }).catch((err) => console.error("Razorpay subscription email background error:", err.message));
@@ -129066,148 +129361,114 @@ var verifyRazorpaySubscriptionPayment = async (req, res) => {
       console.error("Failed to send Razorpay email:", e.message);
     }
     res.json({
-      message: `Subscription to ${planName} plan activated successfully!`,
+      message: `Subscription to ${pricing.planName} plan activated successfully!`,
       restaurant,
       transactionId: txnId,
+      chargeAmount: pricing.chargeAmount,
       expiryDate: newExpiry
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(error.statusCode || 400).json({ message: error.message });
   }
 };
 var generateRazorpaySubscriptionQR = async (req, res) => {
   try {
     const { planName, billingCycle } = req.body;
-    const restaurant = await Restaurant_default.findById(req.user.restaurantId);
+    let restId = req.user.restaurantId || req.user.restaurant;
+    const restaurant = restId ? await Restaurant_default.findById(restId) : await Restaurant_default.findOne({ ownerId: req.user._id });
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant not found" });
     }
-    const targetPlan = await Plan_default.findOne({ name: planName });
-    const targetPrice = targetPlan ? billingCycle === "yearly" ? targetPlan.yearlyPrice : targetPlan.monthlyPrice : planName === "Pro" ? billingCycle === "yearly" ? 990 : 99 : billingCycle === "yearly" ? 1990 : 199;
-    const currentPlanName = restaurant.subscription?.plan || "Basic";
-    const currentPlan = await Plan_default.findOne({ name: currentPlanName });
-    const currentPrice = currentPlan ? restaurant.subscription?.billingCycle === "yearly" ? currentPlan.yearlyPrice : currentPlan.monthlyPrice : 0;
-    const now = /* @__PURE__ */ new Date();
-    const expiry = restaurant.subscription?.expiryDate ? new Date(restaurant.subscription.expiryDate) : now;
-    const totalDuration = restaurant.subscription?.billingCycle === "yearly" ? 365 : 30;
-    const remainingDays = Math.max(0, Math.ceil((expiry - now) / (1e3 * 60 * 60 * 24)));
-    const remainingCredit = Math.floor(currentPrice / totalDuration * remainingDays);
-    const chargeAmount = Math.max(1, targetPrice - remainingCredit);
-    const refId = `SUB-${restaurant._id.toString().slice(-6)}-${Date.now().toString().slice(-6)}`;
-    const razorpayKey = process.env.RAZORPAY_KEY_ID || "rzp_live_SlbQBi57McKtUc";
-    const razorpaySecret = process.env.RAZORPAY_KEY_SECRET || "IgfxpfmQCMxSPaU0T4EyhcLU";
-    let qrImageUrl = "";
-    let upiString = `upi://pay?pa=razorpay.sub@icici&pn=RestoSys%20SaaS&am=${chargeAmount}&tr=${refId}&tn=RestoSys%20${planName}%20Plan`;
-    try {
-      const instance = new import_razorpay.default({
-        key_id: razorpayKey,
-        key_secret: razorpaySecret
-      });
-      const qrCode = await instance.qrCode.create({
-        type: "upi_qr",
-        name: `Sub_${restaurant.name.slice(0, 10).replace(/[^a-zA-Z0-9]/g, "")}_${planName}`,
-        usage: "single_use",
-        fixed_amount: true,
-        payment_amount: Math.round(chargeAmount * 100),
-        description: `RestoSys ${planName} Subscription`,
-        notes: {
-          restaurantId: restaurant._id.toString(),
-          planName,
-          billingCycle
-        }
-      });
-      if (qrCode && (qrCode.image_url || qrCode.short_url)) {
-        qrImageUrl = qrCode.image_url || qrCode.short_url;
-        if (qrCode.upi_link) upiString = qrCode.upi_link;
-      }
-    } catch (qrErr) {
-      console.warn("Official Razorpay QR API call fallback:", qrErr.message || qrErr);
+    if (restaurant.subscription?.manualFreeze) {
+      return res.status(403).json({ message: "Dashboard is frozen by Super Admin. Contact support." });
     }
-    if (!qrImageUrl) {
-      qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiString)}`;
-    }
+    const pricing = await calculateProratedUpgrade(restaurant, planName, billingCycle || "monthly");
+    const refId = `QR-SUB-${Date.now().toString().slice(-8)}`;
+    const upiString = `upi://pay?pa=foodnest@upi&pn=${encodeURIComponent("FoodNest SaaS")}&am=${pricing.chargeAmount}&cu=INR&tn=${encodeURIComponent(`${pricing.planName} Plan (${pricing.billingCycle})`)}`;
+    const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiString)}`;
     res.json({
+      qrCodeId: refId,
       qrImageUrl,
       upiString,
-      chargeAmount,
+      chargeAmount: pricing.chargeAmount,
+      remainingCredit: pricing.remainingCredit,
       refId,
-      planName,
-      billingCycle,
-      razorpayKey
+      planName: pricing.planName,
+      billingCycle: pricing.billingCycle
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error("QR Creation Error:", error);
+    res.status(error.statusCode || 400).json({ message: error.message || "Unable to generate QR code." });
   }
 };
 var confirmSubscriptionQRPayment = async (req, res) => {
   try {
-    const { planName, billingCycle, refId, paymentUpiId } = req.body;
-    const restaurant = await Restaurant_default.findById(req.user.restaurantId);
+    let restId = req.user.restaurantId || req.user.restaurant;
+    const restaurant = restId ? await Restaurant_default.findById(restId) : await Restaurant_default.findOne({ ownerId: req.user._id });
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant not found" });
     }
-    const targetPlan = await Plan_default.findOne({ name: planName });
-    const targetPrice = targetPlan ? billingCycle === "yearly" ? targetPlan.yearlyPrice : targetPlan.monthlyPrice : planName === "Pro" ? billingCycle === "yearly" ? 990 : 99 : billingCycle === "yearly" ? 1990 : 199;
-    const newExpiry = /* @__PURE__ */ new Date();
-    if (billingCycle === "yearly") {
-      newExpiry.setDate(newExpiry.getDate() + 365);
-    } else {
-      newExpiry.setDate(newExpiry.getDate() + 30);
+    if (restaurant.subscription?.manualFreeze) {
+      return res.status(403).json({ message: "Dashboard is under administrative freeze by Super Admin." });
     }
-    restaurant.subscription = {
-      status: "Active",
-      plan: planName,
-      billingCycle: billingCycle || "monthly",
-      trialActive: false,
-      expiryDate: newExpiry,
-      startDate: /* @__PURE__ */ new Date(),
-      price: targetPrice,
-      downgradeScheduledPlan: "",
-      downgradeScheduledDate: null
-    };
-    await restaurant.save();
-    const txnId = refId || `PAY-QR-${Date.now().toString().slice(-8)}`;
+    const planName = req.body?.planName || req.query?.planName || restaurant.subscription?.plan || "Basic";
+    const billingCycle = req.body?.billingCycle || req.query?.billingCycle || "monthly";
+    const txnRef = req.params.qrId || req.body?.refId || req.body?.qrCodeId || req.body?.transactionId;
+    const { updatedRestaurant, pricing, txnId, expiryDate } = await activateRestaurantPlanPayment({
+      restaurant,
+      reqUser: req.user,
+      planName,
+      billingCycle,
+      transactionId: txnRef,
+      paymentMethod: "UPI QR"
+    });
+    res.json({
+      paid: true,
+      status: "completed",
+      message: `Subscription to ${pricing.planName} plan activated via UPI QR!`,
+      restaurant: updatedRestaurant,
+      transactionId: txnId,
+      chargeAmount: pricing.chargeAmount,
+      expiryDate
+    });
+  } catch (error) {
+    res.status(error.statusCode || 400).json({ paid: false, message: error.message });
+  }
+};
+var recordFailedSubscriptionPayment = async (req, res) => {
+  try {
+    const { planName, billingCycle, amount, paymentId, reason } = req.body;
+    let restId = req.user.restaurantId || req.user.restaurant;
+    const restaurant = restId ? await Restaurant_default.findById(restId) : await Restaurant_default.findOne({ ownerId: req.user._id });
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
+    const txnId = paymentId || `RZP-FAIL-${Date.now().toString().slice(-8)}`;
     await SubscriptionPayment_default.create({
       restaurantId: restaurant._id,
-      planName,
-      amount: targetPrice,
+      planName: planName || restaurant.subscription?.plan || "Basic",
+      amount: Number(amount) || 0,
       billingCycle: billingCycle || "monthly",
-      paymentMethod: "UPI QR",
+      paymentMethod: "Razorpay",
       transactionId: txnId,
-      status: "Completed",
-      effectiveDate: /* @__PURE__ */ new Date(),
-      expiryDate: newExpiry
+      status: "Failed",
+      effectiveDate: /* @__PURE__ */ new Date()
     });
+    if (restaurant.subscription) {
+      restaurant.subscription.paymentStatus = "Failed";
+      await restaurant.save();
+    }
     await Notification_default.create({
-      title: "Subscription Activated via Scanner QR",
-      desc: `Your subscription to the ${planName} plan was verified and activated via UPI QR Code (Txn ID: ${txnId}).`,
+      title: "Subscription Payment Failed",
+      desc: `Payment attempt failed for ${planName || "subscription"} (${reason || "Payment unsuccessful"}). Dashboard remains locked until payment succeeds.`,
       type: "System",
       restaurantId: restaurant._id
     });
-    try {
-      const owner = await User_default.findById(restaurant.ownerId || req.user._id);
-      const targetEmail = owner?.email || req.user?.email;
-      if (targetEmail) {
-        sendSubscriptionSuccessEmail({
-          email: targetEmail,
-          name: owner?.name || req.user?.name,
-          restaurantName: restaurant.name,
-          plan: planName,
-          billingCycle: billingCycle || "monthly",
-          price: targetPrice,
-          transactionId: txnId,
-          expiryDate: newExpiry
-        }).catch((err) => console.error("QR payment subscription email background error:", err.message));
-      }
-    } catch (e) {
-      console.error("Failed to send QR subscription email:", e.message);
-    }
-    res.json({
-      message: `Subscription to ${planName} plan activated successfully via QR Payment!`,
-      restaurant,
-      transactionId: txnId,
-      expiryDate: newExpiry
+    broadcastToRestaurant(restaurant._id, "subscription_updated", {
+      restaurantId: String(restaurant._id),
+      subscription: restaurant.subscription
     });
+    res.json({ message: "Failed payment attempt recorded.", restaurant });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -129261,7 +129522,7 @@ var requestFreeTrial = async (req, res) => {
       const owner = await User_default.findById(restaurant.ownerId || req.user._id);
       const targetEmail = owner?.email || req.user?.email;
       if (targetEmail) {
-        sendTrialRequestSubmittedEmail2({
+        sendTrialRequestSubmittedEmail({
           email: targetEmail,
           name: owner?.name || req.user?.name,
           restaurantName: restaurant.name,
@@ -129322,7 +129583,9 @@ router2.route("/mine/renew").post(protect, authorize("RestaurantAdmin", "SuperAd
 router2.route("/mine/razorpay-order").post(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), createRazorpaySubscriptionOrder);
 router2.route("/mine/razorpay-verify").post(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), verifyRazorpaySubscriptionPayment);
 router2.route("/mine/razorpay-qr").post(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), generateRazorpaySubscriptionQR);
+router2.route("/mine/razorpay-qr-status/:qrId").get(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), confirmSubscriptionQRPayment);
 router2.route("/mine/confirm-qr-payment").post(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), confirmSubscriptionQRPayment);
+router2.route("/mine/razorpay-failed").post(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), recordFailedSubscriptionPayment);
 router2.route("/trial-request").post(protect, authorize("RestaurantAdmin", "Admin"), requestFreeTrial);
 router2.route("/subscribe").put(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), selfSubscribe);
 router2.route("/").get(getRestaurants).post(protect, authorize("SuperAdmin"), createRestaurant);
@@ -129667,8 +129930,8 @@ var getNextKotNumber = async (restaurantId, branchId) => {
 var generateKOTsForOrder = async (order, options = {}) => {
   if (!order) return [];
   try {
-    const Restaurant3 = (await Promise.resolve().then(() => (init_Restaurant(), Restaurant_exports))).default;
-    const targetRest = await Restaurant3.findById(order.restaurantId).select("restaurantConfig");
+    const Restaurant2 = (await Promise.resolve().then(() => (init_Restaurant(), Restaurant_exports))).default;
+    const targetRest = await Restaurant2.findById(order.restaurantId).select("restaurantConfig");
     if (targetRest?.restaurantConfig?.orderKitchen?.kotEnabled === false) {
       return [];
     }
@@ -129825,20 +130088,20 @@ var addOrderItems = async (req, res) => {
       }
     }
     if (!finalBranchId && finalRestaurantId) {
-      const Branch3 = import_mongoose18.default.model("Branch");
-      const firstBranch = await Branch3.findOne({ restaurantId: finalRestaurantId });
+      const Branch2 = import_mongoose18.default.model("Branch");
+      const firstBranch = await Branch2.findOne({ restaurantId: finalRestaurantId });
       if (firstBranch) {
         finalBranchId = firstBranch._id;
       }
     }
     if (!finalRestaurantId || !finalBranchId) {
-      const Restaurant3 = import_mongoose18.default.model("Restaurant");
-      const Branch3 = import_mongoose18.default.model("Branch");
-      let demoRestaurant = await Restaurant3.findOne({ name: "Pizza Palace" }) || await Restaurant3.findOne({ isDemo: true });
+      const Restaurant2 = import_mongoose18.default.model("Restaurant");
+      const Branch2 = import_mongoose18.default.model("Branch");
+      let demoRestaurant = await Restaurant2.findOne({ name: "Pizza Palace" }) || await Restaurant2.findOne({ isDemo: true });
       if (!demoRestaurant) {
         const User2 = import_mongoose18.default.model("User");
         const adminUser = await User2.findOne({ role: "SuperAdmin" }) || await User2.findOne();
-        demoRestaurant = await Restaurant3.create({
+        demoRestaurant = await Restaurant2.create({
           name: "Pizza Palace",
           isDemo: true,
           ownerId: adminUser ? adminUser._id : new import_mongoose18.default.Types.ObjectId(),
@@ -129847,9 +130110,9 @@ var addOrderItems = async (req, res) => {
         });
       }
       finalRestaurantId = demoRestaurant._id;
-      let demoBranch = await Branch3.findOne({ restaurantId: demoRestaurant._id });
+      let demoBranch = await Branch2.findOne({ restaurantId: demoRestaurant._id });
       if (!demoBranch) {
-        demoBranch = await Branch3.create({
+        demoBranch = await Branch2.create({
           name: "Downtown Branch",
           restaurantId: demoRestaurant._id
         });
@@ -129885,6 +130148,13 @@ var addOrderItems = async (req, res) => {
     if (isRestBlocked) {
       return res.status(403).json({
         message: "This restaurant is currently inactive or suspended and cannot accept orders."
+      });
+    }
+    const { evaluateSubscriptionAccess: evaluateSubscriptionAccess2 } = await Promise.resolve().then(() => (init_subscriptionHelper(), subscriptionHelper_exports));
+    const subVerdict = await evaluateSubscriptionAccess2(targetRestaurant, { notifyOnExpire: false });
+    if (subVerdict.isFrozen) {
+      return res.status(403).json({
+        message: subVerdict.message || "This restaurant is temporarily unavailable due to subscription status."
       });
     }
     const restDeliverySettings = targetRestaurant?.deliverySettings || {};
@@ -130592,11 +130862,19 @@ var refundOrder = async (req, res) => {
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
+    if (req.user?.role !== "SuperAdmin") {
+      const userRestId = req.user?.restaurantId ? String(req.user.restaurantId) : null;
+      if (!userRestId || String(order.restaurantId) !== userRestId) {
+        return res.status(403).json({ message: "Not authorized to refund orders outside your restaurant." });
+      }
+    }
     order.status = "Refunded";
     order.paymentMethod = "Refunded";
     order.isPaid = false;
-    await order.save();
-    res.json({ message: "Order refunded successfully", order });
+    const updatedOrder = await order.save();
+    broadcastToRestaurant(order.restaurantId, "order_updated", updatedOrder);
+    broadcastToCustomerOrder(order._id, "order_status_updated", updatedOrder);
+    res.json({ message: "Order refunded successfully", order: updatedOrder });
   } catch (error) {
     res.status(500).json({ message: "Refund failed", error: error.message });
   }
@@ -130607,13 +130885,8 @@ var createRazorpayCustomerOrder = async (req, res) => {
     if (!amount || amount <= 0) {
       return res.status(400).json({ message: "Valid payment amount is required." });
     }
-    const Razorpay2 = (await import("razorpay")).default;
-    const keyId = process.env.RAZORPAY_KEY_ID || "rzp_live_SlbQBi57McKtUc";
-    const keySecret = process.env.RAZORPAY_KEY_SECRET || "IgfxpfmQCMxSPaU0T4EyhcLU";
-    const instance = new Razorpay2({
-      key_id: keyId,
-      key_secret: keySecret
-    });
+    const { getRazorpayInstance: getRazorpayInstance2 } = await Promise.resolve().then(() => (init_subscriptionHelper(), subscriptionHelper_exports));
+    const { keyId, instance } = getRazorpayInstance2();
     const razorpayOrder = await instance.orders.create({
       amount: Math.round(amount * 100),
       // in paise
@@ -130633,7 +130906,7 @@ var createRazorpayCustomerOrder = async (req, res) => {
     });
   } catch (error) {
     console.error("Razorpay Customer Order Error:", error);
-    res.status(400).json({ message: error.message || "Failed to create Razorpay payment order" });
+    res.status(error.statusCode || 400).json({ message: error.message || "Failed to create Razorpay payment order" });
   }
 };
 var verifyRazorpayCustomerPayment = async (req, res) => {
@@ -130642,11 +130915,8 @@ var verifyRazorpayCustomerPayment = async (req, res) => {
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return res.status(400).json({ message: "Missing Razorpay signature verification parameters." });
     }
-    const crypto2 = (await import("crypto")).default;
-    const keySecret = process.env.RAZORPAY_KEY_SECRET || "IgfxpfmQCMxSPaU0T4EyhcLU";
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
-    const expectedSignature = crypto2.createHmac("sha256", keySecret).update(body.toString()).digest("hex");
-    if (expectedSignature !== razorpay_signature) {
+    const { verifyRazorpaySignature: verifyRazorpaySignature2 } = await Promise.resolve().then(() => (init_subscriptionHelper(), subscriptionHelper_exports));
+    if (!verifyRazorpaySignature2({ orderId: razorpay_order_id, paymentId: razorpay_payment_id, signature: razorpay_signature })) {
       return res.status(400).json({ message: "Razorpay payment signature verification failed." });
     }
     if (orderId) {
@@ -130669,7 +130939,7 @@ var verifyRazorpayCustomerPayment = async (req, res) => {
     res.json({ success: true, message: "Razorpay payment verified successfully!", paymentId: razorpay_payment_id });
   } catch (error) {
     console.error("Razorpay Customer Payment Verification Error:", error);
-    res.status(400).json({ message: error.message || "Payment verification failed" });
+    res.status(error.statusCode || 400).json({ message: error.message || "Payment verification failed" });
   }
 };
 var updateDeliveryLocation = async (req, res) => {
@@ -130710,15 +130980,15 @@ var updateDeliveryLocation = async (req, res) => {
 var router4 = import_express4.default.Router();
 router4.route("/razorpay-order").post(createRazorpayCustomerOrder);
 router4.route("/razorpay-verify").post(verifyRazorpayCustomerPayment);
-router4.route("/").post(optionalProtect, addOrderItems).get(protect, checkBillingModule("dineInTakeawayOrders"), getOrders);
+router4.route("/").post(optionalProtect, addOrderItems).get(protect, checkSubscription, authorize("SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager", "Chef", "Waiter", "Cashier"), checkBillingModule("dineInTakeawayOrders"), getOrders);
 router4.route("/myorders").get(protect, getMyOrders);
+router4.route("/merge").post(protect, checkSubscription, authorize("SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager", "Cashier"), mergeOrders);
 router4.route("/:id").get(optionalProtect, getOrderById);
 router4.route("/:id/items").put(optionalProtect, appendOrderItems);
 router4.route("/:id/pay").put(optionalProtect, updateOrderToPaid);
-router4.route("/:id/status").put(protect, updateOrderStatus);
-router4.route("/:id/location").put(protect, updateDeliveryLocation);
-router4.route("/merge").post(protect, mergeOrders);
-router4.route("/:id/refund").put(protect, refundOrder);
+router4.route("/:id/status").put(protect, checkSubscription, authorize("SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager", "Chef", "Waiter", "Cashier", "DeliveryPartner"), updateOrderStatus);
+router4.route("/:id/location").put(protect, checkSubscription, authorize("SuperAdmin", "DeliveryPartner", "RestaurantAdmin", "Admin", "BranchManager"), updateDeliveryLocation);
+router4.route("/:id/refund").put(protect, checkSubscription, authorize("SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager", "Cashier"), refundOrder);
 var orderRoutes_default = router4;
 
 // routes/analyticsRoutes.js
@@ -132070,9 +132340,11 @@ var getDailyEarnings = async (req, res) => {
 
 // routes/analyticsRoutes.js
 var router5 = import_express5.default.Router();
-router5.route("/dashboard").get(protect, authorize("SuperAdmin", "RestaurantAdmin", "BranchManager", "Admin"), getDashboardAnalytics);
-router5.route("/profit-loss").get(protect, authorize("SuperAdmin", "RestaurantAdmin", "BranchManager", "Admin"), getProfitAndLoss);
-router5.route("/daily-earnings").get(protect, authorize("SuperAdmin", "RestaurantAdmin", "BranchManager", "Admin"), getDailyEarnings);
+router5.use(protect);
+router5.use(checkSubscription);
+router5.route("/dashboard").get(authorize("SuperAdmin", "RestaurantAdmin", "BranchManager", "Admin"), getDashboardAnalytics);
+router5.route("/profit-loss").get(authorize("SuperAdmin", "RestaurantAdmin", "BranchManager", "Admin"), getProfitAndLoss);
+router5.route("/daily-earnings").get(authorize("SuperAdmin", "RestaurantAdmin", "BranchManager", "Admin"), getDailyEarnings);
 var analyticsRoutes_default = router5;
 
 // routes/menuRoutes.js
@@ -132140,12 +132412,18 @@ var createMenuItem = async (req, res) => {
 };
 var updateMenuItem = async (req, res) => {
   try {
-    const item = await MenuItem_default.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (item) {
-      res.json(item);
-    } else {
-      res.status(404).json({ message: "Menu item not found" });
+    const existing = await MenuItem_default.findById(req.params.id);
+    if (!existing) {
+      return res.status(404).json({ message: "Menu item not found" });
     }
+    if (req.user.role !== "SuperAdmin" && String(existing.restaurantId) !== String(req.user.restaurantId)) {
+      return res.status(403).json({ message: "Not authorized to modify this restaurant menu item" });
+    }
+    const updates = { ...req.body };
+    delete updates.restaurantId;
+    Object.assign(existing, updates);
+    const saved = await existing.save();
+    res.json(saved);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -132153,12 +132431,14 @@ var updateMenuItem = async (req, res) => {
 var deleteMenuItem = async (req, res) => {
   try {
     const item = await MenuItem_default.findById(req.params.id);
-    if (item) {
-      await item.deleteOne();
-      res.json({ message: "Item removed" });
-    } else {
-      res.status(404).json({ message: "Menu item not found" });
+    if (!item) {
+      return res.status(404).json({ message: "Menu item not found" });
     }
+    if (req.user.role !== "SuperAdmin" && String(item.restaurantId) !== String(req.user.restaurantId)) {
+      return res.status(403).json({ message: "Not authorized to delete this restaurant menu item" });
+    }
+    await item.deleteOne();
+    res.json({ message: "Item removed" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -132166,14 +132446,15 @@ var deleteMenuItem = async (req, res) => {
 
 // routes/menuRoutes.js
 var router6 = import_express6.default.Router();
-router6.route("/").get(optionalProtect, getMenuItems).post(protect, checkBillingModule("menuManagement"), createMenuItem);
-router6.route("/:id").put(protect, checkBillingModule("menuManagement"), updateMenuItem).delete(protect, checkBillingModule("menuManagement"), deleteMenuItem);
+router6.route("/").get(optionalProtect, getMenuItems).post(protect, checkSubscription, authorize("SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager", "Chef"), checkBillingModule("menuManagement"), createMenuItem);
+router6.route("/:id").put(protect, checkSubscription, authorize("SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager", "Chef"), checkBillingModule("menuManagement"), updateMenuItem).delete(protect, checkSubscription, authorize("SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager"), checkBillingModule("menuManagement"), deleteMenuItem);
 var menuRoutes_default = router6;
 
 // routes/superAdminRoutes.js
 var import_express7 = __toESM(require_express2(), 1);
 
 // controllers/superAdminController.js
+init_emailService();
 init_Restaurant();
 init_User();
 init_Order();
@@ -132326,7 +132607,7 @@ var getStats = async (req, res) => {
 };
 var getRestaurants2 = async (req, res) => {
   try {
-    const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+    const Branch2 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
     const User2 = (await Promise.resolve().then(() => (init_User(), User_exports))).default;
     const adminUsers = await User2.find({ role: { $in: ["RestaurantAdmin", "Admin"] } });
     for (const admin of adminUsers) {
@@ -132337,12 +132618,12 @@ var getRestaurants2 = async (req, res) => {
           name: restName,
           ownerId: admin._id,
           subscription: {
-            status: "Active",
+            status: "Pending Approval",
             plan: "Basic",
             billingCycle: "monthly",
-            trialActive: true,
-            startDate: /* @__PURE__ */ new Date(),
-            expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1e3)
+            trialActive: false,
+            paymentStatus: "Trial",
+            trialRequestDate: /* @__PURE__ */ new Date()
           },
           approvalStatus: "Pending",
           verificationStatus: "Pending",
@@ -132350,7 +132631,7 @@ var getRestaurants2 = async (req, res) => {
         });
         admin.restaurantId = newRest._id;
         await admin.save();
-        await Branch3.create({
+        await Branch2.create({
           restaurantId: newRest._id,
           name: `${newRest.name} Branch`,
           location: { address: "Primary Location" },
@@ -132500,13 +132781,13 @@ var deleteRestaurant = async (req, res) => {
       return res.status(404).json({ message: "Restaurant not found" });
     }
     if (isPermanent) {
-      const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+      const Branch2 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
       const RestaurantVerification2 = (await Promise.resolve().then(() => (init_RestaurantVerification(), RestaurantVerification_exports))).default;
       const Menu = (await import("../models/Menu.js")).default;
       const MenuItem2 = (await Promise.resolve().then(() => (init_MenuItem(), MenuItem_exports))).default;
       const Table2 = (await Promise.resolve().then(() => (init_Table(), Table_exports))).default;
       const Category2 = (await Promise.resolve().then(() => (init_Category(), Category_exports))).default;
-      await Branch3.deleteMany({ restaurantId: id });
+      await Branch2.deleteMany({ restaurantId: id });
       await RestaurantVerification2.deleteMany({ restaurantId: id });
       await Menu.deleteMany({ restaurantId: id });
       await MenuItem2.deleteMany({ restaurantId: id });
@@ -132616,7 +132897,6 @@ var updateApprovalStatus = async (req, res) => {
       if (req.body.approvalStatus === "Approved") {
         restaurant.verificationStatus = "Verified";
         if (!restaurant.subscription) restaurant.subscription = {};
-        restaurant.subscription.status = "Active";
         try {
           const RestaurantVerification2 = (await Promise.resolve().then(() => (init_RestaurantVerification(), RestaurantVerification_exports))).default;
           const verif = await RestaurantVerification2.findOne({ restaurantId: restaurant._id });
@@ -132882,24 +133162,26 @@ var approveTrialRequest = async (req, res) => {
     }
     const now = /* @__PURE__ */ new Date();
     const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1e3);
-    restaurant.subscription = {
-      ...restaurant.subscription,
-      status: "Active",
-      trialActive: true,
-      trialStartDate: now,
-      trialEndDate: trialEnd,
-      expiryDate: trialEnd,
-      approvedBy: req.user._id,
-      approvedAt: now,
-      paymentStatus: "Trial",
-      manualFreeze: false,
-      freezeReason: "",
-      rejectionReason: "",
-      reminderSent24h: false
-    };
+    if (!restaurant.subscription) restaurant.subscription = {};
+    restaurant.subscription.status = "Active";
+    restaurant.subscription.trialActive = true;
+    restaurant.subscription.trialStartDate = now;
+    restaurant.subscription.trialEndDate = trialEnd;
+    restaurant.subscription.expiryDate = trialEnd;
+    restaurant.subscription.approvedBy = req.user._id;
+    restaurant.subscription.approvedAt = now;
+    restaurant.subscription.paymentStatus = "Trial";
+    restaurant.subscription.manualFreeze = false;
+    restaurant.subscription.freezeReason = "";
+    restaurant.subscription.rejectionReason = "";
+    restaurant.subscription.reminderSent24h = false;
     restaurant.approvalStatus = "Approved";
     restaurant.isActive = true;
     await restaurant.save();
+    broadcastToRestaurant(restaurant._id, "subscription_updated", {
+      restaurantId: String(restaurant._id),
+      subscription: restaurant.subscription
+    });
     try {
       await Notification_default.create({
         title: "Free Trial Approved! \u{1F389}",
@@ -132945,15 +133227,17 @@ var rejectTrialRequest = async (req, res) => {
       return res.status(404).json({ message: "Restaurant not found" });
     }
     const rejectionReason = reason || "Documentation criteria or verification requirements not met.";
-    restaurant.subscription = {
-      ...restaurant.subscription,
-      status: "Rejected",
-      trialActive: false,
-      rejectedAt: /* @__PURE__ */ new Date(),
-      rejectionReason
-    };
+    if (!restaurant.subscription) restaurant.subscription = {};
+    restaurant.subscription.status = "Rejected";
+    restaurant.subscription.trialActive = false;
+    restaurant.subscription.rejectedAt = /* @__PURE__ */ new Date();
+    restaurant.subscription.rejectionReason = rejectionReason;
     restaurant.approvalStatus = "Rejected";
     await restaurant.save();
+    broadcastToRestaurant(restaurant._id, "subscription_updated", {
+      restaurantId: String(restaurant._id),
+      subscription: restaurant.subscription
+    });
     const ownerEmail = restaurant.ownerId?.email;
     const ownerName = restaurant.ownerId?.name || restaurant.name;
     if (ownerEmail) {
@@ -132981,14 +133265,16 @@ var manualFreezeRestaurant = async (req, res) => {
     }
     const freezeReason = reason || "Administrative freeze placed by Super Admin.";
     const frozenAt = /* @__PURE__ */ new Date();
-    restaurant.subscription = {
-      ...restaurant.subscription,
-      status: "Frozen",
-      manualFreeze: true,
-      freezeReason,
-      frozenAt
-    };
+    if (!restaurant.subscription) restaurant.subscription = {};
+    restaurant.subscription.status = "Frozen";
+    restaurant.subscription.manualFreeze = true;
+    restaurant.subscription.freezeReason = freezeReason;
+    restaurant.subscription.frozenAt = frozenAt;
     await restaurant.save();
+    broadcastToRestaurant(restaurant._id, "subscription_updated", {
+      restaurantId: String(restaurant._id),
+      subscription: restaurant.subscription
+    });
     const ownerEmail = restaurant.ownerId?.email;
     const ownerName = restaurant.ownerId?.name || restaurant.name;
     if (ownerEmail) {
@@ -133042,6 +133328,10 @@ var manualUnfreezeRestaurant = async (req, res) => {
     restaurant.subscription.status = "Active";
     restaurant.subscription.freezeReason = "";
     await restaurant.save();
+    broadcastToRestaurant(restaurant._id, "subscription_updated", {
+      restaurantId: String(restaurant._id),
+      subscription: restaurant.subscription
+    });
     const ownerEmail = restaurant.ownerId?.email;
     const ownerName = restaurant.ownerId?.name || restaurant.name;
     if (ownerEmail) {
@@ -133185,8 +133475,8 @@ var createTable = async (req, res) => {
   try {
     let finalBranchId = branchId || req.user.branchId;
     if (!finalBranchId) {
-      const Branch3 = import_mongoose27.default.model("Branch");
-      const firstBranch = await Branch3.findOne({ restaurantId: req.user.restaurantId });
+      const Branch2 = import_mongoose27.default.model("Branch");
+      const firstBranch = await Branch2.findOne({ restaurantId: req.user.restaurantId });
       if (firstBranch) {
         finalBranchId = firstBranch._id;
       }
@@ -133243,9 +133533,11 @@ var deleteTable = async (req, res) => {
 
 // routes/tableRoutes.js
 var router8 = import_express8.default.Router();
-router8.route("/").get(protect, checkBillingModule("tableManagement"), authorize("SuperAdmin", "Admin", "RestaurantAdmin", "BranchManager", "Waiter", "Cashier"), getTables).post(protect, checkBillingModule("tableManagement"), authorize("SuperAdmin", "Admin", "RestaurantAdmin", "BranchManager"), createTable);
-router8.route("/:id").delete(protect, checkBillingModule("tableManagement"), authorize("SuperAdmin", "Admin", "RestaurantAdmin", "BranchManager"), deleteTable);
-router8.route("/:id/status").put(protect, checkBillingModule("tableManagement"), authorize("SuperAdmin", "Admin", "RestaurantAdmin", "BranchManager", "Waiter", "Cashier"), updateTableStatus);
+router8.use(protect);
+router8.use(checkSubscription);
+router8.route("/").get(checkBillingModule("tableManagement"), authorize("SuperAdmin", "Admin", "RestaurantAdmin", "BranchManager", "Waiter", "Cashier"), getTables).post(checkBillingModule("tableManagement"), authorize("SuperAdmin", "Admin", "RestaurantAdmin", "BranchManager"), createTable);
+router8.route("/:id").delete(checkBillingModule("tableManagement"), authorize("SuperAdmin", "Admin", "RestaurantAdmin", "BranchManager"), deleteTable);
+router8.route("/:id/status").put(checkBillingModule("tableManagement"), authorize("SuperAdmin", "Admin", "RestaurantAdmin", "BranchManager", "Waiter", "Cashier"), updateTableStatus);
 var tableRoutes_default = router8;
 
 // routes/customerRoutes.js
@@ -133354,6 +133646,7 @@ var customerRoutes_default = router9;
 var import_express10 = __toESM(require_express2(), 1);
 
 // controllers/staffController.js
+init_emailService();
 var import_mongoose31 = __toESM(require_mongoose2(), 1);
 init_User();
 init_Branch();
@@ -133726,6 +134019,20 @@ var createStaff = async (req, res) => {
       });
     }
     const populatedUser = await User_default.findById(user._id).populate("branchId", "name").select("-password");
+    try {
+      const restDoc = restaurantId ? await (await Promise.resolve().then(() => (init_Restaurant(), Restaurant_exports))).default.findById(restaurantId).select("name") : null;
+      sendStaffRoleCredentialsEmail({
+        email: normalizedEmail,
+        name: name.trim(),
+        role: normalizedRole,
+        restaurantName: restDoc?.name || "",
+        branchName: populatedUser?.branchId?.name || "",
+        password: password ? String(password).trim() : "Staff@123",
+        employeeId: empId
+      }).catch((e) => console.error("Error dispatching staff credentials email:", e));
+    } catch (mailErr) {
+      console.error("Failed to prepare staff email:", mailErr);
+    }
     res.status(201).json(populatedUser);
   } catch (error) {
     console.error("Error in createStaff:", error);
@@ -133835,6 +134142,7 @@ var bulkMarkAttendance = async (req, res) => {
     for (const r of records) {
       const employeeId = r.employeeId || r.employee;
       if (!employeeId) continue;
+      if (r.status === "Not Marked" || !r.status) continue;
       const staffMember = await User_default.findById(employeeId);
       if (!staffMember) continue;
       const targetBranch = staffMember.branchId || branchId || req.user.branchId;
@@ -134133,11 +134441,27 @@ var enrichPayrollWithAliases = (doc) => {
     netPayable: calc.netSalaryPayable ?? 0
   };
 };
-var calculateEmployeePayrollItem = async (emp, m, y, restaurantId) => {
+var prefetchPayrollContext = async (restaurantId, employees, m, y) => {
+  const startDate = new Date(y, m - 1, 1);
+  const endDate = new Date(y, m, 0, 23, 59, 59, 999);
+  const empIds = employees.map((e) => e._id);
+  const [restaurant, allAttendance] = await Promise.all([
+    Restaurant_default.findById(restaurantId).select("restaurantConfig").lean(),
+    empIds.length > 0 ? Attendance_default.find({ restaurantId, employee: { $in: empIds }, date: { $gte: startDate, $lte: endDate } }).lean() : Promise.resolve([])
+  ]);
+  const attendanceMap = /* @__PURE__ */ new Map();
+  for (const a of allAttendance) {
+    const key = String(a.employee);
+    if (!attendanceMap.has(key)) attendanceMap.set(key, []);
+    attendanceMap.get(key).push(a);
+  }
+  return { restaurant, attendanceMap };
+};
+var calculateEmployeePayrollItem = async (emp, m, y, restaurantId, prefetched = null) => {
   const startDate = new Date(y, m - 1, 1);
   const endDate = new Date(y, m, 0, 23, 59, 59, 999);
   const daysInMonth = new Date(y, m, 0).getDate();
-  const restaurant = await Restaurant_default.findById(restaurantId).select("restaurantConfig");
+  const restaurant = prefetched?.restaurant || await Restaurant_default.findById(restaurantId).select("restaurantConfig").lean();
   const payrollConfig = restaurant?.restaurantConfig?.payrollConfig || {};
   const lopPolicy = payrollConfig.lopCalculationPolicy || "Configured_Working_Days";
   const config = emp.salaryConfig || {};
@@ -134146,11 +134470,11 @@ var calculateEmployeePayrollItem = async (emp, m, y, restaurantId) => {
   const otRate = Number(config.overtimeRatePerHour) || 0;
   const standardWorkDays = Number(config.monthlyWorkingDays) || 26;
   const dailyHours = Number(config.dailyWorkHours) || 8;
-  const attendance = await Attendance_default.find({
+  const attendance = prefetched?.attendanceMap ? prefetched.attendanceMap.get(String(emp._id)) || [] : await Attendance_default.find({
     restaurantId,
     employee: emp._id,
     date: { $gte: startDate, $lte: endDate }
-  });
+  }).lean();
   let presentDays = 0;
   let absentDays = 0;
   let leaveDays = 0;
@@ -134282,12 +134606,11 @@ var calculatePayroll = async (req, res) => {
     } else if (req.user.role === "BranchManager" && req.user.branchId) {
       staffFilter.branchId = req.user.branchId;
     }
-    const employees = await User_default.find(staffFilter).populate("branchId", "name");
-    const calculatedPayroll = [];
-    for (const emp of employees) {
-      const item = await calculateEmployeePayrollItem(emp, m, y, restaurantId);
-      calculatedPayroll.push(item);
-    }
+    const employees = await User_default.find(staffFilter).populate("branchId", "name").lean();
+    const context = await prefetchPayrollContext(restaurantId, employees, m, y);
+    const calculatedPayroll = await Promise.all(
+      employees.map((emp) => calculateEmployeePayrollItem(emp, m, y, restaurantId, context))
+    );
     res.json({
       month: m,
       year: y,
@@ -134322,12 +134645,11 @@ var generatePayroll = async (req, res) => {
       } else if (req.user.role === "BranchManager" && req.user.branchId) {
         staffFilter.branchId = req.user.branchId;
       }
-      const employees = await User_default.find(staffFilter).populate("branchId", "name");
-      itemsToProcess = [];
-      for (const emp of employees) {
-        const item = await calculateEmployeePayrollItem(emp, m, y, restaurantId);
-        itemsToProcess.push(item);
-      }
+      const employees = await User_default.find(staffFilter).populate("branchId", "name").lean();
+      const context = await prefetchPayrollContext(restaurantId, employees, m, y);
+      itemsToProcess = await Promise.all(
+        employees.map((emp) => calculateEmployeePayrollItem(emp, m, y, restaurantId, context))
+      );
     }
     const periodString = `${y}-${m.toString().padStart(2, "0")}`;
     const savedRecords = [];
@@ -134895,12 +135217,119 @@ var updatePayrollConfig = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+var clockIn = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const restaurantId = req.user.restaurantId || await getUserRestaurantId2(req.user);
+    const branchId = req.user.branchId || (await (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default.findOne({ restaurantId }).select("_id"))?._id;
+    const now = /* @__PURE__ */ new Date();
+    const dateString = now.toISOString().split("T")[0];
+    let att = await Attendance_default.findOne({
+      restaurantId,
+      employee: userId,
+      dateString
+    });
+    if (att) {
+      if (!att.checkIn) {
+        att.checkIn = now;
+      }
+      att.status = "Present";
+      await att.save();
+    } else {
+      att = await Attendance_default.create({
+        restaurantId,
+        branchId,
+        employee: userId,
+        date: now,
+        dateString,
+        status: "Present",
+        checkIn: now,
+        lateMinutes: 0,
+        overtimeHours: 0,
+        workingHours: 0,
+        createdBy: userId
+      });
+    }
+    res.json({ message: "Clocked in successfully", attendance: att });
+  } catch (error) {
+    console.error("Clock in error:", error);
+    res.status(500).json({ message: error.message || "Error clocking in" });
+  }
+};
+var clockOut = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const restaurantId = req.user.restaurantId || await getUserRestaurantId2(req.user);
+    const now = /* @__PURE__ */ new Date();
+    const dateString = now.toISOString().split("T")[0];
+    let att = await Attendance_default.findOne({
+      restaurantId,
+      employee: userId,
+      dateString
+    });
+    if (!att) {
+      const branchId = req.user.branchId || (await (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default.findOne({ restaurantId }).select("_id"))?._id;
+      att = await Attendance_default.create({
+        restaurantId,
+        branchId,
+        employee: userId,
+        date: now,
+        dateString,
+        status: "Present",
+        checkIn: now,
+        checkOut: now,
+        lateMinutes: 0,
+        overtimeHours: 0,
+        workingHours: 0,
+        createdBy: userId
+      });
+    } else {
+      att.checkOut = now;
+      if (att.checkIn) {
+        const diffMs = now.getTime() - new Date(att.checkIn).getTime();
+        const diffHrs = Math.max(0, diffMs / (1e3 * 60 * 60));
+        att.workingHours = Math.round(diffHrs * 10) / 10;
+        const userDoc = await User_default.findById(userId).select("salaryConfig");
+        const dailyShift = userDoc?.salaryConfig?.dailyWorkHours || 8;
+        if (diffHrs > dailyShift) {
+          att.overtimeHours = Math.round((diffHrs - dailyShift) * 2) / 2;
+        }
+      }
+      await att.save();
+    }
+    res.json({ message: "Clocked out successfully", attendance: att });
+  } catch (error) {
+    console.error("Clock out error:", error);
+    res.status(500).json({ message: error.message || "Error clocking out" });
+  }
+};
+var getMyAttendanceToday = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const dateString = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+    const att = await Attendance_default.findOne({
+      employee: userId,
+      dateString
+    });
+    res.json({
+      status: att ? att.status : "Not Clocked In",
+      checkIn: att?.checkIn || null,
+      checkOut: att?.checkOut || null,
+      overtimeHours: att?.overtimeHours || 0
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // routes/staffRoutes.js
 var router10 = import_express10.default.Router();
 router10.use(protect);
 router10.use(checkSubscription);
 router10.use(checkBillingModule("staffManagement"));
+router10.post("/clock-in", clockIn);
+router10.post("/clock-out", clockOut);
+router10.get("/my-attendance-today", getMyAttendanceToday);
 router10.post("/attendance/bulk", authorize("RestaurantAdmin", "BranchManager"), bulkMarkAttendance);
 router10.get("/attendance", authorize("RestaurantAdmin", "BranchManager"), getAttendance);
 router10.put("/attendance/:id/correct", authorize("RestaurantAdmin", "BranchManager"), correctAttendance);
@@ -134936,13 +135365,15 @@ var import_express11 = __toESM(require_express2(), 1);
 
 // controllers/userController.js
 init_User();
+init_Restaurant();
+init_subscriptionHelper();
 var getUsers = async (req, res) => {
   try {
     let query = {};
     if (req.user.role !== "SuperAdmin" && req.user.role !== "SupportAgent") {
       query.restaurantId = req.user.restaurantId;
     }
-    const users = await User_default.find(query).populate("branchId", "name").select("-password");
+    const users = await User_default.find(query).populate("branchId", "name").select("-password").lean();
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -134951,13 +135382,28 @@ var getUsers = async (req, res) => {
 var inviteUser = async (req, res) => {
   const { name, email, role, branchId } = req.body;
   try {
-    const userExists = await User_default.findOne({ email });
+    const userExists = await User_default.findOne({ email: String(email || "").trim().toLowerCase() });
     if (userExists) {
       return res.status(400).json({ message: "A user with this email already exists" });
     }
-    const validRoles = ["RestaurantAdmin", "BranchManager", "Chef", "Waiter", "Cashier", "Customer"];
+    const validRoles = ["RestaurantAdmin", "BranchManager", "Chef", "Waiter", "Cashier", "DeliveryPartner", "Customer"];
     if (!validRoles.includes(role)) {
       return res.status(400).json({ message: "Invalid role" });
+    }
+    if (req.user.role !== "SuperAdmin" && req.user.restaurantId && role !== "Customer") {
+      const restaurant = await Restaurant_default.findById(req.user.restaurantId).select("subscription").lean();
+      const planName = restaurant?.subscription?.plan || "Basic";
+      const planDoc = await findPlanDocument(planName);
+      const staffLimit = ["pro", "professional", "enterprise"].includes(planName.toLowerCase()) ? Infinity : planDoc?.staffLimit || 5;
+      const currentStaff = await User_default.countDocuments({
+        restaurantId: req.user.restaurantId,
+        role: { $in: ["BranchManager", "Chef", "Waiter", "Cashier", "DeliveryPartner", "Staff", "Manager"] }
+      });
+      if (currentStaff >= staffLimit) {
+        return res.status(403).json({
+          message: `Your "${planName}" plan is limited to ${staffLimit} staff members. Please upgrade to add more staff.`
+        });
+      }
     }
     const user = await User_default.create({
       name,
@@ -135230,8 +135676,8 @@ var getReservations = async (req, res) => {
     }
     let branchIds = [];
     if (req.user.role !== "SuperAdmin") {
-      const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
-      const branches = await Branch3.find({ restaurantId: req.user.restaurantId }).select("_id");
+      const Branch2 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+      const branches = await Branch2.find({ restaurantId: req.user.restaurantId }).select("_id");
       branchIds = branches.map((b) => b._id);
     }
     const filter = {};
@@ -135275,7 +135721,10 @@ var updateReservationStatus = async (req, res) => {
     if (!reservation) {
       return res.status(404).json({ message: "Reservation not found" });
     }
-    reservation.status = status;
+    if (status) reservation.status = status;
+    if (req.body.table !== void 0) {
+      reservation.table = req.body.table || void 0;
+    }
     await reservation.save();
     res.json(reservation);
   } catch (error) {
@@ -135304,8 +135753,8 @@ var getCategories = async (req, res) => {
       if (req.user.branchId) {
         filter.branch = req.user.branchId;
       } else if (req.user.restaurantId) {
-        const Branch3 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
-        const branches = await Branch3.find({ restaurantId: req.user.restaurantId }).select("_id");
+        const Branch2 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+        const branches = await Branch2.find({ restaurantId: req.user.restaurantId }).select("_id");
         filter.branch = { $in: branches.map((b) => b._id) };
       } else {
         return res.json([]);
@@ -136924,40 +137373,44 @@ var generateReport = async (req, res) => {
         totalAmountDue: Math.round(reportData.reduce((acc, r) => acc + r.balanceDue, 0) * 100) / 100,
         totalOriginalAmount: Math.round(reportData.reduce((acc, r) => acc + r.totalAmount, 0) * 100) / 100
       };
-    } else if (reportType === 2) {
+    } else if (reportType === 2 || reportType === "2") {
       const matchStage = {
-        status: "Completed",
+        status: { $nin: ["Cancelled", "Refunded"] },
         restaurantId: restObjId,
         createdAt: { $gte: start, $lte: end }
       };
-      if (effectiveBranchId) matchStage.branch = effectiveBranchId;
+      if (effectiveBranchId && import_mongoose39.default.Types.ObjectId.isValid(effectiveBranchId)) {
+        matchStage.branchId = new import_mongoose39.default.Types.ObjectId(effectiveBranchId);
+      }
       reportData = await Order_default.aggregate([
         { $match: matchStage },
-        { $unwind: "$items" },
+        { $unwind: "$orderItems" },
         {
           $group: {
-            _id: "$items.menuItem",
-            name: { $first: "$items.name" },
-            quantitySold: { $sum: "$items.quantity" },
-            totalRevenue: { $sum: { $multiply: ["$items.price", "$items.quantity"] } }
+            _id: { $ifNull: ["$orderItems.product", "$orderItems.name"] },
+            name: { $first: "$orderItems.name" },
+            quantitySold: { $sum: { $ifNull: ["$orderItems.qty", 1] } },
+            totalRevenue: { $sum: { $multiply: [{ $ifNull: ["$orderItems.price", 0] }, { $ifNull: ["$orderItems.qty", 1] }] } }
           }
         },
         { $sort: { quantitySold: -1 } }
       ]);
-    } else if (reportType === 3) {
+    } else if (reportType === 3 || reportType === "3") {
       const matchStage = {
-        status: "Completed",
+        status: { $nin: ["Cancelled", "Refunded"] },
         restaurantId: restObjId,
         createdAt: { $gte: start, $lte: end }
       };
-      if (effectiveBranchId) matchStage.branch = effectiveBranchId;
+      if (effectiveBranchId && import_mongoose39.default.Types.ObjectId.isValid(effectiveBranchId)) {
+        matchStage.branchId = new import_mongoose39.default.Types.ObjectId(effectiveBranchId);
+      }
       reportData = await Order_default.aggregate([
         { $match: matchStage },
         {
           $group: {
-            _id: "$server",
+            _id: { $ifNull: ["$waiter", "$user"] },
             ordersHandled: { $sum: 1 },
-            totalRevenue: { $sum: "$totalAmount" }
+            totalRevenue: { $sum: { $ifNull: ["$totalPrice", 0] } }
           }
         },
         {
@@ -136970,27 +137423,36 @@ var generateReport = async (req, res) => {
         },
         {
           $project: {
-            staffName: { $ifNull: [{ $arrayElemAt: ["$staff.name", 0] }, "Staff Member"] },
+            staffName: { $ifNull: [{ $arrayElemAt: ["$staff.name", 0] }, "Walk-in / Self-Service"] },
             ordersHandled: 1,
-            totalRevenue: 1
+            totalRevenue: { $round: ["$totalRevenue", 2] }
           }
         },
         { $sort: { totalRevenue: -1 } }
       ]);
-    } else if (reportType === 4) {
+    } else if (reportType === 4 || reportType === "4") {
       const matchStage = {
-        status: "Completed",
+        status: { $nin: ["Cancelled", "Refunded"] },
         restaurantId: restObjId,
         createdAt: { $gte: start, $lte: end }
       };
-      if (effectiveBranchId) matchStage.branch = effectiveBranchId;
+      if (effectiveBranchId && import_mongoose39.default.Types.ObjectId.isValid(effectiveBranchId)) {
+        matchStage.branchId = new import_mongoose39.default.Types.ObjectId(effectiveBranchId);
+      }
       reportData = await Order_default.aggregate([
         { $match: matchStage },
         {
           $group: {
             _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-            taxableSales: { $sum: "$subtotal" },
-            taxCollected: { $sum: "$taxAmount" }
+            taxableSales: { $sum: { $max: [0, { $subtract: [{ $ifNull: ["$totalPrice", 0] }, { $ifNull: ["$taxPrice", 0] }] }] } },
+            taxCollected: { $sum: { $ifNull: ["$taxPrice", 0] } }
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            taxableSales: { $round: ["$taxableSales", 2] },
+            taxCollected: { $round: ["$taxCollected", 2] }
           }
         },
         { $sort: { _id: 1 } }
@@ -137117,7 +137579,17 @@ var requestRestock = async (req, res) => {
 };
 var markAsRead = async (req, res) => {
   try {
-    const notification = await Notification_default.findOne({ _id: req.params.id, restaurantId: req.user.restaurantId });
+    const query = {
+      _id: req.params.id,
+      $or: [
+        { userId: req.user._id },
+        { restaurantId: req.user.restaurantId }
+      ]
+    };
+    let notification = await Notification_default.findOne(query);
+    if (!notification) {
+      notification = await Notification_default.findById(req.params.id);
+    }
     if (notification) {
       notification.read = true;
       await notification.save();
@@ -137131,10 +137603,11 @@ var markAsRead = async (req, res) => {
 };
 var markAllAsRead = async (req, res) => {
   try {
-    await Notification_default.updateMany(
-      { restaurantId: req.user.restaurantId, read: false },
-      { $set: { read: true } }
-    );
+    const conditions = [];
+    if (req.user._id) conditions.push({ userId: req.user._id });
+    if (req.user.restaurantId) conditions.push({ restaurantId: req.user.restaurantId });
+    const filter = conditions.length > 0 ? { $or: conditions, read: false } : { read: false };
+    await Notification_default.updateMany(filter, { $set: { read: true } });
     res.json({ message: "All notifications marked as read" });
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -137157,129 +137630,133 @@ var notificationRoutes_default = router20;
 var import_express21 = __toESM(require_express2(), 1);
 
 // controllers/planController.js
+var import_crypto2 = __toESM(require("crypto"), 1);
 var import_mongoose40 = __toESM(require_mongoose2(), 1);
 init_Plan();
 init_Restaurant();
+init_Notification();
+init_subscriptionHelper();
+var getPublicFallbackPlans = () => [
+  { _id: "p1", name: "Basic", monthlyPrice: DEFAULT_PLAN_CATALOG.Basic.monthlyPrice, yearlyPrice: DEFAULT_PLAN_CATALOG.Basic.yearlyPrice, branchesLimit: 1, staffLimit: 5, features: ["1 Branch", "Basic POS Billing", "QR Ordering", "Email Support"], isActive: true },
+  { _id: "p2", name: "Pro", monthlyPrice: DEFAULT_PLAN_CATALOG.Pro.monthlyPrice, yearlyPrice: DEFAULT_PLAN_CATALOG.Pro.yearlyPrice, branchesLimit: 3, staffLimit: 9999, features: ["Up to 3 Branches", "Kitchen Display System", "Online Ordering", "Advanced Analytics", "Priority Support"], isActive: true },
+  { _id: "p3", name: "Enterprise", monthlyPrice: DEFAULT_PLAN_CATALOG.Enterprise.monthlyPrice, yearlyPrice: DEFAULT_PLAN_CATALOG.Enterprise.yearlyPrice, branchesLimit: 9999, staffLimit: 9999, features: ["Unlimited Branches", "Custom APIs & Webhooks", "Dedicated Account Manager", "SLA Guarantee", "White-label Branding"], isActive: true }
+];
 var getPublicPlans = async (req, res) => {
   try {
     if (import_mongoose40.default.connection.readyState !== 1) {
-      return res.json([
-        { _id: "p1", name: "Basic", monthlyPrice: 2999, yearlyPrice: 2399, features: ["1 Branch", "Basic POS Billing", "QR Ordering", "Email Support"], isActive: true },
-        { _id: "p2", name: "Pro", monthlyPrice: 5999, yearlyPrice: 4799, features: ["Up to 3 Branches", "Kitchen Display System", "Online Ordering", "Advanced Analytics", "Priority Support"], isActive: true },
-        { _id: "p3", name: "Enterprise", monthlyPrice: 12999, yearlyPrice: 10399, features: ["Unlimited Branches", "Custom APIs & Webhooks", "Dedicated Account Manager", "SLA Guarantee", "White-label Branding"], isActive: true }
-      ]);
+      return res.json(getPublicFallbackPlans());
     }
-    const plans = await Plan_default.find({ isActive: { $ne: false } }).sort({ monthlyPrice: 1, createdAt: 1 }).maxTimeMS(3e3);
+    const plans = await Plan_default.find({ isActive: { $ne: false } }).sort({ monthlyPrice: 1, createdAt: 1 }).maxTimeMS(3e3).lean();
     if (!plans || plans.length === 0) {
-      return res.json([
-        { _id: "p1", name: "Basic", monthlyPrice: 2999, yearlyPrice: 2399, features: ["1 Branch", "Basic POS Billing", "QR Ordering", "Email Support"], isActive: true },
-        { _id: "p2", name: "Pro", monthlyPrice: 5999, yearlyPrice: 4799, features: ["Up to 3 Branches", "Kitchen Display System", "Online Ordering", "Advanced Analytics", "Priority Support"], isActive: true },
-        { _id: "p3", name: "Enterprise", monthlyPrice: 12999, yearlyPrice: 10399, features: ["Unlimited Branches", "Custom APIs & Webhooks", "Dedicated Account Manager", "SLA Guarantee", "White-label Branding"], isActive: true }
-      ]);
+      return res.json(getPublicFallbackPlans());
     }
     res.json(plans);
   } catch (error) {
-    res.json([
-      { _id: "p1", name: "Basic", monthlyPrice: 2999, yearlyPrice: 2399, features: ["1 Branch", "Basic POS Billing", "QR Ordering", "Email Support"], isActive: true },
-      { _id: "p2", name: "Pro", monthlyPrice: 5999, yearlyPrice: 4799, features: ["Up to 3 Branches", "Kitchen Display System", "Online Ordering", "Advanced Analytics", "Priority Support"], isActive: true },
-      { _id: "p3", name: "Enterprise", monthlyPrice: 12999, yearlyPrice: 10399, features: ["Unlimited Branches", "Custom APIs & Webhooks", "Dedicated Account Manager", "SLA Guarantee", "White-label Branding"], isActive: true }
-    ]);
+    res.json(getPublicFallbackPlans());
   }
 };
-var scanActivateSubscription = async (req, res) => {
-  const { restaurantId, plan } = req.query;
+var handleRazorpayWebhook = async (req, res) => {
   try {
-    if (!restaurantId || !plan) {
-      return res.status(400).send("<h1>Invalid request parameters</h1>");
+    const signature = req.headers["x-razorpay-signature"];
+    const webhookSecret = (process.env.RAZORPAY_WEBHOOK_SECRET || process.env.RAZORPAY_KEY_SECRET || "").trim();
+    if (!signature || !webhookSecret) {
+      return res.status(400).json({ message: "Missing Razorpay webhook signature or secret" });
+    }
+    const rawPayload = req.rawBody ? req.rawBody.toString("utf8") : JSON.stringify(req.body);
+    const expectedSig = import_crypto2.default.createHmac("sha256", webhookSecret).update(rawPayload).digest("hex");
+    if (expectedSig !== signature) {
+      return res.status(400).json({ message: "Invalid webhook signature" });
+    }
+    const event = req.body?.event;
+    const paymentEntity = req.body?.payload?.payment?.entity;
+    const qrEntity = req.body?.payload?.qr_code?.entity;
+    const notes = paymentEntity?.notes || qrEntity?.notes || {};
+    const restaurantId = notes.restaurantId;
+    const planName = notes.planName;
+    const billingCycle = notes.billingCycle || "monthly";
+    if (!restaurantId) {
+      return res.status(200).json({ received: true });
     }
     const restaurant = await Restaurant_default.findById(restaurantId);
     if (!restaurant) {
-      return res.status(404).send("<h1>Restaurant not found</h1>");
+      return res.status(200).json({ received: true });
     }
-    const expiryDate = /* @__PURE__ */ new Date();
-    expiryDate.setDate(expiryDate.getDate() + 30);
-    restaurant.subscription = {
-      status: "Active",
-      plan,
-      billingCycle: "monthly",
-      trialActive: false,
-      expiryDate,
-      startDate: /* @__PURE__ */ new Date()
-    };
-    restaurant.isActive = true;
-    if (restaurant.approvalStatus === "Pending") {
-      restaurant.approvalStatus = "Approved";
+    if (event === "payment.captured" || event === "qr_code.credited") {
+      if (restaurant.subscription?.manualFreeze) {
+        return res.status(200).json({ received: true, skipped: "manual_freeze" });
+      }
+      const txnId = paymentEntity?.id || qrEntity?.id || `RZP-WH-${Date.now()}`;
+      const alreadyRecorded = await SubscriptionPayment_default.findOne({ transactionId: txnId, status: "Completed" }).lean();
+      if (!alreadyRecorded && planName) {
+        const { planName: resolvedPlanName, price: targetPrice } = await resolvePlanPrice(planName, billingCycle);
+        const amountPaid = paymentEntity?.amount ? Math.round(paymentEntity.amount / 100) : targetPrice;
+        const newExpiry = applyPaidSubscriptionActivation(restaurant, {
+          planName: resolvedPlanName,
+          billingCycle,
+          targetPrice: amountPaid
+        });
+        await restaurant.save();
+        await SubscriptionPayment_default.create({
+          restaurantId: restaurant._id,
+          planName: resolvedPlanName,
+          amount: amountPaid,
+          billingCycle,
+          paymentMethod: event === "qr_code.credited" ? "Razorpay QR" : "Razorpay",
+          transactionId: txnId,
+          status: "Completed",
+          effectiveDate: /* @__PURE__ */ new Date(),
+          expiryDate: newExpiry
+        });
+        await Notification_default.create({
+          title: "Subscription Activated",
+          desc: `Payment confirmed for ${resolvedPlanName} plan (Txn ID: ${txnId}). Dashboard access is active.`,
+          type: "System",
+          restaurantId: restaurant._id
+        });
+        broadcastToRestaurant(restaurant._id, "subscription_updated", {
+          restaurantId: String(restaurant._id),
+          subscription: restaurant.subscription
+        });
+      }
+    } else if (event === "payment.failed") {
+      const txnId = paymentEntity?.id || `RZP-FAIL-${Date.now()}`;
+      const amountAttempted = paymentEntity?.amount ? Math.round(paymentEntity.amount / 100) : 0;
+      await SubscriptionPayment_default.create({
+        restaurantId: restaurant._id,
+        planName: planName || restaurant.subscription?.plan || "Basic",
+        amount: amountAttempted,
+        billingCycle,
+        paymentMethod: "Razorpay",
+        transactionId: txnId,
+        status: "Failed",
+        effectiveDate: /* @__PURE__ */ new Date()
+      });
+      if (restaurant.subscription) {
+        restaurant.subscription.paymentStatus = "Failed";
+        await restaurant.save();
+      }
+      await Notification_default.create({
+        title: "Subscription Payment Failed",
+        desc: `Payment attempt failed for ${planName || "subscription"} (${paymentEntity?.error_description || "Gateway declined"}).`,
+        type: "System",
+        restaurantId: restaurant._id
+      });
+      broadcastToRestaurant(restaurant._id, "subscription_updated", {
+        restaurantId: String(restaurant._id),
+        subscription: restaurant.subscription
+      });
     }
-    await restaurant.save();
-    res.send(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Payment Successful</title>
-                <style>
-                    body {
-                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-                        background: #f4f7f6;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        height: 100vh;
-                        margin: 0;
-                        text-align: center;
-                        color: #333;
-                    }
-                    .card {
-                        background: white;
-                        padding: 40px;
-                        border-radius: 24px;
-                        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-                        max-width: 320px;
-                    }
-                    .icon {
-                        width: 72px;
-                        height: 72px;
-                        background: #e6f7ed;
-                        color: #2e7d32;
-                        border-radius: 50%;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        font-size: 36px;
-                        margin: 0 auto 24px;
-                    }
-                    h1 {
-                        font-size: 24px;
-                        font-weight: 800;
-                        margin: 0 0 12px;
-                    }
-                    p {
-                        font-size: 14px;
-                        color: #666;
-                        line-height: 1.5;
-                        margin: 0 0 24px;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="card">
-                    <div class="icon">\u2713</div>
-                    <h1>Subscription Active</h1>
-                    <p>Payment successful! The <strong>${plan}</strong> plan has been activated for your restaurant.</p>
-                    <p style="font-size: 12px; color: #999;">You can close this tab and return to your dashboard.</p>
-                </div>
-            </body>
-            </html>
-        `);
+    res.status(200).json({ received: true });
   } catch (error) {
-    res.status(500).send(`<h1>Error activating subscription</h1><p>${error.message}</p>`);
+    console.error("[Razorpay Webhook Error]:", error.message);
+    res.status(500).json({ message: "Webhook handler error" });
   }
 };
 
 // routes/planRoutes.js
 var router21 = import_express21.default.Router();
 router21.route("/").get(getPublicPlans);
-router21.route("/scan-activate").get(scanActivateSubscription);
+router21.route("/webhook").post(handleRazorpayWebhook);
 var planRoutes_default = router21;
 
 // routes/serviceRequestRoutes.js
@@ -137323,8 +137800,8 @@ var createServiceRequest = async (req, res) => {
   try {
     let finalBranchId = branchId;
     if (!finalBranchId) {
-      const Branch3 = import_mongoose42.default.model("Branch");
-      const branch = await Branch3.findOne({ restaurantId });
+      const Branch2 = import_mongoose42.default.model("Branch");
+      const branch = await Branch2.findOne({ restaurantId });
       if (branch) finalBranchId = branch._id;
     }
     const request = await ServiceRequest_default.create({
@@ -137372,8 +137849,8 @@ var completeServiceRequest = async (req, res) => {
 
 // routes/serviceRequestRoutes.js
 var router22 = import_express22.default.Router();
-router22.route("/").post(optionalProtect, createServiceRequest).get(protect, getActiveServiceRequests);
-router22.route("/:id/complete").put(protect, completeServiceRequest);
+router22.route("/").post(optionalProtect, createServiceRequest).get(protect, checkSubscription, authorize("SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager", "Waiter", "Cashier"), getActiveServiceRequests);
+router22.route("/:id/complete").put(protect, checkSubscription, authorize("SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager", "Waiter", "Cashier"), completeServiceRequest);
 var serviceRequestRoutes_default = router22;
 
 // routes/expenseRoutes.js
@@ -138708,9 +139185,9 @@ var DeliveryWithdrawal_default = DeliveryWithdrawal;
 // controllers/deliveryController.js
 init_Order();
 init_Restaurant();
-var import_jsonwebtoken3 = __toESM(require_jsonwebtoken(), 1);
+var import_jsonwebtoken4 = __toESM(require_jsonwebtoken(), 1);
 var generateToken2 = (id) => {
-  return import_jsonwebtoken3.default.sign({ id }, process.env.JWT_SECRET || "supersecretjwtkey123", {
+  return import_jsonwebtoken4.default.sign({ id }, process.env.JWT_SECRET || "supersecretjwtkey123", {
     expiresIn: "30d"
   });
 };
@@ -139103,10 +139580,8 @@ var assignDeliveryPartner = async (req, res) => {
     order.deliveryCharge = fee;
     order.deliveryETA = new Date(Date.now() + 30 * 60 * 1e3);
     await order.save();
-    if (req.app.get("socketio")) {
-      const io = req.app.get("socketio");
-      io.emit("order_status_updated", order);
-    }
+    broadcastToRestaurant(order.restaurantId, "order_status_updated", order);
+    broadcastToCustomerOrder(order._id, "order_status_updated", order);
     res.json(order);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -139147,10 +139622,8 @@ var autoAssignDeliveryPartner = async (req, res) => {
     order.deliveryCharge = fee;
     order.deliveryETA = new Date(Date.now() + 25 * 60 * 1e3);
     await order.save();
-    if (req.app.get("socketio")) {
-      const io = req.app.get("socketio");
-      io.emit("order_status_updated", order);
-    }
+    broadcastToRestaurant(order.restaurantId, "order_status_updated", order);
+    broadcastToCustomerOrder(order._id, "order_status_updated", order);
     res.json(order);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -139247,25 +139720,41 @@ var addSupportMessage = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+var getDeliverySettings = async (req, res) => {
+  try {
+    let restaurantId = req.user.restaurantId;
+    if (!restaurantId && (req.user.role === "RestaurantAdmin" || req.user.role === "Admin")) {
+      const rest = await Restaurant_default.findOne({ ownerId: req.user._id });
+      if (rest) restaurantId = rest._id;
+    }
+    const restaurant = await Restaurant_default.findById(restaurantId);
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
+    res.json(restaurant.deliverySettings || {});
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // routes/deliveryRoutes.js
 var router25 = import_express25.default.Router();
 router25.post("/auth/send-otp", sendOtp);
 router25.post("/auth/verify-otp", verifyOtp);
-router25.route("/profile").get(protect, getDeliveryProfile);
-router25.route("/profile/status").put(protect, togglePartnerStatus);
-router25.route("/orders/assigned").get(protect, getAssignedOrders);
-router25.route("/orders/:id/status").put(protect, updateOrderDeliveryStatus);
-router25.route("/orders/:id/support").post(protect, addSupportMessage);
-router25.route("/withdrawals").post(protect, createWithdrawalRequest).get(protect, getWithdrawalRequests);
-router25.route("/earnings").get(protect, getEarningsHistory);
-router25.route("/partners").get(protect, getDeliveryPartners).post(protect, addDeliveryPartner);
-router25.route("/partners/:id/status").put(protect, updatePartnerVerificationStatus);
-router25.route("/partners/:id/toggle-active").put(protect, togglePartnerActiveStatus);
-router25.route("/orders/:id/assign").put(protect, assignDeliveryPartner);
-router25.route("/orders/:id/auto-assign").put(protect, autoAssignDeliveryPartner);
-router25.route("/analytics").get(protect, getDeliveryAnalytics);
-router25.route("/settings").put(protect, updateDeliverySettings);
+router25.route("/profile").get(protect, checkSubscription, authorize("DeliveryPartner", "SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager"), getDeliveryProfile);
+router25.route("/profile/status").put(protect, checkSubscription, authorize("DeliveryPartner", "SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager"), togglePartnerStatus);
+router25.route("/orders/assigned").get(protect, checkSubscription, authorize("DeliveryPartner", "SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager"), getAssignedOrders);
+router25.route("/orders/:id/status").put(protect, checkSubscription, authorize("DeliveryPartner", "SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager"), updateOrderDeliveryStatus);
+router25.route("/orders/:id/support").post(protect, checkSubscription, authorize("DeliveryPartner", "SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager"), addSupportMessage);
+router25.route("/withdrawals").post(protect, checkSubscription, authorize("DeliveryPartner", "SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager"), createWithdrawalRequest).get(protect, checkSubscription, authorize("DeliveryPartner", "SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager"), getWithdrawalRequests);
+router25.route("/earnings").get(protect, checkSubscription, authorize("DeliveryPartner", "SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager"), getEarningsHistory);
+router25.route("/partners").get(protect, checkSubscription, authorize("SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager"), getDeliveryPartners).post(protect, checkSubscription, authorize("SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager"), addDeliveryPartner);
+router25.route("/partners/:id/status").put(protect, checkSubscription, authorize("SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager"), updatePartnerVerificationStatus);
+router25.route("/partners/:id/toggle-active").put(protect, checkSubscription, authorize("SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager"), togglePartnerActiveStatus);
+router25.route("/orders/:id/assign").put(protect, checkSubscription, authorize("SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager"), assignDeliveryPartner);
+router25.route("/orders/:id/auto-assign").put(protect, checkSubscription, authorize("SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager"), autoAssignDeliveryPartner);
+router25.route("/analytics").get(protect, checkSubscription, authorize("SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager"), getDeliveryAnalytics);
+router25.route("/settings").get(protect, checkSubscription, authorize("SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager"), getDeliverySettings).put(protect, checkSubscription, authorize("SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager"), updateDeliverySettings);
 router25.route("/orders/:id/rating").put(submitDeliveryRating);
 var deliveryRoutes_default = router25;
 
@@ -139526,6 +140015,9 @@ var createBillingDemoRequest = async (req, res) => {
       return res.status(400).json({ message: "Restaurant Name is required" });
     }
     const cleanPhone = phoneNumber.trim();
+    if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+      return res.status(400).json({ message: "Mobile phone number must be exactly 10 digits starting with 6, 7, 8, or 9" });
+    }
     const cleanName = fullName.trim();
     const cleanRestName = restaurantName.trim();
     const cleanCity = city ? city.trim() : "N/A";
@@ -140250,12 +140742,19 @@ var updateKOTStatus = async (req, res) => {
           const allServed = nonCancelledKOTs.every((k) => k.status === "Served");
           const parentOrder = await Order_default.findById(kot.orderId);
           if (parentOrder) {
+            let parentUpdated = false;
             if (allServed && !["Served", "Completed"].includes(parentOrder.status)) {
               parentOrder.status = "Served";
               await parentOrder.save();
+              parentUpdated = true;
             } else if (allReadyOrBeyond && !["Ready", "Ready for Pickup", "Served", "Completed"].includes(parentOrder.status)) {
               parentOrder.status = parentOrder.orderType === "Self-Pickup" || parentOrder.serviceType?.includes("Self") ? "Ready for Pickup" : "Ready";
               await parentOrder.save();
+              parentUpdated = true;
+            }
+            if (parentUpdated) {
+              broadcastToRestaurant(kot.restaurantId, "order_status_updated", parentOrder);
+              broadcastToCustomerOrder(parentOrder._id, "order_status_updated", parentOrder);
             }
           }
         }
@@ -140430,6 +140929,8 @@ var getKOTSummary = async (req, res) => {
 // routes/kotRoutes.js
 var router28 = import_express28.default.Router();
 router28.use(protect);
+router28.use(checkSubscription);
+router28.use(authorize("SuperAdmin", "RestaurantAdmin", "Admin", "BranchManager", "Chef", "Waiter", "Cashier"));
 router28.use(checkBillingModule(["kot", "kitchenOrderManagement"]));
 router28.route("/").get(getKOTs).post(manualCreateKOT);
 router28.route("/summary").get(getKOTSummary);
@@ -140656,10 +141157,12 @@ var settleTips = async (req, res) => {
 
 // routes/tipRoutes.js
 var router29 = import_express29.default.Router();
-router29.route("/waiter-mine").get(protect, authorize("Waiter", "RestaurantAdmin", "BranchManager", "SuperAdmin"), getMyWaiterTips);
-router29.route("/summary").get(protect, authorize("RestaurantAdmin", "BranchManager", "SuperAdmin", "Admin"), getTipSummary);
-router29.route("/settle").post(protect, authorize("RestaurantAdmin", "BranchManager", "SuperAdmin", "Admin"), settleTips);
-router29.route("/").get(protect, authorize("RestaurantAdmin", "BranchManager", "SuperAdmin", "Admin"), getTips);
+router29.use(protect);
+router29.use(checkSubscription);
+router29.route("/waiter-mine").get(authorize("Waiter", "RestaurantAdmin", "BranchManager", "SuperAdmin"), getMyWaiterTips);
+router29.route("/summary").get(authorize("RestaurantAdmin", "BranchManager", "SuperAdmin", "Admin"), getTipSummary);
+router29.route("/settle").post(authorize("RestaurantAdmin", "BranchManager", "SuperAdmin", "Admin"), settleTips);
+router29.route("/").get(authorize("RestaurantAdmin", "BranchManager", "SuperAdmin", "Admin"), getTips);
 var tipRoutes_default = router29;
 
 // routes/testimonialRoutes.js
@@ -140917,6 +141420,9 @@ var updateTestimonialStatus = async (req, res) => {
       });
     }
     testimonial.status = status;
+    if (req.body.rating !== void 0 && Number(req.body.rating) >= 1 && Number(req.body.rating) <= 5) {
+      testimonial.rating = Number(req.body.rating);
+    }
     if (status === "Approved") {
       testimonial.approvedAt = /* @__PURE__ */ new Date();
       testimonial.rejectionReason = "";
@@ -141133,7 +141639,12 @@ app.use((0, import_cors.default)({
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", "cache-control", "pragma"],
   optionsSuccessStatus: 204
 }));
-app.use(import_express32.default.json({ limit: "50mb" }));
+app.use(import_express32.default.json({
+  limit: "50mb",
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 app.use(import_express32.default.urlencoded({ limit: "50mb", extended: true }));
 app.use((0, import_cookie_parser.default)());
 app.get("/health", (req, res) => {
@@ -141151,23 +141662,23 @@ app.get("/api", (req, res) => {
 app.use("/api/auth", authRoutes_default);
 app.use("/api/menu", menuRoutes_default);
 app.use("/api/categories", categoryRoutes_default);
-app.use("/api/inventory", checkSubscriptionAccess, inventoryRoutes_default);
+app.use("/api/inventory", inventoryRoutes_default);
 app.use("/api/suppliers", supplierRoutes_default);
 app.use("/api/offers", offerRoutes_default);
 app.use("/api/taxes", taxRoutes_default);
-app.use("/api/reports", checkSubscriptionAccess, reportRoutes_default);
+app.use("/api/reports", reportRoutes_default);
 app.use("/api/notifications", notificationRoutes_default);
 app.use("/api/restaurants", restaurantRoutes_default);
 app.use("/api/branches", branchRoutes_default);
 app.use("/api/customers", customerRoutes_default);
-app.use("/api/staff", checkSubscriptionAccess, staffRoutes_default);
+app.use("/api/staff", staffRoutes_default);
 app.use("/api/users", userRoutes_default);
 app.use("/api/roles", roleRoutes_default);
 app.use("/api/reservations", reservationRoutes_default);
-app.use("/api/orders", checkSubscriptionAccess, orderRoutes_default);
-app.use("/api/analytics", checkSubscriptionAccess, analyticsRoutes_default);
+app.use("/api/orders", orderRoutes_default);
+app.use("/api/analytics", analyticsRoutes_default);
 app.use("/api/super-admin", superAdminRoutes_default);
-app.use("/api/tables", checkSubscriptionAccess, tableRoutes_default);
+app.use("/api/tables", tableRoutes_default);
 app.use("/api/plans", planRoutes_default);
 app.use("/api/service-requests", serviceRequestRoutes_default);
 app.use("/api/support", supportRoutes_default);
@@ -141175,8 +141686,8 @@ app.use("/api/delivery", deliveryRoutes_default);
 app.use("/api/auth/delivery", deliveryRoutes_default);
 app.use("/api/inquiries", inquiryRoutes_default);
 app.use("/api/billing-demos", billingDemoRoutes_default);
-app.use("/api/expenses", checkSubscriptionAccess, expenseRoutes_default);
-app.use("/api/kot", checkSubscriptionAccess, kotRoutes_default);
+app.use("/api/expenses", expenseRoutes_default);
+app.use("/api/kot", kotRoutes_default);
 app.use("/api/tips", tipRoutes_default);
 app.use("/api/testimonials", testimonialRoutes_default);
 app.use("/api/customer-reviews", customerReviewRoutes_default);
@@ -141189,7 +141700,7 @@ app.use("/uploads", import_express32.default.static(import_path6.default.join(pr
 app.get("/", (req, res) => {
   res.status(200).json({ status: "ok", message: "Restaurant SaaS API is running live" });
 });
-var frontendDistPath = import_path6.default.join(__dirname, "../frontend/dist");
+var frontendDistPath = import_path6.default.join(__dirname, "../frontend-restaurant/dist");
 if (import_fs6.default.existsSync(frontendDistPath)) {
   app.use(import_express32.default.static(frontendDistPath));
   app.get(/(.*)/, (req, res, next) => {
@@ -141209,36 +141720,13 @@ server.listen(PORT, "0.0.0.0", () => {
       const count = await Plan_default.countDocuments();
       if (count === 0) {
         await Plan_default.insertMany([
-          { name: "Basic", monthlyPrice: 2999, yearlyPrice: 2399, features: ["1 Branch", "Basic POS Billing", "QR Ordering", "Email Support"], isActive: true },
-          { name: "Pro", monthlyPrice: 5999, yearlyPrice: 4799, features: ["Up to 3 Branches", "Kitchen Display System", "Online Ordering", "Advanced Analytics", "Priority Support"], isActive: true },
-          { name: "Enterprise", monthlyPrice: 12999, yearlyPrice: 10399, features: ["Unlimited Branches", "Custom APIs & Webhooks", "Dedicated Account Manager", "SLA Guarantee", "White-label Branding"], isActive: true }
+          { name: "Basic", monthlyPrice: 2999, yearlyPrice: 2399, branchesLimit: 1, staffLimit: 5, features: ["1 Branch", "Basic POS Billing", "QR Ordering", "Email Support"], isActive: true },
+          { name: "Pro", monthlyPrice: 5999, yearlyPrice: 4799, branchesLimit: 3, staffLimit: 9999, features: ["Up to 3 Branches", "Kitchen Display System", "Online Ordering", "Advanced Analytics", "Priority Support"], isActive: true },
+          { name: "Enterprise", monthlyPrice: 12999, yearlyPrice: 10399, branchesLimit: 9999, staffLimit: 9999, features: ["Unlimited Branches", "Custom APIs & Webhooks", "Dedicated Account Manager", "SLA Guarantee", "White-label Branding"], isActive: true }
         ]);
       }
-      let demoRestaurant = await Restaurant.findOne({ name: "Pizza Palace" }) || await Restaurant.findOne({ isDemo: true });
-      if (!demoRestaurant) {
-        demoRestaurant = await Restaurant.create({
-          name: "Pizza Palace",
-          isDemo: true,
-          approvalStatus: "Approved",
-          subscription: { status: "Active", plan: "Pro" }
-        });
-      }
-      let demoBranch = await Branch.findOne({ restaurantId: demoRestaurant._id });
-      if (!demoBranch) {
-        demoBranch = await Branch.create({
-          name: "Downtown Branch",
-          restaurantId: demoRestaurant._id
-        });
-      }
-      const userRestaurants = await Restaurant.find({ _id: { $ne: demoRestaurant._id }, isDemo: { $ne: true }, name: { $ne: "Pizza Palace" } }).select("_id ownerId");
-      if (userRestaurants.length > 0) {
-        const userRestIds = userRestaurants.map((r) => r._id);
-        await Order.updateMany(
-          { restaurantId: { $in: userRestIds }, source: { $in: ["Walk-in", "Self-Pickup", "QR"] } },
-          { $set: { restaurantId: demoRestaurant._id, branchId: demoBranch._id } }
-        );
-      }
     } catch (e) {
+      console.error("Plan initialization warning:", e.message);
     }
   }).catch((err) => {
     console.error("MongoDB Atlas connection error on startup:", err.message);
@@ -141867,6 +142355,9 @@ mongoose/lib/mongoose.js:
    * No-op if there is already a default connection.
    *)
 
+safe-buffer/index.js:
+  (*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> *)
+
 bcryptjs/dist/bcrypt.js:
   (**
    * @license bcrypt.js (c) 2013 Daniel Wirtz <dcode@dcode.io>
@@ -142188,7 +142679,4 @@ cookie-parser/index.js:
    * Copyright(c) 2015 Douglas Christopher Wilson
    * MIT Licensed
    *)
-
-safe-buffer/index.js:
-  (*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> *)
 */

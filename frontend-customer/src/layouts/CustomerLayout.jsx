@@ -9,7 +9,7 @@ import LocationPickerModal from '../components/LocationPickerModal';
 import { getSavedLocation, EVENT_LOCATION_UPDATED } from '../utils/locationHelper';
 
 const CustomerLayout = () => {
-    const { user } = useCustomerAuth();
+    const { user, api } = useCustomerAuth();
     const { cartCount, setIsCartOpen, wishlist, setIsWishlistOpen } = useCart();
     const [userLocation, setUserLocation] = useState(() => getSavedLocation());
     const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
@@ -35,6 +35,14 @@ const CustomerLayout = () => {
             window.removeEventListener('storage', handleLocationUpdate);
         };
     }, []);
+
+    // Load restaurant cities once when location picker is opened
+    useEffect(() => {
+        if (!isLocationPickerOpen || restaurants.length > 0 || !api) return;
+        api.get('/restaurants').then(res => {
+            if (Array.isArray(res.data)) setRestaurants(res.data);
+        }).catch(() => {});
+    }, [isLocationPickerOpen, restaurants.length, api]);
 
     return (
         <div className="min-h-screen flex flex-col font-sans relative bg-white text-slate-800">
@@ -86,9 +94,9 @@ const CustomerLayout = () => {
                         </div>
 
                         <nav className="hidden lg:flex items-center gap-7 text-[15px] font-semibold">
-                            <Link to="/explore" className="text-slate-600 hover:text-[#FF5A1F] transition-colors py-1.5">Home</Link>
+                            <Link to="/explore" className={`relative py-1.5 transition-colors ${location.pathname === '/' || location.pathname === '/explore' ? 'text-[#FF5A1F] font-bold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#FF5A1F] after:rounded-full' : 'text-slate-600 hover:text-[#FF5A1F]'}`}>Home</Link>
                             <Link to="/explore#featured-restaurants" className="text-slate-600 hover:text-[#FF5A1F] transition-colors py-1.5">Restaurants</Link>
-                            <Link to="/menu" className="relative py-1.5 text-[#FF5A1F] font-bold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#FF5A1F] after:rounded-full">Menu</Link>
+                            <Link to="/menu" className={`relative py-1.5 transition-colors ${location.pathname.startsWith('/menu') ? 'text-[#FF5A1F] font-bold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#FF5A1F] after:rounded-full' : 'text-slate-600 hover:text-[#FF5A1F]'}`}>Menu</Link>
                             <Link to="/explore#offers" className="text-slate-600 hover:text-[#FF5A1F] transition-colors py-1.5">Offers</Link>
                             <Link to="/explore#how-it-works" className="text-slate-600 hover:text-[#FF5A1F] transition-colors py-1.5">About Us</Link>
                         </nav>

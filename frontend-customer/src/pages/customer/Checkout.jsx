@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { CreditCard, MapPin, Ticket, ChevronRight, Utensils, CheckCircle, ShieldCheck, ArrowRight, Store, AlertTriangle } from 'lucide-react';
+import { CreditCard, MapPin, Ticket, ChevronRight, Utensils, CheckCircle, ShieldCheck, ArrowRight, Store, AlertTriangle, QrCode } from 'lucide-react';
 import axios from 'axios';
 import { getItemImage } from '../../utils/imageHelper';
 import { getApiUrl } from '../../utils/axiosInstance';
@@ -24,17 +24,25 @@ const Checkout = () => {
     const [orderPlaced, setOrderPlaced] = useState(false);
     const [calculatedDeliveryFee, setCalculatedDeliveryFee] = useState(0);
     const [deliveryValidation, setDeliveryValidation] = useState({ isValid: true, error: '' });
-    const mockDistance = 3.2; // 3.2 km mock distance
 
     const [subscriptionPlan, setSubscriptionPlan] = useState('One-time Order');
     const [paymentMethod, setPaymentMethod] = useState('Card');
+    const [upiMethod, setUpiMethod] = useState('QR');
     const [upiId, setUpiId] = useState('');
-    const [upiMethod, setUpiMethod] = useState('QR'); // 'QR' or 'ID'
     const [isScanned, setIsScanned] = useState(false);
-    const [upiPlatform, setUpiPlatform] = useState(''); // 'GPay', 'PhonePe', 'Paytm'
     const [checkoutStep, setCheckoutStep] = useState(1);
     const [restaurantsList, setRestaurantsList] = useState([]);
     const [selectedRestaurantId, setSelectedRestaurantId] = useState('');
+
+    // Fetch live restaurants list so delivery radius, fees & hours validate properly
+    useEffect(() => {
+        if (!api) return;
+        api.get('/restaurants')
+            .then(res => {
+                if (Array.isArray(res.data)) setRestaurantsList(res.data);
+            })
+            .catch(() => {});
+    }, [api]);
 
     useEffect(() => {
         const rawCartRestId = cartItems.length > 0 ? cartItems[0].restaurantId : null;
@@ -44,7 +52,7 @@ const Checkout = () => {
         if (initialId) {
             setSelectedRestaurantId(initialId);
         }
-    }, []);
+    }, [cartItems, location.state?.restaurantId]);
 
     const rawCartRestId = cartItems.length > 0 ? cartItems[0].restaurantId : null;
     const cartRestId = typeof rawCartRestId === 'object' ? rawCartRestId?._id : (rawCartRestId || cartItems[0]?.restaurant);
@@ -53,18 +61,6 @@ const Checkout = () => {
     const targetResId = String(selectedRestaurantId || location.state?.restaurantId || cartRestId || '');
     const selectedRestaurantObj = restaurantsList.find(r => String(r._id) === targetResId) || (restaurantsList.length > 0 ? restaurantsList[0] : null);
     const selectedRestaurantName = selectedRestaurantObj ? selectedRestaurantObj.name : (cartRestName || 'Restaurant');
-
-    useEffect(() => {
-        let timer;
-        if (paymentMethod === 'UPI' && upiMethod === 'QR' && !isScanned) {
-            timer = setTimeout(() => {
-                setIsScanned(true);
-            }, 3000);
-        }
-        return () => {
-            if (timer) clearTimeout(timer);
-        };
-    }, [paymentMethod, upiMethod, isScanned]);
 
     let subscriptionDiscount = 0;
     if (subscriptionPlan === 'Weekly Subscription') {
@@ -226,10 +222,50 @@ const Checkout = () => {
         }
     };
 
+    const finalizeOrderSubmission = async (resolvedRestId) => {
+        const isOnlinePaid = paymentMethod !== 'Cash on Delivery';
+        const orderData = {
+            orderItems: cartItems.map(item => ({
+                name: item.name,
+                qty: item.quantity || item.qty || 1,
+                image: item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800',
+                price: item.price,
+                product: (item._id || item.id) && String(item._id || item.id).length === 24 ? String(item._id || item.id) : undefined
+            })),
+            orderType: orderType === 'Delivery' ? 'Delivery' : 'Self-Pickup',
+            serviceType: orderType === 'Delivery' ? 'Delivery' : 'Self-Pickup',
+            source: orderType === 'Delivery' ? 'Walk-in' : 'Self-Pickup',
+            restaurantId: resolvedRestId && resolvedRestId !== 'cart_rest' && /^[0-9a-fA-F]{24}$/.test(resolvedRestId) ? resolvedRestId : undefined,
+            branchId: branchId || undefined,
+            paymentMethod: paymentMethod === 'Cash on Delivery' ? 'Cash on Delivery' : (paymentMethod === 'UPI' ? 'UPI QR' : 'Card'),
+            subscriptionPlan,
+            taxPrice: tax,
+            totalPrice: grandTotal,
+            shippingAddress: orderType === 'Delivery' ? { address } : undefined,
+            deliveryDistance: orderType === 'Delivery' ? actualDistance : undefined,
+            deliveryCharge: orderType === 'Delivery' ? calculatedDeliveryFee : undefined,
+            deliveryStatus: 'None'
+        };
+
+        const { data: createdOrder } = await api.post('/orders', orderData);
+
+        if (isOnlinePaid && createdOrder?._id) {
+            await api.put(`/orders/${createdOrder._id}/pay`, {
+                paymentMethod: orderData.paymentMethod,
+                taxPrice: tax,
+                totalPrice: grandTotal
+            });
+        }
+
+        toast.success("Order placed successfully!");
+        setOrderPlaced(createdOrder._id || 'ORD' + Date.now());
+        if (typeof clearCart === 'function') clearCart();
+    };
+
     const handlePlaceOrder = async (e) => {
         if (e && e.preventDefault) e.preventDefault();
         
-        let targetRestaurantId = selectedRestaurantId || restaurantId;
+        let targetRestaurantId = selectedRestaurantId || restaurantId || (targetResId && targetResId !== 'cart_rest' ? targetResId : '');
         if (!targetRestaurantId && restaurantsList.length > 0) {
             targetRestaurantId = restaurantsList[0]._id;
             setSelectedRestaurantId(targetRestaurantId);
@@ -246,60 +282,17 @@ const Checkout = () => {
             }
         }
 
+        if (paymentMethod === 'UPI' && upiMethod === 'ID' && !upiId.trim()) {
+            toast.error('Please enter your UPI ID or switch to QR Scanner.');
+            return;
+        }
+
         setIsPlacingOrder(true);
-        
         try {
-            const orderData = {
-                orderItems: cartItems.map(item => ({
-                    name: item.name,
-                    qty: item.quantity || item.qty || 1,
-                    image: item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800',
-                    price: item.price,
-                    product: (item._id || item.id) && String(item._id || item.id).length === 24 ? String(item._id || item.id) : undefined
-                })),
-                orderType: orderType === 'Delivery' ? 'Delivery' : 'Self-Pickup',
-                serviceType: orderType === 'Delivery' ? 'Delivery' : 'Self-Pickup',
-                source: orderType === 'Delivery' ? 'Walk-in' : 'Self-Pickup',
-                restaurantId: targetResId && targetResId !== 'cart_rest' && /^[0-9a-fA-F]{24}$/.test(targetResId) ? targetResId : undefined,
-                branchId: branchId || undefined,
-                paymentMethod: paymentMethod === 'UPI' 
-                    ? (upiMethod === 'QR' ? `UPI - ${upiPlatform || 'QR'}` : `UPI ID - ${upiId}`) 
-                    : paymentMethod,
-                subscriptionPlan,
-                taxPrice: tax,
-                totalPrice: grandTotal,
-                shippingAddress: orderType === 'Delivery' ? { address } : undefined,
-                deliveryDistance: orderType === 'Delivery' ? mockDistance : undefined,
-                deliveryCharge: orderType === 'Delivery' ? calculatedDeliveryFee : undefined,
-                deliveryStatus: 'None'
-            };
-            
-            const { data: createdOrder } = await api.post('/orders', orderData);
-
-            // Only mark as paid in background for online/card payments, NEVER for Cash on Delivery
-            const isCashPayment = ['Cash on Delivery', 'Cash', 'Pay at Counter', 'COD'].some(m => 
-                String(orderData.paymentMethod || '').toLowerCase().includes(m.toLowerCase())
-            );
-
-            if (createdOrder && createdOrder._id && !isCashPayment) {
-                api.put(`/orders/${createdOrder._id}/pay`, {
-                    paymentMethod: orderData.paymentMethod,
-                    paymentStatus: 'COMPLETED',
-                    totalPrice: grandTotal,
-                    taxPrice: tax
-                }).catch(payErr => console.log('Background pay update note:', payErr.message));
-            }
-
-            toast.success("Order placed successfully! 🎉");
-            setOrderPlaced(createdOrder._id || 'ORD' + Date.now());
-            if (typeof clearCart === 'function') clearCart();
+            await finalizeOrderSubmission(targetRestaurantId);
         } catch (error) {
             console.error('Order failed:', error);
-            const isNetworkError = error.code === 'ERR_NETWORK' || !error.response || error.message.includes('Network Error');
-            const errorMsg = isNetworkError 
-                ? 'Server is starting up or connection dropped. Please check your internet connection and try clicking Place Order again.'
-                : (error.response?.data?.message || error.message);
-            toast.error(errorMsg);
+            toast.error(error.response?.data?.message || error.message || 'Failed to place order.');
         } finally {
             setIsPlacingOrder(false);
         }
@@ -548,69 +541,85 @@ const Checkout = () => {
                             </div>
 
                             {/* Payment Details Container */}
-                            {paymentMethod === 'Card' && (
-                                <div className="bg-gray-900 rounded-2xl p-6 text-white relative overflow-hidden shadow-xl shadow-gray-900/20 animate-in fade-in slide-in-from-top-4 duration-300">
-                                    <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
-                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8 relative z-10">
-                                        <CreditCard size={28} className="text-gray-400" />
-                                        <span className="font-bold tracking-widest text-lg">VISA</span>
-                                    </div>
-                                    
-                                    <div className="space-y-4 relative z-10">
-                                        <div>
-                                            <label className="text-xs text-gray-400 uppercase tracking-widest font-bold mb-1 block">Card Number</label>
-                                            <input type="text" defaultValue="•••• •••• •••• 4242" className="w-full bg-transparent border-b border-gray-700 focus:border-orange-500 outline-none pb-1 font-mono text-lg transition-colors" />
-                                        </div>
-                                        <div className="flex gap-6">
-                                            <div className="flex-1">
-                                                <label className="text-xs text-gray-400 uppercase tracking-widest font-bold mb-1 block">Expiry</label>
-                                                <input type="text" defaultValue="12/28" className="w-full bg-transparent border-b border-gray-700 focus:border-orange-500 outline-none pb-1 font-mono transition-colors" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <label className="text-xs text-gray-400 uppercase tracking-widest font-bold mb-1 block">CVC</label>
-                                                <input type="password" defaultValue="•••" className="w-full bg-transparent border-b border-gray-700 focus:border-orange-500 outline-none pb-1 font-mono transition-colors" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="text-xs text-gray-400 uppercase tracking-widest font-bold mb-1 block">Cardholder Name</label>
-                                            <input type="text" placeholder="JOHN DOE" className="w-full bg-transparent border-b border-gray-700 focus:border-orange-500 outline-none pb-1 font-bold transition-colors" />
+                            {paymentMethod === 'UPI' && (
+                                <div className="p-6 bg-gradient-to-br from-orange-50/70 to-amber-50/70 rounded-2xl border border-orange-200/80 animate-in fade-in slide-in-from-top-4 duration-300 space-y-4">
+                                    <div className="flex items-center justify-between flex-wrap gap-2">
+                                        <span className="text-xs font-extrabold text-orange-950 uppercase tracking-wider flex items-center gap-2">
+                                            <QrCode size={18} className="text-orange-600" />
+                                            UPI QR Scanner
+                                        </span>
+                                        <div className="flex gap-2">
+                                            {['QR', 'ID'].map((m) => (
+                                                <button
+                                                    key={m}
+                                                    type="button"
+                                                    onClick={() => setUpiMethod(m)}
+                                                    className={`px-3 py-1 rounded-lg text-xs font-bold cursor-pointer ${upiMethod === m ? 'bg-orange-600 text-white' : 'bg-white text-slate-600 border border-slate-200'}`}
+                                                >
+                                                    {m === 'QR' ? 'Scan QR Code' : 'Enter UPI ID'}
+                                                </button>
+                                            ))}
                                         </div>
                                     </div>
+
+                                    {upiMethod === 'QR' ? (
+                                        <div className="flex flex-col sm:flex-row items-center gap-5 bg-white p-4 rounded-xl border border-orange-100">
+                                            <div className="p-2 bg-slate-50 rounded-xl border border-slate-200 shrink-0">
+                                                <img
+                                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(`upi://pay?pa=resto@upi&pn=${encodeURIComponent(selectedRestaurantName)}&am=${grandTotal.toFixed(2)}&cu=INR`)}`}
+                                                    alt="UPI Payment QR"
+                                                    className="w-32 h-32 object-contain"
+                                                />
+                                            </div>
+                                            <div className="space-y-2 text-left">
+                                                <p className="text-xs font-bold text-slate-800">
+                                                    Scan to pay <span className="text-orange-600 font-black">₹{grandTotal.toFixed(2)}</span> via GPay, PhonePe, or Paytm
+                                                </p>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setIsScanned(true);
+                                                        toast.success('UPI QR Payment marked as scanned!');
+                                                    }}
+                                                    className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer ${isScanned ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
+                                                >
+                                                    <CheckCircle size={14} />
+                                                    {isScanned ? 'QR Scanned & Ready' : 'Mark QR Scanned'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <input
+                                                type="text"
+                                                value={upiId}
+                                                onChange={(e) => setUpiId(e.target.value)}
+                                                placeholder="Enter your UPI ID (e.g. name@okaxis)"
+                                                className="w-full px-4 py-2.5 bg-white rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-orange-500"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
-                            {paymentMethod === 'UPI' && (
-                                <div className="p-6 bg-gradient-to-br from-orange-50/60 to-amber-50/60 rounded-2xl border border-orange-200/80 animate-in fade-in slide-in-from-top-4 duration-300 space-y-4 text-center flex flex-col items-center">
-                                    <div className="flex items-center justify-center gap-2">
-                                        <ShieldCheck size={20} className="text-orange-600" />
-                                        <span className="text-xs font-extrabold text-orange-950 uppercase tracking-wider">Instant Payment Scanner</span>
+                            {paymentMethod === 'Card' && (
+                                <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200 animate-in fade-in slide-in-from-top-4 duration-300 space-y-3 text-left">
+                                    <div className="flex items-center gap-2.5">
+                                        <CreditCard size={20} className="text-orange-600 shrink-0" />
+                                        <span className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
+                                            Card Checkout
+                                        </span>
                                     </div>
-                                    
-                                    <div 
-                                        onClick={handlePlaceOrder}
-                                        className="relative w-44 h-44 bg-white p-3 rounded-2xl shadow-md border border-orange-200 cursor-pointer group hover:scale-105 transition-transform flex items-center justify-center"
-                                        title="Click QR Code to Simulate Payment & Place Order"
-                                    >
-                                        <img 
-                                            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi%3A%2F%2Fpay%3Fpa%3Dresto%40upi%26pn%3DFoodOrder%26am%3D${grandTotal}%26cu%3DINR&bgcolor=ffffff&color=ea580c`}
-                                            alt="Food Order UPI QR Code" 
-                                            className="w-36 h-36 object-contain"
-                                        />
-                                        <div className="absolute inset-0 bg-orange-600/20 group-hover:opacity-100 opacity-0 transition-opacity rounded-2xl flex items-center justify-center font-black text-orange-950 text-xs bg-white/90 p-2 text-center">
-                                            Click QR to Simulate Payment →
-                                        </div>
-                                    </div>
-
-                                    <p className="text-xs text-gray-600 leading-relaxed font-medium">
-                                        Scan using GPay, PhonePe, Paytm, or click <strong>Place Order</strong> below to complete your order.
+                                    <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                                        Click <strong>Place Order</strong> to confirm card payment of <strong>₹{grandTotal.toFixed(2)}</strong> securely.
                                     </p>
                                 </div>
                             )}
 
                             {paymentMethod === 'Cash on Delivery' && (
                                 <div className="p-6 bg-green-50/50 rounded-2xl border border-green-100 animate-in fade-in slide-in-from-top-4 duration-300 text-left">
-                                    <h3 className="font-bold text-green-800 text-base">Cash on Delivery Confirmed</h3>
-                                    <p className="text-sm text-green-700/80 mt-1 leading-relaxed">No online payment is required. You can pay via cash, card, or UPI directly at the restaurant counter when picking up your order.</p>
+                                    <h3 className="font-bold text-green-800 text-base">Cash on Delivery / Counter Confirmed</h3>
+                                    <p className="text-sm text-green-700/80 mt-1 leading-relaxed">No online payment is required. You can pay via cash, card, or UPI directly when receiving or picking up your order.</p>
                                 </div>
                             )}
                         </div>
@@ -690,8 +699,8 @@ const Checkout = () => {
                                 <span>₹{tax.toFixed(2)}</span>
                             </div>
                             {orderType === 'Delivery' && (
-                                <div className="flex justify-between items-center text-sm font-bold text-orange-650">
-                                    <span>Delivery Fee ({mockDistance} km)</span>
+                                <div className="flex justify-between items-center text-sm font-bold text-orange-600">
+                                    <span>Delivery Fee ({actualDistance} km)</span>
                                     <span>₹{calculatedDeliveryFee.toFixed(2)}</span>
                                 </div>
                             )}

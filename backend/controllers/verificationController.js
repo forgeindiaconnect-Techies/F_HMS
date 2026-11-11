@@ -61,9 +61,9 @@ const getFileUrl = (file) => {
     return '/uploads/verification/' + file.filename;
 };
 
-const fileToDataUri = (file) => {
+const fileToDataUri = async (file) => {
     try {
-        const buf = fs.readFileSync(file.path);
+        const buf = await fs.promises.readFile(file.path);
         const ext = path.extname(file.originalname || file.filename || '').toLowerCase();
         let mime = 'image/png';
         if (ext === '.jpg' || ext === '.jpeg') mime = 'image/jpeg';
@@ -184,7 +184,7 @@ export const submitVerification = async (req, res) => {
             const logoFile = files.logo[0];
             documents.logo = { filePath: getFileUrl(logoFile) };
             try {
-                const fileBuffer = fs.readFileSync(logoFile.path);
+                const fileBuffer = await fs.promises.readFile(logoFile.path);
                 const ext = path.extname(logoFile.originalname || logoFile.filename || '').toLowerCase();
                 const mimeType = ext === '.pdf' ? 'application/pdf' : (logoFile.mimetype || 'image/png');
                 restaurant.logo = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
@@ -206,7 +206,7 @@ export const submitVerification = async (req, res) => {
             documents.images = req.body.showcaseImages.map(img => ({ filePath: img }));
             await restaurant.save();
         } else if (files.images && files.images.length > 0) {
-            const newImages = files.images.map(img => ({ filePath: fileToDataUri(img) }));
+            const newImages = await Promise.all(files.images.map(async img => ({ filePath: await fileToDataUri(img) })));
             documents.images = [...(documents.images || []), ...newImages];
             const allImgPaths = documents.images.map(img => img.filePath);
             restaurant.showcaseImages = allImgPaths;
@@ -319,7 +319,7 @@ export const updateBrandAssets = async (req, res) => {
             const logoFile = files.logo[0];
             verification.documents.logo = { filePath: getFileUrl(logoFile) };
             try {
-                const fileBuffer = fs.readFileSync(logoFile.path);
+                const fileBuffer = await fs.promises.readFile(logoFile.path);
                 const ext = path.extname(logoFile.originalname || logoFile.filename || '').toLowerCase();
                 const mimeType = ext === '.pdf' ? 'application/pdf' : (logoFile.mimetype || 'image/png');
                 restaurant.logo = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
@@ -339,7 +339,7 @@ export const updateBrandAssets = async (req, res) => {
             if (!restaurant.bannerImage) restaurant.bannerImage = req.body.showcaseImages[0];
             verification.documents.images = req.body.showcaseImages.map(img => ({ filePath: img }));
         } else if (files.images && files.images.length > 0) {
-            const newImages = files.images.map(img => ({ filePath: fileToDataUri(img) }));
+            const newImages = await Promise.all(files.images.map(async img => ({ filePath: await fileToDataUri(img) })));
             verification.documents.images = [...(verification.documents.images || []), ...newImages];
             const allImgPaths = verification.documents.images.map(img => img.filePath);
             restaurant.showcaseImages = allImgPaths;
@@ -564,17 +564,9 @@ export const reviewVerification = async (req, res) => {
 
         if (status === 'Verified') {
             restaurant.approvalStatus = 'Approved';
-            
-            const billingCycle = restaurant.subscription?.billingCycle || 'monthly';
-            const expiry = new Date();
-            if (billingCycle === 'yearly') {
-                expiry.setDate(expiry.getDate() + 365);
-            } else {
-                expiry.setDate(expiry.getDate() + 30);
-            }
-
-            restaurant.subscription.status = 'Active';
-            restaurant.subscription.expiryDate = expiry;
+            // Keep trial/paid gating intact — only mark Pending Approval or trial state explicitly handled elsewhere, never auto-extend expired paid dates
+            const currentSub = restaurant.subscription || {};
+            const expiry = currentSub.subscriptionEndDate || currentSub.trialEndDate || currentSub.expiryDate || new Date();
 
             // Ensure verified address from addressProof is synced to restaurant address and primary branch
             const verifiedAddr = verification.documents?.addressProof?.addressText;
@@ -611,9 +603,13 @@ export const reviewVerification = async (req, res) => {
                 }
             });
 
+            const validUntilStr = (restaurant.subscription?.subscriptionEndDate || restaurant.subscription?.trialEndDate || restaurant.subscription?.expiryDate)
+                ? ` until ${new Date(restaurant.subscription.subscriptionEndDate || restaurant.subscription.trialEndDate || restaurant.subscription.expiryDate).toLocaleDateString()}`
+                : '';
+
             await Notification.create({
                 title: 'Verification Approved',
-                desc: `Congratulations! Your restaurant verification has been approved. Your plan "${restaurant.subscription.plan}" is now active until ${expiry.toLocaleDateString()}.`,
+                desc: `Congratulations! Your restaurant KYC verification has been approved.${restaurant.subscription?.status === 'Active' ? ` Your plan "${restaurant.subscription.plan}" is active${validUntilStr}.` : ' Your subscription request status determines dashboard unlock.'}`,
                 type: 'Alert',
                 restaurantId: restaurant._id,
                 targetRole: ['RestaurantAdmin', 'Admin']

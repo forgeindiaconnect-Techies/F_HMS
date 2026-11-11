@@ -66,6 +66,8 @@ const ChefSidebar = () => {
         {
             title: 'Resources',
             items: [
+                { name: 'Prep List', path: '/chef/prep', icon: ClipboardList },
+                { name: 'Recipes & SOP', path: '/chef/recipes', icon: BookOpen },
                 { name: 'Wastage & Restock', path: '/chef/inventory', icon: AlertTriangle },
             ]
         },

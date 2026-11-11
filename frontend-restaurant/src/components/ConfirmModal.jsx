@@ -16,7 +16,7 @@ const ConfirmModal = ({
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
             <div 
-                className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-150 dark:border-slate-800 scale-100 animate-in zoom-in-95 duration-150 relative text-left"
+                className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-800 scale-100 animate-in zoom-in-95 duration-150 relative text-left"
                 onClick={(e) => e.stopPropagation()}
             >
                 <button 

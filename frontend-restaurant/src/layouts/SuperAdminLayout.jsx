@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
 import { 
     LayoutDashboard, Store, CreditCard, Percent, TrendingUp, 
     Users, MessageSquare, SlidersHorizontal, Settings, BarChart3, 
     Bell, ShieldCheck, LogOut, User, Menu, X, ChevronRight, ArrowLeft,
-    CalendarCheck, Receipt, MessageSquareQuote
+    CalendarCheck, Receipt, MessageSquareQuote, Sparkles
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -43,12 +43,12 @@ const SuperAdminLayout = () => {
     };
 
     useEffect(() => {
-        if (api) {
+        if (api && user?.role === 'SuperAdmin') {
             fetchNotifications();
             const interval = setInterval(fetchNotifications, 45000);
             return () => clearInterval(interval);
         }
-    }, [api]);
+    }, [api, user?.role]);
 
     const handleMarkAsRead = async (id) => {
         try {
@@ -67,6 +67,7 @@ const SuperAdminLayout = () => {
             { name: 'Leads & Walkthroughs', href: '/super-admin/inquiries',     icon: CalendarCheck,   roles: ['SuperAdmin'] },
             { name: 'Billing Demo Requests', href: '/super-admin/billing-demos', icon: Receipt,        roles: ['SuperAdmin'] },
             { name: 'Restaurants',         href: '/super-admin/restaurants',   icon: Store,           roles: ['SuperAdmin'] },
+            { name: 'Free Trial Requests', href: '/super-admin/free-trials',   icon: Sparkles,        roles: ['SuperAdmin'] },
             { name: 'Plans',               href: '/super-admin/plans',         icon: CreditCard,      roles: ['SuperAdmin'] },
             { name: 'Commissions',         href: '/super-admin/commissions',   icon: Percent,         roles: ['SuperAdmin'] },
             { name: 'Revenue Analytics',   href: '/super-admin/revenue',       icon: TrendingUp,      roles: ['SuperAdmin'] },
@@ -83,6 +84,11 @@ const SuperAdminLayout = () => {
     };
 
     const navigation = getNavigation();
+
+    // Redirect SupportAgent away from SuperAdmin-only overview/routes
+    if (user?.role === 'SupportAgent' && !location.pathname.startsWith('/super-admin/support')) {
+        return <Navigate to="/super-admin/support" replace />;
+    }
 
     // Build a nice page title from the URL
     const getPageTitle = () => {

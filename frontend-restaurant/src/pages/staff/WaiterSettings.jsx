@@ -46,7 +46,7 @@ const WaiterSettings = () => {
                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold text-sm cursor-pointer ${
                                 activeTab === item.name 
                                 ? 'bg-green-50 dark:bg-slate-800 text-green-700 dark:text-green-400 shadow-xs' 
-                                : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-850 border border-gray-100 dark:border-slate-800'
+                                : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 border border-gray-100 dark:border-slate-800'
                             }`}
                         >
                             <item.icon size={18} className={activeTab === item.name ? 'text-green-600 dark:text-green-400' : 'text-gray-400'} /> 
@@ -136,7 +136,7 @@ const WaiterSettings = () => {
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-gray-700 dark:text-slate-300">Role</label>
-                                    <input type="text" defaultValue="Floor Server / Captain" disabled className="w-full bg-gray-100 dark:bg-slate-850 border border-gray-200 dark:border-slate-700 text-gray-500 rounded-xl px-4 py-2 text-sm cursor-not-allowed" />
+                                    <input type="text" defaultValue="Floor Server / Captain" disabled className="w-full bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-500 rounded-xl px-4 py-2 text-sm cursor-not-allowed" />
                                 </div>
                             </div>
                         </div>

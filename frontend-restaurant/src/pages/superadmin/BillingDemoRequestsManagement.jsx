@@ -404,7 +404,7 @@ const BillingDemoRequestsManagement = () => {
                                     const activeModuleCount = Object.values(req.customBillingConfig?.modules || {}).filter(Boolean).length;
                                     
                                     return (
-                                        <tr key={req._id} className="hover:bg-gray-50/50 dark:hover:bg-slate-850/40 transition-colors">
+                                        <tr key={req._id} className="hover:bg-gray-50/50 dark:hover:bg-slate-800/40 transition-colors">
                                             {/* Restaurant Name & City */}
                                             <td className="py-4 px-5">
                                                 <div className="font-bold text-gray-900 dark:text-white text-sm">
@@ -714,7 +714,7 @@ const BillingDemoRequestsManagement = () => {
                                             className={`p-3.5 rounded-2xl border transition-all flex items-start gap-3 cursor-pointer select-none ${
                                                 isEnabled
                                                     ? 'bg-rose-50/40 dark:bg-rose-950/20 border-rose-300 dark:border-rose-700 shadow-xs'
-                                                    : 'bg-white dark:bg-slate-850 border-gray-200 dark:border-slate-800 opacity-60 hover:opacity-100'
+                                                    : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-800 opacity-60 hover:opacity-100'
                                             }`}
                                         >
                                             <div className={`mt-0.5 w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${

@@ -13,7 +13,9 @@ import { useAuth } from '../../context/AuthContext';
 
 const BusinessIntelligence = () => {
     const { api } = useAuth();
-    const [rawOutletsData, setRawOutletsData] = useState([]);
+    const [branches, setBranches] = useState([]);
+    const [orders, setOrders] = useState([]);
+    const [expenses, setExpenses] = useState([]);
     const [loading, setLoading] = useState(true);
 
     // Filter states
@@ -24,57 +26,17 @@ const BusinessIntelligence = () => {
     const fetchBIData = async () => {
         try {
             setLoading(true);
-            const [branchesRes, ordersRes] = await Promise.all([
+            const [branchesRes, ordersRes, expensesRes] = await Promise.all([
                 api.get('/branches').catch(() => ({ data: [] })),
-                api.get('/orders').catch(() => ({ data: [] }))
+                api.get('/orders').catch(() => ({ data: [] })),
+                api.get('/expenses').catch(() => ({ data: [] }))
             ]);
 
-            const branches = branchesRes.data || [];
-            const orders = ordersRes.data || [];
-
-            if (branches.length > 0) {
-                const computedData = branches.map((branch, idx) => {
-                    const branchOrders = orders.filter(o => {
-                        const oBranchId = o.branchId?._id || o.branchId;
-                        return oBranchId && oBranchId.toString() === branch._id.toString();
-                    });
-
-                    const completedOrders = branchOrders.filter(o => o.isPaid || o.status === 'Completed');
-                    const sales = completedOrders.reduce((sum, o) => sum + (o.totalPrice || 0), 0) || 0;
-                    const margins = sales > 0 ? 38 + (idx * 3) % 12 : 0;
-                    const profit = Math.round(sales * (margins / 100));
-                    const footfall = completedOrders.length || 0;
-
-                    // Derive top category from real orders if available
-                    let topCat = 'N/A';
-                    if (completedOrders.length > 0) {
-                        const cats = {};
-                        completedOrders.forEach(o => o.orderItems?.forEach(i => {
-                            cats[i.name] = (cats[i.name] || 0) + i.qty;
-                        }));
-                        if (Object.keys(cats).length > 0) {
-                            topCat = Object.keys(cats).reduce((a, b) => cats[a] > cats[b] ? a : b);
-                        }
-                    }
-
-                    return {
-                        outlet: branch.name,
-                        region: 'N/A', // Update later to use actual branch region if added
-                        sales,
-                        profit,
-                        margins,
-                        footfall,
-                        topCategory: topCat
-                    };
-                });
-
-                setRawOutletsData(computedData);
-            } else {
-                setRawOutletsData([]);
-            }
+            setBranches(Array.isArray(branchesRes.data) ? branchesRes.data : []);
+            setOrders(Array.isArray(ordersRes.data) ? ordersRes.data : (ordersRes.data?.orders || []));
+            setExpenses(Array.isArray(expensesRes.data) ? expensesRes.data : []);
         } catch (err) {
             console.error('Failed to load live BI metrics', err);
-            setRawOutletsData([]);
         } finally {
             setLoading(false);
         }
@@ -84,24 +46,65 @@ const BusinessIntelligence = () => {
         fetchBIData();
     }, []);
 
-    // Filtered computation
-    const filteredData = useMemo(() => {
-        let multiplier = 1;
-        if (selectedTimeframe === 'Today') multiplier = 0.05;
-        else if (selectedTimeframe === 'This Week') multiplier = 0.25;
-        else if (selectedTimeframe === 'This Quarter') multiplier = 2.8;
-        else if (selectedTimeframe === 'This Year') multiplier = 11.2;
+    // Filtered computation from actual dates & DB orders/expenses
+    const rawOutletsData = useMemo(() => {
+        const now = new Date();
+        let start = new Date(now.getFullYear(), now.getMonth(), 1);
+        if (selectedTimeframe === 'Today') {
+            start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        } else if (selectedTimeframe === 'This Week') {
+            start = new Date(now);
+            start.setDate(now.getDate() - 7);
+            start.setHours(0, 0, 0, 0);
+        } else if (selectedTimeframe === 'This Quarter') {
+            const qMonth = Math.floor(now.getMonth() / 3) * 3;
+            start = new Date(now.getFullYear(), qMonth, 1);
+        } else if (selectedTimeframe === 'This Year') {
+            start = new Date(now.getFullYear(), 0, 1);
+        }
 
+        const timeOrders = orders.filter(o => new Date(o.createdAt) >= start && !['Cancelled', 'Refunded'].includes(o.status));
+        const timeExpenses = expenses.filter(e => new Date(e.date || e.createdAt) >= start);
+
+        return branches.map((branch) => {
+            const branchIdStr = String(branch._id);
+            const branchOrders = timeOrders.filter(o => String(o.branchId?._id || o.branchId) === branchIdStr);
+            const branchExps = timeExpenses.filter(e => !e.branchId || String(e.branchId?._id || e.branchId) === branchIdStr);
+
+            const sales = Math.round(branchOrders.reduce((sum, o) => sum + (Number(o.totalPrice) || 0), 0));
+            const expTotal = Math.round(branchExps.reduce((sum, e) => sum + (Number(e.amount) || 0), 0));
+            const profit = Math.round(sales - expTotal);
+            const margins = sales > 0 ? Math.round((profit / sales) * 100) : 0;
+            const footfall = branchOrders.length;
+
+            let topCat = 'N/A';
+            if (branchOrders.length > 0) {
+                const cats = {};
+                branchOrders.forEach(o => (o.orderItems || []).forEach(i => {
+                    cats[i.name] = (cats[i.name] || 0) + (i.qty || i.quantity || 1);
+                }));
+                if (Object.keys(cats).length > 0) {
+                    topCat = Object.keys(cats).reduce((a, b) => cats[a] > cats[b] ? a : b);
+                }
+            }
+
+            return {
+                outlet: branch.name,
+                region: branch.location || branch.address || 'Main',
+                sales,
+                profit,
+                margins,
+                footfall,
+                topCategory: topCat
+            };
+        });
+    }, [branches, orders, expenses, selectedTimeframe]);
+
+    const filteredData = useMemo(() => {
         return rawOutletsData
             .filter(d => selectedOutlet === 'All' || d.outlet === selectedOutlet)
-            .filter(d => selectedCategory === 'All' || d.topCategory === selectedCategory)
-            .map(d => ({
-                ...d,
-                sales: Math.round(d.sales * multiplier),
-                profit: Math.round(d.profit * multiplier),
-                footfall: Math.round(d.footfall * multiplier)
-            }));
-    }, [rawOutletsData, selectedTimeframe, selectedOutlet, selectedCategory]);
+            .filter(d => selectedCategory === 'All' || d.topCategory === selectedCategory);
+    }, [rawOutletsData, selectedOutlet, selectedCategory]);
 
     // Aggregate summary metrics
     const totalSales = filteredData.reduce((acc, curr) => acc + curr.sales, 0);

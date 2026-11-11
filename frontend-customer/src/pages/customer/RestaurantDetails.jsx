@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 const RestaurantDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { cartItems, addToCart, removeFromCart, cartTotal, cartCount } = useCart();
+    const { cartItems, addToCart, removeFromCart, clearCart, cartTotal, cartCount } = useCart();
     
     const [restaurant, setRestaurant] = useState(null);
     const [branches, setBranches] = useState([]);
@@ -96,17 +96,12 @@ const RestaurantDetails = () => {
 
                 if (!fetchedRest || isSoftDeleted || isInactiveStatus || isExplicitlyDisabled || isRejected) {
                     setRestaurant(null);
-                    // Automatically clean up cart if it holds items for this unavailable restaurant
-                    try {
-                        const savedCart = JSON.parse(localStorage.getItem('restosys_cart') || '[]');
-                        const cleanedCart = savedCart.filter(item => {
-                            const rId = typeof item.restaurantId === 'object' ? item.restaurantId?._id : (item.restaurantId || item.restaurant);
-                            return String(rId) !== String(id);
-                        });
-                        if (cleanedCart.length !== savedCart.length) {
-                            localStorage.setItem('restosys_cart', JSON.stringify(cleanedCart));
-                        }
-                    } catch (e) {}
+                    // Clean up cart if it holds items for this unavailable restaurant (synced with CartContext)
+                    const hasMatchingItems = cartItems.some(item => {
+                        const rId = typeof item.restaurantId === 'object' ? item.restaurantId?._id : (item.restaurantId || item.restaurant);
+                        return String(rId) === String(id);
+                    });
+                    if (hasMatchingItems) clearCart();
                     setLoading(false);
                     return;
                 }
@@ -526,9 +521,9 @@ const RestaurantDetails = () => {
                         </div>
                         <button 
                             onClick={handleCheckout}
-                            disabled={!selectedBranch}
+                            disabled={branches.length > 0 && !selectedBranch}
                             className={`px-8 py-3.5 font-bold rounded-xl transition-all shadow-lg flex items-center gap-2 ${
-                                selectedBranch 
+                                (branches.length === 0 || selectedBranch)
                                 ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-600/30' 
                                 : 'bg-gray-300 dark:bg-slate-800 text-gray-500 dark:text-slate-500 cursor-not-allowed'
                             }`}

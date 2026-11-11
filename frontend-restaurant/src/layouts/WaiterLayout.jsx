@@ -8,17 +8,8 @@ import VerificationBlockedOverlay from '../components/VerificationBlockedOverlay
 import SubscriptionFreezeOverlay from '../components/SubscriptionFreezeOverlay';
 
 const WaiterLayout = () => {
-    const { user, restaurant, fetchRestaurant } = useAuth();
-    const status = restaurant?.subscription?.status || 'Active';
-    const isTrialExpired = restaurant?.subscription?.trialActive && 
-        restaurant?.subscription?.expiryDate && 
-        (new Date() > new Date(restaurant.subscription.expiryDate));
-        
-    const isFrozen = user?.role !== 'SuperAdmin' && (
-        status === 'Frozen' || 
-        status === 'Expired' || 
-        isTrialExpired
-    );
+    const { user, restaurant, subscriptionState, fetchRestaurant } = useAuth();
+    const isFrozen = Boolean(subscriptionState?.isFrozen);
 
     const isApproved = restaurant?.approvalStatus === 'Approved' || restaurant?.verificationStatus === 'Verified';
     const isUnverified = user?.role !== 'SuperAdmin' && Boolean(restaurant && !isApproved && (restaurant.approvalStatus === 'Pending' || restaurant.approvalStatus === 'Rejected' || restaurant.verificationStatus === 'Rejected' || restaurant.verificationStatus === 'Re-upload Required'));

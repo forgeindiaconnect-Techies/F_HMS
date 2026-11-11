@@ -12,42 +12,54 @@ import clsx from 'clsx';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
-// Same config as DashboardLayout — single source of truth for plan gating
+// Same config as DashboardLayout — aligned with DB plans when loaded
 const ROUTE_PLAN_REQUIREMENTS = [
     // Pro features
-    { path: '/admin/analytics',    minPlan: 'Pro',        feature: 'Sales Analytics' },
-    { path: '/admin/inventory',    minPlan: 'Pro',        feature: 'Inventory Management' },
-    { path: '/admin/suppliers',    minPlan: 'Pro',        feature: 'Vendor Management' },
-    { path: '/admin/reservations', minPlan: 'Pro',        feature: 'Reservation Management' },
-    { path: '/admin/offers',       minPlan: 'Pro',        feature: 'Coupons & Promotions' },
-    { path: '/admin/delivery',     minPlan: 'Pro',        feature: 'Delivery Management' },
+    { path: '/admin/analytics',    featureKey: 'Sales Reports',              minPlan: 'Pro',        feature: 'Sales Analytics' },
+    { path: '/admin/inventory',    featureKey: 'Stock Levels',               minPlan: 'Pro',        feature: 'Inventory Management' },
+    { path: '/admin/suppliers',    featureKey: 'Vendor Management',          minPlan: 'Pro',        feature: 'Vendor Management' },
+    { path: '/admin/reservations', featureKey: 'Advanced Table Management',  minPlan: 'Pro',        feature: 'Reservation Management' },
+    { path: '/admin/offers',       featureKey: 'Customer Segmentation',      minPlan: 'Pro',        feature: 'Coupons & Promotions' },
+    { path: '/admin/delivery',     featureKey: 'Delivery Partner Management',minPlan: 'Pro',        feature: 'Delivery Management' },
 
     // Enterprise features
-    { path: '/admin/franchise',        minPlan: 'Enterprise', feature: 'Franchise Management' },
-    { path: '/admin/central-kitchen',  minPlan: 'Enterprise', feature: 'Central Kitchen Ops' },
-    { path: '/admin/developer-config', minPlan: 'Enterprise', feature: 'Developer APIs & White Label' },
-    { path: '/admin/audit-logs',       minPlan: 'Enterprise', feature: 'Security Audit Logs' },
-    { path: '/admin/bi',               minPlan: 'Enterprise', feature: 'Business Intelligence Console' },
-    { path: '/admin/support',          minPlan: 'Enterprise', feature: 'Customer Care & Priority Support' },
+    { path: '/admin/franchise',        featureKey: 'Multi-Branch Management', minPlan: 'Enterprise', feature: 'Franchise Management' },
+    { path: '/admin/central-kitchen',  featureKey: 'Stock Transfer',          minPlan: 'Enterprise', feature: 'Central Kitchen Ops' },
+    { path: '/admin/developer-config', featureKey: 'Advanced AI Insights',    minPlan: 'Enterprise', feature: 'Developer APIs & White Label' },
+    { path: '/admin/audit-logs',       featureKey: 'Business Health Score',   minPlan: 'Enterprise', feature: 'Security Audit Logs' },
+    { path: '/admin/bi',               featureKey: 'Sales Prediction',        minPlan: 'Enterprise', feature: 'Business Intelligence Console' },
 ];
 const PLAN_ORDER = { Basic: 0, Starter: 0, Pro: 1, Professional: 1, Enterprise: 2 };
+const SAAS_FEATURE_KEYS = [
+    'Sales Reports', 'Stock Levels', 'Vendor Management', 'Advanced Table Management',
+    'Customer Segmentation', 'Delivery Partner Management', 'Multi-Branch Management',
+    'Stock Transfer', 'Advanced AI Insights', 'Business Health Score', 'Sales Prediction',
+];
 const planMeetsRequirement = (current, min) =>
     (PLAN_ORDER[current] ?? 0) >= (PLAN_ORDER[min] ?? 99);
-const getItemLock = (path, plan, status) => {
+const getItemLock = (path, plan, status, allPlans = []) => {
     const rule = ROUTE_PLAN_REQUIREMENTS.find(r => path.startsWith(r.path));
     if (!rule) return null;
-    if (status !== 'Active' || !planMeetsRequirement(plan, rule.minPlan)) {
-        return rule;
+    if (status !== 'Active') return rule;
+    const planObj = allPlans.find(p => p.name && plan && p.name.toLowerCase() === plan.toLowerCase());
+    if (planObj && Array.isArray(planObj.features) && planObj.features.some(f => SAAS_FEATURE_KEYS.includes(f))) {
+        return planObj.features.includes(rule.featureKey) ? null : rule;
     }
-    return null;
+    return planMeetsRequirement(plan, rule.minPlan) ? null : rule;
 };
 
 const Sidebar = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { logout, restaurant } = useAuth();
+    const { logout, restaurant, api } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [logoError, setLogoError] = useState(false);
+    const [allPlans, setAllPlans] = useState([]);
+
+    useEffect(() => {
+        if (!api) return;
+        api.get('/plans').then(res => setAllPlans(res.data || [])).catch(() => {});
+    }, [api]);
 
     useEffect(() => {
         setLogoError(false);
@@ -107,10 +119,13 @@ const Sidebar = () => {
             title: 'Management & Materials',
             items: [
                 { name: 'Billing Management', path: '/admin/billing-management', icon: Receipt, moduleKey: 'posBilling' },
+                { name: 'Taxes & GST', path: '/admin/taxes', icon: ReceiptText, moduleKey: 'posBilling' },
                 { name: 'Material Management', path: '/admin/inventory', icon: PackageSearch, moduleKey: 'inventoryManagement' },
+                { name: 'Suppliers & Vendors', path: '/admin/suppliers', icon: Truck, moduleKey: 'inventoryManagement' },
                 { name: 'Staff Management', path: '/admin/staff', icon: UserCheck, moduleKey: 'staffManagement' },
                 { name: 'Branch Management', path: '/admin/branches', icon: Store, moduleKey: 'staffManagement' },
                 { name: 'Menu Management', path: '/admin/menu', icon: UtensilsCrossed, moduleKey: 'menuManagement' },
+                { name: 'Menu Categories', path: '/admin/categories', icon: ListTree, moduleKey: 'menuManagement' },
                 { name: 'Customer Management', path: '/admin/customers', icon: Users, moduleKey: 'customerManagement' },
             ]
         },
@@ -143,11 +158,12 @@ const Sidebar = () => {
         {
             title: 'Reports & Config',
             items: [
+                { name: 'Business Intelligence', path: '/admin/bi', icon: TrendingUp },
+                { name: 'Activity Logs', path: '/admin/activity', icon: Activity },
                 { name: 'Setup Wizard', path: '/admin/setup-wizard', icon: Sparkles },
                 { name: 'My Testimonial', path: '/admin/my-testimonial', icon: MessageSquareQuote },
                 { name: 'Restaurant Settings', path: '/admin/settings?tab=operations', icon: Sliders },
                 { name: 'General Settings', path: '/admin/settings', icon: Settings },
-                { name: 'Reports', path: '/admin/reports', icon: FileText, moduleKey: 'salesReports' },
                 { name: 'Notifications', path: '/admin/notifications', icon: Bell },
                 { name: 'Verification', path: '/admin/verification', icon: FileText },
             ]
@@ -217,7 +233,7 @@ const Sidebar = () => {
                             {group.items.map((item) => {
                                 const Icon = item.icon;
                                 
-                                const lock = getItemLock(item.path, plan, status);
+                                const lock = getItemLock(item.path, plan, status, allPlans);
 
                                 if (lock) {
                                     return (
@@ -250,8 +266,17 @@ const Sidebar = () => {
                                     if (item.name === 'Payroll & Salary') {
                                         return location.pathname === '/admin/staff' && location.search === '?tab=payroll';
                                     }
+                                    if (item.name === 'Payroll Reports') {
+                                        return location.pathname === '/admin/staff' && location.search === '?tab=reports';
+                                    }
                                     if (item.name === 'Staff Management') {
-                                        return location.pathname === '/admin/staff' && location.search !== '?tab=payroll';
+                                        return location.pathname === '/admin/staff' && location.search !== '?tab=payroll' && location.search !== '?tab=reports';
+                                    }
+                                    if (item.name === 'Restaurant Settings') {
+                                        return location.pathname === '/admin/settings' && location.search === '?tab=operations';
+                                    }
+                                    if (item.name === 'General Settings') {
+                                        return location.pathname === '/admin/settings' && location.search !== '?tab=operations';
                                     }
                                     if (item.name === 'Rent & Bills') {
                                         return location.pathname === '/admin/expenses' && location.search === '?tab=bills';

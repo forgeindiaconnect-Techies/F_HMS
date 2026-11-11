@@ -63,7 +63,7 @@ const OrderTracking = () => {
 
     useEffect(() => {
         fetchOrder();
-        const interval = setInterval(() => fetchOrder(false), 5000);
+        const interval = setInterval(() => fetchOrder(false), 15000);
         return () => clearInterval(interval);
     }, [fetchOrder]);
 
@@ -343,7 +343,7 @@ const OrderTracking = () => {
                         </div>
                     ) : (
                         /* Dine-In Hero Card */
-                        <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 border border-slate-800 p-7 rounded-3xl shadow-md text-white flex flex-col sm:flex-row items-center justify-between gap-5">
+                        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-slate-800 p-7 rounded-3xl shadow-md text-white flex flex-col sm:flex-row items-center justify-between gap-5">
                             <div className="flex items-center gap-5 w-full sm:w-auto">
                                 <div className="w-16 h-16 bg-emerald-500/20 border border-emerald-500/40 rounded-2xl flex items-center justify-center text-emerald-400 shrink-0 shadow-inner">
                                     {progress === 1 && <PackageOpen size={32} />}

@@ -1,12 +1,35 @@
 import { useState, useEffect } from 'react';
 import { UserCheck, Clock, ShieldCheck, MapPin, Coffee, Calendar, Play, Pause } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 import toast from 'react-hot-toast';
 
 const WaiterShiftStatus = () => {
-    const [status, setStatus] = useState('On Duty');
-    const [zone, setZone] = useState('Floor Zone A');
-    const [elapsedSeconds, setElapsedSeconds] = useState(20000); // 5h 33m
+    const { api, user } = useAuth();
+    const [status, setStatus] = useState('Not Clocked In');
+    const [zone, setZone] = useState(() => localStorage.getItem(`waiter_zone_${user?._id || 'me'}`) || 'Floor Zone A (Main Hall)');
+    const [clockInLabel, setClockInLabel] = useState('Not clocked in yet');
+    const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+    useEffect(() => {
+        if (!api) return;
+        api.get('/staff/my-attendance-today')
+            .then(res => {
+                const data = res.data;
+                if (data?.checkIn && !data?.checkOut) {
+                    const startMs = new Date(data.checkIn).getTime();
+                    if (!isNaN(startMs)) {
+                        setStatus('On Duty');
+                        setElapsedSeconds(Math.max(0, Math.floor((Date.now() - startMs) / 1000)));
+                        setClockInLabel(`Clocked in at ${new Date(data.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
+                    }
+                } else if (data?.checkOut) {
+                    setStatus('Shift Completed');
+                    setClockInLabel(`Completed at ${new Date(data.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
+                }
+            })
+            .catch(() => {});
+    }, [api]);
 
     useEffect(() => {
         let timer;
@@ -81,7 +104,7 @@ const WaiterShiftStatus = () => {
                     <div>
                         <span className="text-xs font-bold text-slate-400 uppercase">Active Duty Timer</span>
                         <div className="text-3xl font-black text-slate-900 mt-2 font-mono">{formatTime(elapsedSeconds)}</div>
-                        <p className="text-xs text-emerald-600 font-bold mt-1">Clocked in at 09:00 AM Today</p>
+                        <p className="text-xs text-emerald-600 font-bold mt-1">{clockInLabel}</p>
                     </div>
                     <div className="flex gap-2">
                         <button
@@ -110,7 +133,7 @@ const WaiterShiftStatus = () => {
                         {['Floor Zone A (Main Hall)', 'Floor Zone B (Patio)', 'Terrace Dining'].map((z) => (
                             <button
                                 key={z}
-                                onClick={() => { setZone(z); toast.success(`Assigned to ${z}`); }}
+                                onClick={() => { setZone(z); localStorage.setItem(`waiter_zone_${user?._id || 'me'}`, z); toast.success(`Assigned to ${z}`); }}
                                 className={`w-full p-3 rounded-2xl border text-left text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
                                     zone === z
                                     ? 'bg-emerald-50 border-emerald-500 text-emerald-900'

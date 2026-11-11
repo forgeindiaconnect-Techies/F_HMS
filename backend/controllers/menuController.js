@@ -80,12 +80,18 @@ export const createMenuItem = async (req, res) => {
 // @access  Private (Admin/Manager)
 export const updateMenuItem = async (req, res) => {
     try {
-        const item = await MenuItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (item) {
-            res.json(item);
-        } else {
-            res.status(404).json({ message: 'Menu item not found' });
+        const existing = await MenuItem.findById(req.params.id);
+        if (!existing) {
+            return res.status(404).json({ message: 'Menu item not found' });
         }
+        if (req.user.role !== 'SuperAdmin' && String(existing.restaurantId) !== String(req.user.restaurantId)) {
+            return res.status(403).json({ message: 'Not authorized to modify this restaurant menu item' });
+        }
+        const updates = { ...req.body };
+        delete updates.restaurantId;
+        Object.assign(existing, updates);
+        const saved = await existing.save();
+        res.json(saved);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
@@ -97,12 +103,14 @@ export const updateMenuItem = async (req, res) => {
 export const deleteMenuItem = async (req, res) => {
     try {
         const item = await MenuItem.findById(req.params.id);
-        if (item) {
-            await item.deleteOne();
-            res.json({ message: 'Item removed' });
-        } else {
-            res.status(404).json({ message: 'Menu item not found' });
+        if (!item) {
+            return res.status(404).json({ message: 'Menu item not found' });
         }
+        if (req.user.role !== 'SuperAdmin' && String(item.restaurantId) !== String(req.user.restaurantId)) {
+            return res.status(403).json({ message: 'Not authorized to delete this restaurant menu item' });
+        }
+        await item.deleteOne();
+        res.json({ message: 'Item removed' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

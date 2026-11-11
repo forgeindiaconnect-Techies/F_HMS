@@ -184,7 +184,7 @@ const StaffMyPayroll = () => {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-xs">
-                            <thead className="bg-gray-50 dark:bg-slate-850 text-gray-400 uppercase tracking-wider font-extrabold border-b border-gray-100 dark:border-slate-800">
+                            <thead className="bg-gray-50 dark:bg-slate-800 text-gray-400 uppercase tracking-wider font-extrabold border-b border-gray-100 dark:border-slate-800">
                                 <tr>
                                     <th className="py-3.5 px-5">Salary Month</th>
                                     <th className="py-3.5 px-5">Basic Pay</th>

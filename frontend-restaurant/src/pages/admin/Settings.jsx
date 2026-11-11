@@ -1111,7 +1111,7 @@ const Settings = () => {
                                         </div>
                                         <div>
                                             <span className="font-bold text-sm text-gray-900 dark:text-white block">Online Gateway</span>
-                                            <span className="text-[11px] text-gray-500 dark:text-slate-400 block mt-0.5">Razorpay / Stripe customer mobile checkout.</span>
+                                            <span className="text-[11px] text-gray-500 dark:text-slate-400 block mt-0.5">UPI QR / Online customer mobile checkout.</span>
                                         </div>
                                     </label>
                                 </div>
@@ -1161,7 +1161,7 @@ const Settings = () => {
                     ) : activeTab === 'pos-customization' ? (
                         <div className="space-y-8 min-w-0 pr-1.5 flex-1">
                             {/* Header Banner */}
-                            <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-rose-950 text-white p-6 sm:p-7 rounded-2xl shadow-md border border-slate-800 relative overflow-hidden">
+                            <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-rose-950 text-white p-6 sm:p-7 rounded-2xl shadow-md border border-slate-800 relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-80 h-80 bg-rose-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
                                 <div className="relative z-10 space-y-2">
                                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-bold">

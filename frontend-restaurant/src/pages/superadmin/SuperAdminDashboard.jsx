@@ -692,7 +692,7 @@ const SuperAdminDashboard = () => {
                                     <div>
                                         <span className="font-bold text-blue-600 block">{tkt.ticketId}</span>
                                         <span className="text-xs text-gray-900 block font-semibold">{tkt.restaurantId?.name || 'Platform Customer'}</span>
-                                        <span className="text-[11px] text-gray-450 block">{tkt.restaurantId?.email || 'N/A'}</span>
+                                        <span className="text-[11px] text-gray-400 block">{tkt.restaurantId?.email || 'N/A'}</span>
                                     </div>
                                 </td>
                                 <td className="p-5">

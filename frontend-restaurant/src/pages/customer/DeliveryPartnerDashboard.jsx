@@ -9,12 +9,16 @@ import {
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { getApiUrl } from '../../utils/axiosInstance';
+import { createReconnectingWebSocket } from '../../utils/wsClient';
 import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 import LiveOrderMap from '../../components/LiveOrderMap';
+import SubscriptionFreezeOverlay from '../../components/SubscriptionFreezeOverlay';
+import StaffMyLeave from '../../components/staff/StaffMyLeave';
+import StaffMyPayroll from '../../components/staff/StaffMyPayroll';
 
 const DeliveryPartnerDashboard = () => {
     const navigate = useNavigate();
-    const { logout } = useAuth();
+    const { logout, subscriptionState } = useAuth();
     const [user, setUser] = useState(null);
     const [profile, setProfile] = useState(null);
     const [assignedOrders, setAssignedOrders] = useState([]);
@@ -82,48 +86,31 @@ const DeliveryPartnerDashboard = () => {
             navigate('/delivery/login');
             return;
         }
-        setUser(authUser || JSON.parse(stored));
+        const resolvedUser = authUser || JSON.parse(stored);
+        setUser(resolvedUser);
         loadData();
 
-        const wsRef = { current: null };
-        const connectWS = () => {
-            let baseURL = API_URL;
-            let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
-            const ws = new WebSocket(wsURL);
-            wsRef.current = ws;
-
-            ws.onopen = () => {
-                ws.send(JSON.stringify({
-                    type: 'register',
-                    role: 'delivery'
-                }));
-            };
-
-            ws.onmessage = (event) => {
-                try {
-                    const msg = JSON.parse(event.data);
-                    if (['order_status_updated', 'new_order', 'delivery_status_updated'].includes(msg.type)) {
-                        loadData();
-                    }
-                } catch (e) {
-                    console.error("Error reading websocket message", e);
+        const cleanupWs = createReconnectingWebSocket({
+            apiUrl: API_URL,
+            buildRegistrationPayload: () => {
+                const rawRestId = resolvedUser?.restaurantId;
+                const cleanRestId = (rawRestId && typeof rawRestId === 'object') ? (rawRestId._id || rawRestId.id) : rawRestId;
+                return { restaurantId: cleanRestId || null, role: 'delivery' };
+            },
+            onMessage: (msg) => {
+                if (['order_status_updated', 'new_order', 'delivery_status_updated'].includes(msg.type)) {
+                    loadData();
                 }
-            };
+            }
+        });
 
-            ws.onclose = () => {
-                setTimeout(connectWS, 5000);
-            };
-        };
-
-        connectWS();
-
-        // 10s fallback polling
+        // 20s fallback polling (real-time updates come over WS)
         const pollInterval = setInterval(() => {
             loadData();
-        }, 10000);
+        }, 20000);
 
         return () => {
-            if (wsRef.current) wsRef.current.close();
+            cleanupWs();
             clearInterval(pollInterval);
         };
     }, [authUser]);
@@ -315,6 +302,7 @@ const DeliveryPartnerDashboard = () => {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 pb-28 flex flex-col selection:bg-emerald-500/20 selection:text-emerald-300 transition-colors">
+            {subscriptionState?.isFrozen && <SubscriptionFreezeOverlay />}
             {/* Header */}
             <header className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-md px-6 py-4 border-b border-slate-200 dark:border-slate-800/80 flex justify-between items-center sticky top-0 z-20 shadow-sm dark:shadow-[0_4px_30px_rgba(0,0,0,0.4)]">
                 <div className="flex items-center gap-3.5">
@@ -470,7 +458,7 @@ const DeliveryPartnerDashboard = () => {
                                                         <div className={`w-5 h-5 rounded-full flex items-center justify-center border text-[8px] font-black ${
                                                             step.active 
                                                             ? 'bg-emerald-500 border-emerald-600 text-white shadow-sm' 
-                                                            : 'bg-slate-100 dark:bg-slate-850 border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-400'
+                                                            : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-400'
                                                         }`}>
                                                             {step.active ? '✓' : idx + 1}
                                                         </div>
@@ -480,7 +468,7 @@ const DeliveryPartnerDashboard = () => {
                                             </div>
 
                                             {/* Distance & Info */}
-                                            <div className="grid grid-cols-2 gap-4 text-xs font-semibold text-slate-700 dark:text-slate-350 pt-1 text-left">
+                                            <div className="grid grid-cols-2 gap-4 text-xs font-semibold text-slate-700 dark:text-slate-300 pt-1 text-left">
                                                 <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                                     <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-wider block font-bold">Restaurant Pickup</span>
                                                     <p className="truncate text-slate-900 dark:text-white font-extrabold">Hub Kitchen Counter</p>
@@ -551,7 +539,7 @@ const DeliveryPartnerDashboard = () => {
                                                             Collect Food (Confirm Pickup)
                                                         </button>
                                                     ) : (
-                                                        <div className="text-center p-3.5 bg-slate-100 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-850 rounded-2xl text-xs font-black text-slate-500 tracking-wide flex items-center justify-center gap-1.5">
+                                                        <div className="text-center p-3.5 bg-slate-100 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-black text-slate-500 tracking-wide flex items-center justify-center gap-1.5">
                                                             <Clock size={12} className="animate-spin text-slate-500" /> Kitchen is preparing order...
                                                         </div>
                                                     )
@@ -569,7 +557,7 @@ const DeliveryPartnerDashboard = () => {
                                                         )}
                                                         <button
                                                             onClick={() => handleOpenOtpModal(order)}
-                                                            className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-650 text-white rounded-2xl text-xs font-black tracking-wider uppercase transition-all shadow-lg shadow-emerald-500/15 cursor-pointer active:scale-98 flex items-center justify-center gap-2"
+                                                            className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 text-white rounded-2xl text-xs font-black tracking-wider uppercase transition-all shadow-lg shadow-emerald-500/15 cursor-pointer active:scale-98 flex items-center justify-center gap-2"
                                                         >
                                                             <ShieldCheck size={16} /> Complete Delivery (Verify Customer OTP)
                                                         </button>
@@ -591,7 +579,7 @@ const DeliveryPartnerDashboard = () => {
                                     <div className="flex justify-between items-center text-xs">
                                         <span className="text-slate-500 dark:text-slate-400 font-medium">Agent Status</span>
                                         <span className={`px-2 py-0.5 rounded-full font-black text-[9px] uppercase ${
-                                            profile?.status === 'Online' ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-850 text-slate-600 dark:text-slate-400'
+                                            profile?.status === 'Online' ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                                         }`}>{profile?.status}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-xs">
@@ -667,7 +655,7 @@ const DeliveryPartnerDashboard = () => {
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-1.5 custom-scrollbar">
                                 {earnings?.history?.length === 0 ? (
-                                    <div className="col-span-2 py-12 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-850 rounded-[2rem] text-center text-slate-500 font-bold text-xs">
+                                    <div className="col-span-2 py-12 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-[2rem] text-center text-slate-500 font-bold text-xs">
                                         No completed deliveries yet.
                                     </div>
                                 ) : (
@@ -712,8 +700,8 @@ const DeliveryPartnerDashboard = () => {
                             </div>
 
                             {/* Verification Stats */}
-                            <div className="space-y-4 text-xs font-semibold text-slate-700 dark:text-slate-350 text-left">
-                                <div className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-850 rounded-2xl flex items-center gap-3">
+                            <div className="space-y-4 text-xs font-semibold text-slate-700 dark:text-slate-300 text-left">
+                                <div className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center gap-3">
                                     <ShieldCheck className="text-emerald-500 dark:text-emerald-400 shrink-0" size={18} />
                                     <div>
                                         <span className="text-[9px] text-slate-500 uppercase tracking-wider block font-bold">Registered Mobile</span>
@@ -721,7 +709,7 @@ const DeliveryPartnerDashboard = () => {
                                     </div>
                                 </div>
 
-                                <div className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-850 rounded-2xl flex items-center gap-3">
+                                <div className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center gap-3">
                                     <Truck className="text-emerald-500 dark:text-emerald-400 shrink-0" size={18} />
                                     <div>
                                         <span className="text-[9px] text-slate-500 uppercase tracking-wider block font-bold">Vehicle Details</span>
@@ -729,7 +717,7 @@ const DeliveryPartnerDashboard = () => {
                                     </div>
                                 </div>
 
-                                <div className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-850 rounded-2xl flex items-center gap-3">
+                                <div className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center gap-3">
                                     <Award className="text-emerald-500 dark:text-emerald-400 shrink-0" size={18} />
                                     <div>
                                         <span className="text-[9px] text-slate-500 uppercase tracking-wider block font-bold">License Number</span>
@@ -745,22 +733,22 @@ const DeliveryPartnerDashboard = () => {
                             
                             <div className="bg-white dark:bg-slate-900/60 backdrop-blur-md border border-slate-200 dark:border-slate-800/80 rounded-[2.5rem] p-6 shadow-xl space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-                                    <div className="p-5 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-850 rounded-3xl space-y-1">
+                                    <div className="p-5 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-1">
                                         <span className="text-[9px] text-slate-500 uppercase tracking-wider block font-bold">Delivery Success Rate</span>
                                         <h4 className="text-2xl font-black text-emerald-600 dark:text-emerald-400">99.2%</h4>
                                         <p className="text-[9px] text-slate-500">Top 5% among branch partners this week</p>
                                     </div>
 
-                                    <div className="p-5 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-850 rounded-3xl space-y-1">
+                                    <div className="p-5 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-1">
                                         <span className="text-[9px] text-slate-500 uppercase tracking-wider block font-bold">Average Ratings</span>
                                         <h4 className="text-2xl font-black text-teal-600 dark:text-teal-400">4.9 ★</h4>
                                         <p className="text-[9px] text-slate-500">Excellent feedback on behavior & timeliness</p>
                                     </div>
                                 </div>
 
-                                <div className="p-5 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-850 rounded-3xl text-left space-y-2">
-                                    <h4 className="text-xs font-black text-slate-800 dark:text-slate-350 uppercase tracking-wider">System notifications</h4>
-                                    <p className="text-[10px] text-slate-600 dark:text-slate-450 leading-relaxed font-semibold">
+                                <div className="p-5 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-3xl text-left space-y-2">
+                                    <h4 className="text-xs font-black text-slate-800 dark:text-slate-300 uppercase tracking-wider">System notifications</h4>
+                                    <p className="text-[10px] text-slate-600 dark:text-slate-400 leading-relaxed font-semibold">
                                         🚨 <strong>Rain Surcharge Active:</strong> High precipitation alert in branch limits. Delivery per-KM fees are increased by ₹15 for all runs accepted between 6:00 PM and 10:00 PM today.
                                     </p>
                                 </div>
@@ -769,13 +757,27 @@ const DeliveryPartnerDashboard = () => {
                     </div>
                 )}
 
+                {activeSection === 'leave' && (
+                    <div className="animate-in fade-in">
+                        <StaffMyLeave />
+                    </div>
+                )}
+
+                {activeSection === 'payroll' && (
+                    <div className="animate-in fade-in">
+                        <StaffMyPayroll />
+                    </div>
+                )}
+
             </main>
 
             {/* Bottom Navigation Tabs */}
-            <nav className="fixed bottom-0 inset-x-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-slate-200 dark:border-slate-800/80 py-3 px-6 flex justify-around items-center z-20 shadow-lg dark:shadow-[0_-10px_35px_rgba(0,0,0,0.6)]">
+            <nav className="fixed bottom-0 inset-x-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-slate-200 dark:border-slate-800/80 py-3 px-4 flex justify-around items-center z-20 shadow-lg dark:shadow-[0_-10px_35px_rgba(0,0,0,0.6)]">
                 {[
                     { id: 'tasks', label: 'Tasks', icon: ListTodo },
                     { id: 'earnings', label: 'Earnings', icon: Wallet },
+                    { id: 'leave', label: 'Leave', icon: Calendar },
+                    { id: 'payroll', label: 'Salary', icon: DollarSign },
                     { id: 'profile', label: 'Profile', icon: User }
                 ].map(item => {
                     const Icon = item.icon;
@@ -1011,7 +1013,7 @@ const DeliveryPartnerDashboard = () => {
                                     {selectedPhoneOrder.shippingAddress?.address || 'Customer Location'}
                                 </p>
                             </div>
-                            <div className="pt-2 border-t border-slate-200 dark:border-slate-850 flex justify-between items-center">
+                            <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center">
                                 <div>
                                     <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Phone Number</span>
                                     <p className="text-base font-black font-mono text-emerald-600 dark:text-emerald-400">

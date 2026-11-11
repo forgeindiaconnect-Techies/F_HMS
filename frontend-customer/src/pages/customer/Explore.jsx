@@ -355,9 +355,8 @@ export default function Explore() {
         setLocation(res.formattedLocation);
         saveUserLocation(res.formattedLocation, res.coordinates);
         if (user && api) {
-          api.put('/customer/profile', {
-            location: res.formattedLocation,
-            coordinates: res.coordinates
+          api.put('/users/profile', {
+            address: res.formattedLocation
           }).catch(() => {});
         }
         toast.success('Location set to ' + res.formattedLocation + '!', { icon: '📍' });
@@ -437,23 +436,25 @@ export default function Explore() {
         (d.category || '').toLowerCase().includes(qLower)
       );
 
-      // Check if user typed a city or location
-      const isLikelyLocation = restaurants.some(r => {
-        const c = (r.city || '').toLowerCase();
-        const a = (r.address || '').toLowerCase();
-        const v = (r.verificationAddress || '').toLowerCase();
-        return c.includes(qLower) || a.includes(qLower) || v.includes(qLower) || qLower.includes(c);
-      }) || ['chennai', 'krishnagiri', 'bangalore', 'bengaluru', 'mumbai', 'delhi', 'hyderabad', 'coimbatore', 'madurai', 'salem', 'hosur'].some(known => qLower.includes(known) || known.includes(qLower));
+      // Check if user typed a city or location (guard non-empty strings!)
+      const isLikelyLocation = (qLower.length >= 3 && restaurants.some(r => {
+        const c = (r.city || '').toLowerCase().trim();
+        const a = (r.address || '').toLowerCase().trim();
+        const v = (r.verificationAddress || '').toLowerCase().trim();
+        return (c && (c.includes(qLower) || qLower.includes(c))) ||
+               (a && a.includes(qLower)) ||
+               (v && v.includes(qLower));
+      })) || ['chennai', 'krishnagiri', 'bangalore', 'bengaluru', 'mumbai', 'delhi', 'hyderabad', 'coimbatore', 'madurai', 'salem', 'hosur'].some(known => qLower.includes(known));
 
       if (isLikelyLocation && !matchesDishOrCuisine) {
         setLocation(q);
-        localStorage.setItem('userLocation', q);
+        saveUserLocation(q);
         setSearchQuery('');
         toast.success(`Showing restaurants in ${q}!`, { icon: '📍' });
       } else if (isLikelyLocation && matchesDishOrCuisine) {
-        // If query matches both (or pure city), set location
+        // If query matches both, only set location cleanly
         setLocation(q);
-        localStorage.setItem('userLocation', q);
+        saveUserLocation(q);
         setSearchQuery('');
         toast.success(`Showing restaurants in ${q}!`, { icon: '📍' });
       }

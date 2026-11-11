@@ -58,25 +58,7 @@ const StaffShiftClockWidget = ({ userRole = 'Staff', userName = 'Staff Member', 
                 }
             })
             .catch(() => {});
-    }, []);
-
-    // Fetch real-time attendance from backend on mount
-    useEffect(() => {
-        if (!api) return;
-        api.get('/staff/my-attendance-today')
-            .then(res => {
-                if (res.data?.status === 'Present') {
-                    setShiftState(prev => ({
-                        ...prev,
-                        status: res.data.checkOut ? 'ClockedOut' : 'ClockedIn',
-                        clockInTime: res.data.checkIn || prev.clockInTime,
-                        lastClockInTime: res.data.checkIn || prev.lastClockInTime,
-                        lastClockOutTime: res.data.checkOut || prev.lastClockOutTime
-                    }));
-                }
-            })
-            .catch(() => {});
-    }, []);
+    }, [api]);
 
     // Live second ticker timer
     useEffect(() => {

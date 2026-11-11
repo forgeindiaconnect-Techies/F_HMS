@@ -460,25 +460,14 @@ html.dark .hover\:bg-gray-100:hover {
    Removes excessive horizontal gap/gutters on phone screens
    ======================================================== */
 @media (max-width: 768px) {
-  /* Eliminate heavy padding from layout mains */
+  /* Reduce horizontal gutters on small screens without breaking nested flex/grid cards */
   main.overflow-y-auto,
   main {
-    padding-left: 0.625rem !important;
-    padding-right: 0.625rem !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
     padding-top: 0.75rem !important;
   }
 
-  /* Reset inner page wrappers that have extra p-8/p-6 gutters */
-  main > div,
-  main.overflow-y-auto > div,
-  main.overflow-y-auto > div > div:first-child:not(.fixed):not(.absolute) {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  /* Standardized responsive layout container */
   .admin-page-container {
     padding-left: 0.25rem !important;
     padding-right: 0.25rem !important;

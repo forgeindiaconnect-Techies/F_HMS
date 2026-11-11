@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Search, Clock, CheckCircle2, ChevronRight, ShoppingBag, Truck, Utensils, AlertCircle, X, MapPin } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { getApiUrl } from '../../utils/axiosInstance';
+import { createReconnectingWebSocket } from '../../utils/wsClient';
 import toast from 'react-hot-toast';
 import LiveOrderMap from '../../components/LiveOrderMap';
 
 const getTypeIcon = (type) => {
     switch (type) {
+        case 'Dine In':
         case 'Dine-in': return <Utensils size={16} />;
         case 'Delivery': return <Truck size={16} />;
-        default: return <ShoppingBag size={16} />; // Takeaway
+        default: return <ShoppingBag size={16} />;
     }
 };
 
@@ -16,9 +19,15 @@ const getStatusColor = (status, isDelayed) => {
     if (isDelayed) return 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/60';
     switch (status) {
         case 'Pending':
+        case 'Accepted':
         case 'New': return 'bg-blue-50/70 dark:bg-slate-900 border-blue-200 dark:border-slate-800';
         case 'Preparing': return 'bg-orange-50/70 dark:bg-slate-900 border-orange-200 dark:border-slate-800';
-        case 'Ready': return 'bg-green-50/70 dark:bg-slate-900 border-green-200 dark:border-slate-800';
+        case 'Ready':
+        case 'Ready for Pickup':
+        case 'Ready for Dispatch': return 'bg-green-50/70 dark:bg-slate-900 border-green-200 dark:border-slate-800';
+        case 'Out for Delivery':
+        case 'Served':
+        case 'Picked Up':
         case 'Dispatched': return 'bg-purple-50/70 dark:bg-slate-900 border-purple-200 dark:border-slate-800';
         default: return 'bg-gray-50 dark:bg-slate-900 border-gray-200 dark:border-slate-800';
     }
@@ -46,19 +55,35 @@ const ManagerOrderMonitoring = () => {
 
     useEffect(() => {
         fetchOrders();
-        // Optional: Polling every 30 seconds
         const interval = setInterval(fetchOrders, 30000);
-        return () => clearInterval(interval);
-    }, []);
+        const cleanupWs = createReconnectingWebSocket({
+            apiUrl: getApiUrl(),
+            buildRegistrationPayload: () => {
+                const rawRestId = user?.restaurantId;
+                const cleanRestId = (rawRestId && typeof rawRestId === 'object') ? (rawRestId._id || rawRestId.id) : rawRestId;
+                return { restaurantId: cleanRestId || null, role: 'manager' };
+            },
+            onMessage: (msg) => {
+                if (['new_order', 'order_updated', 'order_status_updated', 'ready_to_serve'].includes(msg.type)) {
+                    fetchOrders();
+                }
+            }
+        });
+        return () => {
+            clearInterval(interval);
+            cleanupWs();
+        };
+    }, [user]);
 
     const handleStatusUpdate = async (id, newStatus) => {
         try {
             await api.put(`/orders/${id}/status`, { status: newStatus });
+            toast.success(`Order updated to ${newStatus}`);
             fetchOrders();
             setSelectedOrder(null);
         } catch (error) {
             console.error('Failed to update status', error);
-            toast.success('Failed to update order status');
+            toast.error(error.response?.data?.message || 'Failed to update order status');
         }
     };
 
@@ -80,8 +105,8 @@ const ManagerOrderMonitoring = () => {
     });
 
     // Calculate derived data
-    const activeOrders = tenantOrders.filter(o => o.status !== 'Completed' && o.status !== 'Cancelled');
-    const completedTodayCount = tenantOrders.filter(o => o.status === 'Completed').length;
+    const activeOrders = tenantOrders.filter(o => !['Completed', 'Delivered', 'Cancelled', 'Refunded'].includes(o.status));
+    const completedTodayCount = tenantOrders.filter(o => ['Completed', 'Delivered'].includes(o.status)).length;
 
     // Enhance active orders with "delayed" calculation and formatted time
     const enhancedOrders = activeOrders.map(order => {
@@ -106,16 +131,19 @@ const ManagerOrderMonitoring = () => {
     const filteredOrders = enhancedOrders.filter(o => {
         if (filterStatus === 'All') return true;
         if (filterStatus === 'Delayed') return o.isDelayed;
-        return o.status === filterStatus || (filterStatus === 'New' && o.status === 'Pending');
+        if (filterStatus === 'New') return o.status === 'Pending' || o.status === 'Accepted' || o.status === 'New';
+        if (filterStatus === 'Ready') return ['Ready', 'Ready for Pickup', 'Ready for Dispatch'].includes(o.status);
+        if (filterStatus === 'Dispatched') return ['Out for Delivery', 'Dispatched', 'Served', 'Picked Up'].includes(o.status);
+        return o.status === filterStatus;
     });
 
     // Counts for tabs
     const counts = {
         All: enhancedOrders.length,
-        New: enhancedOrders.filter(o => o.status === 'Pending' || o.status === 'New').length,
+        New: enhancedOrders.filter(o => ['Pending', 'Accepted', 'New'].includes(o.status)).length,
         Preparing: enhancedOrders.filter(o => o.status === 'Preparing').length,
-        Ready: enhancedOrders.filter(o => o.status === 'Ready').length,
-        Dispatched: enhancedOrders.filter(o => o.status === 'Dispatched').length,
+        Ready: enhancedOrders.filter(o => ['Ready', 'Ready for Pickup', 'Ready for Dispatch'].includes(o.status)).length,
+        Dispatched: enhancedOrders.filter(o => ['Out for Delivery', 'Dispatched', 'Served', 'Picked Up'].includes(o.status)).length,
         Delayed: delayedCount
     };
 
@@ -176,8 +204,8 @@ const ManagerOrderMonitoring = () => {
                                     <div>
                                         <h3 className="font-bold text-gray-900 dark:text-white text-lg">#{order._id.substring(order._id.length - 6).toUpperCase()}</h3>
                                         <p className="text-[10px] sm:text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide block leading-tight break-words">
-                                            {order.orderType || 'Dine-in'} 
-                                            {order.table && ` • Table ${order.table.number || order.table}`}
+                                            {order.orderType || 'Dine In'} 
+                                            {(order.tableNumber || order.table) && ` • Table ${order.tableNumber || order.table?.number || order.table}`}
                                         </p>
                                     </div>
                                 </div>
@@ -244,7 +272,7 @@ const ManagerOrderMonitoring = () => {
                             <div>
                                 <h4 className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block leading-tight break-words">Update Status</h4>
                                 <div className="grid grid-cols-2 gap-2.5">
-                                    {['Pending', 'Preparing', 'Ready', 'Dispatched', 'Completed', 'Cancelled'].map(status => (
+                                    {['Pending', 'Preparing', 'Ready', 'Out for Delivery', 'Completed', 'Cancelled'].map(status => (
                                         <button
                                             key={status}
                                             onClick={() => handleStatusUpdate(selectedOrder._id, status)}

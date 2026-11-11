@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getApiUrl } from '../../utils/axiosInstance';
+import { createReconnectingWebSocket } from '../../utils/wsClient';
 import toast from 'react-hot-toast';
 import KOTPrintModal from '../../components/KOTPrintModal';
 import { generateThermalKOTHtml, printKOTViaIframe, printKOTViaWindow } from '../../utils/receiptGenerator';
@@ -78,17 +79,24 @@ const ChefKOTManagement = () => {
         }
     };
 
-    // Live clock
+    // Elapsed-minute refresh every 30s (no unused 1s full-component re-render)
     const [currentTime, setCurrentTime] = useState(new Date());
+    const audioCtxRef = useRef(null);
     useEffect(() => {
-        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        const timer = setInterval(() => setCurrentTime(new Date()), 30000);
         return () => clearInterval(timer);
     }, []);
 
-    // Play kitchen bell audio
+    // Play kitchen bell audio reusing shared AudioContext
     const playKitchenBell = () => {
         try {
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const Ctx = window.AudioContext || window.webkitAudioContext;
+            if (!Ctx) return;
+            if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+                audioCtxRef.current = new Ctx();
+            }
+            const audioCtx = audioCtxRef.current;
+            if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'sine';
@@ -127,65 +135,36 @@ const ChefKOTManagement = () => {
 
     useEffect(() => {
         fetchKOTData();
-        const pollInterval = setInterval(fetchKOTData, 5000);
+        const pollInterval = setInterval(fetchKOTData, 20000);
         return () => clearInterval(pollInterval);
     }, [selectedStation, selectedStatus]);
 
     // WebSocket real-time listener for incoming KOTs
     useEffect(() => {
-        let ws;
-        const connectWS = () => {
-            try {
-                let baseURL = getApiUrl();
-                let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
-                ws = new WebSocket(wsURL);
-
-                ws.onopen = () => {
-                    const rawRestId = user?.restaurantId;
-                    const cleanRestId = (rawRestId && typeof rawRestId === 'object') ? (rawRestId._id || rawRestId.id) : rawRestId;
-                    ws.send(JSON.stringify({
-                        type: 'register',
-                        restaurantId: cleanRestId || null,
-                        role: 'chef'
-                    }));
-                };
-
-                ws.onmessage = (event) => {
-                    try {
-                        const msg = JSON.parse(event.data);
-                        if (['new_kot', 'kot_status_updated', 'new_order', 'order_updated'].includes(msg.type)) {
-                            fetchKOTData();
-
-                            if (msg.type === 'new_kot' || msg.type === 'new_order') {
-                                playKitchenBell();
-                                const kotPayload = msg.data?.orderData || msg.data;
-                                const kotNum = kotPayload?.kotNumber || kotPayload?.kotNumbers?.[0] || 'New KOT';
-                                const tableInfo = kotPayload?.tableNumber ? `Table ${kotPayload.tableNumber}` : 'Counter';
-                                
-                                toast.success(`🔔 ${kotNum} Received for ${tableInfo}!`, {
-                                    duration: 6000,
-                                    position: 'top-right'
-                                });
-
-                                // Trigger auto-print of thermal KOT slip
-                                autoPrintIncomingKOT(kotPayload);
-                            }
-                        }
-                    } catch (e) {}
-                };
-
-                ws.onclose = () => {
-                    setTimeout(connectWS, 5000);
-                };
-            } catch (wsErr) {
-                console.error('WebSocket connection error in ChefKOTManagement', wsErr);
+        return createReconnectingWebSocket({
+            apiUrl: getApiUrl(),
+            buildRegistrationPayload: () => {
+                const rawRestId = user?.restaurantId;
+                const cleanRestId = (rawRestId && typeof rawRestId === 'object') ? (rawRestId._id || rawRestId.id) : rawRestId;
+                return { restaurantId: cleanRestId || null, role: 'chef' };
+            },
+            onMessage: (msg) => {
+                if (['new_kot', 'kot_status_updated', 'new_order', 'order_updated'].includes(msg.type)) {
+                    fetchKOTData();
+                    if (msg.type === 'new_kot' || msg.type === 'new_order') {
+                        playKitchenBell();
+                        const kotPayload = msg.data?.orderData || msg.data;
+                        const kotNum = kotPayload?.kotNumber || kotPayload?.kotNumbers?.[0] || 'New KOT';
+                        const tableInfo = kotPayload?.tableNumber ? `Table ${kotPayload.tableNumber}` : 'Counter';
+                        toast.success(`🔔 ${kotNum} Received for ${tableInfo}!`, {
+                            duration: 6000,
+                            position: 'top-right'
+                        });
+                        autoPrintIncomingKOT(kotPayload);
+                    }
+                }
             }
-        };
-
-        connectWS();
-        return () => {
-            if (ws) ws.close();
-        };
+        });
     }, [user]);
 
     // Status transition handler with invalid status guard

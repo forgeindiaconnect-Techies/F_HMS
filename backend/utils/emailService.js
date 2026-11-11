@@ -335,7 +335,7 @@ export const sendSubscriptionSuccessEmail = async ({ email, name, restaurantName
 // 7-DAY FREE TRIAL & SUBSCRIPTION LIFECYCLE EMAIL NOTIFICATIONS (10 TRIGGERS)
 // ============================================================================
 
-const portalBaseUrl = process.env.FRONTEND_URL || 'https://f-hms-ten.vercel.app';
+const portalBaseUrl = process.env.RESTAURANT_FRONTEND_URL || process.env.FRONTEND_URL || 'https://f-hms-restaurant.vercel.app';
 
 /**
  * 1. Free trial subscription request submitted

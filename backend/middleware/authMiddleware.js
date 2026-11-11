@@ -4,23 +4,32 @@ import Role from '../models/Role.js';
 import Restaurant from '../models/Restaurant.js';
 import Branch from '../models/Branch.js';
 import Plan from '../models/Plan.js';
-import { sendSubscriptionExpiredEmail } from '../utils/emailService.js';
+import { checkSubscriptionAccess } from './subscriptionMiddleware.js';
+
+const getJwtSecret = () => process.env.JWT_SECRET || 'supersecretjwtkey123';
+
+const extractRequestToken = (req) => {
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        return req.headers.authorization.split(' ')[1];
+    }
+    if (req.cookies) {
+        return req.cookies.jwt || req.cookies.jwt_staff || req.cookies.jwt_customer || null;
+    }
+    return null;
+};
 
 export const protect = async (req, res, next) => {
-    let token;
-
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-        token = req.headers.authorization.split(' ')[1];
-    } else if (req.cookies && req.cookies.jwt) {
-        token = req.cookies.jwt;
-    }
+    const token = extractRequestToken(req);
 
     if (token) {
         try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'supersecretjwtkey123');
+            const decoded = jwt.verify(token, getJwtSecret());
             req.user = await User.findById(decoded.id).select('-password');
             if (!req.user) {
                 return res.status(401).json({ message: 'Not authorized, user not found' });
+            }
+            if (req.user.isActive === false || req.user.employmentStatus === 'Terminated') {
+                return res.status(401).json({ message: 'Account is deactivated or terminated' });
             }
 
             next();
@@ -33,17 +42,15 @@ export const protect = async (req, res, next) => {
 };
 
 export const optionalProtect = async (req, res, next) => {
-    let token;
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-        token = req.headers.authorization.split(' ')[1];
-    } else if (req.cookies && req.cookies.jwt) {
-        token = req.cookies.jwt;
-    }
+    const token = extractRequestToken(req);
 
     if (token) {
         try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'supersecretjwtkey123');
-            req.user = await User.findById(decoded.id).select('-password');
+            const decoded = jwt.verify(token, getJwtSecret());
+            const user = await User.findById(decoded.id).select('-password');
+            if (user && user.isActive !== false && user.employmentStatus !== 'Terminated') {
+                req.user = user;
+            }
         } catch (error) {
             // Token failed, but optional so ignore
         }
@@ -51,7 +58,7 @@ export const optionalProtect = async (req, res, next) => {
     next();
 };
 
-// Check for specific roles
+// Check for specific roles strictly (SuperAdmin is never conflated with RestaurantAdmin/Admin)
 export const authorize = (...roles) => {
     return (req, res, next) => {
         if (!req.user || !req.user.role) {
@@ -60,13 +67,20 @@ export const authorize = (...roles) => {
             });
         }
 
-        const userRole = String(req.user.role).trim().toLowerCase();
+        const userRole = String(req.user.role).trim().toLowerCase().replace(/\s+/g, '');
         const allowed = roles.some(role => {
-            const r = String(role).trim().toLowerCase();
-            return userRole === r || 
-                   userRole === r.replace(/\s+/g, '') || 
-                   (userRole.includes('superadmin') && r.includes('superadmin')) ||
-                   (userRole.includes('admin') && r.includes('admin'));
+            const r = String(role).trim().toLowerCase().replace(/\s+/g, '');
+            if (userRole === r) return true;
+            if ((r === 'restaurantadmin' || r === 'admin') && ['restaurantadmin', 'admin', 'owner'].includes(userRole)) {
+                return true;
+            }
+            if ((r === 'branchmanager' || r === 'manager') && ['branchmanager', 'manager'].includes(userRole)) {
+                return true;
+            }
+            if ((r === 'chef' || r === 'kitchen') && ['chef', 'kitchen'].includes(userRole)) {
+                return true;
+            }
+            return false;
         });
 
         if (!allowed) {
@@ -78,70 +92,8 @@ export const authorize = (...roles) => {
     };
 };
 
-// Check if restaurant subscription is active
-export const checkSubscription = async (req, res, next) => {
-    if (!req.user || !req.user.restaurantId || req.user.role === 'DeliveryPartner') {
-        return next(); // SuperAdmin, Customer, or DeliveryPartner, skip
-    }
-
-    // Bypass check for subscription & payment upgrade routes
-    if (
-        req.originalUrl.includes('/subscribe') || 
-        req.originalUrl.includes('/upgrade') || 
-        req.originalUrl.includes('/renew') || 
-        req.originalUrl.includes('/razorpay') || 
-        (req.method === 'GET' && req.originalUrl.includes('/mine'))
-    ) {
-        return next();
-    }
-
-    try {
-        let rId = req.user.restaurantId || req.user.restaurant;
-        if (!rId && req.user.branchId) {
-            const branchDoc = await Branch.findById(req.user.branchId);
-            if (branchDoc) rId = branchDoc.restaurantId;
-        }
-
-        if (!rId) {
-            return next();
-        }
-
-        const restaurant = await Restaurant.findById(rId);
-        if (!restaurant) {
-            return next();
-        }
-
-        const now = new Date();
-        const expiry = restaurant.subscription?.expiryDate ? new Date(restaurant.subscription.expiryDate) : null;
-
-        if (restaurant.subscription?.status === 'Frozen' || (expiry && now > expiry)) {
-            // Trigger Expiry Email Alert asynchronously
-            try {
-                if (req.user && req.user.email) {
-                    sendSubscriptionExpiredEmail({
-                        email: req.user.email,
-                        name: req.user.name,
-                        restaurantName: restaurant.name,
-                        plan: restaurant.subscription?.plan,
-                        expiryDate: expiry
-                    });
-                }
-            } catch (expErr) {
-                console.error("Expired email dispatch error:", expErr.message);
-            }
-
-            return res.status(402).json({ 
-                message: 'Your subscription has expired or is frozen. Please renew your subscription to continue.',
-                requiresSubscription: true
-            });
-        }
-        
-        req.restaurant = restaurant;
-        next();
-    } catch (error) {
-        res.status(500).json({ message: 'Failed to verify subscription' });
-    }
-};
+// Unified subscription enforcement alias so existing router imports get full freeze/expiry checks
+export const checkSubscription = checkSubscriptionAccess;
 
 // Check if restaurant is verified
 export const checkVerification = async (req, res, next) => {

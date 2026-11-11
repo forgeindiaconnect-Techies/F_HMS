@@ -724,13 +724,33 @@ const enrichPayrollWithAliases = (doc) => {
     };
 };
 
-const calculateEmployeePayrollItem = async (emp, m, y, restaurantId) => {
+const prefetchPayrollContext = async (restaurantId, employees, m, y) => {
+    const startDate = new Date(y, m - 1, 1);
+    const endDate = new Date(y, m, 0, 23, 59, 59, 999);
+    const empIds = employees.map(e => e._id);
+    const [restaurant, allAttendance] = await Promise.all([
+        Restaurant.findById(restaurantId).select('restaurantConfig').lean(),
+        empIds.length > 0
+            ? Attendance.find({ restaurantId, employee: { $in: empIds }, date: { $gte: startDate, $lte: endDate } }).lean()
+            : Promise.resolve([])
+    ]);
+    const attendanceMap = new Map();
+    for (const a of allAttendance) {
+        const key = String(a.employee);
+        if (!attendanceMap.has(key)) attendanceMap.set(key, []);
+        attendanceMap.get(key).push(a);
+    }
+    return { restaurant, attendanceMap };
+};
+
+const calculateEmployeePayrollItem = async (emp, m, y, restaurantId, prefetched = null) => {
     const startDate = new Date(y, m - 1, 1);
     const endDate = new Date(y, m, 0, 23, 59, 59, 999);
     const daysInMonth = new Date(y, m, 0).getDate();
 
-    // Fetch Restaurant LOP and Leave Policy
-    const restaurant = await Restaurant.findById(restaurantId).select('restaurantConfig');
+    // Reuse prefetched Restaurant & Attendance when calculating batches
+    const restaurant = prefetched?.restaurant
+        || await Restaurant.findById(restaurantId).select('restaurantConfig').lean();
     const payrollConfig = restaurant?.restaurantConfig?.payrollConfig || {};
     const lopPolicy = payrollConfig.lopCalculationPolicy || 'Configured_Working_Days';
 
@@ -741,12 +761,13 @@ const calculateEmployeePayrollItem = async (emp, m, y, restaurantId) => {
     const standardWorkDays = Number(config.monthlyWorkingDays) || 26;
     const dailyHours = Number(config.dailyWorkHours) || 8;
 
-    // Fetch attendance records for this employee in this month
-    const attendance = await Attendance.find({
-        restaurantId,
-        employee: emp._id,
-        date: { $gte: startDate, $lte: endDate }
-    });
+    const attendance = prefetched?.attendanceMap
+        ? (prefetched.attendanceMap.get(String(emp._id)) || [])
+        : await Attendance.find({
+            restaurantId,
+            employee: emp._id,
+            date: { $gte: startDate, $lte: endDate }
+        }).lean();
 
     let presentDays = 0;
     let absentDays = 0;
@@ -905,13 +926,11 @@ export const calculatePayroll = async (req, res) => {
             staffFilter.branchId = req.user.branchId;
         }
 
-        const employees = await User.find(staffFilter).populate('branchId', 'name');
-        const calculatedPayroll = [];
-
-        for (const emp of employees) {
-            const item = await calculateEmployeePayrollItem(emp, m, y, restaurantId);
-            calculatedPayroll.push(item);
-        }
+        const employees = await User.find(staffFilter).populate('branchId', 'name').lean();
+        const context = await prefetchPayrollContext(restaurantId, employees, m, y);
+        const calculatedPayroll = await Promise.all(
+            employees.map(emp => calculateEmployeePayrollItem(emp, m, y, restaurantId, context))
+        );
 
         res.json({
             month: m,
@@ -957,12 +976,11 @@ export const generatePayroll = async (req, res) => {
                 staffFilter.branchId = req.user.branchId;
             }
 
-            const employees = await User.find(staffFilter).populate('branchId', 'name');
-            itemsToProcess = [];
-            for (const emp of employees) {
-                const item = await calculateEmployeePayrollItem(emp, m, y, restaurantId);
-                itemsToProcess.push(item);
-            }
+            const employees = await User.find(staffFilter).populate('branchId', 'name').lean();
+            const context = await prefetchPayrollContext(restaurantId, employees, m, y);
+            itemsToProcess = await Promise.all(
+                employees.map(emp => calculateEmployeePayrollItem(emp, m, y, restaurantId, context))
+            );
         }
 
         const periodString = `${y}-${m.toString().padStart(2, '0')}`;

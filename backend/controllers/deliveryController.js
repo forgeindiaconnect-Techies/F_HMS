@@ -4,6 +4,7 @@ import DeliveryWithdrawal from '../models/DeliveryWithdrawal.js';
 import Order from '../models/Order.js';
 import Restaurant from '../models/Restaurant.js';
 import jwt from 'jsonwebtoken';
+import { broadcastToRestaurant, broadcastToCustomerOrder } from '../config/websocket.js';
 
 // Helper to generate JWT Token
 const generateToken = (id) => {
@@ -141,8 +142,6 @@ export const togglePartnerStatus = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
-import { broadcastToRestaurant, broadcastToCustomerOrder } from '../config/websocket.js';
 
 // @desc    Get assigned and available delivery orders
 // @route   GET /api/delivery/orders/assigned
@@ -525,11 +524,9 @@ export const assignDeliveryPartner = async (req, res) => {
         order.deliveryETA = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
         await order.save();
 
-        // Emit Socket Event
-        if (req.app.get('socketio')) {
-            const io = req.app.get('socketio');
-            io.emit('order_status_updated', order);
-        }
+        // Emit Real-time WebSocket update
+        broadcastToRestaurant(order.restaurantId, 'order_status_updated', order);
+        broadcastToCustomerOrder(order._id, 'order_status_updated', order);
 
         res.json(order);
     } catch (error) {
@@ -586,11 +583,9 @@ export const autoAssignDeliveryPartner = async (req, res) => {
         order.deliveryETA = new Date(Date.now() + 25 * 60 * 1000);
         await order.save();
 
-        // Socket Event
-        if (req.app.get('socketio')) {
-            const io = req.app.get('socketio');
-            io.emit('order_status_updated', order);
-        }
+        // Real-time WebSocket update
+        broadcastToRestaurant(order.restaurantId, 'order_status_updated', order);
+        broadcastToCustomerOrder(order._id, 'order_status_updated', order);
 
         res.json(order);
     } catch (error) {

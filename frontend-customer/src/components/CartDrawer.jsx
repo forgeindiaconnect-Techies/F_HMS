@@ -73,8 +73,8 @@ const CartDrawer = () => {
                                 <div className="flex-1 flex flex-col justify-between">
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <h3 className="font-bold text-gray-900 leading-tight">{item.name}</h3>
-                                            <p className="text-orange-600 font-bold text-sm mt-1">₹{item.price.toFixed(2)}</p>
+                                            <h3 className="font-bold text-gray-900 leading-tight">{item?.name || 'Menu Item'}</h3>
+                                            <p className="text-orange-600 font-bold text-sm mt-1">₹{(Number(item?.price) || 0).toFixed(2)}</p>
                                         </div>
                                         <button 
                                             onClick={() => removeFromCart(item.id)}

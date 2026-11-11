@@ -185,7 +185,7 @@ const TipManagement = () => {
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
                                 {uniqueWaiters.map((w, idx) => (
-                                    <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-850">
+                                    <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800">
                                         <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
                                             {w.waiterName || 'Table Service Staff'}
                                             {w.employeeId && <span className="text-[10px] text-slate-400 font-normal ml-1.5">({w.employeeId})</span>}
@@ -263,7 +263,7 @@ const TipManagement = () => {
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
                                 {filteredTips.map((tip) => (
-                                    <tr key={tip._id} className="hover:bg-slate-50 dark:hover:bg-slate-850">
+                                    <tr key={tip._id} className="hover:bg-slate-50 dark:hover:bg-slate-800">
                                         <td className="py-3.5 px-4 text-slate-500">
                                             {new Date(tip.date || tip.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
                                         </td>

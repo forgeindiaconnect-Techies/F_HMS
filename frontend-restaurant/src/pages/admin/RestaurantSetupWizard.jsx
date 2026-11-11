@@ -215,7 +215,7 @@ const RestaurantSetupWizard = ({ onComplete }) => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {/* KOT Toggle */}
-                                <div className="p-5 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850 space-y-3">
+                                <div className="p-5 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800 space-y-3">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-950/60 text-orange-600 flex items-center justify-center shrink-0">
@@ -245,7 +245,7 @@ const RestaurantSetupWizard = ({ onComplete }) => {
                                 </div>
 
                                 {/* KDS Toggle */}
-                                <div className="p-5 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850 space-y-3">
+                                <div className="p-5 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800 space-y-3">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 flex items-center justify-center shrink-0">
@@ -275,7 +275,7 @@ const RestaurantSetupWizard = ({ onComplete }) => {
                                 </div>
 
                                 {/* KOT Print Toggle */}
-                                <div className="p-5 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850 space-y-3 md:col-span-2">
+                                <div className="p-5 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800 space-y-3 md:col-span-2">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center shrink-0">
@@ -327,7 +327,7 @@ const RestaurantSetupWizard = ({ onComplete }) => {
                                     { role: 'Cashier', desc: 'POS billing terminal, cash drawer balance, split checks, and invoice GST printing.', badge: 'Billing' },
                                     { role: 'Delivery Partner', desc: 'Live GPS road tracking, delivery dispatch, customer OTP verification, and proof of drop-off.', badge: 'Logistics' },
                                 ].map((item, idx) => (
-                                    <div key={idx} className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850 space-y-2">
+                                    <div key={idx} className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800 space-y-2">
                                         <div className="flex items-center justify-between">
                                             <span className="text-xs font-black text-slate-900 dark:text-white">{item.role}</span>
                                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
@@ -371,7 +371,7 @@ const RestaurantSetupWizard = ({ onComplete }) => {
                             </div>
 
                             {/* Master QR Ordering Toggle */}
-                            <div className="p-5 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850 flex items-center justify-between">
+                            <div className="p-5 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800 flex items-center justify-between">
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2">
                                         <span className="text-sm font-black text-slate-900 dark:text-white">Enable QR Table Ordering</span>
@@ -484,7 +484,7 @@ const RestaurantSetupWizard = ({ onComplete }) => {
                             </div>
 
                             {/* Tips Master Toggle */}
-                            <div className="p-5 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850 flex items-center justify-between">
+                            <div className="p-5 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800 flex items-center justify-between">
                                 <div className="space-y-1">
                                     <span className="text-sm font-black text-slate-900 dark:text-white">Enable Waiter Tips Feature</span>
                                     <p className="text-xs text-slate-500">Show Tips tab, performance ledger, and settlement tools on the Waiter Dashboard.</p>
@@ -634,7 +634,7 @@ const RestaurantSetupWizard = ({ onComplete }) => {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {/* Kitchen Card */}
-                                <div className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850 space-y-2">
+                                <div className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800 space-y-2">
                                     <span className="text-[11px] font-black uppercase text-slate-400 tracking-wider">Kitchen & KOT</span>
                                     <div className="space-y-1 text-xs font-bold text-slate-800 dark:text-slate-200">
                                         <div className="flex justify-between"><span>KOT System:</span><span className={config.orderKitchen.kotEnabled ? 'text-emerald-600' : 'text-slate-400'}>{config.orderKitchen.kotEnabled ? 'Enabled' : 'Disabled'}</span></div>
@@ -644,7 +644,7 @@ const RestaurantSetupWizard = ({ onComplete }) => {
                                 </div>
 
                                 {/* QR Ordering Card */}
-                                <div className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850 space-y-2">
+                                <div className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800 space-y-2">
                                     <span className="text-[11px] font-black uppercase text-slate-400 tracking-wider">QR & Service Modes</span>
                                     <div className="space-y-1 text-xs font-bold text-slate-800 dark:text-slate-200">
                                         <div className="flex justify-between"><span>QR Ordering:</span><span className={config.qrOrdering.enabled ? 'text-emerald-600' : 'text-slate-400'}>{config.qrOrdering.enabled ? 'Enabled' : 'Disabled'}</span></div>
@@ -654,7 +654,7 @@ const RestaurantSetupWizard = ({ onComplete }) => {
                                 </div>
 
                                 {/* Tips Card */}
-                                <div className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850 space-y-2">
+                                <div className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800 space-y-2">
                                     <span className="text-[11px] font-black uppercase text-slate-400 tracking-wider">Gratuity & Tips</span>
                                     <div className="space-y-1 text-xs font-bold text-slate-800 dark:text-slate-200">
                                         <div className="flex justify-between"><span>Waiter Tips:</span><span className={config.waiterTips.enabled ? 'text-emerald-600' : 'text-slate-400'}>{config.waiterTips.enabled ? 'Enabled' : 'Disabled'}</span></div>
@@ -663,7 +663,7 @@ const RestaurantSetupWizard = ({ onComplete }) => {
                                 </div>
 
                                 {/* Payments Card */}
-                                <div className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850 space-y-2">
+                                <div className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800 space-y-2">
                                     <span className="text-[11px] font-black uppercase text-slate-400 tracking-wider">Active Payment Methods</span>
                                     <div className="flex flex-wrap gap-1.5 pt-1">
                                         {config.paymentMethods.cash && <span className="px-2 py-0.5 rounded-md bg-green-100 text-green-800 text-[10px] font-bold">Cash</span>}

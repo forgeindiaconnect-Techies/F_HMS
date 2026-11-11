@@ -12,20 +12,22 @@ const ChefPrepList = () => {
         try {
             setLoading(true);
             const res = await api.get('/orders');
-            // Filter accepted or preparing orders
-            const activeOrders = res.data.filter(o => o.status === 'Accepted' || o.status === 'Preparing');
+            // Filter pending, accepted or preparing orders
+            const ordersArr = Array.isArray(res.data) ? res.data : [];
+            const activeOrders = ordersArr.filter(o => ['Pending', 'Accepted', 'Preparing'].includes(o.status));
             
             // Consolidate identical items needing preparation
             const itemMap = {};
             activeOrders.forEach(order => {
-                order.orderItems.forEach(item => {
+                (order.orderItems || []).forEach(item => {
+                    const q = item.qty || item.quantity || 1;
                     if (itemMap[item.name]) {
-                        itemMap[item.name].qty += item.qty;
+                        itemMap[item.name].qty += q;
                         itemMap[item.name].orders.push(order._id);
                     } else {
                         itemMap[item.name] = {
                             name: item.name,
-                            qty: item.qty,
+                            qty: q,
                             completed: order.status === 'Preparing' && order.orderItems.every(oi => oi.name !== item.name), // partial status simulation
                             priority: order.orderType === 'Delivery' ? 'High' : 'Medium',
                             time: new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),

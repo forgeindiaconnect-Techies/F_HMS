@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { 
     Receipt, CreditCard, Banknote, QrCode, Search, Download, 
     Printer, CheckCircle2, AlertCircle, Clock, ArrowUpRight, ArrowDownRight, 
@@ -244,15 +244,25 @@ const BillingManagement = () => {
         setSettleCashTendered('');
     };
 
+    // Shared settle calculation used identically by confirmation & modal preview
+    const getSettleBreakdown = useCallback((order, discountPct) => {
+        if (!order) return { rawSubtotal: 0, discountAmt: 0, taxAmt: 0, finalTotal: 0 };
+        const items = order.orderItems || [];
+        const rawSubtotal = items.length > 0
+            ? items.reduce((sum, i) => sum + ((Number(i.price) || 0) * (Number(i.qty || i.quantity) || 1)), 0)
+            : (Number(order.totalPrice) || 0);
+        const discountAmt = rawSubtotal * ((Number(discountPct) || 0) / 100);
+        const discountedBase = Math.max(0, rawSubtotal - discountAmt);
+        const taxAmt = Math.round(discountedBase * 0.05 * 100) / 100;
+        const finalTotal = Math.round((discountedBase + taxAmt) * 100) / 100;
+        return { rawSubtotal, discountAmt, taxAmt, finalTotal };
+    }, []);
+
     const handleConfirmSettle = async () => {
         if (!settleModalOrder) return;
         setIsSubmittingSettle(true);
         try {
-            const rawSubtotal = settleModalOrder.orderItems?.reduce((sum, i) => sum + (i.price * (i.qty || i.quantity || 1)), 0) || settleModalOrder.totalPrice;
-            const discountAmt = rawSubtotal * (settleDiscountPct / 100);
-            const discountedBase = Math.max(0, rawSubtotal - discountAmt);
-            const taxAmt = discountedBase * 0.05; // 5% GST
-            const finalTotal = Math.round((discountedBase + taxAmt) * 100) / 100;
+            const { taxAmt, finalTotal } = getSettleBreakdown(settleModalOrder, settleDiscountPct);
 
             await api.put(`/orders/${settleModalOrder._id}/pay`, {
                 paymentMethod: settleMethod,
@@ -1322,40 +1332,45 @@ const BillingManagement = () => {
                         </div>
 
                         {/* Order breakdown summary */}
-                        <div className="bg-gray-50 dark:bg-slate-800/50 p-3.5 rounded-xl space-y-1.5 text-xs">
-                            <div className="flex justify-between text-gray-500">
-                                <span>Items Subtotal ({settleModalOrder.orderItems?.length || 1} items)</span>
-                                <span className="font-bold text-gray-900 dark:text-white">
-                                    ₹{(settleModalOrder.orderItems?.reduce((sum, i) => sum + (i.price * (i.qty || 1)), 0) || settleModalOrder.totalPrice).toFixed(2)}
-                                </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-gray-500">Discount Applicable</span>
-                                <div className="flex items-center gap-1.5">
-                                    {[0, 5, 10, 15].map(d => (
-                                        <button 
-                                            key={d}
-                                            onClick={() => setSettleDiscountPct(d)}
-                                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${settleDiscountPct === d ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-300'}`}
-                                        >
-                                            {d}%
-                                        </button>
-                                    ))}
+                        {(() => {
+                            const { rawSubtotal, taxAmt, finalTotal } = getSettleBreakdown(settleModalOrder, settleDiscountPct);
+                            return (
+                                <div className="bg-gray-50 dark:bg-slate-800/50 p-3.5 rounded-xl space-y-1.5 text-xs">
+                                    <div className="flex justify-between text-gray-500">
+                                        <span>Items Subtotal ({settleModalOrder.orderItems?.length || 1} items)</span>
+                                        <span className="font-bold text-gray-900 dark:text-white">
+                                            ₹{rawSubtotal.toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-gray-500">Discount Applicable</span>
+                                        <div className="flex items-center gap-1.5">
+                                            {[0, 5, 10, 15].map(d => (
+                                                <button 
+                                                    key={d}
+                                                    onClick={() => setSettleDiscountPct(d)}
+                                                    className={`px-2 py-0.5 rounded text-[10px] font-bold ${settleDiscountPct === d ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-300'}`}
+                                                >
+                                                    {d}%
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between text-gray-500">
+                                        <span>Taxes (5% GST)</span>
+                                        <span className="font-bold text-gray-900 dark:text-white">
+                                            ₹{taxAmt.toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-baseline pt-2 border-t border-gray-200 dark:border-slate-700 text-sm">
+                                        <span className="font-bold text-gray-900 dark:text-white">Final Amount to Settle</span>
+                                        <span className="text-xl font-black text-emerald-600" style={{ fontFamily: 'Manrope, sans-serif' }}>
+                                            ₹{finalTotal.toFixed(2)}
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="flex justify-between text-gray-500">
-                                <span>Taxes (5% GST)</span>
-                                <span className="font-bold text-gray-900 dark:text-white">
-                                    ₹{(((settleModalOrder.totalPrice || 0) * (1 - settleDiscountPct/100)) * 0.05).toFixed(2)}
-                                </span>
-                            </div>
-                            <div className="flex justify-between items-baseline pt-2 border-t border-gray-200 dark:border-slate-700 text-sm">
-                                <span className="font-bold text-gray-900 dark:text-white">Final Amount to Settle</span>
-                                <span className="text-xl font-black text-emerald-600" style={{ fontFamily: 'Manrope, sans-serif' }}>
-                                    ₹{(((settleModalOrder.totalPrice || 0) * (1 - settleDiscountPct/100)) * 1.05).toFixed(2)}
-                                </span>
-                            </div>
-                        </div>
+                            );
+                        })()}
 
                         {/* Payment Method Selector */}
                         <div>

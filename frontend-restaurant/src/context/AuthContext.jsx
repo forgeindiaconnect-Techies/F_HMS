@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { getApiUrl } from '../utils/axiosInstance';
+import { evaluateClientSubscriptionFreeze } from '../utils/subscriptionClient';
 
 const AuthContext = createContext();
 
@@ -61,12 +62,29 @@ api.interceptors.response.use(
                 }
             }
         }
-        if (error.response && error.response.status === 402) {
-            console.warn('[Subscription Over] Action blocked by server: Subscription expired or frozen.');
+        if (error.response && (error.response.status === 402 || (error.response.status === 403 && error.response.data?.isFrozen))) {
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('subscription-frozen', { detail: error.response.data }));
+            }
         }
         return Promise.reject(error);
     }
 );
+
+const isStaffPortalPath = (path) => {
+    return (
+        path.startsWith('/admin') ||
+        path.startsWith('/staff') ||
+        path.startsWith('/kitchen') ||
+        path.startsWith('/pos') ||
+        path.startsWith('/owner') ||
+        path.startsWith('/waiter') ||
+        path.startsWith('/chef') ||
+        path.startsWith('/cashier') ||
+        path.startsWith('/manager') ||
+        path.startsWith('/delivery')
+    );
+};
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
@@ -82,9 +100,9 @@ export const AuthProvider = ({ children }) => {
 
     const fetchRestaurant = useCallback(async (currentUser = user) => {
         const path = typeof window !== 'undefined' ? window.location.pathname : '';
-        const isStaffRoute = path.startsWith('/admin') || path.startsWith('/staff') || path.startsWith('/kitchen') || path.startsWith('/pos') || path.startsWith('/owner') || path.startsWith('/waiter') || path.startsWith('/chef') || path.startsWith('/cashier') || path.startsWith('/manager');
-        
-        if (!isStaffRoute || !currentUser || currentUser.role === 'Customer' || currentUser.role === 'SuperAdmin' || currentUser.role === 'DeliveryPartner') {
+        const isStaffRoute = isStaffPortalPath(path);
+
+        if (!isStaffRoute || !currentUser || ['Customer', 'SuperAdmin', 'SupportAgent'].includes(currentUser.role)) {
             setRestaurant(null);
             return null;
         }
@@ -130,22 +148,71 @@ export const AuthProvider = ({ children }) => {
         initializeAuth();
     }, []);
 
-    // Auto-refresh restaurant subscription data every 30s and on window focus (Staff/Admin only on staff pages)
+    // Auto-refresh restaurant subscription data every 30s, on window focus, on server 402/403 freeze event, and live via WS
     useEffect(() => {
         const path = typeof window !== 'undefined' ? window.location.pathname : '';
-        const isStaffRoute = path.startsWith('/admin') || path.startsWith('/staff') || path.startsWith('/kitchen') || path.startsWith('/pos') || path.startsWith('/owner') || path.startsWith('/waiter') || path.startsWith('/chef') || path.startsWith('/cashier') || path.startsWith('/manager');
+        const isStaffRoute = isStaffPortalPath(path);
 
-        if (!isStaffRoute || !user || user.role === 'Customer' || user.role === 'SuperAdmin' || user.role === 'DeliveryPartner') return;
+        if (!isStaffRoute || !user || ['Customer', 'SuperAdmin', 'SupportAgent'].includes(user.role)) return;
 
         const refresh = () => fetchRestaurant(user);
         window.addEventListener('focus', refresh);
+        window.addEventListener('subscription-frozen', refresh);
         const interval = setInterval(refresh, 30000);
 
+        let ws = null;
+        let reconnectTimer = null;
+        let isUnmounted = false;
+
+        const connectSubWS = () => {
+            if (isUnmounted || !user?.restaurantId) return;
+            try {
+                const wsURL = getApiUrl().replace(/^http/, 'ws').replace(/\/api$/, '');
+                ws = new WebSocket(wsURL);
+                ws.onopen = () => {
+                    const cleanRestId = typeof user.restaurantId === 'object' ? (user.restaurantId._id || user.restaurantId.id) : user.restaurantId;
+                    ws.send(JSON.stringify({
+                        type: 'register',
+                        token: user.token || localStorage.getItem('token') || undefined,
+                        restaurantId: cleanRestId,
+                        role: user.role,
+                    }));
+                };
+                ws.onmessage = (event) => {
+                    try {
+                        const msg = JSON.parse(event.data);
+                        if (msg.type === 'subscription_updated' && msg.data?.subscription) {
+                            setRestaurant((prev) => {
+                                if (!prev) return prev;
+                                const updated = { ...prev, subscription: { ...(prev.subscription || {}), ...msg.data.subscription } };
+                                try { localStorage.setItem('restosys_restaurant', JSON.stringify(updated)); } catch (_) {}
+                                return updated;
+                            });
+                            fetchRestaurant(user);
+                        }
+                    } catch (_) {}
+                };
+                ws.onclose = () => {
+                    if (!isUnmounted) {
+                        reconnectTimer = setTimeout(connectSubWS, 8000);
+                    }
+                };
+            } catch (_) {}
+        };
+
+        connectSubWS();
+
         return () => {
+            isUnmounted = true;
             window.removeEventListener('focus', refresh);
+            window.removeEventListener('subscription-frozen', refresh);
             clearInterval(interval);
+            if (reconnectTimer) clearTimeout(reconnectTimer);
+            if (ws) ws.close();
         };
     }, [user, fetchRestaurant]);
+
+    const subscriptionState = useMemo(() => evaluateClientSubscriptionFreeze(user, restaurant), [user, restaurant]);
 
     const clearAllStaleState = () => {
         setUser(null);
@@ -210,7 +277,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, setUser, restaurant, fetchRestaurant, login, register, logout, loading, api }}>
+        <AuthContext.Provider value={{ user, setUser, restaurant, subscriptionState, fetchRestaurant, login, register, logout, loading, api }}>
             {!loading && children}
         </AuthContext.Provider>
     );

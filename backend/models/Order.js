@@ -111,7 +111,7 @@ const orderSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-        enum: ['Pending', 'Accepted', 'Preparing', 'Ready', 'Ready for Pickup', 'Picked Up', 'Ready for Dispatch', 'Served', 'Billing Requested', 'Out for Delivery', 'Delivered', 'Cancelled', 'Completed'],
+        enum: ['Pending', 'Accepted', 'Preparing', 'Ready', 'Ready for Pickup', 'Picked Up', 'Ready for Dispatch', 'Served', 'Billing Requested', 'Out for Delivery', 'Delivered', 'Cancelled', 'Completed', 'Refunded'],
         default: 'Pending'
     },
     kitchenMode: {

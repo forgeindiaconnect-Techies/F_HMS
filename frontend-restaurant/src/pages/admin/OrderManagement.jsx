@@ -1,29 +1,50 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Search, Clock, CheckCircle2, ChefHat, Bike, Eye, Package, X, RefreshCw, UtensilsCrossed, Truck } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { getApiUrl } from '../../utils/axiosInstance';
+import { createReconnectingWebSocket } from '../../utils/wsClient';
 import toast from 'react-hot-toast';
-
-const STATUS_FLOW = ['Pending', 'Preparing', 'Ready', 'On the way', 'Delivered'];
 
 const getStatusColor = (status) => {
     switch(status) {
-        case 'Pending':    return 'bg-blue-100 text-blue-700 border-blue-200';
-        case 'Preparing':  return 'bg-orange-100 text-orange-700 border-orange-200';
-        case 'Ready':      return 'bg-green-100 text-green-700 border-green-200';
-        case 'On the way': return 'bg-purple-100 text-purple-700 border-purple-200';
-        case 'Delivered':  return 'bg-gray-100 text-gray-600 border-gray-200';
-        default:           return 'bg-gray-100 text-gray-700 border-gray-200';
+        case 'Pending':
+        case 'Accepted':           return 'bg-blue-100 text-blue-700 border-blue-200';
+        case 'Preparing':          return 'bg-orange-100 text-orange-700 border-orange-200';
+        case 'Ready':
+        case 'Ready for Pickup':
+        case 'Ready for Dispatch': return 'bg-green-100 text-green-700 border-green-200';
+        case 'Out for Delivery':
+        case 'Served':
+        case 'Picked Up':
+        case 'Billing Requested':  return 'bg-purple-100 text-purple-700 border-purple-200';
+        case 'Delivered':
+        case 'Completed':          return 'bg-gray-100 text-gray-600 border-gray-200';
+        default:                   return 'bg-gray-100 text-gray-700 border-gray-200';
     }
 };
 
-const getNextStatus = (current) => {
-    const idx = STATUS_FLOW.indexOf(current);
-    return idx >= 0 && idx < STATUS_FLOW.length - 1 ? STATUS_FLOW[idx + 1] : null;
+const getNextStatus = (order) => {
+    if (!order) return null;
+    const { status, orderType } = order;
+    if (status === 'Pending' || status === 'Accepted') return 'Preparing';
+    if (status === 'Preparing') {
+        if (orderType === 'Delivery') return 'Ready for Dispatch';
+        if (orderType === 'Takeaway' || orderType === 'Self-Pickup') return 'Ready for Pickup';
+        return 'Ready';
+    }
+    if (['Ready', 'Ready for Pickup', 'Ready for Dispatch'].includes(status)) {
+        if (orderType === 'Delivery') return 'Out for Delivery';
+        if (orderType === 'Dine In') return 'Served';
+        return 'Completed';
+    }
+    if (status === 'Out for Delivery') return 'Delivered';
+    if (['Served', 'Picked Up', 'Billing Requested'].includes(status)) return 'Completed';
+    return null;
 };
 
 /* ── Order Detail Modal ─────────────────────────────────────────── */
 const OrderDetailModal = ({ order, onClose, onAdvance, onPickup }) => {
-    const nextStatus = getNextStatus(order.status);
+    const nextStatus = getNextStatus(order);
     return (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-700 w-full max-w-md">
@@ -40,18 +61,21 @@ const OrderDetailModal = ({ order, onClose, onAdvance, onPickup }) => {
 
                 {/* Items */}
                 <div className="p-5 space-y-2 max-h-60 overflow-y-auto">
-                    {(order.orderItems || []).map((item, i) => (
-                        <div key={i} className="flex justify-between items-center py-2 border-b border-gray-50 dark:border-slate-800 last:border-0">
-                            <div>
-                                <p className="text-sm font-semibold text-gray-800 dark:text-slate-200">{item.name}</p>
-                                {item.addons?.length > 0 && <p className="text-xs text-gray-400">+{item.addons.join(', ')}</p>}
+                    {(order.orderItems || []).map((item, i) => {
+                        const qty = item.qty || item.quantity || 1;
+                        return (
+                            <div key={i} className="flex justify-between items-center py-2 border-b border-gray-50 dark:border-slate-800 last:border-0">
+                                <div>
+                                    <p className="text-sm font-semibold text-gray-800 dark:text-slate-200">{item.name}</p>
+                                    {item.addons?.length > 0 && <p className="text-xs text-gray-400">+{item.addons.join(', ')}</p>}
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-xs text-gray-500">×{qty}</p>
+                                    <p className="text-sm font-bold text-green-600">₹{((item.price || 0) * qty).toFixed(0)}</p>
+                                </div>
                             </div>
-                            <div className="text-right">
-                                <p className="text-xs text-gray-500">×{item.quantity}</p>
-                                <p className="text-sm font-bold text-green-600">₹{(item.price * item.quantity).toFixed(0)}</p>
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
 
                 {/* Footer */}
@@ -61,7 +85,7 @@ const OrderDetailModal = ({ order, onClose, onAdvance, onPickup }) => {
                         <span className="font-black text-lg text-green-600">₹{(order.totalPrice || 0).toFixed(2)}</span>
                     </div>
                     <div className="flex gap-2">
-                        {order.orderType === 'Takeaway' && order.status !== 'Delivered' && (
+                        {(order.orderType === 'Takeaway' || order.orderType === 'Self-Pickup') && !['Completed', 'Delivered'].includes(order.status) && (
                             <button
                                 onClick={() => { onPickup(order); onClose(); }}
                                 className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2"
@@ -85,8 +109,7 @@ const OrderDetailModal = ({ order, onClose, onAdvance, onPickup }) => {
 };
 
 /* ── Kanban Card ────────────────────────────────────────────────── */
-const OrderCard = ({ order, onView, onAdvance, onPickup }) => {
-    const nextStatus = getNextStatus(order.status);
+const OrderCard = ({ order, onView }) => {
     return (
         <div 
             onClick={() => onView(order)}
@@ -97,13 +120,13 @@ const OrderCard = ({ order, onView, onAdvance, onPickup }) => {
                     #{order.orderNumber || (order._id || '').slice(-6)}
                 </span>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${getStatusColor(order.status)}`}>
-                    {order.orderType || 'Dine-in'}
+                    {order.orderType || 'Dine In'}
                 </span>
             </div>
 
             <div className="space-y-1.5 mb-4">
                 <p className="text-sm text-gray-600 dark:text-slate-300 font-medium">
-                    {order.customerName || order.customerId?.name || 'Walk-in'}
+                    {order.customerName || order.user?.name || order.customerId?.name || 'Walk-in'}
                 </p>
                 {order.tableNumber && (
                     <p className="text-xs text-gray-500 dark:text-slate-400 flex items-center gap-1">
@@ -133,7 +156,7 @@ const OrderCard = ({ order, onView, onAdvance, onPickup }) => {
 
 /* ── Main Component ─────────────────────────────────────────────── */
 const OrderManagement = () => {
-    const { api } = useAuth();
+    const { api, user } = useAuth();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [view, setView] = useState('kanban');
@@ -143,9 +166,9 @@ const OrderManagement = () => {
     const fetchOrders = useCallback(async () => {
         try {
             const res = await api.get('/orders?limit=200');
-            // Show only active orders (not delivered/cancelled)
+            // Show only active orders (exclude Completed/Delivered/Cancelled/Refunded)
             const active = (res.data?.orders || res.data || []).filter(
-                o => !['Delivered', 'Cancelled'].includes(o.status)
+                o => !['Delivered', 'Completed', 'Cancelled', 'Refunded'].includes(o.status)
             );
             setOrders(active);
         } catch (error) {
@@ -158,9 +181,25 @@ const OrderManagement = () => {
 
     useEffect(() => {
         fetchOrders();
-        const interval = setInterval(fetchOrders, 30000); // auto-refresh every 30s
-        return () => clearInterval(interval);
-    }, [fetchOrders]);
+        const interval = setInterval(fetchOrders, 30000);
+        const cleanupWs = createReconnectingWebSocket({
+            apiUrl: getApiUrl(),
+            buildRegistrationPayload: () => {
+                const rawRestId = user?.restaurantId;
+                const cleanRestId = (rawRestId && typeof rawRestId === 'object') ? (rawRestId._id || rawRestId.id) : rawRestId;
+                return { restaurantId: cleanRestId || null, role: 'admin' };
+            },
+            onMessage: (msg) => {
+                if (['new_order', 'order_updated', 'order_status_updated', 'ready_to_serve'].includes(msg.type)) {
+                    fetchOrders();
+                }
+            }
+        });
+        return () => {
+            clearInterval(interval);
+            cleanupWs();
+        };
+    }, [fetchOrders, user]);
 
     const handleAdvanceStatus = async (order, nextStatus) => {
         try {
@@ -174,8 +213,8 @@ const OrderManagement = () => {
 
     const handlePickup = async (order) => {
         try {
-            await api.put(`/orders/${order._id}/status`, { status: 'Delivered' });
-            toast.success('Order marked as picked up!');
+            await api.put(`/orders/${order._id}/status`, { status: 'Completed' });
+            toast.success('Order marked as picked up & completed!');
             fetchOrders();
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to mark as picked up');
@@ -188,17 +227,18 @@ const OrderManagement = () => {
             (o._id || '').toLowerCase().includes(query) ||
             (o.orderNumber || '').toLowerCase().includes(query) ||
             (o.customerName || '').toLowerCase().includes(query) ||
+            (o.user?.name || '').toLowerCase().includes(query) ||
             (o.customerId?.name || '').toLowerCase().includes(query)
         );
     });
 
-    const getColumn = (status) => filteredOrders.filter(o => o.status === status);
+    const getColumn = (statuses) => filteredOrders.filter(o => statuses.includes(o.status));
 
     const columns = [
-        { key: 'Pending',    label: 'New Orders',      color: 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900/30',   headerColor: 'text-blue-800 dark:text-blue-300',   countBg: 'bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200' },
-        { key: 'Preparing',  label: 'Preparing',        color: 'bg-orange-50/30 dark:bg-orange-950/20 border-orange-100/50 dark:border-orange-900/30', headerColor: 'text-orange-800 dark:text-orange-300', countBg: 'bg-orange-200 dark:bg-orange-900 text-orange-800 dark:text-orange-200' },
-        { key: 'Ready',      label: 'Ready',            color: 'bg-green-50/30 dark:bg-green-950/20 border-green-100/50 dark:border-green-900/30',   headerColor: 'text-green-800 dark:text-green-300',   countBg: 'bg-green-200 dark:bg-green-900 text-green-800 dark:text-green-200' },
-        { key: 'On the way', label: 'Out for Delivery', color: 'bg-purple-50/30 dark:bg-purple-950/20 border-purple-100/50 dark:border-purple-900/30', headerColor: 'text-purple-800 dark:text-purple-300', countBg: 'bg-purple-200 dark:bg-purple-900 text-purple-800 dark:text-purple-200' },
+        { key: 'Pending',          statuses: ['Pending', 'Accepted'], label: 'New Orders',      color: 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900/30',   headerColor: 'text-blue-800 dark:text-blue-300',   countBg: 'bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200' },
+        { key: 'Preparing',        statuses: ['Preparing'], label: 'Preparing',        color: 'bg-orange-50/30 dark:bg-orange-950/20 border-orange-100/50 dark:border-orange-900/30', headerColor: 'text-orange-800 dark:text-orange-300', countBg: 'bg-orange-200 dark:bg-orange-900 text-orange-800 dark:text-orange-200' },
+        { key: 'Ready',            statuses: ['Ready', 'Ready for Pickup', 'Ready for Dispatch'], label: 'Ready',            color: 'bg-green-50/30 dark:bg-green-950/20 border-green-100/50 dark:border-green-900/30',   headerColor: 'text-green-800 dark:text-green-300',   countBg: 'bg-green-200 dark:bg-green-900 text-green-800 dark:text-green-200' },
+        { key: 'Out for Delivery', statuses: ['Out for Delivery', 'Served', 'Picked Up', 'Billing Requested'], label: 'Serving / Out for Delivery', color: 'bg-purple-50/30 dark:bg-purple-950/20 border-purple-100/50 dark:border-purple-900/30', headerColor: 'text-purple-800 dark:text-purple-300', countBg: 'bg-purple-200 dark:bg-purple-900 text-purple-800 dark:text-purple-200' },
     ];
 
     return (
@@ -250,7 +290,7 @@ const OrderManagement = () => {
             {!loading && view === 'kanban' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 items-start">
                     {columns.map(col => {
-                        const colOrders = getColumn(col.key);
+                        const colOrders = getColumn(col.statuses);
                         return (
                             <div key={col.key} className={`rounded-xl p-4 border min-h-[400px] ${col.color}`}>
                                 <h3 className={`font-bold mb-4 flex items-center justify-between uppercase text-xs tracking-wider ${col.headerColor}`}>
@@ -279,8 +319,8 @@ const OrderManagement = () => {
 
             {/* List View */}
             {!loading && view === 'list' && (
-                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden">
-                    <table className="w-full text-sm">
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-x-auto">
+                    <table className="w-full text-sm min-w-[640px]">
                         <thead>
                             <tr className="bg-gray-50 dark:bg-slate-900 text-gray-500 dark:text-slate-400 text-xs uppercase tracking-wider">
                                 <th className="text-left px-5 py-3 font-semibold">Order</th>
@@ -296,14 +336,14 @@ const OrderManagement = () => {
                                 <tr><td colSpan={6} className="text-center py-12 text-gray-400 dark:text-slate-500">No active orders found</td></tr>
                             )}
                             {filteredOrders.map(order => {
-                                const nextStatus = getNextStatus(order.status);
+                                const nextStatus = getNextStatus(order);
                                 return (
                                     <tr key={order._id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
                                         <td className="px-5 py-3 font-bold text-gray-900 dark:text-white">
                                             #{order.orderNumber || (order._id || '').slice(-6)}
                                         </td>
                                         <td className="px-5 py-3 text-gray-700 dark:text-slate-300">
-                                            {order.customerName || order.customerId?.name || 'Walk-in'}
+                                            {order.customerName || order.user?.name || order.customerId?.name || 'Walk-in'}
                                         </td>
                                         <td className="px-5 py-3 text-gray-500 dark:text-slate-400">{order.orderType}</td>
                                         <td className="px-5 py-3">

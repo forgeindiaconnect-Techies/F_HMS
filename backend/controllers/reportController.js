@@ -579,42 +579,46 @@ export const generateReport = async (req, res) => {
         }
 
         // Backward compatibility for legacy numeric reports (2: Item Performance, 3: Staff Shift, 4: Tax)
-        else if (reportType === 2) {
-            const matchStage = { 
-                status: 'Completed',
+        else if (reportType === 2 || reportType === '2') {
+            const matchStage = {
+                status: { $nin: ['Cancelled', 'Refunded'] },
                 restaurantId: restObjId,
                 createdAt: { $gte: start, $lte: end }
             };
-            if (effectiveBranchId) matchStage.branch = effectiveBranchId;
+            if (effectiveBranchId && mongoose.Types.ObjectId.isValid(effectiveBranchId)) {
+                matchStage.branchId = new mongoose.Types.ObjectId(effectiveBranchId);
+            }
 
             reportData = await Order.aggregate([
                 { $match: matchStage },
-                { $unwind: '$items' },
+                { $unwind: '$orderItems' },
                 {
                     $group: {
-                        _id: '$items.menuItem',
-                        name: { $first: '$items.name' },
-                        quantitySold: { $sum: '$items.quantity' },
-                        totalRevenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
+                        _id: { $ifNull: ['$orderItems.product', '$orderItems.name'] },
+                        name: { $first: '$orderItems.name' },
+                        quantitySold: { $sum: { $ifNull: ['$orderItems.qty', 1] } },
+                        totalRevenue: { $sum: { $multiply: [{ $ifNull: ['$orderItems.price', 0] }, { $ifNull: ['$orderItems.qty', 1] }] } }
                     }
                 },
                 { $sort: { quantitySold: -1 } }
             ]);
-        } else if (reportType === 3) {
-            const matchStage = { 
-                status: 'Completed',
+        } else if (reportType === 3 || reportType === '3') {
+            const matchStage = {
+                status: { $nin: ['Cancelled', 'Refunded'] },
                 restaurantId: restObjId,
                 createdAt: { $gte: start, $lte: end }
             };
-            if (effectiveBranchId) matchStage.branch = effectiveBranchId;
+            if (effectiveBranchId && mongoose.Types.ObjectId.isValid(effectiveBranchId)) {
+                matchStage.branchId = new mongoose.Types.ObjectId(effectiveBranchId);
+            }
 
             reportData = await Order.aggregate([
                 { $match: matchStage },
                 {
                     $group: {
-                        _id: '$server',
+                        _id: { $ifNull: ['$waiter', '$user'] },
                         ordersHandled: { $sum: 1 },
-                        totalRevenue: { $sum: '$totalAmount' }
+                        totalRevenue: { $sum: { $ifNull: ['$totalPrice', 0] } }
                     }
                 },
                 {
@@ -627,28 +631,37 @@ export const generateReport = async (req, res) => {
                 },
                 {
                     $project: {
-                        staffName: { $ifNull: [{ $arrayElemAt: ['$staff.name', 0] }, 'Staff Member'] },
+                        staffName: { $ifNull: [{ $arrayElemAt: ['$staff.name', 0] }, 'Walk-in / Self-Service'] },
                         ordersHandled: 1,
-                        totalRevenue: 1
+                        totalRevenue: { $round: ['$totalRevenue', 2] }
                     }
                 },
                 { $sort: { totalRevenue: -1 } }
             ]);
-        } else if (reportType === 4) {
-            const matchStage = { 
-                status: 'Completed',
+        } else if (reportType === 4 || reportType === '4') {
+            const matchStage = {
+                status: { $nin: ['Cancelled', 'Refunded'] },
                 restaurantId: restObjId,
                 createdAt: { $gte: start, $lte: end }
             };
-            if (effectiveBranchId) matchStage.branch = effectiveBranchId;
+            if (effectiveBranchId && mongoose.Types.ObjectId.isValid(effectiveBranchId)) {
+                matchStage.branchId = new mongoose.Types.ObjectId(effectiveBranchId);
+            }
 
             reportData = await Order.aggregate([
                 { $match: matchStage },
                 {
                     $group: {
                         _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-                        taxableSales: { $sum: '$subtotal' },
-                        taxCollected: { $sum: '$taxAmount' }
+                        taxableSales: { $sum: { $max: [0, { $subtract: [{ $ifNull: ['$totalPrice', 0] }, { $ifNull: ['$taxPrice', 0] }] }] } },
+                        taxCollected: { $sum: { $ifNull: ['$taxPrice', 0] } }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        taxableSales: { $round: ['$taxableSales', 2] },
+                        taxCollected: { $round: ['$taxCollected', 2] }
                     }
                 },
                 { $sort: { _id: 1 } }

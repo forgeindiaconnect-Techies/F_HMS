@@ -179,14 +179,23 @@ const CustomerMenu = () => {
         localStorage.setItem('restosys_guest_name', customerName.trim());
         if (customerPhone) localStorage.setItem('restosys_guest_phone', customerPhone.trim());
 
-        // If online payment (UPI or Card) is chosen, open simulated payment modal
+        // If online payment (UPI or Card) is chosen, open the Dummy QR Scanner / Card confirmation modal
         if (paymentOption === 'UPI' || paymentOption === 'Card') {
+            setPaymentStep('qr');
             setShowPaymentModal(true);
-            setPaymentStep('idle');
         } else {
             // Direct placement with Pay at Counter or Pay to Waiter
             submitOrderToBackend(false);
         }
+    };
+
+    const handleConfirmDummyQRPayment = async () => {
+        if (isSubmitting) return;
+        setPaymentStep('simulating');
+        setTimeout(async () => {
+            setPaymentStep('success');
+            await submitOrderToBackend(true);
+        }, 600);
     };
 
     const getTipAmount = () => {
@@ -228,7 +237,7 @@ const CustomerMenu = () => {
             source: 'QR',
             restaurantId,
             branchId,
-            paymentMethod: paymentOption === 'UPI' ? 'UPI' : 
+            paymentMethod: paymentOption === 'UPI' ? 'UPI QR' : 
                            paymentOption === 'Card' ? 'Card' : 
                            paymentOption === 'WaiterCard' ? 'Card on Table' : 
                            paymentOption === 'Counter' ? 'Pay at Counter' : 'Cash to Waiter',
@@ -242,17 +251,26 @@ const CustomerMenu = () => {
         };
 
         try {
+            let targetOrderId = activeOrderId;
             if (activeOrderId) {
-                // Append items to existing order
                 await api.put(`/orders/${activeOrderId}/items`, orderData);
-                toast.success('Items added to your active order!');
-                navigate(`/customer/track/${activeOrderId}?restaurantId=${restaurantId}&branchId=${branchId || ''}&tableNumber=${tableNumber || ''}`);
             } else {
-                // Create new order
                 const res = await api.post('/orders', orderData);
-                const createdOrder = res.data;
-                toast.success('Order placed successfully!');
-                navigate(`/customer/track/${createdOrder._id}?restaurantId=${restaurantId}&branchId=${branchId || ''}&tableNumber=${tableNumber || ''}`);
+                targetOrderId = res.data?._id;
+            }
+
+            if (isPrePaid && targetOrderId) {
+                await api.put(`/orders/${targetOrderId}/pay`, {
+                    paymentMethod: orderData.paymentMethod,
+                    taxPrice: 0,
+                    totalPrice: finalTotal
+                });
+            }
+
+            setShowPaymentModal(false);
+            toast.success(activeOrderId ? 'Items added to your active order!' : 'Order placed successfully!');
+            if (targetOrderId) {
+                navigate(`/customer/track/${targetOrderId}?restaurantId=${restaurantId}&branchId=${branchId || ''}&tableNumber=${tableNumber || ''}`);
             }
         } catch (error) {
             console.error("Order submission failed", error);
@@ -262,17 +280,6 @@ const CustomerMenu = () => {
             setIsSubmitting(false);
             setShowCartModal(false);
         }
-    };
-
-    // Simulate online payment success
-    const handleConfirmSimulatedPayment = () => {
-        setPaymentStep('simulating');
-        setTimeout(() => {
-            setPaymentStep('success');
-            setTimeout(() => {
-                submitOrderToBackend(true);
-            }, 800);
-        }, 1200);
     };
 
     if (!loading && isUnavailable) {
@@ -828,7 +835,7 @@ const CustomerMenu = () => {
                             })()}
 
                             {/* 5. Optional Waiter Tips Section */}
-                            {publicConfig?.waiterTips?.enabled && publicConfig?.waiterTips?.allowCustomerTips && (
+                            {(publicConfig?.waiterTips?.enabled !== false) && (
                                 <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 space-y-3">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
@@ -855,7 +862,7 @@ const CustomerMenu = () => {
                                             </button>
                                         ))}
                                     </div>
-                                    {publicConfig.waiterTips?.customTipAllowed && (
+                                    {publicConfig?.waiterTips?.customTipAllowed !== false && (
                                         <div className="flex items-center gap-2 pt-1">
                                             <button
                                                 type="button"
@@ -889,7 +896,12 @@ const CustomerMenu = () => {
                                     <span className="text-xs block text-slate-700 font-bold">Total Payable</span>
                                     <span className="text-[10px] text-slate-400 font-semibold">{totalItemsCount} {totalItemsCount === 1 ? 'item' : 'items'} • {serviceType}</span>
                                 </div>
-                                <span className="text-emerald-600 text-lg font-black">₹{getCartTotal().toLocaleString('en-IN')}</span>
+                                <div className="text-right">
+                                    <span className="text-emerald-600 text-lg font-black block">₹{(getCartTotal() + getTipAmount()).toLocaleString('en-IN')}</span>
+                                    {getTipAmount() > 0 && (
+                                        <span className="text-[10px] text-amber-700 font-bold block">Items: ₹{getCartTotal()} + Tip: ₹{getTipAmount()}</span>
+                                    )}
+                                </div>
                             </div>
                             
                             <button 
@@ -901,8 +913,8 @@ const CustomerMenu = () => {
                                 <Send size={16} />
                                 <span>
                                     {isSubmitting ? 'Submitting Order...' : 
-                                     paymentOption === 'UPI' || paymentOption === 'Card' ? `Proceed to Pay ₹${getCartTotal()} & Order` :
-                                     `Confirm Order • ₹${getCartTotal()}`}
+                                     paymentOption === 'UPI' || paymentOption === 'Card' ? `Proceed to Pay ₹${(getCartTotal() + getTipAmount()).toLocaleString('en-IN')} & Order` :
+                                     `Confirm Order • ₹${(getCartTotal() + getTipAmount()).toLocaleString('en-IN')}`}
                                 </span>
                             </button>
                         </div>
@@ -910,45 +922,45 @@ const CustomerMenu = () => {
                 </div>
             )}
 
-            {/* SIMULATED UPI / CARD PAYMENT MODAL */}
+            {/* DUMMY QR SCANNER / CARD PAYMENT MODAL */}
             {showPaymentModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 h-[100dvh] max-h-[100dvh] overflow-y-auto">
-                    <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowPaymentModal(false)}></div>
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm relative z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200 p-5 sm:p-6 text-center space-y-3.5 max-h-[88dvh] overflow-y-auto my-auto border border-slate-100">
-                        <button 
-                            onClick={() => setShowPaymentModal(false)} 
-                            className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 p-1"
-                        >
-                            <X size={20} />
-                        </button>
-
-                        <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-100">
-                            {paymentOption === 'UPI' ? <QrCode size={26} /> : <CreditCard size={26} />}
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 h-[100dvh]">
+                    <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => !isSubmitting && setShowPaymentModal(false)}></div>
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm relative z-10 p-6 text-center space-y-4 border border-slate-100 animate-in zoom-in-95">
+                        <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
+                                {paymentOption === 'UPI' ? 'UPI QR Scanner' : 'Card Payment'}
+                            </span>
+                            <button
+                                type="button"
+                                disabled={isSubmitting}
+                                onClick={() => setShowPaymentModal(false)}
+                                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer"
+                            >
+                                <X size={18} />
+                            </button>
                         </div>
 
                         <div>
                             <h3 className="font-black text-slate-900 text-lg">
-                                {paymentOption === 'UPI' ? 'Scan & Pay via UPI' : 'Simulated Card Payment'}
+                                {paymentOption === 'UPI' ? 'Scan & Pay via UPI QR' : 'Complete Card Payment'}
                             </h3>
-                            <p className="text-xs text-slate-500 mt-0.5">
-                                Order for <strong className="text-slate-800">{customerName}</strong> • Table {tableNumber || 'Dine-In'}
-                            </p>
-                            <p className="text-2xl font-black text-emerald-600 mt-2">
-                                ₹{getCartTotal().toLocaleString('en-IN')}
+                            <p className="text-2xl font-black text-emerald-600 mt-1">
+                                ₹{(getCartTotal() + getTipAmount()).toLocaleString('en-IN')}
                             </p>
                         </div>
 
                         {paymentOption === 'UPI' ? (
-                            <div className="space-y-3">
+                            <div className="space-y-2.5">
                                 <div className="bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200 inline-block shadow-inner">
-                                    <img 
-                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`upi://pay?pa=resto@upi&pn=${encodeURIComponent(restaurantName)}&am=${getCartTotal()}&cu=INR`)}`} 
-                                        alt="UPI QR Code" 
+                                    <img
+                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`upi://pay?pa=resto@upi&pn=${encodeURIComponent(restaurantName)}&am=${getCartTotal() + getTipAmount()}&cu=INR`)}`}
+                                        alt="UPI QR Code"
                                         className="w-36 h-36 sm:w-44 sm:h-44 object-contain mx-auto"
                                     />
                                 </div>
                                 <div className="flex justify-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                                    <span>GPay</span> • <span>PhonePe</span> • <span>Paytm</span> • <span>CRED</span>
+                                    <span>GPay</span> • <span>PhonePe</span> • <span>Paytm</span> • <span>BHIM</span>
                                 </div>
                             </div>
                         ) : (
@@ -970,26 +982,26 @@ const CustomerMenu = () => {
                             </div>
                         )}
 
-                        <div className="pt-2">
+                        <div className="pt-1">
                             {paymentStep === 'simulating' ? (
                                 <div className="py-3 flex items-center justify-center gap-2 text-emerald-600 font-bold text-sm">
                                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-emerald-600"></div>
-                                    <span>Processing Payment...</span>
+                                    <span>Confirming Payment...</span>
                                 </div>
                             ) : paymentStep === 'success' ? (
-                                <div className="py-3 flex items-center justify-center gap-2 text-emerald-600 font-bold text-sm animate-in zoom-in">
+                                <div className="py-3 flex items-center justify-center gap-2 text-emerald-600 font-bold text-sm">
                                     <CheckCircle2 size={20} />
-                                    <span>Payment Successful! Creating Order...</span>
+                                    <span>Payment Confirmed! Sending to Kitchen...</span>
                                 </div>
                             ) : (
                                 <button
-                                    id="confirm-simulated-payment-btn"
-                                    onClick={handleConfirmSimulatedPayment}
+                                    id="confirm-dummy-qr-payment-btn"
+                                    onClick={handleConfirmDummyQRPayment}
                                     disabled={isSubmitting}
-                                    className="w-full py-3.5 sm:py-4 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black rounded-2xl shadow-lg shadow-emerald-600/30 text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                                    className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black rounded-2xl shadow-lg shadow-emerald-600/30 text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
                                 >
-                                    <CheckCircle2 size={18} />
-                                    <span>Simulate Payment & Send to Kitchen</span>
+                                    <QrCode size={18} />
+                                    <span>Confirm QR Payment &amp; Send to Kitchen</span>
                                 </button>
                             )}
                         </div>

@@ -12,7 +12,8 @@ const ManagerAnalytics = () => {
         const fetchAnalytics = async () => {
             try {
                 setLoading(true);
-                const res = await api.get('/analytics/dashboard');
+                const timeframeDays = range === 'Last 30 Days' ? 30 : range === 'This Month' ? Math.max(1, new Date().getDate()) : 7;
+                const res = await api.get(`/analytics/dashboard?timeframe=${timeframeDays}`);
                 setData(res.data);
             } catch (err) {
                 console.error('Failed to fetch manager analytics', err);
@@ -21,7 +22,7 @@ const ManagerAnalytics = () => {
             }
         };
         fetchAnalytics();
-    }, [api]);
+    }, [api, range]);
 
     const overview = data?.overview || {
         totalRevenue: 0,
@@ -107,7 +108,7 @@ const ManagerAnalytics = () => {
                             <div className="flex justify-between items-start mb-2">
                                 <div className="p-2.5 bg-orange-50 text-orange-600 rounded-lg"><Clock size={20} /></div>
                                 <span className="flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">
-                                    <ArrowDownRight size={14} /> {qrAnalytics?.avgPrepTime || 12} min
+                                    <ArrowDownRight size={14} /> {qrAnalytics?.avgPrepTime || 0} min
                                 </span>
                             </div>
                             <p className="text-sm font-medium text-gray-500 mb-1">Avg Prep Time</p>

@@ -8,6 +8,7 @@ import {
     Bike, Store, BellRing, MoreVertical
 } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import { getApiUrl } from '../../utils/axiosInstance';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { getItemImage } from '../../utils/imageHelper';
@@ -236,17 +237,22 @@ const CustomerDashboard = () => {
 
     // Real-time WebSocket connection to receive instant order updates
     useEffect(() => {
+        let isUnmounted = false;
+        let reconnectTimer;
         let ws;
         const connectWS = () => {
+            if (isUnmounted) return;
             try {
                 let baseURL = getApiUrl();
                 let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
                 ws = new WebSocket(wsURL);
 
                 ws.onopen = () => {
+                    const token = sessionStorage.getItem('customer_token') || localStorage.getItem('customer_token') || sessionStorage.getItem('token') || localStorage.getItem('token');
                     ws.send(JSON.stringify({
                         type: 'register',
-                        role: 'customer'
+                        role: 'customer',
+                        token
                     }));
                 };
 
@@ -260,7 +266,9 @@ const CustomerDashboard = () => {
                 };
 
                 ws.onclose = () => {
-                    setTimeout(connectWS, 5000);
+                    if (!isUnmounted) {
+                        reconnectTimer = setTimeout(connectWS, 5000);
+                    }
                 };
             } catch (e) {}
         };
@@ -268,6 +276,8 @@ const CustomerDashboard = () => {
         connectWS();
 
         return () => {
+            isUnmounted = true;
+            clearTimeout(reconnectTimer);
             if (ws) ws.close();
         };
     }, []);
@@ -434,8 +444,25 @@ const CustomerDashboard = () => {
         }
     };
 
+    const [redeemedPoints, setRedeemedPoints] = useState(() => {
+        try {
+            return Number(localStorage.getItem('customer_redeemed_points') || 0);
+        } catch {
+            return 0;
+        }
+    });
+
+    const deductUserPoints = (pts) => {
+        setRedeemedPoints(prev => {
+            const next = prev + pts;
+            localStorage.setItem('customer_redeemed_points', String(next));
+            return next;
+        });
+    };
+
     const safeOrders = Array.isArray(orders) ? orders : [];
-    const userPoints = user?.loyaltyPoints || (safeOrders.filter(o => o.status === 'Completed' || o.status === 'Delivered').length * 50) || 0;
+    const earnedPoints = user?.loyaltyPoints || (safeOrders.filter(o => o.status === 'Completed' || o.status === 'Delivered').length * 50) || 0;
+    const userPoints = Math.max(0, earnedPoints - redeemedPoints);
     const tierName = userPoints >= 1000 ? 'GOLD MEMBER' : userPoints >= 500 ? 'SILVER MEMBER' : 'BRONZE MEMBER';
 
     const activeOrders = safeOrders.filter(o => 
@@ -1168,8 +1195,8 @@ const CustomerDashboard = () => {
                             <div className="flex justify-between items-center border-b border-gray-100 pb-3 sm:pb-4 gap-2">
                                 <h3 className="text-sm sm:text-lg font-bold text-gray-900 truncate">Your Order History &amp; Tracking</h3>
                                 <div className="flex items-center gap-1.5 shrink-0">
-                                    <span className="text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-150">Delivery</span>
-                                    <span className="text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded bg-orange-50 text-orange-700 border border-orange-150">Pickup</span>
+                                    <span className="text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100">Delivery</span>
+                                    <span className="text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded bg-orange-50 text-orange-700 border border-orange-100">Pickup</span>
                                 </div>
                             </div>
 
@@ -1180,7 +1207,7 @@ const CustomerDashboard = () => {
                                     <p className="text-center text-gray-400 py-10 text-xs">No orders found. Settle a new order from the Menu!</p>
                                 ) : (
                                     safeOrders.map(order => (
-                                        <div key={order._id} className="border border-gray-100 hover:border-orange-150 p-3.5 sm:p-5 rounded-xl sm:rounded-2xl transition-all space-y-3 sm:space-y-4 bg-white shadow-xs">
+                                        <div key={order._id} className="border border-gray-100 hover:border-orange-100 p-3.5 sm:p-5 rounded-xl sm:rounded-2xl transition-all space-y-3 sm:space-y-4 bg-white shadow-xs">
                                             <div className="flex justify-between items-center flex-wrap gap-2 border-b border-gray-50 pb-2.5 sm:pb-3">
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-extrabold text-xs sm:text-sm text-gray-900 font-mono">#{getShortId(order._id)}</span>
@@ -1629,7 +1656,7 @@ const CustomerDashboard = () => {
                                 <div className="space-y-3 min-w-0 pr-0.5 flex-1">
                                     <h4 className="font-extrabold text-xs sm:text-sm text-gray-900">Available Redemptions</h4>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-4">
-                                        <div className="border border-gray-150 p-3 sm:p-4 rounded-xl sm:rounded-2xl flex items-center justify-between gap-3 bg-gray-50/60 hover:bg-white transition-all shadow-2xs">
+                                        <div className="border border-gray-100 p-3 sm:p-4 rounded-xl sm:rounded-2xl flex items-center justify-between gap-3 bg-gray-50/60 hover:bg-white transition-all shadow-2xs">
                                             <div className="min-w-0">
                                                 <p className="font-bold text-gray-900 text-xs sm:text-sm truncate">₹100 Store Credit</p>
                                                 <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">Requires 1000 pts</p>
@@ -1637,8 +1664,12 @@ const CustomerDashboard = () => {
                                             <button 
                                                 onClick={() => {
                                                     if (userPoints >= 1000) {
-                                                        setUserPoints(prev => prev - 1000);
-                                                        setWalletBalance(prev => prev + 100);
+                                                        deductUserPoints(1000);
+                                                        setWalletBalance(prev => {
+                                                            const next = prev + 100;
+                                                            localStorage.setItem('customerWalletBalance', String(next));
+                                                            return next;
+                                                        });
                                                         toast.success('Successfully redeemed 1000 points for ₹100 Store Credit!');
                                                     } else {
                                                         toast.error('Insufficient points! You need 1000 points.');
@@ -1650,7 +1681,7 @@ const CustomerDashboard = () => {
                                             </button>
                                         </div>
 
-                                        <div className="border border-gray-150 p-3 sm:p-4 rounded-xl sm:rounded-2xl flex items-center justify-between gap-3 bg-gray-50/60 hover:bg-white transition-all shadow-2xs">
+                                        <div className="border border-gray-100 p-3 sm:p-4 rounded-xl sm:rounded-2xl flex items-center justify-between gap-3 bg-gray-50/60 hover:bg-white transition-all shadow-2xs">
                                             <div className="min-w-0">
                                                 <p className="font-bold text-gray-900 text-xs sm:text-sm truncate">Free Cheese Pizza</p>
                                                 <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">Requires 2000 pts</p>
@@ -1658,7 +1689,7 @@ const CustomerDashboard = () => {
                                             <button 
                                                 onClick={() => {
                                                     if (userPoints >= 2000) {
-                                                        setUserPoints(prev => prev - 2000);
+                                                        deductUserPoints(2000);
                                                         toast.success('🎉 Voucher for Free Double Cheese Pizza redeemed!');
                                                     } else {
                                                         toast.error('Insufficient points! You need 2000 points.');
@@ -1685,7 +1716,7 @@ const CustomerDashboard = () => {
 
                             <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-300">
                                 {/* Wallet Card */}
-                                <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-150 shadow-sm relative overflow-hidden flex flex-col justify-between">
+                                <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-100 shadow-sm relative overflow-hidden flex flex-col justify-between">
                                     <div className="absolute top-0 right-0 w-28 h-28 bg-orange-50 rounded-full blur-2xl pointer-events-none"></div>
                                     <div className="flex justify-between items-center relative z-10">
                                         <div className="flex items-center gap-2">
@@ -1694,7 +1725,7 @@ const CustomerDashboard = () => {
                                             </div>
                                             <span className="font-extrabold text-xs sm:text-sm text-gray-900">FoodNest Secure Wallet</span>
                                         </div>
-                                        <span className="text-[9px] sm:text-[10px] font-black text-green-700 bg-green-50 border border-green-150 px-2 py-0.5 rounded-full">ACTIVE</span>
+                                        <span className="text-[9px] sm:text-[10px] font-black text-green-700 bg-green-50 border border-green-100 px-2 py-0.5 rounded-full">ACTIVE</span>
                                     </div>
 
                                     <div className="relative z-10 space-y-0.5 sm:space-y-1 my-4 sm:my-5">
@@ -1812,7 +1843,7 @@ const CustomerDashboard = () => {
                                         <select 
                                             value={feedbackType}
                                             onChange={(e) => setFeedbackType(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-150 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                            className="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 text-xs focus:outline-none focus:border-orange-500"
                                         >
                                             <option value="Feedback">General Feedback & Reviews</option>
                                             <option value="Complaint">Complaint / Bug Report</option>
@@ -1827,7 +1858,7 @@ const CustomerDashboard = () => {
                                             placeholder="E.g. Food quality, delivery delay..."
                                             value={feedbackSubject}
                                             onChange={(e) => setFeedbackSubject(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-150 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                            className="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 text-xs focus:outline-none focus:border-orange-500"
                                         />
                                     </div>
                                 </div>
@@ -1838,7 +1869,7 @@ const CustomerDashboard = () => {
                                         placeholder="Write your review, support question, or complaint detail here..."
                                         value={feedbackMessage}
                                         onChange={(e) => setFeedbackMessage(e.target.value)}
-                                        className="w-full bg-gray-50 border border-gray-150 rounded-xl p-3 text-xs focus:outline-none focus:border-orange-500 resize-none"
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-xl p-3 text-xs focus:outline-none focus:border-orange-500 resize-none"
                                     />
                                 </div>
                                 <button 
@@ -2010,7 +2041,7 @@ const CustomerDashboard = () => {
                                                 type="text"
                                                 value={profileName}
                                                 onChange={(e) => setProfileName(e.target.value)}
-                                                className="w-full bg-gray-50 border border-gray-150 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-orange-500 font-bold"
+                                                className="w-full bg-gray-50 border border-gray-100 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-orange-500 font-bold"
                                             />
                                         </div>
                                     </div>
@@ -2022,7 +2053,7 @@ const CustomerDashboard = () => {
                                                 type="text"
                                                 value={profilePhone}
                                                 onChange={(e) => setProfilePhone(e.target.value)}
-                                                className="w-full bg-gray-50 border border-gray-150 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                                className="w-full bg-gray-50 border border-gray-100 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
                                             />
                                         </div>
                                     </div>
@@ -2035,7 +2066,7 @@ const CustomerDashboard = () => {
                                                 placeholder="Street name, floor, city, postal code..."
                                                 value={profileAddress}
                                                 onChange={(e) => setProfileAddress(e.target.value)}
-                                                className="w-full bg-gray-50 border border-gray-150 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                                className="w-full bg-gray-50 border border-gray-100 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
                                             />
                                         </div>
                                     </div>
@@ -2053,7 +2084,7 @@ const CustomerDashboard = () => {
                                                     value={currentPassword}
                                                     onChange={(e) => setCurrentPassword(e.target.value)}
                                                     placeholder="••••••••"
-                                                    className="w-full bg-gray-50 border border-gray-150 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                                    className="w-full bg-gray-50 border border-gray-100 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
                                                 />
                                             </div>
                                         </div>
@@ -2066,7 +2097,7 @@ const CustomerDashboard = () => {
                                                     value={newPassword}
                                                     onChange={(e) => setNewPassword(e.target.value)}
                                                     placeholder="Minimum 6 characters"
-                                                    className="w-full bg-gray-50 border border-gray-150 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                                    className="w-full bg-gray-50 border border-gray-100 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
                                                 />
                                             </div>
                                         </div>
@@ -2110,12 +2141,12 @@ const CustomerDashboard = () => {
                             <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Deposit Amount (₹)</label>
                                 <div className="relative">
-                                    <span className="absolute left-4 top-3 text-gray-450 font-bold text-sm">₹</span>
+                                    <span className="absolute left-4 top-3 text-gray-400 font-bold text-sm">₹</span>
                                     <input 
                                         type="number"
                                         value={addFundsAmount}
                                         onChange={(e) => setAddFundsAmount(e.target.value)}
-                                        className="w-full bg-gray-50 border border-gray-150 rounded-xl pl-8 pr-4 py-2.5 text-sm font-bold focus:outline-none focus:border-orange-500"
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-xl pl-8 pr-4 py-2.5 text-sm font-bold focus:outline-none focus:border-orange-500"
                                         placeholder="500"
                                         autoFocus
                                     />
@@ -2132,7 +2163,7 @@ const CustomerDashboard = () => {
                                         className={`flex-1 py-1.5 text-xs font-bold rounded-lg border transition-all ${
                                             addFundsAmount === amt.toString()
                                             ? 'bg-orange-50 text-orange-600 border-orange-200 shadow-sm'
-                                            : 'bg-gray-50 text-gray-650 border-gray-150 hover:bg-gray-100'
+                                            : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-gray-100'
                                         }`}
                                     >
                                         +₹{amt}

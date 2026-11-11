@@ -39,7 +39,7 @@ const CustomerOrderTracking = () => {
         e.preventDefault();
         setIsRatingLoading(true);
         try {
-            await axios.put(`${API_URL}/orders/${orderId}/rating`, {
+            await axios.put(`${API_URL}/delivery/orders/${orderId}/rating`, {
                 speed: speedRating,
                 behaviour: behaviourRating,
                 foodHandling: foodHandlingRating,
@@ -71,8 +71,11 @@ const CustomerOrderTracking = () => {
         fetchOrderDetails();
 
         // WebSocket Connection for instant status updates!
+        let isUnmounted = false;
+        let reconnectTimer;
         let ws;
         const connectWS = () => {
+            if (isUnmounted) return;
             let baseURL = API_URL;
             let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
             
@@ -111,13 +114,17 @@ const CustomerOrderTracking = () => {
             };
 
             ws.onclose = () => {
-                setTimeout(connectWS, 5000);
+                if (!isUnmounted) {
+                    reconnectTimer = setTimeout(connectWS, 5000);
+                }
             };
         };
 
         connectWS();
 
         return () => {
+            isUnmounted = true;
+            clearTimeout(reconnectTimer);
             if (ws) ws.close();
         };
     }, [orderId]);
@@ -143,7 +150,10 @@ const CustomerOrderTracking = () => {
     }, [order?.status, order?.deliveryStatus, order?.orderType, order?.deliveryPartner]);
 
     const handleServiceRequest = async (requestType) => {
-        if (!restaurantId) {
+        const effectiveRestId = restaurantId || order?.restaurantId?._id || order?.restaurantId;
+        const effectiveBranchId = branchId || order?.branchId?._id || order?.branchId;
+        const effectiveTable = tableNumber || order?.tableNumber || 1;
+        if (!effectiveRestId) {
             toast.error("Missing Restaurant context details.");
             return;
         }
@@ -151,9 +161,9 @@ const CustomerOrderTracking = () => {
 
         try {
             await axios.post(`${API_URL}/service-requests`, {
-                restaurantId,
-                branchId,
-                tableNumber: tableNumber || 1,
+                restaurantId: effectiveRestId,
+                branchId: effectiveBranchId,
+                tableNumber: effectiveTable,
                 requestType
             });
             toast.success(`${requestType} sent to waiters!`);
@@ -547,7 +557,7 @@ const CustomerOrderTracking = () => {
                     <div className="flex justify-between items-center pb-4 border-b border-gray-100">
                         <div>
                             <p className="text-xs text-gray-400 font-black tracking-wider uppercase">Current Status</p>
-                            <h3 className="text-xl font-black text-green-650 mt-1">{order.status}</h3>
+                            <h3 className="text-xl font-black text-green-600 mt-1">{order.status}</h3>
                         </div>
                         <div className="bg-green-50 text-green-700 p-3 rounded-2xl animate-pulse">
                             <Clock size={24} />
@@ -598,7 +608,7 @@ const CustomerOrderTracking = () => {
                             </span>
                             <h3 className="font-black text-sm uppercase tracking-wider">Delivery Security Code</h3>
                         </div>
-                        <p className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Share this 4-digit PIN with the delivery executive upon arrival to confirm delivery:</p>
+                        <p className="text-xs text-slate-600 dark:text-slate-300 font-semibold">Share this 4-digit PIN with the delivery executive upon arrival to confirm delivery:</p>
                         <div className="bg-white dark:bg-slate-900 border border-amber-500/40 text-amber-600 dark:text-amber-400 py-3.5 px-6 rounded-2xl font-mono text-3xl font-black tracking-[0.4em] inline-block shadow-md">
                             {order.deliveryOtp}
                         </div>
@@ -643,7 +653,7 @@ const CustomerOrderTracking = () => {
                             <button 
                                 onClick={() => handleServiceRequest('Call Waiter')}
                                 disabled={requestLoading !== null}
-                                className="bg-white hover:bg-red-50 hover:border-red-200 border border-gray-150 p-4 rounded-2xl transition-all text-left flex flex-col justify-between shadow-sm h-28 group"
+                                className="bg-white hover:bg-red-50 hover:border-red-200 border border-gray-100 p-4 rounded-2xl transition-all text-left flex flex-col justify-between shadow-sm h-28 group"
                             >
                                 <PhoneCall size={20} className="text-red-500 stroke-[2] transition-transform group-hover:scale-110" />
                                 <div>
@@ -655,7 +665,7 @@ const CustomerOrderTracking = () => {
                             <button 
                                 onClick={() => handleServiceRequest('Request Water')}
                                 disabled={requestLoading !== null}
-                                className="bg-white hover:bg-blue-50 hover:border-blue-200 border border-gray-150 p-4 rounded-2xl transition-all text-left flex flex-col justify-between shadow-sm h-28 group"
+                                className="bg-white hover:bg-blue-50 hover:border-blue-200 border border-gray-100 p-4 rounded-2xl transition-all text-left flex flex-col justify-between shadow-sm h-28 group"
                             >
                                 <Coffee size={20} className="text-blue-500 stroke-[2] transition-transform group-hover:scale-110" />
                                 <div>
@@ -667,7 +677,7 @@ const CustomerOrderTracking = () => {
                             <button 
                                 onClick={() => handleServiceRequest('Request Cutlery')}
                                 disabled={requestLoading !== null}
-                                className="bg-white hover:bg-orange-50 hover:border-orange-200 border border-gray-150 p-4 rounded-2xl transition-all text-left flex flex-col justify-between shadow-sm h-28 group"
+                                className="bg-white hover:bg-orange-50 hover:border-orange-200 border border-gray-100 p-4 rounded-2xl transition-all text-left flex flex-col justify-between shadow-sm h-28 group"
                             >
                                 <Utensils size={20} className="text-orange-500 stroke-[2] transition-transform group-hover:scale-110" />
                                 <div>
@@ -679,7 +689,7 @@ const CustomerOrderTracking = () => {
                             <button 
                                 onClick={() => handleServiceRequest('Request Bill')}
                                 disabled={requestLoading !== null}
-                                className="bg-white hover:bg-purple-50 hover:border-purple-200 border border-gray-150 p-4 rounded-2xl transition-all text-left flex flex-col justify-between shadow-sm h-28 group"
+                                className="bg-white hover:bg-purple-50 hover:border-purple-200 border border-gray-100 p-4 rounded-2xl transition-all text-left flex flex-col justify-between shadow-sm h-28 group"
                             >
                                 <FileText size={20} className="text-purple-500 stroke-[2] transition-transform group-hover:scale-110" />
                                 <div>

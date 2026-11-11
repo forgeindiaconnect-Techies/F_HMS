@@ -132,6 +132,14 @@ export const addOrderItems = async (req, res) => {
             });
         }
 
+        const { evaluateSubscriptionAccess } = await import('../utils/subscriptionHelper.js');
+        const subVerdict = await evaluateSubscriptionAccess(targetRestaurant, { notifyOnExpire: false });
+        if (subVerdict.isFrozen) {
+            return res.status(403).json({
+                message: subVerdict.message || 'This restaurant is temporarily unavailable due to subscription status.'
+            });
+        }
+
         const restDeliverySettings = targetRestaurant?.deliverySettings || {};
         
         const restCoords = restDeliverySettings.location || {};
@@ -1021,12 +1029,21 @@ export const refundOrder = async (req, res) => {
             return res.status(404).json({ message: 'Order not found' });
         }
 
+        if (req.user?.role !== 'SuperAdmin') {
+            const userRestId = req.user?.restaurantId ? String(req.user.restaurantId) : null;
+            if (!userRestId || String(order.restaurantId) !== userRestId) {
+                return res.status(403).json({ message: 'Not authorized to refund orders outside your restaurant.' });
+            }
+        }
+
         order.status = 'Refunded';
         order.paymentMethod = 'Refunded';
         order.isPaid = false;
-        
-        await order.save();
-        res.json({ message: 'Order refunded successfully', order });
+
+        const updatedOrder = await order.save();
+        broadcastToRestaurant(order.restaurantId, 'order_updated', updatedOrder);
+        broadcastToCustomerOrder(order._id, 'order_status_updated', updatedOrder);
+        res.json({ message: 'Order refunded successfully', order: updatedOrder });
     } catch (error) {
         res.status(500).json({ message: 'Refund failed', error: error.message });
     }
@@ -1042,14 +1059,8 @@ export const createRazorpayCustomerOrder = async (req, res) => {
             return res.status(400).json({ message: 'Valid payment amount is required.' });
         }
 
-        const Razorpay = (await import('razorpay')).default;
-        const keyId = process.env.RAZORPAY_KEY_ID || 'rzp_live_SlbQBi57McKtUc';
-        const keySecret = process.env.RAZORPAY_KEY_SECRET || 'IgfxpfmQCMxSPaU0T4EyhcLU';
-
-        const instance = new Razorpay({
-            key_id: keyId,
-            key_secret: keySecret,
-        });
+        const { getRazorpayInstance } = await import('../utils/subscriptionHelper.js');
+        const { keyId, instance } = getRazorpayInstance();
 
         const razorpayOrder = await instance.orders.create({
             amount: Math.round(amount * 100), // in paise
@@ -1070,7 +1081,7 @@ export const createRazorpayCustomerOrder = async (req, res) => {
         });
     } catch (error) {
         console.error('Razorpay Customer Order Error:', error);
-        res.status(400).json({ message: error.message || 'Failed to create Razorpay payment order' });
+        res.status(error.statusCode || 400).json({ message: error.message || 'Failed to create Razorpay payment order' });
     }
 };
 
@@ -1085,16 +1096,8 @@ export const verifyRazorpayCustomerPayment = async (req, res) => {
             return res.status(400).json({ message: 'Missing Razorpay signature verification parameters.' });
         }
 
-        const crypto = (await import('crypto')).default;
-        const keySecret = process.env.RAZORPAY_KEY_SECRET || 'IgfxpfmQCMxSPaU0T4EyhcLU';
-
-        const body = razorpay_order_id + "|" + razorpay_payment_id;
-        const expectedSignature = crypto
-            .createHmac("sha256", keySecret)
-            .update(body.toString())
-            .digest("hex");
-
-        if (expectedSignature !== razorpay_signature) {
+        const { verifyRazorpaySignature } = await import('../utils/subscriptionHelper.js');
+        if (!verifyRazorpaySignature({ orderId: razorpay_order_id, paymentId: razorpay_payment_id, signature: razorpay_signature })) {
             return res.status(400).json({ message: 'Razorpay payment signature verification failed.' });
         }
 
@@ -1122,7 +1125,7 @@ export const verifyRazorpayCustomerPayment = async (req, res) => {
         res.json({ success: true, message: 'Razorpay payment verified successfully!', paymentId: razorpay_payment_id });
     } catch (error) {
         console.error('Razorpay Customer Payment Verification Error:', error);
-        res.status(400).json({ message: error.message || 'Payment verification failed' });
+        res.status(error.statusCode || 400).json({ message: error.message || 'Payment verification failed' });
     }
 };
 

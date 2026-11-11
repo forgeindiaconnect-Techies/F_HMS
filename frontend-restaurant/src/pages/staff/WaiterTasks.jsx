@@ -11,22 +11,24 @@ const WaiterTasks = () => {
     const [filter, setFilter] = useState('All');
     const [loading, setLoading] = useState(true);
 
-    const fetchLiveTasks = async () => {
+    const fetchLiveTasks = async (isInitial = false) => {
         try {
-            setLoading(true);
+            if (isInitial) setLoading(true);
             const [ordersRes, requestsRes] = await Promise.all([
                 api.get('/orders').catch(() => ({ data: [] })),
                 api.get('/service-requests').catch(() => ({ data: [] }))
             ]);
 
             const liveTasks = [];
+            const ordersArr = Array.isArray(ordersRes.data) ? ordersRes.data : [];
+            const reqsArr = Array.isArray(requestsRes.data) ? requestsRes.data : [];
 
             // 1. Food Ready Tasks
-            ordersRes.data.forEach(o => {
+            ordersArr.forEach(o => {
                 if (['Ready', 'Ready for Pickup'].includes(o.status)) {
                     liveTasks.push({
                         id: `order-${o._id}`,
-                        text: `Serve Table ${o.tableNumber || 'Takeout'} - ${o.orderItems?.map(i => `${i.qty}x ${i.name}`).join(', ')}`,
+                        text: `Serve Table ${o.tableNumber || 'Takeout'} - ${o.orderItems?.map(i => `${i.qty || i.quantity || 1}x ${i.name}`).join(', ')}`,
                         done: false,
                         urgent: true,
                         category: 'Service',
@@ -36,7 +38,7 @@ const WaiterTasks = () => {
             });
 
             // 2. Service Requests Tasks
-            requestsRes.data.forEach(r => {
+            reqsArr.forEach(r => {
                 liveTasks.push({
                     id: `req-${r._id}`,
                     text: `Table ${r.tableNumber || 'N/A'}: ${r.requestType || 'Assistance Needed'} ${r.note ? `(${r.note})` : ''}`,
@@ -62,8 +64,8 @@ const WaiterTasks = () => {
     };
 
     useEffect(() => {
-        fetchLiveTasks();
-        const interval = setInterval(fetchLiveTasks, 3000);
+        fetchLiveTasks(true);
+        const interval = setInterval(() => fetchLiveTasks(false), 15000);
         return () => clearInterval(interval);
     }, [api, user]);
 

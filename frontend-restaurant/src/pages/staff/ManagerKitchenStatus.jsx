@@ -44,12 +44,12 @@ const ManagerKitchenStatus = () => {
         return () => clearInterval(interval);
     }, [api]);
 
-    // Initialize Stations Map
+    // Initialize Stations Map dynamically without hardcoded staff names
     const stationsData = {
-        'Grill': { name: 'Grill', load: 'Low', tickets: 0, sold: 0, avgTime: '12m', chef: 'Marcus W.', delay: false },
-        'Fryer': { name: 'Fryer', load: 'Low', tickets: 0, sold: 0, avgTime: '8m', chef: 'Jessica L.', delay: false },
-        'Salad/Cold': { name: 'Salad/Cold', load: 'Low', tickets: 0, sold: 0, avgTime: '4m', chef: 'Sarah K.', delay: false },
-        'Dessert': { name: 'Dessert', load: 'Low', tickets: 0, sold: 0, avgTime: '6m', chef: 'Tom H.', delay: false },
+        'Grill': { name: 'Grill', load: 'Low', tickets: 0, sold: 0, avgTime: '—', chef: 'Active Station', delay: false },
+        'Fryer': { name: 'Fryer', load: 'Low', tickets: 0, sold: 0, avgTime: '—', chef: 'Active Station', delay: false },
+        'Salad/Cold': { name: 'Salad/Cold', load: 'Low', tickets: 0, sold: 0, avgTime: '—', chef: 'Active Station', delay: false },
+        'Dessert': { name: 'Dessert', load: 'Low', tickets: 0, sold: 0, avgTime: '—', chef: 'Active Station', delay: false },
     };
 
     const userRestId = user?.restaurantId?._id || user?.restaurantId;
@@ -105,16 +105,17 @@ const ManagerKitchenStatus = () => {
 
     const stationsList = Object.values(stationsData);
 
-    // Compute Delayed Tickets from active orders older than 15 minutes
+    // Compute Delayed Tickets from active tenant orders older than 15 minutes
     const delayedTickets = [];
-    orders.forEach(order => {
+    tenantOrders.forEach(order => {
         const isPendingOrPreparing = ['Pending', 'Preparing'].includes(order.status);
         if (isPendingOrPreparing) {
             const timeDiffMinutes = Math.floor((new Date() - new Date(order.createdAt)) / 60000);
             if (timeDiffMinutes > 15) {
-                const itemsDesc = order.orderItems.map(item => `${item.qty}x ${item.name}`).join(', ');
-                const primaryStation = order.orderItems.length > 0 ? getStationForItem(order.orderItems[0].name) : 'Grill';
+                const itemsDesc = (order.orderItems || []).map(item => `${item.qty || item.quantity || 1}x ${item.name}`).join(', ');
+                const primaryStation = order.orderItems?.length > 0 ? getStationForItem(order.orderItems[0].name) : 'Grill';
                 delayedTickets.push({
+                    orderId: order._id,
                     id: `#ORD-${order._id.substring(order._id.length - 4).toUpperCase()}`,
                     station: primaryStation,
                     time: `${timeDiffMinutes}m`,
@@ -125,19 +126,31 @@ const ManagerKitchenStatus = () => {
         }
     });
 
-    // Calculate Overall Avg Prep Time (from completed orders or dynamic fallback)
-    const completedOrders = orders.filter(o => ['Served', 'Out for Delivery', 'Delivered'].includes(o.status));
-    let overallAvgTime = '12m 45s';
+    // Calculate Overall Avg Prep Time from real completed orders
+    const completedOrders = tenantOrders.filter(o => ['Served', 'Out for Delivery', 'Delivered', 'Completed'].includes(o.status));
+    let overallAvgTime = '—';
     if (completedOrders.length > 0) {
         let totalDiff = 0;
         completedOrders.forEach(o => {
-            const diff = new Date(o.updatedAt) - new Date(o.createdAt);
+            const diff = Math.max(0, new Date(o.updatedAt) - new Date(o.createdAt));
             totalDiff += diff;
         });
         const avgMinutes = Math.floor((totalDiff / completedOrders.length) / 60000);
         const avgSeconds = Math.floor(((totalDiff / completedOrders.length) % 60000) / 1000);
         overallAvgTime = `${avgMinutes > 0 ? `${avgMinutes}m ` : ''}${avgSeconds}s`;
     }
+
+    const handleExpediteTicket = async (ticket) => {
+        try {
+            if (ticket.status === 'Pending' && ticket.orderId) {
+                await api.put(`/orders/${ticket.orderId}/status`, { status: 'Preparing' });
+            }
+            toast.success(`Expedited ${ticket.id} (${ticket.station} station notified)!`);
+            fetchOrders();
+        } catch (err) {
+            toast.error('Failed to expedite order');
+        }
+    };
 
     return (
         <div className="w-full max-w-[1600px] mx-auto space-y-4 sm:space-y-6 pb-12 font-sans">
@@ -223,7 +236,7 @@ const ManagerKitchenStatus = () => {
                             <div className="flex items-center gap-4">
                                 <span className="text-sm font-bold text-orange-600">{ticket.status}</span>
                                 <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
-                                    <button onClick={() => toast.success('Expediting order...')} className="bg-red-50 hover:bg-red-100 text-red-700 text-sm font-bold px-4 py-2 rounded-lg transition-colors border border-red-200">
+                                    <button onClick={() => handleExpediteTicket(ticket)} className="bg-red-50 hover:bg-red-100 text-red-700 text-sm font-bold px-4 py-2 rounded-lg transition-colors border border-red-200 cursor-pointer">
                                         Expedite
                                     </button>
                                 </div>

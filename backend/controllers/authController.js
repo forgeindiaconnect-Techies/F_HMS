@@ -7,7 +7,21 @@ import Restaurant from '../models/Restaurant.js';
 import Branch from '../models/Branch.js';
 import Notification from '../models/Notification.js';
 import RestaurantVerification from '../models/RestaurantVerification.js';
-import { sendWelcomeEmail, sendLoginNotificationEmail, sendApprovalEmail, sendSubscriptionSuccessEmail } from '../utils/emailService.js';
+import SubscriptionPayment from '../models/SubscriptionPayment.js';
+import {
+    sendWelcomeEmail,
+    sendLoginNotificationEmail,
+    sendApprovalEmail,
+    sendSubscriptionSuccessEmail,
+    sendTrialRequestSubmittedEmail
+} from '../utils/emailService.js';
+import {
+    getRazorpayInstance,
+    verifyRazorpaySignature,
+    resolvePlanPrice,
+    evaluateSubscriptionAccess,
+    normalizePlanName
+} from '../utils/subscriptionHelper.js';
 
 // Generate JWT
 const generateToken = (id) => {
@@ -51,6 +65,23 @@ export const registerUser = async (req, res) => {
         };
         const role = normalizedRole(rawRole);
 
+        // Security: Prevent public registration of privileged administrative or support roles
+        if (!['Customer', 'RestaurantAdmin'].includes(role)) {
+            return res.status(403).json({
+                message: 'Public registration is only permitted for Customers and Restaurant Owners.'
+            });
+        }
+
+        // Check upfront QR payment reference BEFORE creating User / Restaurant records
+        const isRestaurantSignup = role === 'RestaurantAdmin' || Boolean(req.body.restaurantName);
+        const qrPaymentRef = req.body.qrPaymentId || req.body.paymentReference || req.body.razorpayPaymentId || req.body.razorpay_payment_id;
+        const isPaidUpfront = Boolean(qrPaymentRef);
+        let verifiedPlanInfo = null;
+
+        if (isRestaurantSignup && isPaidUpfront) {
+            verifiedPlanInfo = await resolvePlanPrice(req.body.plan, req.body.billingCycle || 'monthly');
+        }
+
         const user = await User.create({
             name: String(name).trim(),
             email: normalizedEmail,
@@ -61,41 +92,34 @@ export const registerUser = async (req, res) => {
 
         let createdRestaurant = null;
 
-        if (role === 'RestaurantAdmin' || role === 'Admin' || req.body.restaurantName) {
+        if (isRestaurantSignup) {
             const files = req.files || {};
             const hasVerificationFiles = Object.keys(files).length > 0;
             const restaurantName = req.body.restaurantName || `${name}'s Restaurant`;
 
-            const sanitizePlan = (p) => {
-                if (!p) return 'Basic';
-                const lower = String(p).trim().toLowerCase();
-                if (lower.includes('trial') || lower.includes('free')) return 'Starter';
-                if (lower === 'basic') return 'Basic';
-                if (lower === 'pro' || lower === 'professional') return 'Pro';
-                if (lower === 'enterprise') return 'Enterprise';
-                if (lower === 'starter') return 'Starter';
-                return p.charAt(0).toUpperCase() + p.slice(1);
-            };
-
-            const isPaidUpfront = Boolean(req.body.razorpayPaymentId);
-            const isTrial = !isPaidUpfront;
+            const resolvedPlan = verifiedPlanInfo?.planName || normalizePlanName(req.body.plan);
+            const billingCycle = req.body.billingCycle === 'yearly' ? 'yearly' : 'monthly';
+            const now = new Date();
+            const paidExpiry = new Date(now.getTime() + (billingCycle === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000);
 
             const subData = isPaidUpfront ? {
                 status: 'Active',
-                plan: sanitizePlan(req.body.plan),
-                billingCycle: req.body.billingCycle || 'monthly',
+                plan: resolvedPlan,
+                billingCycle,
                 trialActive: false,
                 paymentStatus: 'Paid',
-                subscriptionStartDate: new Date(),
-                subscriptionEndDate: new Date(Date.now() + (req.body.billingCycle === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000),
-                startDate: new Date(),
-                expiryDate: new Date(Date.now() + (req.body.billingCycle === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000)
+                manualFreeze: false,
+                price: verifiedPlanInfo?.price || 0,
+                subscriptionStartDate: now,
+                subscriptionEndDate: paidExpiry,
+                startDate: now,
+                expiryDate: paidExpiry
             } : {
                 status: 'Pending Approval',
-                plan: sanitizePlan(req.body.plan) || 'Basic',
-                billingCycle: req.body.billingCycle || 'monthly',
+                plan: resolvedPlan || 'Basic',
+                billingCycle,
                 trialActive: false,
-                trialRequestDate: new Date(),
+                trialRequestDate: now,
                 paymentStatus: 'Trial',
                 manualFreeze: false
             };
@@ -186,7 +210,7 @@ export const registerUser = async (req, res) => {
                 const logoFile = files.logo[0];
                 documents.logo = { filePath: getFileUrl(logoFile) };
                 try {
-                    const fileBuffer = fs.readFileSync(logoFile.path);
+                    const fileBuffer = await fs.promises.readFile(logoFile.path);
                     const ext = path.extname(logoFile.originalname || logoFile.filename || '').toLowerCase();
                     const mimeType = ext === '.pdf' ? 'application/pdf' : (logoFile.mimetype || 'image/png');
                     createdRestaurant.logo = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
@@ -202,6 +226,21 @@ export const registerUser = async (req, res) => {
 
             if (files.images && files.images.length > 0) {
                 documents.images = files.images.map(img => ({ filePath: getFileUrl(img) }));
+            }
+
+            // Record initial paid subscription transaction if paid upfront
+            if (isPaidUpfront) {
+                await SubscriptionPayment.create({
+                    restaurantId: createdRestaurant._id,
+                    planName: createdRestaurant.subscription.plan,
+                    amount: createdRestaurant.subscription.price || 0,
+                    billingCycle: createdRestaurant.subscription.billingCycle,
+                    paymentMethod: 'UPI QR',
+                    transactionId: String(qrPaymentRef),
+                    status: 'Completed',
+                    effectiveDate: createdRestaurant.subscription.subscriptionStartDate,
+                    expiryDate: createdRestaurant.subscription.subscriptionEndDate
+                }).catch((payErr) => console.error('Initial SubscriptionPayment log error:', payErr.message));
             }
 
             // Always create RestaurantVerification document so Super Admin receives the verification request
@@ -358,17 +397,11 @@ export const loginUser = async (req, res) => {
                 }
             }
 
-            // Check subscription if user belongs to a restaurant (flag status as Frozen if expired, but do NOT block login)
-            if (user.restaurantId && user.role !== 'SuperAdmin') {
+            // Evaluate subscription expiry consistently (do NOT block login so owner can pay/renew or contact support)
+            if (user.restaurantId && !['SuperAdmin', 'SupportAgent', 'Customer'].includes(user.role)) {
                 const restaurant = await Restaurant.findById(user.restaurantId);
                 if (restaurant) {
-                    if (restaurant.subscription.status === 'Frozen' || (restaurant.subscription.expiryDate && new Date(restaurant.subscription.expiryDate) < new Date())) {
-                        if (restaurant.subscription.status !== 'Frozen') {
-                            restaurant.subscription.status = 'Frozen';
-                            await restaurant.save();
-                        }
-                        // Allow login so user can access dashboard and use SubscriptionFreezeOverlay / QR payment to upgrade
-                    }
+                    await evaluateSubscriptionAccess(restaurant, { notifyOnExpire: true });
                 }
             }
 
@@ -563,29 +596,17 @@ export const testSendEmail = async (req, res) => {
 export const createRazorpayRegistrationOrder = async (req, res) => {
     try {
         const { planName, billingCycle, restaurantName } = req.body;
-        const Plan = (await import('../models/Plan.js')).default;
-        const Razorpay = (await import('razorpay')).default;
-
-        const targetPlan = await Plan.findOne({ name: planName });
-        const targetPrice = targetPlan 
-            ? (billingCycle === 'yearly' ? targetPlan.yearlyPrice : targetPlan.monthlyPrice)
-            : (planName === 'Pro' ? (billingCycle === 'yearly' ? 990 : 99) : (billingCycle === 'yearly' ? 1990 : 199));
-
+        const { planName: resolvedPlanName, price: targetPrice } = await resolvePlanPrice(planName, billingCycle || 'monthly');
         const chargeAmount = Math.max(1, targetPrice);
-        const keyId = process.env.RAZORPAY_KEY_ID || 'rzp_live_SlbQBi57McKtUc';
-        const keySecret = process.env.RAZORPAY_KEY_SECRET || 'IgfxpfmQCMxSPaU0T4EyhcLU';
 
-        const instance = new Razorpay({
-            key_id: keyId,
-            key_secret: keySecret
-        });
+        const { keyId, instance } = getRazorpayInstance();
 
         const razorpayOrder = await instance.orders.create({
             amount: Math.round(chargeAmount * 100),
             currency: 'INR',
             receipt: `reg_${Date.now().toString().slice(-8)}`,
             notes: {
-                planName: planName || 'Basic',
+                planName: resolvedPlanName,
                 billingCycle: billingCycle || 'monthly',
                 restaurantName: restaurantName || ''
             }
@@ -596,13 +617,13 @@ export const createRazorpayRegistrationOrder = async (req, res) => {
             amount: chargeAmount,
             amountPaise: Math.round(chargeAmount * 100),
             currency: 'INR',
-            keyId: keyId,
-            planName,
-            billingCycle
+            keyId,
+            planName: resolvedPlanName,
+            billingCycle: billingCycle || 'monthly'
         });
     } catch (error) {
         console.error('Razorpay Registration Order Creation Error:', error);
-        res.status(400).json({ message: error.message || 'Failed to create Razorpay Order' });
+        res.status(error.statusCode || 400).json({ message: error.message || 'Failed to create Razorpay Order' });
     }
 };
 

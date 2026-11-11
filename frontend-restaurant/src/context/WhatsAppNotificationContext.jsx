@@ -3,57 +3,12 @@ import toast from 'react-hot-toast';
 
 const WhatsAppNotificationContext = createContext(null);
 
-const DEFAULT_ALERTS = [
-    {
-        id: 'wa-alert-1',
-        type: 'order',
-        title: 'New QR Dine-In Order Placed',
-        message: '🛎️ *NEW ORDER #ORD-1084* received from Table 04 (Dine-In)!\n• Items: 2x Paneer Butter Masala, 4x Garlic Naan, 2x Cold Lime Soda\n• Bill Amount: *₹1,320.00* (UPI Pre-Authorized)\n• Kitchen Station: North Indian Curry & Tandoor KDS notified.',
-        recipient: 'Owner WhatsApp (+91 98765 43210)',
-        time: 'Just now',
-        timestamp: Date.now() - 1000 * 60 * 3,
-        read: false,
-        meta: { orderId: 'ORD-1084', amount: 1320, table: 'Table 04' }
-    },
-    {
-        id: 'wa-alert-2',
-        type: 'closing',
-        title: 'Daily Executive Sales & GST Statement',
-        message: '📊 *FOODNEST DAILY EXECUTIVE CLOSING SUMMARY*\n🗓️ Date: Today\n📍 Store: Downtown Gourmet Bistro #102\n\n• Gross Revenue: *₹1,24,917.00*\n• Net Bank Settlement: *₹1,14,461.15*\n• Total GST Collected (5%): *₹6,245.85*\n• Total Dining Orders: *342 Orders* | AOV: *₹365.00*\n• Food Cost (CoGS): 31.6% (Optimal)\n• Cash Drawer Balance: ₹19,976 (Zero variance)\n\n✅ Shift certified by Store Manager.',
-        recipient: 'Owner WhatsApp (+91 98765 43210)',
-        time: '18 mins ago',
-        timestamp: Date.now() - 1000 * 60 * 18,
-        read: false,
-        meta: { amount: 124917, orders: 342 }
-    },
-    {
-        id: 'wa-alert-3',
-        type: 'inventory',
-        title: 'Low Stock Safety Buffer Alert',
-        message: '⚠️ *LOW STOCK CRITICAL WARNING*\nItem: Fresh Mozzarella Cheese (Grade A)\n• Current Stock: *4.0 Kg*\n• Minimum Buffer: *10.0 Kg*\n• Action: Auto Reorder Indent #PO-941 generated for Dairy Wholesale Co-op.',
-        recipient: 'Owner WhatsApp (+91 98765 43210)',
-        time: '42 mins ago',
-        timestamp: Date.now() - 1000 * 60 * 42,
-        read: true,
-        meta: { item: 'Mozzarella Cheese', stock: '4 Kg' }
-    },
-    {
-        id: 'wa-alert-4',
-        type: 'customer',
-        title: 'VIP Guest Anniversary Reservation',
-        message: '🎉 *VIP GOLD DINER ARRIVAL NOTIFICATION*\nGuest: *Amit Sharma* (1,240 FoodNest Coins)\n• Reservation: Table 02 (Corner Window)\n• Occasion: 3rd Wedding Anniversary\n• Note: Complimentary dessert platter pre-assigned to order.',
-        recipient: 'Owner WhatsApp (+91 98765 43210)',
-        time: '1 hour ago',
-        timestamp: Date.now() - 1000 * 60 * 65,
-        read: true,
-        meta: { guest: 'Amit Sharma', tier: 'VIP Gold' }
-    }
-];
+const DEFAULT_ALERTS = [];
 
 export const WhatsAppNotificationProvider = ({ children }) => {
     // Persistent settings
     const [ownerPhone, setOwnerPhone] = useState(() => {
-        return localStorage.getItem('restosys_owner_wa_phone') || '+91 98765 43210';
+        return localStorage.getItem('restosys_owner_wa_phone') || '';
     });
 
     const [isSyncActive, setIsSyncActive] = useState(() => {

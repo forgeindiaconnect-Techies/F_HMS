@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api, { getApiUrl } from '../utils/axiosInstance';
+import { buildDummyUpiQrUrl } from '../utils/subscriptionClient';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -155,7 +156,8 @@ const StaffAuthPage = () => {
         if (result.success) {
             const role = (result.data?.role || '').toLowerCase();
             let route = '/admin';
-            if (role.includes('superadmin') || role.includes('supportagent')) route = '/super-admin';
+            if (role.includes('superadmin')) route = '/super-admin';
+            else if (role.includes('supportagent')) route = '/super-admin/support';
             else if (role.includes('manager')) route = '/manager';
             else if (role.includes('chef')) route = '/chef';
             else if (role.includes('waiter')) route = '/waiter';
@@ -180,31 +182,24 @@ const StaffAuthPage = () => {
         return isYearly ? '39.00' : '49.00';
     };
 
-    const startRazorpayPayment = async () => {
+    const handleConfirmQRRegistration = async () => {
         if (paymentStatus === 'processing') return;
         setPaymentStatus('processing');
-        try {
-            setPaymentStatus('success');
-            toast.success("Payment verified! Submitting restaurant registration...");
-            setTimeout(() => {
-                setStep(5);
-                submitRegistration(`PAY_MOCK_${Date.now()}`);
-            }, 500);
-        } catch (err) {
-            console.error("Registration payment error:", err);
-            setPaymentStatus('failed');
-            toast.error("Failed to complete payment simulation.");
-        }
+        setAuthError('');
+        const qrRef = `QR-REG-${Date.now().toString().slice(-8)}`;
+        toast.success('QR Payment confirmed! Completing restaurant registration...');
+        setStep(5);
+        await submitRegistration(qrRef);
     };
 
     const [regStatusMessage, setRegStatusMessage] = useState('Connecting to server...');
 
-    const submitRegistration = async (razorpayPaymentId = '') => {
+    const submitRegistration = async (paymentProof = null) => {
         setLoading(true);
         setAuthError('');
         setRegStatusMessage('Uploading KYC documents & restaurant information...');
         const data = getValues();
-        const effectivePlan = isTrialSelected ? 'Starter' : (data.plan || 'Starter');
+        const effectivePlan = isTrialSelected ? 'Basic' : (data.plan || selectedPlan || 'Basic');
         
         const formData = new FormData();
         formData.append('name', data.name);
@@ -217,9 +212,10 @@ const StaffAuthPage = () => {
         formData.append('plan', effectivePlan);
         formData.append('isTrial', isTrialSelected ? 'true' : 'false');
         formData.append('trialPlanName', '7-Day Free Trial');
-        formData.append('billingCycle', data.billingCycle || 'monthly');
-        if (razorpayPaymentId) {
-            formData.append('razorpayPaymentId', razorpayPaymentId);
+        formData.append('billingCycle', data.billingCycle || (isYearly ? 'yearly' : 'monthly'));
+        if (typeof paymentProof === 'string' && paymentProof) {
+            formData.append('qrPaymentId', paymentProof);
+            formData.append('paymentReference', paymentProof);
         }
 
         if (fssaiFile) formData.append('fssai', fssaiFile);
@@ -967,57 +963,82 @@ const StaffAuthPage = () => {
     );
 
     // =========================================================================
-    // STEP 4: PAYMENT (ONLY FOR PAID PLANS)
+    // STEP 4: PAYMENT (ONLY FOR PAID PLANS) - DUMMY QR SCANNER
     // =========================================================================
-    const renderRegisterStep4Payment = () => (
-        <div className="text-center animate-in fade-in zoom-in-95 duration-500 py-2">
-            <button onClick={() => setStep(3)} disabled={paymentStatus === 'processing'} className="text-xs font-bold text-slate-500 hover:text-slate-900 mb-3 inline-flex items-center gap-1 self-start mr-auto block cursor-pointer">
-                &larr; Back to KYC
-            </button>
-            <h2 className="text-2xl font-black text-slate-900 mb-1">Activate {watch('plan')} Plan</h2>
-            <p className="text-xs text-slate-500 mb-4 font-medium">Scan QR code or click simulate payment below for <span className="font-bold text-slate-800">₹{getPlanAmount()}</span>.</p>
+    const renderRegisterStep4Payment = () => {
+        const planLabel = watch('plan') || selectedPlan || 'Basic';
+        const amountStr = getPlanAmount();
+        const qrImageUrl = buildDummyUpiQrUrl({
+            amount: parseFloat(amountStr) || 0,
+            label: `${planLabel} Registration`
+        });
 
-            <div 
-                onClick={startRazorpayPayment}
-                className="bg-white border-2 border-emerald-200 rounded-3xl p-5 mb-4 text-center space-y-3 shadow-md flex flex-col items-center cursor-pointer group hover:scale-[1.02] transition-transform"
-                title="Click QR Code to Simulate Payment"
-            >
-                <div className="w-48 h-48 bg-white p-3 rounded-2xl border border-slate-200 shadow-inner flex items-center justify-center relative">
-                    <img 
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi%3A%2F%2Fpay%3Fpa%3Dresto%40upi%26pn%3DRestaurantRegistration%26am%3D${getPlanAmount()}%26cu%3DINR&bgcolor=ffffff&color=15803d`}
-                        alt="Registration Payment QR Code" 
-                        className="w-40 h-40 object-contain"
-                    />
-                    <div className="absolute inset-0 bg-emerald-600/20 group-hover:opacity-100 opacity-0 transition-opacity rounded-2xl flex items-center justify-center font-black text-emerald-950 text-xs bg-white/90 p-2 text-center">
-                        Click QR to Simulate Payment →
+        return (
+            <div className="text-center animate-in fade-in zoom-in-95 duration-500 py-2">
+                <button onClick={() => setStep(3)} disabled={paymentStatus === 'processing'} className="text-xs font-bold text-slate-500 hover:text-slate-900 mb-3 inline-flex items-center gap-1 self-start mr-auto block cursor-pointer">
+                    &larr; Back to KYC
+                </button>
+                <h2 className="text-2xl font-black text-slate-900 mb-1">Activate {planLabel} Plan</h2>
+                <p className="text-xs text-slate-500 mb-4 font-medium">
+                    Scan the UPI QR code below for <span className="font-bold text-slate-800">₹{amountStr}</span> to register and activate your restaurant.
+                </p>
+
+                <div className="bg-white border-2 border-emerald-200 rounded-3xl p-5 mb-4 space-y-3 shadow-md">
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-600">
+                        <span>Selected Plan</span>
+                        <span className="text-slate-900 font-black">{planLabel} ({isYearly ? 'Yearly' : 'Monthly'})</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-600">
+                        <span>Restaurant</span>
+                        <span className="text-slate-900 font-black">{watch('restaurantName') || 'New Restaurant'}</span>
+                    </div>
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                        <span className="text-xs font-bold text-slate-600">Payable Total</span>
+                        <span className="text-xl font-black text-emerald-700">₹{amountStr}</span>
+                    </div>
+
+                    {/* Dummy UPI QR Scanner Box */}
+                    <div className="pt-2 flex flex-col items-center">
+                        <div className="w-40 h-40 bg-slate-50 p-2 rounded-2xl border border-slate-200 shadow-inner flex items-center justify-center">
+                            <img
+                                src={qrImageUrl}
+                                alt="Registration UPI QR Code"
+                                className="w-full h-full object-contain"
+                            />
+                        </div>
+                        <span className="text-[11px] font-bold text-slate-500 mt-2">
+                            Scan with GPay, PhonePe or Paytm &amp; confirm below
+                        </span>
                     </div>
                 </div>
 
-                <div className="flex items-center justify-center gap-2">
-                    <ShieldCheck size={16} className="text-emerald-600" />
-                    <span className="text-xs font-bold text-slate-600">Scan via GPay, PhonePe, Paytm, or click QR</span>
-                </div>
-            </div>
-
-            <button 
-                type="button"
-                onClick={startRazorpayPayment}
-                disabled={paymentStatus === 'processing'}
-                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-3.5 rounded-xl shadow-md shadow-emerald-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-60"
-            >
-                {paymentStatus === 'processing' ? (
-                    <>
-                        <Loader2 className="animate-spin text-white" size={18} />
-                        Verifying Payment...
-                    </>
-                ) : (
-                    <>
-                        <CheckCircle2 size={18} /> Pay ₹{getPlanAmount()} &amp; Activate Subscription <ArrowRight size={16} />
-                    </>
+                {paymentStatus === 'failed' && (
+                    <div className="mb-3 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700 flex items-center justify-center gap-2">
+                        <AlertCircle size={15} />
+                        Payment confirmation failed. Please retry below.
+                    </div>
                 )}
-            </button>
-        </div>
-    );
+
+                <button
+                    type="button"
+                    onClick={handleConfirmQRRegistration}
+                    disabled={paymentStatus === 'processing'}
+                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-3.5 rounded-xl shadow-md shadow-emerald-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-60"
+                >
+                    {paymentStatus === 'processing' ? (
+                        <>
+                            <Loader2 className="animate-spin text-white" size={18} />
+                            Confirming QR Payment...
+                        </>
+                    ) : (
+                        <>
+                            <QrCode size={18} /> Confirm QR Payment &amp; Complete Registration <ArrowRight size={16} />
+                        </>
+                    )}
+                </button>
+            </div>
+        );
+    };
 
     // =========================================================================
     // STEP 5: REGISTRATION IN PROGRESS

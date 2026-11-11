@@ -13,6 +13,16 @@ import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import Razorpay from 'razorpay';
+import {
+    applyPaidSubscriptionActivation,
+    calculateProratedUpgrade,
+    evaluateSubscriptionAccess,
+    findPlanDocument,
+    getRazorpayInstance,
+    resolvePlanPrice,
+    verifyRazorpaySignature
+} from '../utils/subscriptionHelper.js';
+import { broadcastToRestaurant } from '../config/websocket.js';
 
 // Multer setup for restaurant logo uploads
 const logoUploadDir = 'uploads/logos';
@@ -67,22 +77,41 @@ export const getRestaurants = async (req, res) => {
         };
 
         let restaurants = await Restaurant.find(filter).populate('ownerId', 'name email').sort({ createdAt: -1 }).lean();
-        
-        // Auto-repair missing names if needed
-        const populatedRestaurants = await Promise.all(restaurants.map(async (rest) => {
+        if (restaurants.length === 0) {
+            return res.json([]);
+        }
+
+        const restIds = restaurants.map(r => r._id);
+
+        // Batch fetch partner existence, active branches, and verifications in 3 parallel queries (eliminates N+1 queries)
+        const [partnerRestIds, allBranches, allVerifs] = await Promise.all([
+            DeliveryPartner.distinct('restaurantId', { restaurantId: { $in: restIds } }),
+            Branch.find({ restaurantId: { $in: restIds }, isActive: true }).lean(),
+            RestaurantVerification.find({ restaurantId: { $in: restIds } }).lean().catch(() => [])
+        ]);
+
+        const partnerSet = new Set(partnerRestIds.map(id => String(id)));
+        const branchMap = new Map();
+        for (const b of allBranches) {
+            const key = String(b.restaurantId);
+            if (!branchMap.has(key)) branchMap.set(key, []);
+            branchMap.get(key).push(b);
+        }
+        const verifMap = new Map();
+        for (const v of allVerifs) {
+            verifMap.set(String(v.restaurantId), v);
+        }
+
+        const nameFixes = [];
+        const populatedRestaurants = restaurants.map((rest) => {
+            const restIdStr = String(rest._id);
             if (!rest.name || rest.name.trim() === '' || rest.name === 'Unnamed') {
                 const ownerName = rest.ownerId?.name || 'Partner';
                 rest.name = `${ownerName}'s Restaurant`;
-                try {
-                    await Restaurant.findByIdAndUpdate(rest._id, { $set: { name: rest.name } });
-                } catch (err) {
-                    console.error('Failed auto-repairing restaurant name:', err);
-                }
+                nameFixes.push(Restaurant.findByIdAndUpdate(rest._id, { $set: { name: rest.name } }).catch(() => {}));
             }
 
-            // Dynamically enable delivery if there are registered delivery partners
-            const hasPartners = await DeliveryPartner.exists({ restaurantId: rest._id });
-            if (hasPartners) {
+            if (partnerSet.has(restIdStr)) {
                 if (!rest.deliverySettings) {
                     rest.deliverySettings = { 
                         deliveryType: 'Both',
@@ -102,26 +131,21 @@ export const getRestaurants = async (req, res) => {
                 }
             }
 
-            // Attach active branches and primary location details for customer location-based filtering
-            const branches = await Branch.find({ restaurantId: rest._id, isActive: true }).lean();
+            const branches = branchMap.get(restIdStr) || [];
             rest.branches = branches;
             const primaryBranch = branches[0];
 
-            // Attach showcase images and logo from verification if unset
-            let verifAddress = '';
-            try {
-                const verif = await RestaurantVerification.findOne({ restaurantId: rest._id }).lean();
-                verifAddress = verif?.documents?.addressProof?.addressText || '';
-                if (!rest.logo && verif?.documents?.logo?.filePath) {
-                    rest.logo = verif.documents.logo.filePath;
-                }
-                if ((!rest.showcaseImages || rest.showcaseImages.length === 0) && verif?.documents?.images?.length > 0) {
-                    rest.showcaseImages = verif.documents.images.map(img => img.filePath);
-                }
-                if (!rest.bannerImage && rest.showcaseImages?.length > 0) {
-                    rest.bannerImage = rest.showcaseImages[0];
-                }
-            } catch (_) {}
+            const verif = verifMap.get(restIdStr);
+            const verifAddress = verif?.documents?.addressProof?.addressText || '';
+            if (!rest.logo && verif?.documents?.logo?.filePath) {
+                rest.logo = verif.documents.logo.filePath;
+            }
+            if ((!rest.showcaseImages || rest.showcaseImages.length === 0) && verif?.documents?.images?.length > 0) {
+                rest.showcaseImages = verif.documents.images.map(img => img.filePath);
+            }
+            if (!rest.bannerImage && rest.showcaseImages?.length > 0) {
+                rest.bannerImage = rest.showcaseImages[0];
+            }
 
             const branchAddress = primaryBranch?.location?.address && primaryBranch.location.address !== 'Primary Location' 
                 ? primaryBranch.location.address 
@@ -130,7 +154,6 @@ export const getRestaurants = async (req, res) => {
             const combinedAddr = rest.address || branchAddress || verifAddress || primaryBranch?.location?.address || '';
             rest.address = combinedAddr;
 
-            // Extract city accurately: prioritize restaurant's own configured city
             let resolvedCity = rest.city && rest.city.trim() ? rest.city.trim() : '';
             if (!resolvedCity && primaryBranch?.location?.city && primaryBranch.location.city !== 'Primary Location') {
                 resolvedCity = primaryBranch.location.city.trim();
@@ -153,7 +176,9 @@ export const getRestaurants = async (req, res) => {
             rest.verificationAddress = verifAddress;
 
             return rest;
-        }));
+        });
+
+        if (nameFixes.length > 0) Promise.allSettled(nameFixes);
         
         res.json(populatedRestaurants);
     } catch (error) {
@@ -202,57 +227,105 @@ export const updateSubscription = async (req, res) => {
 };
 
 // @desc    Self-service subscribe/renew subscription
+// Shared helper to activate a subscription via QR scan / direct plan confirmation
+const activateRestaurantPlanPayment = async ({
+    restaurant,
+    reqUser,
+    planName,
+    billingCycle = 'monthly',
+    transactionId,
+    paymentMethod = 'UPI QR'
+}) => {
+    const pricing = await calculateProratedUpgrade(
+        restaurant,
+        planName || restaurant.subscription?.plan || 'Basic',
+        billingCycle || restaurant.subscription?.billingCycle || 'monthly'
+    );
+
+    const expiryDate = applyPaidSubscriptionActivation(restaurant, {
+        planName: pricing.planName,
+        billingCycle: pricing.billingCycle,
+        targetPrice: pricing.targetPrice
+    });
+
+    const updatedRestaurant = await restaurant.save();
+    const txnId = transactionId || `QR-PAY-${Date.now().toString().slice(-8)}`;
+
+    await SubscriptionPayment.create({
+        restaurantId: restaurant._id,
+        planName: pricing.planName,
+        amount: pricing.chargeAmount,
+        billingCycle: pricing.billingCycle,
+        paymentMethod,
+        transactionId: txnId,
+        status: 'Completed',
+        effectiveDate: new Date(),
+        expiryDate
+    });
+
+    await Notification.create({
+        title: 'Subscription Activated via UPI QR',
+        desc: `Your subscription to the ${pricing.planName} plan has been confirmed and activated (Txn ID: ${txnId}).`,
+        type: 'System',
+        restaurantId: restaurant._id
+    }).catch(() => {});
+
+    broadcastToRestaurant(restaurant._id, 'subscription_updated', {
+        restaurantId: String(restaurant._id),
+        subscription: updatedRestaurant.subscription
+    });
+
+    try {
+        const owner = await User.findById(restaurant.ownerId || reqUser?._id).lean();
+        const targetEmail = owner?.email || reqUser?.email;
+        if (targetEmail) {
+            sendSubscriptionSuccessEmail({
+                email: targetEmail,
+                name: owner?.name || reqUser?.name,
+                restaurantName: restaurant.name,
+                plan: pricing.planName,
+                billingCycle: pricing.billingCycle,
+                price: pricing.chargeAmount,
+                transactionId: txnId,
+                expiryDate
+            }).catch(err => console.error('Subscription email background error:', err.message));
+        }
+    } catch (e) {
+        console.error('Failed to send subscription confirmation email:', e.message);
+    }
+
+    return {
+        updatedRestaurant,
+        pricing,
+        txnId,
+        expiryDate
+    };
+};
+
+// @desc    Self-subscribe or update restaurant subscription plan (Dummy QR / direct activation)
 // @route   PUT /api/restaurants/subscribe
 // @access  Private/RestaurantAdmin
 export const selfSubscribe = async (req, res) => {
     try {
-        const { plan, billingCycle } = req.body;
+        const { plan, planName, billingCycle, transactionId } = req.body;
         const restaurant = await Restaurant.findById(req.user.restaurantId);
 
         if (!restaurant) {
             return res.status(404).json({ message: 'Restaurant not found' });
         }
 
-        const expiryDate = new Date();
-        if (billingCycle === 'yearly') {
-            expiryDate.setDate(expiryDate.getDate() + 365);
-        } else {
-            // Monthly
-            expiryDate.setDate(expiryDate.getDate() + 30);
+        if (restaurant.subscription?.manualFreeze) {
+            return res.status(403).json({ message: 'Dashboard is manually frozen by Super Admin. Please contact support.' });
         }
 
-        restaurant.subscription = {
-            status: 'Active',
-            plan: plan || 'Basic',
+        const { updatedRestaurant } = await activateRestaurantPlanPayment({
+            restaurant,
+            reqUser: req.user,
+            planName: plan || planName || 'Basic',
             billingCycle: billingCycle || 'monthly',
-            trialActive: false,
-            startDate: new Date(),
-            expiryDate: expiryDate
-        };
-        restaurant.isActive = true;
-        if (restaurant.approvalStatus === 'Pending') {
-            restaurant.approvalStatus = 'Approved';
-        }
-
-        const updatedRestaurant = await restaurant.save();
-
-        // Send Subscription Confirmation Email to Owner
-        try {
-            const owner = await User.findById(restaurant.ownerId || req.user._id);
-            const targetEmail = owner?.email || req.user?.email;
-            if (targetEmail) {
-                sendSubscriptionSuccessEmail({
-                    email: targetEmail,
-                    name: owner?.name || req.user?.name,
-                    restaurantName: restaurant.name,
-                    plan: plan || 'Basic',
-                    billingCycle: billingCycle || 'monthly',
-                    expiryDate: expiryDate
-                }).catch(err => console.error("Subscription email background error:", err.message));
-            }
-        } catch (e) {
-            console.error("Failed to send selfSubscribe email:", e.message);
-        }
+            transactionId,
+            paymentMethod: 'UPI QR'
+        });
 
         res.json(updatedRestaurant);
     } catch (error) {
@@ -303,49 +376,38 @@ export const getMyRestaurant = async (req, res) => {
             return res.json(null);
         }
         
-        if (restaurant && restaurant.subscription?.expiryDate) {
-            const expiry = new Date(restaurant.subscription.expiryDate);
+        if (restaurant && restaurant.subscription) {
+            const expiryCheckDate = restaurant.subscription.subscriptionEndDate || restaurant.subscription.expiryDate;
             const now = new Date();
-            
+
             // Auto apply scheduled downgrade if downgrade date has passed
-            if (restaurant.subscription.downgradeScheduledPlan && now >= new Date(restaurant.subscription.downgradeScheduledDate)) {
+            if (
+                restaurant.subscription.downgradeScheduledPlan &&
+                restaurant.subscription.downgradeScheduledDate &&
+                now >= new Date(restaurant.subscription.downgradeScheduledDate)
+            ) {
                 const targetPlan = restaurant.subscription.downgradeScheduledPlan;
-                restaurant.subscription.plan = targetPlan;
-                restaurant.subscription.price = targetPlan === 'Pro' ? 99 : 49;
+                const { planName: resolvedTargetName, price: targetPrice } = await resolvePlanPrice(
+                    targetPlan,
+                    restaurant.subscription.billingCycle || 'monthly'
+                );
+                restaurant.subscription.plan = resolvedTargetName;
+                restaurant.subscription.price = targetPrice;
                 restaurant.subscription.downgradeScheduledPlan = '';
                 restaurant.subscription.downgradeScheduledDate = null;
                 await restaurant.save();
 
                 await Notification.create({
                     title: 'Subscription Downgraded',
-                    desc: `Your scheduled downgrade to the ${targetPlan} plan has been processed.`,
+                    desc: `Your scheduled downgrade to the ${resolvedTargetName} plan has been processed.`,
                     type: 'System',
                     restaurantId: restaurant._id
                 });
             }
 
-            // If subscription or 7-day free trial has expired, freeze the dashboard
-            if (expiry < now) {
-                if (restaurant.subscription.status !== 'Frozen' && restaurant.subscription.status !== 'Cancelled') {
-                    restaurant.subscription.status = 'Frozen';
-                    restaurant.subscription.trialActive = false;
-                    await restaurant.save();
-
-                    const existingNotif = await Notification.findOne({
-                        restaurantId: restaurant._id,
-                        title: '7-Day Free Trial Expired',
-                        read: false
-                    });
-                    
-                    if (!existingNotif) {
-                        await Notification.create({
-                            title: '7-Day Free Trial Expired',
-                            desc: 'Your 7-day free trial has ended. Your dashboard has been frozen. Please subscribe to unlock full access.',
-                            type: 'System',
-                            restaurantId: restaurant._id
-                        });
-                    }
-                }
+            // Evaluate trial/paid expiration uniformly across all expiry fields without mutating manual freeze
+            if (expiryCheckDate || restaurant.subscription.trialEndDate) {
+                await evaluateSubscriptionAccess(restaurant, { notifyOnExpire: true });
             }
         }
         
@@ -846,9 +908,32 @@ export const getBranches = async (req, res) => {
 // @access  Private/Admin
 export const createBranch = async (req, res) => {
     try {
+        const targetRestId = req.params.id;
+        if (req.user.role !== 'SuperAdmin' && String(req.user.restaurantId) !== String(targetRestId)) {
+            return res.status(403).json({ message: 'Not authorized to create branches for another restaurant.' });
+        }
+
+        const restaurant = await Restaurant.findById(targetRestId);
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found.' });
+        }
+
+        const planName = restaurant.subscription?.plan || 'Basic';
+        const planDoc = await findPlanDocument(planName);
+        let limit = planDoc?.branchesLimit || 1;
+        if (planName.toLowerCase() === 'enterprise') limit = Infinity;
+        else if (['pro', 'professional'].includes(planName.toLowerCase())) limit = Math.max(limit, 3);
+
+        const currentCount = await Branch.countDocuments({ restaurantId: targetRestId });
+        if (currentCount >= limit) {
+            return res.status(403).json({
+                message: `Your "${planName}" plan is limited to ${limit} branch(es). Please upgrade to add more branches.`
+            });
+        }
+
         const { name, location, contact, manager } = req.body;
         const branch = await Branch.create({
-            restaurant: req.params.id,
+            restaurantId: targetRestId,
             name,
             location,
             contact,
@@ -943,113 +1028,33 @@ export const getMyBillingHistory = async (req, res) => {
 
 export const upgradeSubscription = async (req, res) => {
     try {
-        const { planName, billingCycle } = req.body;
-        
-        let restId = req.user.restaurantId || req.user.restaurant;
-        let restaurant;
-        if (restId) {
-            restaurant = await Restaurant.findById(restId);
-        }
-        if (!restaurant) {
-            restaurant = await Restaurant.findOne({ ownerId: req.user._id });
-        }
+        const { planName, billingCycle, transactionId } = req.body;
+        const restId = req.user.restaurantId || req.user.restaurant;
+        const restaurant = restId ? await Restaurant.findById(restId) : await Restaurant.findOne({ ownerId: req.user._id });
         if (!restaurant) {
             return res.status(404).json({ message: 'Restaurant profile not found.' });
         }
-
-        const targetPlan = await Plan.findOne({ name: planName });
-        const targetPrice = targetPlan 
-            ? (billingCycle === 'yearly' ? targetPlan.yearlyPrice : targetPlan.monthlyPrice)
-            : (planName === 'Pro' ? (billingCycle === 'yearly' ? 990 : 99) : (billingCycle === 'yearly' ? 1990 : 199));
-
-        const currentPlanName = restaurant.subscription?.plan || 'Basic';
-        const currentPlan = await Plan.findOne({ name: currentPlanName });
-        const currentPrice = currentPlan
-            ? (restaurant.subscription?.billingCycle === 'yearly' ? currentPlan.yearlyPrice : currentPlan.monthlyPrice)
-            : 0;
-
-        // Calculate remaining credit from current subscription
-        const now = new Date();
-        const expiry = restaurant.subscription?.expiryDate ? new Date(restaurant.subscription.expiryDate) : now;
-        const totalDuration = restaurant.subscription?.billingCycle === 'yearly' ? 365 : 30;
-        const remainingDays = Math.max(0, Math.ceil((expiry - now) / (1000 * 60 * 60 * 24)));
-        const remainingCredit = Math.floor((currentPrice / totalDuration) * remainingDays);
-
-        const chargeAmount = Math.max(0, targetPrice - remainingCredit);
-
-        // Set new expiry date
-        const newExpiry = new Date();
-        if (billingCycle === 'yearly') {
-            newExpiry.setDate(newExpiry.getDate() + 365);
-        } else {
-            newExpiry.setDate(newExpiry.getDate() + 30);
+        if (restaurant.subscription?.manualFreeze) {
+            return res.status(403).json({ message: 'Dashboard is under administrative freeze by Super Admin.' });
         }
 
-        // Update Restaurant Subscription to Active
-        restaurant.subscription = {
-            status: 'Active',
-            plan: planName,
-            billingCycle: billingCycle || 'monthly',
-            trialActive: false,
-            expiryDate: newExpiry,
-            startDate: new Date(),
-            price: targetPrice,
-            downgradeScheduledPlan: '',
-            downgradeScheduledDate: null
-        };
-        restaurant.isActive = true;
-        if (restaurant.approvalStatus === 'Pending') {
-            restaurant.approvalStatus = 'Approved';
-        }
-        await restaurant.save();
-
-        // Record Completed Subscription Payment
-        const transactionId = 'TXN-UPG-' + Date.now().toString().slice(-8).toUpperCase();
-        await SubscriptionPayment.create({
-            restaurantId: restaurant._id,
+        const { updatedRestaurant, pricing, txnId, expiryDate } = await activateRestaurantPlanPayment({
+            restaurant,
+            reqUser: req.user,
             planName,
-            amount: chargeAmount,
-            billingCycle: billingCycle || 'monthly',
-            paymentMethod: 'Card',
+            billingCycle,
             transactionId,
-            status: 'Completed',
-            effectiveDate: new Date(),
-            expiryDate: newExpiry
+            paymentMethod: 'UPI QR'
         });
-
-        // Broadcast System Notification
-        await Notification.create({
-            title: 'Subscription Upgraded',
-            desc: `Your restaurant has been successfully upgraded to the ${planName} plan.`,
-            type: 'System',
-            restaurantId: restaurant._id
-        });
-
-        // Send Subscription Confirmation Email to Owner
-        try {
-            const owner = await User.findById(restaurant.ownerId || req.user._id);
-            const targetEmail = owner?.email || req.user?.email;
-            if (targetEmail) {
-                sendSubscriptionSuccessEmail({
-                    email: targetEmail,
-                    name: owner?.name || req.user?.name,
-                    restaurantName: restaurant.name,
-                    plan: planName,
-                    billingCycle: billingCycle || 'monthly',
-                    price: chargeAmount,
-                    transactionId,
-                    expiryDate: newExpiry
-                }).catch(err => console.error("Upgrade subscription email background error:", err.message));
-            }
-        } catch (e) {
-            console.error("Failed to send upgrade email:", e.message);
-        }
 
         res.json({
-            message: `Your restaurant has been upgraded to ${planName}.`,
-            restaurant,
-            chargeAmount,
-            transactionId
+            paid: true,
+            status: 'completed',
+            message: `Upgraded to ${pricing.planName} plan successfully!`,
+            restaurant: updatedRestaurant,
+            transactionId: txnId,
+            chargeAmount: pricing.chargeAmount,
+            expiryDate
         });
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -1102,67 +1107,33 @@ export const downgradeSubscription = async (req, res) => {
 // @access  Private/RestaurantAdmin
 export const renewSubscription = async (req, res) => {
     try {
-        let restId = req.user.restaurantId || req.user.restaurant;
-        let restaurant;
-        if (restId) {
-            restaurant = await Restaurant.findById(restId);
-        }
-        if (!restaurant) {
-            restaurant = await Restaurant.findOne({ ownerId: req.user._id });
-        }
+        const { planName, billingCycle, transactionId } = req.body;
+        const restId = req.user.restaurantId || req.user.restaurant;
+        const restaurant = restId ? await Restaurant.findById(restId) : await Restaurant.findOne({ ownerId: req.user._id });
         if (!restaurant) {
             return res.status(404).json({ message: 'Restaurant profile not found.' });
         }
-
-        const planName = restaurant.subscription?.plan || 'Basic';
-        const billingCycle = restaurant.subscription?.billingCycle || 'monthly';
-
-        const plan = await Plan.findOne({ name: planName });
-        const price = plan 
-            ? (billingCycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice)
-            : (planName === 'Pro' ? (billingCycle === 'yearly' ? 990 : 99) : (billingCycle === 'yearly' ? 1990 : 199));
-
-        let currentExpiry = restaurant.subscription.expiryDate ? new Date(restaurant.subscription.expiryDate) : new Date();
-        if (currentExpiry < new Date()) {
-            currentExpiry = new Date();
+        if (restaurant.subscription?.manualFreeze) {
+            return res.status(403).json({ message: 'Dashboard is under administrative freeze by Super Admin.' });
         }
 
-        if (billingCycle === 'yearly') {
-            currentExpiry.setDate(currentExpiry.getDate() + 365);
-        } else {
-            currentExpiry.setDate(currentExpiry.getDate() + 30);
-        }
-
-        restaurant.subscription.status = 'Active';
-        restaurant.subscription.expiryDate = currentExpiry;
-        restaurant.subscription.price = price;
-        await restaurant.save();
-
-        const transactionId = 'TXN-REN-' + Date.now().toString().slice(-8).toUpperCase();
-        await SubscriptionPayment.create({
-            restaurantId: restaurant._id,
+        const { updatedRestaurant, pricing, txnId, expiryDate } = await activateRestaurantPlanPayment({
+            restaurant,
+            reqUser: req.user,
             planName,
-            amount: price,
             billingCycle,
-            paymentMethod: 'Card',
             transactionId,
-            status: 'Completed',
-            effectiveDate: new Date(),
-            expiryDate: currentExpiry
-        });
-
-        await Notification.create({
-            title: 'Subscription Renewed',
-            desc: `Your subscription to the ${planName} plan has been renewed until ${currentExpiry.toLocaleDateString()}.`,
-            type: 'System',
-            restaurantId: restaurant._id
+            paymentMethod: 'UPI QR'
         });
 
         res.json({
-            message: `Subscription successfully renewed.`,
-            restaurant,
-            expiryDate: currentExpiry,
-            transactionId
+            paid: true,
+            status: 'completed',
+            message: `Subscription to ${pricing.planName} plan renewed successfully!`,
+            restaurant: updatedRestaurant,
+            transactionId: txnId,
+            chargeAmount: pricing.chargeAmount,
+            expiryDate
         });
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -1175,70 +1146,48 @@ export const renewSubscription = async (req, res) => {
 export const createRazorpaySubscriptionOrder = async (req, res) => {
     try {
         const { planName, billingCycle } = req.body;
-        
+
         let restId = req.user.restaurantId || req.user.restaurant;
-        let restaurant;
-        if (restId) {
-            restaurant = await Restaurant.findById(restId);
-        }
-        if (!restaurant) {
-            restaurant = await Restaurant.findOne({ ownerId: req.user._id });
-        }
+        let restaurant = restId ? await Restaurant.findById(restId) : await Restaurant.findOne({ ownerId: req.user._id });
         if (!restaurant) {
             return res.status(404).json({ message: 'Restaurant profile not found.' });
         }
 
-        const targetPlan = await Plan.findOne({ name: planName });
-        const targetPrice = targetPlan 
-            ? (billingCycle === 'yearly' ? targetPlan.yearlyPrice : targetPlan.monthlyPrice)
-            : (planName === 'Pro' ? (billingCycle === 'yearly' ? 990 : 99) : (billingCycle === 'yearly' ? 1990 : 199));
+        if (restaurant.subscription?.manualFreeze) {
+            return res.status(403).json({
+                message: 'Your dashboard is under an administrative freeze by Super Admin. Please contact support.'
+            });
+        }
 
-        const currentPlanName = restaurant.subscription?.plan || 'Basic';
-        const currentPlan = await Plan.findOne({ name: currentPlanName });
-        const currentPrice = currentPlan
-            ? (restaurant.subscription?.billingCycle === 'yearly' ? currentPlan.yearlyPrice : currentPlan.monthlyPrice)
-            : 0;
-
-        const now = new Date();
-        const expiry = restaurant.subscription?.expiryDate ? new Date(restaurant.subscription.expiryDate) : now;
-        const totalDuration = restaurant.subscription?.billingCycle === 'yearly' ? 365 : 30;
-        const remainingDays = Math.max(0, Math.ceil((expiry - now) / (1000 * 60 * 60 * 24)));
-        const remainingCredit = Math.floor((currentPrice / totalDuration) * remainingDays);
-
-        const chargeAmount = Math.max(1, targetPrice - remainingCredit); // Amount in INR
-
-        const keyId = (process.env.RAZORPAY_KEY_ID || 'rzp_live_SlbQBi57McKtUc').trim();
-        const keySecret = (process.env.RAZORPAY_KEY_SECRET || 'IgfxpfmQCMxSPaU0T4EyhcLU').trim();
-
-        const instance = new Razorpay({
-            key_id: keyId,
-            key_secret: keySecret
-        });
+        const pricing = await calculateProratedUpgrade(restaurant, planName, billingCycle || 'monthly');
+        const { keyId, instance } = getRazorpayInstance();
 
         const razorpayOrder = await instance.orders.create({
-            amount: Math.round(chargeAmount * 100), // in paise
+            amount: Math.round(pricing.chargeAmount * 100),
             currency: 'INR',
             receipt: `sub_${restaurant._id.toString().slice(-6)}_${Date.now().toString().slice(-6)}`,
             notes: {
                 restaurantId: restaurant._id.toString(),
-                planName,
-                billingCycle
+                planName: pricing.planName,
+                billingCycle: pricing.billingCycle
             }
         });
 
         res.json({
             orderId: razorpayOrder.id,
-            amount: chargeAmount,
-            amountPaise: Math.round(chargeAmount * 100),
+            amount: pricing.chargeAmount,
+            amountPaise: Math.round(pricing.chargeAmount * 100),
+            remainingCredit: pricing.remainingCredit,
+            targetPrice: pricing.targetPrice,
             currency: 'INR',
-            keyId: keyId,
-            planName,
-            billingCycle,
+            keyId,
+            planName: pricing.planName,
+            billingCycle: pricing.billingCycle,
             restaurantName: restaurant.name
         });
     } catch (error) {
         console.error('Razorpay Subscription Order Creation Failed:', error);
-        res.status(400).json({ message: error.message || 'Failed to create Razorpay Order' });
+        res.status(error.statusCode || 400).json({ message: error.message || 'Failed to create Razorpay Order' });
     }
 };
 
@@ -1248,70 +1197,57 @@ export const createRazorpaySubscriptionOrder = async (req, res) => {
 export const verifyRazorpaySubscriptionPayment = async (req, res) => {
     try {
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planName, billingCycle } = req.body;
-        
+
         let restId = req.user.restaurantId || req.user.restaurant;
-        let restaurant;
-        if (restId) {
-            restaurant = await Restaurant.findById(restId);
-        }
-        if (!restaurant) {
-            restaurant = await Restaurant.findOne({ ownerId: req.user._id });
-        }
+        let restaurant = restId ? await Restaurant.findById(restId) : await Restaurant.findOne({ ownerId: req.user._id });
         if (!restaurant) {
             return res.status(404).json({ message: 'Restaurant profile not found.' });
+        }
+
+        if (restaurant.subscription?.manualFreeze) {
+            return res.status(403).json({
+                message: 'Dashboard is under an administrative freeze by Super Admin. Please contact support.'
+            });
         }
 
         if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
             return res.status(400).json({ message: 'Missing Razorpay payment verification parameters' });
         }
 
-        const keySecret = (process.env.RAZORPAY_KEY_SECRET || 'IgfxpfmQCMxSPaU0T4EyhcLU').trim();
-        
-        // Validate Razorpay HMAC Signature
-        const body = razorpay_order_id + "|" + razorpay_payment_id;
-        const expectedSignature = crypto
-            .createHmac("sha256", keySecret)
-            .update(body.toString())
-            .digest("hex");
-
-        if (expectedSignature !== razorpay_signature) {
+        if (!verifyRazorpaySignature({ orderId: razorpay_order_id, paymentId: razorpay_payment_id, signature: razorpay_signature })) {
             return res.status(400).json({ message: 'Razorpay payment signature verification failed!' });
         }
 
-        const targetPlan = await Plan.findOne({ name: planName });
-        const targetPrice = targetPlan 
-            ? (billingCycle === 'yearly' ? targetPlan.yearlyPrice : targetPlan.monthlyPrice)
-            : (planName === 'Pro' ? (billingCycle === 'yearly' ? 990 : 99) : (billingCycle === 'yearly' ? 1990 : 199));
-
-        // Calculate new expiry date
-        const newExpiry = new Date();
-        if (billingCycle === 'yearly') {
-            newExpiry.setDate(newExpiry.getDate() + 365);
-        } else {
-            newExpiry.setDate(newExpiry.getDate() + 30);
+        // Prevent duplicate replay of same payment ID
+        const existingPayment = await SubscriptionPayment.findOne({ transactionId: razorpay_payment_id, status: 'Completed' }).lean();
+        if (existingPayment) {
+            return res.json({
+                message: `Subscription already activated for transaction ${razorpay_payment_id}.`,
+                restaurant,
+                transactionId: razorpay_payment_id,
+                expiryDate: existingPayment.expiryDate
+            });
         }
 
-        // Activate Subscription
-        restaurant.subscription = {
-            status: 'Active',
-            plan: planName,
-            billingCycle: billingCycle || 'monthly',
-            trialActive: false,
-            expiryDate: newExpiry,
-            startDate: new Date(),
-            price: targetPrice,
-            downgradeScheduledPlan: '',
-            downgradeScheduledDate: null
-        };
+        const pricing = await calculateProratedUpgrade(
+            restaurant,
+            planName || restaurant.subscription?.plan || 'Basic',
+            billingCycle || restaurant.subscription?.billingCycle || 'monthly'
+        );
+
+        const newExpiry = applyPaidSubscriptionActivation(restaurant, {
+            planName: pricing.planName,
+            billingCycle: pricing.billingCycle,
+            targetPrice: pricing.targetPrice
+        });
         await restaurant.save();
 
-        // Record Subscription Payment
         const txnId = razorpay_payment_id;
         await SubscriptionPayment.create({
             restaurantId: restaurant._id,
-            planName,
-            amount: targetPrice,
-            billingCycle: billingCycle || 'monthly',
+            planName: pricing.planName,
+            amount: pricing.chargeAmount,
+            billingCycle: pricing.billingCycle,
             paymentMethod: 'Razorpay',
             transactionId: txnId,
             status: 'Completed',
@@ -1319,26 +1255,29 @@ export const verifyRazorpaySubscriptionPayment = async (req, res) => {
             expiryDate: newExpiry
         });
 
-        // Notifications
         await Notification.create({
             title: 'Subscription Activated (Razorpay)',
-            desc: `Your subscription to the ${planName} plan has been successfully activated via Razorpay (Txn ID: ${txnId}).`,
+            desc: `Your subscription to the ${pricing.planName} plan has been verified and activated via Razorpay (Txn ID: ${txnId}).`,
             type: 'System',
             restaurantId: restaurant._id
         });
 
-        // Send Subscription Confirmation Email to Owner
+        broadcastToRestaurant(restaurant._id, 'subscription_updated', {
+            restaurantId: String(restaurant._id),
+            subscription: restaurant.subscription
+        });
+
         try {
-            const owner = await User.findById(restaurant.ownerId || req.user._id);
+            const owner = await User.findById(restaurant.ownerId || req.user._id).lean();
             const targetEmail = owner?.email || req.user?.email;
             if (targetEmail) {
                 sendSubscriptionSuccessEmail({
                     email: targetEmail,
                     name: owner?.name || req.user?.name,
                     restaurantName: restaurant.name,
-                    plan: planName,
-                    billingCycle: billingCycle || 'monthly',
-                    price: targetPrice,
+                    plan: pricing.planName,
+                    billingCycle: pricing.billingCycle,
+                    price: pricing.chargeAmount,
                     transactionId: txnId,
                     expiryDate: newExpiry
                 }).catch(err => console.error("Razorpay subscription email background error:", err.message));
@@ -1348,182 +1287,139 @@ export const verifyRazorpaySubscriptionPayment = async (req, res) => {
         }
 
         res.json({
-            message: `Subscription to ${planName} plan activated successfully!`,
+            message: `Subscription to ${pricing.planName} plan activated successfully!`,
             restaurant,
             transactionId: txnId,
+            chargeAmount: pricing.chargeAmount,
             expiryDate: newExpiry
         });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(error.statusCode || 400).json({ message: error.message });
     }
 };
 
-// @desc    Generate Realtime Scannable Razorpay UPI QR Code for Subscription
+// @desc    Generate Dummy UPI QR Code for Subscription
 // @route   POST /api/restaurants/mine/razorpay-qr
 // @access  Private/RestaurantAdmin
 export const generateRazorpaySubscriptionQR = async (req, res) => {
     try {
         const { planName, billingCycle } = req.body;
-        const restaurant = await Restaurant.findById(req.user.restaurantId);
+        let restId = req.user.restaurantId || req.user.restaurant;
+        const restaurant = restId ? await Restaurant.findById(restId) : await Restaurant.findOne({ ownerId: req.user._id });
         if (!restaurant) {
             return res.status(404).json({ message: 'Restaurant not found' });
         }
 
-        const targetPlan = await Plan.findOne({ name: planName });
-        const targetPrice = targetPlan 
-            ? (billingCycle === 'yearly' ? targetPlan.yearlyPrice : targetPlan.monthlyPrice)
-            : (planName === 'Pro' ? (billingCycle === 'yearly' ? 990 : 99) : (billingCycle === 'yearly' ? 1990 : 199));
-
-        const currentPlanName = restaurant.subscription?.plan || 'Basic';
-        const currentPlan = await Plan.findOne({ name: currentPlanName });
-        const currentPrice = currentPlan
-            ? (restaurant.subscription?.billingCycle === 'yearly' ? currentPlan.yearlyPrice : currentPlan.monthlyPrice)
-            : 0;
-
-        const now = new Date();
-        const expiry = restaurant.subscription?.expiryDate ? new Date(restaurant.subscription.expiryDate) : now;
-        const totalDuration = restaurant.subscription?.billingCycle === 'yearly' ? 365 : 30;
-        const remainingDays = Math.max(0, Math.ceil((expiry - now) / (1000 * 60 * 60 * 24)));
-        const remainingCredit = Math.floor((currentPrice / totalDuration) * remainingDays);
-
-        const chargeAmount = Math.max(1, targetPrice - remainingCredit);
-        const refId = `SUB-${restaurant._id.toString().slice(-6)}-${Date.now().toString().slice(-6)}`;
-        
-        const razorpayKey = process.env.RAZORPAY_KEY_ID || 'rzp_live_SlbQBi57McKtUc';
-        const razorpaySecret = process.env.RAZORPAY_KEY_SECRET || 'IgfxpfmQCMxSPaU0T4EyhcLU';
-        
-        let qrImageUrl = '';
-        let upiString = `upi://pay?pa=razorpay.sub@icici&pn=RestoSys%20SaaS&am=${chargeAmount}&tr=${refId}&tn=RestoSys%20${planName}%20Plan`;
-
-        // Try generating official Razorpay API Dynamic QR Code
-        try {
-            const instance = new Razorpay({
-                key_id: razorpayKey,
-                key_secret: razorpaySecret,
-            });
-            const qrCode = await instance.qrCode.create({
-                type: 'upi_qr',
-                name: `Sub_${restaurant.name.slice(0, 10).replace(/[^a-zA-Z0-9]/g, '')}_${planName}`,
-                usage: 'single_use',
-                fixed_amount: true,
-                payment_amount: Math.round(chargeAmount * 100),
-                description: `RestoSys ${planName} Subscription`,
-                notes: {
-                    restaurantId: restaurant._id.toString(),
-                    planName: planName,
-                    billingCycle: billingCycle
-                }
-            });
-
-            if (qrCode && (qrCode.image_url || qrCode.short_url)) {
-                qrImageUrl = qrCode.image_url || qrCode.short_url;
-                if (qrCode.upi_link) upiString = qrCode.upi_link;
-            }
-        } catch (qrErr) {
-            console.warn("Official Razorpay QR API call fallback:", qrErr.message || qrErr);
+        if (restaurant.subscription?.manualFreeze) {
+            return res.status(403).json({ message: 'Dashboard is frozen by Super Admin. Contact support.' });
         }
 
-        if (!qrImageUrl) {
-            qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiString)}`;
-        }
+        const pricing = await calculateProratedUpgrade(restaurant, planName, billingCycle || 'monthly');
+        const refId = `QR-SUB-${Date.now().toString().slice(-8)}`;
+        const upiString = `upi://pay?pa=foodnest@upi&pn=${encodeURIComponent('FoodNest SaaS')}&am=${pricing.chargeAmount}&cu=INR&tn=${encodeURIComponent(`${pricing.planName} Plan (${pricing.billingCycle})`)}`;
+        const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiString)}`;
 
         res.json({
+            qrCodeId: refId,
             qrImageUrl,
             upiString,
-            chargeAmount,
+            chargeAmount: pricing.chargeAmount,
+            remainingCredit: pricing.remainingCredit,
             refId,
-            planName,
-            billingCycle,
-            razorpayKey
+            planName: pricing.planName,
+            billingCycle: pricing.billingCycle
         });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        console.error('QR Creation Error:', error);
+        res.status(error.statusCode || 400).json({ message: error.message || 'Unable to generate QR code.' });
     }
 };
 
-// @desc    Confirm Live QR Payment and Activate Subscription
+// @desc    Confirm Dummy QR Subscription Payment and Activate Plan
+// @route   GET /api/restaurants/mine/razorpay-qr-status/:qrId
 // @route   POST /api/restaurants/mine/confirm-qr-payment
 // @access  Private/RestaurantAdmin
 export const confirmSubscriptionQRPayment = async (req, res) => {
     try {
-        const { planName, billingCycle, refId, paymentUpiId } = req.body;
-        const restaurant = await Restaurant.findById(req.user.restaurantId);
+        let restId = req.user.restaurantId || req.user.restaurant;
+        const restaurant = restId ? await Restaurant.findById(restId) : await Restaurant.findOne({ ownerId: req.user._id });
         if (!restaurant) {
             return res.status(404).json({ message: 'Restaurant not found' });
         }
 
-        const targetPlan = await Plan.findOne({ name: planName });
-        const targetPrice = targetPlan 
-            ? (billingCycle === 'yearly' ? targetPlan.yearlyPrice : targetPlan.monthlyPrice)
-            : (planName === 'Pro' ? (billingCycle === 'yearly' ? 990 : 99) : (billingCycle === 'yearly' ? 1990 : 199));
-
-        const newExpiry = new Date();
-        if (billingCycle === 'yearly') {
-            newExpiry.setDate(newExpiry.getDate() + 365);
-        } else {
-            newExpiry.setDate(newExpiry.getDate() + 30);
+        if (restaurant.subscription?.manualFreeze) {
+            return res.status(403).json({ message: 'Dashboard is under administrative freeze by Super Admin.' });
         }
 
-        // Activate Subscription
-        restaurant.subscription = {
-            status: 'Active',
-            plan: planName,
-            billingCycle: billingCycle || 'monthly',
-            trialActive: false,
-            expiryDate: newExpiry,
-            startDate: new Date(),
-            price: targetPrice,
-            downgradeScheduledPlan: '',
-            downgradeScheduledDate: null
-        };
-        await restaurant.save();
+        const planName = req.body?.planName || req.query?.planName || restaurant.subscription?.plan || 'Basic';
+        const billingCycle = req.body?.billingCycle || req.query?.billingCycle || 'monthly';
+        const txnRef = req.params.qrId || req.body?.refId || req.body?.qrCodeId || req.body?.transactionId;
 
-        const txnId = refId || `PAY-QR-${Date.now().toString().slice(-8)}`;
-        await SubscriptionPayment.create({
-            restaurantId: restaurant._id,
+        const { updatedRestaurant, pricing, txnId, expiryDate } = await activateRestaurantPlanPayment({
+            restaurant,
+            reqUser: req.user,
             planName,
-            amount: targetPrice,
-            billingCycle: billingCycle || 'monthly',
-            paymentMethod: 'UPI QR',
-            transactionId: txnId,
-            status: 'Completed',
-            effectiveDate: new Date(),
-            expiryDate: newExpiry
+            billingCycle,
+            transactionId: txnRef,
+            paymentMethod: 'UPI QR'
         });
 
+        res.json({
+            paid: true,
+            status: 'completed',
+            message: `Subscription to ${pricing.planName} plan activated via UPI QR!`,
+            restaurant: updatedRestaurant,
+            transactionId: txnId,
+            chargeAmount: pricing.chargeAmount,
+            expiryDate
+        });
+    } catch (error) {
+        res.status(error.statusCode || 400).json({ paid: false, message: error.message });
+    }
+};
+
+// @desc    Record Failed Subscription Payment Attempt
+// @route   POST /api/restaurants/mine/razorpay-failed
+// @access  Private/RestaurantAdmin
+export const recordFailedSubscriptionPayment = async (req, res) => {
+    try {
+        const { planName, billingCycle, amount, paymentId, reason } = req.body;
+        let restId = req.user.restaurantId || req.user.restaurant;
+        const restaurant = restId ? await Restaurant.findById(restId) : await Restaurant.findOne({ ownerId: req.user._id });
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        const txnId = paymentId || `RZP-FAIL-${Date.now().toString().slice(-8)}`;
+        await SubscriptionPayment.create({
+            restaurantId: restaurant._id,
+            planName: planName || restaurant.subscription?.plan || 'Basic',
+            amount: Number(amount) || 0,
+            billingCycle: billingCycle || 'monthly',
+            paymentMethod: 'Razorpay',
+            transactionId: txnId,
+            status: 'Failed',
+            effectiveDate: new Date()
+        });
+
+        if (restaurant.subscription) {
+            restaurant.subscription.paymentStatus = 'Failed';
+            await restaurant.save();
+        }
+
         await Notification.create({
-            title: 'Subscription Activated via Scanner QR',
-            desc: `Your subscription to the ${planName} plan was verified and activated via UPI QR Code (Txn ID: ${txnId}).`,
+            title: 'Subscription Payment Failed',
+            desc: `Payment attempt failed for ${planName || 'subscription'} (${reason || 'Payment unsuccessful'}). Dashboard remains locked until payment succeeds.`,
             type: 'System',
             restaurantId: restaurant._id
         });
 
-        // Send Subscription Confirmation Email to Owner
-        try {
-            const owner = await User.findById(restaurant.ownerId || req.user._id);
-            const targetEmail = owner?.email || req.user?.email;
-            if (targetEmail) {
-                sendSubscriptionSuccessEmail({
-                    email: targetEmail,
-                    name: owner?.name || req.user?.name,
-                    restaurantName: restaurant.name,
-                    plan: planName,
-                    billingCycle: billingCycle || 'monthly',
-                    price: targetPrice,
-                    transactionId: txnId,
-                    expiryDate: newExpiry
-                }).catch(err => console.error("QR payment subscription email background error:", err.message));
-            }
-        } catch (e) {
-            console.error("Failed to send QR subscription email:", e.message);
-        }
-
-        res.json({
-            message: `Subscription to ${planName} plan activated successfully via QR Payment!`,
-            restaurant,
-            transactionId: txnId,
-            expiryDate: newExpiry
+        broadcastToRestaurant(restaurant._id, 'subscription_updated', {
+            restaurantId: String(restaurant._id),
+            subscription: restaurant.subscription
         });
+
+        res.json({ message: 'Failed payment attempt recorded.', restaurant });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
