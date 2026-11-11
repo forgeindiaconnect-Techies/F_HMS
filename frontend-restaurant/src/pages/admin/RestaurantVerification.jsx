@@ -560,19 +560,38 @@ const RestaurantVerification = () => {
                         {/* Logo upload */}
                         <div className="space-y-2 min-w-0 pr-1.5 flex-1">
                             <label className="text-xs font-black text-gray-500 uppercase tracking-wider block">Restaurant Logo (Image / PDF)</label>
-                            {(verification?.documents?.logo?.filePath || restaurant?.logo) && (() => {
-                                const rawPath = verification?.documents?.logo?.filePath || restaurant?.logo;
-                                const docUrl = resolveDocUrl(rawPath);
+                            {(logoBase64 || restaurant?.logo || verification?.documents?.logo?.filePath) && (() => {
+                                const verifPath = verification?.documents?.logo?.filePath || '';
+                                const restLogo = restaurant?.logo || '';
+                                // Prefer persistent data URI / https URL or instant preview over ephemeral local /uploads paths
+                                const preferredRaw = logoBase64 ||
+                                    ((restLogo.startsWith('data:') || restLogo.startsWith('http')) ? restLogo : '') ||
+                                    ((verifPath.startsWith('data:') || verifPath.startsWith('http')) ? verifPath : '') ||
+                                    restLogo ||
+                                    verifPath;
+                                const docUrl = resolveDocUrl(preferredRaw);
                                 const isPdf = docUrl.includes('application/pdf') || docUrl.toLowerCase().endsWith('.pdf');
                                 return isPdf ? (
                                     <div className="mb-3 p-3 bg-red-50 text-red-600 rounded-xl font-bold text-xs flex items-center gap-2 border border-red-100 max-w-xs shadow-sm">
                                         <FileText size={16} /> PDF Logo Document Uploaded
                                     </div>
-                                ) : (
-                                    <div className="mb-3 w-16 h-16 rounded-xl border border-gray-200 overflow-hidden shadow-sm bg-white">
-                                        <img src={docUrl} alt="Logo" className="w-full h-full object-cover" />
+                                ) : docUrl ? (
+                                    <div className="mb-3 w-16 h-16 rounded-xl border border-gray-200 overflow-hidden shadow-sm bg-white flex items-center justify-center">
+                                        <img
+                                            src={docUrl}
+                                            alt="Restaurant Logo"
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                const altSrc = resolveDocUrl(restLogo);
+                                                if (altSrc && e.currentTarget.src !== altSrc) {
+                                                    e.currentTarget.src = altSrc;
+                                                } else {
+                                                    e.currentTarget.parentElement.style.display = 'none';
+                                                }
+                                            }}
+                                        />
                                     </div>
-                                );
+                                ) : null;
                             })()}
                             <input
                                 type="file"

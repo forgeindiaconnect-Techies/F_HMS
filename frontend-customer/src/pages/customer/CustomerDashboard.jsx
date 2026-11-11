@@ -2050,9 +2050,13 @@ const CustomerDashboard = () => {
                                         <div className="relative">
                                             <span className="absolute left-3.5 top-3 text-gray-400"><Phone size={14} /></span>
                                             <input 
-                                                type="text"
+                                                type="tel"
+                                                inputMode="numeric"
+                                                maxLength={10}
+                                                pattern="[6-9][0-9]{9}"
                                                 value={profilePhone}
-                                                onChange={(e) => setProfilePhone(e.target.value)}
+                                                onChange={(e) => setProfilePhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                                                placeholder="10-digit mobile number"
                                                 className="w-full bg-gray-50 border border-gray-100 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-orange-500"
                                             />
                                         </div>

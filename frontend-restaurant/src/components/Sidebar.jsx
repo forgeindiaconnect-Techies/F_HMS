@@ -125,7 +125,6 @@ const Sidebar = () => {
                 { name: 'Staff Management', path: '/admin/staff', icon: UserCheck, moduleKey: 'staffManagement' },
                 { name: 'Branch Management', path: '/admin/branches', icon: Store, moduleKey: 'staffManagement' },
                 { name: 'Menu Management', path: '/admin/menu', icon: UtensilsCrossed, moduleKey: 'menuManagement' },
-                { name: 'Menu Categories', path: '/admin/categories', icon: ListTree, moduleKey: 'menuManagement' },
                 { name: 'Customer Management', path: '/admin/customers', icon: Users, moduleKey: 'customerManagement' },
             ]
         },
@@ -134,7 +133,6 @@ const Sidebar = () => {
             items: [
                 { name: 'Order Management', path: '/admin/orders', icon: ShoppingBag, moduleKey: 'dineInTakeawayOrders' },
                 { name: 'Table Management', path: '/admin/tables', icon: QrCode, moduleKey: 'tableManagement' },
-                { name: 'QR Digital Menu', path: '/admin/tables?tab=qr', icon: QrCode, moduleKey: 'tableManagement' },
                 { name: 'Reservation Management', path: '/admin/reservations', icon: CalendarCheck, moduleKey: 'tableManagement' },
                 { name: 'Offers & Promotions', path: '/admin/offers', icon: Tag, moduleKey: 'discounts' },
                 { name: 'Delivery Management', path: '/admin/delivery', icon: Truck, moduleKey: 'dineInTakeawayOrders' },
@@ -159,11 +157,9 @@ const Sidebar = () => {
             title: 'Reports & Config',
             items: [
                 { name: 'Business Intelligence', path: '/admin/bi', icon: TrendingUp },
-                { name: 'Activity Logs', path: '/admin/activity', icon: Activity },
                 { name: 'Setup Wizard', path: '/admin/setup-wizard', icon: Sparkles },
                 { name: 'My Testimonial', path: '/admin/my-testimonial', icon: MessageSquareQuote },
                 { name: 'Restaurant Settings', path: '/admin/settings?tab=operations', icon: Sliders },
-                { name: 'General Settings', path: '/admin/settings', icon: Settings },
                 { name: 'Notifications', path: '/admin/notifications', icon: Bell },
                 { name: 'Verification', path: '/admin/verification', icon: FileText },
             ]
@@ -258,10 +254,7 @@ const Sidebar = () => {
 
                                 const checkActive = () => {
                                     if (item.name === 'Table Management') {
-                                        return location.pathname === '/admin/tables' && location.search !== '?tab=qr';
-                                    }
-                                    if (item.name === 'QR Digital Menu') {
-                                        return location.pathname === '/admin/tables' && location.search === '?tab=qr';
+                                        return location.pathname === '/admin/tables';
                                     }
                                     if (item.name === 'Payroll & Salary') {
                                         return location.pathname === '/admin/staff' && location.search === '?tab=payroll';
@@ -273,10 +266,7 @@ const Sidebar = () => {
                                         return location.pathname === '/admin/staff' && location.search !== '?tab=payroll' && location.search !== '?tab=reports';
                                     }
                                     if (item.name === 'Restaurant Settings') {
-                                        return location.pathname === '/admin/settings' && location.search === '?tab=operations';
-                                    }
-                                    if (item.name === 'General Settings') {
-                                        return location.pathname === '/admin/settings' && location.search !== '?tab=operations';
+                                        return location.pathname === '/admin/settings';
                                     }
                                     if (item.name === 'Rent & Bills') {
                                         return location.pathname === '/admin/expenses' && location.search === '?tab=bills';

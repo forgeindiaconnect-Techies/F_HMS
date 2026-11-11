@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Bell, Megaphone, AlertCircle, Info, MailOpen, MoreHorizontal, X, Clock, Eye, CheckCircle2, Phone, MessageCircle, ExternalLink, Copy } from 'lucide-react';
+import { Bell, Megaphone, AlertCircle, Info, MailOpen, X, Clock, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
-import { useLocation } from 'react-router-dom';
-import { useWhatsAppNotifications } from '../../context/WhatsAppNotificationContext';
 
 const getIcon = (type) => {
     switch(type) {
@@ -43,10 +41,7 @@ const formatTime = (dateString) => {
 };
 
 const NotificationCenter = () => {
-    const { api, user } = useAuth();
-    const location = useLocation();
-    const isManager = user?.role === 'BranchManager' || location.pathname.startsWith('/manager');
-    const { alerts: waAlerts, setIsDrawerOpen, ownerPhone, markAsRead: markWaAsRead } = useWhatsAppNotifications();
+    const { api } = useAuth();
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('All'); // All, Unread, Alerts
@@ -159,10 +154,6 @@ const NotificationCenter = () => {
     };
 
     const handleMarkAsRead = async (id) => {
-        if (id.startsWith('wa-alert-')) {
-            markWaAsRead(id);
-            return;
-        }
         try {
             if (!id.startsWith('dummy-')) {
                 await api.put(`/notifications/${id}/read`);
@@ -220,28 +211,13 @@ const NotificationCenter = () => {
         }
     };
 
-    const formattedWaAlerts = (waAlerts || []).map(a => ({
-        _id: a.id,
-        title: a.title,
-        desc: a.message,
-        type: 'WhatsApp',
-        read: a.read,
-        createdAt: a.timestamp ? new Date(a.timestamp).toISOString() : new Date().toISOString(),
-        isWhatsApp: true,
-        original: a
-    }));
+    const filteredNotifications = filter === 'Unread' 
+        ? notifications.filter(n => !n.read) 
+        : filter === 'Alerts' 
+            ? notifications.filter(n => n.type === 'Alert') 
+            : notifications;
 
-    const allCombined = isManager ? notifications : [...notifications, ...formattedWaAlerts];
-
-    const filteredNotifications = filter === 'WhatsApp' 
-        ? formattedWaAlerts 
-        : filter === 'Unread' 
-            ? allCombined.filter(n => !n.read) 
-            : filter === 'Alerts' 
-                ? allCombined.filter(n => n.type === 'Alert' || n.type === 'WhatsApp') 
-                : allCombined;
-
-    const unreadCount = allCombined.filter(n => !n.read).length;
+    const unreadCount = notifications.filter(n => !n.read).length;
 
     return (
         <div className="px-0 py-2 sm:p-4 md:p-8 max-w-5xl mx-auto space-y-4 sm:space-y-6 font-sans">
@@ -277,17 +253,6 @@ const NotificationCenter = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    {!isManager && (
-                        <button
-                            type="button"
-                            onClick={() => setIsDrawerOpen(true)}
-                            className="px-3.5 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-transform active:scale-95 cursor-pointer"
-                        >
-                            <Phone size={13} />
-                            <span>Open WhatsApp Hub</span>
-                        </button>
-                    )}
-
                     {unreadCount > 0 && (
                         <button 
                             onClick={handleMarkAllAsRead}
@@ -333,33 +298,6 @@ const NotificationCenter = () => {
                                 >
                                     <Eye size={14} /> View Details
                                 </button>
-
-                                {note.isWhatsApp && (
-                                    <>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                const encoded = encodeURIComponent(note.desc);
-                                                window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
-                                            }}
-                                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-black rounded-lg transition-transform active:scale-95 shadow-2xs cursor-pointer"
-                                        >
-                                            <ExternalLink size={12} /> Open WhatsApp
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                if (navigator.clipboard) {
-                                                    navigator.clipboard.writeText(note.desc);
-                                                    toast.success('WhatsApp text copied to clipboard!');
-                                                }
-                                            }}
-                                            className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-lg transition-colors cursor-pointer"
-                                        >
-                                            <Copy size={12} /> Copy
-                                        </button>
-                                    </>
-                                )}
 
                                 {!note.read && (
                                     <button 

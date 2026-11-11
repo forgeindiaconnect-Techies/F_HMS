@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, Trash2, Tag, Image as ImageIcon, X } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Tag, Image as ImageIcon, X, ListTree, UtensilsCrossed } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../../components/ConfirmModal';
+import CategoryManagement from './CategoryManagement';
 import { useAuth } from '../../context/AuthContext';
 import { getItemImage } from '../../utils/imageHelper';
 
 const MenuManagement = () => {
     const { api } = useAuth();
+    const [activeSection, setActiveSection] = useState('items');
     const [menuItems, setMenuItems] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -152,19 +154,48 @@ const MenuManagement = () => {
                 {...confirmModal} 
                 onClose={() => setConfirmModal({...confirmModal, isOpen: false})} 
             />
-            {/* Header */}
-            <div className="flex justify-between items-center">
+            {/* Header & Unified Tabs */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800" style={{ fontFamily: 'Poppins, sans-serif' }}>Menu Items</h2>
-                    <p className="text-gray-500 text-sm mt-1">Manage your restaurant's digital menu offering.</p>
+                    <h2 className="text-2xl font-bold text-gray-800" style={{ fontFamily: 'Poppins, sans-serif' }}>Menu &amp; Category Management</h2>
+                    <p className="text-gray-500 text-sm mt-1">Manage your restaurant&apos;s digital menu items and categories in one place.</p>
                 </div>
-                <button 
-                    onClick={handleAddClick}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2 text-sm shadow-sm"
-                >
-                    <Plus size={18} /> Add Menu Item
-                </button>
+                <div className="flex items-center gap-3">
+                    <div className="flex p-1 bg-gray-100 rounded-xl border border-gray-200">
+                        <button
+                            type="button"
+                            onClick={() => setActiveSection('items')}
+                            className={`px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                                activeSection === 'items' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                            }`}
+                        >
+                            <UtensilsCrossed size={14} /> Menu Items ({menuItems.length})
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setActiveSection('categories')}
+                            className={`px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                                activeSection === 'categories' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                            }`}
+                        >
+                            <ListTree size={14} /> Categories ({categories.length})
+                        </button>
+                    </div>
+                    {activeSection === 'items' && (
+                        <button 
+                            onClick={handleAddClick}
+                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2 text-sm shadow-sm cursor-pointer"
+                        >
+                            <Plus size={18} /> Add Menu Item
+                        </button>
+                    )}
+                </div>
             </div>
+
+            {activeSection === 'categories' ? (
+                <CategoryManagement embedded={true} onUpdated={fetchMenu} />
+            ) : (
+                <>
 
             {/* Controls */}
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-wrap gap-4 justify-between items-center">
@@ -420,6 +451,8 @@ const MenuManagement = () => {
                         </form>
                     </div>
                 </div>
+            )}
+                </>
             )}
         </div>
     );

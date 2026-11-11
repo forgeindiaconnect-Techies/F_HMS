@@ -691,10 +691,13 @@ const FranchiseManagement = () => {
                                 <div>
                                     <label className="text-xs font-bold text-gray-700 dark:text-slate-300 block mb-1">Phone Number</label>
                                     <input
-                                        type="text"
+                                        type="tel"
+                                        inputMode="numeric"
+                                        maxLength={10}
+                                        pattern="[6-9][0-9]{9}"
                                         value={storeForm.ownerPhone}
-                                        onChange={(e) => setStoreForm({ ...storeForm, ownerPhone: e.target.value })}
-                                        placeholder="+91 98765 43210"
+                                        onChange={(e) => setStoreForm({ ...storeForm, ownerPhone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                                        placeholder="9876543210"
                                         className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl text-xs font-semibold focus:outline-none focus:border-green-500"
                                     />
                                 </div>

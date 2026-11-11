@@ -1891,9 +1891,13 @@ const StaffManagement = () => {
                                 <div>
                                     <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Phone Number</label>
                                     <input 
-                                        type="text"
+                                        type="tel"
+                                        inputMode="numeric"
+                                        maxLength={10}
+                                        pattern="[6-9][0-9]{9}"
+                                        placeholder="10-digit mobile"
                                         value={staffForm.phone}
-                                        onChange={(e) => setStaffForm({ ...staffForm, phone: e.target.value })}
+                                        onChange={(e) => setStaffForm({ ...staffForm, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
                                         className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm"
                                     />
                                 </div>

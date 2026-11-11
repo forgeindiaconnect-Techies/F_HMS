@@ -164,8 +164,19 @@ export const checkFeature = (featureName) => {
             }
 
             const planName = restaurant.subscription?.plan || 'Basic';
-            const plan = await Plan.findOne({ name: planName });
-            
+            const lowerPlan = String(planName).trim().toLowerCase();
+
+            // Active trials, Enterprise tiers, and custom billing setups always have access to tier features
+            if (
+                (restaurant.subscription?.trialActive && restaurant.subscription?.status === 'Active') ||
+                ['enterprise', 'custom saas', 'custom plan'].includes(lowerPlan) ||
+                restaurant.billingConfig?.isCustomBillingActive
+            ) {
+                return next();
+            }
+
+            const escapedPlan = planName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const plan = await Plan.findOne({ name: { $regex: new RegExp(`^${escapedPlan}$`, 'i') } });
             const targetNorm = normalizeFeatureName(featureName);
 
             // Customer Support is a fundamental platform right available to all accounts
@@ -173,33 +184,26 @@ export const checkFeature = (featureName) => {
                 return next();
             }
 
-            // If the plan exists and features are configured, verify permission
-            if (plan) {
-                const hasFeature = plan.features.some(f => normalizeFeatureName(f) === targetNorm);
-                if (!hasFeature) {
-                    return res.status(403).json({
-                        message: `The feature "${featureName}" is not included in your current "${planName}" plan. Please upgrade your subscription to unlock it.`,
-                        requiresUpgrade: true,
-                        requiredPlan: 'Pro'
-                    });
-                }
-            } else {
-                // Fallback rules in case seeds aren't fully loaded
-                const fallbackFeatures = {
-                    Basic: ['Restaurant Management', 'Menu Management', 'QR Digital Menu', 'Order Management', 'Basic Inventory', 'Basic Reports', 'Customer Support'],
-                    Pro: ['Restaurant Management', 'Menu Management', 'QR Digital Menu', 'Order Management', 'Multi Branch', 'Basic Inventory', 'Advanced Inventory', 'Purchase Orders', 'Vendor Management', 'Waste Management', 'Basic Reports', 'Profit & Loss', 'Advanced Analytics', 'PDF Export', 'Excel Export', 'Customer Support'],
-                    Enterprise: ['Restaurant Management', 'Menu Management', 'QR Digital Menu', 'Order Management', 'Multi Branch', 'Basic Inventory', 'Advanced Inventory', 'Purchase Orders', 'Vendor Management', 'Waste Management', 'Basic Reports', 'Profit & Loss', 'Advanced Analytics', 'PDF Export', 'Excel Export', 'Customer Support', 'Advanced Support', 'Live Chat', 'Priority Support', 'AI Insights', 'Sales Prediction', 'Inventory Forecast', 'Demand Forecast', 'Menu Recommendations', 'Business Health Score']
-                };
-                
-                const allowed = fallbackFeatures[planName] || fallbackFeatures['Basic'];
-                const hasFeature = allowed.some(f => normalizeFeatureName(f) === targetNorm);
-                
-                if (!hasFeature) {
-                    return res.status(403).json({
-                        message: `The feature "${featureName}" is not included in your current "${planName}" plan. Please upgrade your subscription to unlock it.`,
-                        requiresUpgrade: true
-                    });
-                }
+            const fallbackFeatures = {
+                basic: ['Restaurant Management', 'Menu Management', 'QR Digital Menu', 'Order Management', 'Basic Inventory', 'Basic Reports', 'Customer Support'],
+                starter: ['Restaurant Management', 'Menu Management', 'QR Digital Menu', 'Order Management', 'Basic Inventory', 'Basic Reports', 'Customer Support'],
+                pro: ['Restaurant Management', 'Menu Management', 'QR Digital Menu', 'Order Management', 'Multi Branch', 'Basic Inventory', 'Advanced Inventory', 'Purchase Orders', 'Vendor Management', 'Waste Management', 'Basic Reports', 'Profit & Loss', 'Advanced Analytics', 'PDF Export', 'Excel Export', 'Customer Support'],
+                professional: ['Restaurant Management', 'Menu Management', 'QR Digital Menu', 'Order Management', 'Multi Branch', 'Basic Inventory', 'Advanced Inventory', 'Purchase Orders', 'Vendor Management', 'Waste Management', 'Basic Reports', 'Profit & Loss', 'Advanced Analytics', 'PDF Export', 'Excel Export', 'Customer Support'],
+                enterprise: ['Restaurant Management', 'Menu Management', 'QR Digital Menu', 'Order Management', 'Multi Branch', 'Basic Inventory', 'Advanced Inventory', 'Purchase Orders', 'Vendor Management', 'Waste Management', 'Basic Reports', 'Profit & Loss', 'Advanced Analytics', 'PDF Export', 'Excel Export', 'Customer Support', 'Advanced Support', 'Live Chat', 'Priority Support', 'AI Insights', 'Sales Prediction', 'Inventory Forecast', 'Demand Forecast', 'Menu Recommendations', 'Business Health Score']
+            };
+
+            const tierFallback = fallbackFeatures[lowerPlan] || fallbackFeatures.basic;
+            const mergedFeatures = plan && Array.isArray(plan.features)
+                ? [...plan.features, ...tierFallback]
+                : tierFallback;
+
+            const hasFeature = mergedFeatures.some(f => normalizeFeatureName(f) === targetNorm);
+            if (!hasFeature) {
+                return res.status(403).json({
+                    message: `The feature "${featureName}" is not included in your current "${planName}" plan. Please upgrade your subscription to unlock it.`,
+                    requiresUpgrade: true,
+                    requiredPlan: 'Pro'
+                });
             }
             next();
         } catch (error) {

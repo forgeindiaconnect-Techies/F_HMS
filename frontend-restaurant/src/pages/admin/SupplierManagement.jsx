@@ -107,11 +107,17 @@ const SupplierManagement = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const digits = String(formData.phone || '').replace(/\D/g, '');
+        if (!/^[6-9]\d{9}$/.test(digits)) {
+            toast.error('Phone number must be exactly 10 digits starting with 6, 7, 8, or 9.');
+            return;
+        }
         try {
+            const payload = { ...formData, phone: digits };
             if (editingSupplier) {
-                await api.put(`/suppliers/${editingSupplier}`, formData);
+                await api.put(`/suppliers/${editingSupplier}`, payload);
             } else {
-                await api.post('/suppliers', formData);
+                await api.post('/suppliers', payload);
             }
             fetchData();
             setIsModalOpen(false);
@@ -287,9 +293,13 @@ const SupplierManagement = () => {
                                         <label className="block text-sm font-bold text-gray-700 mb-1.5">Phone Number *</label>
                                         <input 
                                             type="tel" 
+                                            inputMode="numeric"
+                                            maxLength={10}
+                                            pattern="[6-9][0-9]{9}"
+                                            placeholder="10-digit mobile (6-9)"
                                             required
                                             value={formData.phone}
-                                            onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                                            onChange={(e) => setFormData({...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10)})}
                                             className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all font-medium"
                                         />
                                     </div>

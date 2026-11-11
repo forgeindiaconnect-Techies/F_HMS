@@ -182,14 +182,17 @@ export const submitVerification = async (req, res) => {
             await restaurant.save();
         } else if (files.logo && files.logo.length > 0) {
             const logoFile = files.logo[0];
-            documents.logo = { filePath: getFileUrl(logoFile) };
             try {
                 const fileBuffer = await fs.promises.readFile(logoFile.path);
                 const ext = path.extname(logoFile.originalname || logoFile.filename || '').toLowerCase();
                 const mimeType = ext === '.pdf' ? 'application/pdf' : (logoFile.mimetype || 'image/png');
-                restaurant.logo = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+                const persistentLogo = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+                restaurant.logo = persistentLogo;
+                documents.logo = { filePath: persistentLogo };
             } catch (e) {
-                restaurant.logo = getFileUrl(logoFile);
+                const fallbackUrl = getFileUrl(logoFile);
+                restaurant.logo = fallbackUrl;
+                documents.logo = { filePath: fallbackUrl };
             }
             await restaurant.save();
         }
@@ -317,14 +320,17 @@ export const updateBrandAssets = async (req, res) => {
             restaurant.logo = req.body.logoBase64;
         } else if (files.logo && files.logo.length > 0) {
             const logoFile = files.logo[0];
-            verification.documents.logo = { filePath: getFileUrl(logoFile) };
             try {
                 const fileBuffer = await fs.promises.readFile(logoFile.path);
                 const ext = path.extname(logoFile.originalname || logoFile.filename || '').toLowerCase();
                 const mimeType = ext === '.pdf' ? 'application/pdf' : (logoFile.mimetype || 'image/png');
-                restaurant.logo = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+                const persistentLogo = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+                verification.documents.logo = { filePath: persistentLogo };
+                restaurant.logo = persistentLogo;
             } catch (e) {
-                restaurant.logo = getFileUrl(logoFile);
+                const fallbackUrl = getFileUrl(logoFile);
+                verification.documents.logo = { filePath: fallbackUrl };
+                restaurant.logo = fallbackUrl;
             }
         }
 

@@ -61,7 +61,7 @@ const ManagerSettings = () => {
                                     
                                     <div className="space-y-1.5">
                                         <label className="text-sm font-bold text-gray-700">Phone Number</label>
-                                        <input type="tel" maxLength={10} defaultValue={user?.phoneNumber || user?.phone || "9876543210"} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 focus:bg-white transition-colors font-mono" />
+                                        <input type="tel" inputMode="numeric" maxLength={10} pattern="[6-9][0-9]{9}" onInput={(e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10); }} defaultValue={user?.phoneNumber || user?.phone || "9876543210"} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 focus:bg-white transition-colors font-mono" />
                                     </div>
                                 </div>
                             </div>

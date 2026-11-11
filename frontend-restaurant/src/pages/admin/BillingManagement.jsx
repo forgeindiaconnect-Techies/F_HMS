@@ -1053,10 +1053,13 @@ const BillingManagement = () => {
                             <div>
                                 <label className="font-bold text-gray-500 dark:text-slate-400 block mb-1">Phone (Optional)</label>
                                 <input 
-                                    type="text"
+                                    type="tel"
+                                    inputMode="numeric"
+                                    maxLength={10}
+                                    pattern="[6-9][0-9]{9}"
                                     placeholder="9876543210"
                                     value={posCustomerPhone}
-                                    onChange={(e) => setPosCustomerPhone(e.target.value)}
+                                    onChange={(e) => setPosCustomerPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                                     className="w-full px-2.5 py-1.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg font-semibold text-gray-800 dark:text-white"
                                 />
                             </div>

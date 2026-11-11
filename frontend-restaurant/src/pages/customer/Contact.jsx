@@ -156,10 +156,13 @@ const Contact = () => {
                                         <label className="text-xs font-bold text-slate-700">Phone Number</label>
                                         <input
                                             type="tel"
+                                            inputMode="numeric"
+                                            maxLength={10}
+                                            pattern="[6-9][0-9]{9}"
                                             required
                                             value={formData.phone}
-                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                            placeholder="Your Phone Number"
+                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                                            placeholder="10-digit Mobile Number"
                                             className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white text-slate-900 transition-all font-medium"
                                         />
                                     </div>

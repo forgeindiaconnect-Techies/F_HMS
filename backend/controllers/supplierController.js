@@ -1,4 +1,5 @@
 import Supplier from '../models/Supplier.js';
+import Branch from '../models/Branch.js';
 
 // @desc    Get all suppliers
 // @route   GET /api/suppliers
@@ -7,11 +8,14 @@ export const getSuppliers = async (req, res) => {
     try {
         const filter = {};
         
-        // If staff is logged in, filter by their branch
+        // If staff is logged in, filter by their branch; else scope to restaurant branches
         if (req.user && req.user.branchId) {
             filter.branch = req.user.branchId;
         } else if (req.query.branch) {
             filter.branch = req.query.branch;
+        } else if (req.user?.restaurantId) {
+            const branches = await Branch.find({ restaurantId: req.user.restaurantId }).select('_id').lean();
+            filter.branch = { $in: branches.map(b => b._id) };
         }
         
         const suppliers = await Supplier.find(filter).populate('branch', 'name');
@@ -28,14 +32,28 @@ export const createSupplier = async (req, res) => {
     const { name, category, contactPerson, phone, email, address, branch, isActive } = req.body;
 
     try {
+        const cleanPhone = String(phone || '').replace(/\D/g, '');
+        if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+            return res.status(400).json({ message: 'Phone number must be exactly 10 digits starting with 6, 7, 8, or 9.' });
+        }
+
+        let targetBranch = req.user.branchId || branch;
+        if (!targetBranch && req.user?.restaurantId) {
+            const defaultBranch = await Branch.findOne({ restaurantId: req.user.restaurantId }).select('_id').lean();
+            if (defaultBranch) targetBranch = defaultBranch._id;
+        }
+        if (!targetBranch) {
+            return res.status(400).json({ message: 'Please assign a branch to this supplier.' });
+        }
+
         const supplier = await Supplier.create({
             name,
             category,
             contactPerson,
-            phone,
+            phone: cleanPhone,
             email,
             address,
-            branch: req.user.branchId || branch, // Use user's branch if they have one, else from body
+            branch: targetBranch,
             isActive: isActive !== undefined ? isActive : true
         });
 
@@ -51,7 +69,15 @@ export const createSupplier = async (req, res) => {
 // @access  Private
 export const updateSupplier = async (req, res) => {
     try {
-        const supplier = await Supplier.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate('branch', 'name');
+        const updates = { ...req.body };
+        if (updates.phone !== undefined) {
+            const cleanPhone = String(updates.phone || '').replace(/\D/g, '');
+            if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+                return res.status(400).json({ message: 'Phone number must be exactly 10 digits starting with 6, 7, 8, or 9.' });
+            }
+            updates.phone = cleanPhone;
+        }
+        const supplier = await Supplier.findByIdAndUpdate(req.params.id, updates, { new: true }).populate('branch', 'name');
         if (supplier) {
             res.json(supplier);
         } else {

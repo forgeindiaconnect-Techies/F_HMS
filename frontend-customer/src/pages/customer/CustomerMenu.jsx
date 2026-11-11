@@ -594,10 +594,14 @@ const CustomerMenu = () => {
                                     </label>
                                     <input 
                                         type="tel"
+                                        inputMode="numeric"
+                                        maxLength={10}
+                                        pattern="[6-9][0-9]{9}"
                                         value={customerPhone}
                                         onChange={(e) => {
-                                            setCustomerPhone(e.target.value);
-                                            localStorage.setItem('restosys_guest_phone', e.target.value);
+                                            const clean = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                            setCustomerPhone(clean);
+                                            localStorage.setItem('restosys_guest_phone', clean);
                                         }}
                                         placeholder="e.g., 9876543210"
                                         className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white transition-all"

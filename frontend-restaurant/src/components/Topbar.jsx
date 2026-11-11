@@ -71,11 +71,20 @@ const PlanUpgradeModal = ({ currentPlan, plans, api, restaurant, subscriptionSta
         });
     };
 
-    const displayPlans = plans.length > 0 ? plans : [
+    const tierRank = (name = '') => {
+        const lower = String(name).trim().toLowerCase();
+        if (lower.includes('basic') || lower.includes('starter')) return 0;
+        if (lower.includes('pro')) return 1;
+        if (lower.includes('enterprise')) return 2;
+        return 3;
+    };
+
+    const rawPlans = plans.length > 0 ? plans : [
         { _id: 'p1', name: 'Basic',      monthlyPrice: 2999,  features: ['1 Branch', 'Basic Reporting', 'Email Support'] },
         { _id: 'p2', name: 'Pro',        monthlyPrice: 5999,  features: ['3 Branches', 'Advanced Analytics', 'Priority Support'] },
         { _id: 'p3', name: 'Enterprise', monthlyPrice: 12999, features: ['Unlimited Branches', 'Custom Features', '24/7 Support'] },
     ];
+    const displayPlans = [...rawPlans].sort((a, b) => tierRank(a.name) - tierRank(b.name));
 
     return (
         <>
@@ -86,11 +95,10 @@ const PlanUpgradeModal = ({ currentPlan, plans, api, restaurant, subscriptionSta
             <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
                 <div
                     ref={modalRef}
-                    className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden"
-                    style={{ maxHeight: '90vh', overflowY: 'auto' }}
+                    className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
                 >
                     {/* Header */}
-                    <div className="flex items-center justify-between px-8 py-6 border-b border-gray-100 sticky top-0 bg-white z-10">
+                    <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-gray-100 bg-white shrink-0">
                         <div>
                             <h2 className="text-xl font-black text-gray-900">Upgrade Your Plan</h2>
                             <p className="text-sm text-gray-500 mt-0.5">
@@ -99,12 +107,13 @@ const PlanUpgradeModal = ({ currentPlan, plans, api, restaurant, subscriptionSta
                         </div>
                         <button
                             onClick={onClose}
-                            className="p-2.5 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
+                            className="p-2.5 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
                         >
                             <X size={20} />
                         </button>
                     </div>
 
+                    <div className="overflow-y-auto flex-1">
                     {qrPlan ? (
                         <div className="p-8 flex flex-col items-center text-center space-y-5">
                             <div className="p-4 bg-orange-50 rounded-2xl border border-orange-200">
@@ -146,84 +155,84 @@ const PlanUpgradeModal = ({ currentPlan, plans, api, restaurant, subscriptionSta
                     ) : (
                         <>
                             {/* Plans grid */}
-                            <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-5">
+                            <div className="p-6 sm:p-8 pt-9 grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
                                 {displayPlans.map((plan, idx) => {
                                     const meta  = getPlanMeta(plan.name);
                                     const Icon  = meta?.icon || Star;
                                     const price = plan.monthlyPrice || plan.price || 0;
                                     const isCurrent = plan.name === currentPlan;
-                                    const isPopular  = idx === 1;
+                                    const isPopular = tierRank(plan.name) === 1;
 
                                     return (
                                         <div
                                             key={plan._id || idx}
-                                            className={`relative rounded-2xl border-2 p-6 flex flex-col transition-all
+                                            className={`relative rounded-2xl border-2 p-6 flex flex-col h-full transition-all
                                                 ${isCurrent
-                                                    ? `${meta?.border || 'border-gray-300'} bg-gray-50`
-                                                    : 'border-gray-100 hover:border-gray-300 hover:shadow-md'
+                                                    ? `${meta?.border || 'border-gray-300'} bg-gray-50 shadow-sm`
+                                                    : 'border-gray-100 hover:border-gray-300 hover:shadow-md bg-white'
                                                 }
                                                 ${isPopular && !isCurrent ? 'shadow-lg' : ''}
                                             `}
                                         >
-                                            {/* Popular badge */}
-                                            {isPopular && (
-                                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
-                                                    Most Popular
-                                                </div>
-                                            )}
-
-                                            {/* Current badge */}
-                                            {isCurrent && (
+                                            {/* Current / Popular badge */}
+                                            {isCurrent ? (
                                                 <div className={`absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap ${meta?.bg} ${meta?.text}`}>
                                                     Current Plan
                                                 </div>
-                                            )}
+                                            ) : isPopular ? (
+                                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
+                                                    Most Popular
+                                                </div>
+                                            ) : null}
 
                                             {/* Plan icon */}
-                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${meta?.bg}`}>
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 shrink-0 ${meta?.bg}`}>
                                                 <Icon size={20} className={meta?.text} />
                                             </div>
 
                                             <h3 className="text-lg font-black text-gray-900 mb-1">{plan.name}</h3>
 
-                                            <div className="mb-5">
+                                            <div className="mb-4 pb-4 border-b border-gray-100">
                                                 <span className="text-3xl font-black text-gray-900">₹{price.toLocaleString('en-IN')}</span>
                                                 <span className="text-gray-400 text-sm">/mo</span>
                                             </div>
 
-                                            <ul className="space-y-2 mb-6 flex-1">
+                                            <ul className="space-y-2.5 mb-6 flex-1">
                                                 {(plan.features || []).map((f, i) => (
-                                                    <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                                                    <li key={i} className="flex items-start gap-2 text-xs font-medium text-gray-600 leading-snug">
                                                         <Check size={14} className="text-green-500 mt-0.5 shrink-0" />
-                                                        {f}
+                                                        <span>{f}</span>
                                                     </li>
                                                 ))}
                                             </ul>
 
-                                            {isCurrent ? (
-                                                <div className={`w-full py-2.5 rounded-xl font-bold text-center text-sm flex items-center justify-center gap-1.5 ${meta?.bg} ${meta?.text}`}>
-                                                    <Check size={15} /> Active Plan
-                                                </div>
-                                            ) : (
-                                                <button
-                                                    onClick={() => handleUpgradeClick(plan)}
-                                                    disabled={subscribing !== null}
-                                                    className={`w-full py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer
-                                                        bg-gradient-to-r ${meta?.grad} text-white shadow-md hover:opacity-90 hover:shadow-lg
-                                                        disabled:opacity-50 disabled:cursor-not-allowed
-                                                    `}
-                                                >
-                                                    <ArrowUpRight size={14} /> Upgrade to {plan.name}
-                                                </button>
-                                            )}
+                                            <div className="mt-auto pt-2">
+                                                {isCurrent ? (
+                                                    <div className={`w-full py-2.5 rounded-xl font-bold text-center text-sm flex items-center justify-center gap-1.5 ${meta?.bg} ${meta?.text}`}>
+                                                        <Check size={15} /> Active Plan
+                                                    </div>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleUpgradeClick(plan)}
+                                                        disabled={subscribing !== null}
+                                                        className={`w-full py-2.5 px-3 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap
+                                                            bg-gradient-to-r ${meta?.grad} text-white shadow-md hover:opacity-90 hover:shadow-lg
+                                                            disabled:opacity-50 disabled:cursor-not-allowed
+                                                        `}
+                                                    >
+                                                        <ArrowUpRight size={14} /> Upgrade to {plan.name}
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     );
                                 })}
                             </div>
 
-                            <p className="text-center text-xs text-gray-400 pb-6">Instant UPI QR Scanner · Quick plan activation</p>
+                            <p className="text-center text-xs text-gray-400 pb-6 px-4">Instant UPI QR Scanner · Quick plan activation</p>
                         </>
                     )}
+                    </div>
                 </div>
             </div>
         </>

@@ -101,7 +101,7 @@ const TicketList = () => {
                             placeholder="Search by ID or subject..."
                             className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm font-semibold transition-all"
                         />
-                        <Search size={16} className="absolute left-3.5 text-gray-400" />
+                        <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                     </div>
                 </div>
 
@@ -190,7 +190,6 @@ const TicketList = () => {
                                     <th className="p-5">Priority</th>
                                     <th className="p-5">Status</th>
                                     <th className="p-5">Last Updated</th>
-                                    <th className="p-5 text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
@@ -243,13 +242,6 @@ const TicketList = () => {
                                             <span className="text-xs font-semibold text-gray-400">
                                                 {new Date(ticket.lastUpdated).toLocaleString()}
                                             </span>
-                                        </td>
-
-                                        {/* Action Arrow */}
-                                        <td className="p-5 text-right">
-                                            <div className="flex items-center justify-end text-gray-300 group-hover:text-green-500 transition-colors">
-                                                <ChevronRight size={18} />
-                                            </div>
                                         </td>
                                     </tr>
                                 ))}

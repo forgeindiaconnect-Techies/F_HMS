@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import ConfirmModal from '../../components/ConfirmModal';
 import { useAuth } from '../../context/AuthContext';
 
-const CategoryManagement = () => {
+const CategoryManagement = ({ embedded = false, onUpdated }) => {
     const { api } = useAuth();
     const [categories, setCategories] = useState([]);
     const [branches, setBranches] = useState([]);
@@ -61,6 +61,7 @@ const CategoryManagement = () => {
                 try {
                     await api.delete(`/categories/${id}`);
                     fetchData();
+                    if (onUpdated) onUpdated();
                     toast.success('Category deleted successfully');
                 } catch (error) {
                     console.error('Failed to delete category', error);
@@ -86,6 +87,7 @@ const CategoryManagement = () => {
         try {
             await api.post('/categories', formData);
             fetchData();
+            if (onUpdated) onUpdated();
             setIsModalOpen(false);
             toast.success('Category created successfully');
         } catch (error) {
@@ -118,13 +120,20 @@ const CategoryManagement = () => {
             />
             {/* Header */}
             <div className="flex justify-between items-center">
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-800" style={{ fontFamily: 'Poppins, sans-serif' }}>Menu Categories</h2>
-                    <p className="text-gray-500 text-sm mt-1">Organize your menu into categories and subcategories.</p>
-                </div>
+                {!embedded ? (
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-800" style={{ fontFamily: 'Poppins, sans-serif' }}>Menu Categories</h2>
+                        <p className="text-gray-500 text-sm mt-1">Organize your menu into categories and subcategories.</p>
+                    </div>
+                ) : (
+                    <div>
+                        <h3 className="text-lg font-bold text-gray-800">Manage Categories</h3>
+                        <p className="text-gray-500 text-xs mt-0.5">Add and organize categories by branch.</p>
+                    </div>
+                )}
                 <button 
                     onClick={handleAddClick}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2 text-sm shadow-sm"
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2 text-sm shadow-sm cursor-pointer"
                 >
                     <Plus size={18} /> New Category
                 </button>

@@ -478,17 +478,27 @@ export const generateRecurringBills = async (req, res) => {
             });
         }
 
-        // Deduplicate templates by category + branchId
+        // Deduplicate templates by normalized category + branchId (prevents duplicate billing entries across manual & recurring keys)
         const templatesByKey = {};
         for (const t of recurringTemplates) {
-            const key = `${t.category}_${t.branchId || 'main'}`;
+            const catSlug = String(t.category || 'general').toLowerCase().replace(/\s+/g, '_');
+            const key = `${catSlug}_${t.branchId || 'main'}`;
             if (!templatesByKey[key]) templatesByKey[key] = t;
         }
 
         const generated = [];
         for (const [key, tmpl] of Object.entries(templatesByKey)) {
             const cycleKey = `${key}_${periodKey}`;
-            const alreadyExists = await Expense.findOne({ restaurantId, recurringKey: cycleKey });
+            const altCycleKey = `${tmpl.category}_${tmpl.branchId || 'main'}_${periodKey}`;
+            const branchQuery = tmpl.branchId ? { branchId: tmpl.branchId } : {};
+            const alreadyExists = await Expense.findOne({
+                restaurantId,
+                $or: [
+                    { recurringKey: cycleKey },
+                    { recurringKey: altCycleKey },
+                    { category: tmpl.category, billingPeriod: periodLabel, ...branchQuery }
+                ]
+            }).lean();
 
             if (!alreadyExists) {
                 // Due on 10th of that billing month

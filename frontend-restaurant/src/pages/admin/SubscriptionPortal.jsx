@@ -492,14 +492,17 @@ const SubscriptionPortal = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {plans.map(plan => {
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+                    {[...plans].sort((a, b) => {
+                        const rank = (n = '') => n.toLowerCase().includes('basic') || n.toLowerCase().includes('starter') ? 0 : n.toLowerCase().includes('pro') ? 1 : n.toLowerCase().includes('enterprise') ? 2 : 3;
+                        return rank(a.name) - rank(b.name);
+                    }).map(plan => {
                         const price = billingCycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
                         const isCurrent = sub.plan === plan.name;
                         const isEnterprise = plan.name === 'Enterprise';
 
                         return (
-                            <div key={plan._id} className={`bg-white dark:bg-slate-800 rounded-3xl border-2 p-6 flex flex-col justify-between relative transition-all duration-300 ${isCurrent && isPaidActive
+                            <div key={plan._id} className={`bg-white dark:bg-slate-800 rounded-3xl border-2 p-6 flex flex-col h-full relative transition-all duration-300 ${isCurrent && isPaidActive
                                 ? 'border-orange-500 shadow-md shadow-orange-500/10'
                                 : 'border-slate-200 dark:border-slate-700 hover:border-orange-300'
                                 }`}>
@@ -509,7 +512,7 @@ const SubscriptionPortal = () => {
                                     </div>
                                 )}
 
-                                <div className="space-y-4">
+                                <div className="space-y-4 flex-1">
                                     <div>
                                         <h4 className="font-black text-slate-900 dark:text-slate-100 text-lg">{plan.name}</h4>
                                         <div className="flex items-baseline gap-1 mt-2">
@@ -520,9 +523,9 @@ const SubscriptionPortal = () => {
 
                                     <ul className="space-y-2.5 pt-4 border-t border-slate-100 dark:border-slate-700/60">
                                         {plan.features.slice(0, 6).map((feat, idx) => (
-                                            <li key={idx} className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
-                                                <CheckCircle size={14} className="text-emerald-500 shrink-0" />
-                                                {feat}
+                                            <li key={idx} className="flex items-start gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                                                <CheckCircle size={14} className="text-emerald-500 shrink-0 mt-0.5" />
+                                                <span>{feat}</span>
                                             </li>
                                         ))}
                                     </ul>
@@ -531,42 +534,13 @@ const SubscriptionPortal = () => {
                                 <button
                                     onClick={() => handleSelectPlan(plan)}
                                     disabled={isSubmitting}
-                                    className={`w-full py-3 rounded-2xl font-black text-xs transition-all mt-6 cursor-pointer ${isCurrent && isPaidActive
+                                    className={`w-full py-3 rounded-2xl font-black text-xs transition-all mt-auto pt-3 cursor-pointer ${isCurrent && isPaidActive
                                         ? 'bg-orange-50 text-orange-600 border border-orange-200 cursor-default'
                                         : 'bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-500/20'
                                         }`}
                                 >
                                     {isCurrent && isPaidActive ? 'Your Current Plan' : 'Select Plan & Unlock'}
                                 </button>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* Feature Access Lock Matrix */}
-            <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 space-y-6">
-                <div>
-                    <h3 className="font-black text-slate-900 dark:text-slate-100 text-base">Plan Feature Matrix</h3>
-                    <p className="text-xs text-slate-400 font-semibold mt-0.5">Check which modules are unlocked or locked in your current tier.</p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {SaaS_FEATURES.map(feat => {
-                        const planObj = plans.find(p => p.name === sub.plan);
-                        const isUnlocked = isTrialActive || (isPaidActive && (planObj?.features.includes(feat.key) || ['Restaurant Management', 'Menu Management', 'QR Digital Menu', 'Order Management'].includes(feat.key)));
-
-                        return (
-                            <div key={feat.key} className="flex items-center justify-between p-4 bg-slate-50/50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800">
-                                <div className="space-y-0.5 min-w-0 pr-1.5 flex-1">
-                                    <span className="text-xs font-black text-slate-900 dark:text-slate-100">{feat.key}</span>
-                                    <p className="text-[10px] text-slate-400 font-semibold leading-relaxed max-w-sm">{feat.desc}</p>
-                                </div>
-                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${isUnlocked
-                                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400'
-                                    : 'bg-slate-100 text-slate-400 border border-slate-200 dark:bg-slate-800'
-                                    }`}>
-                                    {isUnlocked ? '✓ Unlocked' : '🔒 Locked'}
-                                </span>
                             </div>
                         );
                     })}

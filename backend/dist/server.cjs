@@ -127547,34 +127547,32 @@ var checkFeature = (featureName) => {
         return res.status(404).json({ message: "Restaurant not found" });
       }
       const planName = restaurant.subscription?.plan || "Basic";
-      const plan = await Plan_default.findOne({ name: planName });
+      const lowerPlan = String(planName).trim().toLowerCase();
+      if (restaurant.subscription?.trialActive && restaurant.subscription?.status === "Active" || ["enterprise", "custom saas", "custom plan"].includes(lowerPlan) || restaurant.billingConfig?.isCustomBillingActive) {
+        return next();
+      }
+      const escapedPlan = planName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const plan = await Plan_default.findOne({ name: { $regex: new RegExp(`^${escapedPlan}$`, "i") } });
       const targetNorm = normalizeFeatureName(featureName);
       if (targetNorm.includes("support") || targetNorm.includes("customersupport")) {
         return next();
       }
-      if (plan) {
-        const hasFeature = plan.features.some((f) => normalizeFeatureName(f) === targetNorm);
-        if (!hasFeature) {
-          return res.status(403).json({
-            message: `The feature "${featureName}" is not included in your current "${planName}" plan. Please upgrade your subscription to unlock it.`,
-            requiresUpgrade: true,
-            requiredPlan: "Pro"
-          });
-        }
-      } else {
-        const fallbackFeatures = {
-          Basic: ["Restaurant Management", "Menu Management", "QR Digital Menu", "Order Management", "Basic Inventory", "Basic Reports", "Customer Support"],
-          Pro: ["Restaurant Management", "Menu Management", "QR Digital Menu", "Order Management", "Multi Branch", "Basic Inventory", "Advanced Inventory", "Purchase Orders", "Vendor Management", "Waste Management", "Basic Reports", "Profit & Loss", "Advanced Analytics", "PDF Export", "Excel Export", "Customer Support"],
-          Enterprise: ["Restaurant Management", "Menu Management", "QR Digital Menu", "Order Management", "Multi Branch", "Basic Inventory", "Advanced Inventory", "Purchase Orders", "Vendor Management", "Waste Management", "Basic Reports", "Profit & Loss", "Advanced Analytics", "PDF Export", "Excel Export", "Customer Support", "Advanced Support", "Live Chat", "Priority Support", "AI Insights", "Sales Prediction", "Inventory Forecast", "Demand Forecast", "Menu Recommendations", "Business Health Score"]
-        };
-        const allowed = fallbackFeatures[planName] || fallbackFeatures["Basic"];
-        const hasFeature = allowed.some((f) => normalizeFeatureName(f) === targetNorm);
-        if (!hasFeature) {
-          return res.status(403).json({
-            message: `The feature "${featureName}" is not included in your current "${planName}" plan. Please upgrade your subscription to unlock it.`,
-            requiresUpgrade: true
-          });
-        }
+      const fallbackFeatures = {
+        basic: ["Restaurant Management", "Menu Management", "QR Digital Menu", "Order Management", "Basic Inventory", "Basic Reports", "Customer Support"],
+        starter: ["Restaurant Management", "Menu Management", "QR Digital Menu", "Order Management", "Basic Inventory", "Basic Reports", "Customer Support"],
+        pro: ["Restaurant Management", "Menu Management", "QR Digital Menu", "Order Management", "Multi Branch", "Basic Inventory", "Advanced Inventory", "Purchase Orders", "Vendor Management", "Waste Management", "Basic Reports", "Profit & Loss", "Advanced Analytics", "PDF Export", "Excel Export", "Customer Support"],
+        professional: ["Restaurant Management", "Menu Management", "QR Digital Menu", "Order Management", "Multi Branch", "Basic Inventory", "Advanced Inventory", "Purchase Orders", "Vendor Management", "Waste Management", "Basic Reports", "Profit & Loss", "Advanced Analytics", "PDF Export", "Excel Export", "Customer Support"],
+        enterprise: ["Restaurant Management", "Menu Management", "QR Digital Menu", "Order Management", "Multi Branch", "Basic Inventory", "Advanced Inventory", "Purchase Orders", "Vendor Management", "Waste Management", "Basic Reports", "Profit & Loss", "Advanced Analytics", "PDF Export", "Excel Export", "Customer Support", "Advanced Support", "Live Chat", "Priority Support", "AI Insights", "Sales Prediction", "Inventory Forecast", "Demand Forecast", "Menu Recommendations", "Business Health Score"]
+      };
+      const tierFallback = fallbackFeatures[lowerPlan] || fallbackFeatures.basic;
+      const mergedFeatures = plan && Array.isArray(plan.features) ? [...plan.features, ...tierFallback] : tierFallback;
+      const hasFeature = mergedFeatures.some((f) => normalizeFeatureName(f) === targetNorm);
+      if (!hasFeature) {
+        return res.status(403).json({
+          message: `The feature "${featureName}" is not included in your current "${planName}" plan. Please upgrade your subscription to unlock it.`,
+          requiresUpgrade: true,
+          requiredPlan: "Pro"
+        });
       }
       next();
     } catch (error) {
@@ -127771,14 +127769,17 @@ var submitVerification = async (req, res) => {
       await restaurant.save();
     } else if (files.logo && files.logo.length > 0) {
       const logoFile = files.logo[0];
-      documents.logo = { filePath: getFileUrl(logoFile) };
       try {
         const fileBuffer = await import_fs2.default.promises.readFile(logoFile.path);
         const ext = import_path2.default.extname(logoFile.originalname || logoFile.filename || "").toLowerCase();
         const mimeType = ext === ".pdf" ? "application/pdf" : logoFile.mimetype || "image/png";
-        restaurant.logo = `data:${mimeType};base64,${fileBuffer.toString("base64")}`;
+        const persistentLogo = `data:${mimeType};base64,${fileBuffer.toString("base64")}`;
+        restaurant.logo = persistentLogo;
+        documents.logo = { filePath: persistentLogo };
       } catch (e) {
-        restaurant.logo = getFileUrl(logoFile);
+        const fallbackUrl = getFileUrl(logoFile);
+        restaurant.logo = fallbackUrl;
+        documents.logo = { filePath: fallbackUrl };
       }
       await restaurant.save();
     }
@@ -127884,14 +127885,17 @@ var updateBrandAssets = async (req, res) => {
       restaurant.logo = req.body.logoBase64;
     } else if (files.logo && files.logo.length > 0) {
       const logoFile = files.logo[0];
-      verification.documents.logo = { filePath: getFileUrl(logoFile) };
       try {
         const fileBuffer = await import_fs2.default.promises.readFile(logoFile.path);
         const ext = import_path2.default.extname(logoFile.originalname || logoFile.filename || "").toLowerCase();
         const mimeType = ext === ".pdf" ? "application/pdf" : logoFile.mimetype || "image/png";
-        restaurant.logo = `data:${mimeType};base64,${fileBuffer.toString("base64")}`;
+        const persistentLogo = `data:${mimeType};base64,${fileBuffer.toString("base64")}`;
+        verification.documents.logo = { filePath: persistentLogo };
+        restaurant.logo = persistentLogo;
       } catch (e) {
-        restaurant.logo = getFileUrl(logoFile);
+        const fallbackUrl = getFileUrl(logoFile);
+        verification.documents.logo = { filePath: fallbackUrl };
+        restaurant.logo = fallbackUrl;
       }
     }
     if (files.menuPdf && files.menuPdf.length > 0) {
@@ -136608,6 +136612,7 @@ var Supplier = import_mongoose36.default.model("Supplier", supplierSchema);
 var Supplier_default = Supplier;
 
 // controllers/supplierController.js
+init_Branch();
 var getSuppliers = async (req, res) => {
   try {
     const filter = {};
@@ -136615,6 +136620,9 @@ var getSuppliers = async (req, res) => {
       filter.branch = req.user.branchId;
     } else if (req.query.branch) {
       filter.branch = req.query.branch;
+    } else if (req.user?.restaurantId) {
+      const branches = await Branch_default.find({ restaurantId: req.user.restaurantId }).select("_id").lean();
+      filter.branch = { $in: branches.map((b) => b._id) };
     }
     const suppliers = await Supplier_default.find(filter).populate("branch", "name");
     res.json(suppliers);
@@ -136625,15 +136633,26 @@ var getSuppliers = async (req, res) => {
 var createSupplier = async (req, res) => {
   const { name, category, contactPerson, phone, email, address, branch, isActive } = req.body;
   try {
+    const cleanPhone = String(phone || "").replace(/\D/g, "");
+    if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+      return res.status(400).json({ message: "Phone number must be exactly 10 digits starting with 6, 7, 8, or 9." });
+    }
+    let targetBranch = req.user.branchId || branch;
+    if (!targetBranch && req.user?.restaurantId) {
+      const defaultBranch = await Branch_default.findOne({ restaurantId: req.user.restaurantId }).select("_id").lean();
+      if (defaultBranch) targetBranch = defaultBranch._id;
+    }
+    if (!targetBranch) {
+      return res.status(400).json({ message: "Please assign a branch to this supplier." });
+    }
     const supplier = await Supplier_default.create({
       name,
       category,
       contactPerson,
-      phone,
+      phone: cleanPhone,
       email,
       address,
-      branch: req.user.branchId || branch,
-      // Use user's branch if they have one, else from body
+      branch: targetBranch,
       isActive: isActive !== void 0 ? isActive : true
     });
     const populatedSupplier = await Supplier_default.findById(supplier._id).populate("branch", "name");
@@ -136644,7 +136663,15 @@ var createSupplier = async (req, res) => {
 };
 var updateSupplier = async (req, res) => {
   try {
-    const supplier = await Supplier_default.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate("branch", "name");
+    const updates = { ...req.body };
+    if (updates.phone !== void 0) {
+      const cleanPhone = String(updates.phone || "").replace(/\D/g, "");
+      if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+        return res.status(400).json({ message: "Phone number must be exactly 10 digits starting with 6, 7, 8, or 9." });
+      }
+      updates.phone = cleanPhone;
+    }
+    const supplier = await Supplier_default.findByIdAndUpdate(req.params.id, updates, { new: true }).populate("branch", "name");
     if (supplier) {
       res.json(supplier);
     } else {
@@ -136671,8 +136698,9 @@ var deleteSupplier = async (req, res) => {
 // routes/supplierRoutes.js
 var router16 = import_express16.default.Router();
 router16.use(protect);
-router16.use(authorize("RestaurantAdmin", "BranchManager"));
+router16.use(authorize("RestaurantAdmin", "Admin", "BranchManager"));
 router16.use(checkSubscription);
+router16.use(checkBillingModule("inventoryManagement"));
 router16.route("/").get(getSuppliers).post(checkFeature("Vendor Management"), createSupplier);
 router16.route("/:id").put(checkFeature("Vendor Management"), updateSupplier).delete(checkFeature("Vendor Management"), deleteSupplier);
 var supplierRoutes_default = router16;
@@ -138256,13 +138284,23 @@ var generateRecurringBills = async (req, res) => {
     }
     const templatesByKey = {};
     for (const t of recurringTemplates) {
-      const key = `${t.category}_${t.branchId || "main"}`;
+      const catSlug = String(t.category || "general").toLowerCase().replace(/\s+/g, "_");
+      const key = `${catSlug}_${t.branchId || "main"}`;
       if (!templatesByKey[key]) templatesByKey[key] = t;
     }
     const generated = [];
     for (const [key, tmpl] of Object.entries(templatesByKey)) {
       const cycleKey = `${key}_${periodKey}`;
-      const alreadyExists = await Expense_default.findOne({ restaurantId, recurringKey: cycleKey });
+      const altCycleKey = `${tmpl.category}_${tmpl.branchId || "main"}_${periodKey}`;
+      const branchQuery = tmpl.branchId ? { branchId: tmpl.branchId } : {};
+      const alreadyExists = await Expense_default.findOne({
+        restaurantId,
+        $or: [
+          { recurringKey: cycleKey },
+          { recurringKey: altCycleKey },
+          { category: tmpl.category, billingPeriod: periodLabel, ...branchQuery }
+        ]
+      }).lean();
       if (!alreadyExists) {
         const billDueDate = new Date(y, m - 1, 10, 23, 59, 59);
         const newBill = await Expense_default.create({

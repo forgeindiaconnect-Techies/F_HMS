@@ -270,11 +270,14 @@ const BranchesManagement = () => {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Phone Number</label>
                                 <input 
-                                    type="text" 
+                                    type="tel" 
+                                    inputMode="numeric"
+                                    maxLength={10}
+                                    pattern="[6-9][0-9]{9}"
                                     value={formData.phone}
-                                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                                    onChange={(e) => setFormData({...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10)})}
                                     className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
-                                    placeholder="+1 234 567 8900"
+                                    placeholder="9876543210"
                                 />
                             </div>
                             <div className="flex items-center gap-2 pt-2">

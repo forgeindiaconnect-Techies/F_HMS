@@ -9,7 +9,9 @@ import { useAuth } from '../../context/AuthContext';
 const TablesManagement = () => {
     const { api } = useAuth();
     const location = useLocation();
-    const activeTab = new URLSearchParams(location.search).get('tab') === 'qr' ? 'qr' : 'tables';
+    const [activeTab, setActiveTab] = useState(() =>
+        new URLSearchParams(location.search).get('tab') === 'qr' ? 'qr' : 'tables'
+    );
     const [tables, setTables] = useState([]);
     const [branches, setBranches] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -235,26 +237,44 @@ const TablesManagement = () => {
                 onClose={() => setConfirmModal({...confirmModal, isOpen: false})} 
             />
 
-            {/* Header */}
-            <div className="flex justify-between items-center">
+            {/* Header & Unified Tabs */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                        {activeTab === 'qr' ? 'QR Digital Menu' : 'Table Management'}
+                        Table Management &amp; QR Digital Menu
                     </h2>
                     <p className="text-gray-500 text-sm mt-1">
-                        {activeTab === 'qr'
-                            ? 'Scan & share QR codes for contactless customer menu ordering.'
-                            : 'Manage restaurant tables and generate customer QR menu access points.'}
+                        Manage restaurant tables and generate contactless QR menu codes in one place.
                     </p>
                 </div>
-                {activeTab === 'tables' && (
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex p-1 bg-gray-100 rounded-xl border border-gray-200">
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('tables')}
+                            className={`px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                                activeTab === 'tables' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                            }`}
+                        >
+                            <Users size={14} /> Tables ({tables.length})
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('qr')}
+                            className={`px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                                activeTab === 'qr' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                            }`}
+                        >
+                            <QrCode size={14} /> QR Digital Menu
+                        </button>
+                    </div>
                     <button 
                         onClick={handleAddClick}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2 text-sm shadow-sm"
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2 text-sm shadow-sm cursor-pointer"
                     >
                         <Plus size={18} /> Add Table
                     </button>
-                )}
+                </div>
             </div>
 
             {/* Controls (only for Tables tab) */}

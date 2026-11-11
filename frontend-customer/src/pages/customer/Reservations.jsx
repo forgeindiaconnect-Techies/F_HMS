@@ -205,7 +205,7 @@ const Reservations = () => {
                                 <input type="email" placeholder="Email Address" className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-xs sm:text-sm text-gray-900" required />
                             </div>
                             <div>
-                                <input type="tel" placeholder="Phone Number" className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-xs sm:text-sm text-gray-900" required />
+                                <input type="tel" inputMode="numeric" maxLength={10} pattern="[6-9][0-9]{9}" onInput={(e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10); }} placeholder="10-digit Phone Number" className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-xs sm:text-sm text-gray-900" required />
                             </div>
                             <div className="sm:col-span-2">
                                 <textarea rows="2" placeholder="Special Requests (Allergies, Occasions, etc.)" className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl outline-none focus:border-orange-500 focus:bg-white transition-colors text-xs sm:text-sm text-gray-900 resize-none"></textarea>

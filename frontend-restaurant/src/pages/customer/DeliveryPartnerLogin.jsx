@@ -93,11 +93,14 @@ const DeliveryPartnerLogin = () => {
                             <div className="relative">
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-extrabold">+91</span>
                                 <input 
-                                    type="text"
+                                    type="tel"
+                                    inputMode="numeric"
+                                    maxLength={10}
+                                    pattern="[6-9][0-9]{9}"
                                     required
                                     value={phoneNumber}
-                                    onChange={(e) => setPhoneNumber(e.target.value)}
-                                    placeholder="Enter registered mobile number"
+                                    onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                                    placeholder="10-digit mobile number"
                                     className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100 transition-all font-semibold"
                                 />
                             </div>
