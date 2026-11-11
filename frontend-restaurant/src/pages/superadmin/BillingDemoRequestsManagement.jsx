@@ -342,6 +342,7 @@ const BillingDemoRequestsManagement = ({ defaultTab = 'demos' }) => {
             setActivateModalRequest(null);
             if (configModalRequest?._id === target._id) setConfigModalRequest(null);
             if (previewModalRequest?._id === target._id) setPreviewModalRequest(null);
+            fetchRequests();
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to activate custom billing');
         } finally {
@@ -380,6 +381,7 @@ const BillingDemoRequestsManagement = ({ defaultTab = 'demos' }) => {
             } : r));
             toast.success(res.data?.message || 'Customer login credentials saved!');
             setCredentialsModalRequest(null);
+            fetchRequests();
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to save customer credentials.');
         } finally {

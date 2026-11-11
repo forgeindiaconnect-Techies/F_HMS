@@ -51,18 +51,13 @@ export const createBillingDemoRequest = async (req, res) => {
             });
         }
 
-        // Only auto-link if an existing restaurant has the exact same name (never link a different restaurant just by shared test phone)
-        const existingRestaurant = await Restaurant.findOne({
-            name: { $regex: exactRestNameRegex }
-        });
-
         const newDemoRequest = new BillingDemoRequest({
             fullName: cleanName,
             phoneNumber: cleanPhone,
             restaurantName: cleanRestName,
             city: cleanCity,
             outletFormat: cleanOutlet,
-            restaurantId: existingRestaurant ? existingRestaurant._id : null,
+            restaurantId: null,
             status: 'Pending',
             customBillingConfig: {
                 modules: {
@@ -141,20 +136,34 @@ export const getBillingDemoRequests = async (req, res) => {
             : [];
         const ownerMap = new Map(owners.map(o => [String(o._id), o]));
 
+        const mismatchFixOps = [];
         const enrichedRequests = requests.map(r => {
             const linkedMatchesName = r.restaurantId &&
                 (r.restaurantId.name || '').trim().toLowerCase() === (r.restaurantName || '').trim().toLowerCase();
+            if (r.restaurantId && !linkedMatchesName) {
+                const nextStatus = r.status === 'Activated' ? 'Pending' : r.status;
+                mismatchFixOps.push(
+                    BillingDemoRequest.updateOne(
+                        { _id: r._id },
+                        { $set: { restaurantId: null, status: nextStatus } }
+                    ).catch(() => {})
+                );
+            }
             const validRest = linkedMatchesName ? r.restaurantId : null;
             const ownerIdStr = validRest?.ownerId ? String(validRest.ownerId) : null;
             const owner = ownerIdStr ? ownerMap.get(ownerIdStr) : null;
             return {
                 ...r,
+                status: (r.restaurantId && !linkedMatchesName && r.status === 'Activated') ? 'Pending' : r.status,
                 restaurantId: validRest,
                 ownerCredentials: owner
                     ? { email: owner.email, name: owner.name, phoneNumber: owner.phoneNumber, isActive: owner.isActive }
                     : null
             };
         });
+        if (mismatchFixOps.length > 0) {
+            await Promise.allSettled(mismatchFixOps);
+        }
 
         // Summary counts
         const all = await BillingDemoRequest.find().lean();
@@ -532,16 +541,30 @@ export const activateBillingDemo = async (req, res) => {
             ownerUser.restaurantId = restaurant._id;
             await ownerUser.save();
 
-            // Create initial main branch
-            await Branch.create({
+            // Create initial main branch & link branchId onto ownerUser
+            const mainBranch = await Branch.create({
                 restaurantId: restaurant._id,
                 name: `${restaurant.name} - Main Outlet`,
                 location: { address: request.city || 'Main Street' },
                 contact: { phone: request.phoneNumber },
                 isActive: true
             });
-        } else if (restaurant.ownerId && !ownerUser) {
-            ownerUser = await User.findById(restaurant.ownerId);
+            ownerUser.branchId = mainBranch._id;
+            await ownerUser.save();
+        } else {
+            let mainBranch = await Branch.findOne({ restaurantId: restaurant._id });
+            if (!mainBranch) {
+                mainBranch = await Branch.create({
+                    restaurantId: restaurant._id,
+                    name: `${request.restaurantName} - Main Outlet`,
+                    location: { address: request.city || 'Main Street' },
+                    contact: { phone: request.phoneNumber },
+                    isActive: true
+                });
+            }
+            if (restaurant.ownerId && !ownerUser) {
+                ownerUser = await User.findById(restaurant.ownerId);
+            }
             if (ownerUser) {
                 if (normalizedProvidedEmail && ownerUser.email !== normalizedProvidedEmail) {
                     const emailTaken = await User.findOne({ email: normalizedProvidedEmail, _id: { $ne: ownerUser._id } }).lean();
@@ -559,8 +582,14 @@ export const activateBillingDemo = async (req, res) => {
                     ownerUser.activationToken = activationToken;
                     ownerUser.activationExpires = tokenExpires;
                 }
+                if (request.fullName && request.fullName.trim()) {
+                    ownerUser.name = request.fullName.trim();
+                }
+                ownerUser.restaurantId = restaurant._id;
+                ownerUser.branchId = ownerUser.branchId || mainBranch._id;
                 await ownerUser.save();
             }
+            restaurant.name = request.restaurantName || restaurant.name;
         }
 
         // 4. Update the restaurant with the custom billing configuration
@@ -879,22 +908,44 @@ export const setBillingDemoCredentials = async (req, res) => {
                     trialActive: false,
                     startDate: new Date(),
                     expiryDate
+                },
+                billingConfig: {
+                    isCustomBillingActive: request.status === 'Activated',
+                    outletFormat: request.outletFormat || 'Fine Dine & Resto-Bar',
+                    branchLimit: request.customPlan?.branchLimit || 1,
+                    staffLimit: request.customPlan?.staffLimit || 10,
+                    customPlanName: request.customPlan?.planName || 'Custom Plan'
                 }
             });
-            await Branch.create({
+            const mainBranch = await Branch.create({
                 restaurantId: restaurant._id,
                 name: `${restaurant.name} - Main Outlet`,
                 location: { address: request.city || 'Main Street' },
                 contact: { phone: request.phoneNumber },
                 isActive: true
             });
+            ownerUser.branchId = mainBranch._id;
         } else {
+            restaurant.name = request.restaurantName || restaurant.name;
             restaurant.ownerId = ownerUser._id;
             restaurant.contactEmail = normalizedEmail;
             await restaurant.save();
+            let mainBranch = await Branch.findOne({ restaurantId: restaurant._id });
+            if (!mainBranch) {
+                mainBranch = await Branch.create({
+                    restaurantId: restaurant._id,
+                    name: `${restaurant.name} - Main Outlet`,
+                    location: { address: request.city || 'Main Street' },
+                    contact: { phone: request.phoneNumber },
+                    isActive: true
+                });
+            }
+            if (!ownerUser.branchId) {
+                ownerUser.branchId = mainBranch._id;
+            }
         }
 
-        if (String(ownerUser.restaurantId || '') !== String(restaurant._id)) {
+        if (String(ownerUser.restaurantId || '') !== String(restaurant._id) || ownerUser.isModified('branchId')) {
             ownerUser.restaurantId = restaurant._id;
             await ownerUser.save();
         }
