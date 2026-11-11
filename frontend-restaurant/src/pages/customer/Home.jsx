@@ -343,7 +343,7 @@ const Home = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#FFFDF9] text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white relative overflow-x-hidden">
+        <div className="min-h-screen bg-[#FFFDF9] text-slate-800 font-sans selection:bg-[#FF5A1F] selection:text-white relative overflow-x-clip">
 
             {/* ========================================================================= */}
             {/* 1. TOP NAVBAR (STICKY, LOGO, NAV LINKS, LOGIN, ORANGE GET STARTED)        */}
@@ -656,7 +656,7 @@ const Home = () => {
             {/* ========================================================================= */}
             {/* 2. HERO SECTION: EXACT RECREATION OF REFERENCE IMAGE                      */}
             {/* ========================================================================= */}
-            <section id="home" className="relative pt-6 pb-14 sm:pt-10 sm:pb-20 bg-gradient-to-r from-[#FFFDF9] via-[#FFF9F2] to-[#FFF5EC] z-20 overflow-x-hidden">
+            <section id="home" className="relative pt-6 pb-14 sm:pt-10 sm:pb-20 bg-gradient-to-r from-[#FFFDF9] via-[#FFF9F2] to-[#FFF5EC] z-20 overflow-x-clip">
                 {/* Subtle warm cream background ambient glows */}
                 <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-orange-100/35 rounded-full blur-3xl pointer-events-none -z-10" />
                 <div className="absolute top-10 right-0 w-[600px] h-[600px] bg-[#FFEEDB]/40 rounded-full blur-3xl pointer-events-none -z-10" />
@@ -1341,7 +1341,7 @@ const Home = () => {
             {/* ========================================================================= */}
             {/* 3. STATISTICS STRIP: 4 HORIZONTAL STAT CARDS WITH CIRCULAR ICONS          */}
             {/* ========================================================================= */}
-            <section className="py-8 sm:py-10 bg-white border-y border-orange-100/70 shadow-xs overflow-x-hidden">
+            <section className="py-8 sm:py-10 bg-white border-y border-orange-100/70 shadow-xs overflow-x-clip">
                 <div className="max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-12">
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:flex lg:flex-wrap items-center justify-between lg:justify-start gap-3 sm:gap-6 md:gap-10 lg:gap-16">
                         {STATISTICS.map((stat, idx) => {
