@@ -26,6 +26,10 @@ const notificationSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Branch',
     },
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
     // Role-scoping: if set, only these roles can see this notification
     targetRole: {
         type: [String],
@@ -35,6 +39,11 @@ const notificationSchema = new mongoose.Schema({
     isSuperAdminOnly: {
         type: Boolean,
         default: false,
+    },
+    // Structured metadata (e.g., kitchen restock request / admin order confirmation)
+    metadata: {
+        type: mongoose.Schema.Types.Mixed,
+        default: null,
     },
 }, { timestamps: true });
 

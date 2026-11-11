@@ -49,6 +49,8 @@ const ManagerStaff = () => {
 
     // Shared state
     const [staffList, setStaffList] = useState([]);
+    const [todayAttendanceList, setTodayAttendanceList] = useState([]);
+    const [nowTick, setNowTick] = useState(Date.now());
     const [loading, setLoading] = useState(true);
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -283,12 +285,40 @@ const ManagerStaff = () => {
         }
     };
 
-    useEffect(() => {
-        fetchStaff();
-    }, []);
+    const fetchTodayAttendance = async () => {
+        try {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const params = { date: todayStr };
+            if (user?.branchId) {
+                params.branchId = user.branchId?._id || user.branchId;
+            }
+            const res = await api.get('/staff/attendance', { params });
+            setTodayAttendanceList(Array.isArray(res.data) ? res.data : []);
+        } catch (err) {
+            console.error('Failed to fetch today shift attendance', err);
+        }
+    };
 
     useEffect(() => {
-        if (activeTab === 'leaves') {
+        fetchStaff();
+        fetchTodayAttendance();
+    }, []);
+
+    // Keep live shift durations ticking every minute on the shifts tab
+    useEffect(() => {
+        if (activeTab !== 'shifts') return;
+        const tick = setInterval(() => setNowTick(Date.now()), 60000);
+        const poll = setInterval(fetchTodayAttendance, 60000);
+        return () => {
+            clearInterval(tick);
+            clearInterval(poll);
+        };
+    }, [activeTab]);
+
+    useEffect(() => {
+        if (activeTab === 'shifts') {
+            fetchTodayAttendance();
+        } else if (activeTab === 'leaves') {
             fetchLeaveRequests();
         } else if (activeTab === 'attendance' && staffList.length > 0) {
             fetchAttendance();
@@ -471,66 +501,107 @@ const ManagerStaff = () => {
         return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
     };
 
-    const calculateShiftHours = (startTimeIso) => {
-        if (!startTimeIso) return '-';
-        const start = new Date(startTimeIso).getTime();
-        if (isNaN(start)) return '-';
-        const now = Date.now();
-        const diffMs = Math.max(0, now - start);
-        const hrs = Math.floor(diffMs / (1000 * 60 * 60));
-        const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    const formatElapsedDuration = (diffMs) => {
+        const clampedMs = Math.max(0, diffMs);
+        const hrs = Math.floor(clampedMs / (1000 * 60 * 60));
+        const mins = Math.floor((clampedMs % (1000 * 60 * 60)) / (1000 * 60));
         return `${hrs}h ${mins.toString().padStart(2, '0')}m`;
     };
 
-    const displayStaff = staffList.map((staff, index) => {
-        const isUserActive = staff.isActive !== false;
+    const isSameCalendarDay = (isoString) => {
+        if (!isoString) return false;
+        const d = new Date(isoString);
+        if (isNaN(d.getTime())) return false;
+        return d.toDateString() === new Date(nowTick).toDateString();
+    };
+
+    const calculateShiftHours = (startTimeIso, endTimeIso = null) => {
+        if (!startTimeIso) return '-';
+        const start = new Date(startTimeIso).getTime();
+        if (isNaN(start)) return '-';
+        const end = endTimeIso ? new Date(endTimeIso).getTime() : nowTick;
+        if (isNaN(end)) return '-';
+        return formatElapsedDuration(end - start);
+    };
+
+    const displayStaff = staffList.map((staff) => {
         const storageKeyName = `staff_shift_clock_${(staff.name || '').replace(/\s+/g, '_')}`;
         let savedState = null;
         try {
             const raw = localStorage.getItem(storageKeyName);
-            if (raw) savedState = JSON.parse(raw);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                const refIso = parsed.clockInTime || parsed.lastClockOutTime || parsed.lastClockInTime;
+                if (isSameCalendarDay(refIso)) {
+                    savedState = parsed;
+                }
+            }
         } catch (_) {}
 
-        let status = 'Active';
+        const todayRecord = todayAttendanceList.find(r => (r.employee?._id || r.employee) === staff._id);
+        const dailyLimit = staff.salaryConfig?.dailyWorkHours || 8;
+
+        let status = 'Absent';
+        let badgeLabel = 'Not Clocked In';
         let timeIn = '-';
         let hours = '-';
+        let workedHrsNumeric = 0;
 
-        if (savedState && savedState.status) {
-            if (savedState.status === 'ClockedIn') {
+        if (todayRecord) {
+            const checkInIso = todayRecord.checkIn || todayRecord.checkInTime;
+            const checkOutIso = todayRecord.checkOut || todayRecord.checkOutTime;
+            if (checkInIso && checkOutIso) {
+                status = 'Absent';
+                badgeLabel = 'Clocked Out';
+                timeIn = formatTime12h(checkInIso);
+                const diffMs = Math.max(0, new Date(checkOutIso).getTime() - new Date(checkInIso).getTime());
+                workedHrsNumeric = diffMs / (1000 * 60 * 60);
+                hours = formatElapsedDuration(diffMs);
+            } else if (checkInIso) {
+                status = savedState?.status === 'OnBreak' ? 'Break' : 'Active';
+                badgeLabel = status === 'Break' ? 'On Break' : 'Clocked In';
+                timeIn = formatTime12h(checkInIso);
+                const diffMs = Math.max(0, nowTick - new Date(checkInIso).getTime());
+                workedHrsNumeric = diffMs / (1000 * 60 * 60);
+                hours = formatElapsedDuration(diffMs);
+            } else if (todayRecord.status === 'On Leave' || todayRecord.status === 'Absent' || todayRecord.status === 'Holiday') {
+                status = 'Absent';
+                badgeLabel = todayRecord.status;
+            }
+        } else if (savedState && savedState.status) {
+            if (savedState.status === 'ClockedIn' && savedState.clockInTime) {
                 status = 'Active';
+                badgeLabel = 'Clocked In';
                 timeIn = formatTime12h(savedState.clockInTime);
-                hours = calculateShiftHours(savedState.clockInTime);
-            } else if (savedState.status === 'OnBreak') {
+                const diffMs = Math.max(0, nowTick - new Date(savedState.clockInTime).getTime());
+                workedHrsNumeric = diffMs / (1000 * 60 * 60);
+                hours = formatElapsedDuration(diffMs);
+            } else if (savedState.status === 'OnBreak' && savedState.clockInTime) {
                 status = 'Break';
+                badgeLabel = 'On Break';
                 timeIn = formatTime12h(savedState.clockInTime);
-                hours = calculateShiftHours(savedState.clockInTime);
+                const diffMs = Math.max(0, nowTick - new Date(savedState.clockInTime).getTime());
+                workedHrsNumeric = diffMs / (1000 * 60 * 60);
+                hours = formatElapsedDuration(diffMs);
             } else if (savedState.status === 'ClockedOut') {
                 status = 'Absent';
-                timeIn = savedState.lastClockOutTime ? formatTime12h(savedState.lastClockOutTime) : '-';
+                badgeLabel = savedState.lastClockOutTime ? 'Clocked Out' : 'Not Clocked In';
+                timeIn = savedState.lastClockInTime ? formatTime12h(savedState.lastClockInTime) : '-';
                 const totalSec = savedState.totalShiftSecondsToday || 0;
+                workedHrsNumeric = totalSec / 3600;
                 const hrs = Math.floor(totalSec / 3600);
                 const mins = Math.floor((totalSec % 3600) / 60);
-                hours = `${hrs}h ${mins.toString().padStart(2, '0')}m`;
-            }
-        } else {
-            if (isUserActive) {
-                status = index % 4 === 3 ? 'Break' : 'Active';
-                const refTime = staff.createdAt || new Date(Date.now() - (3600000 * (index + 2))).toISOString();
-                timeIn = formatTime12h(refTime);
-                hours = calculateShiftHours(refTime);
-            } else {
-                status = 'Absent';
-                timeIn = '-';
-                hours = '-';
+                hours = totalSec > 0 ? `${hrs}h ${mins.toString().padStart(2, '0')}m` : '-';
             }
         }
 
         return {
             ...staff,
             status,
+            badgeLabel,
             timeIn,
             hours,
-            alert: isUserActive && index % 5 === 2
+            alert: workedHrsNumeric > dailyLimit
         };
     }).filter(s => 
         !searchQuery || 
@@ -814,7 +885,7 @@ const ManagerStaff = () => {
                                             <td className="px-6 py-4">
                                                 {staff.status === 'Active' && <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">Clocked In</span>}
                                                 {staff.status === 'Break' && <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">On Break</span>}
-                                                {staff.status === 'Absent' && <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">Off Shift</span>}
+                                                {staff.status === 'Absent' && <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">{staff.badgeLabel || 'Off Shift'}</span>}
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-600 dark:text-slate-300 font-mono">{staff.timeIn}</td>
                                             <td className="px-6 py-4 text-sm text-gray-600 dark:text-slate-300 font-mono">{staff.hours}</td>

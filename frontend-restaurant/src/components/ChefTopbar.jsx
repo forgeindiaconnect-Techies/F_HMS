@@ -57,7 +57,11 @@ const ChefTopbar = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const chefNotifications = notifications.filter(n => n.type === 'Order');
+    const chefNotifications = notifications.filter(n =>
+        n.type === 'Order' ||
+        n.metadata?.kind === 'admin_restock_reply' ||
+        (Array.isArray(n.targetRole) && (n.targetRole.includes('Chef') || n.targetRole.includes('Kitchen')) && n.metadata?.kind !== 'kitchen_low_stock')
+    );
     const unreadCount = chefNotifications.filter(n => !n.read).length || 0;
 
     return (
@@ -98,7 +102,7 @@ const ChefTopbar = () => {
                     {showNotifs && (
                         <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-[#1e2330] rounded-xl shadow-xl border border-gray-100 dark:border-[#2a3040] overflow-hidden z-50">
                             <div className="p-3 border-b border-gray-100 dark:border-[#2a3040] bg-gray-50 dark:bg-[#1a1e2a]">
-                                <h3 className="font-bold text-gray-700 dark:text-gray-200">New Orders</h3>
+                                <h3 className="font-bold text-gray-700 dark:text-gray-200">Kitchen &amp; Order Alerts</h3>
                             </div>
                             <div className="max-h-80 overflow-y-auto custom-scrollbar">
                                 {chefNotifications.length === 0 ? (

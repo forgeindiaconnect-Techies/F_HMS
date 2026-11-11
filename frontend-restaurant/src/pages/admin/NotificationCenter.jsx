@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bell, Megaphone, AlertCircle, Info, MailOpen, X, Clock, Eye } from 'lucide-react';
+import { Bell, Megaphone, AlertCircle, Info, MailOpen, X, Clock, Eye, ShoppingCart, CheckCircle2, PackageCheck, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
@@ -9,7 +9,6 @@ const getIcon = (type) => {
         case 'Info': return <Info size={20} className="text-blue-500" />;
         case 'Broadcast': return <Megaphone size={20} className="text-purple-500" />;
         case 'System': return <Info size={20} className="text-gray-500" />;
-        case 'WhatsApp': return <Phone size={20} className="text-emerald-500" />;
         default: return <Bell size={20} className="text-gray-500" />;
     }
 };
@@ -19,9 +18,22 @@ const getBg = (type) => {
         case 'Alert': return 'bg-red-100';
         case 'Info': return 'bg-blue-100';
         case 'Broadcast': return 'bg-purple-100';
-        case 'WhatsApp': return 'bg-emerald-100 dark:bg-emerald-950/50';
         default: return 'bg-gray-100';
     }
+};
+
+const isRestockRequestNote = (note) => {
+    if (!note) return false;
+    if (note.metadata?.kind === 'kitchen_low_stock') return true;
+    const t = (note.title || '').toLowerCase();
+    return t.includes('restock') || t.includes('low stock');
+};
+
+const extractRestockIngredient = (note) => {
+    if (note?.metadata?.ingredientName) return note.metadata.ingredientName;
+    return (note?.title || '')
+        .replace(/^(URGENT LOW STOCK:|URGENT RESTOCK:|Low Stock \/ Restock Request:|Low Stock Request:|Restock Request:|Low Stock Alert:)\s*/i, '')
+        .trim() || 'Ingredient';
 };
 
 const formatTime = (dateString) => {
@@ -49,56 +61,31 @@ const NotificationCenter = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedNoteForView, setSelectedNoteForView] = useState(null);
     const [rectifyModal, setRectifyModal] = useState({ isOpen: false, note: null, newQty: '', reason: '' });
-    const [restockModal, setRestockModal] = useState({ isOpen: false, note: null, poNotes: '' });
+    const [restockModal, setRestockModal] = useState({
+        isOpen: false,
+        note: null,
+        ingredientName: '',
+        orderQuantity: '5',
+        unit: 'kg',
+        supplierId: '',
+        supplierName: '',
+        unitCost: '',
+        expectedDelivery: 'Today',
+        addToStockNow: true,
+        poNotes: ''
+    });
+    const [orderingRestock, setOrderingRestock] = useState(false);
+    const [suppliers, setSuppliers] = useState([]);
     const [formData, setFormData] = useState({ title: '', desc: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const DUMMY_NOTIFICATIONS = [
-        {
-            _id: 'dummy-1',
-            title: 'Low Stock Alert: Mozzarella Cheese',
-            desc: 'Inventory for Mozzarella Cheese has dropped below 5 kg. Please submit a purchase requisition to restock.',
-            type: 'Alert',
-            read: false,
-            createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString()
-        },
-        {
-            _id: 'dummy-2',
-            title: 'New Table QR Dine-In Order #177D66',
-            desc: 'Table 4 scanned QR menu and placed order #177D66 (2 Items - ₹36.00). KDS ticket generated.',
-            type: 'Info',
-            read: false,
-            createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString()
-        },
-        {
-            _id: 'dummy-3',
-            title: 'Scheduled System Maintenance: FOODNEST-v3.2',
-            desc: 'System maintenance scheduled tonight from 02:00 AM to 04:00 AM EST. POS offline mode remains functional.',
-            type: 'Broadcast',
-            read: true,
-            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString()
-        },
-        {
-            _id: 'dummy-4',
-            title: 'Daily Sales Report Generated',
-            desc: 'Branch gross sales report for yesterday (₹48,920.00) is ready for manager sign-off.',
-            type: 'System',
-            read: true,
-            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString()
-        }
-    ];
 
     const fetchNotifications = async () => {
         try {
             const res = await api.get('/notifications');
-            if (res.data && res.data.length > 0) {
-                setNotifications(res.data);
-            } else {
-                setNotifications(DUMMY_NOTIFICATIONS);
-            }
+            setNotifications(Array.isArray(res.data) ? res.data : []);
         } catch (error) {
             console.error('Failed to fetch notifications', error);
-            setNotifications(DUMMY_NOTIFICATIONS);
+            setNotifications([]);
         } finally {
             setLoading(false);
         }
@@ -106,6 +93,11 @@ const NotificationCenter = () => {
 
     useEffect(() => {
         fetchNotifications();
+        api.get('/suppliers')
+            .then(res => setSuppliers(Array.isArray(res.data) ? res.data : []))
+            .catch(() => {});
+        const poll = setInterval(fetchNotifications, 20000);
+        return () => clearInterval(poll);
     }, []);
 
     
@@ -138,18 +130,53 @@ const NotificationCenter = () => {
         }
     };
 
+    const openRestockOrderModal = (note) => {
+        setRestockModal({
+            isOpen: true,
+            note,
+            ingredientName: extractRestockIngredient(note),
+            orderQuantity: String(note.metadata?.quantity > 0 ? note.metadata.quantity : 5),
+            unit: note.metadata?.unit || 'kg',
+            supplierId: suppliers[0]?._id || '',
+            supplierName: suppliers[0]?.name || '',
+            unitCost: '',
+            expectedDelivery: 'Today',
+            addToStockNow: true,
+            poNotes: 'Restock order placed. Fresh stock arriving soon.'
+        });
+    };
+
     const handleConfirmRestockAction = async (e) => {
         e.preventDefault();
+        if (!restockModal.note?._id) return;
+        setOrderingRestock(true);
         try {
-            if (restockModal.note?._id) {
-                await api.put(`/notifications/${restockModal.note._id}/read`).catch(() => {});
+            const res = await api.post(`/notifications/${restockModal.note._id}/order-restock`, {
+                ingredientName: restockModal.ingredientName,
+                orderQuantity: Number(restockModal.orderQuantity) || 5,
+                unit: restockModal.unit || 'kg',
+                supplierId: restockModal.supplierId || undefined,
+                supplierName: restockModal.supplierName || undefined,
+                unitCost: Number(restockModal.unitCost) || 0,
+                expectedDelivery: restockModal.expectedDelivery || 'Today',
+                addToStockNow: restockModal.addToStockNow,
+                poNotes: restockModal.poNotes
+            });
+            toast.success('Item ordered, stock updated & reply sent to Kitchen!');
+            if (res.data?.sourceNotification) {
+                setNotifications(prev =>
+                    prev.map(n => n._id === res.data.sourceNotification._id ? res.data.sourceNotification : n)
+                );
+            } else {
+                fetchNotifications();
             }
-            toast.success('Restock purchase requisition created & kitchen notified!');
-            setRestockModal({ isOpen: false, note: null, poNotes: '' });
-            fetchNotifications();
+            window.dispatchEvent(new Event('notifications-updated'));
+            setRestockModal(prev => ({ ...prev, isOpen: false, note: null }));
         } catch (err) {
-            toast.success('Restock requisition created.');
-            setRestockModal({ isOpen: false, note: null, poNotes: '' });
+            console.error('Failed to order restock item', err);
+            toast.error(err.response?.data?.message || 'Failed to place restock order.');
+        } finally {
+            setOrderingRestock(false);
         }
     };
 
@@ -299,6 +326,22 @@ const NotificationCenter = () => {
                                     <Eye size={14} /> View Details
                                 </button>
 
+                                {isRestockRequestNote(note) && (
+                                    note.metadata?.orderStatus === 'Ordered' ? (
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-lg">
+                                            <CheckCircle2 size={14} />
+                                            Ordered ({note.metadata.orderedQty} {note.metadata.orderedUnit}) · Kitchen Notified
+                                        </span>
+                                    ) : (
+                                        <button
+                                            onClick={() => openRestockOrderModal(note)}
+                                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors shadow-xs cursor-pointer"
+                                        >
+                                            <ShoppingCart size={14} /> Order Item &amp; Notify Kitchen
+                                        </button>
+                                    )
+                                )}
+
                                 {!note.read && (
                                     <button 
                                         onClick={() => handleMarkAsRead(note._id)}
@@ -355,6 +398,161 @@ const NotificationCenter = () => {
                                 </button>
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Order Item & Notify Kitchen Modal */}
+            {restockModal.isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-gray-900/60 dark:bg-black/80 backdrop-blur-sm" onClick={() => setRestockModal(prev => ({ ...prev, isOpen: false }))}></div>
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-lg relative z-10 overflow-hidden flex flex-col border border-gray-100 dark:border-slate-800">
+                        <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-emerald-50/70 dark:bg-emerald-950/30">
+                            <div className="flex items-center gap-2.5">
+                                <div className="p-2 bg-emerald-600 text-white rounded-xl">
+                                    <ShoppingCart size={18} />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-gray-900 dark:text-white text-base">Order Low-Stock Item &amp; Notify Kitchen</h3>
+                                    <p className="text-xs text-gray-500 dark:text-slate-400">Places order, updates stock, and sends confirmation message to Kitchen.</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setRestockModal(prev => ({ ...prev, isOpen: false }))} className="text-gray-400 hover:text-gray-600 dark:hover:text-white p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 cursor-pointer">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleConfirmRestockAction} className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300 mb-1.5">Ingredient / Item Name *</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={restockModal.ingredientName}
+                                    onChange={(e) => setRestockModal(prev => ({ ...prev, ingredientName: e.target.value }))}
+                                    className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300 mb-1.5">Order Quantity *</label>
+                                    <input
+                                        type="number"
+                                        step="0.1"
+                                        min="0.1"
+                                        required
+                                        value={restockModal.orderQuantity}
+                                        onChange={(e) => setRestockModal(prev => ({ ...prev, orderQuantity: e.target.value }))}
+                                        className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300 mb-1.5">Unit</label>
+                                    <select
+                                        value={restockModal.unit}
+                                        onChange={(e) => setRestockModal(prev => ({ ...prev, unit: e.target.value }))}
+                                        className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                                    >
+                                        {['kg', 'g', 'l', 'ml', 'pcs', 'packets', 'boxes', 'dozen'].map(u => (
+                                            <option key={u} value={u}>{u}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300 mb-1.5">Supplier</label>
+                                    {suppliers.length > 0 ? (
+                                        <select
+                                            value={restockModal.supplierId}
+                                            onChange={(e) => {
+                                                const s = suppliers.find(sup => sup._id === e.target.value);
+                                                setRestockModal(prev => ({ ...prev, supplierId: e.target.value, supplierName: s?.name || '' }));
+                                            }}
+                                            className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                                        >
+                                            <option value="">Direct / Walk-in Purchase</option>
+                                            {suppliers.map(s => (
+                                                <option key={s._id} value={s._id}>{s.name}</option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <input
+                                            type="text"
+                                            placeholder="Supplier name"
+                                            value={restockModal.supplierName}
+                                            onChange={(e) => setRestockModal(prev => ({ ...prev, supplierName: e.target.value }))}
+                                            className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                                        />
+                                    )}
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300 mb-1.5">Unit Price (₹)</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="0.00"
+                                        value={restockModal.unitCost}
+                                        onChange={(e) => setRestockModal(prev => ({ ...prev, unitCost: e.target.value }))}
+                                        className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300 mb-1.5">Expected Delivery / ETA</label>
+                                    <input
+                                        type="text"
+                                        value={restockModal.expectedDelivery}
+                                        onChange={(e) => setRestockModal(prev => ({ ...prev, expectedDelivery: e.target.value }))}
+                                        placeholder="e.g. In 2 hours, Tomorrow 9 AM"
+                                        className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                                    />
+                                </div>
+                                <label className="flex items-center gap-2.5 pt-4 text-xs font-bold text-gray-700 dark:text-slate-300 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={restockModal.addToStockNow}
+                                        onChange={(e) => setRestockModal(prev => ({ ...prev, addToStockNow: e.target.checked }))}
+                                        className="w-4 h-4 accent-emerald-600 rounded"
+                                    />
+                                    Update branch inventory stock immediately
+                                </label>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300 mb-1.5">Message to Kitchen *</label>
+                                <textarea
+                                    required
+                                    rows="2"
+                                    value={restockModal.poNotes}
+                                    onChange={(e) => setRestockModal(prev => ({ ...prev, poNotes: e.target.value }))}
+                                    placeholder="e.g. Ordered 10 kg from Metro Suppliers, arriving by 5 PM."
+                                    className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:border-emerald-500 resize-none"
+                                ></textarea>
+                            </div>
+
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setRestockModal(prev => ({ ...prev, isOpen: false }))}
+                                    className="flex-1 py-2.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-200 font-bold rounded-xl text-sm cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={orderingRestock}
+                                    className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow-md flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
+                                >
+                                    <Send size={15} /> {orderingRestock ? 'Ordering...' : 'Order & Notify Kitchen'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

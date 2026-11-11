@@ -1,24 +1,40 @@
-import { useState } from 'react';
-import { AlertTriangle, Trash2, Send, Plus } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { AlertTriangle, Trash2, Send, Plus, CheckCircle2, PackageCheck } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
-
-import { useEffect } from 'react';
 
 const ChefInventory = () => {
     const { api } = useAuth();
     const [recentRequests, setRecentRequests] = useState([]);
+    const [adminReplies, setAdminReplies] = useState([]);
 
     const fetchRecentRequests = async () => {
         try {
             const res = await api.get('/notifications');
-            const kitchenNotes = (res.data || []).filter(n => n.type === 'Alert' || n.type === 'Info' || n.desc?.toLowerCase().includes('kitchen') || n.title?.toLowerCase().includes('restock'));
-            setRecentRequests(kitchenNotes.slice(0, 8));
+            const list = Array.isArray(res.data) ? res.data : [];
+            const sentRequests = list.filter(n =>
+                n.metadata?.kind === 'kitchen_low_stock' ||
+                (n.metadata?.kind !== 'admin_restock_reply' && (n.title?.toLowerCase().includes('restock') || n.title?.toLowerCase().includes('low stock')))
+            );
+            const replies = list.filter(n =>
+                n.metadata?.kind === 'admin_restock_reply'
+            );
+            setRecentRequests(sentRequests.slice(0, 10));
+            setAdminReplies(replies.slice(0, 10));
+        } catch (e) {}
+    };
+
+    const handleMarkReplyRead = async (id) => {
+        try {
+            await api.put(`/notifications/${id}/read`);
+            setAdminReplies(prev => prev.map(r => r._id === id ? { ...r, read: true } : r));
         } catch (e) {}
     };
 
     useEffect(() => {
         fetchRecentRequests();
+        const poll = setInterval(fetchRecentRequests, 15000);
+        return () => clearInterval(poll);
     }, []);
     
     const [wastageForm, setWastageForm] = useState({
@@ -31,6 +47,8 @@ const ChefInventory = () => {
 
     const [restockForm, setRestockForm] = useState({
         ingredientNeeded: '',
+        quantity: '5',
+        unit: 'kg',
         urgency: 'Urgent',
         notes: ''
     });
@@ -56,8 +74,8 @@ const ChefInventory = () => {
         setIsSubmittingRestock(true);
         try {
             await api.post('/notifications/restock', restockForm);
-            toast.success('Restock request sent to management!');
-            setRestockForm({ ingredientNeeded: '', urgency: 'Urgent', notes: '' });
+            toast.success('Low-stock request sent to Admin & Management!');
+            setRestockForm({ ingredientNeeded: '', quantity: '5', unit: 'kg', urgency: 'Urgent', notes: '' });
             fetchRecentRequests();
         } catch (error) {
             console.error('Failed to request restock', error);
@@ -186,6 +204,36 @@ const ChefInventory = () => {
                                 className="w-full bg-slate-50 dark:bg-[#151923] border border-slate-200 dark:border-[#2a3040] rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors" 
                             />
                         </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="text-sm font-bold text-slate-700 dark:text-gray-300 block mb-1.5">Qty Needed</label>
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    min="0.1"
+                                    value={restockForm.quantity}
+                                    onChange={(e) => setRestockForm({...restockForm, quantity: e.target.value})}
+                                    placeholder="5"
+                                    className="w-full bg-slate-50 dark:bg-[#151923] border border-slate-200 dark:border-[#2a3040] rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-sm font-bold text-slate-700 dark:text-gray-300 block mb-1.5">Unit</label>
+                                <select
+                                    value={restockForm.unit}
+                                    onChange={(e) => setRestockForm({...restockForm, unit: e.target.value})}
+                                    className="w-full bg-slate-50 dark:bg-[#151923] border border-slate-200 dark:border-[#2a3040] rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-orange-500 transition-colors"
+                                >
+                                    <option value="kg">kg</option>
+                                    <option value="g">grams</option>
+                                    <option value="l">liters</option>
+                                    <option value="ml">ml</option>
+                                    <option value="pcs">pcs</option>
+                                    <option value="packets">packets</option>
+                                    <option value="boxes">boxes</option>
+                                </select>
+                            </div>
+                        </div>
                         <div>
                             <label className="text-sm font-bold text-slate-700 dark:text-gray-300 block mb-1.5">Urgency</label>
                             <div className="flex gap-4">
@@ -234,6 +282,57 @@ const ChefInventory = () => {
 
             </div>
 
+            {/* Messages & Restock Order Updates from Admin */}
+            {adminReplies.length > 0 && (
+                <div className="bg-emerald-50/70 dark:bg-emerald-950/25 rounded-2xl border border-emerald-200 dark:border-emerald-900/60 shadow-sm overflow-hidden">
+                    <div className="p-4 sm:p-5 border-b border-emerald-200/70 dark:border-emerald-900/60 flex justify-between items-center">
+                        <div>
+                            <h3 className="font-bold text-emerald-900 dark:text-emerald-200 text-base flex items-center gap-2">
+                                <PackageCheck size={18} className="text-emerald-600 dark:text-emerald-400" /> Messages from Admin / Restock Ordered
+                            </h3>
+                            <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">Live restock order confirmations and messages from Management.</p>
+                        </div>
+                    </div>
+                    <div className="divide-y divide-emerald-200/60 dark:divide-emerald-900/50">
+                        {adminReplies.map(reply => (
+                            <div key={reply._id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="font-bold text-slate-900 dark:text-white text-sm">{reply.title}</span>
+                                        {reply.metadata?.orderedQty && (
+                                            <span className="px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold">
+                                                {reply.metadata.orderedQty} {reply.metadata.orderedUnit}
+                                            </span>
+                                        )}
+                                        {reply.metadata?.expectedDelivery && (
+                                            <span className="px-2 py-0.5 rounded-full bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
+                                                ETA: {reply.metadata.expectedDelivery}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-slate-700 dark:text-slate-300">{reply.desc}</p>
+                                    <p className="text-[11px] text-slate-400">
+                                        {reply.createdAt ? new Date(reply.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now'}
+                                    </p>
+                                </div>
+                                {!reply.read ? (
+                                    <button
+                                        onClick={() => handleMarkReplyRead(reply._id)}
+                                        className="shrink-0 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                                    >
+                                        Acknowledge
+                                    </button>
+                                ) : (
+                                    <span className="shrink-0 text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                                        <CheckCircle2 size={14} /> Seen
+                                    </span>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Sent Restock & Wastage Requests Log for Kitchen Staff */}
             <div className="bg-white dark:bg-[#1e2330] rounded-2xl border border-slate-200 dark:border-[#2a3040] shadow-sm overflow-hidden">
                 <div className="p-5 border-b border-slate-200 dark:border-[#2a3040] bg-slate-50 dark:bg-[#1a1e2a] flex justify-between items-center">
@@ -241,7 +340,7 @@ const ChefInventory = () => {
                         <h3 className="font-bold text-slate-800 dark:text-gray-200 text-base flex items-center gap-2">
                             <Send size={18} className="text-indigo-600" /> Restock Requests Sent to Management
                         </h3>
-                        <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">Track real-time status and manager actions on kitchen requisitions.</p>
+                        <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">Track real-time status and Admin restock order actions.</p>
                     </div>
                     <button 
                         onClick={fetchRecentRequests} 
@@ -258,7 +357,7 @@ const ChefInventory = () => {
                                 <th className="p-3">Urgency</th>
                                 <th className="p-3">Details / Notes</th>
                                 <th className="p-3">Sent Time</th>
-                                <th className="p-3 text-right">Manager Action</th>
+                                <th className="p-3 text-right">Admin / Manager Status</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium text-slate-700 dark:text-slate-300">
@@ -277,12 +376,23 @@ const ChefInventory = () => {
                                                 {req.type === 'Alert' ? 'Urgent' : 'Normal'}
                                             </span>
                                         </td>
-                                        <td className="p-3 max-w-xs truncate text-slate-500 dark:text-slate-400">{req.desc || '-'}</td>
+                                        <td className="p-3 max-w-xs text-slate-500 dark:text-slate-400">
+                                            <p className="truncate">{req.desc || '-'}</p>
+                                            {req.metadata?.poNotes && (
+                                                <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold mt-0.5">
+                                                    Admin Reply: {req.metadata.poNotes}
+                                                </p>
+                                            )}
+                                        </td>
                                         <td className="p-3 text-slate-400">{req.createdAt ? new Date(req.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Today'}</td>
                                         <td className="p-3 text-right font-bold">
-                                            {req.read ? (
-                                                <span className="text-emerald-600 dark:text-emerald-400 flex items-center justify-end gap-1">
-                                                    ✓ Acknowledged by Manager
+                                            {req.metadata?.orderStatus === 'Ordered' ? (
+                                                <span className="text-emerald-600 dark:text-emerald-400 inline-flex items-center justify-end gap-1">
+                                                    <CheckCircle2 size={14} /> Ordered ({req.metadata.orderedQty} {req.metadata.orderedUnit})
+                                                </span>
+                                            ) : req.read ? (
+                                                <span className="text-blue-600 dark:text-blue-400 flex items-center justify-end gap-1">
+                                                    ✓ Seen by Management
                                                 </span>
                                             ) : (
                                                 <span className="text-amber-500 flex items-center justify-end gap-1">

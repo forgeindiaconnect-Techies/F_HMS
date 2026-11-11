@@ -5,30 +5,43 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
 
+const isSameCalendarDay = (isoString) => {
+    if (!isoString) return false;
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return false;
+    return d.toDateString() === new Date().toDateString();
+};
+
+const EMPTY_SHIFT_STATE = {
+    status: 'ClockedOut', // 'ClockedIn' | 'OnBreak' | 'ClockedOut'
+    clockInTime: null,
+    breakStartTime: null,
+    totalBreakSeconds: 0,
+    totalShiftSecondsToday: 0,
+    lastClockInTime: null,
+    lastClockOutTime: null
+};
+
 const StaffShiftClockWidget = ({ userRole = 'Staff', userName = 'Staff Member', compact = false }) => {
     const { api } = useAuth();
     // Unique key per user to store shift state
     const userStorageKey = `staff_shift_clock_${userName.replace(/\s+/g, '_')}`;
 
-    // State initialization from localStorage
+    // State initialization from localStorage (only if recorded today)
     const [shiftState, setShiftState] = useState(() => {
         try {
             const saved = localStorage.getItem(userStorageKey);
             if (saved) {
-                return JSON.parse(saved);
+                const parsed = JSON.parse(saved);
+                const refIso = parsed.clockInTime || parsed.lastClockOutTime || parsed.lastClockInTime;
+                if (isSameCalendarDay(refIso)) {
+                    return parsed;
+                }
             }
         } catch (e) {
             console.error("Failed to load shift state", e);
         }
-        return {
-            status: 'ClockedOut', // 'ClockedIn' | 'OnBreak' | 'ClockedOut'
-            clockInTime: null,
-            breakStartTime: null,
-            totalBreakSeconds: 0,
-            totalShiftSecondsToday: 0,
-            lastClockInTime: null,
-            lastClockOutTime: null
-        };
+        return { ...EMPTY_SHIFT_STATE };
     });
 
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -47,14 +60,25 @@ const StaffShiftClockWidget = ({ userRole = 'Staff', userName = 'Staff Member', 
         if (!api) return;
         api.get('/staff/my-attendance-today')
             .then(res => {
-                if (res.data?.status === 'Present') {
+                if (res.data?.status === 'Present' && res.data?.checkIn) {
+                    const checkInMs = new Date(res.data.checkIn).getTime();
+                    const checkOutMs = res.data.checkOut ? new Date(res.data.checkOut).getTime() : null;
+                    const workedTodaySec = (checkOutMs && !isNaN(checkInMs) && !isNaN(checkOutMs))
+                        ? Math.max(0, Math.floor((checkOutMs - checkInMs) / 1000))
+                        : 0;
                     setShiftState(prev => ({
                         ...prev,
-                        status: res.data.checkOut ? 'ClockedOut' : 'ClockedIn',
-                        clockInTime: res.data.checkIn || prev.clockInTime,
-                        lastClockInTime: res.data.checkIn || prev.lastClockInTime,
-                        lastClockOutTime: res.data.checkOut || prev.lastClockOutTime
+                        status: res.data.checkOut ? 'ClockedOut' : (prev.status === 'OnBreak' && isSameCalendarDay(prev.clockInTime) ? 'OnBreak' : 'ClockedIn'),
+                        clockInTime: res.data.checkOut ? null : res.data.checkIn,
+                        lastClockInTime: res.data.checkIn,
+                        lastClockOutTime: res.data.checkOut || null,
+                        totalShiftSecondsToday: res.data.checkOut ? workedTodaySec : (isSameCalendarDay(prev.lastClockInTime) ? prev.totalShiftSecondsToday : 0)
                     }));
+                } else if (res.data?.status === 'Not Clocked In') {
+                    setShiftState(prev => {
+                        const refIso = prev.clockInTime || prev.lastClockOutTime || prev.lastClockInTime;
+                        return isSameCalendarDay(refIso) ? prev : { ...EMPTY_SHIFT_STATE };
+                    });
                 }
             })
             .catch(() => {});
@@ -104,6 +128,7 @@ const StaffShiftClockWidget = ({ userRole = 'Staff', userName = 'Staff Member', 
         } catch (e) {
             console.error('Error clocking in via API:', e);
         }
+        const isNewDay = !isSameCalendarDay(shiftState.lastClockInTime);
         const newState = {
             ...shiftState,
             status: 'ClockedIn',
@@ -111,7 +136,8 @@ const StaffShiftClockWidget = ({ userRole = 'Staff', userName = 'Staff Member', 
             lastClockInTime: nowIso,
             lastClockOutTime: null,
             breakStartTime: null,
-            totalBreakSeconds: 0
+            totalBreakSeconds: 0,
+            totalShiftSecondsToday: isNewDay ? 0 : (shiftState.totalShiftSecondsToday || 0)
         };
         setShiftState(newState);
         toast.success(`Welcome ${userName}! Shift Started & Clocked In at ${formatTime12h(nowIso)} 🟢`, {

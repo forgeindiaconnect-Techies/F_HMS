@@ -133,6 +133,15 @@ const ChefDashboard = () => {
                 return { restaurantId: cleanRestId || null, role: 'kitchen' };
             },
             onMessage: (msg) => {
+                if (msg.type === 'restock_ordered' || (msg.type === 'new_notification' && msg.data?.metadata?.kind === 'admin_restock_reply')) {
+                    const note = msg.data?.kitchenNotification || msg.data;
+                    if (note?.title) {
+                        toast.success(`📦 ${note.title}: ${note.desc || ''}`, {
+                            id: `chef-restock-${note._id || Date.now()}`,
+                            duration: 7000
+                        });
+                    }
+                }
                 if (msg.type === 'new_order' || msg.type === 'order_updated' || msg.type === 'order_status_updated') {
                     if (msg.data && msg.data._id) {
                         setOrders(prev => {
@@ -670,14 +679,14 @@ const ChefDashboard = () => {
                     <div className="flex items-center gap-2 sm:gap-3 w-full lg:w-auto justify-between lg:justify-end">
                         
                         {/* Search Input */}
-                        <div className="relative flex-1 sm:w-64 min-w-0">
-                            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <div className="relative flex-1 sm:w-64 lg:flex-none min-w-0">
+                            <Search size={15} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                             <input
                                 type="text"
                                 placeholder="Search ticket #, table..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-8 sm:pl-9 pr-3 py-2 sm:py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-orange-500"
+                                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-3 py-2 sm:py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-orange-500"
                             />
                         </div>
 

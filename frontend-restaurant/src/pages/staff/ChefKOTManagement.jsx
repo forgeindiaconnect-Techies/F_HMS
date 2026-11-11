@@ -350,14 +350,14 @@ const ChefKOTManagement = () => {
                 </div>
 
                 {/* Search Box */}
-                <div className="relative w-full sm:w-72">
-                    <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <div className="relative w-full sm:w-72 shrink-0">
+                    <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                         type="text"
                         placeholder="Search Table, KOT #, or Item..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-amber-500 text-slate-900 dark:text-white"
+                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-amber-500 text-slate-900 dark:text-white"
                     />
                 </div>
             </div>

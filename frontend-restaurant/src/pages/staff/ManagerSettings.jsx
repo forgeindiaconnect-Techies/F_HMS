@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Settings, Save, Bell, Lock, User, Store, Sun } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { ThemeSettingCard } from '../../components/ThemeToggle';
+import { useAuth } from '../../context/AuthContext';
 
 const ManagerSettings = () => {
+    const { user, restaurant } = useAuth();
     const [activeTab, setActiveTab] = useState('My Profile');
 
     return (

@@ -66240,6 +66240,10 @@ var init_Notification = __esm({
         type: import_mongoose2.default.Schema.Types.ObjectId,
         ref: "Branch"
       },
+      userId: {
+        type: import_mongoose2.default.Schema.Types.ObjectId,
+        ref: "User"
+      },
       // Role-scoping: if set, only these roles can see this notification
       targetRole: {
         type: [String],
@@ -66249,6 +66253,11 @@ var init_Notification = __esm({
       isSuperAdminOnly: {
         type: Boolean,
         default: false
+      },
+      // Structured metadata (e.g., kitchen restock request / admin order confirmation)
+      metadata: {
+        type: import_mongoose2.default.Schema.Types.Mixed,
+        default: null
       }
     }, { timestamps: true });
     Notification = import_mongoose2.default.model("Notification", notificationSchema);
@@ -137516,6 +137525,15 @@ var import_express20 = __toESM(require_express2(), 1);
 
 // controllers/notificationController.js
 init_Notification();
+init_Branch();
+var resolveUserRestaurantId = async (user) => {
+  if (user?.restaurantId) return user.restaurantId;
+  if (user?.branchId) {
+    const b = await Branch_default.findById(user.branchId).select("restaurantId");
+    if (b?.restaurantId) return b.restaurantId;
+  }
+  return null;
+};
 var getNotifications = async (req, res) => {
   try {
     const { role, restaurantId } = req.user;
@@ -137588,21 +137606,257 @@ var createBroadcast = async (req, res) => {
   }
 };
 var requestRestock = async (req, res) => {
-  const { ingredientNeeded, urgency, notes } = req.body;
+  const { ingredientNeeded, quantity, unit, urgency, notes } = req.body;
+  if (!ingredientNeeded || !String(ingredientNeeded).trim()) {
+    return res.status(400).json({ message: "Ingredient name is required" });
+  }
   try {
-    const title = urgency === "Urgent" ? `URGENT RESTOCK: ${ingredientNeeded}` : `Restock Request: ${ingredientNeeded}`;
+    const restaurantId = await resolveUserRestaurantId(req.user);
+    const branchId = req.user.branchId || req.body.branchId || null;
+    const cleanItem = String(ingredientNeeded).trim();
+    const qtyNum = Number(quantity) || 0;
+    const unitStr = unit ? String(unit).trim() : "kg";
+    const qtyPart = qtyNum > 0 ? `Qty needed: ${qtyNum} ${unitStr}. ` : "";
+    const senderLabel = req.user.name ? `Requested by ${req.user.name}. ` : "";
+    const title = urgency === "Urgent" ? `URGENT LOW STOCK: ${cleanItem}` : `Low Stock Request: ${cleanItem}`;
     const type = urgency === "Urgent" ? "Alert" : "Info";
-    const desc = `Kitchen requests restock. Notes: ${notes || "None"}`;
+    const desc = `${qtyPart}${senderLabel}Notes: ${notes || "Running low in kitchen"}`;
     const notification = await Notification_default.create({
       title,
       desc,
       type,
-      restaurantId: req.user.restaurantId,
+      restaurantId,
+      branchId,
+      userId: req.user._id,
+      targetRole: ["RestaurantAdmin", "Admin", "BranchManager", "Chef", "Kitchen"],
+      metadata: {
+        kind: "kitchen_low_stock",
+        ingredientName: cleanItem,
+        quantity: qtyNum,
+        unit: unitStr,
+        urgency: urgency || "Urgent",
+        notes: notes || "",
+        requestedBy: req.user.name || "Chef",
+        requestedById: req.user._id,
+        orderStatus: "Pending"
+      },
       read: false
     });
+    if (restaurantId) {
+      broadcastToRestaurant(restaurantId, "new_notification", notification);
+    }
     res.status(201).json(notification);
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+var orderRestockFromNotification = async (req, res) => {
+  try {
+    const restaurantId = await resolveUserRestaurantId(req.user);
+    const sourceNote = await Notification_default.findById(req.params.id);
+    if (!sourceNote) {
+      return res.status(404).json({ message: "Restock notification not found" });
+    }
+    if (restaurantId && sourceNote.restaurantId && String(sourceNote.restaurantId) !== String(restaurantId) && req.user.role !== "SuperAdmin") {
+      return res.status(403).json({ message: "Not authorized for this restaurant notification" });
+    }
+    const {
+      ingredientName,
+      orderQuantity,
+      unit,
+      supplierId,
+      supplierName,
+      unitCost,
+      expectedDelivery,
+      addToStockNow,
+      poNotes
+    } = req.body;
+    const parsedItem = (ingredientName || sourceNote.metadata?.ingredientName || sourceNote.title.replace(/^(URGENT LOW STOCK:|URGENT RESTOCK:|Low Stock \/ Restock Request:|Low Stock Request:|Restock Request:|Low Stock Alert:)\s*/i, "")).trim();
+    const qty = Math.max(0.1, Number(orderQuantity) || Number(sourceNote.metadata?.quantity) || 5);
+    const itemUnit = (unit || sourceNote.metadata?.unit || "kg").trim();
+    const price = Math.max(0, Number(unitCost) || 0);
+    const shouldRestockNow = addToStockNow !== false;
+    let targetBranchId = sourceNote.branchId || req.user.branchId;
+    if (!targetBranchId && restaurantId) {
+      const firstBranch = await Branch_default.findOne({ restaurantId }).select("_id");
+      if (firstBranch) targetBranchId = firstBranch._id;
+    }
+    let resolvedSupplierName = supplierName ? String(supplierName).trim() : "";
+    let resolvedSupplierPhone = "";
+    let resolvedSupplierId = void 0;
+    if (supplierId) {
+      const suppDoc = await Supplier_default.findById(supplierId).select("name phone");
+      if (suppDoc) {
+        resolvedSupplierId = suppDoc._id;
+        resolvedSupplierName = suppDoc.name;
+        resolvedSupplierPhone = suppDoc.phone || "";
+      }
+    }
+    if (!resolvedSupplierName) {
+      resolvedSupplierName = "Direct Supplier Order";
+    }
+    const totalCost = Math.round(qty * price * 100) / 100;
+    const invoiceNumber = `PO-${Date.now().toString().slice(-6)}`;
+    if (targetBranchId) {
+      let invItem = await Inventory_default.findOne({
+        itemName: { $regex: new RegExp(`^${parsedItem.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
+        branch: targetBranchId
+      });
+      if (shouldRestockNow) {
+        if (invItem) {
+          const prevQty = invItem.quantity || 0;
+          const newQty = prevQty + qty;
+          if (price > 0 && newQty > 0) {
+            const prevPrice = invItem.pricePerUnit || 0;
+            invItem.pricePerUnit = Math.round((prevQty * prevPrice + qty * price) / newQty * 100) / 100;
+            invItem.lastPurchasePrice = price;
+          }
+          invItem.quantity = newQty;
+          invItem.lastPurchaseDate = /* @__PURE__ */ new Date();
+          if (resolvedSupplierId) invItem.supplier = resolvedSupplierId;
+          await invItem.save();
+          await StockMovement_default.create({
+            restaurantId: sourceNote.restaurantId || restaurantId,
+            branchId: targetBranchId,
+            inventoryItem: invItem._id,
+            itemName: invItem.itemName,
+            movementType: "Purchase Received",
+            quantityChanged: qty,
+            previousQuantity: prevQty,
+            newQuantity: newQty,
+            unit: invItem.unit || itemUnit,
+            unitCost: price,
+            totalValue: totalCost,
+            reference: `Kitchen Restock #${invoiceNumber}`,
+            reason: `Ordered by ${req.user.name || "Admin"} for kitchen request`,
+            performedBy: req.user._id,
+            date: /* @__PURE__ */ new Date()
+          });
+        } else {
+          invItem = await Inventory_default.create({
+            restaurantId: sourceNote.restaurantId || restaurantId,
+            branch: targetBranchId,
+            supplier: resolvedSupplierId,
+            itemName: parsedItem,
+            category: "Other",
+            quantity: qty,
+            unit: itemUnit,
+            minStockLevel: 5,
+            pricePerUnit: price,
+            lastPurchasePrice: price,
+            lastPurchaseDate: /* @__PURE__ */ new Date(),
+            costingMethod: "Weighted Average"
+          });
+          await StockMovement_default.create({
+            restaurantId: sourceNote.restaurantId || restaurantId,
+            branchId: targetBranchId,
+            inventoryItem: invItem._id,
+            itemName: invItem.itemName,
+            movementType: "Purchase Received",
+            quantityChanged: qty,
+            previousQuantity: 0,
+            newQuantity: qty,
+            unit: itemUnit,
+            unitCost: price,
+            totalValue: totalCost,
+            reference: `Kitchen Restock #${invoiceNumber}`,
+            reason: `Ordered by ${req.user.name || "Admin"} for kitchen request`,
+            performedBy: req.user._id,
+            date: /* @__PURE__ */ new Date()
+          });
+        }
+      }
+      await MaterialPurchase_default.create({
+        restaurantId: sourceNote.restaurantId || restaurantId,
+        branchId: targetBranchId,
+        supplier: resolvedSupplierId,
+        supplierName: resolvedSupplierName,
+        supplierPhone: resolvedSupplierPhone,
+        invoiceNumber,
+        purchaseDate: /* @__PURE__ */ new Date(),
+        items: [{
+          material: invItem?._id,
+          itemName: parsedItem,
+          category: invItem?.category || "General",
+          quantity: qty,
+          unit: itemUnit,
+          unitPrice: price,
+          taxPercent: 0,
+          taxAmount: 0,
+          totalCost
+        }],
+        subtotal: totalCost,
+        taxAmount: 0,
+        totalAmount: totalCost,
+        paidAmount: totalCost > 0 ? totalCost : 0,
+        balanceDue: 0,
+        paymentStatus: totalCost > 0 ? "Paid" : "Pending",
+        notes: poNotes || `Kitchen low-stock order (${expectedDelivery || "Today"})`,
+        createdBy: req.user._id
+      }).catch((err) => {
+        console.error("MaterialPurchase log error during restock:", err.message);
+      });
+    }
+    sourceNote.read = true;
+    sourceNote.metadata = {
+      ...sourceNote.metadata || {},
+      kind: sourceNote.metadata?.kind || "kitchen_low_stock",
+      ingredientName: parsedItem,
+      orderStatus: "Ordered",
+      orderedQty: qty,
+      orderedUnit: itemUnit,
+      supplierName: resolvedSupplierName,
+      unitCost: price,
+      invoiceNumber,
+      expectedDelivery: expectedDelivery || "Today",
+      addedToStock: shouldRestockNow,
+      poNotes: poNotes || "",
+      actionedByName: req.user.name || "Admin",
+      actionedAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    sourceNote.markModified("metadata");
+    await sourceNote.save();
+    const etaPart = expectedDelivery ? ` ETA: ${expectedDelivery}.` : "";
+    const stockPart = shouldRestockNow ? " Inventory stock updated." : "";
+    const notePart = poNotes ? ` Message from Admin: "${poNotes}"` : "";
+    const kitchenNotification = await Notification_default.create({
+      title: `Restock Ordered: ${parsedItem}`,
+      desc: `${req.user.name || "Admin"} ordered ${qty} ${itemUnit} of ${parsedItem} from ${resolvedSupplierName}.${etaPart}${stockPart}${notePart}`,
+      type: "Info",
+      restaurantId: sourceNote.restaurantId || restaurantId,
+      branchId: targetBranchId,
+      targetRole: ["Chef", "Kitchen"],
+      metadata: {
+        kind: "admin_restock_reply",
+        relatedNotificationId: sourceNote._id,
+        ingredientName: parsedItem,
+        orderedQty: qty,
+        orderedUnit: itemUnit,
+        supplierName: resolvedSupplierName,
+        invoiceNumber,
+        expectedDelivery: expectedDelivery || "Today",
+        addedToStock: shouldRestockNow,
+        poNotes: poNotes || "",
+        orderedBy: req.user.name || "Admin"
+      },
+      read: false
+    });
+    const wsRestId = sourceNote.restaurantId || restaurantId;
+    if (wsRestId) {
+      broadcastToRestaurant(wsRestId, "new_notification", kitchenNotification);
+      broadcastToRestaurant(wsRestId, "restock_ordered", {
+        sourceNotification: sourceNote,
+        kitchenNotification
+      });
+    }
+    res.json({
+      message: "Item ordered and kitchen notified successfully",
+      sourceNotification: sourceNote,
+      kitchenNotification
+    });
+  } catch (error) {
+    console.error("Failed to order restock from notification:", error);
+    res.status(400).json({ message: error.message || "Failed to place restock order" });
   }
 };
 var markAsRead = async (req, res) => {
@@ -137650,6 +137904,7 @@ router20.use(checkSubscription);
 router20.route("/").get(getNotifications);
 router20.route("/broadcast").post(authorize("RestaurantAdmin", "BranchManager"), createBroadcast);
 router20.route("/restock").post(requestRestock);
+router20.route("/:id/order-restock").post(authorize("RestaurantAdmin", "BranchManager"), orderRestockFromNotification);
 router20.route("/read-all").put(markAllAsRead);
 router20.route("/:id/read").put(markAsRead);
 var notificationRoutes_default = router20;

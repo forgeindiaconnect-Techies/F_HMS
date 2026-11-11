@@ -1,5 +1,5 @@
 import express from 'express';
-import { getNotifications, createBroadcast, markAsRead, markAllAsRead, requestRestock } from '../controllers/notificationController.js';
+import { getNotifications, createBroadcast, markAsRead, markAllAsRead, requestRestock, orderRestockFromNotification } from '../controllers/notificationController.js';
 import { protect, authorize, checkSubscription } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -16,6 +16,9 @@ router.route('/broadcast')
 
 router.route('/restock')
     .post(requestRestock);
+
+router.route('/:id/order-restock')
+    .post(authorize('RestaurantAdmin', 'BranchManager'), orderRestockFromNotification);
 
 router.route('/read-all')
     .put(markAllAsRead);
