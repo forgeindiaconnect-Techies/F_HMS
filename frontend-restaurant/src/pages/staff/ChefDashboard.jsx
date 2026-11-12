@@ -118,7 +118,8 @@ const ChefDashboard = () => {
     };
 
     useEffect(() => {
-        fetchOrders();
+        const capTimer = setTimeout(() => setLoading(false), 1500);
+        fetchOrders().finally(() => clearTimeout(capTimer));
         const pollInterval = setInterval(fetchOrders, 20000);
         // Update priority/overdue minute checks every 30s (seconds are isolated inside CookingStopwatch)
         const timeInterval = setInterval(() => {

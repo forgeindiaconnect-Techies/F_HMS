@@ -63,7 +63,9 @@ const SuperAdminDashboard = () => {
     };
 
     useEffect(() => {
-        fetchDashboardData();
+        const capTimer = setTimeout(() => setLoading(false), 1500);
+        fetchDashboardData().finally(() => clearTimeout(capTimer));
+        return () => clearTimeout(capTimer);
     }, [api]);
 
     useEffect(() => {

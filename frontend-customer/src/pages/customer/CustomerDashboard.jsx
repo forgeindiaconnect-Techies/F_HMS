@@ -29,9 +29,24 @@ const CustomerDashboard = () => {
     const toggleWishlist = cartContext.toggleWishlist || (() => {});
     
     // Core states
-    const [activeTab, setActiveTab] = useState('overview');
-    const [orders, setOrders] = useState([]);
-    const [loadingOrders, setLoadingOrders] = useState(true);
+    const [activeTab, setActiveTab] = useState(() => {
+        try {
+            const t = new URLSearchParams(window.location.search).get('tab');
+            return t || 'overview';
+        } catch { return 'overview'; }
+    });
+    const [orders, setOrders] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('restosys_cust_orders_cache');
+            return cached ? JSON.parse(cached) : [];
+        } catch { return []; }
+    });
+    const [loadingOrders, setLoadingOrders] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('restosys_cust_orders_cache');
+            return !(cached && JSON.parse(cached)?.length >= 0);
+        } catch { return true; }
+    });
     const [reservations, setReservations] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [registeredRestaurants, setRegisteredRestaurants] = useState([]);
@@ -191,17 +206,19 @@ const CustomerDashboard = () => {
 
     // Fetch user orders on mount
     const fetchOrders = async () => {
+        const capTimer = setTimeout(() => setLoadingOrders(false), 1500);
         try {
             const { data } = await api.get('/orders/myorders');
             if (Array.isArray(data)) {
                 setOrders(data);
+                try { sessionStorage.setItem('restosys_cust_orders_cache', JSON.stringify(data.slice(0, 30))); } catch {}
             } else {
                 setOrders([]);
             }
         } catch (error) {
             console.error("Failed to fetch customer orders", error);
-            setOrders([]);
         } finally {
+            clearTimeout(capTimer);
             setLoadingOrders(false);
         }
     };

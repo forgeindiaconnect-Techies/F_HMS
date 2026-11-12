@@ -20,6 +20,7 @@ const DashboardHome = () => {
     const [loading, setLoading] = useState(() => !data);
 
     useEffect(() => {
+        const capTimer = setTimeout(() => setLoading(false), 1500);
         const fetchAnalytics = async () => {
             try {
                 const res = await api.get('/analytics/dashboard');
@@ -28,10 +29,12 @@ const DashboardHome = () => {
             } catch (err) {
                 console.error('Failed to fetch dashboard analytics', err);
             } finally {
+                clearTimeout(capTimer);
                 setLoading(false);
             }
         };
         fetchAnalytics();
+        return () => clearTimeout(capTimer);
     }, [api]);
 
     if (loading) {

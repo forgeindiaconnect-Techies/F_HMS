@@ -14,6 +14,7 @@ const CashierOverview = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        const capTimer = setTimeout(() => setLoading(false), 1500);
         const fetchOverview = async () => {
             try {
                 const { data } = await api.get('/orders');
@@ -37,13 +38,14 @@ const CashierOverview = () => {
             } catch (error) {
                 console.error('Failed to fetch cashier overview', error);
             } finally {
+                clearTimeout(capTimer);
                 setLoading(false);
             }
         };
 
         fetchOverview();
         const interval = setInterval(fetchOverview, 30000);
-        return () => clearInterval(interval);
+        return () => { clearTimeout(capTimer); clearInterval(interval); };
     }, [api]);
 
     if (loading) {

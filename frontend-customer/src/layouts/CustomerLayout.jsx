@@ -30,7 +30,7 @@ const CustomerLayout = () => {
         let cancelled = false;
         const fetchActiveOrders = async () => {
             try {
-                const res = await api.get('/orders/my-orders');
+                const res = await api.get('/orders/myorders');
                 if (cancelled) return;
                 const list = Array.isArray(res.data) ? res.data : [];
                 const live = list.filter(o => !['Completed', 'Cancelled', 'Delivered', 'Served', 'Picked Up', 'Refunded'].includes(o.status));
@@ -151,7 +151,7 @@ const CustomerLayout = () => {
                                             } else if (activeOrders.length > 1) {
                                                 setShowTrackDropdown(prev => !prev);
                                             } else {
-                                                navigate('/dashboard');
+                                                navigate('/profile?tab=orders');
                                             }
                                         }}
                                         className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer shrink-0 border ${
@@ -183,7 +183,7 @@ const CustomerLayout = () => {
                                             <div className="px-4 py-2.5 bg-orange-50/70 border-b border-orange-100 flex items-center justify-between">
                                                 <span className="text-xs font-black text-slate-900">Active Orders ({activeOrders.length})</span>
                                                 <Link
-                                                    to="/dashboard"
+                                                    to="/profile?tab=orders"
                                                     onClick={() => setShowTrackDropdown(false)}
                                                     className="text-[11px] font-bold text-[#FF5A1F] hover:underline"
                                                 >

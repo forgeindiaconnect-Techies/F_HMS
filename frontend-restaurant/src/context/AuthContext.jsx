@@ -71,14 +71,40 @@ api.interceptors.response.use(
     }
 );
 
-// Fast in-memory GET cache + in-flight deduplication so sidebar/section switches render immediately
+// Fast in-memory + sessionStorage GET cache & in-flight deduplication so sidebar/section switches render immediately
+const SESSION_CACHE_KEY = 'restosys_api_cache_v1';
 const _apiGetCache = new Map();
 const _apiInFlight = new Map();
-const API_CACHE_TTL_MS = 20000;
+const API_CACHE_TTL_MS = 30000;
+
+try {
+    const rawSession = sessionStorage.getItem(SESSION_CACHE_KEY);
+    if (rawSession) {
+        const parsed = JSON.parse(rawSession);
+        Object.entries(parsed).forEach(([k, v]) => {
+            if (v && (Date.now() - v.ts) < API_CACHE_TTL_MS) {
+                _apiGetCache.set(k, { res: { data: v.data, status: 200 }, ts: v.ts });
+            }
+        });
+    }
+} catch (_) {}
+
+const persistCacheEntry = (key, data) => {
+    try {
+        const serialized = JSON.stringify(data);
+        if (serialized.length > 60000) return; // Skip huge payloads
+        const existing = JSON.parse(sessionStorage.getItem(SESSION_CACHE_KEY) || '{}');
+        const keys = Object.keys(existing);
+        if (keys.length > 25) delete existing[keys[0]];
+        existing[key] = { data, ts: Date.now() };
+        sessionStorage.setItem(SESSION_CACHE_KEY, JSON.stringify(existing));
+    } catch (_) {}
+};
 
 export const clearApiGetCache = () => {
     _apiGetCache.clear();
     _apiInFlight.clear();
+    try { sessionStorage.removeItem(SESSION_CACHE_KEY); } catch (_) {}
 };
 
 const _rawGet = api.get.bind(api);
@@ -98,6 +124,7 @@ api.get = (url, config = {}) => {
     const reqPromise = _rawGet(url, config)
         .then((res) => {
             _apiGetCache.set(key, { res, ts: Date.now() });
+            persistCacheEntry(key, res.data);
             return res;
         })
         .finally(() => {
