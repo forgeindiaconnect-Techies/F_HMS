@@ -6,6 +6,7 @@ import { useCart } from '../../context/CartContext';
 import { getItemImage } from '../../utils/imageHelper';
 import api, { getApiUrl } from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
+import DishDetailModal from '../../components/DishDetailModal';
 
 const RestaurantDetails = () => {
     const { id } = useParams();
@@ -17,6 +18,7 @@ const RestaurantDetails = () => {
     const [menu, setMenu] = useState([]);
     const [selectedBranch, setSelectedBranch] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [selectedDish, setSelectedDish] = useState(null);
 
     const [bookingDate, setBookingDate] = useState('');
     const [bookingTime, setBookingTime] = useState('');
@@ -396,14 +398,16 @@ const RestaurantDetails = () => {
                                         return (
                                         <div 
                                              key={item._id} 
-                                             className="p-4 sm:p-6 flex gap-4 sm:gap-6 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors group rounded-2xl"
+                                             onClick={() => setSelectedDish({ ...item, restaurantName: restaurant?.name })}
+                                             className="p-4 sm:p-6 flex gap-4 sm:gap-6 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors group rounded-2xl cursor-pointer"
                                          >
                                              <div className="flex-1">
                                                  <div className="flex items-start justify-between gap-2 mb-1">
                                                      <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">{item.name}</h3>
                                                      <button
                                                          type="button"
-                                                         onClick={() => {
+                                                         onClick={(e) => {
+                                                             e.stopPropagation();
                                                              toggleWishlist(item);
                                                              toast.success(isFav ? `${item.name} removed from wishlist` : `${item.name} added to wishlist!`);
                                                          }}
@@ -421,7 +425,8 @@ const RestaurantDetails = () => {
                                                  <div className="font-extrabold text-red-600 dark:text-red-400 mb-1.5">₹{item.price}</div>
                                                  <p className="text-gray-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed line-clamp-2">{item.description}</p>
                                                  <button 
-                                                     onClick={() => { addToCart(item); toast.success(`${item.name} added to cart!`); }}
+                                                     type="button"
+                                                     onClick={(e) => { e.stopPropagation(); setSelectedDish({ ...item, restaurantName: restaurant?.name }); }}
                                                      className="mt-3 px-4 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
                                                  >
                                                      <Plus size={14} /> Add
@@ -578,6 +583,22 @@ const RestaurantDetails = () => {
                     </div>
                 </div>
             )}
+
+            <DishDetailModal
+                dish={selectedDish}
+                isOpen={Boolean(selectedDish)}
+                onClose={() => setSelectedDish(null)}
+                onAddToCart={(d, qty) => {
+                    addToCart(d, qty);
+                    toast.success(`${qty > 1 ? `${qty}x ` : ''}${d.name} added to cart!`);
+                }}
+                isWishlisted={Boolean(selectedDish && wishlist?.some(w => (w._id || w.id) === (selectedDish._id || selectedDish.id)))}
+                onToggleWishlist={(d) => {
+                    const isFavNow = wishlist?.some(w => (w._id || w.id) === (d._id || d.id));
+                    toggleWishlist(d);
+                    toast.success(isFavNow ? `${d.name} removed from wishlist` : `${d.name} added to wishlist!`);
+                }}
+            />
         </div>
     );
 };

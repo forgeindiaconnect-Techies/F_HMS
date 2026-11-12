@@ -10,9 +10,11 @@ import {
 import toast from 'react-hot-toast';
 import { getItemImage } from '../../utils/imageHelper';
 import { useCart } from '../../context/CartContext';
+import DishDetailModal from '../../components/DishDetailModal';
 
 const CustomerMenu = () => {
     const { wishlist, toggleWishlist } = useCart();
+    const [selectedDish, setSelectedDish] = useState(null);
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
@@ -413,7 +415,11 @@ const CustomerMenu = () => {
                     filteredItems.map(item => {
                         const inCart = cart.find(c => c._id === item._id);
                         return (
-                            <div key={item._id} className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm flex gap-4 items-center hover:shadow-md transition-shadow">
+                            <div
+                                key={item._id}
+                                onClick={() => setSelectedDish({ ...item, restaurantName })}
+                                className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm flex gap-4 items-center hover:shadow-md transition-shadow cursor-pointer"
+                            >
                                 <img
                                     src={getItemImage(item)}
                                     onError={(e) => { e.target.onerror = null; e.target.src = getItemImage({ ...item, image: '' }); }}
@@ -427,7 +433,7 @@ const CustomerMenu = () => {
                                     <p className="text-emerald-600 font-black text-sm mt-1.5">₹{item.price}</p>
                                 </div>
 
-                                <div className="shrink-0 flex items-center gap-2">
+                                <div className="shrink-0 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                                     <button
                                         type="button"
                                         onClick={() => {
@@ -1043,6 +1049,28 @@ const CustomerMenu = () => {
                     </button>
                 </div>
             )}
+
+            <DishDetailModal
+                dish={selectedDish}
+                isOpen={Boolean(selectedDish)}
+                onClose={() => setSelectedDish(null)}
+                onAddToCart={(d, qty) => {
+                    setCart((prev) => {
+                        const existing = prev.find((c) => c._id === d._id);
+                        if (existing) {
+                            return prev.map((c) => c._id === d._id ? { ...c, qty: (c.qty || 1) + qty } : c);
+                        }
+                        return [...prev, { ...d, qty }];
+                    });
+                    toast.success(`Added ${qty > 1 ? `${qty}x ` : ''}${d.name} to order!`);
+                }}
+                isWishlisted={Boolean(selectedDish && wishlist?.some(w => (w._id || w.id) === (selectedDish._id || selectedDish.id)))}
+                onToggleWishlist={(d) => {
+                    const isFavNow = wishlist?.some(w => (w._id || w.id) === (d._id || d.id));
+                    toggleWishlist(d);
+                    toast.success(isFavNow ? 'Removed from wishlist' : 'Added to wishlist!');
+                }}
+            />
         </div>
     );
 };

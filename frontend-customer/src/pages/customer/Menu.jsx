@@ -3,6 +3,8 @@ import { Search, Heart, ShoppingBag, Star, Filter, Info, Flame, Leaf } from 'luc
 import { useCart } from '../../context/CartContext';
 import { getItemImage, getFallbackFoodImage } from '../../utils/imageHelper';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import DishDetailModal from '../../components/DishDetailModal';
+import toast from 'react-hot-toast';
 
 const categories = ['All', 'Starters', 'Salads', 'Mains', 'Desserts', 'Beverages'];
 
@@ -16,6 +18,7 @@ const Menu = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('All');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [selectedDish, setSelectedDish] = useState(null);
 
     useEffect(() => {
         const fetchMenu = async () => {
@@ -177,7 +180,8 @@ const Menu = () => {
                             return (
                                 <div 
                                     key={item._id || item.id} 
-                                    className="bg-white rounded-xl border border-slate-200/80 p-3 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between text-left group"
+                                    onClick={() => setSelectedDish(item)}
+                                    className="bg-white rounded-xl border border-slate-200/80 p-3 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between text-left group cursor-pointer"
                                 >
                                     <div>
                                         {/* Square Image with Badges & Heart Button */}
@@ -246,9 +250,13 @@ const Menu = () => {
                                         </div>
                                     </div>
 
-                                    {/* Compact Orange Add to Cart Button (Matching Landing Page) */}
+                                    {/* Compact Orange Add to Cart Button (opens dish description before adding) */}
                                     <button 
-                                        onClick={() => addToCart(item)}
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedDish(item);
+                                        }}
                                         className="w-full mt-3 bg-[#FF5A1F] hover:bg-[#e04f1a] active:scale-98 text-white font-bold py-2 px-3 rounded-lg text-xs transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
                                     >
                                         <ShoppingBag size={13} />
@@ -260,6 +268,22 @@ const Menu = () => {
                     </div>
                 )}
             </div>
+
+            <DishDetailModal
+                dish={selectedDish}
+                isOpen={Boolean(selectedDish)}
+                onClose={() => setSelectedDish(null)}
+                onAddToCart={(d, qty) => {
+                    addToCart(d, qty);
+                    toast.success(`Added ${qty > 1 ? `${qty}x ` : ''}${d.name} to cart!`);
+                }}
+                isWishlisted={Boolean(selectedDish && wishlist?.some(w => (w._id || w.id) === (selectedDish._id || selectedDish.id)))}
+                onToggleWishlist={(d) => {
+                    const isFavNow = wishlist?.some(w => (w._id || w.id) === (d._id || d.id));
+                    toggleWishlist(d);
+                    toast.success(isFavNow ? 'Removed from wishlist' : 'Added to wishlist!');
+                }}
+            />
         </div>
     );
 };

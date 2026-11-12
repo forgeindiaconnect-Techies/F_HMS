@@ -15,6 +15,7 @@ import { getItemImage } from '../../utils/imageHelper';
 import toast from 'react-hot-toast';
 import { ThemeSettingCard } from '../../components/ThemeToggle';
 import LocationPickerModal from '../../components/LocationPickerModal';
+import DishDetailModal from '../../components/DishDetailModal';
 import { getSavedLocation, saveUserLocation, detectUserLocation, filterRestaurantsForLocation, matchesRestaurantLocation, EVENT_LOCATION_UPDATED } from '../../utils/locationHelper';
 import { Navigation, Loader2 } from 'lucide-react';
 import { getOrderReadyTimeInfo } from '../../utils/orderReadyHelper';
@@ -53,6 +54,7 @@ const CustomerDashboard = () => {
     const [selectedRestaurantFilter, setSelectedRestaurantFilter] = useState('All');
     const [userLocation, setUserLocation] = useState(() => getSavedLocation() || '');
     const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
+    const [selectedDish, setSelectedDish] = useState(null);
     const [isDetectingLocation, setIsDetectingLocation] = useState(false);
     const [showOnlyLocalOutlets, setShowOnlyLocalOutlets] = useState(true);
     const [outletSearchFilter, setOutletSearchFilter] = useState('');
@@ -1011,7 +1013,8 @@ const CustomerDashboard = () => {
                                                  return (
                                                      <div 
                                                          key={food._id || food.id}
-                                                         className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between text-left group"
+                                                         onClick={() => setSelectedDish({ ...food, restaurantName: restName })}
+                                                         className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between text-left group cursor-pointer"
                                                      >
                                                          <div>
                                                              <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden bg-slate-50 mb-2.5 flex items-center justify-center">
@@ -1071,7 +1074,8 @@ const CustomerDashboard = () => {
                                                          <div className="flex justify-between items-center pt-2.5 mt-2 border-t border-slate-100">
                                                              <span className="font-black text-slate-900 text-sm sm:text-base">₹{food.price}</span>
                                                              <button 
-                                                                 onClick={() => { addToCart(food); toast.success(`${food.name} added to cart!`); }}
+                                                                 type="button"
+                                                                 onClick={(e) => { e.stopPropagation(); setSelectedDish({ ...food, restaurantName: restName }); }}
                                                                  className="px-3.5 py-1.5 bg-[#FF5A1F] hover:bg-[#e04f1a] active:scale-98 text-white text-xs font-bold rounded-lg transition-colors shadow-xs cursor-pointer flex items-center gap-1"
                                                              >
                                                                  <ShoppingBag size={12} />
@@ -2128,6 +2132,22 @@ const CustomerDashboard = () => {
                 currentLocation={userLocation}
                 onSelectLocation={(loc) => setUserLocation(loc)}
                 restaurants={registeredRestaurants}
+            />
+
+            <DishDetailModal
+                dish={selectedDish}
+                isOpen={Boolean(selectedDish)}
+                onClose={() => setSelectedDish(null)}
+                onAddToCart={(d, qty) => {
+                    addToCart(d, qty);
+                    toast.success(`${qty > 1 ? `${qty}x ` : ''}${d.name} added to cart!`);
+                }}
+                isWishlisted={Boolean(selectedDish && wishlist?.some(w => (w._id || w.id) === (selectedDish._id || selectedDish.id)))}
+                onToggleWishlist={(d) => {
+                    const isFavNow = wishlist?.some(w => (w._id || w.id) === (d._id || d.id));
+                    toggleWishlist(d);
+                    toast.success(isFavNow ? 'Removed from wishlist' : 'Added to wishlist!');
+                }}
             />
         </div>
     );

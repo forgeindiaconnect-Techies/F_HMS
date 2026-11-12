@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import LocationPickerModal from '../../components/LocationPickerModal';
+import DishDetailModal from '../../components/DishDetailModal';
 import { getSavedLocation, saveUserLocation, detectUserLocation, requestBrowserGpsLocation, reverseGeocodeCoords, filterRestaurantsForLocation, EVENT_LOCATION_UPDATED } from '../../utils/locationHelper';
 import { useCart } from '../../context/CartContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
@@ -78,6 +79,7 @@ export default function Explore() {
   });
   const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
   const [manualCityInput, setManualCityInput] = useState('');
+  const [selectedDish, setSelectedDish] = useState(null);
 
   const containerRef = useRef(null);
   const profileRef = useRef(null);
@@ -432,9 +434,9 @@ export default function Explore() {
     setTimeout(() => setCopiedCoupon(false), 2000);
   };
 
-  const handleAddToCart = (dish) => {
-    addToCart(dish);
-    toast.success(`Added ${dish.name} to cart!`);
+  const handleAddToCart = (dish, qty = 1) => {
+    addToCart(dish, qty);
+    toast.success(`Added ${qty > 1 ? `${qty}x ` : ''}${dish.name} to cart!`);
   };
 
   const handleSubscribe = async (e) => {
@@ -1351,7 +1353,8 @@ export default function Explore() {
                 return (
                   <div
                     key={dish._id}
-                    className="bg-white rounded-xl border border-slate-200/80 p-3 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between text-left"
+                    onClick={() => setSelectedDish(dish)}
+                    className="bg-white rounded-xl border border-slate-200/80 p-3 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between text-left cursor-pointer"
                     style={{ transitionDelay: `${index * 40}ms` }}
                   >
                     <div>
@@ -1421,10 +1424,13 @@ export default function Explore() {
                       </div>
                     </div>
 
-                    {/* Add to Cart Button */}
+                    {/* Add to Cart Button (opens dish description before adding) */}
                     <button
                       type="button"
-                      onClick={() => handleAddToCart(dish)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedDish(dish);
+                      }}
                       className="w-full mt-3 bg-[#FF5A1F] hover:bg-[#e04f1a] active:scale-95 text-white font-bold py-2.5 px-3 rounded-lg text-xs transition-all shadow-xs cursor-pointer touch-manipulation flex items-center justify-center gap-1.5"
                     >
                       <ShoppingBag size={13} />
@@ -1882,6 +1888,19 @@ export default function Explore() {
           </div>
         </div>
       )}
+
+      <DishDetailModal
+        dish={selectedDish}
+        isOpen={Boolean(selectedDish)}
+        onClose={() => setSelectedDish(null)}
+        onAddToCart={(d, qty) => handleAddToCart(d, qty)}
+        isWishlisted={Boolean(selectedDish && wishlist?.some(item => (item._id || item.id) === (selectedDish._id || selectedDish.id)))}
+        onToggleWishlist={(d) => {
+          const isFavNow = wishlist?.some(item => (item._id || item.id) === (d._id || d.id));
+          toggleWishlist(d);
+          toast.success(isFavNow ? 'Removed from wishlist' : 'Added to wishlist!');
+        }}
+      />
 
     </div>
   );
