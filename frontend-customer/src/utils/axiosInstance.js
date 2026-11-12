@@ -8,8 +8,8 @@ export const getApiUrl = () => {
         if (customUrl) return customUrl;
     }
 
-    // If running in browser on localhost or local loopback, use local backend port 5000
-    if (typeof window !== 'undefined') {
+    // If running in desktop/local browser (NOT native Capacitor Android/iOS), use local backend port 5000
+    if (!Capacitor.isNativePlatform() && typeof window !== 'undefined') {
         const host = window.location.hostname;
         if (host === 'localhost' || host === '127.0.0.1') {
             return 'http://localhost:5000/api';
