@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 import { 
     MessageSquare, CheckCircle, Clock, Star, Users, 
     TrendingUp, LifeBuoy, Search, ArrowRight, ShieldAlert,
@@ -15,17 +16,29 @@ const CustomerCareDashboard = () => {
     const [categories, setCategories] = useState([]);
     const [trend, setTrend] = useState([]);
     const [announcements, setAnnouncements] = useState([]);
+    const [customerInquiries, setCustomerInquiries] = useState([]);
+    const [updatingInquiryId, setUpdatingInquiryId] = useState(null);
     const [loading, setLoading] = useState(true);
     const [kbSearch, setKbSearch] = useState('');
 
     useEffect(() => {
         const fetchDashboardData = async () => {
+            const capTimer = setTimeout(() => setLoading(false), 1500);
             try {
-                // Fetch support analytics safely
-                const statsRes = await api.get('/support/analytics').catch(err => {
-                    console.warn('Analytics fetch warning:', err);
-                    return { data: { summary: null, categories: [], trend: [] } };
-                });
+                const [statsRes, announceRes, inquiriesRes] = await Promise.all([
+                    api.get('/support/analytics').catch(err => {
+                        console.warn('Analytics fetch warning:', err);
+                        return { data: { summary: null, categories: [], trend: [] } };
+                    }),
+                    api.get('/support/announcements').catch(err => {
+                        console.warn('Announcements fetch warning:', err);
+                        return { data: [] };
+                    }),
+                    api.get('/inquiries/restaurant').catch(err => {
+                        console.warn('Customer inquiries fetch warning:', err);
+                        return { data: [] };
+                    })
+                ]);
                 
                 if (statsRes && statsRes.data) {
                     setStats(statsRes.data.summary || null);
@@ -33,24 +46,36 @@ const CustomerCareDashboard = () => {
                     setTrend(statsRes.data.trend || []);
                 }
 
-                // Fetch active announcements safely
-                const announceRes = await api.get('/support/announcements').catch(err => {
-                    console.warn('Announcements fetch warning:', err);
-                    return { data: [] };
-                });
-                
                 if (announceRes && Array.isArray(announceRes.data)) {
                     setAnnouncements(announceRes.data.slice(0, 3));
+                }
+
+                if (inquiriesRes && Array.isArray(inquiriesRes.data)) {
+                    setCustomerInquiries(inquiriesRes.data);
                 }
             } catch (error) {
                 console.error('Failed to load support dashboard data:', error);
             } finally {
+                clearTimeout(capTimer);
                 setLoading(false);
             }
         };
 
         fetchDashboardData();
     }, [api]);
+
+    const handleUpdateInquiryStatus = async (id, status) => {
+        setUpdatingInquiryId(id);
+        try {
+            const { data } = await api.put(`/inquiries/restaurant/${id}`, { status });
+            setCustomerInquiries(prev => prev.map(item => (item._id === id ? data : item)));
+            toast.success(`Customer ticket marked as ${status}`);
+        } catch (error) {
+            toast.error(error?.response?.data?.message || 'Failed to update ticket status');
+        } finally {
+            setUpdatingInquiryId(null);
+        }
+    };
 
     const handleSearchKb = (e) => {
         e.preventDefault();
@@ -254,6 +279,75 @@ const CustomerCareDashboard = () => {
                         </Link>
                     </div>
                 </div>
+            </div>
+
+            {/* Customer Tickets & Inquiries (Admin & Customer) */}
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-gray-100 dark:border-slate-800 shadow-sm space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 dark:border-slate-800 pb-4">
+                    <div>
+                        <h3 className="font-extrabold text-gray-900 dark:text-white text-lg">Customer Tickets & Inquiries</h3>
+                        <p className="text-xs text-gray-500 dark:text-slate-400">Direct feedback, complaints, and inquiries submitted by customers</p>
+                    </div>
+                    <span className="px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 text-xs font-bold self-start sm:self-center">
+                        {customerInquiries.length} Total
+                    </span>
+                </div>
+
+                {customerInquiries.length === 0 ? (
+                    <div className="text-center py-8 text-gray-400 dark:text-slate-500 text-sm font-medium">
+                        No customer inquiries or tickets submitted yet.
+                    </div>
+                ) : (
+                    <div className="space-y-3">
+                        {customerInquiries.map((inq) => (
+                            <div key={inq._id} className="p-4 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950/60 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="space-y-1 min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="font-bold text-sm text-gray-900 dark:text-white">{inq.subject}</span>
+                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                                            inq.status === 'Resolved' ? 'bg-emerald-100 text-emerald-700' :
+                                            inq.status === 'In Progress' ? 'bg-amber-100 text-amber-700' :
+                                            'bg-blue-100 text-blue-700'
+                                        }`}>
+                                            {inq.status || 'New'}
+                                        </span>
+                                        {inq.restaurantName && inq.restaurantName !== 'General' && (
+                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-700">
+                                                {inq.restaurantName}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-gray-600 dark:text-slate-300">{inq.message}</p>
+                                    <p className="text-[11px] text-gray-400 dark:text-slate-500">
+                                        From <strong className="text-gray-600 dark:text-slate-300">{inq.name}</strong> ({inq.email}) • {new Date(inq.createdAt).toLocaleString()}
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                    {inq.status !== 'In Progress' && inq.status !== 'Resolved' && (
+                                        <button
+                                            type="button"
+                                            disabled={updatingInquiryId === inq._id}
+                                            onClick={() => handleUpdateInquiryStatus(inq._id, 'In Progress')}
+                                            className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+                                        >
+                                            In Progress
+                                        </button>
+                                    )}
+                                    {inq.status !== 'Resolved' && (
+                                        <button
+                                            type="button"
+                                            disabled={updatingInquiryId === inq._id}
+                                            onClick={() => handleUpdateInquiryStatus(inq._id, 'Resolved')}
+                                            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+                                        >
+                                            Resolve
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

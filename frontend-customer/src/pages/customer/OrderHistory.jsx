@@ -86,12 +86,14 @@ const OrderHistory = () => {
 
     useEffect(() => {
         const fetchOrders = async () => {
+            const capTimer = setTimeout(() => setLoading(false), 1500);
             try {
                 const { data } = await api.get('/orders/myorders');
                 setPastOrders(data);
             } catch (error) {
                 console.error('Failed to fetch past orders', error);
             } finally {
+                clearTimeout(capTimer);
                 setLoading(false);
             }
         };
@@ -142,7 +144,7 @@ const OrderHistory = () => {
                     </div>
                 </div>
 
-                <div className="space-y-6 min-w-0 pr-1.5 flex-1">
+                <div className="space-y-3.5 min-w-0 pr-1.5 flex-1">
                     {loading ? (
                         <div className="text-center py-20 text-gray-500">Loading orders...</div>
                     ) : pastOrders.length === 0 ? (
@@ -156,12 +158,12 @@ const OrderHistory = () => {
                                 }
                                 navigate(`/track/${order._id}?restaurantId=${order.restaurantId?._id || order.restaurantId || ''}&branchId=${order.branchId || ''}`);
                             }}
-                            className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 transition-all hover:border-orange-200 cursor-pointer hover:shadow-md hover:scale-[1.005]"
+                            className="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100 transition-all hover:border-orange-200 cursor-pointer hover:shadow-md"
                         >
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6 pb-6 border-b border-gray-100">
-                                <div className="flex items-center gap-5">
-                                    <div className="w-16 h-16 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600 shrink-0">
-                                        <ShoppingBag size={28} />
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3 pb-3 border-b border-gray-100">
+                                <div className="flex items-center gap-3.5">
+                                    <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600 shrink-0">
+                                        <ShoppingBag size={22} />
                                     </div>
                                     <div>
                                         <h3 className="text-xl font-bold text-gray-900 font-sans mb-1 flex items-center flex-wrap gap-2">

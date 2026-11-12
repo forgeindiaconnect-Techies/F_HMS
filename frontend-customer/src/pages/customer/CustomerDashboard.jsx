@@ -91,6 +91,10 @@ const CustomerDashboard = () => {
     const [feedbackSubject, setFeedbackSubject] = useState('');
     const [feedbackMessage, setFeedbackMessage] = useState('');
     const [feedbackType, setFeedbackType] = useState('Feedback');
+    const [feedbackRestaurantId, setFeedbackRestaurantId] = useState('');
+    const [submittingFeedback, setSubmittingFeedback] = useState(false);
+    const [myInquiries, setMyInquiries] = useState([]);
+    const [loadingInquiries, setLoadingInquiries] = useState(false);
 
     // Customer Review (Landing Page Testimonials) State
     const [reviewRating, setReviewRating] = useState(5);
@@ -183,6 +187,7 @@ const CustomerDashboard = () => {
         };
 
         const fetchLiveMenu = async () => {
+            const capTimer = setTimeout(() => setLoadingMenuItems(false), 1500);
             try {
                 const { data } = await api.get('/menu');
                 if (Array.isArray(data)) {
@@ -192,6 +197,7 @@ const CustomerDashboard = () => {
                 console.error('Failed to load live menu in dashboard', err);
                 setLiveMenuItems([]);
             } finally {
+                clearTimeout(capTimer);
                 setLoadingMenuItems(false);
             }
         };
@@ -230,6 +236,7 @@ const CustomerDashboard = () => {
     const [loadingOffers, setLoadingOffers] = useState(true);
 
     const fetchLiveOffers = async () => {
+        const capTimer = setTimeout(() => setLoadingOffers(false), 1500);
         try {
             const { data } = await api.get('/offers');
             if (Array.isArray(data)) {
@@ -238,7 +245,24 @@ const CustomerDashboard = () => {
         } catch (err) {
             console.error("Failed to fetch live offers", err);
         } finally {
+            clearTimeout(capTimer);
             setLoadingOffers(false);
+        }
+    };
+
+    const fetchMyInquiries = async () => {
+        const capTimer = setTimeout(() => setLoadingInquiries(false), 1500);
+        setLoadingInquiries(true);
+        try {
+            const { data } = await api.get('/inquiries/mine');
+            if (Array.isArray(data)) {
+                setMyInquiries(data);
+            }
+        } catch (err) {
+            console.error("Failed to fetch customer inquiries", err);
+        } finally {
+            clearTimeout(capTimer);
+            setLoadingInquiries(false);
         }
     };
 
@@ -246,6 +270,7 @@ const CustomerDashboard = () => {
         if (api) {
             fetchOrders();
             fetchLiveOffers();
+            fetchMyInquiries();
             const interval = setInterval(() => {
                 fetchOrders();
                 fetchLiveOffers();
@@ -367,25 +392,37 @@ const CustomerDashboard = () => {
             toast.error("Please fill in all feedback fields");
             return;
         }
+        setSubmittingFeedback(true);
         try {
+            const selectedRest = registeredRestaurants.find(r => r._id === feedbackRestaurantId);
             await api.post('/inquiries', {
                 name: user?.name || 'Guest User',
                 email: user?.email || 'guest@example.com',
-                subject: `[${feedbackType}] ${feedbackSubject}`,
-                message: feedbackMessage
+                phone: user?.phoneNumber || 'N/A',
+                restaurantId: selectedRest?._id || null,
+                restaurantName: selectedRest?.name || 'General',
+                customerId: user?._id || null,
+                source: 'Customer',
+                subject: `[${feedbackType}] ${feedbackSubject.trim()}`,
+                message: feedbackMessage.trim()
             });
-            toast.success("Feedback submitted successfully! Thank you.");
+            toast.success("Ticket submitted successfully! Thank you.");
             setFeedbackSubject('');
             setFeedbackMessage('');
+            setFeedbackRestaurantId('');
+            fetchMyInquiries();
         } catch (error) {
             console.error("Failed to submit inquiry", error);
-            toast.error("Failed to submit feedback. Please try again.");
+            toast.error(error?.response?.data?.message || "Failed to submit ticket. Please try again.");
+        } finally {
+            setSubmittingFeedback(false);
         }
     };
 
     // Fetch Customer's Own Reviews for Landing Page
     const fetchMyReviews = async () => {
         if (!api) return;
+        const capTimer = setTimeout(() => setLoadingMyReviews(false), 1500);
         setLoadingMyReviews(true);
         try {
             const { data } = await api.get('/customer-reviews/mine');
@@ -395,6 +432,7 @@ const CustomerDashboard = () => {
         } catch (err) {
             console.error("Failed to fetch customer reviews", err);
         } finally {
+            clearTimeout(capTimer);
             setLoadingMyReviews(false);
         }
     };
@@ -546,106 +584,36 @@ const CustomerDashboard = () => {
                 </div>
             </div>
 
-            {/* Mobile & Desktop Hamburger Drawer Control Header */}
-            <div className="flex items-center justify-between bg-white rounded-2xl px-4 py-3 border border-slate-200/80 shadow-xs lg:hidden">
-                <button
-                    type="button"
-                    onClick={() => setIsSidebarOpen(prev => !prev)}
-                    className="p-2 rounded-xl bg-orange-50 text-[#FF5A1F] hover:bg-orange-100 transition-all cursor-pointer flex items-center gap-2 font-bold text-xs border border-orange-200/80"
-                    aria-label="Toggle Navigation Sidebar"
-                >
-                    <Menu size={18} />
-                    <span>{tabsList.find(t => t.id === activeTab)?.name || 'Dashboard Menu'}</span>
-                </button>
-                <span className="text-[11px] font-bold text-slate-400">
-                    {tabsList.length} Sections
-                </span>
+            {/* Sticky Top Dashboard Navigation Bar (stays fixed at top while scrolling content) */}
+            <div className="sticky top-14 sm:top-[68px] z-30 bg-white/95 backdrop-blur-md rounded-2xl px-2.5 py-2 border border-slate-200/90 shadow-sm">
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                    {tabsList.map(tab => {
+                        const isActive = activeTab === tab.id;
+                        return (
+                            <button
+                                key={tab.id}
+                                type="button"
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+                                    isActive
+                                        ? 'bg-[#FF5A1F] text-white shadow-xs shadow-[#FF5A1F]/25'
+                                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                                }`}
+                            >
+                                <span className={isActive ? 'text-white' : 'text-slate-400'}>
+                                    {tab.icon}
+                                </span>
+                                <span>{tab.name}</span>
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
-            {/* Portal Layout Container with Toggleable Sidebar */}
-            <div className={`grid grid-cols-1 ${isSidebarOpen ? 'lg:grid-cols-4' : 'lg:grid-cols-1'} gap-6 items-start transition-all duration-300`}>
-                
-                {/* Sidebar Navigation Options */}
-                {isSidebarOpen ? (
-                    <div className="bg-white rounded-2xl p-2.5 sm:p-4 shadow-xs border border-slate-200/80 transition-all duration-300 animate-in fade-in">
-                        <div className="flex items-center justify-between px-3 py-1.5 mb-2 border-b border-slate-100 pb-2">
-                            <p className="text-[11px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest">Customer Account</p>
-                            <button
-                                type="button"
-                                onClick={() => setIsSidebarOpen(false)}
-                                title="Collapse Sidebar Menu"
-                                className="p-1.5 rounded-lg text-slate-500 hover:text-[#FF5A1F] hover:bg-orange-50 transition-colors cursor-pointer"
-                                aria-label="Collapse Sidebar"
-                            >
-                                <X size={17} />
-                            </button>
-                        </div>
-                        <div className="flex flex-col gap-1.5 w-full">
-                            {tabsList.map(tab => {
-                                const isActive = activeTab === tab.id;
-                                return (
-                                    <button
-                                        key={tab.id}
-                                        type="button"
-                                        onClick={() => {
-                                            setActiveTab(tab.id);
-                                            if (window.innerWidth < 1024) setIsSidebarOpen(false);
-                                        }}
-                                        className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-[15px] font-bold transition-all cursor-pointer w-full text-left ${
-                                            isActive
-                                            ? 'bg-orange-50 text-[#FF5A1F] border border-orange-200/80 shadow-xs'
-                                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-transparent'
-                                        }`}
-                                    >
-                                        <span className={isActive ? 'text-[#FF5A1F]' : 'text-slate-400'}>
-                                            {tab.icon}
-                                        </span>
-                                        <span>{tab.name}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-                ) : (
-                    /* Collapsed Quick Hamburger Bar (Desktop) */
-                    <div className="hidden lg:flex items-center justify-between bg-white rounded-2xl px-4 py-3 border border-slate-200/80 shadow-xs">
-                        <div className="flex items-center gap-3">
-                            <button
-                                type="button"
-                                onClick={() => setIsSidebarOpen(true)}
-                                className="p-2 rounded-xl bg-orange-50 text-[#FF5A1F] hover:bg-orange-100 transition-all cursor-pointer flex items-center gap-2 font-bold text-xs shadow-xs border border-orange-200/80"
-                                title="Open Sidebar Menu"
-                                aria-label="Open Sidebar Menu"
-                            >
-                                <Menu size={18} />
-                                <span>Sections</span>
-                            </button>
-                            <span className="text-xs font-bold text-slate-500">
-                                Currently viewing: <strong className="text-slate-800">{tabsList.find(t => t.id === activeTab)?.name || 'Dashboard'}</strong>
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-                            {tabsList.map(tab => (
-                                <button
-                                    key={tab.id}
-                                    type="button"
-                                    onClick={() => setActiveTab(tab.id)}
-                                    title={tab.name}
-                                    className={`p-2 rounded-xl transition-all cursor-pointer ${
-                                        activeTab === tab.id
-                                            ? 'bg-orange-500 text-white shadow-xs'
-                                            : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-                                    }`}
-                                >
-                                    {tab.icon}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
+            {/* Portal Layout Container */}
+            <div className="w-full">
                 {/* Main Dynamic Viewport Panel */}
-                <div className={`${isSidebarOpen ? 'lg:col-span-3' : 'w-full'}`}>
+                <div className="w-full">
                     
                                         {/* Tab: Nearby Outlets */}
                     {activeTab === 'outlets' && (
@@ -1170,7 +1138,7 @@ const CustomerDashboard = () => {
                                                 const readyInfo = getOrderReadyTimeInfo(order);
                                                 if (!readyInfo) return null;
                                                 return (
-                                                    <div className={`p-3 rounded-xl border flex items-center justify-between gap-3 text-xs ${
+                                                    <div className={`px-2.5 py-2 rounded-xl border flex items-center justify-between gap-2 text-[11px] ${
                                                         readyInfo.isReady
                                                             ? 'bg-emerald-50 border-emerald-300 text-emerald-950 font-bold'
                                                             : readyInfo.isPreparing
@@ -1179,28 +1147,16 @@ const CustomerDashboard = () => {
                                                             ? 'bg-gray-50 border-gray-200 text-gray-600'
                                                             : 'bg-red-50 border-red-200 text-red-700'
                                                     }`}>
-                                                        <div className="flex items-center gap-2.5">
-                                                            <Clock size={16} className={readyInfo.isPreparing ? 'text-amber-600 animate-spin shrink-0' : readyInfo.isReady ? 'text-emerald-600 shrink-0' : 'text-gray-400 shrink-0'} />
-                                                            <div>
-                                                                <span className="text-[10px] uppercase font-black tracking-wider block opacity-70">
-                                                                    {readyInfo.isReady ? 'Order Ready for Pickup' : readyInfo.isPreparing ? 'Estimated Order Ready Time' : 'Order Status'}
-                                                                </span>
-                                                                <span className="font-extrabold text-xs">
-                                                                    {readyInfo.isReady ? (
-                                                                        <span className="text-emerald-700 font-black">Food is Ready Now! Please collect / receive tray.</span>
-                                                                    ) : readyInfo.isPreparing ? (
-                                                                        <span>{readyInfo.label} <span className="opacity-75 font-normal">(Ready by {readyInfo.exactReadyTime})</span></span>
-                                                                    ) : (
-                                                                        readyInfo.label
-                                                                    )}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                        {readyInfo.isPreparing && (
-                                                            <span className="font-mono font-black text-xs bg-white text-amber-950 px-2.5 py-1 rounded-lg border border-amber-200 shrink-0 shadow-xs">
-                                                                Ready by {readyInfo.exactReadyTime}
+                                                        <div className="flex items-center gap-2 min-w-0">
+                                                            <Clock size={14} className={readyInfo.isPreparing ? 'text-amber-600 animate-spin shrink-0' : readyInfo.isReady ? 'text-emerald-600 shrink-0' : 'text-gray-400 shrink-0'} />
+                                                            <span className="font-bold truncate">
+                                                                {readyInfo.isReady
+                                                                    ? 'Food is Ready Now for Pickup'
+                                                                    : readyInfo.isPreparing
+                                                                    ? `${readyInfo.label} (Ready by ${readyInfo.exactReadyTime})`
+                                                                    : readyInfo.label}
                                                             </span>
-                                                        )}
+                                                        </div>
                                                     </div>
                                                 );
                                             })()}
@@ -1234,77 +1190,67 @@ const CustomerDashboard = () => {
 
                                             {/* Delivery OTP Badge for Active Home Deliveries */}
                                             {order.orderType === 'Delivery' && order.status !== 'Delivered' && order.status !== 'Completed' && order.status !== 'Cancelled' && (
-                                                <div className="p-3 bg-amber-50/80 border border-amber-200 rounded-xl flex items-center justify-between text-xs">
+                                                <div className="px-2.5 py-2 bg-amber-50/80 border border-amber-200 rounded-xl flex items-center justify-between text-[11px]">
                                                     <div className="flex items-center gap-2">
-                                                        <ShieldAlert size={16} className="text-amber-600 shrink-0" />
-                                                        <div>
-                                                            <span className="font-extrabold text-amber-900 block">Delivery Verification OTP</span>
-                                                            <span className="text-[10px] text-amber-700 font-medium">Share with delivery agent upon arrival</span>
-                                                        </div>
+                                                        <ShieldAlert size={14} className="text-amber-600 shrink-0" />
+                                                        <span className="font-extrabold text-amber-900">Delivery OTP</span>
                                                     </div>
                                                     {order.deliveryOtp && (
-                                                        <span className="font-mono font-black text-base text-amber-950 bg-white px-3.5 py-1 rounded-lg border border-amber-300 shadow-sm tracking-[0.25em]">
+                                                        <span className="font-mono font-black text-sm text-amber-950 bg-white px-2.5 py-0.5 rounded-lg border border-amber-300 shadow-sm tracking-[0.2em]">
                                                             {order.deliveryOtp}
                                                         </span>
                                                     )}
                                                 </div>
                                             )}
 
-                                            {/* Delivery Pickup & Destination Route Details Card (Zomato Style) */}
+                                            {/* Compact Delivery Pickup & Destination Route Details Card */}
                                             {order.orderType === 'Delivery' && (
-                                                <div className="bg-slate-900 text-white p-4 sm:p-5 rounded-2xl space-y-4 border border-slate-800 shadow-md">
+                                                <div className="bg-slate-900 text-white p-3 rounded-xl space-y-2.5 border border-slate-800 shadow-sm">
                                                     {/* Pickup & Delivery Addresses */}
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs border-b border-slate-800 pb-3">
-                                                        <div className="flex items-start gap-2 bg-slate-800/60 p-2.5 rounded-xl border border-slate-700">
-                                                            <Store size={16} className="text-amber-400 shrink-0 mt-0.5" />
-                                                            <div>
-                                                                <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest block">Pickup Store</span>
-                                                                <p className="font-extrabold text-white text-xs mt-0.5">
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] border-b border-slate-800 pb-2">
+                                                        <div className="flex items-start gap-2 bg-slate-800/60 p-2 rounded-lg border border-slate-700">
+                                                            <Store size={14} className="text-amber-400 shrink-0 mt-0.5" />
+                                                            <div className="min-w-0">
+                                                                <span className="text-[9px] font-black text-amber-400 uppercase tracking-wider block">Pickup</span>
+                                                                <p className="font-bold text-white truncate">
                                                                     {order.restaurantId?.name || 'Restaurant'}
                                                                 </p>
-                                                                <p className="text-[10px] text-slate-400">Branch Central Kitchen Counter</p>
                                                             </div>
                                                         </div>
 
-                                                        <div className="flex items-start gap-2 bg-slate-800/60 p-2.5 rounded-xl border border-slate-700">
-                                                            <MapPin size={16} className="text-emerald-400 shrink-0 mt-0.5" />
-                                                            <div>
-                                                                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest block">Delivered To</span>
-                                                                <p className="font-extrabold text-white text-xs mt-0.5 truncate">
+                                                        <div className="flex items-start gap-2 bg-slate-800/60 p-2 rounded-lg border border-slate-700">
+                                                            <MapPin size={14} className="text-emerald-400 shrink-0 mt-0.5" />
+                                                            <div className="min-w-0">
+                                                                <span className="text-[9px] font-black text-emerald-400 uppercase tracking-wider block">Drop-off</span>
+                                                                <p className="font-bold text-white truncate">
                                                                     {typeof order.shippingAddress === 'object' 
                                                                         ? (order.shippingAddress?.address || 'Customer Home Location')
                                                                         : (order.shippingAddress || 'Customer Home Location')}
                                                                 </p>
-                                                                <p className="text-[10px] text-slate-400">Home Delivery Address</p>
                                                             </div>
                                                         </div>
                                                     </div>
 
                                                     {/* Delivery Partner Executive Details */}
-                                                    <div className="flex justify-between items-center flex-wrap gap-3">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center font-bold text-sm shrink-0">
-                                                                <Bike size={20} />
+                                                    <div className="flex justify-between items-center flex-wrap gap-2">
+                                                        <div className="flex items-center gap-2.5">
+                                                            <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center shrink-0">
+                                                                <Bike size={16} />
                                                             </div>
                                                             <div>
-                                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Delivery Executive</span>
-                                                                <p className="font-extrabold text-white text-sm">
+                                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Rider</span>
+                                                                <p className="font-bold text-white text-xs">
                                                                     {(order.deliveryPartner && typeof order.deliveryPartner === 'object') ? (order.deliveryPartner.name || 'Assigned Executive') : (order.deliveryPartner ? 'Assigned Executive' : 'Assigning nearest rider...')}
                                                                 </p>
-                                                                {order.deliveryPartner && typeof order.deliveryPartner === 'object' && (
-                                                                    <p className="text-[10px] text-slate-400 font-medium">
-                                                                        Vehicle: {order.deliveryPartner.vehicleDetails?.type || 'Bike'} {order.deliveryPartner.vehicleDetails?.model ? `(${order.deliveryPartner.vehicleDetails.model})` : ''}
-                                                                    </p>
-                                                                )}
                                                             </div>
                                                         </div>
 
                                                         {order.deliveryPartner && typeof order.deliveryPartner === 'object' && order.deliveryPartner.phoneNumber && (
                                                             <a
                                                                 href={`tel:${order.deliveryPartner.phoneNumber}`}
-                                                                className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-md"
+                                                                className="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-[11px] rounded-lg flex items-center gap-1 transition-all"
                                                             >
-                                                                <Phone size={14} /> Call Rider
+                                                                <Phone size={12} /> Call Rider
                                                             </a>
                                                         )}
                                                     </div>
@@ -1738,55 +1684,105 @@ const CustomerDashboard = () => {
 
                     {/* Tab: Feedback & Inquiries */}
                     {activeTab === 'feedback' && (
-                        <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-gray-100 space-y-4 sm:space-y-6">
-                            <div>
-                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 font-sans">Feedback & Inquiries</h3>
-                                <p className="text-gray-500 text-[11px] sm:text-xs mt-0.5">Submit inquiries, complaints, or restaurant feedback directly to administration</p>
-                            </div>
+                        <div className="space-y-4 sm:space-y-6">
+                            <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-gray-100 space-y-4 sm:space-y-6">
+                                <div>
+                                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 font-sans">Feedback & Inquiries</h3>
+                                    <p className="text-gray-500 text-[11px] sm:text-xs mt-0.5">Submit inquiries, complaints, or restaurant feedback directly to administration & branch managers</p>
+                                </div>
 
-                            <form onSubmit={handleSubmitFeedback} className="space-y-3 sm:space-y-4 min-w-0 pr-0.5 flex-1">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <div className="space-y-1 min-w-0 flex-1">
-                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Submission Type</label>
-                                        <select 
-                                            value={feedbackType}
-                                            onChange={(e) => setFeedbackType(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 text-xs focus:outline-none focus:border-orange-500"
-                                        >
-                                            <option value="Feedback">General Feedback & Reviews</option>
-                                            <option value="Complaint">Complaint / Bug Report</option>
-                                            <option value="Support">Support Ticket inquiry</option>
-                                            <option value="Franchise">Franchise request</option>
-                                        </select>
+                                <form onSubmit={handleSubmitFeedback} className="space-y-3 sm:space-y-4 min-w-0 pr-0.5 flex-1">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        <div className="space-y-1 min-w-0 flex-1">
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Submission Type</label>
+                                            <select 
+                                                value={feedbackType}
+                                                onChange={(e) => setFeedbackType(e.target.value)}
+                                                className="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                            >
+                                                <option value="Feedback">General Feedback & Reviews</option>
+                                                <option value="Complaint">Complaint / Bug Report</option>
+                                                <option value="Support">Support Ticket inquiry</option>
+                                                <option value="Franchise">Franchise request</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-1 min-w-0 flex-1">
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Restaurant / Outlet (Optional)</label>
+                                            <select 
+                                                value={feedbackRestaurantId}
+                                                onChange={(e) => setFeedbackRestaurantId(e.target.value)}
+                                                className="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                            >
+                                                <option value="">General / All Outlets</option>
+                                                {registeredRestaurants.map(rest => (
+                                                    <option key={rest._id} value={rest._id}>{rest.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="space-y-1 min-w-0 flex-1">
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Subject Summary</label>
+                                            <input 
+                                                type="text"
+                                                placeholder="E.g. Food quality, delivery delay..."
+                                                value={feedbackSubject}
+                                                onChange={(e) => setFeedbackSubject(e.target.value)}
+                                                className="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="space-y-1 min-w-0 flex-1">
-                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Subject Summary</label>
-                                        <input 
-                                            type="text"
-                                            placeholder="E.g. Food quality, delivery delay..."
-                                            value={feedbackSubject}
-                                            onChange={(e) => setFeedbackSubject(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 text-xs focus:outline-none focus:border-orange-500"
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Message Details</label>
+                                        <textarea 
+                                            rows={3}
+                                            placeholder="Write your review, support question, or complaint detail here..."
+                                            value={feedbackMessage}
+                                            onChange={(e) => setFeedbackMessage(e.target.value)}
+                                            className="w-full bg-gray-50 border border-gray-100 rounded-xl p-3 text-xs focus:outline-none focus:border-orange-500 resize-none"
                                         />
                                     </div>
-                                </div>
-                                <div className="space-y-1 min-w-0 flex-1">
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Message Details</label>
-                                    <textarea 
-                                        rows={3}
-                                        placeholder="Write your review, support question, or complaint detail here..."
-                                        value={feedbackMessage}
-                                        onChange={(e) => setFeedbackMessage(e.target.value)}
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-xl p-3 text-xs focus:outline-none focus:border-orange-500 resize-none"
-                                    />
-                                </div>
-                                <button 
-                                    type="submit"
-                                    className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
-                                >
-                                    Submit Ticket
-                                </button>
-                            </form>
+                                    <button 
+                                        type="submit"
+                                        disabled={submittingFeedback}
+                                        className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 disabled:opacity-60 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
+                                    >
+                                        {submittingFeedback ? 'Submitting...' : 'Submit Ticket'}
+                                    </button>
+                                </form>
+                            </div>
+
+                            {/* My Submitted Tickets */}
+                            <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-100 space-y-3">
+                                <h4 className="text-sm sm:text-base font-bold text-gray-900">My Submitted Tickets & Inquiries</h4>
+                                {loadingInquiries ? (
+                                    <p className="text-xs text-gray-400 py-3">Loading tickets...</p>
+                                ) : myInquiries.length === 0 ? (
+                                    <p className="text-xs text-gray-400 py-3">No tickets submitted yet.</p>
+                                ) : (
+                                    <div className="space-y-2.5">
+                                        {myInquiries.map((inq) => (
+                                            <div key={inq._id} className="p-3 rounded-xl border border-gray-100 bg-gray-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                                <div className="min-w-0">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <span className="font-bold text-xs text-gray-900">{inq.subject}</span>
+                                                        {inq.restaurantName && inq.restaurantName !== 'General' && (
+                                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">{inq.restaurantName}</span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-xs text-gray-600 mt-0.5">{inq.message}</p>
+                                                    <p className="text-[10px] text-gray-400 mt-1">{new Date(inq.createdAt).toLocaleString()}</p>
+                                                </div>
+                                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0 self-start sm:self-center ${
+                                                    inq.status === 'Resolved' ? 'bg-emerald-100 text-emerald-700' :
+                                                    inq.status === 'In Progress' ? 'bg-amber-100 text-amber-700' :
+                                                    'bg-blue-100 text-blue-700'
+                                                }`}>
+                                                    {inq.status || 'New'}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
 

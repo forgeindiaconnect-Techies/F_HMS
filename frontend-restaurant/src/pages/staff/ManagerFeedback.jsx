@@ -6,16 +6,22 @@ import { useAuth } from '../../context/AuthContext';
 const ManagerFeedback = () => {
     const { api } = useAuth();
     const [feedback, setFeedback] = useState([]);
+    const [inquiries, setInquiries] = useState([]);
+    const [updatingInquiryId, setUpdatingInquiryId] = useState(null);
     const [loading, setLoading] = useState(true);
     const [actionModal, setActionModal] = useState({ show: false, type: '', feedback: null });
     const [filterType, setFilterType] = useState('All');
 
     const fetchFeedback = async () => {
+        const capTimer = setTimeout(() => setLoading(false), 1500);
         try {
             setLoading(true);
-            const res = await api.get('/orders');
+            const [res, inquiriesRes] = await Promise.all([
+                api.get('/orders'),
+                api.get('/inquiries/restaurant').catch(() => ({ data: [] }))
+            ]);
             // Filter completed orders that have feedback ratings
-            const reviewed = res.data.filter(order => 
+            const reviewed = (Array.isArray(res.data) ? res.data : []).filter(order => 
                 (order.deliveryRating && (order.deliveryRating.overall > 0 || order.deliveryRating.review)) ||
                 (order.internalRating && order.internalRating > 0)
             ).map(order => {
@@ -36,11 +42,28 @@ const ManagerFeedback = () => {
                 };
             });
             setFeedback(reviewed);
+            if (Array.isArray(inquiriesRes.data)) {
+                setInquiries(inquiriesRes.data);
+            }
         } catch (err) {
             console.error('Failed to fetch reviews', err);
             toast.error('Failed to fetch reviews');
         } finally {
+            clearTimeout(capTimer);
             setLoading(false);
+        }
+    };
+
+    const handleUpdateInquiryStatus = async (id, status) => {
+        setUpdatingInquiryId(id);
+        try {
+            const { data } = await api.put(`/inquiries/restaurant/${id}`, { status });
+            setInquiries(prev => prev.map(item => (item._id === id ? data : item)));
+            toast.success(`Ticket marked as ${status}`);
+        } catch (err) {
+            toast.error(err?.response?.data?.message || 'Failed to update ticket status');
+        } finally {
+            setUpdatingInquiryId(null);
         }
     };
 
@@ -101,6 +124,67 @@ const ManagerFeedback = () => {
                         {filter.label}
                     </button>
                 ))}
+            </div>
+
+            {/* Customer Tickets & Inquiries Section */}
+            <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-3">
+                <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                    <div>
+                        <h3 className="text-lg font-bold text-gray-900">Customer Tickets & Inquiries</h3>
+                        <p className="text-xs text-gray-500">Tickets and feedback submitted from the customer portal</p>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold">
+                        {inquiries.length} Tickets
+                    </span>
+                </div>
+                {inquiries.length === 0 ? (
+                    <p className="text-sm text-gray-400 py-4 text-center">No customer tickets or inquiries yet.</p>
+                ) : (
+                    <div className="space-y-3">
+                        {inquiries.map((inq) => (
+                            <div key={inq._id} className="p-4 rounded-xl border border-gray-100 bg-gray-50/60 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                                <div className="space-y-1 min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="font-bold text-sm text-gray-900">{inq.subject}</span>
+                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                                            inq.status === 'Resolved' ? 'bg-emerald-100 text-emerald-700' :
+                                            inq.status === 'In Progress' ? 'bg-amber-100 text-amber-700' :
+                                            'bg-blue-100 text-blue-700'
+                                        }`}>
+                                            {inq.status || 'New'}
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-gray-700">{inq.message}</p>
+                                    <p className="text-[11px] text-gray-400">
+                                        {inq.name} ({inq.email}) • {new Date(inq.createdAt).toLocaleString()}
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                    {inq.status !== 'In Progress' && inq.status !== 'Resolved' && (
+                                        <button
+                                            type="button"
+                                            disabled={updatingInquiryId === inq._id}
+                                            onClick={() => handleUpdateInquiryStatus(inq._id, 'In Progress')}
+                                            className="px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+                                        >
+                                            In Progress
+                                        </button>
+                                    )}
+                                    {inq.status !== 'Resolved' && (
+                                        <button
+                                            type="button"
+                                            disabled={updatingInquiryId === inq._id}
+                                            onClick={() => handleUpdateInquiryStatus(inq._id, 'Resolved')}
+                                            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+                                        >
+                                            Resolve
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Feedback List */}

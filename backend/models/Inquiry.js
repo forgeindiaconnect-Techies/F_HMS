@@ -11,11 +11,31 @@ const inquirySchema = new mongoose.Schema({
     },
     phone: {
         type: String,
-        required: true
+        default: 'N/A'
     },
     restaurantName: {
         type: String,
-        required: true
+        default: 'General'
+    },
+    restaurantId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Restaurant',
+        default: null
+    },
+    branchId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Branch',
+        default: null
+    },
+    customerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    },
+    source: {
+        type: String,
+        enum: ['Public', 'Customer'],
+        default: 'Public'
     },
     subject: {
         type: String,
