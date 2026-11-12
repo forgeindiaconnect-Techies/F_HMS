@@ -8,20 +8,26 @@ import ConfirmModal from '../../components/ConfirmModal';
 const SuperAdminDashboard = () => {
     const { api } = useAuth();
     const location = useLocation();
-    const [stats, setStats] = useState({
+    const cachedOverview = (() => {
+        try {
+            const raw = sessionStorage.getItem('restosys_superadmin_overview_cache');
+            return raw ? JSON.parse(raw) : null;
+        } catch { return null; }
+    })();
+    const [stats, setStats] = useState(() => cachedOverview?.stats || {
         totalRestaurants: 0,
         activeRestaurants: 0,
         frozenRestaurants: 0,
         totalUsers: 0,
         totalOrders: 0
     });
-    const [restaurants, setRestaurants] = useState([]);
-    const [verifications, setVerifications] = useState([]);
-    const [inquiries, setInquiries] = useState([]);
-    const [tickets, setTickets] = useState([]);
-    const [notifications, setNotifications] = useState([]);
-    const [billingDemos, setBillingDemos] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [restaurants, setRestaurants] = useState(() => cachedOverview?.restaurants || []);
+    const [verifications, setVerifications] = useState(() => cachedOverview?.verifications || []);
+    const [inquiries, setInquiries] = useState(() => cachedOverview?.inquiries || []);
+    const [tickets, setTickets] = useState(() => cachedOverview?.tickets || []);
+    const [notifications, setNotifications] = useState(() => cachedOverview?.notifications || []);
+    const [billingDemos, setBillingDemos] = useState(() => cachedOverview?.billingDemos || []);
+    const [loading, setLoading] = useState(() => !cachedOverview);
     const [viewingRestaurant, setViewingRestaurant] = useState(null);
     const [restSearchQuery, setRestSearchQuery] = useState('');
     const [planFilter, setPlanFilter] = useState('All');
@@ -55,6 +61,17 @@ const SuperAdminDashboard = () => {
             setTickets(ticketsRes.data || []);
             setNotifications(notifsRes.data || []);
             setBillingDemos(demosRes.data?.data || []);
+            try {
+                sessionStorage.setItem('restosys_superadmin_overview_cache', JSON.stringify({
+                    stats: statsRes.data || stats,
+                    restaurants: restsRes.data || [],
+                    verifications: verifsRes.data || [],
+                    inquiries: inquiriesRes.data || [],
+                    tickets: ticketsRes.data || [],
+                    notifications: notifsRes.data || [],
+                    billingDemos: demosRes.data?.data || []
+                }));
+            } catch (_) {}
         } catch (error) {
             console.error("Failed to fetch super admin data", error);
         } finally {
@@ -63,9 +80,7 @@ const SuperAdminDashboard = () => {
     };
 
     useEffect(() => {
-        const capTimer = setTimeout(() => setLoading(false), 1500);
-        fetchDashboardData().finally(() => clearTimeout(capTimer));
-        return () => clearTimeout(capTimer);
+        fetchDashboardData();
     }, [api]);
 
     useEffect(() => {
