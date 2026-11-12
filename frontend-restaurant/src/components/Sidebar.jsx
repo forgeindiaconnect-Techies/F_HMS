@@ -51,15 +51,9 @@ const getItemLock = (path, plan, status, allPlans = []) => {
 const Sidebar = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { logout, restaurant, api } = useAuth();
+    const { logout, restaurant, plans: allPlans = [] } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [logoError, setLogoError] = useState(false);
-    const [allPlans, setAllPlans] = useState([]);
-
-    useEffect(() => {
-        if (!api) return;
-        api.get('/plans').then(res => setAllPlans(res.data || [])).catch(() => { });
-    }, [api]);
 
     useEffect(() => {
         setLogoError(false);

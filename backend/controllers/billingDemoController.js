@@ -533,6 +533,9 @@ export const activateBillingDemo = async (req, res) => {
                     plan: request.customPlan?.planName || 'Custom SaaS',
                     billingCycle: request.customPlan?.billingCycle || 'yearly',
                     trialActive: false,
+                    paymentStatus: 'Paid',
+                    subscriptionStartDate: new Date(),
+                    subscriptionEndDate: expiryDate,
                     startDate: new Date(),
                     expiryDate: expiryDate
                 }
@@ -906,6 +909,9 @@ export const setBillingDemoCredentials = async (req, res) => {
                     plan: request.customPlan?.planName || 'Custom SaaS',
                     billingCycle: request.customPlan?.billingCycle || 'yearly',
                     trialActive: false,
+                    paymentStatus: 'Paid',
+                    subscriptionStartDate: new Date(),
+                    subscriptionEndDate: expiryDate,
                     startDate: new Date(),
                     expiryDate
                 },

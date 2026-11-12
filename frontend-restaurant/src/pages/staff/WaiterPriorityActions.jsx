@@ -3,6 +3,7 @@ import { Flame, Receipt, AlertTriangle, Users, CheckCircle2, RefreshCw, Clock, U
 import { useAuth } from '../../context/AuthContext';
 import { getApiUrl } from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
+import { useWaiterSearch } from '../../hooks/useWaiterSearch';
 
 const WaiterPriorityActions = () => {
     const { api, user } = useAuth();
@@ -10,6 +11,7 @@ const WaiterPriorityActions = () => {
     const [serviceRequests, setServiceRequests] = useState([]);
     const [activeOrders, setActiveOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const searchQuery = useWaiterSearch();
 
     const fetchData = async (isInitial = false) => {
         if (isInitial) setLoading(true);
@@ -190,7 +192,15 @@ const WaiterPriorityActions = () => {
         }))
     ];
 
-    const displayItems = priorityItems;
+    const q = String(searchQuery || '').trim().toLowerCase();
+    const displayItems = q
+        ? priorityItems.filter(item =>
+            String(item.table || '').toLowerCase().includes(q) ||
+            String(item.title || '').toLowerCase().includes(q) ||
+            String(item.subtitle || '').toLowerCase().includes(q) ||
+            String(item.type || '').toLowerCase().includes(q)
+        )
+        : priorityItems;
 
     const filteredItems = filter === 'All' 
         ? displayItems 

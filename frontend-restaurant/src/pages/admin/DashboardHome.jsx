@@ -9,14 +9,22 @@ const DashboardHome = () => {
     const { api, restaurant } = useAuth();
     const isCustomActive = restaurant?.billingConfig?.isCustomBillingActive === true;
     const customModules = restaurant?.billingConfig?.modules || {};
-    const [loading, setLoading] = useState(true);
-    const [data, setData] = useState(null);
+    const [data, setData] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('restosys_admin_analytics');
+            return cached ? JSON.parse(cached) : null;
+        } catch {
+            return null;
+        }
+    });
+    const [loading, setLoading] = useState(() => !data);
 
     useEffect(() => {
         const fetchAnalytics = async () => {
             try {
                 const res = await api.get('/analytics/dashboard');
                 setData(res.data);
+                try { sessionStorage.setItem('restosys_admin_analytics', JSON.stringify(res.data)); } catch {}
             } catch (err) {
                 console.error('Failed to fetch dashboard analytics', err);
             } finally {

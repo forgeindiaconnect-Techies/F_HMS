@@ -241,15 +241,15 @@ const PlanUpgradeModal = ({ currentPlan, plans, api, restaurant, subscriptionSta
 
 /* ─── Topbar ────────────────────────────────────────────────────── */
 const Topbar = () => {
-    const { user, api, restaurant, fetchRestaurant, subscriptionState } = useAuth();
+    const { user, api, restaurant, fetchRestaurant, subscriptionState, plans: cachedPlans, fetchPlans } = useAuth();
     const [hasUnread, setHasUnread] = useState(false);
-    const [plans, setPlans] = useState([]);
+    const [plans, setPlans] = useState(cachedPlans || []);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [branches, setBranches] = useState([]);
     const [selectedBranch, setSelectedBranch] = useState(null);
     const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
 
-    const subscriptionPlan = restaurant?.subscription?.plan || 'Trial';
+    const subscriptionPlan = restaurant?.subscription?.plan || (restaurant ? 'Basic' : '');
     const subStatus = restaurant?.subscription?.status || 'Active';
 
     useEffect(() => {
@@ -282,12 +282,12 @@ const Topbar = () => {
 
         const fetchData = async () => {
             try {
-                const [plansRes, branchesRes] = await Promise.allSettled([
-                    api.get('/plans'),
+                const [plansData, branchesRes] = await Promise.allSettled([
+                    fetchPlans ? fetchPlans() : api.get('/plans').then(r => r.data || []),
                     api.get('/branches')
                 ]);
-                if (plansRes.status === 'fulfilled' && plansRes.value.data?.length > 0) {
-                    setPlans(plansRes.value.data);
+                if (plansData.status === 'fulfilled' && plansData.value?.length > 0) {
+                    setPlans(plansData.value);
                 }
                 if (branchesRes.status === 'fulfilled' && branchesRes.value.data?.length > 0) {
                     setBranches(branchesRes.value.data);

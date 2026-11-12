@@ -9,8 +9,10 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getItemImage } from '../../utils/imageHelper';
+import { useCart } from '../../context/CartContext';
 
 const CustomerMenu = () => {
+    const { wishlist, toggleWishlist } = useCart();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     
@@ -426,7 +428,24 @@ const CustomerMenu = () => {
                                     <p className="text-emerald-600 font-black text-sm mt-1.5">₹{item.price}</p>
                                 </div>
 
-                                <div className="shrink-0">
+                                <div className="shrink-0 flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const isFavNow = wishlist?.some(w => (w._id || w.id) === (item._id || item.id));
+                                            toggleWishlist({ ...item, restaurantName });
+                                            toast.success(isFavNow ? 'Removed from wishlist' : 'Added to wishlist!');
+                                        }}
+                                        aria-label="Wishlist"
+                                        title="Save to Wishlist"
+                                        className={`p-2 rounded-xl border transition-colors cursor-pointer ${
+                                            wishlist?.some(w => (w._id || w.id) === (item._id || item.id))
+                                                ? 'bg-rose-500 text-white border-rose-500'
+                                                : 'bg-slate-50 text-slate-500 border-slate-200 hover:text-rose-500 hover:border-rose-200'
+                                        }`}
+                                    >
+                                        <Heart size={15} className={wishlist?.some(w => (w._id || w.id) === (item._id || item.id)) ? 'fill-white' : ''} />
+                                    </button>
                                     {inCart ? (
                                         <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
                                             <button 

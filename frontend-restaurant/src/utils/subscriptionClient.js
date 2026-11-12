@@ -51,6 +51,10 @@ export const evaluateClientSubscriptionFreeze = (user, restaurant) => {
     else if (sub.paymentStatus === 'Failed') freezeType = 'failed';
     else if (isTrialExpired || isPaidExpired || isStatusBlocked) freezeType = 'expired';
 
+    const planLower = String(sub.plan || '').trim().toLowerCase();
+    const isPaidPlan = ['basic', 'starter', 'pro', 'professional', 'enterprise', 'custom', 'custom saas'].includes(planLower);
+    const hasPaidActive = sub.paymentStatus === 'Paid' || (isPaidPlan && status === 'Active' && !sub.trialActive);
+
     return {
         isFrozen,
         isOwner,
@@ -60,7 +64,7 @@ export const evaluateClientSubscriptionFreeze = (user, restaurant) => {
         isRejected,
         isTrialExpired,
         isPaidExpired,
-        isTrial: sub.paymentStatus === 'Trial' || Boolean(sub.trialActive),
+        isTrial: !hasPaidActive && (sub.paymentStatus === 'Trial' || Boolean(sub.trialActive)),
         reason: sub.freezeReason || sub.rejectionReason || '',
         status,
     };

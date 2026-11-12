@@ -398,10 +398,29 @@ export const loginUser = async (req, res) => {
             }
 
             // Evaluate subscription expiry consistently (do NOT block login so owner can pay/renew or contact support)
+            let hydratedRestaurant = null;
             if (user.restaurantId && !['SuperAdmin', 'SupportAgent', 'Customer'].includes(user.role)) {
                 const restaurant = await Restaurant.findById(user.restaurantId);
                 if (restaurant) {
                     await evaluateSubscriptionAccess(restaurant, { notifyOnExpire: true });
+                    hydratedRestaurant = {
+                        _id: restaurant._id,
+                        name: restaurant.name,
+                        email: restaurant.email,
+                        contactEmail: restaurant.contactEmail,
+                        phone: restaurant.phone,
+                        address: restaurant.address,
+                        city: restaurant.city,
+                        logo: restaurant.logo,
+                        isActive: restaurant.isActive,
+                        isDemo: restaurant.isDemo,
+                        approvalStatus: restaurant.approvalStatus,
+                        verificationStatus: restaurant.verificationStatus,
+                        status: restaurant.status,
+                        subscription: restaurant.subscription,
+                        restaurantConfig: restaurant.restaurantConfig,
+                        billingConfig: restaurant.billingConfig,
+                    };
                 }
             }
 
@@ -435,6 +454,7 @@ export const loginUser = async (req, res) => {
                 restaurantId: user.restaurantId,
                 branchId: user.branchId,
                 token: token,
+                ...(hydratedRestaurant ? { restaurant: hydratedRestaurant } : {}),
             });
         } else {
             res.status(401).json({ message: 'Incorrect password. Please check your credentials and try again.' });

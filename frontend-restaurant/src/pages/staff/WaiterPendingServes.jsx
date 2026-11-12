@@ -1,10 +1,12 @@
 import { CheckCircle, Clock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useWaiterSearch, matchesOrderSearch } from '../../hooks/useWaiterSearch';
 
 const WaiterPendingServes = () => {
     const { api } = useAuth();
     const [pending, setPending] = useState([]);
+    const searchQuery = useWaiterSearch();
 
     const isSelfOrder = (o) => {
         if (!o) return false;
@@ -54,10 +56,12 @@ const WaiterPendingServes = () => {
             </div>
 
             <div className="space-y-4">
-                {pending.length === 0 ? (
-                    <div className="text-center py-20 text-gray-400 font-medium text-lg">No pending serves right now. Great job!</div>
-                ) : (
-                    pending.map(order => {
+                {(() => {
+                    const visiblePending = pending.filter((o) => matchesOrderSearch(o, searchQuery));
+                    if (visiblePending.length === 0) {
+                        return <div className="text-center py-20 text-gray-400 font-medium text-lg">{searchQuery.trim() ? `No pending serves matching "${searchQuery}".` : 'No pending serves right now. Great job!'}</div>;
+                    }
+                    return visiblePending.map(order => {
                         const hasTable = order.tableNumber && order.tableNumber !== 'Any' && order.tableNumber !== 'Takeout';
                         const tableNum = hasTable ? order.tableNumber.replace(/^Table\s*/i, '') : null;
                         const isSelfService = order.serviceType === 'Self Dine-In (KFC Style)' || (!hasTable && isSelfOrder(order));
@@ -137,8 +141,8 @@ const WaiterPendingServes = () => {
                                 
                             </div>
                         );
-                    })
-                )}
+                    });
+                })()}
             </div>
         </div>
     );

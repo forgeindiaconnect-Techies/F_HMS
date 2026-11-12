@@ -105,6 +105,35 @@ export const AuthProvider = ({ children }) => {
         }
     });
     const [loading, setLoading] = useState(false);
+    const [plans, setPlans] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('restosys_plans_cache');
+            return cached ? JSON.parse(cached) : [];
+        } catch (e) {
+            return [];
+        }
+    });
+
+    const fetchPlans = useCallback(async (force = false) => {
+        if (!force && plans.length > 0) return plans;
+        if (window.__restosysPlansPromise && !force) return window.__restosysPlansPromise;
+        window.__restosysPlansPromise = api.get('/plans')
+            .then(res => {
+                const list = res.data || [];
+                setPlans(list);
+                try { sessionStorage.setItem('restosys_plans_cache', JSON.stringify(list)); } catch (e) {}
+                return list;
+            })
+            .catch(() => plans)
+            .finally(() => { window.__restosysPlansPromise = null; });
+        return window.__restosysPlansPromise;
+    }, [plans.length]);
+
+    useEffect(() => {
+        if (user && !['Customer', 'SuperAdmin', 'SupportAgent'].includes(user.role)) {
+            fetchPlans();
+        }
+    }, [user, fetchPlans]);
 
     const fetchRestaurant = useCallback(async (currentUser = user) => {
         const path = typeof window !== 'undefined' ? window.location.pathname : '';
@@ -249,7 +278,14 @@ export const AuthProvider = ({ children }) => {
             if (data?.token) {
                 localStorage.setItem('token', data.token);
             }
-            await fetchRestaurant(data);
+            if (data?.restaurant) {
+                setRestaurant(data.restaurant);
+                try { localStorage.setItem('restosys_restaurant', JSON.stringify(data.restaurant)); } catch (e) {}
+                // Background refresh without blocking login navigation
+                fetchRestaurant(data).catch(() => {});
+            } else {
+                await fetchRestaurant(data);
+            }
             return { success: true, data };
         } catch (error) {
             const errorMsg = error.response?.data?.message || 'Login failed';
@@ -288,7 +324,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, setUser, restaurant, subscriptionState, fetchRestaurant, login, register, logout, loading, api }}>
+        <AuthContext.Provider value={{ user, setUser, restaurant, subscriptionState, fetchRestaurant, plans, fetchPlans, login, register, logout, loading, api }}>
             {loading ? (
                 <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#FAFAF8] dark:bg-slate-950 text-slate-800 dark:text-white gap-3">
                     <div className="w-10 h-10 rounded-full border-4 border-orange-200 border-t-[#FF5A1F] animate-spin" />

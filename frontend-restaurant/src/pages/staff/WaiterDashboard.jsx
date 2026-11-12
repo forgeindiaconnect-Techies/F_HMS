@@ -26,7 +26,9 @@ const WaiterDashboard = () => {
     const [panelOpen, setPanelOpen] = useState(false);
     const [statusFilter, setStatusFilter] = useState('All');
     const [serviceRequests, setServiceRequests] = useState([]);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState(() => {
+        try { return sessionStorage.getItem('waiter_search_query') || ''; } catch { return ''; }
+    });
 
     useEffect(() => {
         const onWaiterSearch = (e) => setSearchQuery(e.detail || '');

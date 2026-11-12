@@ -1,10 +1,12 @@
 import { Clock, CheckCircle, Flame, MessageSquare } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useWaiterSearch, matchesOrderSearch } from '../../hooks/useWaiterSearch';
 
 const WaiterActiveOrders = () => {
     const { api } = useAuth();
     const [orders, setOrders] = useState([]);
+    const searchQuery = useWaiterSearch();
 
     const isSelfOrder = (o) => {
         if (!o) return false;
@@ -56,10 +58,12 @@ const WaiterActiveOrders = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {orders.length === 0 ? (
-                    <div className="col-span-full text-center text-gray-500 py-10">No active orders found.</div>
-                ) : (
-                orders.map(order => {
+                {(() => {
+                    const visibleOrders = orders.filter((o) => matchesOrderSearch(o, searchQuery));
+                    if (visibleOrders.length === 0) {
+                        return <div className="col-span-full text-center text-gray-500 py-10">{searchQuery.trim() ? `No active orders matching "${searchQuery}".` : 'No active orders found.'}</div>;
+                    }
+                    return visibleOrders.map(order => {
                     const hasTable = order.tableNumber && order.tableNumber !== 'Any' && order.tableNumber !== 'Takeout';
                     const tableDisplay = hasTable ? (order.tableNumber.startsWith('Table') ? order.tableNumber : `Table ${order.tableNumber}`) : null;
                     const isSelfService = order.serviceType === 'Self Dine-In (KFC Style)' || (!hasTable && isSelfOrder(order));
@@ -163,7 +167,8 @@ const WaiterActiveOrders = () => {
                             </div>
                         </div>
                     );
-                }))}
+                });
+                })()}
             </div>
         </div>
     );

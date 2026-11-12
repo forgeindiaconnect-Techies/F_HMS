@@ -154,6 +154,43 @@ export const verifyRazorpaySignature = ({ orderId, paymentId, signature }) => {
 };
 
 /**
+ * Normalizes inconsistent subscription fields so an active paid plan (e.g. Enterprise/Pro/Basic)
+ * never masquerades as a Free Trial when trialActive or paymentStatus wasn't cleared cleanly.
+ */
+export const normalizeSubscriptionState = (restaurant) => {
+    if (!restaurant?.subscription) return false;
+    const sub = restaurant.subscription;
+    const planLower = String(sub.plan || '').trim().toLowerCase();
+    const isPaidPlanName = ['basic', 'starter', 'pro', 'professional', 'enterprise', 'custom', 'custom saas'].includes(planLower);
+    const hasPaidEvidence =
+        sub.paymentStatus === 'Paid' ||
+        Boolean(sub.subscriptionEndDate) ||
+        Number(sub.price || 0) > 0 ||
+        (isPaidPlanName && sub.status === 'Active' && !sub.trialStartDate && !sub.trialRequestDate);
+
+    let changed = false;
+    if (hasPaidEvidence && sub.status === 'Active') {
+        if (sub.trialActive) {
+            sub.trialActive = false;
+            changed = true;
+        }
+        if (sub.paymentStatus !== 'Paid') {
+            sub.paymentStatus = 'Paid';
+            changed = true;
+        }
+        if (!sub.subscriptionEndDate && sub.expiryDate) {
+            sub.subscriptionEndDate = sub.expiryDate;
+            changed = true;
+        }
+        if (!sub.subscriptionStartDate && sub.startDate) {
+            sub.subscriptionStartDate = sub.startDate;
+            changed = true;
+        }
+    }
+    return changed;
+};
+
+/**
  * Evaluates whether a restaurant has operational dashboard access.
  * Atomically transitions expired trials/subscriptions to 'Expired' at most once
  * so concurrent API requests do not spam duplicate emails or notifications.
@@ -162,6 +199,7 @@ export const evaluateSubscriptionAccess = async (restaurant, { notifyOnExpire = 
     if (!restaurant) return { isFrozen: false };
     if (restaurant.isDemo) return { isFrozen: false };
 
+    normalizeSubscriptionState(restaurant);
     const sub = restaurant.subscription || {};
     const now = new Date();
 

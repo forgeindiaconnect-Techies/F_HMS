@@ -125959,10 +125959,11 @@ __export(subscriptionHelper_exports, {
   getRazorpayCredentials: () => getRazorpayCredentials,
   getRazorpayInstance: () => getRazorpayInstance,
   normalizePlanName: () => normalizePlanName,
+  normalizeSubscriptionState: () => normalizeSubscriptionState,
   resolvePlanPrice: () => resolvePlanPrice,
   verifyRazorpaySignature: () => verifyRazorpaySignature
 });
-var import_crypto, import_razorpay, DEFAULT_PLAN_CATALOG, normalizePlanName, findPlanDocument, resolvePlanPrice, calculateProratedUpgrade, getRazorpayCredentials, getRazorpayInstance, verifyRazorpaySignature, evaluateSubscriptionAccess, applyPaidSubscriptionActivation;
+var import_crypto, import_razorpay, DEFAULT_PLAN_CATALOG, normalizePlanName, findPlanDocument, resolvePlanPrice, calculateProratedUpgrade, getRazorpayCredentials, getRazorpayInstance, verifyRazorpaySignature, normalizeSubscriptionState, evaluateSubscriptionAccess, applyPaidSubscriptionActivation;
 var init_subscriptionHelper = __esm({
   "utils/subscriptionHelper.js"() {
     import_crypto = __toESM(require("crypto"), 1);
@@ -126099,9 +126100,37 @@ var init_subscriptionHelper = __esm({
       const expectedSignature = import_crypto.default.createHmac("sha256", keySecret).update(body).digest("hex");
       return expectedSignature === signature;
     };
+    normalizeSubscriptionState = (restaurant) => {
+      if (!restaurant?.subscription) return false;
+      const sub = restaurant.subscription;
+      const planLower = String(sub.plan || "").trim().toLowerCase();
+      const isPaidPlanName = ["basic", "starter", "pro", "professional", "enterprise", "custom", "custom saas"].includes(planLower);
+      const hasPaidEvidence = sub.paymentStatus === "Paid" || Boolean(sub.subscriptionEndDate) || Number(sub.price || 0) > 0 || isPaidPlanName && sub.status === "Active" && !sub.trialStartDate && !sub.trialRequestDate;
+      let changed = false;
+      if (hasPaidEvidence && sub.status === "Active") {
+        if (sub.trialActive) {
+          sub.trialActive = false;
+          changed = true;
+        }
+        if (sub.paymentStatus !== "Paid") {
+          sub.paymentStatus = "Paid";
+          changed = true;
+        }
+        if (!sub.subscriptionEndDate && sub.expiryDate) {
+          sub.subscriptionEndDate = sub.expiryDate;
+          changed = true;
+        }
+        if (!sub.subscriptionStartDate && sub.startDate) {
+          sub.subscriptionStartDate = sub.startDate;
+          changed = true;
+        }
+      }
+      return changed;
+    };
     evaluateSubscriptionAccess = async (restaurant, { notifyOnExpire = true } = {}) => {
       if (!restaurant) return { isFrozen: false };
       if (restaurant.isDemo) return { isFrozen: false };
+      normalizeSubscriptionState(restaurant);
       const sub = restaurant.subscription || {};
       const now = /* @__PURE__ */ new Date();
       if (sub.manualFreeze || sub.status === "Frozen") {
@@ -127213,10 +127242,29 @@ var loginUser = async (req, res) => {
           }
         }
       }
+      let hydratedRestaurant = null;
       if (user.restaurantId && !["SuperAdmin", "SupportAgent", "Customer"].includes(user.role)) {
         const restaurant = await Restaurant_default.findById(user.restaurantId);
         if (restaurant) {
           await evaluateSubscriptionAccess(restaurant, { notifyOnExpire: true });
+          hydratedRestaurant = {
+            _id: restaurant._id,
+            name: restaurant.name,
+            email: restaurant.email,
+            contactEmail: restaurant.contactEmail,
+            phone: restaurant.phone,
+            address: restaurant.address,
+            city: restaurant.city,
+            logo: restaurant.logo,
+            isActive: restaurant.isActive,
+            isDemo: restaurant.isDemo,
+            approvalStatus: restaurant.approvalStatus,
+            verificationStatus: restaurant.verificationStatus,
+            status: restaurant.status,
+            subscription: restaurant.subscription,
+            restaurantConfig: restaurant.restaurantConfig,
+            billingConfig: restaurant.billingConfig
+          };
         }
       }
       const token = generateToken(user._id);
@@ -127246,7 +127294,8 @@ var loginUser = async (req, res) => {
         role: user.role,
         restaurantId: user.restaurantId,
         branchId: user.branchId,
-        token
+        token,
+        ...hydratedRestaurant ? { restaurant: hydratedRestaurant } : {}
       });
     } else {
       res.status(401).json({ message: "Incorrect password. Please check your credentials and try again." });
@@ -128668,7 +128717,7 @@ var getMyRestaurant = async (req, res) => {
     }
     if (!restaurant.logo || !restaurant.showcaseImages || restaurant.showcaseImages.length === 0) {
       try {
-        const verif = await RestaurantVerification_default.findOne({ restaurantId: restaurant._id }).lean();
+        const verif = await RestaurantVerification_default.findOne({ restaurantId: restaurant._id }).select("documents.logo.filePath documents.images.filePath").lean();
         if (!restaurant.logo && verif?.documents?.logo?.filePath) {
           restaurant.logo = verif.documents.logo.filePath;
         }
@@ -132725,15 +132774,41 @@ var getRestaurants2 = async (req, res) => {
   }
 };
 var updateSubscription2 = async (req, res) => {
-  const { status, plan, expiryDate } = req.body;
+  const { status, plan, expiryDate, billingCycle, price } = req.body;
   try {
     const restaurant = await Restaurant_default.findById(req.params.id);
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant not found" });
     }
+    if (!restaurant.subscription) restaurant.subscription = {};
     if (status) restaurant.subscription.status = status;
-    if (plan) restaurant.subscription.plan = plan;
-    if (expiryDate) restaurant.subscription.expiryDate = expiryDate;
+    if (plan) {
+      restaurant.subscription.plan = plan;
+      const isPaidPlan = ["Basic", "Starter", "Pro", "Professional", "Enterprise", "Custom", "Custom SaaS"].includes(plan);
+      if (isPaidPlan) {
+        restaurant.subscription.trialActive = false;
+        restaurant.subscription.paymentStatus = "Paid";
+        restaurant.subscription.manualFreeze = false;
+        restaurant.subscription.freezeReason = "";
+        if (!restaurant.subscription.subscriptionStartDate) {
+          restaurant.subscription.subscriptionStartDate = /* @__PURE__ */ new Date();
+        }
+        if (!restaurant.subscription.price && price === void 0) {
+          restaurant.subscription.price = plan === "Enterprise" ? 199 : plan === "Pro" || plan === "Professional" ? 99 : 49;
+        }
+      }
+    }
+    if (billingCycle) restaurant.subscription.billingCycle = billingCycle;
+    if (price !== void 0) restaurant.subscription.price = Number(price);
+    if (expiryDate) {
+      restaurant.subscription.expiryDate = expiryDate;
+      restaurant.subscription.subscriptionEndDate = expiryDate;
+    } else if (plan && !restaurant.subscription.subscriptionEndDate) {
+      const defaultEnd = /* @__PURE__ */ new Date();
+      defaultEnd.setDate(defaultEnd.getDate() + (restaurant.subscription.billingCycle === "yearly" ? 365 : 30));
+      restaurant.subscription.expiryDate = defaultEnd;
+      restaurant.subscription.subscriptionEndDate = defaultEnd;
+    }
     await restaurant.save();
     res.json(restaurant);
   } catch (error) {
@@ -133423,6 +133498,11 @@ var createRestaurantBySuperAdmin = async (req, res) => {
         plan: selectedPlan,
         status: "Active",
         billingCycle: billingCycle || "monthly",
+        trialActive: false,
+        paymentStatus: "Paid",
+        manualFreeze: false,
+        subscriptionStartDate: /* @__PURE__ */ new Date(),
+        subscriptionEndDate: expiryDate,
         startDate: /* @__PURE__ */ new Date(),
         expiryDate,
         price: selectedPlan === "Enterprise" ? 199 : selectedPlan === "Pro" ? 99 : 49
@@ -140749,6 +140829,9 @@ var activateBillingDemo = async (req, res) => {
           plan: request.customPlan?.planName || "Custom SaaS",
           billingCycle: request.customPlan?.billingCycle || "yearly",
           trialActive: false,
+          paymentStatus: "Paid",
+          subscriptionStartDate: /* @__PURE__ */ new Date(),
+          subscriptionEndDate: expiryDate,
           startDate: /* @__PURE__ */ new Date(),
           expiryDate
         }
@@ -141069,6 +141152,9 @@ var setBillingDemoCredentials = async (req, res) => {
           plan: request.customPlan?.planName || "Custom SaaS",
           billingCycle: request.customPlan?.billingCycle || "yearly",
           trialActive: false,
+          paymentStatus: "Paid",
+          subscriptionStartDate: /* @__PURE__ */ new Date(),
+          subscriptionEndDate: expiryDate,
           startDate: /* @__PURE__ */ new Date(),
           expiryDate
         },

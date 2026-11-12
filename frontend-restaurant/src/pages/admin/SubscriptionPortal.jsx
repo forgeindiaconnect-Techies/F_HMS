@@ -251,11 +251,15 @@ const SubscriptionPortal = () => {
     const isManualFrozen = sub.manualFreeze || sub.status === 'Frozen';
     const isPendingApproval = sub.status === 'Pending Approval';
     const isRejected = sub.status === 'Rejected';
-    const isTrialActive = Boolean(sub.trialActive && sub.trialEndDate && now <= new Date(sub.trialEndDate));
-    const isTrialExpired = Boolean(sub.trialActive && sub.trialEndDate && now > new Date(sub.trialEndDate)) || (sub.status === 'Expired' && sub.paymentStatus === 'Trial');
+    const planLower = String(sub.plan || '').trim().toLowerCase();
+    const isPaidPlanName = ['basic', 'starter', 'pro', 'professional', 'enterprise', 'custom', 'custom saas'].includes(planLower);
+    const hasPaidEvidence = sub.paymentStatus === 'Paid' || (isPaidPlanName && sub.status === 'Active' && !sub.trialActive);
+    const isTrialActive = Boolean(!hasPaidEvidence && sub.trialActive && sub.trialEndDate && now <= new Date(sub.trialEndDate));
+    const isTrialExpired = Boolean(!hasPaidEvidence && sub.trialActive && sub.trialEndDate && now > new Date(sub.trialEndDate)) || (sub.status === 'Expired' && sub.paymentStatus === 'Trial');
     const isPaidExpired = Boolean(sub.paymentStatus === 'Paid' && sub.subscriptionEndDate && now > new Date(sub.subscriptionEndDate)) || (sub.status === 'Expired' && sub.paymentStatus === 'Paid');
-    const isPaidActive = Boolean((sub.paymentStatus === 'Paid' || sub.status === 'Active') && !isPaidExpired && !isManualFrozen);
-    const hasUsedTrial = Boolean(sub.trialStartDate || sub.trialActive || sub.paymentStatus === 'Trial');
+    const isPaidActive = Boolean((hasPaidEvidence || sub.status === 'Active') && !isPaidExpired && !isManualFrozen && !isTrialActive);
+    const hasUsedTrial = Boolean(sub.trialStartDate || sub.trialActive || (!hasPaidEvidence && sub.paymentStatus === 'Trial'));
+    const effectivePaymentStatus = hasPaidEvidence ? 'Paid' : (sub.paymentStatus || 'Trial');
 
     // Trial countdown calculations
     let trialDaysLeft = 0;
@@ -401,24 +405,26 @@ const SubscriptionPortal = () => {
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-4 border-t border-white/10">
                             <div>
                                 <span className="text-[10px] font-bold text-slate-400 block uppercase">Payment Status</span>
-                                <span className="font-extrabold capitalize text-sm">{sub.paymentStatus || 'Trial'}</span>
+                                <span className="font-extrabold capitalize text-sm">{effectivePaymentStatus}</span>
                             </div>
                             <div>
                                 <span className="text-[10px] font-bold text-slate-400 block uppercase">Plan Price</span>
                                 <span className="font-extrabold text-sm">
-                                    {sub.paymentStatus === 'Trial' ? 'Free (₹0)' : `₹${(sub.price || 0).toLocaleString('en-IN')}`}
+                                    {effectivePaymentStatus === 'Trial' ? 'Free (₹0)' : `₹${(sub.price || 0).toLocaleString('en-IN')}`}
                                 </span>
                             </div>
                             <div>
-                                <span className="text-[10px] font-bold text-slate-400 block uppercase">Trial / Expiry</span>
+                                <span className="text-[10px] font-bold text-slate-400 block uppercase">{isTrialActive ? 'Trial Expiry' : 'Plan Expiry'}</span>
                                 <span className="font-extrabold text-sm">
-                                    {sub.trialEndDate ? new Date(sub.trialEndDate).toLocaleDateString() : (sub.expiryDate ? new Date(sub.expiryDate).toLocaleDateString() : 'Awaiting Approval')}
+                                    {isTrialActive && sub.trialEndDate
+                                        ? new Date(sub.trialEndDate).toLocaleDateString()
+                                        : ((sub.subscriptionEndDate || sub.expiryDate) ? new Date(sub.subscriptionEndDate || sub.expiryDate).toLocaleDateString() : (isPendingApproval ? 'Awaiting Approval' : 'Active'))}
                                 </span>
                             </div>
                             <div>
                                 <span className="text-[10px] font-bold text-slate-400 block uppercase">Approval Date</span>
                                 <span className="font-extrabold text-sm">
-                                    {sub.approvedAt ? new Date(sub.approvedAt).toLocaleDateString() : (isPendingApproval ? 'Pending' : 'N/A')}
+                                    {sub.approvedAt ? new Date(sub.approvedAt).toLocaleDateString() : (isPendingApproval ? 'Pending' : (sub.subscriptionStartDate ? new Date(sub.subscriptionStartDate).toLocaleDateString() : 'Active'))}
                                 </span>
                             </div>
                         </div>

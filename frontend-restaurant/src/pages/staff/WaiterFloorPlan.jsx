@@ -10,7 +10,9 @@ const WaiterFloorPlan = () => {
     const [dbTables, setDbTables] = useState([]);
     const [activeOrders, setActiveOrders] = useState([]);
     const [statusFilter, setStatusFilter] = useState('All');
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState(() => {
+        try { return sessionStorage.getItem('waiter_search_query') || ''; } catch { return ''; }
+    });
     const [activeTable, setActiveTable] = useState(null);
     const [panelOpen, setPanelOpen] = useState(false);
 

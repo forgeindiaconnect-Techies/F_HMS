@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { ChefHat, CheckCircle2, Clock, Flame, RefreshCw, Layers } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import { useWaiterSearch, matchesOrderSearch } from '../../hooks/useWaiterSearch';
 
 const WaiterKitchenTracker = () => {
     const { api } = useAuth();
     const [orders, setOrders] = useState([]);
     const [stageFilter, setStageFilter] = useState('All');
     const [loading, setLoading] = useState(true);
+    const searchQuery = useWaiterSearch();
 
     const fetchOrders = async () => {
         setLoading(true);
@@ -54,7 +56,7 @@ const WaiterKitchenTracker = () => {
         }
     };
 
-    const displayOrders = orders;
+    const displayOrders = orders.filter(o => matchesOrderSearch(o, searchQuery));
 
     const filteredOrders = stageFilter === 'All'
         ? displayOrders

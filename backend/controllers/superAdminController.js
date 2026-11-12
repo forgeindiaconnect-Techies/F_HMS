@@ -167,16 +167,42 @@ export const getRestaurants = async (req, res) => {
 // @route   PUT /api/super-admin/restaurants/:id/subscription
 // @access  Private/SuperAdmin
 export const updateSubscription = async (req, res) => {
-    const { status, plan, expiryDate } = req.body;
+    const { status, plan, expiryDate, billingCycle, price } = req.body;
     try {
         const restaurant = await Restaurant.findById(req.params.id);
         if (!restaurant) {
             return res.status(404).json({ message: 'Restaurant not found' });
         }
 
+        if (!restaurant.subscription) restaurant.subscription = {};
         if (status) restaurant.subscription.status = status;
-        if (plan) restaurant.subscription.plan = plan;
-        if (expiryDate) restaurant.subscription.expiryDate = expiryDate;
+        if (plan) {
+            restaurant.subscription.plan = plan;
+            const isPaidPlan = ['Basic', 'Starter', 'Pro', 'Professional', 'Enterprise', 'Custom', 'Custom SaaS'].includes(plan);
+            if (isPaidPlan) {
+                restaurant.subscription.trialActive = false;
+                restaurant.subscription.paymentStatus = 'Paid';
+                restaurant.subscription.manualFreeze = false;
+                restaurant.subscription.freezeReason = '';
+                if (!restaurant.subscription.subscriptionStartDate) {
+                    restaurant.subscription.subscriptionStartDate = new Date();
+                }
+                if (!restaurant.subscription.price && price === undefined) {
+                    restaurant.subscription.price = plan === 'Enterprise' ? 199 : (plan === 'Pro' || plan === 'Professional' ? 99 : 49);
+                }
+            }
+        }
+        if (billingCycle) restaurant.subscription.billingCycle = billingCycle;
+        if (price !== undefined) restaurant.subscription.price = Number(price);
+        if (expiryDate) {
+            restaurant.subscription.expiryDate = expiryDate;
+            restaurant.subscription.subscriptionEndDate = expiryDate;
+        } else if (plan && !restaurant.subscription.subscriptionEndDate) {
+            const defaultEnd = new Date();
+            defaultEnd.setDate(defaultEnd.getDate() + (restaurant.subscription.billingCycle === 'yearly' ? 365 : 30));
+            restaurant.subscription.expiryDate = defaultEnd;
+            restaurant.subscription.subscriptionEndDate = defaultEnd;
+        }
 
         await restaurant.save();
         res.json(restaurant);
@@ -1050,6 +1076,11 @@ export const createRestaurantBySuperAdmin = async (req, res) => {
                 plan: selectedPlan,
                 status: 'Active',
                 billingCycle: billingCycle || 'monthly',
+                trialActive: false,
+                paymentStatus: 'Paid',
+                manualFreeze: false,
+                subscriptionStartDate: new Date(),
+                subscriptionEndDate: expiryDate,
                 startDate: new Date(),
                 expiryDate,
                 price: selectedPlan === 'Enterprise' ? 199 : (selectedPlan === 'Pro' ? 99 : 49)

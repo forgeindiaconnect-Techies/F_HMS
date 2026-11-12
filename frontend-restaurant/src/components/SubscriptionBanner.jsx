@@ -35,7 +35,8 @@ const SubscriptionBanner = () => {
 
     // Warn 24h before trial expiration while still active
     const sub = restaurant.subscription || {};
-    const endRaw = sub.trialActive ? (sub.trialEndDate || sub.expiryDate) : (sub.subscriptionEndDate || sub.expiryDate);
+    const isPaidActivePlan = sub.paymentStatus === 'Paid' || (!sub.trialActive && Boolean(sub.subscriptionEndDate));
+    const endRaw = (sub.trialActive && !isPaidActivePlan) ? (sub.trialEndDate || sub.expiryDate) : (sub.subscriptionEndDate || sub.expiryDate);
     if (endRaw && sub.status === 'Active') {
         const msLeft = new Date(endRaw) - new Date();
         const hoursLeft = msLeft / (1000 * 60 * 60);
@@ -44,7 +45,7 @@ const SubscriptionBanner = () => {
                 <div className="bg-amber-500 text-slate-950 px-4 py-1.5 text-xs sm:text-sm font-extrabold flex flex-wrap items-center justify-center gap-2 z-50">
                     <Clock size={15} />
                     <span>
-                        Your {sub.trialActive ? '7-Day Free Trial' : `${sub.plan} subscription`} expires in {Math.max(1, Math.ceil(hoursLeft))} hour(s).
+                        Your {(sub.trialActive && !isPaidActivePlan) ? '7-Day Free Trial' : `${sub.plan} subscription`} expires in {Math.max(1, Math.ceil(hoursLeft))} hour(s).
                     </span>
                     {subscriptionState?.isOwner && (
                         <Link to="/admin/billing" className="underline font-black">

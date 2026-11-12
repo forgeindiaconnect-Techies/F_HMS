@@ -2,19 +2,26 @@ import { Bell, User, Search, LogOut, Menu, Settings, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { setWaiterSearchQuery } from '../hooks/useWaiterSearch';
 
 const WaiterTopbar = () => {
     const { user, api, logout } = useAuth();
     const [showNotifs, setShowNotifs] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [showProfile, setShowProfile] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm, setSearchTerm] = useState(() => {
+        try {
+            return sessionStorage.getItem('waiter_search_query') || '';
+        } catch (_) {
+            return '';
+        }
+    });
     const notifRef = useRef(null);
     const profileRef = useRef(null);
 
     const handleSearchChange = (val) => {
         setSearchTerm(val);
-        window.dispatchEvent(new CustomEvent('waiter-search', { detail: val }));
+        setWaiterSearchQuery(val);
     };
 
     useEffect(() => {

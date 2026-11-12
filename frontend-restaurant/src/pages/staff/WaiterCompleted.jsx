@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { CheckSquare, Receipt, Clock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useWaiterSearch, matchesOrderSearch } from '../../hooks/useWaiterSearch';
 
 const WaiterCompleted = () => {
     const { api } = useAuth();
     const [completed, setCompleted] = useState([]);
     const [loading, setLoading] = useState(true);
+    const searchQuery = useWaiterSearch();
 
     const fetchCompletedOrders = async () => {
         try {
@@ -62,7 +64,7 @@ const WaiterCompleted = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
-                            {completed.map((order) => (
+                            {completed.filter(o => matchesOrderSearch(o, searchQuery)).map((order) => (
                                 <tr key={order._id} className="hover:bg-gray-50/50 dark:hover:bg-slate-800/50 transition-colors text-sm">
                                     <td className="p-4 font-mono font-bold text-gray-900 dark:text-white">#{order._id.substring(order._id.length - 6).toUpperCase()}</td>
                                     <td className="p-4">

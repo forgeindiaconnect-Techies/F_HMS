@@ -442,7 +442,9 @@ export const getMyRestaurant = async (req, res) => {
         // Auto-fallback: populate logo and showcase images from verification if unset
         if (!restaurant.logo || !restaurant.showcaseImages || restaurant.showcaseImages.length === 0) {
             try {
-                const verif = await RestaurantVerification.findOne({ restaurantId: restaurant._id }).lean();
+                const verif = await RestaurantVerification.findOne({ restaurantId: restaurant._id })
+                    .select('documents.logo.filePath documents.images.filePath')
+                    .lean();
                 if (!restaurant.logo && verif?.documents?.logo?.filePath) {
                     restaurant.logo = verif.documents.logo.filePath;
                 }

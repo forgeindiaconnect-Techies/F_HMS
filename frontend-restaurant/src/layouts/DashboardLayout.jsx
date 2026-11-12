@@ -54,7 +54,7 @@ const ROUTE_FEATURE_MAP = [
 const PLAN_ORDER_FALLBACK = { Basic: 0, Starter: 0, Pro: 1, Professional: 1, Enterprise: 2 };
 
 const DashboardLayout = () => {
-    const { user, restaurant, subscriptionState, api, fetchRestaurant } = useAuth();
+    const { user, restaurant, subscriptionState, api, fetchRestaurant, plans: cachedPlans, fetchPlans } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -72,15 +72,20 @@ const DashboardLayout = () => {
     // `allPlans` holds the live plan objects (including .features arrays) from MongoDB.
     // This is the source of truth for feature gating — SuperAdmin changes here
     // are immediately reflected on next render after this fetch completes.
-    const [allPlans, setAllPlans] = useState([]);
-    const [plansDataLoaded, setPlansDataLoaded] = useState(false);
+    const [allPlans, setAllPlans] = useState(cachedPlans || []);
+    const [plansDataLoaded, setPlansDataLoaded] = useState(Boolean(cachedPlans?.length));
 
-    // Load plan feature configs from DB once on mount
+    // Load plan feature configs from shared AuthContext cache
     useEffect(() => {
-        api.get('/plans')
-            .then(res => { setAllPlans(res.data || []); setPlansDataLoaded(true); })
+        if (cachedPlans && cachedPlans.length > 0) {
+            setAllPlans(cachedPlans);
+            setPlansDataLoaded(true);
+            return;
+        }
+        (fetchPlans ? fetchPlans() : api.get('/plans').then(r => r.data || []))
+            .then(data => { setAllPlans(data || []); setPlansDataLoaded(true); })
             .catch(() => { setPlansDataLoaded(true); /* use fallback gating */ });
-    }, [api]);
+    }, [api, cachedPlans, fetchPlans]);
 
     // ── Dynamic feature gating check ───────────────────────────────────────────
     // Returns true if the restaurant's current plan grants access to a given feature.
