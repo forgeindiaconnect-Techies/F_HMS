@@ -260,7 +260,17 @@ export default function Explore() {
     const elements = containerRef.current?.querySelectorAll('.reveal-on-scroll');
     elements?.forEach(el => observer.observe(el));
 
-    return () => observer.disconnect();
+    // Safety fallback: ensure reveal-on-scroll elements never remain hidden on mobile/APK webviews
+    const revealFallback = setTimeout(() => {
+      containerRef.current?.querySelectorAll('.reveal-on-scroll:not(.is-revealed)').forEach(el => {
+        el.classList.add('is-revealed');
+      });
+    }, 350);
+
+    return () => {
+      clearTimeout(revealFallback);
+      observer.disconnect();
+    };
   }, [restaurants, dishes]);
 
   // --------------------------------------------------------------------------
@@ -468,15 +478,23 @@ export default function Explore() {
     }
   };
 
-    // Filter restaurants and outlets by detected location and search query
-  const { filtered: displayedRestaurants, matchingOutletsCount } = useMemo(() => {
-    return filterRestaurantsForLocation(restaurants, location, searchQuery);
+    // Filter restaurants and outlets by detected location and search query (with friendly fallback to all outlets)
+  const { filtered: displayedRestaurants, matchingOutletsCount, isLocationFallback } = useMemo(() => {
+    const res = filterRestaurantsForLocation(restaurants, location, searchQuery);
+    if (res.filtered.length === 0 && restaurants.length > 0 && location && location.trim() && !searchQuery.trim()) {
+      return {
+        filtered: restaurants,
+        matchingOutletsCount: restaurants.reduce((acc, r) => acc + Math.max(1, (r.branches || []).length), 0),
+        isLocationFallback: true
+      };
+    }
+    return { ...res, isLocationFallback: false };
   }, [restaurants, location, searchQuery]);
 
   // Filter dishes by cuisine, search, and matching restaurants
   const displayedDishes = dishes.filter(d => {
-    // If a location filter is active, only show dishes belonging to matching restaurants (if restaurants match)
-    if (location && location.trim() && displayedRestaurants.length > 0) {
+    // If an exact location match is active (not fallback), prioritize dishes belonging to matching restaurants
+    if (location && location.trim() && !isLocationFallback && displayedRestaurants.length > 0) {
       const matchingRestIds = new Set(displayedRestaurants.map(r => String(r._id)));
       const dishRestId = String(d.restaurantId?._id || d.restaurantId || '');
       if (dishRestId && !matchingRestIds.has(dishRestId)) {
@@ -1050,7 +1068,25 @@ export default function Explore() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            <div className="space-y-4">
+              {isLocationFallback && (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-orange-50/80 border border-orange-200/80 rounded-xl px-4 py-2.5 text-left">
+                  <p className="text-xs font-semibold text-slate-700">
+                    No exact outlets registered in <span className="font-bold text-[#FF5A1F]">{location.split(',')[0]}</span> yet — showing all <span className="font-bold">{displayedRestaurants.length}</span> verified FoodNest partner restaurants.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLocation('');
+                      localStorage.removeItem('userLocation');
+                    }}
+                    className="text-xs font-bold text-[#FF5A1F] hover:underline self-start sm:self-auto shrink-0 cursor-pointer"
+                  >
+                    Show All Cities
+                  </button>
+                </div>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
               {displayedRestaurants.map((rest, index) => {
                 const outletCount = (rest.branches && rest.branches.length > 0) ? rest.branches.length : 1;
                 const primaryBranch = rest.branches?.[0];
@@ -1147,6 +1183,7 @@ export default function Explore() {
                   </div>
                 );
               })}
+              </div>
             </div>
           )}
 

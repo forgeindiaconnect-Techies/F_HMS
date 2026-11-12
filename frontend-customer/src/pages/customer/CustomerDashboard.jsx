@@ -535,7 +535,7 @@ const CustomerDashboard = () => {
                     className="p-2 rounded-xl bg-orange-50 text-[#FF5A1F] hover:bg-orange-100 transition-all cursor-pointer flex items-center gap-2 font-bold text-xs border border-orange-200/80"
                     aria-label="Toggle Navigation Sidebar"
                 >
-                    {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}
+                    <Menu size={18} />
                     <span>{tabsList.find(t => t.id === activeTab)?.name || 'Dashboard Menu'}</span>
                 </button>
                 <span className="text-[11px] font-bold text-slate-400">
