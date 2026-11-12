@@ -52,7 +52,7 @@ api.interceptors.response.use(
             const path = window.location.pathname;
             const isLoginRoute = path === '/login' || path === '/register' || path === '/delivery/login' || path === '/customer/login' || path === '/staff/login';
             const isAuthEndpoint = config && config.url && (config.url.includes('/auth/login') || config.url.includes('/auth/verify-otp') || config.url.includes('/auth/send-otp'));
-            
+
             if (!isLoginRoute && !isAuthEndpoint) {
                 localStorage.removeItem('restosys_staff_user');
                 if (path.startsWith('/delivery')) {
@@ -168,7 +168,7 @@ export const AuthProvider = ({ children }) => {
             .then(res => {
                 const list = res.data || [];
                 setPlans(list);
-                try { sessionStorage.setItem('restosys_plans_cache', JSON.stringify(list)); } catch (e) {}
+                try { sessionStorage.setItem('restosys_plans_cache', JSON.stringify(list)); } catch (e) { }
                 return list;
             })
             .catch(() => plans)
@@ -194,7 +194,7 @@ export const AuthProvider = ({ children }) => {
             const res = await api.get('/restaurants/mine');
             if (res.data) {
                 setRestaurant(res.data);
-            try { localStorage.setItem('restosys_restaurant', JSON.stringify(res.data)); } catch(e){}
+                try { localStorage.setItem('restosys_restaurant', JSON.stringify(res.data)); } catch (e) { }
                 if (currentUser && !currentUser.restaurantId && res.data._id) {
                     const updatedUser = { ...currentUser, restaurantId: res.data._id, branchId: currentUser.branchId || res.data.mainBranchId };
                     setUser(updatedUser);
@@ -224,7 +224,7 @@ export const AuthProvider = ({ children }) => {
                     setUser(parsedUser);
                     setLoading(false);
                     // Refresh restaurant in background without blocking initial UI render on cold starts
-                    fetchRestaurant(parsedUser).catch(() => {});
+                    fetchRestaurant(parsedUser).catch(() => { });
                     return;
                 } catch (e) {
                     localStorage.removeItem('restosys_staff_user');
@@ -272,19 +272,19 @@ export const AuthProvider = ({ children }) => {
                             setRestaurant((prev) => {
                                 if (!prev) return prev;
                                 const updated = { ...prev, subscription: { ...(prev.subscription || {}), ...msg.data.subscription } };
-                                try { localStorage.setItem('restosys_restaurant', JSON.stringify(updated)); } catch (_) {}
+                                try { localStorage.setItem('restosys_restaurant', JSON.stringify(updated)); } catch (_) { }
                                 return updated;
                             });
                             fetchRestaurant(user);
                         }
-                    } catch (_) {}
+                    } catch (_) { }
                 };
                 ws.onclose = () => {
                     if (!isUnmounted) {
                         reconnectTimer = setTimeout(connectSubWS, 8000);
                     }
                 };
-            } catch (_) {}
+            } catch (_) { }
         };
 
         connectSubWS();
@@ -306,7 +306,7 @@ export const AuthProvider = ({ children }) => {
         setRestaurant(null);
         localStorage.removeItem('restosys_staff_user');
         localStorage.removeItem('token');
-        try { localStorage.removeItem('restosys_restaurant'); } catch(e){}
+        try { localStorage.removeItem('restosys_restaurant'); } catch (e) { }
         // Clear all cached local data keys to prevent cross-restaurant data leakage
         Object.keys(localStorage).forEach(key => {
             if (key.startsWith('restosys_') || key.startsWith('cart_') || key.startsWith('table_')) {
@@ -327,9 +327,9 @@ export const AuthProvider = ({ children }) => {
             }
             if (data?.restaurant) {
                 setRestaurant(data.restaurant);
-                try { localStorage.setItem('restosys_restaurant', JSON.stringify(data.restaurant)); } catch (e) {}
+                try { localStorage.setItem('restosys_restaurant', JSON.stringify(data.restaurant)); } catch (e) { }
                 // Background refresh without blocking login navigation
-                fetchRestaurant(data).catch(() => {});
+                fetchRestaurant(data).catch(() => { });
             } else {
                 await fetchRestaurant(data);
             }
@@ -346,8 +346,8 @@ export const AuthProvider = ({ children }) => {
     const register = async (name, email, password, phoneNumber, roleName, loginType = 'staff', restaurantName, plan, billingCycle) => {
         try {
             clearAllStaleState();
-            const { data } = await api.post('/auth/register', { 
-                name, email, password, phoneNumber, roleName, loginType, restaurantName, plan, billingCycle 
+            const { data } = await api.post('/auth/register', {
+                name, email, password, phoneNumber, roleName, loginType, restaurantName, plan, billingCycle
             });
             setUser(data);
             localStorage.setItem('restosys_staff_user', JSON.stringify(data));

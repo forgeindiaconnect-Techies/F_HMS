@@ -51,22 +51,22 @@ const ManagerReservations = () => {
     const handleAction = async () => {
         if (!actionModal.reservation) return;
         const resId = actionModal.reservation._id;
-        
+
         try {
             let nextStatus = 'Pending';
             if (actionModal.type === 'approve') nextStatus = 'Confirmed';
             else if (actionModal.type === 'reject') nextStatus = 'Cancelled';
-            
-            await api.patch(`/reservations/${resId}/status`, { 
-                status: nextStatus 
+
+            await api.patch(`/reservations/${resId}/status`, {
+                status: nextStatus
             });
 
             toast.success(
-                actionModal.type === 'message' ? 'Message sent!' : 
-                actionModal.type === 'reject' ? 'Reservation rejected.' : 
-                'Reservation approved!'
+                actionModal.type === 'message' ? 'Message sent!' :
+                    actionModal.type === 'reject' ? 'Reservation rejected.' :
+                        'Reservation approved!'
             );
-            
+
             setActionModal({ show: false, type: '', reservation: null });
             setSelectedTable('');
             setInternalNotes('');
@@ -102,7 +102,7 @@ const ManagerReservations = () => {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-                    
+
                     {/* Pending Approvals */}
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 shadow-xs flex flex-col min-w-0">
                         <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-gray-100 dark:border-slate-800">
@@ -113,43 +113,43 @@ const ManagerReservations = () => {
                                 {pendingRequests.length}
                             </span>
                         </div>
-                        
+
                         {pendingRequests.length === 0 ? (
                             <div className="flex-1 min-h-[180px] flex flex-col items-center justify-center text-center bg-gray-50/70 dark:bg-slate-800/40 rounded-xl border border-dashed border-gray-200 dark:border-slate-700 p-6">
                                 <p className="text-gray-400 font-medium text-sm">No pending reservation requests.</p>
                             </div>
                         ) : (
                             <div className="space-y-3 flex-1">
-                            {pendingRequests.map((res, i) => (
-                                <div key={res._id || i} className="bg-gray-50/60 dark:bg-slate-800/40 rounded-xl p-4 border border-orange-200 dark:border-orange-900/50 flex flex-col sm:flex-row justify-between sm:items-center gap-4 relative overflow-hidden">
-                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-500"></div>
-                                    <div className="flex-1 min-w-0 pl-1">
-                                        <div className="flex items-center gap-2.5 mb-1.5">
-                                            <h4 className="font-bold text-gray-900 dark:text-white text-sm sm:text-base truncate">{res.guestName}</h4>
-                                            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 border border-gray-200 dark:border-slate-700 shrink-0">Standard</span>
+                                {pendingRequests.map((res, i) => (
+                                    <div key={res._id || i} className="bg-gray-50/60 dark:bg-slate-800/40 rounded-xl p-4 border border-orange-200 dark:border-orange-900/50 flex flex-col sm:flex-row justify-between sm:items-center gap-4 relative overflow-hidden">
+                                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-500"></div>
+                                        <div className="flex-1 min-w-0 pl-1">
+                                            <div className="flex items-center gap-2.5 mb-1.5">
+                                                <h4 className="font-bold text-gray-900 dark:text-white text-sm sm:text-base truncate">{res.guestName}</h4>
+                                                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 border border-gray-200 dark:border-slate-700 shrink-0">Standard</span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium text-gray-600 dark:text-slate-400">
+                                                <span className="flex items-center gap-1.5">
+                                                    <CalendarCheck size={14} className="shrink-0" />
+                                                    {new Date(res.date).toLocaleDateString()} {res.timeSlot}
+                                                </span>
+                                                <span className="flex items-center gap-1.5"><Users size={14} className="shrink-0" /> {res.guestCount} Guests</span>
+                                                <span className="flex items-center gap-1.5"><Phone size={14} className="shrink-0" /> {res.guestPhone}</span>
+                                            </div>
                                         </div>
-                                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium text-gray-600 dark:text-slate-400">
-                                            <span className="flex items-center gap-1.5">
-                                                <CalendarCheck size={14} className="shrink-0" /> 
-                                                {new Date(res.date).toLocaleDateString()} {res.timeSlot}
-                                            </span>
-                                            <span className="flex items-center gap-1.5"><Users size={14} className="shrink-0" /> {res.guestCount} Guests</span>
-                                            <span className="flex items-center gap-1.5"><Phone size={14} className="shrink-0" /> {res.guestPhone}</span>
+                                        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 shrink-0">
+                                            <button onClick={() => setActionModal({ show: true, type: 'message', reservation: res })} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-xl transition-colors cursor-pointer" title="Message Customer">
+                                                <MessageSquare size={17} />
+                                            </button>
+                                            <button onClick={() => setActionModal({ show: true, type: 'reject', reservation: res })} className="flex items-center gap-1 px-3 py-1.5 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 rounded-xl font-bold text-xs transition-colors cursor-pointer whitespace-nowrap">
+                                                <X size={14} /> Reject
+                                            </button>
+                                            <button onClick={() => setActionModal({ show: true, type: 'approve', reservation: res })} className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white hover:bg-green-700 rounded-xl font-bold text-xs transition-colors shadow-sm cursor-pointer whitespace-nowrap">
+                                                <Check size={14} /> Approve
+                                            </button>
                                         </div>
                                     </div>
-                                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 shrink-0">
-                                        <button onClick={() => setActionModal({ show: true, type: 'message', reservation: res })} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-xl transition-colors cursor-pointer" title="Message Customer">
-                                            <MessageSquare size={17} />
-                                        </button>
-                                        <button onClick={() => setActionModal({ show: true, type: 'reject', reservation: res })} className="flex items-center gap-1 px-3 py-1.5 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 rounded-xl font-bold text-xs transition-colors cursor-pointer whitespace-nowrap">
-                                            <X size={14} /> Reject
-                                        </button>
-                                        <button onClick={() => setActionModal({ show: true, type: 'approve', reservation: res })} className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white hover:bg-green-700 rounded-xl font-bold text-xs transition-colors shadow-sm cursor-pointer whitespace-nowrap">
-                                            <Check size={14} /> Approve
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
+                                ))}
                             </div>
                         )}
                     </div>
@@ -164,7 +164,7 @@ const ManagerReservations = () => {
                                 {approvedRequests.length}
                             </span>
                         </div>
-                        
+
                         <div className="flex-1 flex flex-col divide-y divide-gray-100 dark:divide-slate-800 border border-gray-100 dark:border-slate-800 rounded-xl overflow-hidden bg-gray-50/30 dark:bg-slate-900">
                             {approvedRequests.length === 0 ? (
                                 <div className="flex-1 min-h-[180px] p-6 text-center text-gray-400 text-sm flex items-center justify-center">
@@ -199,13 +199,13 @@ const ManagerReservations = () => {
             {actionModal.show && actionModal.reservation && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-                        
+
                         {/* Header */}
                         <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                             <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
-                                {actionModal.type === 'message' && <><MessageSquare size={20} className="text-blue-600"/> Message Customer</>}
-                                {actionModal.type === 'reject' && <><X size={20} className="text-red-600"/> Reject Reservation</>}
-                                {actionModal.type === 'approve' && <><Check size={20} className="text-green-600"/> Approve Reservation</>}
+                                {actionModal.type === 'message' && <><MessageSquare size={20} className="text-blue-600" /> Message Customer</>}
+                                {actionModal.type === 'reject' && <><X size={20} className="text-red-600" /> Reject Reservation</>}
+                                {actionModal.type === 'approve' && <><Check size={20} className="text-green-600" /> Approve Reservation</>}
                             </h3>
                             <button onClick={() => setActionModal({ show: false, type: '', reservation: null })} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                 <X size={20} />
@@ -244,7 +244,7 @@ const ManagerReservations = () => {
                                 <>
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 mb-1">Assign Table (Optional)</label>
-                                        <select 
+                                        <select
                                             value={selectedTable}
                                             onChange={(e) => setSelectedTable(e.target.value)}
                                             className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -257,12 +257,12 @@ const ManagerReservations = () => {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 mb-1">Internal Notes</label>
-                                        <input 
-                                            type="text" 
+                                        <input
+                                            type="text"
                                             value={internalNotes}
                                             onChange={(e) => setInternalNotes(e.target.value)}
-                                            placeholder="e.g. Birthday anniversary, allergy" 
-                                            className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500" 
+                                            placeholder="e.g. Birthday anniversary, allergy"
+                                            className="w-full border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500"
                                         />
                                     </div>
                                 </>
@@ -272,13 +272,12 @@ const ManagerReservations = () => {
                         {/* Footer */}
                         <div className="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
                             <button onClick={() => setActionModal({ show: false, type: '', reservation: null })} className="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">Cancel</button>
-                            <button 
-                                onClick={handleAction} 
-                                className={`px-5 py-2.5 text-sm font-bold text-white rounded-xl transition-colors ${
-                                    actionModal.type === 'message' ? 'bg-blue-600 hover:bg-blue-700' :
+                            <button
+                                onClick={handleAction}
+                                className={`px-5 py-2.5 text-sm font-bold text-white rounded-xl transition-colors ${actionModal.type === 'message' ? 'bg-blue-600 hover:bg-blue-700' :
                                     actionModal.type === 'reject' ? 'bg-red-600 hover:bg-red-700' :
-                                    'bg-green-600 hover:bg-green-700'
-                                }`}
+                                        'bg-green-600 hover:bg-green-700'
+                                    }`}
                             >
                                 {actionModal.type === 'message' ? 'Send Message' : actionModal.type === 'reject' ? 'Confirm Rejection' : 'Confirm Approval'}
                             </button>

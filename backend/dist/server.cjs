@@ -128443,7 +128443,7 @@ var getRestaurants = async (req, res) => {
         { "subscription.status": { $nin: ["Cancelled", "Frozen", "Expired", "Suspended", "Inactive"] } }
       ]
     };
-    let restaurants = await Restaurant_default.find(filter).populate("ownerId", "name email").sort({ createdAt: -1 }).lean();
+    let restaurants = await Restaurant_default.find(filter).select("name badge rating deliveryTime cuisineType cuisine address city state country deliverySettings subscription approvalStatus isActive isDeleted status ownerId createdAt").populate("ownerId", "name email").sort({ createdAt: -1 }).lean();
     if (restaurants.length === 0) {
       return res.json([]);
     }
@@ -128451,7 +128451,7 @@ var getRestaurants = async (req, res) => {
     const [partnerRestIds, allBranches, allVerifs] = await Promise.all([
       DeliveryPartner_default.distinct("restaurantId", { restaurantId: { $in: restIds } }),
       Branch_default.find({ restaurantId: { $in: restIds }, isActive: true }).select("restaurantId name location").lean(),
-      RestaurantVerification_default.find({ restaurantId: { $in: restIds } }).select("restaurantId documents.addressProof.addressText documents.logo.filePath documents.images.filePath").lean().catch(() => [])
+      RestaurantVerification_default.find({ restaurantId: { $in: restIds } }).select("restaurantId documents.addressProof.addressText").lean().catch(() => [])
     ]);
     const partnerSet = new Set(partnerRestIds.map((id) => String(id)));
     const branchMap = /* @__PURE__ */ new Map();
@@ -128497,15 +128497,11 @@ var getRestaurants = async (req, res) => {
       const primaryBranch = branches[0];
       const verif = verifMap.get(restIdStr);
       const verifAddress = verif?.documents?.addressProof?.addressText || "";
-      if (!rest.logo && verif?.documents?.logo?.filePath) {
-        rest.logo = verif.documents.logo.filePath;
-      }
-      if ((!rest.showcaseImages || rest.showcaseImages.length === 0) && verif?.documents?.images?.length > 0) {
-        rest.showcaseImages = verif.documents.images.map((img) => img.filePath);
-      }
-      if (!rest.bannerImage && rest.showcaseImages?.length > 0) {
-        rest.bannerImage = rest.showcaseImages[0];
-      }
+      const thumbUrl = `/api/restaurants/${restIdStr}/thumbnail`;
+      rest.image = thumbUrl;
+      rest.bannerImage = thumbUrl;
+      rest.logo = `${thumbUrl}?kind=logo`;
+      rest.showcaseImages = [thumbUrl];
       const branchAddress = primaryBranch?.location?.address && primaryBranch.location.address !== "Primary Location" ? primaryBranch.location.address : "";
       const combinedAddr = rest.address || branchAddress || verifAddress || primaryBranch?.location?.address || "";
       rest.address = combinedAddr;
@@ -128535,6 +128531,32 @@ var getRestaurants = async (req, res) => {
     res.json(populatedRestaurants);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+var getRestaurantThumbnail = async (req, res) => {
+  try {
+    const rest = await Restaurant_default.findById(req.params.id).select("showcaseImages bannerImage image logo").lean();
+    if (!rest) return res.status(404).end();
+    const wantLogo = req.query.kind === "logo";
+    let raw = wantLogo ? rest.logo && !String(rest.logo).includes(".pdf") ? rest.logo : null : Array.isArray(rest.showcaseImages) && rest.showcaseImages[0] || rest.bannerImage || rest.image || (rest.logo && !String(rest.logo).includes(".pdf") ? rest.logo : null);
+    if (!raw) {
+      const verif = await RestaurantVerification_default.findOne({ restaurantId: rest._id }).select(wantLogo ? "documents.logo.filePath" : "documents.images.filePath documents.logo.filePath").lean();
+      raw = wantLogo ? verif?.documents?.logo?.filePath : verif?.documents?.images?.[0]?.filePath || verif?.documents?.logo?.filePath;
+    }
+    if (!raw || typeof raw !== "string" || raw.includes(".pdf")) {
+      return res.status(404).end();
+    }
+    if (raw.startsWith("data:")) {
+      const match = raw.match(/^data:([^;]+);base64,(.+)$/);
+      if (!match) return res.status(404).end();
+      const buf = Buffer.from(match[2], "base64");
+      res.set("Content-Type", match[1] || "image/png");
+      res.set("Cache-Control", "public, max-age=86400");
+      return res.send(buf);
+    }
+    return res.redirect(raw);
+  } catch (error) {
+    return res.status(404).end();
   }
 };
 var updateSubscription = async (req, res) => {
@@ -129683,6 +129705,7 @@ router2.route("/mine/confirm-qr-payment").post(protect, authorize("RestaurantAdm
 router2.route("/mine/razorpay-failed").post(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), recordFailedSubscriptionPayment);
 router2.route("/trial-request").post(protect, authorize("RestaurantAdmin", "Admin"), requestFreeTrial);
 router2.route("/subscribe").put(protect, authorize("RestaurantAdmin", "SuperAdmin", "Admin"), selfSubscribe);
+router2.get("/:id/thumbnail", getRestaurantThumbnail);
 router2.route("/").get(getRestaurants).post(protect, authorize("SuperAdmin"), createRestaurant);
 router2.route("/:id").get(getRestaurantById);
 router2.route("/:id/subscription").put(protect, authorize("SuperAdmin"), updateSubscription);

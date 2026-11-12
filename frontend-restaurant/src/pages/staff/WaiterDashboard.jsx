@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { 
-    Coffee, CheckCircle2, Clock, Utensils, AlertTriangle, 
+import {
+    Coffee, CheckCircle2, Clock, Utensils, AlertTriangle,
     Plus, Minus, X, Send, Receipt, Users, MessageSquare, Bell, Check, Star, RefreshCw,
-    Search, Flame, ShieldAlert, Sparkles, UserCheck, DollarSign, ArrowRightLeft, 
+    Search, Flame, ShieldAlert, Sparkles, UserCheck, DollarSign, ArrowRightLeft,
     HelpCircle, ChevronRight, Award, Layers, TrendingUp, CheckSquare, HeartPulse, Filter, Settings, Printer
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -58,7 +58,7 @@ const WaiterDashboard = () => {
                 audioCtxRef.current = new Ctx();
             }
             const audioCtx = audioCtxRef.current;
-            if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+            if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => { });
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = wave;
@@ -72,7 +72,7 @@ const WaiterDashboard = () => {
             gain.connect(audioCtx.destination);
             osc.start();
             osc.stop(audioCtx.currentTime + duration);
-        } catch (e) {}
+        } catch (e) { }
     };
 
     // Smooth Scroll to Section Hash
@@ -112,7 +112,7 @@ const WaiterDashboard = () => {
 
     // Fetch menu catalog once on mount (orders/tables/requests refresh in fetchData)
     useEffect(() => {
-        api.get('/menu').then(res => setMenu(res.data || [])).catch(() => {});
+        api.get('/menu').then(res => setMenu(res.data || [])).catch(() => { });
     }, [api]);
 
     // Fetch live operational data
@@ -151,7 +151,7 @@ const WaiterDashboard = () => {
                         table: tableText || 'Self-Pickup Counter',
                         label: hasTable ? (isSelfDineIn ? 'SELF DINE-IN READY' : 'FOOD READY') : 'PICKUP READY',
                         time: 'Just now',
-                        title: hasTable 
+                        title: hasTable
                             ? `Food Ready for ${tableText}${o.customerName ? ` (${o.customerName})` : ''}${o.kotNumbers?.[0] ? ` [${o.kotNumbers[0]}]` : ''}`
                             : `Self-Pickup Counter Transfer${o.kotNumbers?.[0] ? ` [${o.kotNumbers[0]}]` : ''}`,
                         details: o.orderItems?.map(i => `${i.qty}x ${i.name}`).join(', ') || 'Order items',
@@ -210,8 +210,8 @@ const WaiterDashboard = () => {
 
                         toast.success(
                             hasTable
-                            ? `🍽️ Food READY for Table ${msg.data.tableNumber} (Ticket #${ticketNum})${isSelfDineIn ? ' [Self Dine-In]' : ''}!`
-                            : `📦 Self-Pickup Ticket #${ticketNum} is READY in Kitchen! Collect & Transfer to Cashier Counter!`, {
+                                ? `🍽️ Food READY for Table ${msg.data.tableNumber} (Ticket #${ticketNum})${isSelfDineIn ? ' [Self Dine-In]' : ''}!`
+                                : `📦 Self-Pickup Ticket #${ticketNum} is READY in Kitchen! Collect & Transfer to Cashier Counter!`, {
                             id: `waiter-ready-${msg.data._id}`,
                             duration: 5000,
                             position: 'top-right'
@@ -224,9 +224,9 @@ const WaiterDashboard = () => {
                         return [msg.data, ...prev];
                     });
                     playWaiterChime(987.77, 987.77, 0.4, 'triangle');
-                    toast(`🔔 Customer Request: ${msg.data.requestType} at Table ${msg.data.tableNumber}!`, { 
+                    toast(`🔔 Customer Request: ${msg.data.requestType} at Table ${msg.data.tableNumber}!`, {
                         duration: 7000,
-                        position: 'top-right' 
+                        position: 'top-right'
                     });
                 } else if (msg.type === 'service_request_updated') {
                     fetchData();
@@ -291,16 +291,16 @@ const WaiterDashboard = () => {
             else if (order.status === 'Ready' || order.status === 'Ready for Pickup') displayStatus = 'Needs Attention';
             else if (order.status === 'In Kitchen' || order.status === 'Preparing') displayStatus = 'Waiting for Food';
         }
-        return { 
-            id: String(t.tableNumber), 
-            status: displayStatus, 
-            seats: t.capacity || t.seats || 4, 
-            orders: order, 
-            dbId: t._id, 
+        return {
+            id: String(t.tableNumber),
+            status: displayStatus,
+            seats: t.capacity || t.seats || 4,
+            orders: order,
+            dbId: t._id,
             customers: t.customers || (order ? 2 : 0),
             timeAgo: order ? '18m ago' : '5m ago'
         };
-    }) : [1,2,3,4,5,6,7,8,9,10,11,12].map(num => {
+    }) : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(num => {
         const id = `T-${num}`;
         const order = activeOrders.find(o => norm(o.tableNumber) === String(num) || o.tableNumber === id || o.tableNumber === String(num));
         let status = 'Available';
@@ -311,12 +311,12 @@ const WaiterDashboard = () => {
             else status = 'Occupied';
         }
 
-        return { 
-            id: `Table ${num}`, 
-            rawId: String(num), 
-            status: status, 
-            seats: 4, 
-            orders: order, 
+        return {
+            id: `Table ${num}`,
+            rawId: String(num),
+            status: status,
+            seats: 4,
+            orders: order,
             customers: order ? 2 : 0,
             timeAgo: order ? 'Active' : 'Empty'
         };
@@ -333,8 +333,8 @@ const WaiterDashboard = () => {
     }, [location.search, dbTables.length]);
 
     // Apply Filter, Search & Assigned Tables
-    let filteredTables = statusFilter === 'All' 
-        ? tables 
+    let filteredTables = statusFilter === 'All'
+        ? tables
         : tables.filter(t => t.status === statusFilter);
 
     if (assignedOnly) {
@@ -343,8 +343,8 @@ const WaiterDashboard = () => {
 
     if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
-        filteredTables = filteredTables.filter(t => 
-            t.id.toLowerCase().includes(q) || 
+        filteredTables = filteredTables.filter(t =>
+            t.id.toLowerCase().includes(q) ||
             String(t.rawId || '').toLowerCase().includes(q) ||
             t.status.toLowerCase().includes(q) ||
             (t.orders?._id && t.orders._id.toLowerCase().includes(q)) ||
@@ -412,12 +412,12 @@ const WaiterDashboard = () => {
                 orderData.tableNumber = activeTable.id;
                 orderData.paymentMethod = 'Card';
                 await api.post('/orders', orderData);
-                
+
                 if (activeTable.dbId) {
                     await api.put(`/tables/${activeTable.dbId}/status`, { status: 'Occupied', customers: partySize });
                 }
             }
-            
+
             setPanelOpen(false);
             setCart([]);
             setOrderNote('');
@@ -447,7 +447,7 @@ const WaiterDashboard = () => {
                 setPrintModalKOT(res.data[0]);
                 return;
             }
-        } catch (e) {}
+        } catch (e) { }
 
         const kotNum = order.kotNumbers?.[0] || `KOT-${String(order._id).slice(-4).toUpperCase()}`;
         setPrintModalKOT({
@@ -496,7 +496,7 @@ const WaiterDashboard = () => {
             if (tableToUse.dbId) {
                 await api.put(`/tables/${tableToUse.dbId}/status`, { status: 'Billing' });
             }
-            
+
             // Also notify Cashier via service request notification if needed
             try {
                 await api.post('/service-requests', {
@@ -504,7 +504,7 @@ const WaiterDashboard = () => {
                     requestType: 'Bill Request',
                     note: `Bill generated by Waiter for Order #${String(tableToUse.orders._id).substring(String(tableToUse.orders._id).length - 5).toUpperCase()}`
                 });
-            } catch (srErr) {}
+            } catch (srErr) { }
 
             fetchData();
             toast.success(`🧾 Bill generated for ${tableToUse.id || 'Table'}! Sent to Cashier Dashboard for settlement.`);
@@ -533,14 +533,14 @@ const WaiterDashboard = () => {
 
         try {
             await api.put(`/orders/${sourceOrder._id}/status`, { tableNumber: String(targetTableId) });
-            
+
             // Clean local table statuses if dbId present
             if (sourceTableObj?.dbId) {
-                await api.put(`/tables/${sourceTableObj.dbId}/status`, { status: 'Available', customers: 0 }).catch(() => {});
+                await api.put(`/tables/${sourceTableObj.dbId}/status`, { status: 'Available', customers: 0 }).catch(() => { });
             }
             const destTable = dbTables.find(t => String(t.tableNumber) === String(targetTableId));
             if (destTable) {
-                await api.put(`/tables/${destTable._id}/status`, { status: 'Occupied', customers: sourceTableObj?.customers || 2 }).catch(() => {});
+                await api.put(`/tables/${destTable._id}/status`, { status: 'Occupied', customers: sourceTableObj?.customers || 2 }).catch(() => { });
             }
 
             setTransferModalOpen(false);
@@ -570,8 +570,8 @@ const WaiterDashboard = () => {
                 orderItems: [],
                 totalPrice: 0,
                 notes: `[Split Bill (${splitParts} Guests): ₹${perPerson} per guest]`
-            }).catch(() => {});
-        } catch (e) {}
+            }).catch(() => { });
+        } catch (e) { }
 
         toast.success(`Bill for Table ${targetOrder.tableNumber || effectiveSourceNum} split into ${splitParts} parts: ₹${perPerson} per guest!`);
         setSplitModalOpen(false);
@@ -596,18 +596,18 @@ const WaiterDashboard = () => {
     // Color map for table statuses
     const getTableBadgeStyle = (status) => {
         switch (status) {
-            case 'Available': 
+            case 'Available':
                 return 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:border-emerald-400 hover:shadow-emerald-100';
-            case 'Waiting for Food': 
-            case 'Occupied': 
+            case 'Waiting for Food':
+            case 'Occupied':
                 return 'bg-amber-50 border-amber-200 text-amber-800 hover:border-amber-400 hover:shadow-amber-100';
-            case 'Billing': 
+            case 'Billing':
                 return 'bg-blue-50 border-blue-200 text-blue-800 hover:border-blue-400 hover:shadow-blue-100';
-            case 'Reserved': 
+            case 'Reserved':
                 return 'bg-purple-50 border-purple-200 text-purple-800 hover:border-purple-400 hover:shadow-purple-100';
-            case 'Needs Attention': 
+            case 'Needs Attention':
                 return 'bg-rose-50 border-rose-200 text-rose-800 hover:border-rose-400 hover:shadow-rose-100';
-            default: 
+            default:
                 return 'bg-slate-50 border-slate-200 text-slate-700';
         }
     };
@@ -645,7 +645,7 @@ const WaiterDashboard = () => {
     return (
         <div className="w-full max-w-[1700px] mx-auto text-slate-900 font-sans pb-16 selection:bg-emerald-100 selection:text-emerald-900">
             <div className="space-y-4 sm:space-y-6">
-                
+
                 {/* Sleek Waitstaff Shift & Station Control Strip */}
                 <div className="bg-slate-900 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 shadow-md border border-slate-800 shrink-0">
                     <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
@@ -675,7 +675,7 @@ const WaiterDashboard = () => {
                 {/* SHIFT SUMMARY CARDS */}
                 {/* -------------------------------------------------- */}
                 <section id="shift-status" className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2.5 sm:gap-3.5">
-                    
+
                     {/* Card 1: Shift Status */}
                     <div className="bg-white/80 backdrop-blur-md p-4 rounded-2xl border border-slate-200/70 shadow-xs hover:shadow-md transition-all duration-300 group hover:-translate-y-0.5">
                         <div className="flex items-center justify-between mb-2">
@@ -870,7 +870,7 @@ const WaiterDashboard = () => {
                                             <p className={`text-xs font-bold mt-1 ${styleConfig.sub}`}>{item.title}</p>
                                             <p className={`text-[11px] mt-0.5 ${styleConfig.detail}`}>{item.details}</p>
                                         </div>
-                                        <button 
+                                        <button
                                             onClick={() => item.action(item.id)}
                                             className={`w-full ${styleConfig.btn} font-extrabold py-2.5 px-3 rounded-xl text-xs shadow-sm active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer`}
                                         >
@@ -887,13 +887,13 @@ const WaiterDashboard = () => {
                 {/* MAIN LAYOUT: LEFT (70%) & RIGHT (30%) */}
                 {/* -------------------------------------------------- */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    
+
                     {/* LEFT COLUMN (70%) - Restaurant Floor & Order Tracker */}
                     <div className="lg:col-span-8 space-y-4 sm:space-y-6">
-                        
+
                         {/* Interactive Restaurant Floor Layout */}
                         <div id="floor-plan" className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 p-3.5 sm:p-6 shadow-xs">
-                            
+
                             {/* Layout Header & Filters */}
                             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-slate-100">
                                 <div className="min-w-0">
@@ -910,11 +910,10 @@ const WaiterDashboard = () => {
                                 <div className="flex items-center gap-2 overflow-x-auto no-scrollbar max-w-full pb-1 xl:pb-0 shrink-0">
                                     <button
                                         onClick={() => setAssignedOnly(!assignedOnly)}
-                                        className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all border flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap ${
-                                            assignedOnly 
-                                            ? 'bg-amber-500 border-amber-500 text-white shadow-xs' 
-                                            : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/70'
-                                        }`}
+                                        className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all border flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap ${assignedOnly
+                                                ? 'bg-amber-500 border-amber-500 text-white shadow-xs'
+                                                : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/70'
+                                            }`}
                                     >
                                         <Star size={13} className={assignedOnly ? 'fill-white' : ''} />
                                         My Tables ({assignedIds.length})
@@ -925,11 +924,10 @@ const WaiterDashboard = () => {
                                             <button
                                                 key={st}
                                                 onClick={() => setStatusFilter(st)}
-                                                className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer whitespace-nowrap ${
-                                                    statusFilter === st 
-                                                    ? 'bg-white text-slate-900 shadow-xs' 
-                                                    : 'text-slate-500 hover:text-slate-800'
-                                                }`}
+                                                className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer whitespace-nowrap ${statusFilter === st
+                                                        ? 'bg-white text-slate-900 shadow-xs'
+                                                        : 'text-slate-500 hover:text-slate-800'
+                                                    }`}
                                             >
                                                 {st === 'Waiting for Food' ? 'Waiting' : st}
                                             </button>
@@ -1011,13 +1009,13 @@ const WaiterDashboard = () => {
                                         const currentStep = getOrderStageStep(order.status);
                                         return (
                                             <div key={order._id} className="p-4 rounded-2xl border border-slate-200/80 bg-slate-50/50 hover:bg-slate-50 transition-all space-y-3">
-                                                
+
                                                 {/* Header Row */}
                                                 <div className="flex flex-wrap items-center justify-between gap-2">
                                                     <div className="flex items-center gap-2.5 flex-wrap">
                                                         <span className="font-black text-sm text-slate-900">
                                                             {order.tableNumber && order.tableNumber !== 'Any' && order.tableNumber !== 'Takeout'
-                                                                ? (order.tableNumber.startsWith('Table') ? order.tableNumber : `Table ${order.tableNumber}`) 
+                                                                ? (order.tableNumber.startsWith('Table') ? order.tableNumber : `Table ${order.tableNumber}`)
                                                                 : (order.orderType === 'Delivery' ? '🛵 Delivery' : '📦 Self-Pickup Counter')}
                                                         </span>
                                                         {isKotOnlyOrder(order) && (
@@ -1026,11 +1024,10 @@ const WaiterDashboard = () => {
                                                             </span>
                                                         )}
                                                         {order.tableNumber && order.tableNumber !== 'Any' && order.tableNumber !== 'Takeout' && (
-                                                            <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border ${
-                                                                order.serviceType === 'Self Dine-In (KFC Style)'
+                                                            <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border ${order.serviceType === 'Self Dine-In (KFC Style)'
                                                                     ? 'bg-amber-50 text-amber-800 border-amber-200'
                                                                     : 'bg-blue-50 text-blue-700 border-blue-200'
-                                                            }`}>
+                                                                }`}>
                                                                 {order.serviceType === 'Self Dine-In (KFC Style)' ? 'Self Dine-In' : 'Waiter Service'}
                                                             </span>
                                                         )}
@@ -1047,11 +1044,10 @@ const WaiterDashboard = () => {
                                                         <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
                                                             <Clock size={12} /> ETA: 8-12m
                                                         </span>
-                                                        <span className={`text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border ${
-                                                            (order.status === 'Ready' || order.status === 'Ready for Pickup') 
-                                                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300 animate-pulse' 
-                                                            : 'bg-amber-100 text-amber-800 border-amber-300'
-                                                        }`}>
+                                                        <span className={`text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border ${(order.status === 'Ready' || order.status === 'Ready for Pickup')
+                                                                ? 'bg-emerald-100 text-emerald-800 border-emerald-300 animate-pulse'
+                                                                : 'bg-amber-100 text-amber-800 border-amber-300'
+                                                            }`}>
                                                             {order.status}
                                                         </span>
                                                     </div>
@@ -1071,10 +1067,10 @@ const WaiterDashboard = () => {
                                                         <span className={currentStep >= 4 ? 'text-emerald-700' : ''}>4. Picked Up</span>
                                                         <span className={currentStep >= 5 ? 'text-emerald-700' : ''}>5. Served</span>
                                                     </div>
-                                                    
+
                                                     {/* Progress Track */}
                                                     <div className="w-full bg-slate-200/80 rounded-full h-2 overflow-hidden relative">
-                                                        <div 
+                                                        <div
                                                             className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500 ease-out"
                                                             style={{ width: `${(currentStep / 5) * 100}%` }}
                                                         ></div>
@@ -1248,7 +1244,7 @@ const WaiterDashboard = () => {
 
                     {/* RIGHT COLUMN (30%) - Notifications, Tasks, Performance */}
                     <div className="lg:col-span-4 space-y-6">
-                        
+
                         {/* Live Notifications Feed */}
                         <div className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-xs">
                             <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
@@ -1312,23 +1308,21 @@ const WaiterDashboard = () => {
 
                             <div className="space-y-2.5 min-w-0 pr-1.5 flex-1">
                                 {tasks.map((task) => (
-                                    <div 
+                                    <div
                                         key={task.id}
                                         onClick={() => toggleTask(task.id)}
-                                        className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
-                                            task.done 
-                                            ? 'bg-slate-50 border-slate-200/60 opacity-65 line-through text-slate-400' 
-                                            : task.urgent
-                                            ? 'bg-rose-50/40 border-rose-200/60 text-slate-800 hover:border-rose-300'
-                                            : 'bg-white border-slate-200/70 text-slate-800 hover:border-slate-300'
-                                        }`}
+                                        className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${task.done
+                                                ? 'bg-slate-50 border-slate-200/60 opacity-65 line-through text-slate-400'
+                                                : task.urgent
+                                                    ? 'bg-rose-50/40 border-rose-200/60 text-slate-800 hover:border-rose-300'
+                                                    : 'bg-white border-slate-200/70 text-slate-800 hover:border-slate-300'
+                                            }`}
                                     >
                                         <div className="flex items-center gap-2.5">
-                                            <div className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all ${
-                                                task.done 
-                                                ? 'bg-emerald-600 border-emerald-600 text-white' 
-                                                : 'bg-white border-slate-300'
-                                            }`}>
+                                            <div className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all ${task.done
+                                                    ? 'bg-emerald-600 border-emerald-600 text-white'
+                                                    : 'bg-white border-slate-300'
+                                                }`}>
                                                 {task.done && <Check size={12} strokeWidth={3} />}
                                             </div>
                                             <span className="text-xs font-bold">{task.text}</span>
@@ -1394,7 +1388,7 @@ const WaiterDashboard = () => {
             {/* TABLE DETAILS PANEL (Slide-out) */}
             {/* -------------------------------------------------- */}
             <div className={`fixed inset-y-0 right-0 w-full sm:w-[500px] bg-white shadow-2xl border-l border-slate-200 transform transition-transform duration-300 ease-out z-50 flex flex-col ${panelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                
+
                 {/* Panel Header */}
                 <div className="p-5 border-b border-slate-100 bg-slate-50/80 flex justify-between items-center shrink-0">
                     <div>
@@ -1402,11 +1396,10 @@ const WaiterDashboard = () => {
                             <h2 className="text-2xl font-black text-slate-900 tracking-tight">{activeTable?.id}</h2>
                             <button
                                 onClick={() => handleToggleAssignment(activeTable?.id)}
-                                className={`text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 px-3 py-1 rounded-xl transition-all border ${
-                                    assignedIds.includes(activeTable?.id) || assignedIds.includes(activeTable?.rawId)
-                                    ? 'bg-amber-100 text-amber-800 border-amber-300'
-                                    : 'bg-white hover:bg-slate-50 text-slate-500 border-slate-300'
-                                }`}
+                                className={`text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 px-3 py-1 rounded-xl transition-all border ${assignedIds.includes(activeTable?.id) || assignedIds.includes(activeTable?.rawId)
+                                        ? 'bg-amber-100 text-amber-800 border-amber-300'
+                                        : 'bg-white hover:bg-slate-50 text-slate-500 border-slate-300'
+                                    }`}
                             >
                                 <Star size={11} className={assignedIds.includes(activeTable?.id) || assignedIds.includes(activeTable?.rawId) ? 'fill-amber-500 text-amber-500' : ''} />
                                 {assignedIds.includes(activeTable?.id) || assignedIds.includes(activeTable?.rawId) ? 'Assigned' : 'Assign to Me'}
@@ -1416,7 +1409,7 @@ const WaiterDashboard = () => {
                             Status: <span className="font-extrabold text-slate-800">{activeTable?.status}</span>
                         </p>
                     </div>
-                    <button 
+                    <button
                         onClick={() => setPanelOpen(false)}
                         className="p-2 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-slate-900 transition-all cursor-pointer"
                     >
@@ -1442,7 +1435,7 @@ const WaiterDashboard = () => {
 
                 {/* Panel Scroll Content */}
                 <div className="flex-1 overflow-y-auto p-5 space-y-5">
-                    
+
                     {/* Status Adjustment */}
                     <div>
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-2">Set Table Status</label>
@@ -1451,11 +1444,10 @@ const WaiterDashboard = () => {
                                 <button
                                     key={st}
                                     onClick={() => handleTableStatusChange(st)}
-                                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                                        activeTable?.status === st
-                                        ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                                    }`}
+                                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${activeTable?.status === st
+                                            ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
+                                            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                                        }`}
                                 >
                                     {st}
                                 </button>
@@ -1513,11 +1505,10 @@ const WaiterDashboard = () => {
                         <button
                             onClick={handleSendToKitchen}
                             disabled={cart.length === 0}
-                            className={`py-3 px-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                                cart.length > 0
-                                ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md'
-                                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                            }`}
+                            className={`py-3 px-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${cart.length > 0
+                                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md'
+                                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                }`}
                         >
                             <Send size={14} /> Send to Kitchen
                         </button>
@@ -1549,7 +1540,7 @@ const WaiterDashboard = () => {
 
             {/* Backdrop overlay for side panel */}
             {panelOpen && (
-                <div 
+                <div
                     onClick={() => setPanelOpen(false)}
                     className="fixed inset-0 bg-slate-900/30 backdrop-blur-xs z-40"
                 />
@@ -1559,23 +1550,23 @@ const WaiterDashboard = () => {
             {/* BOTTOM FLOATING ACTION BUTTON (FAB) */}
             {/* -------------------------------------------------- */}
             <div className="fixed bottom-6 right-6 z-40">
-                
+
                 {/* FAB Quick Action Menu Popover */}
                 {fabOpen && (
                     <div className="absolute bottom-16 right-0 w-56 bg-white rounded-2xl border border-slate-200 shadow-2xl p-2 space-y-1 z-50 animate-in fade-in slide-in-from-bottom-2">
-                        <button 
-                            onClick={() => { 
-                                setFabOpen(false); 
+                        <button
+                            onClick={() => {
+                                setFabOpen(false);
                                 const target = activeTable || tables.find(t => t.status === 'Available') || tables[0];
-                                if (target) openTablePanel(target); 
+                                if (target) openTablePanel(target);
                             }}
                             className="w-full text-left px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer"
                         >
                             <Plus size={14} className="text-emerald-600" /> Take New Order
                         </button>
-                        <button 
-                            onClick={() => { 
-                                setFabOpen(false); 
+                        <button
+                            onClick={() => {
+                                setFabOpen(false);
                                 const billingTarget = activeTable?.orders ? activeTable : tables.find(t => t.orders);
                                 if (billingTarget) {
                                     handleGenerateBill(billingTarget);
@@ -1587,9 +1578,9 @@ const WaiterDashboard = () => {
                         >
                             <Receipt size={14} className="text-blue-600" /> Generate Bill
                         </button>
-                        <button 
-                            onClick={() => { 
-                                setFabOpen(false); 
+                        <button
+                            onClick={() => {
+                                setFabOpen(false);
                                 const occupied = activeTable?.orders ? activeTable : tables.find(t => t.orders);
                                 setSourceTableId(occupied ? (occupied.rawId || String(occupied.id).replace(/^Table\s+/i, '')) : '');
                                 setTargetTableId('');
@@ -1599,9 +1590,9 @@ const WaiterDashboard = () => {
                         >
                             <ArrowRightLeft size={14} className="text-purple-600" /> Transfer Table
                         </button>
-                        <button 
-                            onClick={() => { 
-                                setFabOpen(false); 
+                        <button
+                            onClick={() => {
+                                setFabOpen(false);
                                 const occupied = activeTable?.orders ? activeTable : tables.find(t => t.orders);
                                 setSourceTableId(occupied ? (occupied.rawId || String(occupied.id).replace(/^Table\s+/i, '')) : '');
                                 setSplitParts(2);
@@ -1611,16 +1602,16 @@ const WaiterDashboard = () => {
                         >
                             <DollarSign size={14} className="text-amber-600" /> Split Bill
                         </button>
-                        <button 
-                            onClick={() => { 
-                                setFabOpen(false); 
-                                setManagerModalOpen(true); 
+                        <button
+                            onClick={() => {
+                                setFabOpen(false);
+                                setManagerModalOpen(true);
                             }}
                             className="w-full text-left px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-rose-50 hover:text-rose-800 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer"
                         >
                             <ShieldAlert size={14} className="text-rose-600" /> Call Manager
                         </button>
-                        <button 
+                        <button
                             onClick={() => { setFabOpen(false); setSettingsOpen(true); }}
                             className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer border-t border-slate-100 mt-1 pt-2"
                         >
@@ -1645,7 +1636,7 @@ const WaiterDashboard = () => {
             {settingsOpen && (
                 <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
                     <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-2xl w-full p-6 space-y-6 animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
-                        
+
                         {/* Modal Header */}
                         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
                             <div className="flex items-center gap-3">
@@ -1657,7 +1648,7 @@ const WaiterDashboard = () => {
                                     <p className="text-xs text-slate-400">Configure appearance, notifications, theme mode, and POS alerts.</p>
                                 </div>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => setSettingsOpen(false)}
                                 className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 text-slate-500 transition-all cursor-pointer"
                             >
@@ -1729,8 +1720,8 @@ const WaiterDashboard = () => {
                         <div className="space-y-3 min-w-0 pr-1.5 flex-1">
                             <div>
                                 <label className="text-xs font-bold text-slate-700 block mb-1">Source Table (Current Order):</label>
-                                <select 
-                                    value={sourceTableId} 
+                                <select
+                                    value={sourceTableId}
                                     onChange={(e) => setSourceTableId(e.target.value)}
                                     className="w-full p-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-slate-50 focus:outline-none focus:border-purple-500"
                                 >
@@ -1745,8 +1736,8 @@ const WaiterDashboard = () => {
 
                             <div>
                                 <label className="text-xs font-bold text-slate-700 block mb-1">Target Table (Destination):</label>
-                                <select 
-                                    value={targetTableId} 
+                                <select
+                                    value={targetTableId}
                                     onChange={(e) => setTargetTableId(e.target.value)}
                                     className="w-full p-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-slate-50 focus:outline-none focus:border-purple-500"
                                 >
@@ -1790,8 +1781,8 @@ const WaiterDashboard = () => {
 
                         <div>
                             <label className="text-xs font-bold text-slate-700 block mb-1">Select Occupied Table:</label>
-                            <select 
-                                value={sourceTableId} 
+                            <select
+                                value={sourceTableId}
                                 onChange={(e) => setSourceTableId(e.target.value)}
                                 className="w-full p-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-slate-50 focus:outline-none focus:border-amber-500 mb-3"
                             >
@@ -1857,8 +1848,8 @@ const WaiterDashboard = () => {
 
                         <div>
                             <label className="text-xs font-bold text-slate-700 block mb-1.5">Reason for Assistance:</label>
-                            <select 
-                                value={managerReason} 
+                            <select
+                                value={managerReason}
                                 onChange={(e) => setManagerReason(e.target.value)}
                                 className="w-full p-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-slate-50 focus:outline-none focus:border-rose-500"
                             >
