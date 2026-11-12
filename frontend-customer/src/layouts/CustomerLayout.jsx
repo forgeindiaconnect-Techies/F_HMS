@@ -35,7 +35,7 @@ const CustomerLayout = () => {
                 const list = Array.isArray(res.data) ? res.data : [];
                 const live = list.filter(o => !['Completed', 'Cancelled', 'Delivered', 'Served', 'Picked Up', 'Refunded'].includes(o.status));
                 setActiveOrders(live);
-            } catch (_) {}
+            } catch (_) { }
         };
         fetchActiveOrders();
         const interval = setInterval(fetchActiveOrders, 20000);
@@ -154,11 +154,10 @@ const CustomerLayout = () => {
                                                 navigate('/profile?tab=orders');
                                             }
                                         }}
-                                        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer shrink-0 border ${
-                                            activeOrders.length > 0
-                                                ? 'bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] border-orange-200 shadow-xs'
-                                                : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
-                                        }`}
+                                        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer shrink-0 border ${activeOrders.length > 0
+                                            ? 'bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] border-orange-200 shadow-xs'
+                                            : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+                                            }`}
                                         title="Track Live Order"
                                     >
                                         {activeOrders.length > 0 ? (
