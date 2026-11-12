@@ -12,10 +12,12 @@ import path from 'path';
 import fs from 'fs';
 
 // Setup file upload for ticket attachments
-const uploadDir = 'uploads/tickets';
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
+const uploadDir = process.env.VERCEL ? '/tmp/uploads/tickets' : 'uploads/tickets';
+try {
+    if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+    }
+} catch {}
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {

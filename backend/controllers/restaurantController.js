@@ -25,10 +25,12 @@ import {
 import { broadcastToRestaurant } from '../config/websocket.js';
 
 // Multer setup for restaurant logo uploads
-const logoUploadDir = 'uploads/logos';
-if (!fs.existsSync(logoUploadDir)) {
-    fs.mkdirSync(logoUploadDir, { recursive: true });
-}
+const logoUploadDir = process.env.VERCEL ? '/tmp/uploads/logos' : 'uploads/logos';
+try {
+    if (!fs.existsSync(logoUploadDir)) {
+        fs.mkdirSync(logoUploadDir, { recursive: true });
+    }
+} catch {}
 
 const logoStorage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, logoUploadDir),

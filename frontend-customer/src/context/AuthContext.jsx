@@ -37,9 +37,9 @@ api.interceptors.response.use(
         const isNetworkDown = !error.response || error.code === 'ERR_NETWORK';
         const isColdStart = status === 502 || status === 503 || status === 504 || isNetworkDown;
 
-        // Fallback to live Render backend ONLY if local port 5000 is completely down/unreachable, NEVER on 401/400/404
+        // Fallback to live backend ONLY if local port 5000 is completely down/unreachable, NEVER on 401/400/404
         if (config && isNetworkDown && config.baseURL && config.baseURL.includes('localhost:5000')) {
-            config.baseURL = 'https://f-hms-1.onrender.com/api';
+            config.baseURL = 'https://backend-ochre-five-29.vercel.app/api';
             return api.request(config);
         }
         if (config && isColdStart && (!config._retryCount || config._retryCount < 5)) {

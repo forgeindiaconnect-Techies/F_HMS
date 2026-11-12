@@ -81,6 +81,17 @@ app.use(express.json({
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 
+// Ensure MongoDB is connected on serverless (Vercel) invocations
+app.use(async (req, res, next) => {
+    if (req.path === '/health' || req.path === '/api/health') return next();
+    try {
+        await connectDB();
+    } catch (err) {
+        console.error('DB connect middleware error:', err.message);
+    }
+    next();
+});
+
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', time: new Date().toISOString() });
 });
@@ -156,40 +167,45 @@ app.use(notFound);
 app.use(errorHandler);
 
 const server = http.createServer(app);
-initWebSocket(server);
 
-// Bind port immediately on process start so Render health check passes instantly (1s)
-server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
-    
-    // Connect to MongoDB Atlas asynchronously
-    connectDB().then(async () => {
+if (!process.env.VERCEL) {
+    initWebSocket(server);
 
-        // Start background trial expiration & reminder scheduler
-        initSubscriptionScheduler();
+    // Bind port immediately on process start so Render health check passes instantly (1s)
+    server.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server running on port ${PORT}`);
+        
+        // Connect to MongoDB Atlas asynchronously
+        connectDB().then(async () => {
 
-        try {
-            const count = await Plan.countDocuments();
-            if (count === 0) {
-                await Plan.insertMany([
-                    { name: 'Basic', monthlyPrice: 2999, yearlyPrice: 2399, branchesLimit: 1, staffLimit: 5, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'], isActive: true },
-                    { name: 'Pro', monthlyPrice: 5999, yearlyPrice: 4799, branchesLimit: 3, staffLimit: 9999, features: ['Up to 3 Branches', 'Kitchen Display System', 'Online Ordering', 'Advanced Analytics', 'Priority Support'], isActive: true },
-                    { name: 'Enterprise', monthlyPrice: 12999, yearlyPrice: 10399, branchesLimit: 9999, staffLimit: 9999, features: ['Unlimited Branches', 'Custom APIs & Webhooks', 'Dedicated Account Manager', 'SLA Guarantee', 'White-label Branding'], isActive: true }
-                ]);
+            // Start background trial expiration & reminder scheduler
+            initSubscriptionScheduler();
+
+            try {
+                const count = await Plan.countDocuments();
+                if (count === 0) {
+                    await Plan.insertMany([
+                        { name: 'Basic', monthlyPrice: 2999, yearlyPrice: 2399, branchesLimit: 1, staffLimit: 5, features: ['1 Branch', 'Basic POS Billing', 'QR Ordering', 'Email Support'], isActive: true },
+                        { name: 'Pro', monthlyPrice: 5999, yearlyPrice: 4799, branchesLimit: 3, staffLimit: 9999, features: ['Up to 3 Branches', 'Kitchen Display System', 'Online Ordering', 'Advanced Analytics', 'Priority Support'], isActive: true },
+                        { name: 'Enterprise', monthlyPrice: 12999, yearlyPrice: 10399, branchesLimit: 9999, staffLimit: 9999, features: ['Unlimited Branches', 'Custom APIs & Webhooks', 'Dedicated Account Manager', 'SLA Guarantee', 'White-label Branding'], isActive: true }
+                    ]);
+                }
+            } catch (e) {
+                console.error('Plan initialization warning:', e.message);
             }
-        } catch (e) {
-            console.error('Plan initialization warning:', e.message);
-        }
-    }).catch(err => {
-        console.error('MongoDB Atlas connection error on startup:', err.message);
-    });
-
-    // Self-Ping Keep-Alive service for Render container internal loop
-    setInterval(() => {
-        http.get(`http://127.0.0.1:${PORT}/api/health`, (res) => {
-            // Keep local process loop active
-        }).on('error', () => {
-            // Silently swallow network glitches
+        }).catch(err => {
+            console.error('MongoDB Atlas connection error on startup:', err.message);
         });
-    }, 2 * 60 * 1000);
-});
+
+        // Self-Ping Keep-Alive service for Render container internal loop
+        setInterval(() => {
+            http.get(`http://127.0.0.1:${PORT}/api/health`, (res) => {
+                // Keep local process loop active
+            }).on('error', () => {
+                // Silently swallow network glitches
+            });
+        }, 2 * 60 * 1000);
+    });
+}
+
+export default app;

@@ -5,10 +5,12 @@ import path from 'path';
 import fs from 'fs';
 
 // Setup uploads directory for testimonial avatars
-const testimonialUploadDir = 'uploads/testimonials';
-if (!fs.existsSync(testimonialUploadDir)) {
-    fs.mkdirSync(testimonialUploadDir, { recursive: true });
-}
+const testimonialUploadDir = process.env.VERCEL ? '/tmp/uploads/testimonials' : 'uploads/testimonials';
+try {
+    if (!fs.existsSync(testimonialUploadDir)) {
+        fs.mkdirSync(testimonialUploadDir, { recursive: true });
+    }
+} catch {}
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, testimonialUploadDir),

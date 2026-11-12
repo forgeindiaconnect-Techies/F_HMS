@@ -20,15 +20,15 @@ export const getApiUrl = () => {
         let envUrl = import.meta.env.VITE_API_URL.trim();
         if (envUrl.endsWith('/')) envUrl = envUrl.slice(0, -1);
         if (!envUrl.endsWith('/api')) envUrl += '/api';
-        // If native platform and envUrl is localhost, use Render backend instead of localhost
+        // If native platform and envUrl is localhost, use live Vercel backend instead of localhost
         if (Capacitor.isNativePlatform() && (envUrl.includes('localhost') || envUrl.includes('127.0.0.1'))) {
-            return 'https://f-hms-1.onrender.com/api';
+            return 'https://backend-ochre-five-29.vercel.app/api';
         }
         return envUrl;
     }
 
-    // Default to the live Render backend URL for Capacitor Native Android and production deployments
-    return 'https://f-hms-1.onrender.com/api';
+    // Default to the live backend URL for Capacitor Native Android and production deployments
+    return 'https://backend-ochre-five-29.vercel.app/api';
 };
 
 const api = axios.create({
@@ -74,9 +74,9 @@ api.interceptors.response.use(
         const isNetworkDown = !error.response || error.code === 'ERR_NETWORK';
         const isColdStart = status === 502 || status === 503 || status === 504 || isNetworkDown;
 
-        // Fallback to live Render backend if local/LAN port 5000 is unreachable
+        // Fallback to live backend if local/LAN port 5000 is unreachable
         if (config && isNetworkDown && config.baseURL && (config.baseURL.includes('5000') || config.baseURL.includes('localhost') || config.baseURL.includes('192.168.'))) {
-            config.baseURL = 'https://f-hms-1.onrender.com/api';
+            config.baseURL = 'https://backend-ochre-five-29.vercel.app/api';
             return api.request(config);
         }
 

@@ -8,10 +8,12 @@ import path from 'path';
 import fs from 'fs';
 import mongoose from 'mongoose';
 
-const uploadDir = 'uploads/verification';
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
+const uploadDir = process.env.VERCEL ? '/tmp/uploads/verification' : 'uploads/verification';
+try {
+    if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+    }
+} catch {}
 
 // Multer Storage Configuration
 const storage = multer.diskStorage({
