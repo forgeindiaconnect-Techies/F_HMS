@@ -1,6 +1,6 @@
 import express from 'express';
 import { 
-    getRestaurants, getRestaurantById, createRestaurant, getBranches, 
+    getRestaurants, getRestaurantById, getRestaurantThumbnail, createRestaurant, getBranches, 
     createBranch, getMyRestaurant, updateMyRestaurant, updateSubscription, 
     selfSubscribe, logoUpload, getMyBillingHistory, upgradeSubscription, 
     downgradeSubscription, renewSubscription,
@@ -102,6 +102,8 @@ router.route('/trial-request')
 
 router.route('/subscribe')
     .put(protect, authorize('RestaurantAdmin', 'SuperAdmin', 'Admin'), selfSubscribe);
+
+router.get('/:id/thumbnail', getRestaurantThumbnail);
 
 router.route('/')
     .get(getRestaurants)

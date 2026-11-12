@@ -76,19 +76,23 @@ export const getRestaurants = async (req, res) => {
             ]
         };
 
-        let restaurants = await Restaurant.find(filter).populate('ownerId', 'name email').sort({ createdAt: -1 }).lean();
+        let restaurants = await Restaurant.find(filter)
+            .select('name badge rating deliveryTime cuisineType cuisine address city state country deliverySettings subscription approvalStatus isActive isDeleted status ownerId createdAt')
+            .populate('ownerId', 'name email')
+            .sort({ createdAt: -1 })
+            .lean();
         if (restaurants.length === 0) {
             return res.json([]);
         }
 
         const restIds = restaurants.map(r => r._id);
 
-        // Batch fetch partner existence, active branches, and slim verification fields in 3 parallel queries
+        // Batch fetch partner existence, active branches, and slim verification address in 3 parallel queries
         const [partnerRestIds, allBranches, allVerifs] = await Promise.all([
             DeliveryPartner.distinct('restaurantId', { restaurantId: { $in: restIds } }),
             Branch.find({ restaurantId: { $in: restIds }, isActive: true }).select('restaurantId name location').lean(),
             RestaurantVerification.find({ restaurantId: { $in: restIds } })
-                .select('restaurantId documents.addressProof.addressText documents.logo.filePath documents.images.filePath')
+                .select('restaurantId documents.addressProof.addressText')
                 .lean()
                 .catch(() => [])
         ]);
@@ -140,15 +144,11 @@ export const getRestaurants = async (req, res) => {
 
             const verif = verifMap.get(restIdStr);
             const verifAddress = verif?.documents?.addressProof?.addressText || '';
-            if (!rest.logo && verif?.documents?.logo?.filePath) {
-                rest.logo = verif.documents.logo.filePath;
-            }
-            if ((!rest.showcaseImages || rest.showcaseImages.length === 0) && verif?.documents?.images?.length > 0) {
-                rest.showcaseImages = verif.documents.images.map(img => img.filePath);
-            }
-            if (!rest.bannerImage && rest.showcaseImages?.length > 0) {
-                rest.bannerImage = rest.showcaseImages[0];
-            }
+            const thumbUrl = `/api/restaurants/${restIdStr}/thumbnail`;
+            rest.image = thumbUrl;
+            rest.bannerImage = thumbUrl;
+            rest.logo = `${thumbUrl}?kind=logo`;
+            rest.showcaseImages = [thumbUrl];
 
             const branchAddress = primaryBranch?.location?.address && primaryBranch.location.address !== 'Primary Location' 
                 ? primaryBranch.location.address 
@@ -186,6 +186,49 @@ export const getRestaurants = async (req, res) => {
         res.json(populatedRestaurants);
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Serve restaurant thumbnail/logo binary image (avoids multi-MB base64 in list APIs)
+// @route   GET /api/restaurants/:id/thumbnail
+// @access  Public
+export const getRestaurantThumbnail = async (req, res) => {
+    try {
+        const rest = await Restaurant.findById(req.params.id)
+            .select('showcaseImages bannerImage image logo')
+            .lean();
+        if (!rest) return res.status(404).end();
+
+        const wantLogo = req.query.kind === 'logo';
+        let raw = wantLogo
+            ? (rest.logo && !String(rest.logo).includes('.pdf') ? rest.logo : null)
+            : ((Array.isArray(rest.showcaseImages) && rest.showcaseImages[0]) || rest.bannerImage || rest.image || (rest.logo && !String(rest.logo).includes('.pdf') ? rest.logo : null));
+
+        if (!raw) {
+            const verif = await RestaurantVerification.findOne({ restaurantId: rest._id })
+                .select(wantLogo ? 'documents.logo.filePath' : 'documents.images.filePath documents.logo.filePath')
+                .lean();
+            raw = wantLogo
+                ? verif?.documents?.logo?.filePath
+                : (verif?.documents?.images?.[0]?.filePath || verif?.documents?.logo?.filePath);
+        }
+
+        if (!raw || typeof raw !== 'string' || raw.includes('.pdf')) {
+            return res.status(404).end();
+        }
+
+        if (raw.startsWith('data:')) {
+            const match = raw.match(/^data:([^;]+);base64,(.+)$/);
+            if (!match) return res.status(404).end();
+            const buf = Buffer.from(match[2], 'base64');
+            res.set('Content-Type', match[1] || 'image/png');
+            res.set('Cache-Control', 'public, max-age=86400');
+            return res.send(buf);
+        }
+
+        return res.redirect(raw);
+    } catch (error) {
+        return res.status(404).end();
     }
 };
 
