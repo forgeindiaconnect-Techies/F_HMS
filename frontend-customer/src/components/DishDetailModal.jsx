@@ -155,3 +155,4 @@ const DishDetailModal = ({
 };
 
 export default DishDetailModal;
+
