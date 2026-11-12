@@ -1012,6 +1012,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
             const res = await api.post('/billing-demos', {
                 fullName: formData.fullName,
                 phoneNumber: formData.phoneNumber,
+                email: formData.email || '',
                 restaurantName: formData.restaurantName,
                 city: formData.city,
                 outletFormat: formData.outletType
@@ -1024,6 +1025,7 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
             setFormData({
                 fullName: '',
                 phoneNumber: '',
+                email: '',
                 restaurantName: '',
                 city: '',
                 outletType: 'Dine-In Restaurant'
@@ -2113,6 +2115,17 @@ Digital Verification Hash: SHA-IND-9418-DAIRY
                                         className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm font-medium focus:outline-none focus:border-[#FF5A1F] focus:ring-2 focus:ring-[#FF5A1F]/20"
                                     />
                                 </div>
+                            </div>
+
+                            <div>
+                                <label className="text-xs font-black text-slate-700 block mb-1">Business Email (for confirmation)</label>
+                                <input 
+                                    type="email" 
+                                    value={formData.email || ''}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    placeholder="e.g. owner@restaurant.com"
+                                    className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm font-medium focus:outline-none focus:border-[#FF5A1F] focus:ring-2 focus:ring-[#FF5A1F]/20"
+                                />
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

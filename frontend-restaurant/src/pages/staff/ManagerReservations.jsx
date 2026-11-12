@@ -101,48 +101,51 @@ const ManagerReservations = () => {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
                     
                     {/* Pending Approvals */}
-                    <div className="lg:col-span-7 space-y-4 min-w-0">
-                        <div className="flex items-center justify-between">
-                            <h3 className="font-bold text-gray-900 dark:text-white text-lg flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                                <Clock size={20} className="text-orange-500 shrink-0" /> Pending Requests ({pendingRequests.length})
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 shadow-xs flex flex-col min-w-0">
+                        <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-gray-100 dark:border-slate-800">
+                            <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                <Clock size={18} className="text-orange-500 shrink-0" /> Pending Requests
                             </h3>
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-50 text-orange-700 border border-orange-200 dark:bg-orange-950/30 dark:text-orange-300 dark:border-orange-800">
+                                {pendingRequests.length}
+                            </span>
                         </div>
                         
                         {pendingRequests.length === 0 ? (
-                            <div className="bg-white dark:bg-slate-900 rounded-2xl p-10 border border-gray-100 dark:border-slate-800 text-center shadow-sm min-h-[160px] flex flex-col items-center justify-center">
+                            <div className="flex-1 min-h-[180px] flex flex-col items-center justify-center text-center bg-gray-50/70 dark:bg-slate-800/40 rounded-xl border border-dashed border-gray-200 dark:border-slate-700 p-6">
                                 <p className="text-gray-400 font-medium text-sm">No pending reservation requests.</p>
                             </div>
                         ) : (
-                            <div className="space-y-3">
+                            <div className="space-y-3 flex-1">
                             {pendingRequests.map((res, i) => (
-                                <div key={res._id || i} className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-orange-200 dark:border-orange-900/50 shadow-sm flex flex-col sm:flex-row justify-between sm:items-center gap-4 relative overflow-hidden">
+                                <div key={res._id || i} className="bg-gray-50/60 dark:bg-slate-800/40 rounded-xl p-4 border border-orange-200 dark:border-orange-900/50 flex flex-col sm:flex-row justify-between sm:items-center gap-4 relative overflow-hidden">
                                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-500"></div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-3 mb-1.5">
-                                            <h4 className="font-bold text-gray-900 dark:text-white text-base truncate">{res.guestName}</h4>
-                                            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 shrink-0">Standard</span>
+                                    <div className="flex-1 min-w-0 pl-1">
+                                        <div className="flex items-center gap-2.5 mb-1.5">
+                                            <h4 className="font-bold text-gray-900 dark:text-white text-sm sm:text-base truncate">{res.guestName}</h4>
+                                            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 border border-gray-200 dark:border-slate-700 shrink-0">Standard</span>
                                         </div>
-                                        <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs sm:text-sm font-medium text-gray-600 dark:text-slate-400">
+                                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium text-gray-600 dark:text-slate-400">
                                             <span className="flex items-center gap-1.5">
-                                                <CalendarCheck size={15} className="shrink-0" /> 
+                                                <CalendarCheck size={14} className="shrink-0" /> 
                                                 {new Date(res.date).toLocaleDateString()} {res.timeSlot}
                                             </span>
-                                            <span className="flex items-center gap-1.5"><Users size={15} className="shrink-0" /> {res.guestCount} Guests</span>
-                                            <span className="flex items-center gap-1.5"><Phone size={15} className="shrink-0" /> {res.guestPhone}</span>
+                                            <span className="flex items-center gap-1.5"><Users size={14} className="shrink-0" /> {res.guestCount} Guests</span>
+                                            <span className="flex items-center gap-1.5"><Phone size={14} className="shrink-0" /> {res.guestPhone}</span>
                                         </div>
                                     </div>
                                     <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 shrink-0">
                                         <button onClick={() => setActionModal({ show: true, type: 'message', reservation: res })} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-xl transition-colors cursor-pointer" title="Message Customer">
-                                            <MessageSquare size={18} />
+                                            <MessageSquare size={17} />
                                         </button>
-                                        <button onClick={() => setActionModal({ show: true, type: 'reject', reservation: res })} className="flex items-center gap-1 px-3.5 py-2 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 rounded-xl font-bold text-xs sm:text-sm transition-colors cursor-pointer whitespace-nowrap">
-                                            <X size={15} /> Reject
+                                        <button onClick={() => setActionModal({ show: true, type: 'reject', reservation: res })} className="flex items-center gap-1 px-3 py-1.5 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 rounded-xl font-bold text-xs transition-colors cursor-pointer whitespace-nowrap">
+                                            <X size={14} /> Reject
                                         </button>
-                                        <button onClick={() => setActionModal({ show: true, type: 'approve', reservation: res })} className="flex items-center gap-1 px-3.5 py-2 bg-green-600 text-white hover:bg-green-700 rounded-xl font-bold text-xs sm:text-sm transition-colors shadow-sm cursor-pointer whitespace-nowrap">
-                                            <Check size={15} /> Approve
+                                        <button onClick={() => setActionModal({ show: true, type: 'approve', reservation: res })} className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white hover:bg-green-700 rounded-xl font-bold text-xs transition-colors shadow-sm cursor-pointer whitespace-nowrap">
+                                            <Check size={14} /> Approve
                                         </button>
                                     </div>
                                 </div>
@@ -152,30 +155,37 @@ const ManagerReservations = () => {
                     </div>
 
                     {/* Approved Upcoming */}
-                    <div className="lg:col-span-5 space-y-4 min-w-0">
-                        <div className="flex items-center justify-between">
-                            <h3 className="font-bold text-gray-900 dark:text-white text-lg flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                                <CheckCircle size={20} className="text-green-500 shrink-0" /> Upcoming Confirmed ({approvedRequests.length})
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 shadow-xs flex flex-col min-w-0">
+                        <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-gray-100 dark:border-slate-800">
+                            <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg flex items-center gap-2" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                                <CheckCircle size={18} className="text-green-500 shrink-0" /> Upcoming Confirmed
                             </h3>
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800">
+                                {approvedRequests.length}
+                            </span>
                         </div>
                         
-                        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden divide-y divide-gray-100 dark:divide-slate-800">
+                        <div className="flex-1 flex flex-col divide-y divide-gray-100 dark:divide-slate-800 border border-gray-100 dark:border-slate-800 rounded-xl overflow-hidden bg-gray-50/30 dark:bg-slate-900">
                             {approvedRequests.length === 0 ? (
-                                <div className="p-10 text-center text-gray-400 text-sm min-h-[160px] flex items-center justify-center">
+                                <div className="flex-1 min-h-[180px] p-6 text-center text-gray-400 text-sm flex items-center justify-center">
                                     No confirmed reservations.
                                 </div>
                             ) : (
                                 approvedRequests.map((res, i) => (
-                                    <div key={res._id || i} className="p-4 sm:p-5 hover:bg-gray-50/80 dark:hover:bg-slate-800/50 transition-colors">
-                                        <div className="flex justify-between items-center gap-3 mb-2">
+                                    <div key={res._id || i} className="p-4 hover:bg-gray-50/80 dark:hover:bg-slate-800/50 transition-colors flex items-center justify-between gap-4">
+                                        <div className="min-w-0">
                                             <h4 className="font-bold text-gray-900 dark:text-white text-sm sm:text-base truncate">{res.guestName}</h4>
-                                            <span className="text-xs font-bold text-gray-600 dark:text-slate-300 bg-gray-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg shrink-0">
-                                                {new Date(res.date).toLocaleDateString()}
+                                            <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400 mt-1">
+                                                <Users size={13} className="shrink-0" /> {res.guestCount} Guests
                                             </span>
                                         </div>
-                                        <div className="flex justify-between items-center text-xs sm:text-sm text-gray-600 dark:text-slate-400">
-                                            <span className="flex items-center gap-1.5"><Users size={14} className="shrink-0" /> {res.guestCount} Guests</span>
-                                            <span className="text-xs font-mono font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded-md">{res.timeSlot}</span>
+                                        <div className="flex flex-col items-end gap-1 shrink-0">
+                                            <span className="text-xs font-bold text-gray-700 dark:text-slate-300 bg-gray-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg">
+                                                {new Date(res.date).toLocaleDateString()}
+                                            </span>
+                                            <span className="text-xs font-mono font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded-md">
+                                                {res.timeSlot}
+                                            </span>
                                         </div>
                                     </div>
                                 ))

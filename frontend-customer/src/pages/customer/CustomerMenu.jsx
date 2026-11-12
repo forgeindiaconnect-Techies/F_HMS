@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import api, { getApiUrl } from '../../utils/axiosInstance';
-import { 
-    ShoppingBag, ChevronRight, Plus, Minus, Send, MessageSquare, 
-    BookOpen, Clock, Heart, User, UtensilsCrossed, CheckCircle2, 
+import {
+    ShoppingBag, ChevronRight, Plus, Minus, Send, MessageSquare,
+    BookOpen, Clock, Heart, User, UtensilsCrossed, CheckCircle2,
     QrCode, CreditCard, Store, Receipt, Sparkles, X, ShieldCheck,
     Phone, Check, ArrowRight, AlertCircle, Utensils
 } from 'lucide-react';
@@ -15,7 +15,7 @@ const CustomerMenu = () => {
     const { wishlist, toggleWishlist } = useCart();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    
+
     const restaurantId = searchParams.get('restaurantId');
     const branchId = searchParams.get('branchId');
     const tableNumber = searchParams.get('tableNumber');
@@ -27,7 +27,7 @@ const CustomerMenu = () => {
     const [activeCategory, setActiveCategory] = useState('All');
     const [isUnavailable, setIsUnavailable] = useState(false);
     const [unavailableReason, setUnavailableReason] = useState('');
-    
+
     // Cart state
     const [cart, setCart] = useState([]);
     const [showCartModal, setShowCartModal] = useState(false);
@@ -37,10 +37,10 @@ const CustomerMenu = () => {
     // Customer Name & Service selection
     const [customerName, setCustomerName] = useState(() => localStorage.getItem('restosys_guest_name') || '');
     const [customerPhone, setCustomerPhone] = useState(() => localStorage.getItem('restosys_guest_phone') || '');
-    
+
     // Service Type: 'Waiter Table Service' | 'Self Dine-In (KFC Style)'
     const [serviceType, setServiceType] = useState('Waiter Table Service');
-    
+
     // Payment Option:
     // Waiter Service: 'WaiterCash' | 'UPI' | 'WaiterCard'
     // Self Dine-In: 'UPI' | 'Card' | 'Counter'
@@ -73,10 +73,10 @@ const CustomerMenu = () => {
 
                 // Verify restaurant is active and visible
                 if (
-                    restRes?.status === 403 || 
-                    restRes?.status === 404 || 
-                    !restRes?.data || 
-                    restRes?.data?.isDeleted || 
+                    restRes?.status === 403 ||
+                    restRes?.status === 404 ||
+                    !restRes?.data ||
+                    restRes?.data?.isDeleted ||
                     (restRes?.data?.status && restRes?.data?.status !== 'Active') ||
                     restRes?.data?.isActive === false
                 ) {
@@ -239,15 +239,15 @@ const CustomerMenu = () => {
             source: 'QR',
             restaurantId,
             branchId,
-            paymentMethod: paymentOption === 'UPI' ? 'UPI QR' : 
-                           paymentOption === 'Card' ? 'Card' : 
-                           paymentOption === 'WaiterCard' ? 'Card on Table' : 
-                           paymentOption === 'Counter' ? 'Pay at Counter' : 'Cash to Waiter',
+            paymentMethod: paymentOption === 'UPI' ? 'UPI QR' :
+                paymentOption === 'Card' ? 'Card' :
+                    paymentOption === 'WaiterCard' ? 'Card on Table' :
+                        paymentOption === 'Counter' ? 'Pay at Counter' : 'Cash to Waiter',
             isPaid: isPrePaid,
             taxPrice: 0,
             tipAmount: tipAmt,
             totalPrice: finalTotal,
-            notes: activeOrderId 
+            notes: activeOrderId
                 ? `Appended Items [${serviceType}] • Guest: ${customerName.trim()}${tipAmt > 0 ? ` • Tip: ₹${tipAmt}` : ''}`
                 : `[${serviceType}] • Guest: ${customerName.trim()}${customerPhone ? ` (${customerPhone.trim()})` : ''}${tipAmt > 0 ? ` • Tip: ₹${tipAmt}` : ''}`
         };
@@ -350,7 +350,7 @@ const CustomerMenu = () => {
                 </div>
                 <div className="flex items-center gap-2.5">
                     {activeOrderId && (
-                        <button 
+                        <button
                             onClick={() => navigate(`/customer/track/${activeOrderId}?restaurantId=${restaurantId}&branchId=${branchId || ''}&tableNumber=${tableNumber || ''}`)}
                             className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-3.5 py-2 rounded-2xl flex items-center gap-2 text-xs font-bold transition-all border border-emerald-200"
                         >
@@ -388,11 +388,10 @@ const CustomerMenu = () => {
                     <button
                         key={cat}
                         onClick={() => setActiveCategory(cat)}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 border ${
-                            activeCategory === cat 
-                            ? 'bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-500/20' 
+                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 border ${activeCategory === cat
+                            ? 'bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-500/20'
                             : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'
-                        }`}
+                            }`}
                     >
                         {cat}
                     </button>
@@ -415,13 +414,13 @@ const CustomerMenu = () => {
                         const inCart = cart.find(c => c._id === item._id);
                         return (
                             <div key={item._id} className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm flex gap-4 items-center hover:shadow-md transition-shadow">
-                                <img 
-                                    src={getItemImage(item)} 
+                                <img
+                                    src={getItemImage(item)}
                                     onError={(e) => { e.target.onerror = null; e.target.src = getItemImage({ ...item, image: '' }); }}
-                                    alt={item.name} 
+                                    alt={item.name}
                                     className="w-20 h-20 rounded-xl object-cover border border-slate-100 shrink-0 bg-slate-100"
                                 />
-                                
+
                                 <div className="flex-1 min-w-0">
                                     <h4 className="font-bold text-slate-900 text-sm truncate">{item.name}</h4>
                                     <p className="text-xs text-slate-500 line-clamp-2 mt-0.5 leading-relaxed">{item.description || 'Delectable recipe freshly cooked.'}</p>
@@ -448,14 +447,14 @@ const CustomerMenu = () => {
                                     </button>
                                     {inCart ? (
                                         <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
-                                            <button 
+                                            <button
                                                 onClick={() => removeFromCart(item._id)}
                                                 className="w-7 h-7 bg-white border border-slate-300 rounded-lg text-slate-700 flex items-center justify-center hover:bg-slate-200 transition-colors"
                                             >
                                                 <Minus size={13} />
                                             </button>
                                             <span className="font-black text-xs w-4 text-center text-slate-900">{inCart.qty}</span>
-                                            <button 
+                                            <button
                                                 onClick={() => addToCart(item)}
                                                 className="w-7 h-7 bg-emerald-600 text-white rounded-lg flex items-center justify-center hover:bg-emerald-700 transition-colors"
                                             >
@@ -463,7 +462,7 @@ const CustomerMenu = () => {
                                             </button>
                                         </div>
                                     ) : (
-                                        <button 
+                                        <button
                                             onClick={() => addToCart(item)}
                                             className="bg-emerald-600 hover:bg-emerald-700 text-white p-2.5 rounded-xl transition-all shadow-md shadow-emerald-500/10 flex items-center justify-center hover:scale-105 active:scale-95 cursor-pointer"
                                         >
@@ -524,7 +523,7 @@ const CustomerMenu = () => {
             {showCartModal && (
                 <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center h-[100dvh] max-h-[100dvh] overflow-hidden">
                     <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowCartModal(false)}></div>
-                    
+
                     <div className="bg-white border-t sm:border border-slate-200 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-lg relative z-10 flex flex-col h-[85vh] max-h-[85vh] overflow-hidden animate-in slide-in-from-bottom duration-250">
                         {/* Modal Header */}
                         <div className="px-5 sm:px-6 py-3.5 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50/80">
@@ -539,8 +538,8 @@ const CustomerMenu = () => {
                                 </div>
                                 <p className="text-xs text-slate-500 font-medium mt-0.5">Review items, enter your name, and choose dining method.</p>
                             </div>
-                            <button 
-                                onClick={() => setShowCartModal(false)} 
+                            <button
+                                onClick={() => setShowCartModal(false)}
                                 className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
                             >
                                 <X size={22} />
@@ -569,9 +568,9 @@ const CustomerMenu = () => {
                                                 <button onClick={() => addToCart(item)} className="w-7 h-7 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center justify-center transition-colors"><Plus size={13} /></button>
                                             </div>
                                         </div>
-                                        
+
                                         <div>
-                                            <input 
+                                            <input
                                                 type="text"
                                                 value={itemNotes[item._id] || ''}
                                                 onChange={(e) => handleNoteChange(item._id, e.target.value)}
@@ -593,7 +592,7 @@ const CustomerMenu = () => {
                                     <label className="text-[11px] font-bold text-slate-700 block mb-1">
                                         Customer Full Name <span className="text-red-500 font-bold">*</span>
                                     </label>
-                                    <input 
+                                    <input
                                         id="customer-name-input"
                                         type="text"
                                         value={customerName}
@@ -611,7 +610,7 @@ const CustomerMenu = () => {
                                     <label className="text-[11px] font-bold text-slate-700 block mb-1">
                                         Phone Number <span className="text-slate-400 font-normal">(Optional, for WhatsApp / SMS tracking)</span>
                                     </label>
-                                    <input 
+                                    <input
                                         type="tel"
                                         inputMode="numeric"
                                         maxLength={10}
@@ -656,18 +655,16 @@ const CustomerMenu = () => {
                                                         else if (publicConfig?.paymentMethods?.card ?? true) setPaymentOption('Card');
                                                         else setPaymentOption('Counter');
                                                     }}
-                                                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative ${
-                                                        serviceType === 'Self Dine-In (KFC Style)'
-                                                            ? 'bg-emerald-50/80 border-emerald-600 shadow-md shadow-emerald-500/10'
-                                                            : 'bg-white border-slate-200 hover:border-slate-300'
-                                                    }`}
+                                                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative ${serviceType === 'Self Dine-In (KFC Style)'
+                                                        ? 'bg-emerald-50/80 border-emerald-600 shadow-md shadow-emerald-500/10'
+                                                        : 'bg-white border-slate-200 hover:border-slate-300'
+                                                        }`}
                                                 >
                                                     <div className="flex items-start gap-3">
-                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                                                            serviceType === 'Self Dine-In (KFC Style)'
-                                                                ? 'bg-emerald-600 text-white'
-                                                                : 'bg-slate-100 text-slate-600'
-                                                        }`}>
+                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${serviceType === 'Self Dine-In (KFC Style)'
+                                                            ? 'bg-emerald-600 text-white'
+                                                            : 'bg-slate-100 text-slate-600'
+                                                            }`}>
                                                             <Store size={20} />
                                                         </div>
                                                         <div className="flex-1 min-w-0">
@@ -694,18 +691,16 @@ const CustomerMenu = () => {
                                                         else if (publicConfig?.paymentMethods?.upi ?? true) setPaymentOption('UPI');
                                                         else setPaymentOption('WaiterCard');
                                                     }}
-                                                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative ${
-                                                        serviceType === 'Waiter Table Service'
-                                                            ? 'bg-emerald-50/80 border-emerald-600 shadow-md shadow-emerald-500/10'
-                                                            : 'bg-white border-slate-200 hover:border-slate-300'
-                                                    }`}
+                                                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative ${serviceType === 'Waiter Table Service'
+                                                        ? 'bg-emerald-50/80 border-emerald-600 shadow-md shadow-emerald-500/10'
+                                                        : 'bg-white border-slate-200 hover:border-slate-300'
+                                                        }`}
                                                 >
                                                     <div className="flex items-start gap-3">
-                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                                                            serviceType === 'Waiter Table Service'
-                                                                ? 'bg-emerald-600 text-white'
-                                                                : 'bg-slate-100 text-slate-600'
-                                                        }`}>
+                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${serviceType === 'Waiter Table Service'
+                                                            ? 'bg-emerald-600 text-white'
+                                                            : 'bg-slate-100 text-slate-600'
+                                                            }`}>
                                                             <UtensilsCrossed size={20} />
                                                         </div>
                                                         <div className="flex-1 min-w-0">
@@ -744,7 +739,7 @@ const CustomerMenu = () => {
                                             <div className="space-y-2">
                                                 {/* UPI / Dynamic QR */}
                                                 {pmUpi && (
-                                                    <label 
+                                                    <label
                                                         onClick={() => setPaymentOption('UPI')}
                                                         className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${paymentOption === 'UPI' ? 'border-emerald-600 bg-emerald-50/60 shadow-sm' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
                                                     >
@@ -764,7 +759,7 @@ const CustomerMenu = () => {
 
                                                 {/* Online Card */}
                                                 {(pmCard || pmOnline) && (
-                                                    <label 
+                                                    <label
                                                         onClick={() => setPaymentOption('Card')}
                                                         className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${paymentOption === 'Card' ? 'border-emerald-600 bg-emerald-50/60 shadow-sm' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
                                                     >
@@ -781,7 +776,7 @@ const CustomerMenu = () => {
 
                                                 {/* Pay at Pickup Counter */}
                                                 {pmCash && (
-                                                    <label 
+                                                    <label
                                                         onClick={() => setPaymentOption('Counter')}
                                                         className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${paymentOption === 'Counter' ? 'border-emerald-600 bg-emerald-50/60 shadow-sm' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
                                                     >
@@ -800,7 +795,7 @@ const CustomerMenu = () => {
                                             <div className="space-y-2">
                                                 {/* Pay to Waiter on Table */}
                                                 {pmCash && (
-                                                    <label 
+                                                    <label
                                                         onClick={() => setPaymentOption('WaiterCash')}
                                                         className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${paymentOption === 'WaiterCash' ? 'border-emerald-600 bg-emerald-50/60 shadow-sm' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
                                                     >
@@ -820,7 +815,7 @@ const CustomerMenu = () => {
 
                                                 {/* Pre-Pay Online via UPI */}
                                                 {pmUpi && (
-                                                    <label 
+                                                    <label
                                                         onClick={() => setPaymentOption('UPI')}
                                                         className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${paymentOption === 'UPI' ? 'border-emerald-600 bg-emerald-50/60 shadow-sm' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
                                                     >
@@ -837,7 +832,7 @@ const CustomerMenu = () => {
 
                                                 {/* Card on Table */}
                                                 {pmCard && (
-                                                    <label 
+                                                    <label
                                                         onClick={() => setPaymentOption('WaiterCard')}
                                                         className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${paymentOption === 'WaiterCard' ? 'border-emerald-600 bg-emerald-50/60 shadow-sm' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
                                                     >
@@ -875,11 +870,10 @@ const CustomerMenu = () => {
                                                 key={pct}
                                                 type="button"
                                                 onClick={() => { setTipPercent(pct); setCustomTipAmount(''); }}
-                                                className={`py-2 rounded-xl text-xs font-black transition-all ${
-                                                    tipPercent === pct 
-                                                        ? 'bg-amber-500 text-white shadow-xs' 
-                                                        : 'bg-white text-slate-700 border border-amber-200 hover:bg-amber-100/50'
-                                                }`}
+                                                className={`py-2 rounded-xl text-xs font-black transition-all ${tipPercent === pct
+                                                    ? 'bg-amber-500 text-white shadow-xs'
+                                                    : 'bg-white text-slate-700 border border-amber-200 hover:bg-amber-100/50'
+                                                    }`}
                                             >
                                                 {pct === 0 ? 'No Tip' : `${pct}%`}
                                             </button>
@@ -890,9 +884,8 @@ const CustomerMenu = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => setTipPercent(-1)}
-                                                className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all ${
-                                                    tipPercent === -1 ? 'bg-amber-500 text-white' : 'bg-white border border-amber-200 text-slate-700'
-                                                }`}
+                                                className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all ${tipPercent === -1 ? 'bg-amber-500 text-white' : 'bg-white border border-amber-200 text-slate-700'
+                                                    }`}
                                             >
                                                 Custom ₹
                                             </button>
@@ -926,8 +919,8 @@ const CustomerMenu = () => {
                                     )}
                                 </div>
                             </div>
-                            
-                            <button 
+
+                            <button
                                 id="modal-confirm-order-btn"
                                 onClick={handleProceedToPlaceOrder}
                                 disabled={isSubmitting}
@@ -935,9 +928,9 @@ const CustomerMenu = () => {
                             >
                                 <Send size={16} />
                                 <span>
-                                    {isSubmitting ? 'Submitting Order...' : 
-                                     paymentOption === 'UPI' || paymentOption === 'Card' ? `Proceed to Pay ₹${(getCartTotal() + getTipAmount()).toLocaleString('en-IN')} & Order` :
-                                     `Confirm Order • ₹${(getCartTotal() + getTipAmount()).toLocaleString('en-IN')}`}
+                                    {isSubmitting ? 'Submitting Order...' :
+                                        paymentOption === 'UPI' || paymentOption === 'Card' ? `Proceed to Pay ₹${(getCartTotal() + getTipAmount()).toLocaleString('en-IN')} & Order` :
+                                            `Confirm Order • ₹${(getCartTotal() + getTipAmount()).toLocaleString('en-IN')}`}
                                 </span>
                             </button>
                         </div>
@@ -1031,11 +1024,11 @@ const CustomerMenu = () => {
                     </div>
                 </div>
             )}
-            
+
             {/* Active Order Tracker Button */}
             {activeOrderId && !cart.length && (
                 <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 w-full max-w-xs px-4">
-                    <button 
+                    <button
                         onClick={() => navigate(`/customer/track/${activeOrderId}?restaurantId=${restaurantId}&branchId=${branchId || ''}&tableNumber=${tableNumber || ''}`)}
                         className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-bold py-3.5 px-6 rounded-2xl shadow-xl shadow-green-600/35 flex items-center justify-between transition-all duration-300 hover:scale-[1.03] active:scale-95 border border-green-500/20 cursor-pointer"
                     >

@@ -59,16 +59,16 @@ const ManagerReports = () => {
 
     return (
         <div className="w-full max-w-[1600px] mx-auto space-y-4 sm:space-y-6 pb-12 font-sans">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6 no-print">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>Branch Reports</h2>
                     <p className="text-gray-500 text-sm mt-1">Generate dynamic operational, sales, and compliance reports.</p>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 print:block">
                 {/* Configuration Panel */}
-                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm space-y-4 h-fit">
+                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm space-y-4 h-fit no-print">
                     <h3 className="font-bold text-gray-900 text-lg mb-2 flex items-center gap-2">
                         <FileText size={20} className="text-green-600" /> Configure Report
                     </h3>
@@ -133,7 +133,7 @@ const ManagerReports = () => {
                 </div>
 
                 {/* Report Output Screen */}
-                <div className="lg:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col min-h-[450px]">
+                <div className="lg:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col min-h-[450px] print:col-span-4 print:border-none print:shadow-none print:p-0 print:min-h-0">
                     {loading ? (
                         <div className="flex-1 flex flex-col justify-center items-center text-gray-400 space-y-2">
                             <RefreshCw className="animate-spin text-green-600" size={32} />
@@ -159,14 +159,21 @@ const ManagerReports = () => {
                                     </div>
                                     <div className="flex gap-2 no-print">
                                         <button 
+                                            type="button"
                                             onClick={() => {
                                                 if (!reportData?.data || reportData.data.length === 0) {
                                                     toast.error('No report data to export');
                                                     return;
                                                 }
-                                                const headers = Object.keys(reportData.data[0]);
-                                                const rows = reportData.data.map(item => headers.map(h => JSON.stringify(item[h] ?? '')).join(','));
-                                                const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+                                                const rowsData = reportData.data;
+                                                const headers = Array.from(new Set(rowsData.flatMap(r => Object.keys(r || {}))));
+                                                const formatCell = (val) => {
+                                                    if (val === null || val === undefined) return '""';
+                                                    const str = typeof val === 'object' ? (val.name || val.title || JSON.stringify(val)) : String(val);
+                                                    return `"${str.replace(/"/g, '""')}"`;
+                                                };
+                                                const rows = rowsData.map(item => headers.map(h => formatCell(item[h])).join(','));
+                                                const csv = '\uFEFF' + [headers.map(h => formatCell(h)).join(','), ...rows].join('\n');
                                                 const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
                                                 const url = URL.createObjectURL(blob);
                                                 const a = document.createElement('a');
@@ -175,13 +182,14 @@ const ManagerReports = () => {
                                                 document.body.appendChild(a);
                                                 a.click();
                                                 document.body.removeChild(a);
+                                                setTimeout(() => URL.revokeObjectURL(url), 1000);
                                                 toast.success('Report exported to CSV successfully!');
                                             }}
                                             className="bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
                                         >
                                             <FileDown size={14} /> Export CSV
                                         </button>
-                                        <button onClick={handlePrint} className="bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer">
+                                        <button type="button" onClick={handlePrint} className="bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer">
                                             <Printer size={14} /> Print
                                         </button>
                                     </div>

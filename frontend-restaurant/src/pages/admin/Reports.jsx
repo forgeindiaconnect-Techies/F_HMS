@@ -233,6 +233,7 @@ const Reports = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
         toast.success('Excel/CSV Report downloaded successfully with aligned columns!');
     };
 
@@ -252,19 +253,28 @@ const Reports = () => {
                     </p>
                 </div>
 
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 no-print">
                     <button 
+                        type="button"
                         onClick={handleDownloadCSV}
                         disabled={!reportResult || !reportResult.data?.length}
-                        className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm shadow-md shadow-emerald-900/10"
+                        className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm shadow-md shadow-emerald-900/10 cursor-pointer"
                     >
                         <Download size={16} /> Download CSV Report
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => window.print()}
+                        disabled={!reportResult || !reportResult.data?.length}
+                        className="bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-sm shadow-xs cursor-pointer"
+                    >
+                        <Printer size={16} /> Print Report
                     </button>
                 </div>
             </div>
 
             {/* Report Type Selector Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 no-print">
                 {REPORT_DEFINITIONS.map(rep => {
                     const Icon = rep.icon;
                     const isSelected = selectedReport === rep.id;
@@ -296,7 +306,7 @@ const Reports = () => {
             </div>
 
             {/* Reusable Date & Dimension Filter Bar */}
-            <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-xs space-y-4">
+            <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-xs space-y-4 no-print">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     {/* Presets */}
                     <div className="flex flex-wrap items-center gap-2">

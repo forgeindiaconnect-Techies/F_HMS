@@ -39,36 +39,7 @@ const sendEmail = async ({ to, toName, subject, html }) => {
     const smtpConfig = getSmtpConfig();
     const { apiKey, senderEmail, senderName } = getBrevoConfig();
 
-    // 1. Try Brevo SMTP Relay First (reliable delivery without IP restriction issues)
-    try {
-        const transporter = nodemailer.createTransport({
-            host: smtpConfig.host,
-            port: smtpConfig.port,
-            secure: false,
-            auth: {
-                user: smtpConfig.user,
-                pass: smtpConfig.pass
-            }
-        });
-
-        const info = await transporter.sendMail({
-            from: `"${smtpConfig.senderName}" <${smtpConfig.senderEmail}>`,
-            to: to,
-            subject: subject,
-            html: html
-        });
-
-        console.log(`[Brevo SMTP Email Sent Successfully] Delivered to ${to}. Message ID: ${info.messageId}`);
-        return true;
-    } catch (smtpErr) {
-        if (smtpErr.message && (smtpErr.message.includes('525') || smtpErr.message.includes('Unauthorized IP'))) {
-            console.warn('[Brevo SMTP Warning]: Brevo blocked current IP (525 5.7.1 Unauthorized IP address). To enable live delivery from any IP, authorize IPs at https://app.brevo.com/security/authorised_ips');
-        } else {
-            console.warn(`[Brevo SMTP Warning] Falling back to Brevo API: ${smtpErr.message}`);
-        }
-    }
-
-    // 2. Fallback to Brevo HTTPS API
+    // 1. Try Brevo HTTPS API First (reliable on cloud hosts where outbound port 587 may be throttled/blocked)
     if (apiKey) {
         try {
             const response = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -94,13 +65,38 @@ const sendEmail = async ({ to, toName, subject, html }) => {
                 return true;
             } else {
                 console.error('[Brevo API Error Details]:', JSON.stringify(data));
-                if (data.message && data.message.includes('authorised_ips')) {
-                    console.warn('[Action Required for Brevo Real-Time Mail]: Brevo security policy detected unrecognized server IP. Add IP at https://app.brevo.com/security/authorised_ips or disable Brevo IP restrictions to allow automated mail dispatch.');
-                }
             }
         } catch (brevoErr) {
             console.error('[Brevo HTTP Dispatch Error]:', brevoErr.message);
         }
+    }
+
+    // 2. Fallback to Brevo SMTP Relay (short connection timeouts)
+    try {
+        const transporter = nodemailer.createTransport({
+            host: smtpConfig.host,
+            port: smtpConfig.port,
+            secure: false,
+            connectionTimeout: 5000,
+            greetingTimeout: 5000,
+            socketTimeout: 10000,
+            auth: {
+                user: smtpConfig.user,
+                pass: smtpConfig.pass
+            }
+        });
+
+        const info = await transporter.sendMail({
+            from: `"${smtpConfig.senderName}" <${smtpConfig.senderEmail}>`,
+            to: to,
+            subject: subject,
+            html: html
+        });
+
+        console.log(`[Brevo SMTP Email Sent Successfully] Delivered to ${to}. Message ID: ${info.messageId}`);
+        return true;
+    } catch (smtpErr) {
+        console.warn(`[Brevo SMTP Warning]: ${smtpErr.message}`);
     }
 
     return false;
@@ -729,4 +725,36 @@ export const sendStaffRoleCredentialsEmail = async ({ email, name, role, restaur
         </div>
     `;
     return await sendEmail({ to: email, toName: name, subject, html });
+};
+
+/**
+ * 12. Send Outlet Format / Billing Demo Submission Confirmation Email
+ */
+export const sendOutletFormatSubmissionEmail = async ({ email, fullName, phoneNumber, restaurantName, city, outletFormat, isAdminAlert = false }) => {
+    const subject = isAdminAlert
+        ? `New Outlet Format Request: ${restaurantName} (${outletFormat})`
+        : `Outlet Format Request Received — ${restaurantName || 'FoodNest'}`;
+    const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 28px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 22px; font-weight: 800;">${isAdminAlert ? 'New Outlet Format Lead' : 'Thank You for Your Request!'}</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">${outletFormat || 'Restaurant POS & Billing Setup'}</p>
+            </div>
+            <div style="background: white; padding: 28px; border-radius: 12px; margin-top: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${isAdminAlert ? 'Admin' : (fullName || 'Partner')},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    ${isAdminAlert
+                        ? `A new outlet format walkthrough request was submitted for <strong>${restaurantName}</strong>.`
+                        : `We have received your outlet format request for <strong>${restaurantName}</strong>. Our onboarding specialist will contact you shortly on <strong>${phoneNumber}</strong>.`}
+                </p>
+                <div style="background-color: #fff7ed; padding: 16px; border-radius: 10px; margin: 18px 0; border-left: 4px solid #f97316;">
+                    <p style="margin: 0 0 6px 0; font-size: 13px; color: #1e293b;"><strong>Applicant:</strong> ${fullName || 'N/A'}</p>
+                    <p style="margin: 0 0 6px 0; font-size: 13px; color: #1e293b;"><strong>Phone:</strong> ${phoneNumber || 'N/A'}</p>
+                    <p style="margin: 0 0 6px 0; font-size: 13px; color: #1e293b;"><strong>Outlet Format:</strong> ${outletFormat || 'N/A'}</p>
+                    <p style="margin: 0; font-size: 13px; color: #1e293b;"><strong>City:</strong> ${city || 'N/A'}</p>
+                </div>
+            </div>
+        </div>
+    `;
+    return await sendEmail({ to: email, toName: fullName || 'Partner', subject, html });
 };

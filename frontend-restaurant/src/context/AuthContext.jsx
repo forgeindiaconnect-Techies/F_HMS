@@ -71,6 +71,53 @@ api.interceptors.response.use(
     }
 );
 
+// Fast in-memory GET cache + in-flight deduplication so sidebar/section switches render immediately
+const _apiGetCache = new Map();
+const _apiInFlight = new Map();
+const API_CACHE_TTL_MS = 20000;
+
+export const clearApiGetCache = () => {
+    _apiGetCache.clear();
+    _apiInFlight.clear();
+};
+
+const _rawGet = api.get.bind(api);
+api.get = (url, config = {}) => {
+    const skipCache = config?.noCache || String(url).includes('/notifications') || String(url).includes('/auth/');
+    if (skipCache) return _rawGet(url, config);
+
+    const tokenKey = localStorage.getItem('token') || 'anon';
+    const key = `${tokenKey.slice(-12)}:${url}:${JSON.stringify(config?.params || {})}`;
+    const cached = _apiGetCache.get(key);
+    if (cached && (Date.now() - cached.ts) < API_CACHE_TTL_MS) {
+        return Promise.resolve(cached.res);
+    }
+    if (_apiInFlight.has(key)) {
+        return _apiInFlight.get(key);
+    }
+    const reqPromise = _rawGet(url, config)
+        .then((res) => {
+            _apiGetCache.set(key, { res, ts: Date.now() });
+            return res;
+        })
+        .finally(() => {
+            _apiInFlight.delete(key);
+        });
+    _apiInFlight.set(key, reqPromise);
+    return reqPromise;
+};
+
+['post', 'put', 'patch', 'delete'].forEach((method) => {
+    const _rawMethod = api[method].bind(api);
+    api[method] = (...args) => {
+        const url = String(args[0] || '');
+        if (!url.includes('/reports/generate')) {
+            clearApiGetCache();
+        }
+        return _rawMethod(...args);
+    };
+});
+
 const isStaffPortalPath = (path) => {
     return (
         path.startsWith('/admin') ||

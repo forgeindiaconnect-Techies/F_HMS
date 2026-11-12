@@ -2,14 +2,14 @@ import BillingDemoRequest from '../models/BillingDemoRequest.js';
 import Restaurant from '../models/Restaurant.js';
 import User from '../models/User.js';
 import Branch from '../models/Branch.js';
-import { sendWelcomeEmail } from '../utils/emailService.js';
+import { sendWelcomeEmail, sendSubscriptionSuccessEmail, sendOutletFormatSubmissionEmail } from '../utils/emailService.js';
 
 // @desc    Create new Billing Demo Walkthrough Request (Public)
 // @route   POST /api/billing-demos
 // @access  Public
 export const createBillingDemoRequest = async (req, res) => {
     try {
-        const { fullName, phoneNumber, restaurantName, city, outletFormat } = req.body;
+        const { fullName, phoneNumber, email, restaurantName, city, outletFormat } = req.body;
 
         if (!fullName || !fullName.trim()) {
             return res.status(400).json({ message: 'Full Name is required' });
@@ -26,6 +26,7 @@ export const createBillingDemoRequest = async (req, res) => {
             return res.status(400).json({ message: 'Mobile phone number must be exactly 10 digits starting with 6, 7, 8, or 9' });
         }
         const cleanName = fullName.trim();
+        const cleanEmail = email ? String(email).trim().toLowerCase() : '';
         const cleanRestName = restaurantName.trim();
         const cleanCity = city ? city.trim() : 'N/A';
         const cleanOutlet = outletFormat ? outletFormat.trim() : 'Fine Dine & Resto-Bar';
@@ -54,6 +55,7 @@ export const createBillingDemoRequest = async (req, res) => {
         const newDemoRequest = new BillingDemoRequest({
             fullName: cleanName,
             phoneNumber: cleanPhone,
+            email: cleanEmail,
             restaurantName: cleanRestName,
             city: cleanCity,
             outletFormat: cleanOutlet,
@@ -85,6 +87,36 @@ export const createBillingDemoRequest = async (req, res) => {
         });
 
         const savedRequest = await newDemoRequest.save();
+
+        // Dispatch confirmation email to submitter (if email provided) and alert SuperAdmins
+        if (cleanEmail) {
+            sendOutletFormatSubmissionEmail({
+                email: cleanEmail,
+                fullName: cleanName,
+                phoneNumber: cleanPhone,
+                restaurantName: cleanRestName,
+                city: cleanCity,
+                outletFormat: cleanOutlet,
+                isAdminAlert: false
+            }).catch((err) => console.error('Outlet format confirmation email error:', err.message));
+        }
+        User.find({ role: 'SuperAdmin' }).select('email').lean()
+            .then((admins) => {
+                admins.forEach((adm) => {
+                    if (adm.email) {
+                        sendOutletFormatSubmissionEmail({
+                            email: adm.email,
+                            fullName: cleanName,
+                            phoneNumber: cleanPhone,
+                            restaurantName: cleanRestName,
+                            city: cleanCity,
+                            outletFormat: cleanOutlet,
+                            isAdminAlert: true
+                        }).catch(() => {});
+                    }
+                });
+            })
+            .catch(() => {});
 
         res.status(201).json({
             success: true,
@@ -672,6 +704,15 @@ export const activateBillingDemo = async (req, res) => {
                 restaurantName: restaurant.name,
                 plan: restaurant.billingConfig?.customPlanName || 'Custom Plan'
             }).catch((err) => console.error('Billing demo welcome email error:', err.message));
+            sendSubscriptionSuccessEmail({
+                email: ownerUser.email,
+                name: ownerUser.name,
+                restaurantName: restaurant.name,
+                plan: restaurant.subscription?.plan || restaurant.billingConfig?.customPlanName || 'Custom SaaS',
+                billingCycle: restaurant.subscription?.billingCycle || 'yearly',
+                price: restaurant.subscription?.price || 0,
+                expiryDate: restaurant.subscription?.subscriptionEndDate || restaurant.subscription?.expiryDate
+            }).catch((err) => console.error('Billing demo subscription email error:', err.message));
         }
 
         res.json({

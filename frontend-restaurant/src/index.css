@@ -486,3 +486,40 @@ input::-ms-clear {
   height: 0 !important;
   pointer-events: none !important;
 }
+
+/* Clean Print Styles for Admin & Manager Reports */
+@media print {
+  aside,
+  header,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+
+  html,
+  body,
+  #root,
+  main {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  #printable-report {
+    width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  @page {
+    margin: 12mm;
+    size: A4 portrait;
+  }
+}

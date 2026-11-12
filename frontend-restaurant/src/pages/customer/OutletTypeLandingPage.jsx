@@ -491,6 +491,7 @@ const OutletTypeLandingPage = ({ type: typeProp }) => {
             const res = await api.post('/billing-demos', {
                 fullName: formData.fullName,
                 phoneNumber: formData.phoneNumber,
+                email: formData.email || '',
                 restaurantName: formData.restaurantName,
                 city: formData.city,
                 outletFormat: config.title || 'Dine-In Restaurant'
@@ -503,6 +504,7 @@ const OutletTypeLandingPage = ({ type: typeProp }) => {
             setFormData({
                 fullName: '',
                 phoneNumber: '',
+                email: '',
                 restaurantName: '',
                 city: '',
                 outletCount: '1 Outlet'
@@ -1091,6 +1093,17 @@ const OutletTypeLandingPage = ({ type: typeProp }) => {
                                         className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm font-medium focus:outline-none focus:border-[#FF2D55] focus:ring-2 focus:ring-[#FF2D55]/20"
                                     />
                                 </div>
+                            </div>
+
+                            <div>
+                                <label className="text-xs font-black text-slate-700 block mb-1">Business Email (for confirmation)</label>
+                                <input 
+                                    type="email" 
+                                    value={formData.email || ''}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    placeholder="e.g. owner@restaurant.com"
+                                    className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-sm font-medium focus:outline-none focus:border-[#FF2D55] focus:ring-2 focus:ring-[#FF2D55]/20"
+                                />
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

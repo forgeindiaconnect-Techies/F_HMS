@@ -895,22 +895,22 @@ const WaiterDashboard = () => {
                         <div id="floor-plan" className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 p-3.5 sm:p-6 shadow-xs">
                             
                             {/* Layout Header & Filters */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-slate-100">
-                                <div>
+                            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-slate-100">
+                                <div className="min-w-0">
                                     <div className="flex items-center gap-2">
-                                        <h3 className="font-extrabold text-lg text-slate-900 tracking-tight">Interactive Floor Plan</h3>
-                                        <span className="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                                        <h3 className="font-extrabold text-lg text-slate-900 tracking-tight whitespace-nowrap">Interactive Floor Plan</h3>
+                                        <span className="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full whitespace-nowrap">
                                             {filteredTables.length} Tables
                                         </span>
                                     </div>
-                                    <p className="text-xs text-slate-400 font-medium">Click any table card to view details, take orders, or alter status</p>
+                                    <p className="text-xs text-slate-400 font-medium mt-0.5">Click any table card to view details, take orders, or alter status</p>
                                 </div>
 
                                 {/* Status Filters & Assigned Toggle */}
-                                <div className="flex flex-nowrap sm:flex-wrap items-center gap-2 overflow-x-auto no-scrollbar max-w-full pb-1 -mx-1 px-1">
+                                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar max-w-full pb-1 xl:pb-0 shrink-0">
                                     <button
                                         onClick={() => setAssignedOnly(!assignedOnly)}
-                                        className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all border flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                                        className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all border flex items-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap ${
                                             assignedOnly 
                                             ? 'bg-amber-500 border-amber-500 text-white shadow-xs' 
                                             : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200/70'

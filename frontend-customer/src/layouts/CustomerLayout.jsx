@@ -78,14 +78,14 @@ const CustomerLayout = () => {
         if (!isLocationPickerOpen || restaurants.length > 0 || !api) return;
         api.get('/restaurants').then(res => {
             if (Array.isArray(res.data)) setRestaurants(res.data);
-        }).catch(() => {});
+        }).catch(() => { });
     }, [isLocationPickerOpen, restaurants.length, api]);
 
     return (
         <div className="min-h-screen flex flex-col font-sans relative bg-white text-slate-800">
             <CartDrawer />
             <WishlistDrawer />
-            
+
             <LocationPickerModal
                 isOpen={isLocationPickerOpen}
                 onClose={() => setIsLocationPickerOpen(false)}
@@ -94,7 +94,7 @@ const CustomerLayout = () => {
                 restaurants={restaurants}
             />
 
-                        {!isLandingPage && (
+            {!isLandingPage && (
                 <header className="bg-white/95 backdrop-blur-md border-b border-slate-100 sticky top-0 z-40 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
                     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-[76px] flex items-center justify-between gap-2 sm:gap-4">
                         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 min-w-0">
@@ -221,7 +221,7 @@ const CustomerLayout = () => {
                             )}
 
                             <div className="flex items-center gap-1 sm:gap-2">
-                                <button 
+                                <button
                                     type="button"
                                     onClick={() => setIsWishlistOpen(true)}
                                     className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-[#FF5A1F] transition-colors cursor-pointer shrink-0"
@@ -234,7 +234,7 @@ const CustomerLayout = () => {
                                         </span>
                                     )}
                                 </button>
-                                <button 
+                                <button
                                     type="button"
                                     onClick={() => setIsCartOpen(true)}
                                     className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-[#FF5A1F] transition-colors cursor-pointer shrink-0"
@@ -248,11 +248,11 @@ const CustomerLayout = () => {
                                     )}
                                 </button>
                             </div>
-                            
+
                             {/* Profile Avatar or User Icon - Guaranteed 100% Visible on Mobile View */}
                             {user ? (
-                                <Link 
-                                    to="/profile" 
+                                <Link
+                                    to="/profile"
                                     className="w-8 h-8 rounded-full bg-[#FF5A1F] text-white flex items-center justify-center text-xs font-black shadow-xs ring-2 ring-orange-200 shrink-0 hover:opacity-95 transition-all"
                                     title={'Profile: ' + (user.name || 'User')}
                                     aria-label="Profile"
@@ -260,8 +260,8 @@ const CustomerLayout = () => {
                                     {user.name ? user.name.charAt(0).toUpperCase() : <User size={15} />}
                                 </Link>
                             ) : (
-                                <Link 
-                                    to="/customer/login" 
+                                <Link
+                                    to="/customer/login"
                                     className="w-8 h-8 sm:w-auto sm:px-3 sm:py-1.5 rounded-full sm:rounded-xl bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] border border-orange-200 flex items-center justify-center transition-colors shrink-0 shadow-xs"
                                     title="Sign In / Profile"
                                     aria-label="Sign In / Profile"
@@ -274,53 +274,49 @@ const CustomerLayout = () => {
                     </div>
                 </header>
             )}
-            
+
             <main className="flex-grow pb-20 md:pb-0">
                 <Outlet />
             </main>
 
             {/* Mobile Bottom Navigation (Persistent native app bar with active indicator and safe-area support) */}
             <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-2 px-3 flex justify-around items-center z-40 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-                <Link 
-                    to="/explore" 
-                    className={`flex flex-col items-center transition-colors ${
-                        location.pathname === '/' || location.pathname === '/explore' 
-                            ? 'text-[#FF5A1F]' 
-                            : 'text-slate-500 hover:text-slate-800'
-                    }`}
+                <Link
+                    to="/explore"
+                    className={`flex flex-col items-center transition-colors ${location.pathname === '/' || location.pathname === '/explore'
+                        ? 'text-[#FF5A1F]'
+                        : 'text-slate-500 hover:text-slate-800'
+                        }`}
                 >
                     <UtensilsCrossed size={19} className="stroke-[2.2]" />
                     <span className="text-[10px] font-bold mt-1">Explore</span>
                 </Link>
-                <Link 
-                    to="/menu" 
-                    className={`flex flex-col items-center transition-colors ${
-                        location.pathname.startsWith('/menu') 
-                            ? 'text-[#FF5A1F]' 
-                            : 'text-slate-500 hover:text-slate-800'
-                    }`}
+                <Link
+                    to="/menu"
+                    className={`flex flex-col items-center transition-colors ${location.pathname.startsWith('/menu')
+                        ? 'text-[#FF5A1F]'
+                        : 'text-slate-500 hover:text-slate-800'
+                        }`}
                 >
                     <ShoppingBag size={19} className="stroke-[2.2]" />
                     <span className="text-[10px] font-bold mt-1">Menu</span>
                 </Link>
-                <Link 
-                    to="/reservations" 
-                    className={`flex flex-col items-center transition-colors ${
-                        location.pathname.startsWith('/reservations') 
-                            ? 'text-[#FF5A1F]' 
-                            : 'text-slate-500 hover:text-slate-800'
-                    }`}
+                <Link
+                    to="/reservations"
+                    className={`flex flex-col items-center transition-colors ${location.pathname.startsWith('/reservations')
+                        ? 'text-[#FF5A1F]'
+                        : 'text-slate-500 hover:text-slate-800'
+                        }`}
                 >
                     <CalendarDays size={19} className="stroke-[2.2]" />
                     <span className="text-[10px] font-bold mt-1">Dine In</span>
                 </Link>
-                <Link 
-                    to="/profile" 
-                    className={`flex flex-col items-center transition-colors ${
-                        location.pathname.startsWith('/profile') 
-                            ? 'text-[#FF5A1F]' 
-                            : 'text-slate-500 hover:text-slate-800'
-                    }`}
+                <Link
+                    to="/profile"
+                    className={`flex flex-col items-center transition-colors ${location.pathname.startsWith('/profile')
+                        ? 'text-[#FF5A1F]'
+                        : 'text-slate-500 hover:text-slate-800'
+                        }`}
                 >
                     <User size={19} className="stroke-[2.2]" />
                     <span className="text-[10px] font-bold mt-1">Account</span>
@@ -364,8 +360,8 @@ const CustomerLayout = () => {
                             <h4 className="text-xs font-bold text-white mb-3.5 tracking-wider uppercase">Help</h4>
                             <ul className="space-y-2 text-xs font-medium">
                                 <li>
-                                    <Link 
-                                        to="/explore#how-it-works" 
+                                    <Link
+                                        to="/explore#how-it-works"
                                         onClick={() => {
                                             setTimeout(() => {
                                                 const el = document.getElementById('how-it-works');

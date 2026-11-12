@@ -11,6 +11,12 @@ const billingDemoRequestSchema = new mongoose.Schema({
         required: [true, 'Phone number is required'],
         trim: true
     },
+    email: {
+        type: String,
+        trim: true,
+        lowercase: true,
+        default: ''
+    },
     restaurantName: {
         type: String,
         required: [true, 'Restaurant name is required'],

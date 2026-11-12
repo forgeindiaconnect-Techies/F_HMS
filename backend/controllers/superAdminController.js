@@ -1,4 +1,4 @@
-import { sendTrialApprovedEmail, sendTrialRejectedEmail, sendTrialStartedEmail, sendManualFreezeEmail, sendManualUnfreezeEmail } from '../utils/emailService.js';
+import { sendTrialApprovedEmail, sendTrialRejectedEmail, sendTrialStartedEmail, sendManualFreezeEmail, sendManualUnfreezeEmail, sendSubscriptionSuccessEmail, sendWelcomeEmail } from '../utils/emailService.js';
 import { broadcastToRestaurant } from '../config/websocket.js';
 import Restaurant from '../models/Restaurant.js';
 import User from '../models/User.js';
@@ -205,6 +205,27 @@ export const updateSubscription = async (req, res) => {
         }
 
         await restaurant.save();
+
+        // Notify restaurant owner on subscription plan update
+        if (plan || status === 'Active') {
+            User.findById(restaurant.ownerId).select('email name').lean()
+                .then((owner) => {
+                    const targetEmail = owner?.email || restaurant.contactEmail || restaurant.email;
+                    if (targetEmail) {
+                        return sendSubscriptionSuccessEmail({
+                            email: targetEmail,
+                            name: owner?.name || restaurant.name,
+                            restaurantName: restaurant.name,
+                            plan: restaurant.subscription?.plan || plan,
+                            billingCycle: restaurant.subscription?.billingCycle || 'monthly',
+                            price: restaurant.subscription?.price || 0,
+                            expiryDate: restaurant.subscription?.subscriptionEndDate || restaurant.subscription?.expiryDate
+                        });
+                    }
+                })
+                .catch((err) => console.error('SuperAdmin updateSubscription email error:', err.message));
+        }
+
         res.json(restaurant);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -1107,6 +1128,23 @@ export const createRestaurantBySuperAdmin = async (req, res) => {
             phone: phoneNumber.trim(),
             isMain: true
         });
+
+        sendWelcomeEmail({
+            email: user.email,
+            name: user.name,
+            restaurantName: restaurant.name,
+            plan: selectedPlan
+        }).catch((err) => console.error('SuperAdmin createRestaurant welcome email error:', err.message));
+
+        sendSubscriptionSuccessEmail({
+            email: user.email,
+            name: user.name,
+            restaurantName: restaurant.name,
+            plan: selectedPlan,
+            billingCycle: billingCycle || 'monthly',
+            price: restaurant.subscription?.price || 0,
+            expiryDate: restaurant.subscription?.subscriptionEndDate || restaurant.subscription?.expiryDate
+        }).catch((err) => console.error('SuperAdmin createRestaurant subscription email error:', err.message));
 
         res.status(201).json({
             message: `Restaurant "${restaurant.name}" created successfully with ${selectedPlan} plan.`,

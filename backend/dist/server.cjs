@@ -66266,7 +66266,7 @@ var init_Notification = __esm({
 });
 
 // utils/emailService.js
-var import_nodemailer, getBrevoConfig, getSmtpConfig, sendEmail, sendWelcomeEmail, sendSubscriptionExpiredEmail, sendApprovalEmail, sendLoginNotificationEmail, sendSubscriptionSuccessEmail, portalBaseUrl, sendTrialRequestSubmittedEmail, sendTrialApprovedEmail, sendTrialRejectedEmail, sendTrialStartedEmail, sendTrialExpiringReminderEmail, sendTrialExpiredAndFrozenEmail, sendManualFreezeEmail, sendManualUnfreezeEmail, sendStaffRoleCredentialsEmail;
+var import_nodemailer, getBrevoConfig, getSmtpConfig, sendEmail, sendWelcomeEmail, sendSubscriptionExpiredEmail, sendApprovalEmail, sendLoginNotificationEmail, sendSubscriptionSuccessEmail, portalBaseUrl, sendTrialRequestSubmittedEmail, sendTrialApprovedEmail, sendTrialRejectedEmail, sendTrialStartedEmail, sendTrialExpiringReminderEmail, sendTrialExpiredAndFrozenEmail, sendManualFreezeEmail, sendManualUnfreezeEmail, sendStaffRoleCredentialsEmail, sendOutletFormatSubmissionEmail;
 var init_emailService = __esm({
   "utils/emailService.js"() {
     import_nodemailer = __toESM(require("nodemailer"), 1);
@@ -66299,31 +66299,6 @@ var init_emailService = __esm({
       if (!to) return false;
       const smtpConfig = getSmtpConfig();
       const { apiKey, senderEmail, senderName } = getBrevoConfig();
-      try {
-        const transporter = import_nodemailer.default.createTransport({
-          host: smtpConfig.host,
-          port: smtpConfig.port,
-          secure: false,
-          auth: {
-            user: smtpConfig.user,
-            pass: smtpConfig.pass
-          }
-        });
-        const info = await transporter.sendMail({
-          from: `"${smtpConfig.senderName}" <${smtpConfig.senderEmail}>`,
-          to,
-          subject,
-          html
-        });
-        console.log(`[Brevo SMTP Email Sent Successfully] Delivered to ${to}. Message ID: ${info.messageId}`);
-        return true;
-      } catch (smtpErr) {
-        if (smtpErr.message && (smtpErr.message.includes("525") || smtpErr.message.includes("Unauthorized IP"))) {
-          console.warn("[Brevo SMTP Warning]: Brevo blocked current IP (525 5.7.1 Unauthorized IP address). To enable live delivery from any IP, authorize IPs at https://app.brevo.com/security/authorised_ips");
-        } else {
-          console.warn(`[Brevo SMTP Warning] Falling back to Brevo API: ${smtpErr.message}`);
-        }
-      }
       if (apiKey) {
         try {
           const response = await fetch("https://api.brevo.com/v3/smtp/email", {
@@ -66347,13 +66322,34 @@ var init_emailService = __esm({
             return true;
           } else {
             console.error("[Brevo API Error Details]:", JSON.stringify(data));
-            if (data.message && data.message.includes("authorised_ips")) {
-              console.warn("[Action Required for Brevo Real-Time Mail]: Brevo security policy detected unrecognized server IP. Add IP at https://app.brevo.com/security/authorised_ips or disable Brevo IP restrictions to allow automated mail dispatch.");
-            }
           }
         } catch (brevoErr) {
           console.error("[Brevo HTTP Dispatch Error]:", brevoErr.message);
         }
+      }
+      try {
+        const transporter = import_nodemailer.default.createTransport({
+          host: smtpConfig.host,
+          port: smtpConfig.port,
+          secure: false,
+          connectionTimeout: 5e3,
+          greetingTimeout: 5e3,
+          socketTimeout: 1e4,
+          auth: {
+            user: smtpConfig.user,
+            pass: smtpConfig.pass
+          }
+        });
+        const info = await transporter.sendMail({
+          from: `"${smtpConfig.senderName}" <${smtpConfig.senderEmail}>`,
+          to,
+          subject,
+          html
+        });
+        console.log(`[Brevo SMTP Email Sent Successfully] Delivered to ${to}. Message ID: ${info.messageId}`);
+        return true;
+      } catch (smtpErr) {
+        console.warn(`[Brevo SMTP Warning]: ${smtpErr.message}`);
       }
       return false;
     };
@@ -66865,6 +66861,30 @@ var init_emailService = __esm({
         </div>
     `;
       return await sendEmail({ to: email, toName: name, subject, html });
+    };
+    sendOutletFormatSubmissionEmail = async ({ email, fullName, phoneNumber, restaurantName, city, outletFormat, isAdminAlert = false }) => {
+      const subject = isAdminAlert ? `New Outlet Format Request: ${restaurantName} (${outletFormat})` : `Outlet Format Request Received \u2014 ${restaurantName || "FoodNest"}`;
+      const html = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 16px;">
+            <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 28px; border-radius: 12px; text-align: center; color: white;">
+                <h1 style="margin: 0; font-size: 22px; font-weight: 800;">${isAdminAlert ? "New Outlet Format Lead" : "Thank You for Your Request!"}</h1>
+                <p style="margin-top: 8px; opacity: 0.95; font-size: 14px;">${outletFormat || "Restaurant POS & Billing Setup"}</p>
+            </div>
+            <div style="background: white; padding: 28px; border-radius: 12px; margin-top: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Hello ${isAdminAlert ? "Admin" : fullName || "Partner"},</h2>
+                <p style="color: #475569; line-height: 1.6; font-size: 14px;">
+                    ${isAdminAlert ? `A new outlet format walkthrough request was submitted for <strong>${restaurantName}</strong>.` : `We have received your outlet format request for <strong>${restaurantName}</strong>. Our onboarding specialist will contact you shortly on <strong>${phoneNumber}</strong>.`}
+                </p>
+                <div style="background-color: #fff7ed; padding: 16px; border-radius: 10px; margin: 18px 0; border-left: 4px solid #f97316;">
+                    <p style="margin: 0 0 6px 0; font-size: 13px; color: #1e293b;"><strong>Applicant:</strong> ${fullName || "N/A"}</p>
+                    <p style="margin: 0 0 6px 0; font-size: 13px; color: #1e293b;"><strong>Phone:</strong> ${phoneNumber || "N/A"}</p>
+                    <p style="margin: 0 0 6px 0; font-size: 13px; color: #1e293b;"><strong>Outlet Format:</strong> ${outletFormat || "N/A"}</p>
+                    <p style="margin: 0; font-size: 13px; color: #1e293b;"><strong>City:</strong> ${city || "N/A"}</p>
+                </div>
+            </div>
+        </div>
+    `;
+      return await sendEmail({ to: email, toName: fullName || "Partner", subject, html });
     };
   }
 });
@@ -132810,6 +132830,22 @@ var updateSubscription2 = async (req, res) => {
       restaurant.subscription.subscriptionEndDate = defaultEnd;
     }
     await restaurant.save();
+    if (plan || status === "Active") {
+      User_default.findById(restaurant.ownerId).select("email name").lean().then((owner) => {
+        const targetEmail = owner?.email || restaurant.contactEmail || restaurant.email;
+        if (targetEmail) {
+          return sendSubscriptionSuccessEmail({
+            email: targetEmail,
+            name: owner?.name || restaurant.name,
+            restaurantName: restaurant.name,
+            plan: restaurant.subscription?.plan || plan,
+            billingCycle: restaurant.subscription?.billingCycle || "monthly",
+            price: restaurant.subscription?.price || 0,
+            expiryDate: restaurant.subscription?.subscriptionEndDate || restaurant.subscription?.expiryDate
+          });
+        }
+      }).catch((err) => console.error("SuperAdmin updateSubscription email error:", err.message));
+    }
     res.json(restaurant);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -133526,6 +133562,21 @@ var createRestaurantBySuperAdmin = async (req, res) => {
       phone: phoneNumber.trim(),
       isMain: true
     });
+    sendWelcomeEmail({
+      email: user.email,
+      name: user.name,
+      restaurantName: restaurant.name,
+      plan: selectedPlan
+    }).catch((err) => console.error("SuperAdmin createRestaurant welcome email error:", err.message));
+    sendSubscriptionSuccessEmail({
+      email: user.email,
+      name: user.name,
+      restaurantName: restaurant.name,
+      plan: selectedPlan,
+      billingCycle: billingCycle || "monthly",
+      price: restaurant.subscription?.price || 0,
+      expiryDate: restaurant.subscription?.subscriptionEndDate || restaurant.subscription?.expiryDate
+    }).catch((err) => console.error("SuperAdmin createRestaurant subscription email error:", err.message));
     res.status(201).json({
       message: `Restaurant "${restaurant.name}" created successfully with ${selectedPlan} plan.`,
       restaurant,
@@ -140282,6 +140333,12 @@ var billingDemoRequestSchema = new import_mongoose51.default.Schema({
     required: [true, "Phone number is required"],
     trim: true
   },
+  email: {
+    type: String,
+    trim: true,
+    lowercase: true,
+    default: ""
+  },
   restaurantName: {
     type: String,
     required: [true, "Restaurant name is required"],
@@ -140406,7 +140463,7 @@ init_Branch();
 init_emailService();
 var createBillingDemoRequest = async (req, res) => {
   try {
-    const { fullName, phoneNumber, restaurantName, city, outletFormat } = req.body;
+    const { fullName, phoneNumber, email, restaurantName, city, outletFormat } = req.body;
     if (!fullName || !fullName.trim()) {
       return res.status(400).json({ message: "Full Name is required" });
     }
@@ -140421,6 +140478,7 @@ var createBillingDemoRequest = async (req, res) => {
       return res.status(400).json({ message: "Mobile phone number must be exactly 10 digits starting with 6, 7, 8, or 9" });
     }
     const cleanName = fullName.trim();
+    const cleanEmail = email ? String(email).trim().toLowerCase() : "";
     const cleanRestName = restaurantName.trim();
     const cleanCity = city ? city.trim() : "N/A";
     const cleanOutlet = outletFormat ? outletFormat.trim() : "Fine Dine & Resto-Bar";
@@ -140444,6 +140502,7 @@ var createBillingDemoRequest = async (req, res) => {
     const newDemoRequest = new BillingDemoRequest_default({
       fullName: cleanName,
       phoneNumber: cleanPhone,
+      email: cleanEmail,
       restaurantName: cleanRestName,
       city: cleanCity,
       outletFormat: cleanOutlet,
@@ -140474,6 +140533,34 @@ var createBillingDemoRequest = async (req, res) => {
       }
     });
     const savedRequest = await newDemoRequest.save();
+    if (cleanEmail) {
+      sendOutletFormatSubmissionEmail({
+        email: cleanEmail,
+        fullName: cleanName,
+        phoneNumber: cleanPhone,
+        restaurantName: cleanRestName,
+        city: cleanCity,
+        outletFormat: cleanOutlet,
+        isAdminAlert: false
+      }).catch((err) => console.error("Outlet format confirmation email error:", err.message));
+    }
+    User_default.find({ role: "SuperAdmin" }).select("email").lean().then((admins) => {
+      admins.forEach((adm) => {
+        if (adm.email) {
+          sendOutletFormatSubmissionEmail({
+            email: adm.email,
+            fullName: cleanName,
+            phoneNumber: cleanPhone,
+            restaurantName: cleanRestName,
+            city: cleanCity,
+            outletFormat: cleanOutlet,
+            isAdminAlert: true
+          }).catch(() => {
+          });
+        }
+      });
+    }).catch(() => {
+    });
     res.status(201).json({
       success: true,
       message: `Thank you, ${cleanName}! Your free walkthrough request for ${cleanRestName} has been booked. Our specialist will call you on ${cleanPhone}.`,
@@ -140956,6 +141043,15 @@ var activateBillingDemo = async (req, res) => {
         restaurantName: restaurant.name,
         plan: restaurant.billingConfig?.customPlanName || "Custom Plan"
       }).catch((err) => console.error("Billing demo welcome email error:", err.message));
+      sendSubscriptionSuccessEmail({
+        email: ownerUser.email,
+        name: ownerUser.name,
+        restaurantName: restaurant.name,
+        plan: restaurant.subscription?.plan || restaurant.billingConfig?.customPlanName || "Custom SaaS",
+        billingCycle: restaurant.subscription?.billingCycle || "yearly",
+        price: restaurant.subscription?.price || 0,
+        expiryDate: restaurant.subscription?.subscriptionEndDate || restaurant.subscription?.expiryDate
+      }).catch((err) => console.error("Billing demo subscription email error:", err.message));
     }
     res.json({
       success: true,
