@@ -32,7 +32,7 @@ const ChefTopbar = () => {
     const fetchNotifications = async () => {
         try {
             const res = await api.get('/notifications');
-            setNotifications(res.data);
+            setNotifications(Array.isArray(res.data) ? res.data : []);
         } catch (error) {
             console.error('Failed to fetch notifications', error);
         }

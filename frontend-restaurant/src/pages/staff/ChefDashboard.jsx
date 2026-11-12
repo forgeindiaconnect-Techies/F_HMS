@@ -386,9 +386,9 @@ const ChefDashboard = () => {
         // Search Filter
         if (searchQuery.trim()) {
             const q = searchQuery.toLowerCase();
-            const idMatch = order._id.toLowerCase().includes(q);
+            const idMatch = String(order._id || '').toLowerCase().includes(q);
             const tableMatch = String(order.tableNumber || '').toLowerCase().includes(q);
-            const itemMatch = order.orderItems?.some(i => i.name.toLowerCase().includes(q));
+            const itemMatch = Array.isArray(order.orderItems) && order.orderItems.some(i => String(i?.name || '').toLowerCase().includes(q));
             if (!idMatch && !tableMatch && !itemMatch) return false;
         }
 

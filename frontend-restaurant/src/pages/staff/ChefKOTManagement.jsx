@@ -124,8 +124,8 @@ const ChefKOTManagement = () => {
                 api.get('/kot/summary').catch(() => ({ data: {} }))
             ]);
 
-            setKots(kotRes.data || []);
-            if (summaryRes.data) {
+            setKots(Array.isArray(kotRes.data) ? kotRes.data : []);
+            if (summaryRes.data && typeof summaryRes.data === 'object') {
                 setSummary(prev => ({ ...prev, ...summaryRes.data }));
             }
             if (isManual) {
@@ -212,15 +212,15 @@ const ChefKOTManagement = () => {
     };
 
     // Filter tickets by search query
-    const filteredKots = kots.filter(kot => {
+    const filteredKots = (Array.isArray(kots) ? kots : []).filter(kot => {
         if (!searchQuery.trim()) return true;
         const q = searchQuery.toLowerCase();
         return (
-            (kot.kotNumber && kot.kotNumber.toLowerCase().includes(q)) ||
-            (kot.orderNumber && kot.orderNumber.toLowerCase().includes(q)) ||
+            (kot.kotNumber && String(kot.kotNumber).toLowerCase().includes(q)) ||
+            (kot.orderNumber && String(kot.orderNumber).toLowerCase().includes(q)) ||
             (kot.tableNumber && String(kot.tableNumber).toLowerCase().includes(q)) ||
-            (kot.customerName && kot.customerName.toLowerCase().includes(q)) ||
-            (kot.items && kot.items.some(i => i.name.toLowerCase().includes(q)))
+            (kot.customerName && String(kot.customerName).toLowerCase().includes(q)) ||
+            (Array.isArray(kot.items) && kot.items.some(i => String(i?.name || '').toLowerCase().includes(q)))
         );
     });
 
@@ -397,8 +397,9 @@ const ChefKOTManagement = () => {
                         const isOverdue = elapsedMins >= 18;
                         const isWarning = elapsedMins >= 10 && !isOverdue;
 
-                        const tableText = kot.tableNumber && kot.tableNumber !== 'Any' && kot.tableNumber !== 'Takeout'
-                            ? (kot.tableNumber.startsWith('Table') ? kot.tableNumber : `Table ${kot.tableNumber}`)
+                        const tableStr = kot.tableNumber !== undefined && kot.tableNumber !== null ? String(kot.tableNumber) : '';
+                        const tableText = tableStr && tableStr !== 'Any' && tableStr !== 'Takeout'
+                            ? (tableStr.startsWith('Table') ? tableStr : `Table ${tableStr}`)
                             : (kot.orderType === 'Delivery' ? 'Delivery' : 'Counter Pickup');
 
                         const isReady = kot.status === 'Ready';

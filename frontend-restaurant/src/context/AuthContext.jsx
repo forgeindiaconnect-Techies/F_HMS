@@ -87,7 +87,15 @@ const isStaffPortalPath = (path) => {
 };
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(() => {
+        try {
+            const stored = localStorage.getItem('restosys_staff_user');
+            return stored ? JSON.parse(stored) : null;
+        } catch (e) {
+            localStorage.removeItem('restosys_staff_user');
+            return null;
+        }
+    });
     const [restaurant, setRestaurant] = useState(() => {
         try {
             const cached = localStorage.getItem('restosys_restaurant');
@@ -96,7 +104,7 @@ export const AuthProvider = ({ children }) => {
             return null;
         }
     });
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     const fetchRestaurant = useCallback(async (currentUser = user) => {
         const path = typeof window !== 'undefined' ? window.location.pathname : '';
@@ -138,7 +146,10 @@ export const AuthProvider = ({ children }) => {
                 try {
                     const parsedUser = JSON.parse(storedUser);
                     setUser(parsedUser);
-                    await fetchRestaurant(parsedUser);
+                    setLoading(false);
+                    // Refresh restaurant in background without blocking initial UI render on cold starts
+                    fetchRestaurant(parsedUser).catch(() => {});
+                    return;
                 } catch (e) {
                     localStorage.removeItem('restosys_staff_user');
                 }
@@ -278,7 +289,14 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={{ user, setUser, restaurant, subscriptionState, fetchRestaurant, login, register, logout, loading, api }}>
-            {!loading && children}
+            {loading ? (
+                <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#FAFAF8] dark:bg-slate-950 text-slate-800 dark:text-white gap-3">
+                    <div className="w-10 h-10 rounded-full border-4 border-orange-200 border-t-[#FF5A1F] animate-spin" />
+                    <span className="text-xs font-bold tracking-wider uppercase text-slate-500 dark:text-slate-400">Loading FoodNest...</span>
+                </div>
+            ) : (
+                children
+            )}
         </AuthContext.Provider>
     );
 };
