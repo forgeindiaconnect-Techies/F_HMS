@@ -128450,8 +128450,8 @@ var getRestaurants = async (req, res) => {
     const restIds = restaurants.map((r) => r._id);
     const [partnerRestIds, allBranches, allVerifs] = await Promise.all([
       DeliveryPartner_default.distinct("restaurantId", { restaurantId: { $in: restIds } }),
-      Branch_default.find({ restaurantId: { $in: restIds }, isActive: true }).lean(),
-      RestaurantVerification_default.find({ restaurantId: { $in: restIds } }).lean().catch(() => [])
+      Branch_default.find({ restaurantId: { $in: restIds }, isActive: true }).select("restaurantId name location").lean(),
+      RestaurantVerification_default.find({ restaurantId: { $in: restIds } }).select("restaurantId documents.addressProof.addressText documents.logo.filePath documents.images.filePath").lean().catch(() => [])
     ]);
     const partnerSet = new Set(partnerRestIds.map((id) => String(id)));
     const branchMap = /* @__PURE__ */ new Map();
@@ -132484,7 +132484,7 @@ var getMenuItems = async (req, res) => {
         ];
       }
     }
-    const items = await MenuItem_default.find(filter).populate("restaurantId", "name approvalStatus logo subscription isActive isDeleted status");
+    const items = await MenuItem_default.find(filter).populate("restaurantId", "name approvalStatus subscription isActive isDeleted status").lean();
     const validItems = items.filter((item) => {
       if (!item.restaurantId) return false;
       if (typeof item.restaurantId === "object") {

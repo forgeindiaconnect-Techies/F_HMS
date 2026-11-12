@@ -32,7 +32,9 @@ export const getMenuItems = async (req, res) => {
             }
         }
 
-        const items = await MenuItem.find(filter).populate('restaurantId', 'name approvalStatus logo subscription isActive isDeleted status');
+        const items = await MenuItem.find(filter)
+            .populate('restaurantId', 'name approvalStatus subscription isActive isDeleted status')
+            .lean();
         // Exclude menu items whose parent restaurant has been deleted by Super Admin, rejected, or inactive/suspended/frozen!
         const validItems = items.filter(item => {
             if (!item.restaurantId) return false;

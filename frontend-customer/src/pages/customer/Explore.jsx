@@ -36,10 +36,25 @@ export default function Explore() {
   const { cartCount, addToCart, wishlist, toggleWishlist, setIsCartOpen } = useCart();
   const { user, api, logout } = useCustomerAuth();
 
-  // State (Initialized cleanly for pure real-time database data)
-  const [restaurants, setRestaurants] = useState([]);
-  const [dishes, setDishes] = useState([]);
-  const [loadingData, setLoadingData] = useState(true);
+  // State (Initialized cleanly with cached fallback for instant rendering)
+  const [restaurants, setRestaurants] = useState(() => {
+    try {
+      const cached = localStorage.getItem('foodnest_explore_restaurants_cache');
+      return cached ? JSON.parse(cached) : [];
+    } catch { return []; }
+  });
+  const [dishes, setDishes] = useState(() => {
+    try {
+      const cached = localStorage.getItem('foodnest_explore_dishes_cache');
+      return cached ? JSON.parse(cached) : [];
+    } catch { return []; }
+  });
+  const [loadingData, setLoadingData] = useState(() => {
+    try {
+      const cached = localStorage.getItem('foodnest_explore_restaurants_cache');
+      return !(cached && JSON.parse(cached)?.length > 0);
+    } catch { return true; }
+  });
   const [selectedCuisine, setSelectedCuisine] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   // Initialize location from localStorage if previously detected
@@ -76,21 +91,22 @@ export default function Explore() {
   // --------------------------------------------------------------------------
   useEffect(() => {
     let isMounted = true;
-    setLoadingData(true);
+    if (restaurants.length === 0) setLoadingData(true);
     setFetchError(null);
 
-    // Guaranteed fallback timer so skeleton loading NEVER hangs indefinitely (max 8 seconds)
+    // Guaranteed fallback timer so skeleton loading NEVER hangs indefinitely (25s for cold server starts)
     const safetyTimeout = setTimeout(() => {
       if (isMounted) {
         setLoadingData((prev) => {
           if (prev) {
             console.warn('[Explore] Data fetch timed out, clearing skeleton loading state.');
+            setFetchError((curErr) => curErr || 'Server is waking up. Tap Retry Connection to load restaurants.');
             return false;
           }
           return false;
         });
       }
-    }, 8000);
+    }, 25000);
 
     // Parallel atomic fetching with Promise.allSettled
     Promise.allSettled([
@@ -148,6 +164,15 @@ export default function Explore() {
           };
         });
         setRestaurants(backendMapped);
+        try {
+          const slimCache = backendMapped.map(r => ({
+            ...r,
+            image: r.image && r.image.length < 4000 ? r.image : null,
+            logo: r.logo && r.logo.length < 4000 ? r.logo : '',
+            showcaseImages: []
+          }));
+          localStorage.setItem('foodnest_explore_restaurants_cache', JSON.stringify(slimCache));
+        } catch {}
       } else if (restRes.status === 'rejected') {
         console.error('Failed to load restaurants from server:', restRes.reason);
       }
@@ -197,6 +222,13 @@ export default function Explore() {
           };
         });
         setDishes(backendDishes);
+        try {
+          const slimDishes = backendDishes.map(d => ({
+            ...d,
+            image: d.image && d.image.length < 4000 ? d.image : null
+          }));
+          localStorage.setItem('foodnest_explore_dishes_cache', JSON.stringify(slimDishes));
+        } catch {}
       } else if (menuRes.status === 'rejected') {
         console.error('Failed to load menu dishes from server:', menuRes.reason);
       }

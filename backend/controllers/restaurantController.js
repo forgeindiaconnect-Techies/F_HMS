@@ -83,11 +83,14 @@ export const getRestaurants = async (req, res) => {
 
         const restIds = restaurants.map(r => r._id);
 
-        // Batch fetch partner existence, active branches, and verifications in 3 parallel queries (eliminates N+1 queries)
+        // Batch fetch partner existence, active branches, and slim verification fields in 3 parallel queries
         const [partnerRestIds, allBranches, allVerifs] = await Promise.all([
             DeliveryPartner.distinct('restaurantId', { restaurantId: { $in: restIds } }),
-            Branch.find({ restaurantId: { $in: restIds }, isActive: true }).lean(),
-            RestaurantVerification.find({ restaurantId: { $in: restIds } }).lean().catch(() => [])
+            Branch.find({ restaurantId: { $in: restIds }, isActive: true }).select('restaurantId name location').lean(),
+            RestaurantVerification.find({ restaurantId: { $in: restIds } })
+                .select('restaurantId documents.addressProof.addressText documents.logo.filePath documents.images.filePath')
+                .lean()
+                .catch(() => [])
         ]);
 
         const partnerSet = new Set(partnerRestIds.map(id => String(id)));
