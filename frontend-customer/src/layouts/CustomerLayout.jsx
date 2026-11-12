@@ -179,7 +179,7 @@ const CustomerLayout = () => {
                                     </button>
 
                                     {showTrackDropdown && activeOrders.length > 1 && (
-                                        <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden">
+                                        <div className="fixed inset-x-3 top-16 sm:absolute sm:inset-auto sm:right-0 sm:top-auto sm:mt-2 w-auto sm:w-80 max-w-md mx-auto bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden">
                                             <div className="px-4 py-2.5 bg-orange-50/70 border-b border-orange-100 flex items-center justify-between">
                                                 <span className="text-xs font-black text-slate-900">Active Orders ({activeOrders.length})</span>
                                                 <Link
