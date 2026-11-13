@@ -75,6 +75,9 @@ api.interceptors.response.use(
 
         const isDeadRender = config?.baseURL && (config.baseURL.includes('f-hms-1') || config.baseURL.includes('backend-ochre'));
         if (config && !config._fallbackTried && (isDeadRender || (isNetworkDown && isLocalTarget))) {
+            if (typeof window !== 'undefined' && isLocalTarget) {
+                window.__localPort5000Down = true;
+            }
             config._fallbackTried = true;
             config.baseURL = 'https://f-hms.onrender.com/api';
             return api.request(config);
@@ -383,21 +386,41 @@ export const AuthProvider = ({ children }) => {
         try {
             clearAllStaleState();
             let res;
-            try {
-                res = await api.post('/auth/login', { email, password, loginType: 'staff' }, { timeout: 35000 });
-            } catch (localErr) {
-                const isNetErr = !localErr.response || localErr.code === 'ERR_NETWORK' || localErr.code === 'ECONNABORTED';
-                if (isNetErr) {
-                    res = await axios.post('https://f-hms.onrender.com/api/auth/login', {
-                        email,
-                        password,
-                        loginType: 'staff'
-                    }, {
-                        timeout: 45000,
-                        headers: { 'Content-Type': 'application/json' }
-                    });
-                } else {
-                    throw localErr;
+            const currentBase = (api.defaults?.baseURL || getApiUrl());
+            const isLocal = currentBase.includes('localhost') || currentBase.includes(':5000') || currentBase.includes('127.0.0.1');
+
+            // If localhost target is known down or unreachable, bypass directly to cloud without waiting
+            if (isLocal && typeof window !== 'undefined' && window.__localPort5000Down) {
+                res = await axios.post('https://f-hms.onrender.com/api/auth/login', {
+                    email,
+                    password,
+                    loginType: 'staff'
+                }, {
+                    timeout: 25000,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            } else {
+                try {
+                    // Fail fast on local port 5000 in 1500ms so we failover to cloud in 1.5s instead of 35s!
+                    const targetTimeout = isLocal ? 1500 : 25000;
+                    res = await api.post('/auth/login', { email, password, loginType: 'staff' }, { timeout: targetTimeout });
+                } catch (localErr) {
+                    const isNetErr = !localErr.response || localErr.code === 'ERR_NETWORK' || localErr.code === 'ECONNABORTED';
+                    if (isNetErr) {
+                        if (typeof window !== 'undefined' && isLocal) {
+                            window.__localPort5000Down = true;
+                        }
+                        res = await axios.post('https://f-hms.onrender.com/api/auth/login', {
+                            email,
+                            password,
+                            loginType: 'staff'
+                        }, {
+                            timeout: 30000,
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    } else {
+                        throw localErr;
+                    }
                 }
             }
 

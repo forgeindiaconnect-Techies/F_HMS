@@ -411,7 +411,9 @@ export const loginUser = async (req, res) => {
                         phone: restaurant.phone,
                         address: restaurant.address,
                         city: restaurant.city,
-                        logo: restaurant.logo,
+                        logo: (restaurant.logo && typeof restaurant.logo === 'string' && restaurant.logo.length > 5000)
+                            ? `/api/restaurants/${restaurant._id}/thumbnail`
+                            : restaurant.logo,
                         isActive: restaurant.isActive,
                         isDemo: restaurant.isDemo,
                         approvalStatus: restaurant.approvalStatus,

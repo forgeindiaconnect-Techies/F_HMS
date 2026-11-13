@@ -516,7 +516,11 @@ export const getMyRestaurant = async (req, res) => {
             } catch (_) {}
         }
 
-        res.json(restaurant);
+        const restObj = restaurant.toObject ? restaurant.toObject() : { ...restaurant };
+        if (restObj.logo && typeof restObj.logo === 'string' && restObj.logo.length > 5000) {
+            restObj.logo = `/api/restaurants/${restaurant._id}/thumbnail`;
+        }
+        res.json(restObj);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -1072,7 +1076,11 @@ export const getRestaurantById = async (req, res) => {
             }
         } catch (_) {}
         
-        res.json(restaurant);
+        const restObj = restaurant.toObject ? restaurant.toObject() : { ...restaurant };
+        if (restObj.logo && typeof restObj.logo === 'string' && restObj.logo.length > 5000) {
+            restObj.logo = `/api/restaurants/${restaurant._id}/thumbnail`;
+        }
+        res.json(restObj);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

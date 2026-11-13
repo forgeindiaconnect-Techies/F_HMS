@@ -1,7 +1,12 @@
 import axios from 'axios';
 
 export const getApiUrl = () => {
-    // If running in browser on localhost or local network, always use local backend port 5000
+    // If local port 5000 was tested and found unreachable, use the cloud backend immediately without delay
+    if (typeof window !== 'undefined' && window.__localPort5000Down) {
+        return 'https://f-hms.onrender.com/api';
+    }
+
+    // If running in browser on localhost or local network, use local backend port 5000
     if (typeof window !== 'undefined') {
         const host = window.location.hostname;
         if (host === 'localhost' || host === '127.0.0.1') {
@@ -84,6 +89,9 @@ api.interceptors.response.use(
 
         const isDeadRender = config?.baseURL && (config.baseURL.includes('f-hms-1') || config.baseURL.includes('backend-ochre'));
         if (config && !config._fallbackTried && (isDeadRender || (isNetworkDown && isLocalTarget))) {
+            if (typeof window !== 'undefined' && isLocalTarget) {
+                window.__localPort5000Down = true;
+            }
             config._fallbackTried = true;
             config.baseURL = 'https://f-hms.onrender.com/api';
             return api.request(config);

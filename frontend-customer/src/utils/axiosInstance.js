@@ -2,6 +2,11 @@ import axios from 'axios';
 import { Capacitor } from '@capacitor/core';
 
 export const getApiUrl = () => {
+    // If local port 5000 was tested and found unreachable, use the cloud backend immediately without delay
+    if (typeof window !== 'undefined' && window.__localPort5000Down) {
+        return 'https://f-hms.onrender.com/api';
+    }
+
     // Check custom localStorage override first (useful for manual setting or testing on real devices)
     if (typeof window !== 'undefined' && window.localStorage) {
         const customUrl = window.localStorage.getItem('foodnest_api_url');

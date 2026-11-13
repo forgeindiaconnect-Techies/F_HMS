@@ -127296,7 +127296,7 @@ var loginUser = async (req, res) => {
             phone: restaurant.phone,
             address: restaurant.address,
             city: restaurant.city,
-            logo: restaurant.logo,
+            logo: restaurant.logo && typeof restaurant.logo === "string" && restaurant.logo.length > 5e3 ? `/api/restaurants/${restaurant._id}/thumbnail` : restaurant.logo,
             isActive: restaurant.isActive,
             isDemo: restaurant.isDemo,
             approvalStatus: restaurant.approvalStatus,
@@ -128805,7 +128805,11 @@ var getMyRestaurant = async (req, res) => {
       } catch (_) {
       }
     }
-    res.json(restaurant);
+    const restObj = restaurant.toObject ? restaurant.toObject() : { ...restaurant };
+    if (restObj.logo && typeof restObj.logo === "string" && restObj.logo.length > 5e3) {
+      restObj.logo = `/api/restaurants/${restaurant._id}/thumbnail`;
+    }
+    res.json(restObj);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -129280,7 +129284,11 @@ var getRestaurantById = async (req, res) => {
       }
     } catch (_) {
     }
-    res.json(restaurant);
+    const restObj = restaurant.toObject ? restaurant.toObject() : { ...restaurant };
+    if (restObj.logo && typeof restObj.logo === "string" && restObj.logo.length > 5e3) {
+      restObj.logo = `/api/restaurants/${restaurant._id}/thumbnail`;
+    }
+    res.json(restObj);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
