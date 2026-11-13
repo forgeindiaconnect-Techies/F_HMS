@@ -123,7 +123,7 @@ const StaffAuthPage = () => {
         const fetchPlans = async () => {
             try {
                 setPlansLoading(true);
-                const res = await api.get('/plans');
+                const res = await api.get('/plans', { timeout: 5000 });
                 if (res.data && Array.isArray(res.data) && res.data.length > 0) {
                     setPlans(res.data);
                     const qPlan = searchParams.get('plan');
@@ -235,12 +235,24 @@ const StaffAuthPage = () => {
         }
 
         try {
-            const API_URL = getApiUrl();
             setRegStatusMessage('Processing registration on server...');
 
-            await axios.post(`${API_URL}/auth/register`, formData, {
-                timeout: 180000
-            });
+            try {
+                await api.post('/auth/register', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                    timeout: 45000
+                });
+            } catch (postErr) {
+                const isNetErr = !postErr.response || postErr.code === 'ERR_NETWORK' || postErr.code === 'ECONNABORTED';
+                if (isNetErr) {
+                    await axios.post('https://backend-ochre-five-29.vercel.app/api/auth/register', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' },
+                        timeout: 60000
+                    });
+                } else {
+                    throw postErr;
+                }
+            }
 
             setRegStatusMessage('Signing into restaurant portal...');
             try {

@@ -37,6 +37,7 @@ export const getApiUrl = () => {
 
 const api = axios.create({
     baseURL: getApiUrl(),
+    timeout: 8000,
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
@@ -75,11 +76,22 @@ api.interceptors.response.use(
     async (error) => {
         const config = error.config;
         const status = error.response ? error.response.status : 0;
-        const isNetworkDown = !error.response || error.code === 'ERR_NETWORK';
+        const isTimeout = error.code === 'ECONNABORTED' || (error.message && error.message.toLowerCase().includes('timeout'));
+        const isNetworkDown = !error.response || error.code === 'ERR_NETWORK' || isTimeout;
         const isColdStart = status === 502 || status === 503 || status === 504 || isNetworkDown;
 
-        // Fallback to live backend if local/LAN port 5000 is unreachable
-        if (config && isNetworkDown && config.baseURL && (config.baseURL.includes('5000') || config.baseURL.includes('localhost') || config.baseURL.includes('192.168.'))) {
+        // Fallback to live backend if local/LAN port 5000 is unreachable or timed out
+        const isLocalTarget = config?.baseURL && (
+            config.baseURL.includes(':5000') || 
+            config.baseURL.includes('localhost') || 
+            config.baseURL.includes('127.0.0.1') || 
+            config.baseURL.includes('192.168.') || 
+            config.baseURL.includes('10.') || 
+            config.baseURL.includes('172.')
+        );
+
+        if (config && !config._fallbackTried && isNetworkDown && isLocalTarget) {
+            config._fallbackTried = true;
             config.baseURL = 'https://backend-ochre-five-29.vercel.app/api';
             return api.request(config);
         }
