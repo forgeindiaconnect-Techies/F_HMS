@@ -12,7 +12,7 @@ const categories = ['All', 'Starters', 'Salads', 'Mains', 'Desserts', 'Beverages
 const Menu = () => {
     const { addToCart, wishlist, toggleWishlist } = useCart();
     const { api } = useCustomerAuth();
-    
+
     const [menuItems, setMenuItems] = useState(() => {
         try {
             const cached = sessionStorage.getItem('foodnest_menu_cache');
@@ -72,8 +72,8 @@ const Menu = () => {
                 matchesCategory = itemCat === activeCategory.toLowerCase();
             }
 
-            const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                                   (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+            const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
             return matchesCategory && matchesSearch;
         });
     }, [searchQuery, activeCategory, menuItems]);
@@ -104,7 +104,7 @@ const Menu = () => {
                     <div className="mt-6 max-w-xl">
                         <div className="relative flex items-center bg-white rounded-full border border-slate-200/90 shadow-sm focus-within:border-[#FF5A1F] focus-within:ring-2 focus-within:ring-orange-100 transition-all p-1">
                             <Search className="text-slate-400 ml-3.5 shrink-0" size={18} />
-                            <input 
+                            <input
                                 type="text"
                                 placeholder="Search dishes, ingredients, or cuisines..."
                                 value={searchQuery}
@@ -112,15 +112,15 @@ const Menu = () => {
                                 className="w-full px-3 py-2 text-xs sm:text-sm font-medium bg-transparent outline-none text-slate-800 placeholder-slate-400"
                             />
                             {searchQuery && (
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     onClick={() => setSearchQuery('')}
                                     className="text-xs text-slate-400 hover:text-slate-600 px-2 py-1 cursor-pointer"
                                 >
                                     Clear
                                 </button>
                             )}
-                            <button 
+                            <button
                                 type="button"
                                 className="bg-[#FF5A1F] hover:bg-[#e04f1a] text-white text-xs font-bold px-4 py-2 rounded-full transition-colors shrink-0 shadow-xs cursor-pointer"
                             >
@@ -133,7 +133,7 @@ const Menu = () => {
 
             {/* 2. Main Content Container */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                
+
                 {/* Category Filter Pills (Matching Landing Page Style) */}
                 <div className="flex items-center gap-2 overflow-x-auto pb-4 pt-1 no-scrollbar select-none">
                     {categories.map(cat => {
@@ -142,11 +142,10 @@ const Menu = () => {
                             <button
                                 key={cat}
                                 onClick={() => setActiveCategory(cat)}
-                                className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer ${
-                                    isActive 
-                                    ? 'bg-[#FF5A1F] text-white shadow-xs shadow-[#FF5A1F]/30 scale-102' 
+                                className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer ${isActive
+                                    ? 'bg-[#FF5A1F] text-white shadow-xs shadow-[#FF5A1F]/30 scale-102'
                                     : 'bg-slate-100 hover:bg-orange-50 text-slate-700 hover:text-[#FF5A1F] border border-transparent'
-                                }`}
+                                    }`}
                             >
                                 {cat}
                             </button>
@@ -179,7 +178,7 @@ const Menu = () => {
                         <Search size={40} className="mx-auto text-slate-300 mb-3" />
                         <h3 className="text-base font-bold text-slate-900">No dishes match your search</h3>
                         <p className="text-xs text-slate-500 mt-1">Try searching with a different keyword or category.</p>
-                        <button 
+                        <button
                             onClick={() => { setSearchQuery(''); setActiveCategory('All'); }}
                             className="mt-4 text-xs font-bold text-[#FF5A1F] hover:underline cursor-pointer"
                         >
@@ -191,10 +190,10 @@ const Menu = () => {
                         {filteredMenu.map(item => {
                             const isFav = wishlist?.some(w => (w._id || w.id) === (item._id || item.id));
                             const discountBadge = item.discount || (item.tags?.includes('Popular') ? '20% OFF' : null);
-                            
+
                             return (
-                                <div 
-                                    key={item._id || item.id} 
+                                <div
+                                    key={item._id || item.id}
                                     onClick={() => setSelectedDish(item)}
                                     className="bg-white rounded-xl border border-slate-200/80 p-3 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between text-left group cursor-pointer"
                                 >
@@ -202,8 +201,8 @@ const Menu = () => {
                                         {/* Square Image with Badges & Heart Button */}
                                         <div className="relative aspect-square rounded-lg overflow-hidden bg-slate-50 mb-2.5 flex items-center justify-center">
                                             {getItemImage(item) ? (
-                                                <img 
-                                                    src={getItemImage(item)} 
+                                                <img
+                                                    src={getItemImage(item)}
                                                     alt={item.name}
                                                     onError={(e) => {
                                                         e.target.style.display = 'none';
@@ -222,14 +221,13 @@ const Menu = () => {
                                                     {discountBadge}
                                                 </div>
                                             )}
-                                            <button 
+                                            <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     toggleWishlist(item);
                                                 }}
-                                                className={`absolute top-2 right-2 p-1.5 rounded-full backdrop-blur-xs transition-colors cursor-pointer ${
-                                                    isFav ? 'bg-red-500 text-white shadow-xs' : 'bg-white/90 text-slate-600 hover:text-red-500 shadow-xs'
-                                                }`}
+                                                className={`absolute top-2 right-2 p-1.5 rounded-full backdrop-blur-xs transition-colors cursor-pointer ${isFav ? 'bg-red-500 text-white shadow-xs' : 'bg-white/90 text-slate-600 hover:text-red-500 shadow-xs'
+                                                    }`}
                                                 aria-label="Wishlist"
                                             >
                                                 <Heart size={12} className={isFav ? 'fill-white' : ''} />
@@ -241,7 +239,7 @@ const Menu = () => {
                                             <h4 className="text-[13px] sm:text-sm font-bold text-slate-900 line-clamp-1 group-hover:text-[#FF5A1F] transition-colors">
                                                 {item.name}
                                             </h4>
-                                            
+
                                             <div className="flex items-center gap-1 text-xs text-slate-600 font-semibold">
                                                 <Star size={11} className="fill-amber-400 text-amber-400" />
                                                 <span>{item.rating || '4.5'}</span>
@@ -266,7 +264,7 @@ const Menu = () => {
                                     </div>
 
                                     {/* Compact Orange Add to Cart Button (opens dish description before adding) */}
-                                    <button 
+                                    <button
                                         type="button"
                                         onClick={(e) => {
                                             e.stopPropagation();

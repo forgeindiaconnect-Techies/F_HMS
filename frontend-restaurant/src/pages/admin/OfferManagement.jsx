@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Tag, Copy, Trash2, X, Calendar, Percent, DollarSign, Truck } from 'lucide-react';
+import { Search, Plus, Tag, Copy, Trash2, X, Calendar, Percent, DollarSign, Truck, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../../components/ConfirmModal';
 import { useAuth } from '../../context/AuthContext';
@@ -21,6 +21,7 @@ const OfferManagement = () => {
         usageLimit: 0,
         isActive: true
     });
+    const [submitting, setSubmitting] = useState(false);
 
     const [confirmModal, setConfirmModal] = useState({
         isOpen: false,
@@ -79,20 +80,38 @@ const OfferManagement = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (submitting) return;
+
+        const cleanCode = (formData.code || '').trim().toUpperCase();
+        if (!cleanCode) {
+            toast.error('Please enter a promo code');
+            return;
+        }
+
+        const discVal = Number(formData.discountValue);
+        if (isNaN(discVal) || discVal <= 0) {
+            toast.error('Please enter a valid discount value greater than 0');
+            return;
+        }
+
         try {
-            const payload = { ...formData };
+            setSubmitting(true);
+            const payload = { ...formData, code: cleanCode };
             if (payload.expiresAt === '') delete payload.expiresAt;
-            payload.discountValue = Number(payload.discountValue);
-            payload.minSpend = Number(payload.minSpend);
-            payload.usageLimit = Number(payload.usageLimit);
+            payload.discountValue = discVal;
+            payload.minSpend = Number(payload.minSpend) || 0;
+            payload.usageLimit = Number(payload.usageLimit) || 0;
 
             await api.post('/offers', payload);
-            fetchData();
+            await fetchData();
             setIsModalOpen(false);
-            toast.success('Offer created successfully');
+            toast.success(`Promo code "${cleanCode}" created successfully!`);
         } catch (error) {
             console.error('Failed to create offer', error);
-            toast.error(error.response?.data?.message || 'Failed to create offer');
+            const msg = error.response?.data?.message || 'Failed to create offer';
+            toast.error(msg);
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -349,15 +368,24 @@ const OfferManagement = () => {
                                     <button 
                                         type="button" 
                                         onClick={() => setIsModalOpen(false)}
-                                        className="flex-1 py-3 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold rounded-xl transition-colors text-sm shadow-sm"
+                                        disabled={submitting}
+                                        className="flex-1 py-3 bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-50 text-gray-700 font-bold rounded-xl transition-colors text-sm shadow-sm cursor-pointer"
                                     >
                                         Cancel
                                     </button>
                                     <button 
                                         type="submit" 
-                                        className="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-sm shadow-green-600/20 transition-colors text-sm"
+                                        disabled={submitting}
+                                        className="flex-1 py-3 bg-green-600 hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-sm shadow-green-600/20 transition-all text-sm flex items-center justify-center gap-2 cursor-pointer"
                                     >
-                                        Create Offer
+                                        {submitting ? (
+                                            <>
+                                                <Loader2 size={16} className="animate-spin" />
+                                                <span>Creating Offer...</span>
+                                            </>
+                                        ) : (
+                                            <span>Create Offer</span>
+                                        )}
                                     </button>
                                 </div>
                             </form>

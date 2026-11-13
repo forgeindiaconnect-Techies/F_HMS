@@ -880,6 +880,69 @@ const CustomerDashboard = () => {
                                 </div>
                             </div>
 
+                            {/* Active Promo Codes & Discounts Section */}
+                            {liveOffers.length > 0 && (
+                                <div className="bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-orange-500/5 border border-orange-200/90 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-8 h-8 rounded-xl bg-[#FF5A1F] text-white flex items-center justify-center shadow-xs">
+                                                <Gift size={16} />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-black text-slate-900 tracking-tight flex items-center gap-1.5">
+                                                    Special Promo Codes &amp; Live Offers
+                                                    <span className="text-[10px] font-bold text-white bg-[#FF5A1F] px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                                        {liveOffers.length} Active
+                                                    </span>
+                                                </h4>
+                                                <p className="text-[11px] text-slate-500 font-medium">
+                                                    Click any code to copy and apply directly at checkout for instant discounts!
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setActiveTab('offers')}
+                                            className="text-xs font-bold text-[#FF5A1F] hover:text-orange-700 hover:underline flex items-center gap-1 self-start sm:self-auto cursor-pointer"
+                                        >
+                                            <span>View All Deals</span>
+                                            <ChevronRight size={14} />
+                                        </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 pt-1">
+                                        {liveOffers.map((offer) => (
+                                            <div
+                                                key={offer._id || offer.code}
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(offer.code);
+                                                    toast.success(`Promo code ${offer.code} copied to clipboard!`);
+                                                }}
+                                                className="bg-white border border-orange-200/80 hover:border-[#FF5A1F] p-3 rounded-xl shadow-2xs hover:shadow-xs transition-all flex items-center justify-between group cursor-pointer"
+                                                title="Click to copy code"
+                                            >
+                                                <div className="min-w-0 pr-2">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="font-black text-sm text-slate-900 tracking-wide font-mono group-hover:text-[#FF5A1F] transition-colors">
+                                                            {offer.code}
+                                                        </span>
+                                                        <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                                                            {offer.type === 'Percentage' ? `${offer.discountValue}% OFF` : `₹${offer.discountValue} OFF`}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-[10px] text-slate-500 font-medium mt-0.5 truncate">
+                                                        {offer.minSpend > 0 ? `Min order ₹${offer.minSpend}` : 'No minimum order required'}
+                                                    </p>
+                                                </div>
+                                                <span className="text-[10px] font-bold text-orange-600 bg-orange-50 group-hover:bg-[#FF5A1F] group-hover:text-white px-2 py-1 rounded-lg transition-colors shrink-0">
+                                                    Copy
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Registered Restaurants & Cafes Filter Section */}
                             {registeredRestaurants.length > 0 && (
                                 <div className="bg-[#FCF9F5] border border-orange-200/70 p-4 rounded-2xl space-y-2.5">

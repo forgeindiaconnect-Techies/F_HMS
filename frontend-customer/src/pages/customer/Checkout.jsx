@@ -20,6 +20,8 @@ const Checkout = () => {
     const [address, setAddress] = useState('');
     const [coupon, setCoupon] = useState('');
     const [discount, setDiscount] = useState(0);
+    const [availableOffers, setAvailableOffers] = useState([]);
+    const [appliedOffer, setAppliedOffer] = useState(null);
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
     const [calculatedDeliveryFee, setCalculatedDeliveryFee] = useState(0);
@@ -44,6 +46,25 @@ const Checkout = () => {
             })
             .catch(() => {});
     }, [api]);
+
+    // Fetch live active offers / promo codes to display in checkout
+    useEffect(() => {
+        let isMounted = true;
+        const fetchOffers = async () => {
+            try {
+                const API_URL = getApiUrl();
+                const res = await axios.get(`${API_URL}/offers`);
+                if (isMounted && Array.isArray(res.data)) {
+                    const active = res.data.filter(o => o.isActive !== false && (!o.expiresAt || new Date(o.expiresAt) > new Date()));
+                    setAvailableOffers(active);
+                }
+            } catch (err) {
+                console.error("Failed to load offers in Checkout", err);
+            }
+        };
+        fetchOffers();
+        return () => { isMounted = false; };
+    }, []);
 
     useEffect(() => {
         const rawCartRestId = cartItems.length > 0 ? cartItems[0].restaurantId : null;
@@ -210,55 +231,83 @@ const Checkout = () => {
         );
     }
 
+    const applySpecificOffer = (matchedOffer) => {
+        if (!matchedOffer || matchedOffer.isActive === false) {
+            toast.error('Invalid or inactive coupon code');
+            setDiscount(0);
+            setAppliedOffer(null);
+            return;
+        }
+
+        if (matchedOffer.expiresAt && new Date(matchedOffer.expiresAt) < new Date()) {
+            toast.error('This coupon code has expired');
+            setDiscount(0);
+            setAppliedOffer(null);
+            return;
+        }
+
+        if (matchedOffer.minSpend > 0 && cartTotal < matchedOffer.minSpend) {
+            toast.error(`Minimum cart spend of ₹${matchedOffer.minSpend} required for code ${matchedOffer.code}`);
+            setDiscount(0);
+            setAppliedOffer(null);
+            return;
+        }
+
+        let computedDiscount = 0;
+        if (matchedOffer.type === 'Percentage') {
+            computedDiscount = cartTotal * (matchedOffer.discountValue / 100);
+        } else if (matchedOffer.type === 'Fixed Amount') {
+            computedDiscount = Math.min(cartTotal, matchedOffer.discountValue);
+        } else if (matchedOffer.type === 'Free Shipping') {
+            computedDiscount = calculatedDeliveryFee;
+        }
+
+        setCoupon(matchedOffer.code);
+        setDiscount(computedDiscount);
+        setAppliedOffer(matchedOffer);
+        toast.success(`Coupon '${matchedOffer.code}' applied! Saved ₹${computedDiscount.toFixed(2)} 🎉`);
+    };
+
     const handleApplyCoupon = async (e) => {
-        e.preventDefault();
+        if (e && e.preventDefault) e.preventDefault();
         if (!coupon || !coupon.trim()) {
             toast.error('Please enter a coupon code');
             return;
         }
 
+        const inputCode = coupon.trim().toUpperCase();
+
         try {
             let API_URL = getApiUrl();
             const { data } = await axios.get(`${API_URL}/offers`);
-            const matchedOffer = data.find(o => o.code.toUpperCase() === coupon.trim().toUpperCase());
+            const matchedOffer = data.find(o => o.code.toUpperCase() === inputCode);
 
-            if (!matchedOffer || matchedOffer.isActive === false) {
-                toast.error('Invalid or inactive coupon code');
+            if (!matchedOffer) {
+                if (inputCode === 'WELCOME20') {
+                    const fallbackDiscount = cartTotal * 0.20;
+                    setDiscount(fallbackDiscount);
+                    setAppliedOffer({ code: 'WELCOME20', type: 'Percentage', discountValue: 20 });
+                    toast.success('Coupon WELCOME20 applied! Saved ₹' + fallbackDiscount.toFixed(2));
+                    return;
+                }
+                toast.error(`Coupon code "${inputCode}" not found or inactive`);
                 setDiscount(0);
+                setAppliedOffer(null);
                 return;
             }
 
-            if (matchedOffer.expiresAt && new Date(matchedOffer.expiresAt) < new Date()) {
-                toast.error('This coupon code has expired');
-                setDiscount(0);
-                return;
-            }
-
-            if (matchedOffer.minSpend > 0 && cartTotal < matchedOffer.minSpend) {
-                toast.error(`Minimum cart spend of ₹${matchedOffer.minSpend} required for code ${matchedOffer.code}`);
-                setDiscount(0);
-                return;
-            }
-
-            let computedDiscount = 0;
-            if (matchedOffer.type === 'Percentage') {
-                computedDiscount = cartTotal * (matchedOffer.discountValue / 100);
-            } else if (matchedOffer.type === 'Fixed Amount') {
-                computedDiscount = Math.min(cartTotal, matchedOffer.discountValue);
-            } else if (matchedOffer.type === 'Free Shipping') {
-                computedDiscount = calculatedDeliveryFee;
-            }
-
-            setDiscount(computedDiscount);
-            toast.success(`Coupon '${matchedOffer.code}' applied! Saved ₹${computedDiscount.toFixed(2)} 🎉`);
+            applySpecificOffer(matchedOffer);
         } catch (error) {
             console.error("Failed to apply coupon", error);
-            if (coupon.toUpperCase() === 'WELCOME20') {
-                setDiscount(cartTotal * 0.20);
+            if (inputCode === 'WELCOME20') {
+                const fallbackDiscount = cartTotal * 0.20;
+                setDiscount(fallbackDiscount);
+                setAppliedOffer({ code: 'WELCOME20', type: 'Percentage', discountValue: 20 });
                 toast.success('Coupon WELCOME20 applied!');
             } else {
                 toast.error('Failed to apply coupon');
                 setDiscount(0);
+                setAppliedOffer(null);
             }
         }
     };
@@ -750,7 +799,7 @@ const Checkout = () => {
                         </div>
                         
                         {/* Coupon */}
-                        <div className="flex gap-2 mb-6">
+                        <div className="flex gap-2 mb-2.5">
                             <div className="relative flex-1">
                                 <Ticket size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                                 <input 
@@ -764,12 +813,44 @@ const Checkout = () => {
                             <button 
                                 type="button"
                                 onClick={handleApplyCoupon}
-                                className="bg-gray-900 text-white px-4 rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors"
+                                className="bg-gray-900 text-white px-4 rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors cursor-pointer"
                             >
                                 Apply
                             </button>
                         </div>
-                        <p className="text-xs text-orange-600 mb-6 font-medium">Use promo codes like WELCOME20 for discounts</p>
+
+                        {/* Available Offers / Promo Code Pills */}
+                        {availableOffers.length > 0 ? (
+                            <div className="mb-5 space-y-1.5">
+                                <span className="text-[11px] font-extrabold text-gray-500 uppercase tracking-wider block">
+                                    Available Promo Codes:
+                                </span>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {availableOffers.map((offer) => {
+                                        const isApplied = appliedOffer?.code === offer.code;
+                                        return (
+                                            <button
+                                                key={offer._id || offer.code}
+                                                type="button"
+                                                onClick={() => applySpecificOffer(offer)}
+                                                className={`px-2.5 py-1 rounded-lg text-xs font-black transition-all flex items-center gap-1 cursor-pointer ${
+                                                    isApplied
+                                                        ? 'bg-emerald-600 text-white shadow-xs'
+                                                        : 'bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200'
+                                                }`}
+                                            >
+                                                <span>{offer.code}</span>
+                                                <span className={`text-[10px] font-bold ${isApplied ? 'text-emerald-100' : 'text-orange-600'}`}>
+                                                    ({offer.type === 'Percentage' ? `${offer.discountValue}% OFF` : `₹${offer.discountValue} OFF`})
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-xs text-orange-600 mb-5 font-medium">Use promo codes like WELCOME for discounts</p>
+                        )}
                         
                         {/* Totals */}
                         <div className="space-y-3 pt-6 border-t border-gray-100">
@@ -779,7 +860,9 @@ const Checkout = () => {
                             </div>
                             {discount > 0 && (
                                 <div className="flex justify-between items-center text-sm font-bold text-green-600">
-                                    <span>Promo Discount (20%)</span>
+                                    <span>
+                                        Promo Discount {appliedOffer ? `(${appliedOffer.code} - ${appliedOffer.type === 'Percentage' ? `${appliedOffer.discountValue}%` : `₹${appliedOffer.discountValue}`})` : ''}
+                                    </span>
                                     <span>-₹{discount.toFixed(2)}</span>
                                 </div>
                             )}

@@ -29,26 +29,39 @@ export const createOffer = async (req, res) => {
     const { code, type, discountValue, minSpend, expiresAt, usageLimit, isActive } = req.body;
 
     try {
-        const offerExists = await Offer.findOne({ code: code.toUpperCase() });
+        if (!code || typeof code !== 'string' || !code.trim()) {
+            return res.status(400).json({ message: 'Promo code is required and cannot be empty' });
+        }
+
+        const normalizedCode = code.trim().toUpperCase();
+
+        const numDiscount = Number(discountValue);
+        if (isNaN(numDiscount) || numDiscount <= 0) {
+            return res.status(400).json({ message: 'Valid discount value greater than 0 is required' });
+        }
+
+        const offerExists = await Offer.findOne({ code: normalizedCode });
 
         if (offerExists) {
-            return res.status(400).json({ message: 'Offer code already exists' });
+            return res.status(400).json({ 
+                message: `Promo code "${normalizedCode}" already exists. Please choose a unique code or edit the existing one.` 
+            });
         }
 
         const offer = await Offer.create({
-            code: code.toUpperCase(),
-            type,
-            discountValue,
-            minSpend,
-            expiresAt,
-            usageLimit: usageLimit || 0,
-            isActive: isActive !== undefined ? isActive : true
+            code: normalizedCode,
+            type: type || 'Percentage',
+            discountValue: numDiscount,
+            minSpend: Number(minSpend) || 0,
+            expiresAt: expiresAt || null,
+            usageLimit: Number(usageLimit) || 0,
+            isActive: isActive !== undefined ? Boolean(isActive) : true
         });
 
         clearOffersCache();
         res.status(201).json(offer);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(400).json({ message: error.message || 'Failed to create offer' });
     }
 };
 
