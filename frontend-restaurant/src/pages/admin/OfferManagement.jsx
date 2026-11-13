@@ -10,7 +10,7 @@ const OfferManagement = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [typeFilter, setTypeFilter] = useState('All Types');
-    
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
         code: '',
@@ -27,7 +27,7 @@ const OfferManagement = () => {
         isOpen: false,
         title: '',
         message: '',
-        onConfirm: () => {},
+        onConfirm: () => { },
         isDestructive: true
     });
 
@@ -46,19 +46,26 @@ const OfferManagement = () => {
         fetchData();
     }, []);
 
-    const handleDelete = (id) => {
+    const handleDelete = (offerOrId) => {
+        const targetId = typeof offerOrId === 'object' ? (offerOrId._id || offerOrId.id || offerOrId.code) : offerOrId;
+        const offerCode = typeof offerOrId === 'object' ? offerOrId.code : '';
+
         setConfirmModal({
             isOpen: true,
             title: 'Delete Offer',
-            message: 'Are you sure you want to delete this offer?',
+            message: offerCode ? `Are you sure you want to delete promo code "${offerCode}"?` : 'Are you sure you want to delete this offer?',
             onConfirm: async () => {
                 try {
-                    await api.delete(`/offers/${id}`);
-                    fetchData();
-                    toast.success('Offer deleted successfully');
+                    await api.delete(`/offers/${targetId}`);
+                    // Immediate optimistic removal from state
+                    setOffers(prev => prev.filter(o => (o._id || o.id) !== targetId && o.code !== targetId));
+                    await fetchData();
+                    toast.success(offerCode ? `Offer "${offerCode}" deleted successfully` : 'Offer deleted successfully');
                 } catch (error) {
                     console.error('Failed to delete offer', error);
-                    toast.error('Failed to delete offer');
+                    const msg = error.response?.data?.message || error.message || 'Failed to delete offer';
+                    toast.error(msg);
+                    throw error;
                 }
             },
             isDestructive: true
@@ -136,9 +143,9 @@ const OfferManagement = () => {
 
     return (
         <div className="p-8 max-w-[1600px] mx-auto space-y-6 font-sans relative">
-            <ConfirmModal 
-                {...confirmModal} 
-                onClose={() => setConfirmModal({...confirmModal, isOpen: false})} 
+            <ConfirmModal
+                {...confirmModal}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
             />
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-8">
@@ -146,7 +153,7 @@ const OfferManagement = () => {
                     <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Poppins, sans-serif' }}>Offers & Coupons</h2>
                     <p className="text-gray-500 text-sm mt-1">Create and manage discounts, promotions, and coupons.</p>
                 </div>
-                <button 
+                <button
                     onClick={handleAddClick}
                     className="w-full sm:w-auto justify-center bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold transition-colors flex items-center gap-2 text-sm shadow-md shadow-green-900/10"
                 >
@@ -160,7 +167,7 @@ const OfferManagement = () => {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     <input type="text" placeholder="Search promo codes..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all font-medium" />
                 </div>
-                <select 
+                <select
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
                     className="w-full sm:w-auto bg-white border border-gray-200 text-gray-700 text-sm rounded-xl px-4 py-2.5 font-bold focus:outline-none focus:border-green-500 cursor-pointer"
@@ -187,7 +194,7 @@ const OfferManagement = () => {
                         const status = getOfferStatus(offer);
                         return (
                             <div key={offer._id} className={`bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all relative group overflow-hidden ${status.label === 'Expired' || status.label === 'Depleted' || status.label === 'Inactive' ? 'opacity-75' : ''}`}>
-                                
+
                                 {/* Status Banner */}
                                 <div className={`absolute top-0 right-0 px-8 py-1 transform translate-x-6 translate-y-3 rotate-45 text-[10px] font-bold tracking-wider uppercase text-white shadow-sm ${status.label === 'Active' ? 'bg-green-500' : status.label === 'Depleted' ? 'bg-orange-500' : 'bg-gray-400'}`}>
                                     {status.label}
@@ -205,9 +212,9 @@ const OfferManagement = () => {
                                             </button>
                                         </div>
                                         <p className="text-green-600 font-bold text-sm mt-0.5">
-                                            {offer.type === 'Percentage' ? `${offer.discountValue}% OFF` : 
-                                             offer.type === 'Fixed Amount' ? `₹${offer.discountValue.toFixed(2)} OFF` : 
-                                             'FREE SHIPPING'}
+                                            {offer.type === 'Percentage' ? `${offer.discountValue}% OFF` :
+                                                offer.type === 'Fixed Amount' ? `₹${offer.discountValue.toFixed(2)} OFF` :
+                                                    'FREE SHIPPING'}
                                         </p>
                                     </div>
                                 </div>
@@ -216,9 +223,9 @@ const OfferManagement = () => {
                                     <div className="flex justify-between items-center text-sm">
                                         <span className="text-gray-400 font-medium text-xs uppercase tracking-wide">Type</span>
                                         <span className="font-bold text-gray-700 flex items-center gap-1.5">
-                                            {offer.type === 'Percentage' && <Percent size={12} className="text-gray-400"/>}
-                                            {offer.type === 'Fixed Amount' && <DollarSign size={12} className="text-gray-400"/>}
-                                            {offer.type === 'Free Shipping' && <Truck size={12} className="text-gray-400"/>}
+                                            {offer.type === 'Percentage' && <Percent size={12} className="text-gray-400" />}
+                                            {offer.type === 'Fixed Amount' && <DollarSign size={12} className="text-gray-400" />}
+                                            {offer.type === 'Free Shipping' && <Truck size={12} className="text-gray-400" />}
                                             {offer.type}
                                         </span>
                                     </div>
@@ -231,7 +238,7 @@ const OfferManagement = () => {
                                         <span className="font-bold text-gray-700 flex items-center gap-1.5">
                                             {offer.expiresAt ? (
                                                 <>
-                                                    <Calendar size={12} className="text-gray-400"/>
+                                                    <Calendar size={12} className="text-gray-400" />
                                                     {new Date(offer.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                                 </>
                                             ) : 'Never'}
@@ -245,18 +252,22 @@ const OfferManagement = () => {
                                         <span className="text-gray-900">{offer.usedCount} / {offer.usageLimit || 'Unlimited'}</span>
                                     </div>
                                     <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                                        <div 
-                                            className={`h-full rounded-full ${offer.usageLimit && offer.usedCount >= offer.usageLimit ? 'bg-orange-500' : 'bg-green-500'}`} 
+                                        <div
+                                            className={`h-full rounded-full ${offer.usageLimit && offer.usedCount >= offer.usageLimit ? 'bg-orange-500' : 'bg-green-500'}`}
                                             style={{ width: offer.usageLimit ? `${Math.min((offer.usedCount / offer.usageLimit) * 100, 100)}%` : '100%' }}
                                         ></div>
                                     </div>
                                 </div>
-                                
+
                                 {/* Hover Actions */}
                                 <div className="absolute top-4 left-4 transition-opacity">
-                                    <button 
-                                        onClick={() => handleDelete(offer._id)}
-                                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-white shadow-sm"
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDelete(offer);
+                                        }}
+                                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-white shadow-sm cursor-pointer"
                                         title="Delete Offer"
                                     >
                                         <Trash2 size={16} />
@@ -279,16 +290,16 @@ const OfferManagement = () => {
                                 <X size={20} />
                             </button>
                         </div>
-                        
+
                         <div className="p-6 overflow-y-auto">
                             <form id="offer-form" onSubmit={handleSubmit} className="space-y-5 min-w-0 pr-1.5 flex-1">
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1.5">Promo Code *</label>
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         required
                                         value={formData.code}
-                                        onChange={(e) => setFormData({...formData, code: e.target.value.toUpperCase()})}
+                                        onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                                         className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all font-black tracking-widest uppercase"
                                         placeholder="e.g. SUMMER2026"
                                     />
@@ -298,9 +309,9 @@ const OfferManagement = () => {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 mb-1.5">Discount Type</label>
-                                        <select 
+                                        <select
                                             value={formData.type}
-                                            onChange={(e) => setFormData({...formData, type: e.target.value})}
+                                            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                                             className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all font-medium"
                                         >
                                             <option value="Percentage">Percentage (%)</option>
@@ -312,13 +323,13 @@ const OfferManagement = () => {
                                         <label className="block text-sm font-bold text-gray-700 mb-1.5">Discount Value *</label>
                                         <div className="relative">
                                             {formData.type === 'Fixed Amount' && <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />}
-                                            <input 
-                                                type="number" 
+                                            <input
+                                                type="number"
                                                 min="0"
                                                 step="any"
                                                 required
                                                 value={formData.discountValue}
-                                                onChange={(e) => setFormData({...formData, discountValue: e.target.value})}
+                                                onChange={(e) => setFormData({ ...formData, discountValue: e.target.value })}
                                                 disabled={formData.type === 'Free Shipping'}
                                                 className={`w-full ${formData.type === 'Fixed Amount' ? 'pl-9' : 'pl-4'} ${formData.type === 'Percentage' ? 'pr-8' : 'pr-4'} py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all font-bold`}
                                                 placeholder={formData.type === 'Free Shipping' ? 'N/A' : '0.00'}
@@ -331,22 +342,22 @@ const OfferManagement = () => {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 mb-1.5">Minimum Spend ($)</label>
-                                        <input 
-                                            type="number" 
+                                        <input
+                                            type="number"
                                             min="0"
                                             step="any"
                                             value={formData.minSpend}
-                                            onChange={(e) => setFormData({...formData, minSpend: e.target.value})}
+                                            onChange={(e) => setFormData({ ...formData, minSpend: e.target.value })}
                                             className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all font-medium"
                                         />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 mb-1.5">Total Usage Limit</label>
-                                        <input 
-                                            type="number" 
+                                        <input
+                                            type="number"
                                             min="0"
                                             value={formData.usageLimit}
-                                            onChange={(e) => setFormData({...formData, usageLimit: e.target.value})}
+                                            onChange={(e) => setFormData({ ...formData, usageLimit: e.target.value })}
                                             className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all font-medium"
                                             placeholder="Leave 0 for unlimited"
                                         />
@@ -356,25 +367,25 @@ const OfferManagement = () => {
 
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1.5">Expiration Date</label>
-                                    <input 
-                                        type="date" 
+                                    <input
+                                        type="date"
                                         value={formData.expiresAt}
-                                        onChange={(e) => setFormData({...formData, expiresAt: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
                                         className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all font-medium"
                                     />
                                 </div>
-                                
+
                                 <div className="px-6 py-4 border-t border-gray-100 flex gap-3 bg-gray-50/50 shrink-0 mt-8 -mx-6 -mb-6">
-                                    <button 
-                                        type="button" 
+                                    <button
+                                        type="button"
                                         onClick={() => setIsModalOpen(false)}
                                         disabled={submitting}
                                         className="flex-1 py-3 bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-50 text-gray-700 font-bold rounded-xl transition-colors text-sm shadow-sm cursor-pointer"
                                     >
                                         Cancel
                                     </button>
-                                    <button 
-                                        type="submit" 
+                                    <button
+                                        type="submit"
                                         disabled={submitting}
                                         className="flex-1 py-3 bg-green-600 hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-sm shadow-green-600/20 transition-all text-sm flex items-center justify-center gap-2 cursor-pointer"
                                     >

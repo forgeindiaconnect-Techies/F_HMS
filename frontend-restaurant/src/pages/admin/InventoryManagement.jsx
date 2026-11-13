@@ -34,12 +34,26 @@ const getPaymentBadge = (status) => {
 const InventoryManagement = () => {
     const { api } = useAuth();
     const [activeTab, setActiveTab] = useState('materials'); // 'materials' | 'purchases' | 'movements' | 'valuation'
-    const [inventory, setInventory] = useState([]);
+    const [inventory, setInventory] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('restosys_admin_inv_cache');
+            return cached ? JSON.parse(cached) : [];
+        } catch { return []; }
+    });
     const [purchases, setPurchases] = useState([]);
     const [movements, setMovements] = useState([]);
     const [valuationData, setValuationData] = useState(null);
-    const [branches, setBranches] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [branches, setBranches] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('restosys_branches_cache');
+            return cached ? JSON.parse(cached) : [];
+        } catch { return []; }
+    });
+    const [loading, setLoading] = useState(() => {
+        try {
+            return !sessionStorage.getItem('restosys_admin_inv_cache');
+        } catch { return true; }
+    });
 
     // Search and Filters
     const [searchQuery, setSearchQuery] = useState('');
@@ -127,7 +141,9 @@ const InventoryManagement = () => {
     });
 
     const fetchData = async () => {
-        setLoading(true);
+        if (!sessionStorage.getItem('restosys_admin_inv_cache')) {
+            setLoading(true);
+        }
         try {
             const [invRes, branchesRes, purchasesRes, movementsRes, valRes, notesRes, suppRes] = await Promise.all([
                 api.get('/inventory').catch(() => ({ data: [] })),
@@ -141,6 +157,10 @@ const InventoryManagement = () => {
 
             setInventory(invRes.data || []);
             setBranches(branchesRes.data || []);
+            try {
+                sessionStorage.setItem('restosys_admin_inv_cache', JSON.stringify(invRes.data || []));
+                sessionStorage.setItem('restosys_branches_cache', JSON.stringify(branchesRes.data || []));
+            } catch {}
             setPurchases(purchasesRes.data || []);
             setMovements(movementsRes.data || []);
             setValuationData(valRes.data || null);

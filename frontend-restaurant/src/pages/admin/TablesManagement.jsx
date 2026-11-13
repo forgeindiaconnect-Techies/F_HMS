@@ -12,11 +12,26 @@ const TablesManagement = () => {
     const [activeTab, setActiveTab] = useState(() =>
         new URLSearchParams(location.search).get('tab') === 'qr' ? 'qr' : 'tables'
     );
-    const [tables, setTables] = useState([]);
-    const [branches, setBranches] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [tables, setTables] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('restosys_tables_cache');
+            return cached ? JSON.parse(cached) : [];
+        } catch { return []; }
+    });
+    const [branches, setBranches] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('restosys_branches_cache');
+            return cached ? JSON.parse(cached) : [];
+        } catch { return []; }
+    });
+    const [loading, setLoading] = useState(() => !sessionStorage.getItem('restosys_tables_cache'));
     const [searchQuery, setSearchQuery] = useState('');
-    const [localIp, setLocalIp] = useState('');
+    const [qrMode, setQrMode] = useState(() => {
+        if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+            return 'localhost';
+        }
+        return 'network';
+    });
     
     // Modal states
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -41,13 +56,19 @@ const TablesManagement = () => {
         try {
             const [tablesRes, branchesRes] = await Promise.all([
                 api.get('/tables').catch(() => ({ data: [] })),
-                api.get('/branches')
+                api.get('/branches').catch(() => ({ data: [] }))
             ]);
-            setTables(tablesRes.data);
-            setBranches(branchesRes.data);
+            const tblList = tablesRes.data || [];
+            const brList = branchesRes.data || [];
+            setTables(tblList);
+            setBranches(brList);
+            try {
+                sessionStorage.setItem('restosys_tables_cache', JSON.stringify(tblList));
+                sessionStorage.setItem('restosys_branches_cache', JSON.stringify(brList));
+            } catch (_) {}
             
-            if (branchesRes.data.length > 0 && !formData.branchId) {
-                setFormData(prev => ({ ...prev, branchId: branchesRes.data[0]._id }));
+            if (brList.length > 0 && !formData.branchId) {
+                setFormData(prev => ({ ...prev, branchId: brList[0]._id }));
             }
         } catch (error) {
             console.error('Failed to fetch tables', error);
@@ -113,11 +134,22 @@ const TablesManagement = () => {
 
     const getQrUrl = (table) => {
         if (!table) return '';
-        // Always generate QR code with public deployed production customer URL so mobile phones can scan it anywhere
-        const deployUrl = 'https://f-hms.vercel.app';
+        let baseUrl = 'http://localhost:5174';
+
+        if (qrMode === 'network') {
+            const host = (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+                ? window.location.hostname
+                : '192.168.1.48';
+            baseUrl = `http://${host}:5174`;
+        } else if (qrMode === 'production') {
+            baseUrl = 'https://f-hms-customer-two.vercel.app';
+        } else {
+            baseUrl = 'http://localhost:5174';
+        }
+
         const bId = table.branchId?._id || table.branchId || '';
-        const rId = table.restaurantId?._id || table.restaurantId || '';
-        return `${deployUrl}/customer/menu?restaurantId=${rId}&branchId=${bId}&tableNumber=${table.tableNumber}`;
+        const rId = table.restaurantId?._id || table.restaurantId || (table.branchId?.restaurantId) || '';
+        return `${baseUrl}/customer/menu?restaurantId=${rId}&branchId=${bId}&tableNumber=${table.tableNumber}`;
     };
 
     const getQrImageSrc = (table) => {
@@ -464,61 +496,107 @@ const TablesManagement = () => {
 
             {/* QR Display Modal */}
             {isQrModalOpen && selectedTable && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
                     <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onClick={() => setIsQrModalOpen(false)}></div>
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm relative z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col p-6 items-center text-center">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm relative z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col p-4 sm:p-5 items-center text-center">
                         <button 
                             onClick={() => setIsQrModalOpen(false)} 
-                            className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition-colors"
+                            className="absolute right-3.5 top-3.5 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer p-1"
                         >
-                            <X size={20} />
+                            <X size={18} />
                         </button>
 
-                        <div className="bg-green-50 border border-green-100 rounded-2xl p-6 mt-4 mb-4">
-                            <h3 className="text-2xl font-black text-emerald-800 tracking-wider">TABLE {selectedTable.tableNumber}</h3>
-                            <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest mt-0.5">FoodNest QR Ordering</p>
+                        <div className="bg-emerald-50/80 border border-emerald-100 rounded-2xl p-3 sm:p-3.5 mt-0.5 mb-2 w-full">
+                            <h3 className="text-xl font-black text-emerald-800 tracking-wider">TABLE {selectedTable.tableNumber}</h3>
+                            <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">FoodNest QR Ordering</p>
+
+                            {/* Target Environment Switcher for Localhost / Phone Scanning */}
+                            <div className="flex justify-center gap-1 mt-2 bg-white/90 p-0.5 rounded-xl border border-emerald-200/60">
+                                <button
+                                    type="button"
+                                    onClick={() => setQrMode('localhost')}
+                                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                                        qrMode === 'localhost' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-emerald-700'
+                                    }`}
+                                >
+                                    Localhost:5174
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setQrMode('network')}
+                                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                                        qrMode === 'network' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-emerald-700'
+                                    }`}
+                                    title="Allows your mobile phone on the same WiFi to scan and open"
+                                >
+                                    WiFi / Phone
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setQrMode('production')}
+                                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                                        qrMode === 'production' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-emerald-700'
+                                    }`}
+                                >
+                                    Production
+                                </button>
+                            </div>
                             
-                            <div className="bg-white p-4 rounded-xl border border-gray-100 mt-4 shadow-sm inline-block">
+                            <div className="bg-white p-2.5 rounded-xl border border-emerald-100 mt-2 shadow-xs inline-block">
                                 <QRCodeSVG
                                     id={`table-qr-svg-${selectedTable?._id || selectedTable?.tableNumber}`}
                                     value={getQrUrl(selectedTable)}
-                                    size={192}
+                                    size={146}
                                     level="H"
                                     includeMargin={false}
                                 />
                             </div>
                         </div>
 
-                        <p className="text-sm font-medium text-gray-500 mb-4 max-w-[250px]">
-                            Scan this QR code to view the menu and place dine-in orders instantly.
+                        <p className="text-[11px] font-medium text-gray-500 mb-2 max-w-[270px]">
+                            Scan with camera or click below to test ordering.
                         </p>
 
-                        <div className="w-full space-y-2 mb-6 text-left">
-                            <div className="p-3 bg-emerald-50/70 rounded-2xl border border-emerald-100 text-xs">
-                                <span className="font-bold text-emerald-800 block mb-0.5">Live Customer URL:</span>
-                                <a 
-                                    href={getQrUrl(selectedTable)} 
-                                    target="_blank" 
-                                    rel="noreferrer" 
-                                    className="text-emerald-700 hover:underline font-bold break-all block text-[11px]"
+                        <a 
+                            href={getQrUrl(selectedTable)} 
+                            target="_blank" 
+                            rel="noreferrer" 
+                            className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-600/20 mb-2 cursor-pointer"
+                        >
+                            <span>Open Table Menu &amp; Order (Test)</span>
+                            <span>↗</span>
+                        </a>
+
+                        <div className="w-full mb-3 text-left">
+                            <div className="p-2 bg-emerald-50/70 rounded-xl border border-emerald-100 text-xs flex items-center justify-between gap-2">
+                                <span className="text-emerald-800 font-mono text-[10px] truncate max-w-[200px]">
+                                    {getQrUrl(selectedTable)}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(getQrUrl(selectedTable));
+                                        toast.success('Table ordering URL copied to clipboard!');
+                                    }}
+                                    className="text-[10px] font-bold text-emerald-700 hover:underline cursor-pointer shrink-0 bg-white px-2 py-0.5 rounded-md border border-emerald-200"
                                 >
-                                    {getQrUrl(selectedTable)} ↗
-                                </a>
+                                    Copy Link
+                                </button>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3 w-full">
+                        <div className="grid grid-cols-2 gap-2 w-full">
                             <button 
                                 onClick={handlePrintQr}
-                                className="py-2.5 bg-gray-900 hover:bg-black text-white rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                                className="py-2 bg-gray-900 hover:bg-black text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
                             >
-                                <Printer size={16} /> Print Card
+                                <Printer size={14} /> Print Card
                             </button>
                             <button 
                                 onClick={handleDownloadQr}
-                                className="py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-1.5 border border-gray-200"
+                                className="py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 border border-gray-200 cursor-pointer"
                             >
-                                <Download size={16} /> Download
+                                <Download size={14} /> Download
                             </button>
                         </div>
                     </div>

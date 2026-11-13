@@ -153,8 +153,8 @@ const ChefDashboard = () => {
                     }
                     fetchOrders();
 
-                    if (msg.type === 'new_order' && msg.data && msg.data._id) {
-                        const orderData = msg.data;
+                    const orderData = msg.data?.orderData || msg.data?.order || msg.data;
+                    if ((msg.type === 'new_order' || msg.type === 'new_kot') && orderData && orderData._id) {
                         const isPendingStatus = !orderData.status || orderData.status === 'Pending' || orderData.status === 'Placed';
                         if (isPendingStatus && !seenTicketIdsRef.current.has(orderData._id)) {
                             seenTicketIdsRef.current.add(orderData._id);

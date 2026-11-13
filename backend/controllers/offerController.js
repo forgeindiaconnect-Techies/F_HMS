@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Offer from '../models/Offer.js';
 
 let offersCache = { data: null, expiresAt: 0 };
@@ -96,15 +97,27 @@ export const updateOffer = async (req, res) => {
 // @access  Private (Admin / Manager)
 export const deleteOffer = async (req, res) => {
     try {
-        const offer = await Offer.findById(req.params.id);
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).json({ message: 'Offer ID or code is required' });
+        }
+
+        let offer = null;
+        if (mongoose.Types.ObjectId.isValid(id)) {
+            offer = await Offer.findById(id);
+        }
+        if (!offer) {
+            offer = await Offer.findOne({ code: id.trim().toUpperCase() });
+        }
+
         if (offer) {
-            await offer.deleteOne();
+            await Offer.findByIdAndDelete(offer._id);
             clearOffersCache();
-            res.json({ message: 'Offer removed' });
+            return res.json({ message: 'Offer removed successfully', id: offer._id, code: offer.code });
         } else {
-            res.status(404).json({ message: 'Offer not found' });
+            return res.status(404).json({ message: 'Offer not found' });
         }
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: error.message || 'Failed to delete offer' });
     }
 };

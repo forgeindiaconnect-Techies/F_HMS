@@ -8,11 +8,15 @@ export const getApiUrl = () => {
         if (customUrl) return customUrl;
     }
 
-    // If running in desktop/local browser (NOT native Capacitor Android/iOS), use local backend port 5000
+    // If running in desktop/local browser or WiFi LAN (NOT native Capacitor Android/iOS), use local backend port 5000
     if (!Capacitor.isNativePlatform() && typeof window !== 'undefined') {
         const host = window.location.hostname;
         if (host === 'localhost' || host === '127.0.0.1') {
             return 'http://localhost:5000/api';
+        }
+        // Support phone/tablet scanning from local WiFi IP
+        if (/^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(host)) {
+            return `http://${host}:5000/api`;
         }
     }
 

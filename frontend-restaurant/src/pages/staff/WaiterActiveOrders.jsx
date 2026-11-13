@@ -1,11 +1,13 @@
-import { Clock, CheckCircle, Flame, MessageSquare } from 'lucide-react';
+import { Clock, CheckCircle, Flame, MessageSquare, ChefHat, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useWaiterSearch, matchesOrderSearch } from '../../hooks/useWaiterSearch';
+import toast from 'react-hot-toast';
 
 const WaiterActiveOrders = () => {
     const { api } = useAuth();
     const [orders, setOrders] = useState([]);
+    const [updatingId, setUpdatingId] = useState(null);
     const searchQuery = useWaiterSearch();
 
     const isSelfOrder = (o) => {
@@ -33,14 +35,23 @@ const WaiterActiveOrders = () => {
         return () => clearInterval(interval);
     }, [api]);
 
-    const handleServe = async (orderId, targetStatus) => {
+    const handleUpdateStatus = async (orderId, nextStatus) => {
+        setUpdatingId(orderId);
         try {
-            const nextStatus = typeof targetStatus === 'string' ? targetStatus : (targetStatus ? 'Picked Up' : 'Served');
             await api.put(`/orders/${orderId}/status`, { status: nextStatus });
+            toast.success(`Order marked as ${nextStatus} & KOT updated!`);
             fetchOrders();
         } catch (error) {
-            console.error('Failed to serve order', error);
+            console.error('Failed to update order status', error);
+            toast.error(error.response?.data?.message || 'Failed to update order status');
+        } finally {
+            setUpdatingId(null);
         }
+    };
+
+    const handleServe = async (orderId, targetStatus) => {
+        const nextStatus = typeof targetStatus === 'string' ? targetStatus : (targetStatus ? 'Picked Up' : 'Served');
+        await handleUpdateStatus(orderId, nextStatus);
     };
 
     return (
@@ -129,12 +140,48 @@ const WaiterActiveOrders = () => {
                                 <span className="text-xs font-bold text-gray-400 flex items-center gap-1.5">
                                     <Clock size={14} /> {new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
                                 </span>
-                                {isReady ? (
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                        {hasTable ? (
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    {/* Action 1: If Order is Pending / Received, Waiter can send to Kitchen (KOT) */}
+                                    {(!order.status || ['Pending', 'Placed', 'Order Received', 'Accepted'].includes(order.status)) && (
+                                        <button 
+                                            onClick={() => handleUpdateStatus(order._id, 'Preparing')}
+                                            disabled={updatingId === order._id}
+                                            className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 flex items-center gap-1.5 cursor-pointer bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20"
+                                            title="Send ticket to kitchen & set KOT to Preparing"
+                                        >
+                                            <ChefHat size={14} /> Send to Kitchen (KOT)
+                                        </button>
+                                    )}
+
+                                    {/* Action 2: If Order is in Kitchen / Cooking, Waiter can mark Ready or directly Serve */}
+                                    {(order.status === 'Preparing' || order.status === 'In Kitchen') && (
+                                        <>
+                                            <button 
+                                                onClick={() => handleUpdateStatus(order._id, 'Ready')}
+                                                disabled={updatingId === order._id}
+                                                className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 flex items-center gap-1.5 cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20"
+                                                title="Mark dish ready for pickup/serving"
+                                            >
+                                                <Flame size={14} /> Mark Ready
+                                            </button>
+                                            <button 
+                                                onClick={() => handleServe(order._id, 'Served')}
+                                                disabled={updatingId === order._id}
+                                                className="px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all border border-slate-200 hover:bg-slate-50 text-slate-700 flex items-center gap-1 cursor-pointer"
+                                                title="Directly deliver to table"
+                                            >
+                                                <CheckCircle size={13} /> Serve
+                                            </button>
+                                        </>
+                                    )}
+
+                                    {/* Action 3: If Order is Ready, Waiter serves to Table or Picked Up */}
+                                    {isReady && (
+                                        hasTable ? (
                                             <>
                                                 <button 
                                                     onClick={() => handleServe(order._id, 'Served')}
+                                                    disabled={updatingId === order._id}
                                                     className="px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 flex items-center gap-1.5 cursor-pointer bg-green-600 hover:bg-green-700 text-white shadow-green-600/20"
                                                     title={`Deliver and mark served to ${tableDisplay}`}
                                                 >
@@ -143,6 +190,7 @@ const WaiterActiveOrders = () => {
                                                 {order.serviceType === 'Self Dine-In (KFC Style)' && (
                                                     <button 
                                                         onClick={() => handleServe(order._id, 'Picked Up')}
+                                                        disabled={updatingId === order._id}
                                                         className="px-3 py-2 rounded-xl text-xs font-bold transition-all border border-amber-300 active:scale-95 flex items-center gap-1 cursor-pointer bg-amber-50 hover:bg-amber-100 text-amber-800"
                                                         title="Customer collected their tray directly from counter"
                                                     >
@@ -153,17 +201,29 @@ const WaiterActiveOrders = () => {
                                         ) : (
                                             <button 
                                                 onClick={() => handleServe(order._id, 'Picked Up')}
+                                                disabled={updatingId === order._id}
                                                 className="px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-lg active:scale-95 flex items-center gap-2 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/20"
                                             >
                                                 <CheckCircle size={16} /> Transfer to Cashier
                                             </button>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <button className="bg-gray-100 text-gray-400 cursor-not-allowed px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2">
-                                        <Flame size={14} /> Cooking...
-                                    </button>
-                                )}
+                                        )
+                                    )}
+
+                                    {/* Action 4: Quick Status Selector for floor flexibility */}
+                                    <select
+                                        value={order.status}
+                                        onChange={(e) => handleUpdateStatus(order._id, e.target.value)}
+                                        disabled={updatingId === order._id}
+                                        className="text-[11px] font-bold py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-slate-700 cursor-pointer focus:outline-none"
+                                        title="Quick update order status & sync KOT"
+                                    >
+                                        <option value="Pending">Pending</option>
+                                        <option value="Preparing">Preparing</option>
+                                        <option value="Ready">Ready</option>
+                                        <option value="Served">Served</option>
+                                        <option value="Completed">Completed</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     );

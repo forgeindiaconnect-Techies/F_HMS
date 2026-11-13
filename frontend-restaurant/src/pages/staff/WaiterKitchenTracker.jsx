@@ -172,27 +172,63 @@ const WaiterKitchenTracker = () => {
                                 </div>
                             </div>
 
-                            {/* Serve / Transfer Button */}
-                            {(order.status === 'Ready' || order.status === 'Ready for Pickup') && (
-                                <div className="flex justify-end pt-2 gap-2 flex-wrap">
-                                    {hasTable ? (
-                                        <>
-                                            <button onClick={() => handleUpdateStatus(order._id, 'Served')} className="px-5 py-2.5 text-white font-extrabold rounded-xl text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer bg-emerald-600 hover:bg-emerald-700">
-                                                <CheckCircle2 size={16} /> Serve to {tableText}
-                                            </button>
-                                            {order.serviceType === 'Self Dine-In (KFC Style)' && (
-                                                <button onClick={() => handleUpdateStatus(order._id, 'Picked Up')} className="px-4 py-2.5 text-amber-800 font-extrabold rounded-xl text-xs border border-amber-300 transition-all flex items-center gap-1.5 cursor-pointer bg-amber-50 hover:bg-amber-100">
-                                                    Customer Picked Up
-                                                </button>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <button onClick={() => handleUpdateStatus(order._id, 'Picked Up')} className="px-5 py-2.5 text-white font-extrabold rounded-xl text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer bg-blue-600 hover:bg-blue-700">
-                                            <CheckCircle2 size={16} /> Collect &amp; Transfer to Cashier Counter
+                            {/* Action Buttons & Status Controls */}
+                            <div className="flex justify-between items-center pt-2 gap-2 flex-wrap">
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase">Change Stage:</span>
+                                    <select
+                                        value={order.status}
+                                        onChange={(e) => handleUpdateStatus(order._id, e.target.value)}
+                                        className="text-[11px] font-bold py-1 px-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg text-slate-700 cursor-pointer focus:outline-none"
+                                        title="Manually advance stage & sync KOT"
+                                    >
+                                        <option value="Pending">1. Received / Pending</option>
+                                        <option value="Preparing">2. Preparing (Kitchen)</option>
+                                        <option value="Ready">3. Ready</option>
+                                        <option value="Picked Up">4. Picked Up</option>
+                                        <option value="Served">5. Served</option>
+                                    </select>
+                                </div>
+
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    {(!order.status || ['Pending', 'Placed', 'Order Received', 'Accepted'].includes(order.status)) && (
+                                        <button 
+                                            onClick={() => handleUpdateStatus(order._id, 'Preparing')}
+                                            className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer bg-amber-500 hover:bg-amber-600 text-white"
+                                        >
+                                            <Flame size={13} /> Send to Kitchen (KOT)
                                         </button>
                                     )}
+
+                                    {(order.status === 'Preparing' || order.status === 'In Kitchen') && (
+                                        <button 
+                                            onClick={() => handleUpdateStatus(order._id, 'Ready')}
+                                            className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white"
+                                        >
+                                            <CheckCircle2 size={13} /> Food Ready
+                                        </button>
+                                    )}
+
+                                    {(order.status === 'Ready' || order.status === 'Ready for Pickup') && (
+                                        hasTable ? (
+                                            <>
+                                                <button onClick={() => handleUpdateStatus(order._id, 'Served')} className="px-4 py-2 text-white font-extrabold rounded-xl text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer bg-emerald-600 hover:bg-emerald-700">
+                                                    <CheckCircle2 size={15} /> Serve to {tableText}
+                                                </button>
+                                                {order.serviceType === 'Self Dine-In (KFC Style)' && (
+                                                    <button onClick={() => handleUpdateStatus(order._id, 'Picked Up')} className="px-3 py-2 text-amber-800 font-extrabold rounded-xl text-xs border border-amber-300 transition-all flex items-center gap-1 cursor-pointer bg-amber-50 hover:bg-amber-100">
+                                                        Picked Up
+                                                    </button>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <button onClick={() => handleUpdateStatus(order._id, 'Picked Up')} className="px-4 py-2 text-white font-extrabold rounded-xl text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer bg-blue-600 hover:bg-blue-700">
+                                                <CheckCircle2 size={15} /> Transfer to Cashier
+                                            </button>
+                                        )
+                                    )}
                                 </div>
-                            )}
+                            </div>
                         </div>
                     );
                 })}

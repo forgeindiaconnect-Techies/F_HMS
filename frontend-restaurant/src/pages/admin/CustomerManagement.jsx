@@ -14,8 +14,13 @@ const getTierStyle = (tier) => {
 
 const CustomerManagement = () => {
     const { api } = useAuth();
-    const [customers, setCustomers] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [customers, setCustomers] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('restosys_admin_customers_cache');
+            return cached ? JSON.parse(cached) : [];
+        } catch { return []; }
+    });
+    const [loading, setLoading] = useState(() => !sessionStorage.getItem('restosys_admin_customers_cache'));
     const [isModalOpen, setIsModalOpen] = useState(false);
     
     const [formData, setFormData] = useState({
@@ -30,7 +35,9 @@ const CustomerManagement = () => {
     const fetchCustomers = async () => {
         try {
             const { data } = await api.get('/customers');
-            setCustomers(data);
+            const list = data || [];
+            setCustomers(list);
+            try { sessionStorage.setItem('restosys_admin_customers_cache', JSON.stringify(list)); } catch (_) {}
         } catch (error) {
             console.error('Failed to fetch customers', error);
         } finally {

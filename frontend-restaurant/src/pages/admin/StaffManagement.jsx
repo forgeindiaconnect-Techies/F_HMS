@@ -91,9 +91,23 @@ const StaffManagement = () => {
     };
 
     // Shared state
-    const [staffList, setStaffList] = useState([]);
-    const [branches, setBranches] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [staffList, setStaffList] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('restosys_admin_staff_cache');
+            return cached ? JSON.parse(cached) : [];
+        } catch { return []; }
+    });
+    const [branches, setBranches] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('restosys_branches_cache');
+            return cached ? JSON.parse(cached) : [];
+        } catch { return []; }
+    });
+    const [loading, setLoading] = useState(() => {
+        try {
+            return !sessionStorage.getItem('restosys_admin_staff_cache');
+        } catch { return true; }
+    });
 
     // TAB 1: Staff Profiles State
     const [searchQuery, setSearchQuery] = useState('');
@@ -223,7 +237,9 @@ const StaffManagement = () => {
 
     // Fetch Initial Data
     const fetchBaseData = async () => {
-        setLoading(true);
+        if (!sessionStorage.getItem('restosys_admin_staff_cache')) {
+            setLoading(true);
+        }
         try {
             const [staffRes, branchRes] = await Promise.all([
                 api.get('/staff').catch(() => ({ data: [] })),
@@ -231,6 +247,10 @@ const StaffManagement = () => {
             ]);
             setStaffList(staffRes.data || []);
             setBranches(branchRes.data || []);
+            try {
+                sessionStorage.setItem('restosys_admin_staff_cache', JSON.stringify(staffRes.data || []));
+                sessionStorage.setItem('restosys_branches_cache', JSON.stringify(branchRes.data || []));
+            } catch {}
 
             if (branchRes.data?.length > 0 && !staffForm.branchId) {
                 setStaffForm(prev => ({ ...prev, branchId: branchRes.data[0]._id }));

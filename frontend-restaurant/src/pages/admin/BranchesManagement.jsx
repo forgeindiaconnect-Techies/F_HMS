@@ -6,8 +6,13 @@ import { useAuth } from '../../context/AuthContext';
 
 const BranchesManagement = () => {
     const { api, restaurant } = useAuth();
-    const [branches, setBranches] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [branches, setBranches] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('restosys_branches_cache');
+            return cached ? JSON.parse(cached) : [];
+        } catch { return []; }
+    });
+    const [loading, setLoading] = useState(() => !sessionStorage.getItem('restosys_branches_cache'));
 
     const planName = restaurant?.subscription?.plan || 'Basic';
     const maxBranches = (planName === 'Basic' || planName === 'Starter') ? 1 : (planName === 'Pro' || planName === 'Professional') ? 3 : 'Unlimited';
@@ -32,7 +37,9 @@ const BranchesManagement = () => {
     const fetchBranches = async () => {
         try {
             const { data } = await api.get('/branches');
-            setBranches(data);
+            const list = data || [];
+            setBranches(list);
+            try { sessionStorage.setItem('restosys_branches_cache', JSON.stringify(list)); } catch (_) {}
         } catch (error) {
             console.error('Failed to fetch branches', error);
         } finally {

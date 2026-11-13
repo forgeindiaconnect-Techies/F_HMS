@@ -2,8 +2,15 @@ import axios from 'axios';
 
 export const getApiUrl = () => {
     // If running in browser on localhost or local network, always use local backend port 5000
-    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-        return 'http://localhost:5000/api';
+    if (typeof window !== 'undefined') {
+        const host = window.location.hostname;
+        if (host === 'localhost' || host === '127.0.0.1') {
+            return 'http://localhost:5000/api';
+        }
+        // Support local WiFi / LAN IP (e.g. 192.168.x.x)
+        if (/^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(host)) {
+            return `http://${host}:5000/api`;
+        }
     }
 
     if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) {

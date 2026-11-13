@@ -1,13 +1,20 @@
 import React, { useRef } from 'react';
-import { Printer, X, Check, Utensils, Clock, AlertCircle } from 'lucide-react';
+import { Printer, X, Check, Utensils, Clock, AlertCircle, Eye, Download } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { generateThermalKOTHtml, printKOTViaWindow, printKOTViaIframe } from '../utils/receiptGenerator';
 import toast from 'react-hot-toast';
 
 const KOTPrintModal = ({ isOpen, onClose, kot, onPrinted }) => {
-    const { api } = useAuth();
+    const { api, restaurant } = useAuth();
     const printAreaRef = useRef(null);
 
     if (!isOpen || !kot) return null;
+
+    const itemsList = Array.isArray(kot.items) 
+        ? kot.items 
+        : Array.isArray(kot.orderItems) 
+        ? kot.orderItems 
+        : [];
 
     const handlePrint = async () => {
         try {
@@ -16,10 +23,27 @@ const KOTPrintModal = ({ isOpen, onClose, kot, onPrinted }) => {
             }
             if (onPrinted) onPrinted();
             
-            window.print();
+            // Generate clean thermal HTML and trigger print preview via dedicated window
+            const html = generateThermalKOTHtml(kot, restaurant, { paperWidth: '80mm' });
+            printKOTViaWindow(html);
         } catch (err) {
             console.error('Print trigger error', err);
             window.print();
+        }
+    };
+
+    const handleSilentPrint = async () => {
+        try {
+            if (kot._id) {
+                await api.put(`/kot/${kot._id}/print`).catch(() => {});
+            }
+            if (onPrinted) onPrinted();
+            
+            const html = generateThermalKOTHtml(kot, restaurant, { paperWidth: '80mm' });
+            printKOTViaIframe(html);
+            toast.success('KOT queued for thermal printing');
+        } catch (err) {
+            console.error('Silent print error', err);
         }
     };
 
@@ -37,6 +61,12 @@ const KOTPrintModal = ({ isOpen, onClose, kot, onPrinted }) => {
 
     const printCount = (kot.printCount || 0) + 1;
     const isReprint = (kot.printCount || 0) > 0;
+    const restName = kot.restaurantName || restaurant?.name || 'FOODNEST RESTAURANT';
+    const brName = kot.branchName || restaurant?.branchName || '';
+
+    const calculatedTotal = itemsList.reduce((sum, i) => sum + (Number(i.price || 0) * Number(i.qty || i.quantity || 1)), 0);
+    const totalAmount = Number(kot.totalPrice || kot.totalAmount || kot.total || calculatedTotal);
+    const totalItemsCount = itemsList.reduce((sum, i) => sum + (Number(i.qty || i.quantity || 1)), 0);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
@@ -168,7 +198,7 @@ const KOTPrintModal = ({ isOpen, onClose, kot, onPrinted }) => {
                                 <span className="text-right">PRICE</span>
                             </div>
                             <div className="space-y-1.5 py-1">
-                                {kot.items?.map((item, idx) => {
+                                {itemsList.map((item, idx) => {
                                     const qty = Number(item.qty || item.quantity || 1);
                                     const unitPrice = Number(item.price || item.unitPrice || 0);
                                     const lineTotal = Number(item.total || (unitPrice * qty));
@@ -208,24 +238,18 @@ const KOTPrintModal = ({ isOpen, onClose, kot, onPrinted }) => {
                         )}
 
                         {/* Total Items & Total Amount */}
-                        {(() => {
-                            const calculatedTotal = kot.items?.reduce((sum, i) => sum + (Number(i.price || 0) * Number(i.qty || i.quantity || 1)), 0) || 0;
-                            const totalAmount = Number(kot.totalPrice || kot.totalAmount || kot.total || calculatedTotal);
-                            return (
-                                <div className="py-2 border-t border-dashed border-slate-400 text-[11px] space-y-1">
-                                    <div className="flex justify-between font-bold">
-                                        <span>TOTAL ITEMS:</span>
-                                        <span>{kot.items?.reduce((sum, i) => sum + (Number(i.qty || i.quantity || 1)), 0) || 0} Items</span>
-                                    </div>
-                                    {totalAmount > 0 && (
-                                        <div className="flex justify-between font-black text-xs font-mono">
-                                            <span>TOTAL AMOUNT:</span>
-                                            <span>₹{totalAmount.toFixed(2)}</span>
-                                        </div>
-                                    )}
+                        <div className="py-2 border-t border-dashed border-slate-400 text-[11px] space-y-1">
+                            <div className="flex justify-between font-bold">
+                                <span>TOTAL ITEMS:</span>
+                                <span>{totalItemsCount} Items</span>
+                            </div>
+                            {totalAmount > 0 && (
+                                <div className="flex justify-between font-black text-xs font-mono">
+                                    <span>TOTAL AMOUNT:</span>
+                                    <span>₹{totalAmount.toFixed(2)}</span>
                                 </div>
-                            );
-                        })()}
+                            )}
+                        </div>
 
                         {/* Footer */}
                         <div className="text-center pt-2 border-t border-dashed border-slate-400 text-[10px] text-slate-500 space-y-0.5 mt-1">

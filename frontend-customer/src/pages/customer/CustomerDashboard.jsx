@@ -50,7 +50,12 @@ const CustomerDashboard = () => {
     });
     const [reservations, setReservations] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('All');
-    const [registeredRestaurants, setRegisteredRestaurants] = useState([]);
+    const [registeredRestaurants, setRegisteredRestaurants] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('restosys_reg_rests_cache');
+            return cached ? JSON.parse(cached) : [];
+        } catch { return []; }
+    });
     const [selectedRestaurantFilter, setSelectedRestaurantFilter] = useState('All');
     const [userLocation, setUserLocation] = useState(() => getSavedLocation() || '');
     const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
@@ -170,8 +175,17 @@ const CustomerDashboard = () => {
         }
     };
 
-    const [liveMenuItems, setLiveMenuItems] = useState([]);
-    const [loadingMenuItems, setLoadingMenuItems] = useState(true);
+    const [liveMenuItems, setLiveMenuItems] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('restosys_live_menu_cache');
+            return cached ? JSON.parse(cached) : [];
+        } catch { return []; }
+    });
+    const [loadingMenuItems, setLoadingMenuItems] = useState(() => {
+        try {
+            return !sessionStorage.getItem('restosys_live_menu_cache');
+        } catch { return true; }
+    });
 
     useEffect(() => {
         const fetchRegisteredRestaurants = async () => {
@@ -179,6 +193,7 @@ const CustomerDashboard = () => {
                 const { data } = await api.get('/restaurants');
                 if (Array.isArray(data)) {
                     setRegisteredRestaurants(data);
+                    try { sessionStorage.setItem('restosys_reg_rests_cache', JSON.stringify(data)); } catch {}
                 }
             } catch (err) {
                 console.error('Failed to load registered restaurants for menu page', err);
@@ -192,6 +207,7 @@ const CustomerDashboard = () => {
                 const { data } = await api.get('/menu');
                 if (Array.isArray(data)) {
                     setLiveMenuItems(data);
+                    try { sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(data)); } catch {}
                 }
             } catch (err) {
                 console.error('Failed to load live menu in dashboard', err);

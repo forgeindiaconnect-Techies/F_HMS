@@ -8,12 +8,31 @@ import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 const ManagerDashboard = () => {
   const navigate = useNavigate();
   const { api, user } = useAuth();
-  const [suppliers, setSuppliers] = useState([]);
-  const [loadingSuppliers, setLoadingSuppliers] = useState(true);
+  const [suppliers, setSuppliers] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem('restosys_mgr_suppliers');
+      return cached ? JSON.parse(cached) : [];
+    } catch { return []; }
+  });
+  const [loadingSuppliers, setLoadingSuppliers] = useState(() => {
+    try {
+      return !sessionStorage.getItem('restosys_mgr_dash');
+    } catch { return true; }
+  });
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [data, setData] = useState(null);
-  const [staffList, setStaffList] = useState([]);
+  const [data, setData] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem('restosys_mgr_dash');
+      return cached ? JSON.parse(cached) : null;
+    } catch { return null; }
+  });
+  const [staffList, setStaffList] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem('restosys_admin_staff_cache');
+      return cached ? JSON.parse(cached) : [];
+    } catch { return []; }
+  });
   const [stockAlerts, setStockAlerts] = useState([]);
 
   useEffect(() => {
@@ -26,13 +45,22 @@ const ManagerDashboard = () => {
           api.get('/suppliers')
         ]);
 
-        if (dashRes.status === 'fulfilled') setData(dashRes.value.data);
-        if (staffRes.status === 'fulfilled' && Array.isArray(staffRes.value.data)) setStaffList(staffRes.value.data);
+        if (dashRes.status === 'fulfilled') {
+          setData(dashRes.value.data);
+          try { sessionStorage.setItem('restosys_mgr_dash', JSON.stringify(dashRes.value.data)); } catch {}
+        }
+        if (staffRes.status === 'fulfilled' && Array.isArray(staffRes.value.data)) {
+          setStaffList(staffRes.value.data);
+          try { sessionStorage.setItem('restosys_admin_staff_cache', JSON.stringify(staffRes.value.data)); } catch {}
+        }
         if (invRes.status === 'fulfilled' && Array.isArray(invRes.value.data)) {
           const lowItems = invRes.value.data.filter(item => item.quantity <= (item.minStock || 5));
           setStockAlerts(lowItems);
         }
-        if (suppRes.status === 'fulfilled' && Array.isArray(suppRes.value.data)) setSuppliers(suppRes.value.data);
+        if (suppRes.status === 'fulfilled' && Array.isArray(suppRes.value.data)) {
+          setSuppliers(suppRes.value.data);
+          try { sessionStorage.setItem('restosys_mgr_suppliers', JSON.stringify(suppRes.value.data)); } catch {}
+        }
       } catch (err) {
         console.error('Failed to fetch dashboard data', err);
       } finally {

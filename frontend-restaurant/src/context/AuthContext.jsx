@@ -13,18 +13,22 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-    let user = null;
+    let token = null;
     try {
-        user = JSON.parse(localStorage.getItem('restosys_staff_user'));
+        const user = JSON.parse(localStorage.getItem('restosys_staff_user'));
+        if (user?.token) token = user.token;
     } catch (e) {
         localStorage.removeItem('restosys_staff_user');
     }
-    if (user && user.token) {
+    if (!token) {
+        token = localStorage.getItem('token');
+    }
+    if (token) {
         if (config.headers && typeof config.headers.set === 'function') {
-            config.headers.set('Authorization', `Bearer ${user.token}`);
+            config.headers.set('Authorization', `Bearer ${token}`);
         } else {
             config.headers = config.headers || {};
-            config.headers.Authorization = `Bearer ${user.token}`;
+            config.headers.Authorization = `Bearer ${token}`;
         }
     }
     return config;

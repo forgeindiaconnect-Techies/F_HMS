@@ -13,11 +13,30 @@ const RestaurantDetails = () => {
     const navigate = useNavigate();
     const { cartItems, addToCart, removeFromCart, clearCart, cartTotal, cartCount, wishlist, toggleWishlist, setIsWishlistOpen } = useCart();
     
-    const [restaurant, setRestaurant] = useState(null);
-    const [branches, setBranches] = useState([]);
-    const [menu, setMenu] = useState([]);
+    const [restaurant, setRestaurant] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem(`restosys_rest_${id}`);
+            return cached ? JSON.parse(cached) : null;
+        } catch { return null; }
+    });
+    const [branches, setBranches] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem(`restosys_branches_${id}`);
+            return cached ? JSON.parse(cached) : [];
+        } catch { return []; }
+    });
+    const [menu, setMenu] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem(`restosys_menu_${id}`);
+            return cached ? JSON.parse(cached) : [];
+        } catch { return []; }
+    });
     const [selectedBranch, setSelectedBranch] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(() => {
+        try {
+            return !sessionStorage.getItem(`restosys_rest_${id}`);
+        } catch { return true; }
+    });
     const [selectedDish, setSelectedDish] = useState(null);
 
     const [bookingDate, setBookingDate] = useState('');
@@ -119,6 +138,12 @@ const RestaurantDetails = () => {
                     return !rId || String(rId) === String(id);
                 });
                 setMenu(restaurantMenu);
+
+                try {
+                    sessionStorage.setItem(`restosys_rest_${id}`, JSON.stringify(fetchedRest));
+                    sessionStorage.setItem(`restosys_branches_${id}`, JSON.stringify(branchList));
+                    sessionStorage.setItem(`restosys_menu_${id}`, JSON.stringify(restaurantMenu));
+                } catch {}
             } catch (error) {
                 console.error("Failed to load restaurant details", error);
                 setRestaurant(null);

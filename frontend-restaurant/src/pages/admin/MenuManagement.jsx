@@ -9,9 +9,19 @@ import { getItemImage } from '../../utils/imageHelper';
 const MenuManagement = () => {
     const { api } = useAuth();
     const [activeSection, setActiveSection] = useState('items');
-    const [menuItems, setMenuItems] = useState([]);
-    const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [menuItems, setMenuItems] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('restosys_admin_menu_cache');
+            return cached ? JSON.parse(cached) : [];
+        } catch { return []; }
+    });
+    const [categories, setCategories] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('restosys_admin_categories_cache');
+            return cached ? JSON.parse(cached) : [];
+        } catch { return []; }
+    });
+    const [loading, setLoading] = useState(() => !sessionStorage.getItem('restosys_admin_menu_cache'));
     const [searchQuery, setSearchQuery] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('All Categories');
     const [statusFilter, setStatusFilter] = useState('All Statuses');
@@ -40,11 +50,17 @@ const MenuManagement = () => {
     const fetchMenu = async () => {
         try {
             const [menuRes, catRes] = await Promise.all([
-                api.get('/menu'),
-                api.get('/categories')
+                api.get('/menu').catch(() => ({ data: [] })),
+                api.get('/categories').catch(() => ({ data: [] }))
             ]);
-            setMenuItems(menuRes.data);
-            setCategories(catRes.data);
+            const mList = menuRes.data || [];
+            const cList = catRes.data || [];
+            setMenuItems(mList);
+            setCategories(cList);
+            try {
+                sessionStorage.setItem('restosys_admin_menu_cache', JSON.stringify(mList));
+                sessionStorage.setItem('restosys_admin_categories_cache', JSON.stringify(cList));
+            } catch (_) {}
         } catch (error) {
             console.error('Failed to fetch menu items', error);
         } finally {

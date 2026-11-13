@@ -737,6 +737,11 @@ export const updateOrderStatus = async (req, res) => {
                         { orderId: order._id, status: { $ne: 'Cancelled' } },
                         { $set: { status: 'Cancelled' }, $push: { statusHistory: { status: 'Cancelled', timestamp: Date.now(), updatedBy: req.user?._id || null } } }
                     );
+                } else if (newStatus === 'Preparing' || newStatus === 'In Kitchen') {
+                    await KOT.updateMany(
+                        { orderId: order._id, status: 'Pending' },
+                        { $set: { status: 'Preparing', prepStartTime: new Date() }, $push: { statusHistory: { status: 'Preparing', timestamp: Date.now(), updatedBy: req.user?._id || null } } }
+                    );
                 } else if (newStatus === 'Served' || newStatus === 'Completed') {
                     await KOT.updateMany(
                         { orderId: order._id, status: { $nin: ['Served', 'Cancelled'] } },

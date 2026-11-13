@@ -2,7 +2,9 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 
 const CustomerProtectedRoute = ({ children }) => {
-    const { user, loading } = useCustomerAuth();
+    const auth = useCustomerAuth() || {};
+    const user = auth.user;
+    const loading = auth.loading;
     const location = useLocation();
 
     if (loading) {

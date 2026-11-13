@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import axios from 'axios';
 import { 
     CheckCircle, ChefHat, Bike, PackageOpen, ChevronLeft, Phone, 
     Store, User, ShieldCheck, KeyRound, MessageSquare, Clock, BellRing, 
@@ -7,57 +8,91 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import { getApiUrl } from '../../utils/axiosInstance';
 import LiveOrderMap from '../../components/LiveOrderMap';
 import { getOrderReadyTimeInfo } from '../../utils/orderReadyHelper';
 
 const OrderTracking = () => {
     const { id } = useParams();
     const { api } = useCustomerAuth();
-    const [order, setOrder] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [order, setOrder] = useState(() => {
+        try {
+            const cachedOrders = JSON.parse(sessionStorage.getItem('restosys_cust_orders_cache') || '[]');
+            const found = cachedOrders.find(o => (o._id || o.id) === id);
+            return found || null;
+        } catch { return null; }
+    });
+    const [loading, setLoading] = useState(() => {
+        try {
+            const cachedOrders = JSON.parse(sessionStorage.getItem('restosys_cust_orders_cache') || '[]');
+            return !cachedOrders.some(o => (o._id || o.id) === id);
+        } catch { return true; }
+    });
     const [refreshing, setRefreshing] = useState(false);
     const [progress, setProgress] = useState(1); // 1: Received, 2: Preparing, 3: Next Step, 4: Final Step
     const [requestLoading, setRequestLoading] = useState(null);
 
     const fetchOrder = useCallback(async (isManualRefresh = false) => {
         if (isManualRefresh) setRefreshing(true);
-        const capTimer = setTimeout(() => setLoading(false), 1500);
         try {
-            const { data } = await api.get(`/orders/${id}`);
-            setOrder(data);
+            let data = null;
+            try {
+                const res = await api.get(`/orders/${id}`);
+                data = res.data;
+            } catch (err) {
+                // Fallback direct request in case api instance had token/route interceptor issue
+                const API_URL = getApiUrl();
+                const fallbackRes = await axios.get(`${API_URL}/orders/${id}`);
+                data = fallbackRes.data;
+            }
 
-            const isDeliveryOrder = data.orderType === 'Delivery';
-            const isSelfOrder = data.orderType === 'Self-Pickup' || data.orderType === 'Self Pickup' || data.serviceType === 'Self Dine-In (KFC Style)';
-            const isDineInOrder = !isDeliveryOrder && !isSelfOrder;
+            if (data) {
+                setOrder(data);
 
-            if (isDineInOrder) {
-                if (['Served', 'Billing Requested', 'Completed', 'Delivered'].includes(data.status)) setProgress(4);
-                else if (['Ready', 'Ready for Pickup', 'Food Prepared'].includes(data.status)) setProgress(3);
-                else if (['Preparing', 'Accepted', 'In the Kitchen'].includes(data.status)) setProgress(2);
-                else setProgress(1);
-            } else if (isSelfOrder) {
-                if (data.status === 'Completed' || data.status === 'Picked Up') setProgress(4);
-                else if (['Ready for Pickup', 'Ready', 'Food Prepared'].includes(data.status)) setProgress(3);
-                else if (['Preparing', 'Accepted'].includes(data.status)) setProgress(2);
-                else setProgress(1);
-            } else {
-                const st = String(data.status || '').trim();
-                const delSt = String(data.deliveryStatus || '').trim();
+                // Update cache seamlessly
+                try {
+                    const cachedOrders = JSON.parse(sessionStorage.getItem('restosys_cust_orders_cache') || '[]');
+                    const idx = cachedOrders.findIndex(o => (o._id || o.id) === id);
+                    if (idx >= 0) {
+                        cachedOrders[idx] = { ...cachedOrders[idx], ...data };
+                    } else {
+                        cachedOrders.unshift(data);
+                    }
+                    sessionStorage.setItem('restosys_cust_orders_cache', JSON.stringify(cachedOrders));
+                } catch (_) {}
 
-                if (st === 'Delivered' || delSt === 'Delivered') {
-                    setProgress(4);
-                } else if (st === 'Out for Delivery' || delSt === 'On the Way' || delSt === 'Picked Up' || st === 'Picked Up') {
-                    setProgress(3);
-                } else if (st === 'Preparing' || st === 'Accepted' || st === 'Ready' || st === 'Ready for Pickup') {
-                    setProgress(2);
+                const isDeliveryOrder = data.orderType === 'Delivery';
+                const isSelfOrder = data.orderType === 'Self-Pickup' || data.orderType === 'Self Pickup' || data.serviceType === 'Self Dine-In (KFC Style)';
+                const isDineInOrder = !isDeliveryOrder && !isSelfOrder;
+
+                if (isDineInOrder) {
+                    if (['Served', 'Billing Requested', 'Completed', 'Delivered'].includes(data.status)) setProgress(4);
+                    else if (['Ready', 'Ready for Pickup', 'Food Prepared'].includes(data.status)) setProgress(3);
+                    else if (['Preparing', 'Accepted', 'In the Kitchen'].includes(data.status)) setProgress(2);
+                    else setProgress(1);
+                } else if (isSelfOrder) {
+                    if (data.status === 'Completed' || data.status === 'Picked Up') setProgress(4);
+                    else if (['Ready for Pickup', 'Ready', 'Food Prepared'].includes(data.status)) setProgress(3);
+                    else if (['Preparing', 'Accepted'].includes(data.status)) setProgress(2);
+                    else setProgress(1);
                 } else {
-                    setProgress(1);
+                    const st = String(data.status || '').trim();
+                    const delSt = String(data.deliveryStatus || '').trim();
+
+                    if (st === 'Delivered' || delSt === 'Delivered') {
+                        setProgress(4);
+                    } else if (st === 'Out for Delivery' || delSt === 'On the Way' || delSt === 'Picked Up' || st === 'Picked Up') {
+                        setProgress(3);
+                    } else if (st === 'Preparing' || st === 'Accepted' || st === 'Ready' || st === 'Ready for Pickup') {
+                        setProgress(2);
+                    } else {
+                        setProgress(1);
+                    }
                 }
             }
         } catch (error) {
             console.error('Failed to fetch order details', error);
         } finally {
-            clearTimeout(capTimer);
             setLoading(false);
             if (isManualRefresh) setRefreshing(false);
         }
@@ -140,14 +175,23 @@ const OrderTracking = () => {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
                 <AlertCircle className="text-red-500 mb-4" size={48} />
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Order Not Found</h3>
-                <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">We couldn't retrieve the live details for order #{id}.</p>
-                <Link 
-                    to="/profile"
-                    className="mt-6 bg-gray-950 hover:bg-black text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm"
-                >
-                    Back to My Account
-                </Link>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Order Details Not Loaded</h3>
+                <p className="text-sm text-gray-500 dark:text-slate-400 mt-1 max-w-sm">We couldn't retrieve the live details for order #{id}. The server may be waking up or refreshing.</p>
+                <div className="flex items-center gap-3 mt-6">
+                    <button 
+                        type="button"
+                        onClick={() => { setLoading(true); fetchOrder(true); }}
+                        className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+                    >
+                        <RefreshCw size={16} /> Try Again
+                    </button>
+                    <Link 
+                        to="/profile"
+                        className="bg-gray-950 hover:bg-black text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm"
+                    >
+                        Back to My Account
+                    </Link>
+                </div>
             </div>
         );
     }

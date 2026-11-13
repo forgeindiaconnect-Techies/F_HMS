@@ -1,5 +1,5 @@
-import React from 'react';
-import { AlertTriangle, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { AlertTriangle, X, Loader2 } from 'lucide-react';
 
 const ConfirmModal = ({ 
     isOpen, 
@@ -11,7 +11,25 @@ const ConfirmModal = ({
     cancelText = "Cancel", 
     isDestructive = true 
 }) => {
+    const [submitting, setSubmitting] = useState(false);
+
     if (!isOpen) return null;
+
+    const handleConfirm = async () => {
+        try {
+            setSubmitting(true);
+            if (onConfirm) {
+                await onConfirm();
+            }
+            if (onClose) {
+                onClose();
+            }
+        } catch (error) {
+            console.error('Confirm action error:', error);
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
@@ -20,8 +38,9 @@ const ConfirmModal = ({
                 onClick={(e) => e.stopPropagation()}
             >
                 <button 
+                    disabled={submitting}
                     onClick={onClose}
-                    className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40 cursor-pointer"
                 >
                     <X size={18} />
                 </button>
@@ -39,24 +58,30 @@ const ConfirmModal = ({
                 <div className="flex gap-3 mt-6 pt-2 border-t border-slate-100 dark:border-slate-800">
                     <button 
                         type="button"
+                        disabled={submitting}
                         onClick={onClose}
-                        className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold rounded-xl transition-colors cursor-pointer"
+                        className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
                     >
                         {cancelText}
                     </button>
                     <button 
                         type="button"
-                        onClick={() => {
-                            onConfirm();
-                            onClose();
-                        }}
-                        className={`flex-1 py-2.5 px-4 text-white text-sm font-bold rounded-xl shadow-sm transition-all cursor-pointer ${
+                        disabled={submitting}
+                        onClick={handleConfirm}
+                        className={`flex-1 py-2.5 px-4 text-white text-sm font-bold rounded-xl shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2 ${
                             isDestructive 
-                                ? 'bg-red-600 hover:bg-red-700 shadow-red-600/20 active:scale-98' 
-                                : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20 active:scale-98'
+                                ? 'bg-red-600 hover:bg-red-700 shadow-red-600/20 active:scale-98 disabled:opacity-60' 
+                                : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20 active:scale-98 disabled:opacity-60'
                         }`}
                     >
-                        {confirmText}
+                        {submitting ? (
+                            <>
+                                <Loader2 size={16} className="animate-spin" />
+                                <span>Processing...</span>
+                            </>
+                        ) : (
+                            confirmText
+                        )}
                     </button>
                 </div>
             </div>

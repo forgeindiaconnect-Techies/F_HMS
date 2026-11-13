@@ -15,9 +15,23 @@ const roleColors = {
 
 const UsersManagement = () => {
     const { api, user: currentUser } = useAuth();
-    const [users, setUsers] = useState([]);
-    const [branches, setBranches] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [users, setUsers] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('restosys_admin_users_cache');
+            return cached ? JSON.parse(cached) : [];
+        } catch { return []; }
+    });
+    const [branches, setBranches] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('restosys_branches_cache');
+            return cached ? JSON.parse(cached) : [];
+        } catch { return []; }
+    });
+    const [loading, setLoading] = useState(() => {
+        try {
+            return !sessionStorage.getItem('restosys_admin_users_cache');
+        } catch { return true; }
+    });
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState('All Roles');
@@ -43,8 +57,12 @@ const UsersManagement = () => {
                 api.get('/users'),
                 api.get('/branches')
             ]);
-            setUsers(usersRes.data);
-            setBranches(branchesRes.data);
+            setUsers(usersRes.data || []);
+            setBranches(branchesRes.data || []);
+            try {
+                sessionStorage.setItem('restosys_admin_users_cache', JSON.stringify(usersRes.data || []));
+                sessionStorage.setItem('restosys_branches_cache', JSON.stringify(branchesRes.data || []));
+            } catch {}
         } catch (error) {
             console.error('Failed to fetch data', error);
         } finally {

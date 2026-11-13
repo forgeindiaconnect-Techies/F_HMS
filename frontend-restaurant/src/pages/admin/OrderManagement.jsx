@@ -157,8 +157,13 @@ const OrderCard = ({ order, onView }) => {
 /* ── Main Component ─────────────────────────────────────────────── */
 const OrderManagement = () => {
     const { api, user } = useAuth();
-    const [orders, setOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [orders, setOrders] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('restosys_admin_orders_cache');
+            return cached ? JSON.parse(cached) : [];
+        } catch { return []; }
+    });
+    const [loading, setLoading] = useState(() => !sessionStorage.getItem('restosys_admin_orders_cache'));
     const [view, setView] = useState('kanban');
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -171,6 +176,9 @@ const OrderManagement = () => {
                 o => !['Delivered', 'Completed', 'Cancelled', 'Refunded'].includes(o.status)
             );
             setOrders(active);
+            try {
+                sessionStorage.setItem('restosys_admin_orders_cache', JSON.stringify(active));
+            } catch (_) {}
         } catch (error) {
             console.error('Failed to fetch orders', error);
             toast.error('Failed to load orders');

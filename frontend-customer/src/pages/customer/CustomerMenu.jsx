@@ -23,12 +23,43 @@ const CustomerMenu = () => {
     const tableNumber = searchParams.get('tableNumber');
     const activeOrderId = searchParams.get('activeOrderId');
 
-    const [menuItems, setMenuItems] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [restaurantName, setRestaurantName] = useState('FoodNest Client');
+    const qrCacheKey = `restosys_qr_menu_${restaurantId || ''}_${branchId || ''}`;
+    const qrNameCacheKey = `restosys_qr_name_${restaurantId || ''}`;
+    const qrConfigCacheKey = `restosys_qr_cfg_${restaurantId || ''}`;
+
+    const [menuItems, setMenuItems] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem(qrCacheKey) || localStorage.getItem(qrCacheKey);
+            return cached ? JSON.parse(cached) : [];
+        } catch { return []; }
+    });
+    const [restaurantName, setRestaurantName] = useState(() => {
+        try {
+            return sessionStorage.getItem(qrNameCacheKey) || localStorage.getItem(qrNameCacheKey) || 'FoodNest Restaurant';
+        } catch { return 'FoodNest Restaurant'; }
+    });
+    const [publicConfig, setPublicConfig] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem(qrConfigCacheKey) || localStorage.getItem(qrConfigCacheKey);
+            return cached ? JSON.parse(cached) : null;
+        } catch { return null; }
+    });
+    const [loading, setLoading] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem(qrCacheKey) || localStorage.getItem(qrCacheKey);
+            return !cached;
+        } catch { return true; }
+    });
     const [activeCategory, setActiveCategory] = useState('All');
     const [isUnavailable, setIsUnavailable] = useState(false);
     const [unavailableReason, setUnavailableReason] = useState('');
+
+    // Save table number to local storage for persistent session
+    useEffect(() => {
+        if (tableNumber) {
+            try { localStorage.setItem('restosys_last_table', tableNumber); } catch {}
+        }
+    }, [tableNumber]);
 
     // Cart state
     const [cart, setCart] = useState([]);
@@ -53,7 +84,6 @@ const CustomerMenu = () => {
     const [paymentStep, setPaymentStep] = useState('idle'); // 'idle' | 'simulating' | 'success'
 
     // Operational Settings from Backend
-    const [publicConfig, setPublicConfig] = useState(null);
     const [tipPercent, setTipPercent] = useState(0); // 0, 5, 10, 15, 20 or -1 for custom
     const [customTipAmount, setCustomTipAmount] = useState('');
 
@@ -67,10 +97,11 @@ const CustomerMenu = () => {
 
         const fetchMenu = async () => {
             try {
-                // Fetch public operational settings & restaurant info
-                const [restRes, configRes] = await Promise.all([
+                // Fetch restaurant info, public config, and menu items ALL CONCURRENTLY in parallel
+                const [restRes, configRes, menuRes] = await Promise.all([
                     api.get(`/restaurants/${restaurantId}`).catch((err) => err.response || null),
-                    api.get(`/restaurants/${restaurantId}/public-config`).catch((err) => err.response || null)
+                    api.get(`/restaurants/${restaurantId}/public-config`).catch((err) => err.response || null),
+                    api.get(`/menu?restaurantId=${restaurantId}&branchId=${branchId || ''}`).catch(() => ({ data: [] }))
                 ]);
 
                 // Verify restaurant is active and visible
@@ -88,22 +119,23 @@ const CustomerMenu = () => {
                     return;
                 }
 
+                let finalName = restaurantName;
                 if (restRes && restRes.data) {
+                    finalName = restRes.data.name;
                     setRestaurantName(restRes.data.name);
                 }
 
-                // Fetch public menu items
-                const res = await api.get(`/menu?restaurantId=${restaurantId}&branchId=${branchId || ''}`);
-                setMenuItems(Array.isArray(res.data) ? res.data : []);
+                const items = Array.isArray(menuRes?.data) ? menuRes.data : [];
+                setMenuItems(items);
 
                 if (configRes && configRes.data) {
                     setPublicConfig(configRes.data);
                     if (configRes.data.restaurantName) {
+                        finalName = configRes.data.restaurantName;
                         setRestaurantName(configRes.data.restaurantName);
                     }
 
                     // Auto-adjust default service mode based on active options:
-                    // Prioritize Waiter Table Service for table QR orders
                     const qrCfg = configRes.data.qrOrdering || {};
                     if (qrCfg.allowWaiterOrdering !== false) {
                         setServiceType('Waiter Table Service');
@@ -112,7 +144,19 @@ const CustomerMenu = () => {
                         setServiceType('Self Dine-In (KFC Style)');
                         setPaymentOption('UPI');
                     }
+                    try {
+                        sessionStorage.setItem(qrConfigCacheKey, JSON.stringify(configRes.data));
+                        localStorage.setItem(qrConfigCacheKey, JSON.stringify(configRes.data));
+                    } catch {}
                 }
+
+                // Cache for instant 0ms mobile reload
+                try {
+                    sessionStorage.setItem(qrCacheKey, JSON.stringify(items));
+                    localStorage.setItem(qrCacheKey, JSON.stringify(items));
+                    sessionStorage.setItem(qrNameCacheKey, finalName);
+                    localStorage.setItem(qrNameCacheKey, finalName);
+                } catch {}
             } catch (error) {
                 console.error("Failed to load menu", error);
                 if (error.response?.status === 403 || error.response?.status === 404) {
@@ -403,8 +447,17 @@ const CustomerMenu = () => {
             {/* Menu Items Grid */}
             <main className="px-6 py-6 space-y-4">
                 {loading ? (
-                    <div className="flex justify-center py-20">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                    <div className="space-y-3">
+                        {[1, 2, 3, 4].map(n => (
+                            <div key={n} className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex gap-4 items-center animate-pulse">
+                                <div className="w-20 h-20 rounded-xl bg-slate-200 shrink-0" />
+                                <div className="flex-1 space-y-2">
+                                    <div className="h-4 bg-slate-200 rounded w-2/3" />
+                                    <div className="h-3 bg-slate-100 rounded w-full" />
+                                    <div className="h-4 bg-emerald-100 rounded w-16" />
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 ) : filteredItems.length === 0 ? (
                     <div className="text-center py-20 text-gray-500">
