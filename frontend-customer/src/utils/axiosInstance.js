@@ -26,7 +26,7 @@ export const getApiUrl = () => {
         if (!envUrl.endsWith('/api')) envUrl += '/api';
         // If native platform and envUrl is localhost, use live Vercel backend instead of localhost
         if (Capacitor.isNativePlatform() && (envUrl.includes('localhost') || envUrl.includes('127.0.0.1'))) {
-            return 'https://backend-ochre-five-29.vercel.app/api';
+            return 'https://f-hms-1-a2ig.onrender.com/api';
         }
         return envUrl;
     }
@@ -92,7 +92,7 @@ api.interceptors.response.use(
 
         if (config && !config._fallbackTried && isNetworkDown && isLocalTarget) {
             config._fallbackTried = true;
-            config.baseURL = 'https://backend-ochre-five-29.vercel.app/api';
+            config.baseURL = 'https://f-hms-1-a2ig.onrender.com/api';
             return api.request(config);
         }
 

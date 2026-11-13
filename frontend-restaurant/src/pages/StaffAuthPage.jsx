@@ -92,7 +92,7 @@ const StaffAuthPage = () => {
     const [menuFile, setMenuFile] = useState(null);
     const [imagesFiles, setImagesFiles] = useState([]);
     
-    const { login } = useAuth();
+    const { login } = useAuth() || {};
     
     const urlPlan = searchParams.get('plan');
     const initialPlan = (!urlPlan || urlPlan.toLowerCase().includes('trial') || urlPlan.toLowerCase().includes('free'))
@@ -246,7 +246,7 @@ const StaffAuthPage = () => {
             } catch (postErr) {
                 const isNetErr = !postErr.response || postErr.code === 'ERR_NETWORK' || postErr.code === 'ECONNABORTED';
                 if (isNetErr) {
-                    await axios.post('https://backend-ochre-five-29.vercel.app/api/auth/register', formData, {
+                    await axios.post('https://f-hms-1-a2ig.onrender.com/api/auth/register', formData, {
                         headers: { 'Content-Type': 'multipart/form-data' },
                         timeout: 60000
                     });

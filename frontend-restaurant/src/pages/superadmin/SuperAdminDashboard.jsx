@@ -44,19 +44,46 @@ const SuperAdminDashboard = () => {
     };
 
     const fetchDashboardData = async () => {
-        const capTimer = setTimeout(() => setLoading(false), 1500);
+        const capTimer = setTimeout(() => setLoading(false), 2500);
         try {
             const [statsRes, restsRes, verifsRes, inquiriesRes, ticketsRes, notifsRes, demosRes] = await Promise.all([
-                api.get('/super-admin/stats').catch(() => ({ data: null })),
-                api.get('/super-admin/restaurants').catch(() => ({ data: [] })),
+                api.get('/super-admin/stats', { timeout: 15000 }).catch(() => ({ data: null })),
+                api.get('/super-admin/restaurants', { timeout: 15000 }).catch(() => ({ data: [] })),
                 api.get('/restaurants/verification/all').catch(() => ({ data: [] })),
                 api.get('/inquiries/admin').catch(() => ({ data: [] })),
                 api.get('/super-admin/tickets').catch(() => ({ data: [] })),
                 api.get('/super-admin/notifications').catch(() => ({ data: [] })),
                 api.get('/billing-demos/admin').catch(() => ({ data: { data: [] } }))
             ]);
-            if (statsRes.data) setStats(statsRes.data);
-            setRestaurants(restsRes.data || []);
+            
+            const rData = Array.isArray(restsRes.data) ? restsRes.data : [];
+            let resolvedStats = statsRes.data;
+
+            if (!resolvedStats && rData.length > 0) {
+                // Defensive fallback computation from restaurants list so stats are NEVER stuck at 0
+                const totalR = rData.length;
+                const activeR = rData.filter(r => r.status === 'Active' && r.approvalStatus === 'Approved').length;
+                const frozenR = rData.filter(r => r.subscription?.status === 'Frozen').length;
+                let rev = 0;
+                rData.forEach(r => {
+                    const price = r.subscription?.price || (r.subscription?.plan === 'Enterprise' ? 199 : r.subscription?.plan === 'Pro' ? 99 : 49);
+                    rev += (r.subscription?.billingCycle === 'yearly' ? Math.round(price / 12) : price);
+                });
+                resolvedStats = {
+                    totalRestaurants: totalR,
+                    activeRestaurants: activeR,
+                    frozenRestaurants: frozenR,
+                    totalUsers: totalR,
+                    totalOrders: 0,
+                    totalRevenue: rev,
+                    totalCommission: 0
+                };
+            }
+
+            if (resolvedStats) {
+                setStats(resolvedStats);
+            }
+            setRestaurants(rData);
             setVerifications(verifsRes.data || []);
             setInquiries(inquiriesRes.data || []);
             setTickets(ticketsRes.data || []);
@@ -64,8 +91,8 @@ const SuperAdminDashboard = () => {
             setBillingDemos(demosRes.data?.data || []);
             try {
                 sessionStorage.setItem('restosys_superadmin_overview_cache', JSON.stringify({
-                    stats: statsRes.data || stats,
-                    restaurants: restsRes.data || [],
+                    stats: resolvedStats || stats,
+                    restaurants: rData,
                     verifications: verifsRes.data || [],
                     inquiries: inquiriesRes.data || [],
                     tickets: ticketsRes.data || [],

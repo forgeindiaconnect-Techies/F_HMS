@@ -81,7 +81,7 @@ api.interceptors.response.use(
 
         if (config && !config._fallbackTried && isNetworkDown && isLocalTarget) {
             config._fallbackTried = true;
-            config.baseURL = 'https://backend-ochre-five-29.vercel.app/api';
+            config.baseURL = 'https://f-hms-1-a2ig.onrender.com/api';
             return api.request(config);
         }
 

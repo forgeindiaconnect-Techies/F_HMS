@@ -2,9 +2,20 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { getApiUrl } from '../utils/axiosInstance';
 
-const CustomerAuthContext = createContext();
+const defaultCustomerAuthContext = {
+    customer: null,
+    setCustomer: () => {},
+    login: async () => ({ success: false, message: 'Initializing auth...' }),
+    logout: () => {},
+    api: null,
+};
 
-export const useCustomerAuth = () => useContext(CustomerAuthContext);
+const CustomerAuthContext = createContext(defaultCustomerAuthContext);
+
+export const useCustomerAuth = () => {
+    const context = useContext(CustomerAuthContext);
+    return context || defaultCustomerAuthContext;
+};
 
 const api = axios.create({
     baseURL: getApiUrl(),
@@ -41,7 +52,7 @@ api.interceptors.response.use(
         
         // Fallback to live backend if local/LAN port 5000 is unreachable
         if (config && isNetworkDown && config.baseURL && (config.baseURL.includes('5000') || config.baseURL.includes('localhost') || config.baseURL.includes('192.168.'))) {
-            config.baseURL = 'https://backend-ochre-five-29.vercel.app/api';
+            config.baseURL = 'https://f-hms-1-a2ig.onrender.com/api';
             return api.request(config);
         }
 

@@ -14,24 +14,37 @@ import SubscriptionPayment from '../models/SubscriptionPayment.js';
 // @access  Private/SuperAdmin
 export const getStats = async (req, res) => {
     try {
-        const totalRestaurants = await Restaurant.countDocuments({ isDeleted: { $ne: true } });
-        const activeRestaurants = await Restaurant.countDocuments({ 
-            isDeleted: { $ne: true }, 
-            status: 'Active', 
-            approvalStatus: 'Approved', 
-            'subscription.status': { $nin: ['Cancelled', 'Frozen', 'Expired', 'Suspended', 'Inactive'] } 
-        });
-        const pendingRestaurants = await Restaurant.countDocuments({ isDeleted: { $ne: true }, approvalStatus: 'Pending' });
-        const frozenRestaurants = await Restaurant.countDocuments({ isDeleted: { $ne: true }, 'subscription.status': 'Frozen' });
-        const totalUsers = await User.countDocuments();
-        const totalOrders = await Order.countDocuments();
+        const [
+            totalRestaurants,
+            activeRestaurants,
+            pendingRestaurants,
+            frozenRestaurants,
+            totalUsers,
+            totalOrders,
+            activeSubscribedRestaurants,
+            restaurantsCommission,
+            paidOrders
+        ] = await Promise.all([
+            Restaurant.countDocuments({ isDeleted: { $ne: true } }),
+            Restaurant.countDocuments({ 
+                isDeleted: { $ne: true }, 
+                status: 'Active', 
+                approvalStatus: 'Approved', 
+                'subscription.status': { $nin: ['Cancelled', 'Frozen', 'Expired', 'Suspended', 'Inactive'] } 
+            }),
+            Restaurant.countDocuments({ isDeleted: { $ne: true }, approvalStatus: 'Pending' }),
+            Restaurant.countDocuments({ isDeleted: { $ne: true }, 'subscription.status': 'Frozen' }),
+            User.countDocuments(),
+            Order.countDocuments(),
+            Restaurant.find(
+                { approvalStatus: { $ne: 'Rejected' }, 'subscription.status': { $ne: 'Cancelled' }, isDeleted: { $ne: true } },
+                '_id subscription'
+            ).lean(),
+            Restaurant.find({ isDeleted: { $ne: true } }, '_id commissionRate').lean(),
+            Order.find({ isPaid: true }, 'restaurantId totalPrice').lean()
+        ]);
 
         // Calculate real MRR from active restaurant subscriptions
-        const activeSubscribedRestaurants = await Restaurant.find({ 
-            approvalStatus: { $ne: 'Rejected' }, 
-            'subscription.status': { $ne: 'Cancelled' } 
-        });
-
         let totalRevenue = 0;
         activeSubscribedRestaurants.forEach(r => {
             const planPrice = r.subscription?.price || (r.subscription?.plan === 'Enterprise' ? 199 : r.subscription?.plan === 'Pro' ? 99 : 49);
@@ -40,8 +53,6 @@ export const getStats = async (req, res) => {
         });
 
         // Calculate total commission earned across all registered subscribed restaurants from customer food orders
-        const allRestaurants = await Restaurant.find().lean();
-        const paidOrders = await Order.find({ isPaid: true }).lean();
         const restaurantRevenueMap = {};
         paidOrders.forEach(o => {
             if (o.restaurantId) {
@@ -51,7 +62,7 @@ export const getStats = async (req, res) => {
         });
 
         let totalCommission = 0;
-        allRestaurants.forEach(r => {
+        restaurantsCommission.forEach(r => {
             const rev = restaurantRevenueMap[r._id.toString()] || 0;
             const rate = r.commissionRate !== undefined && r.commissionRate !== null ? r.commissionRate : 5; // Default 5% platform commission if set
             totalCommission += (rev * rate) / 100;
