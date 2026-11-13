@@ -17,6 +17,9 @@ export const getApiUrl = () => {
         let envUrl = import.meta.env.VITE_API_URL.trim();
         if (envUrl.endsWith('/')) envUrl = envUrl.slice(0, -1);
         if (!envUrl.endsWith('/api')) envUrl += '/api';
+        if (envUrl.includes('f-hms-1') || envUrl.includes('backend-ochre')) {
+            return 'https://f-hms.onrender.com/api';
+        }
         return envUrl;
     }
 
@@ -79,7 +82,8 @@ api.interceptors.response.use(
             config.baseURL.includes('172.')
         );
 
-        if (config && !config._fallbackTried && isNetworkDown && isLocalTarget) {
+        const isDeadRender = config?.baseURL && (config.baseURL.includes('f-hms-1') || config.baseURL.includes('backend-ochre'));
+        if (config && !config._fallbackTried && (isDeadRender || (isNetworkDown && isLocalTarget))) {
             config._fallbackTried = true;
             config.baseURL = 'https://f-hms.onrender.com/api';
             return api.request(config);

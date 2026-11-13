@@ -73,7 +73,8 @@ api.interceptors.response.use(
             config.baseURL.includes('172.')
         );
 
-        if (config && !config._fallbackTried && isNetworkDown && isLocalTarget) {
+        const isDeadRender = config?.baseURL && (config.baseURL.includes('f-hms-1') || config.baseURL.includes('backend-ochre'));
+        if (config && !config._fallbackTried && (isDeadRender || (isNetworkDown && isLocalTarget))) {
             config._fallbackTried = true;
             config.baseURL = 'https://f-hms.onrender.com/api';
             return api.request(config);

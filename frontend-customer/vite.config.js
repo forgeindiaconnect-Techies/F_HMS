@@ -5,7 +5,10 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const apiUrl = env.VITE_API_URL || 'https://f-hms.onrender.com/api';
+  let apiUrl = env.VITE_API_URL || 'https://f-hms.onrender.com/api';
+  if (apiUrl.includes('f-hms-1') || apiUrl.includes('backend-ochre')) {
+    apiUrl = 'https://f-hms.onrender.com/api';
+  }
   const restaurantUrl = env.VITE_RESTAURANT_URL || 'http://localhost:5173';
 
   return {

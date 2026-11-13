@@ -50,8 +50,8 @@ api.interceptors.response.use(
         const isNetworkDown = !error.response || error.code === 'ERR_NETWORK';
         const isColdStart = status === 502 || status === 503 || status === 504 || isNetworkDown;
         
-        // Fallback to live backend if local/LAN port 5000 is unreachable
-        if (config && isNetworkDown && config.baseURL && (config.baseURL.includes('5000') || config.baseURL.includes('localhost') || config.baseURL.includes('192.168.'))) {
+        // Fallback to live backend if target is dead render or local/LAN port 5000 is unreachable
+        if (config && (config.baseURL?.includes('f-hms-1') || (isNetworkDown && config.baseURL && (config.baseURL.includes('5000') || config.baseURL.includes('localhost') || config.baseURL.includes('192.168.'))))) {
             config.baseURL = 'https://f-hms.onrender.com/api';
             return api.request(config);
         }
