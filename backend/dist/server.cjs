@@ -65973,15 +65973,18 @@ var init_Restaurant = __esm({
         type: String
       },
       logo: {
-        type: String
+        type: String,
+        select: false
       },
       bannerImage: {
         type: String,
-        default: ""
+        default: "",
+        select: false
       },
       showcaseImages: {
         type: [String],
-        default: []
+        default: [],
+        select: false
       },
       currency: {
         type: String,
@@ -66323,6 +66326,9 @@ var init_emailService = __esm({
             return true;
           } else {
             console.error("[Brevo API Error Details]:", JSON.stringify(data));
+            if (response.status === 401 || response.status === 403) {
+              return false;
+            }
           }
         } catch (brevoErr) {
           console.error("[Brevo HTTP Dispatch Error]:", brevoErr.message);
@@ -66333,9 +66339,9 @@ var init_emailService = __esm({
           host: smtpConfig.host,
           port: smtpConfig.port,
           secure: false,
-          connectionTimeout: 5e3,
-          greetingTimeout: 5e3,
-          socketTimeout: 1e4,
+          connectionTimeout: 2e3,
+          greetingTimeout: 2e3,
+          socketTimeout: 3e3,
           auth: {
             user: smtpConfig.user,
             pass: smtpConfig.pass
@@ -127270,7 +127276,7 @@ var loginUser = async (req, res) => {
       }
       if (!user.restaurantId) {
         if (user.role === "RestaurantAdmin") {
-          const ownedRestaurant = await Restaurant_default.findOne({ ownerId: user._id });
+          const ownedRestaurant = await Restaurant_default.findOne({ ownerId: user._id }).select("-logo -bannerImage -showcaseImages");
           if (ownedRestaurant) {
             user.restaurantId = ownedRestaurant._id;
             await user.save();
@@ -127285,7 +127291,7 @@ var loginUser = async (req, res) => {
       }
       let hydratedRestaurant = null;
       if (user.restaurantId && !["SuperAdmin", "SupportAgent", "Customer"].includes(user.role)) {
-        const restaurant = await Restaurant_default.findById(user.restaurantId);
+        const restaurant = await Restaurant_default.findById(user.restaurantId).select("-logo -bannerImage -showcaseImages");
         if (restaurant) {
           await evaluateSubscriptionAccess(restaurant, { notifyOnExpire: true });
           hydratedRestaurant = {
@@ -128726,7 +128732,7 @@ var getMyRestaurant = async (req, res) => {
     }
     let restaurantId = req.user?.restaurantId;
     if (!restaurantId && req.user?._id) {
-      const ownedRestaurant = await Restaurant_default.findOne({ ownerId: req.user._id });
+      const ownedRestaurant = await Restaurant_default.findOne({ ownerId: req.user._id }).select("-logo -bannerImage -showcaseImages");
       if (ownedRestaurant) {
         restaurantId = ownedRestaurant._id;
         req.user.restaurantId = ownedRestaurant._id;
@@ -128736,7 +128742,7 @@ var getMyRestaurant = async (req, res) => {
     if (!restaurantId) {
       return res.json(null);
     }
-    const restaurant = await Restaurant_default.findById(restaurantId);
+    const restaurant = await Restaurant_default.findById(restaurantId).select("-logo -bannerImage -showcaseImages");
     if (!restaurant) {
       return res.json(null);
     }

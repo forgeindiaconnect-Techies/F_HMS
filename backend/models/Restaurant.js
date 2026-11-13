@@ -13,14 +13,17 @@ const restaurantSchema = new mongoose.Schema({
     },
     logo: {
         type: String,
+        select: false,
     },
     bannerImage: {
         type: String,
         default: '',
+        select: false,
     },
     showcaseImages: {
         type: [String],
         default: [],
+        select: false,
     },
     currency: {
         type: String,

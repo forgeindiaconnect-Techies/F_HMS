@@ -418,7 +418,7 @@ export const getMyRestaurant = async (req, res) => {
 
         // Auto-heal: If user is RestaurantAdmin but has no restaurantId set, find by ownerId
         if (!restaurantId && req.user?._id) {
-            const ownedRestaurant = await Restaurant.findOne({ ownerId: req.user._id });
+            const ownedRestaurant = await Restaurant.findOne({ ownerId: req.user._id }).select('-logo -bannerImage -showcaseImages');
             if (ownedRestaurant) {
                 restaurantId = ownedRestaurant._id;
                 req.user.restaurantId = ownedRestaurant._id;
@@ -430,7 +430,7 @@ export const getMyRestaurant = async (req, res) => {
             return res.json(null);
         }
 
-        const restaurant = await Restaurant.findById(restaurantId);
+        const restaurant = await Restaurant.findById(restaurantId).select('-logo -bannerImage -showcaseImages');
         if (!restaurant) {
             return res.json(null);
         }

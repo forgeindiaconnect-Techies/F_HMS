@@ -383,7 +383,7 @@ export const loginUser = async (req, res) => {
             // Auto-heal: If user has no restaurantId set, find by ownerId or branch lookup
             if (!user.restaurantId) {
                 if (user.role === 'RestaurantAdmin') {
-                    const ownedRestaurant = await Restaurant.findOne({ ownerId: user._id });
+                    const ownedRestaurant = await Restaurant.findOne({ ownerId: user._id }).select('-logo -bannerImage -showcaseImages');
                     if (ownedRestaurant) {
                         user.restaurantId = ownedRestaurant._id;
                         await user.save();
@@ -400,7 +400,7 @@ export const loginUser = async (req, res) => {
             // Evaluate subscription expiry consistently (do NOT block login so owner can pay/renew or contact support)
             let hydratedRestaurant = null;
             if (user.restaurantId && !['SuperAdmin', 'SupportAgent', 'Customer'].includes(user.role)) {
-                const restaurant = await Restaurant.findById(user.restaurantId);
+                const restaurant = await Restaurant.findById(user.restaurantId).select('-logo -bannerImage -showcaseImages');
                 if (restaurant) {
                     await evaluateSubscriptionAccess(restaurant, { notifyOnExpire: true });
                     hydratedRestaurant = {
