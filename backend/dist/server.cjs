@@ -128796,24 +128796,12 @@ var getMyRestaurant = async (req, res) => {
         restaurant.restaurantConfig.paymentMethods = { cash: true, upi: true, card: true, onlineGateway: true };
       }
     }
-    if (!restaurant.logo || !restaurant.showcaseImages || restaurant.showcaseImages.length === 0) {
-      try {
-        const verif = await RestaurantVerification_default.findOne({ restaurantId: restaurant._id }).select("documents.logo.filePath documents.images.filePath").lean();
-        if (!restaurant.logo && verif?.documents?.logo?.filePath) {
-          restaurant.logo = verif.documents.logo.filePath;
-        }
-        if ((!restaurant.showcaseImages || restaurant.showcaseImages.length === 0) && verif?.documents?.images?.length > 0) {
-          restaurant.showcaseImages = verif.documents.images.map((img) => img.filePath);
-        }
-        if (!restaurant.bannerImage && restaurant.showcaseImages?.length > 0) {
-          restaurant.bannerImage = restaurant.showcaseImages[0];
-        }
-      } catch (_) {
-      }
-    }
     const restObj = restaurant.toObject ? restaurant.toObject() : { ...restaurant };
-    if (restObj.logo && typeof restObj.logo === "string" && restObj.logo.length > 5e3) {
-      restObj.logo = `/api/restaurants/${restaurant._id}/thumbnail`;
+    if (!restObj.logo || typeof restObj.logo === "string" && restObj.logo.length > 5e3) {
+      restObj.logo = `/api/restaurants/${restaurant._id}/thumbnail?kind=logo`;
+    }
+    if (!restObj.bannerImage || typeof restObj.bannerImage === "string" && restObj.bannerImage.length > 5e3) {
+      restObj.bannerImage = `/api/restaurants/${restaurant._id}/thumbnail`;
     }
     res.json(restObj);
   } catch (error) {
@@ -129047,7 +129035,7 @@ var getRestaurantConfig = async (req, res) => {
     if (!restaurantId) {
       return res.status(400).json({ message: "No restaurant associated with this user" });
     }
-    const restaurant = await Restaurant_default.findById(restaurantId);
+    const restaurant = await Restaurant_default.findById(restaurantId).select("-logo -bannerImage -showcaseImages");
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant not found" });
     }
@@ -129082,7 +129070,7 @@ var updateRestaurantConfig = async (req, res) => {
     if (!restaurantId) {
       return res.status(400).json({ message: "No restaurant associated with this user" });
     }
-    const restaurant = await Restaurant_default.findById(restaurantId);
+    const restaurant = await Restaurant_default.findById(restaurantId).select("-logo -bannerImage -showcaseImages");
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant not found" });
     }
