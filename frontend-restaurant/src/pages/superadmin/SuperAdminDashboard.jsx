@@ -43,21 +43,26 @@ const SuperAdminDashboard = () => {
         return `${diffDays} days remaining`;
     };
 
-    const fetchDashboardData = async () => {
-        const capTimer = setTimeout(() => setLoading(false), 2500);
+    const fetchDashboardData = async (isRetry = false) => {
+        const capTimer = setTimeout(() => setLoading(false), 3000);
         try {
             const [statsRes, restsRes, verifsRes, inquiriesRes, ticketsRes, notifsRes, demosRes] = await Promise.all([
-                api.get('/super-admin/stats', { timeout: 15000 }).catch(() => ({ data: null })),
-                api.get('/super-admin/restaurants', { timeout: 15000 }).catch(() => ({ data: [] })),
-                api.get('/restaurants/verification/all').catch(() => ({ data: [] })),
-                api.get('/inquiries/admin').catch(() => ({ data: [] })),
-                api.get('/super-admin/tickets').catch(() => ({ data: [] })),
-                api.get('/super-admin/notifications').catch(() => ({ data: [] })),
-                api.get('/billing-demos/admin').catch(() => ({ data: { data: [] } }))
+                api.get('/super-admin/stats', { timeout: 35000 }).catch(() => ({ data: null })),
+                api.get('/super-admin/restaurants', { timeout: 35000 }).catch(() => ({ data: [] })),
+                api.get('/restaurants/verification/all', { timeout: 35000 }).catch(() => ({ data: [] })),
+                api.get('/inquiries/admin', { timeout: 35000 }).catch(() => ({ data: [] })),
+                api.get('/super-admin/tickets', { timeout: 35000 }).catch(() => ({ data: [] })),
+                api.get('/super-admin/notifications', { timeout: 35000 }).catch(() => ({ data: [] })),
+                api.get('/billing-demos/admin', { timeout: 35000 }).catch(() => ({ data: { data: [] } }))
             ]);
             
             const rData = Array.isArray(restsRes.data) ? restsRes.data : [];
             let resolvedStats = statsRes.data;
+
+            // If initial fetch returned empty due to cold start, automatically retry once in 2.5s
+            if (!isRetry && (!resolvedStats || rData.length === 0)) {
+                setTimeout(() => fetchDashboardData(true), 2500);
+            }
 
             if (!resolvedStats && rData.length > 0) {
                 // Defensive fallback computation from restaurants list so stats are NEVER stuck at 0

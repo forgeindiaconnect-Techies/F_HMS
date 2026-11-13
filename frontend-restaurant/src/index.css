@@ -37,6 +37,14 @@ body {
   color: inherit;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
+  max-width: 100vw;
+}
+
+#home, .hero-section {
+  overflow-x: clip !important;
+  overflow-y: visible !important;
+  max-width: 100vw;
 }
 
 h1, h2, h3, h4, h5, h6, button, input, select, textarea, table, th, td {

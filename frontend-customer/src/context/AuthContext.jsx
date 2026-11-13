@@ -19,7 +19,7 @@ export const useAuth = () => {
 
 const api = axios.create({
     baseURL: getApiUrl(),
-    timeout: 8000,
+    timeout: 30000,
     withCredentials: true,
 });
 

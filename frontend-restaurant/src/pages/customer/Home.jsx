@@ -377,11 +377,15 @@ const Home = () => {
                         </button>
 
                         {/* Features Dropdown Menu */}
-                        <div className="relative" ref={featuresDropdownRef}>
+                        <div 
+                            className="relative" 
+                            ref={featuresDropdownRef}
+                            onMouseEnter={() => setFeaturesDropdownOpen(true)}
+                            onMouseLeave={() => setFeaturesDropdownOpen(false)}
+                        >
                             <button
                                 type="button"
                                 onClick={() => setFeaturesDropdownOpen(!featuresDropdownOpen)}
-                                onMouseEnter={() => setFeaturesDropdownOpen(true)}
                                 className={`flex items-center gap-1.5 transition-colors cursor-pointer py-2 ${
                                     featuresDropdownOpen || activeSection === 'features' ? 'text-[#FF5A1F] font-bold' : 'hover:text-slate-900'
                                 }`}
@@ -398,7 +402,6 @@ const Home = () => {
                             {/* Features Dropdown Popover */}
                             {featuresDropdownOpen && (
                                 <div
-                                    onMouseLeave={() => setFeaturesDropdownOpen(false)}
                                     className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50 w-[580px] animate-in fade-in slide-in-from-top-2 duration-150"
                                 >
                                     <div className="bg-white rounded-2xl p-5 shadow-2xl border border-slate-200/90 ring-1 ring-black/5">
@@ -1304,7 +1307,7 @@ const Home = () => {
                             </div>
 
                             {/* CUSTOMER LANDING PAGE HERO FOOD IMAGE BLENDING WITH RIGHT SIDE OF LAPTOP */}
-                            <div className="absolute -top-10 -right-10 sm:-right-16 lg:-right-24 xl:-right-32 w-72 sm:w-88 lg:w-[440px] xl:w-[480px] h-[340px] sm:h-[390px] lg:h-[440px] pointer-events-none select-none z-0 hidden md:block">
+                            <div className="absolute -top-10 right-0 sm:right-0 lg:-right-6 xl:-right-10 w-72 sm:w-80 lg:w-[420px] xl:w-[460px] h-[340px] sm:h-[380px] lg:h-[430px] pointer-events-none select-none z-0 hidden md:block">
                                 <div 
                                     className="w-full h-full relative overflow-hidden"
                                     style={{

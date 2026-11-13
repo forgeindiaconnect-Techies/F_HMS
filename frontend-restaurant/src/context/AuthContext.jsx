@@ -28,7 +28,7 @@ export const useAuth = () => {
 
 const api = axios.create({
     baseURL: getApiUrl(),
-    timeout: 8000,
+    timeout: 30000,
     withCredentials: true,
 });
 
@@ -384,7 +384,7 @@ export const AuthProvider = ({ children }) => {
             clearAllStaleState();
             let res;
             try {
-                res = await api.post('/auth/login', { email, password, loginType: 'staff' }, { timeout: 20000 });
+                res = await api.post('/auth/login', { email, password, loginType: 'staff' }, { timeout: 35000 });
             } catch (localErr) {
                 const isNetErr = !localErr.response || localErr.code === 'ERR_NETWORK' || localErr.code === 'ECONNABORTED';
                 if (isNetErr) {
@@ -393,7 +393,7 @@ export const AuthProvider = ({ children }) => {
                         password,
                         loginType: 'staff'
                     }, {
-                        timeout: 25000,
+                        timeout: 45000,
                         headers: { 'Content-Type': 'application/json' }
                     });
                 } else {
@@ -416,7 +416,7 @@ export const AuthProvider = ({ children }) => {
             }
             return { success: true, data };
         } catch (error) {
-            const errorMsg = error.response?.data?.message || (error.code === 'ECONNABORTED' ? 'Login request timed out. Please try again.' : (error.message || 'Login failed'));
+            const errorMsg = error.response?.data?.message || (error.code === 'ECONNABORTED' ? 'Login request timed out while waiting for cloud server to wake up. Please click Login again.' : (error.message || 'Login failed'));
             if (!error.response || error.response.status !== 401) {
                 console.error('Login error:', errorMsg);
             }

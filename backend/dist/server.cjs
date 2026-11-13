@@ -72522,10 +72522,6 @@ var require_bcryptjs = __commonJS({
 });
 
 // models/User.js
-var User_exports = {};
-__export(User_exports, {
-  default: () => User_default
-});
 var import_mongoose3, import_bcryptjs, userSchema, User, User_default;
 var init_User = __esm({
   "models/User.js"() {
@@ -132743,29 +132739,41 @@ init_Notification();
 init_Branch();
 var getStats = async (req, res) => {
   try {
-    const totalRestaurants = await Restaurant_default.countDocuments({ isDeleted: { $ne: true } });
-    const activeRestaurants = await Restaurant_default.countDocuments({
-      isDeleted: { $ne: true },
-      status: "Active",
-      approvalStatus: "Approved",
-      "subscription.status": { $nin: ["Cancelled", "Frozen", "Expired", "Suspended", "Inactive"] }
-    });
-    const pendingRestaurants = await Restaurant_default.countDocuments({ isDeleted: { $ne: true }, approvalStatus: "Pending" });
-    const frozenRestaurants = await Restaurant_default.countDocuments({ isDeleted: { $ne: true }, "subscription.status": "Frozen" });
-    const totalUsers = await User_default.countDocuments();
-    const totalOrders = await Order_default.countDocuments();
-    const activeSubscribedRestaurants = await Restaurant_default.find({
-      approvalStatus: { $ne: "Rejected" },
-      "subscription.status": { $ne: "Cancelled" }
-    });
+    const [
+      totalRestaurants,
+      activeRestaurants,
+      pendingRestaurants,
+      frozenRestaurants,
+      totalUsers,
+      totalOrders,
+      activeSubscribedRestaurants,
+      restaurantsCommission,
+      paidOrders
+    ] = await Promise.all([
+      Restaurant_default.countDocuments({ isDeleted: { $ne: true } }),
+      Restaurant_default.countDocuments({
+        isDeleted: { $ne: true },
+        status: "Active",
+        approvalStatus: "Approved",
+        "subscription.status": { $nin: ["Cancelled", "Frozen", "Expired", "Suspended", "Inactive"] }
+      }),
+      Restaurant_default.countDocuments({ isDeleted: { $ne: true }, approvalStatus: "Pending" }),
+      Restaurant_default.countDocuments({ isDeleted: { $ne: true }, "subscription.status": "Frozen" }),
+      User_default.countDocuments(),
+      Order_default.countDocuments(),
+      Restaurant_default.find(
+        { approvalStatus: { $ne: "Rejected" }, "subscription.status": { $ne: "Cancelled" }, isDeleted: { $ne: true } },
+        "_id subscription"
+      ).lean(),
+      Restaurant_default.find({ isDeleted: { $ne: true } }, "_id commissionRate").lean(),
+      Order_default.find({ isPaid: true }, "restaurantId totalPrice").lean()
+    ]);
     let totalRevenue = 0;
     activeSubscribedRestaurants.forEach((r) => {
       const planPrice = r.subscription?.price || (r.subscription?.plan === "Enterprise" ? 199 : r.subscription?.plan === "Pro" ? 99 : 49);
       const cycle = r.subscription?.billingCycle || "monthly";
       totalRevenue += cycle === "yearly" ? Math.round(planPrice / 12) : planPrice;
     });
-    const allRestaurants = await Restaurant_default.find().lean();
-    const paidOrders = await Order_default.find({ isPaid: true }).lean();
     const restaurantRevenueMap = {};
     paidOrders.forEach((o) => {
       if (o.restaurantId) {
@@ -132774,7 +132782,7 @@ var getStats = async (req, res) => {
       }
     });
     let totalCommission = 0;
-    allRestaurants.forEach((r) => {
+    restaurantsCommission.forEach((r) => {
       const rev = restaurantRevenueMap[r._id.toString()] || 0;
       const rate = r.commissionRate !== void 0 && r.commissionRate !== null ? r.commissionRate : 5;
       totalCommission += rev * rate / 100;
@@ -132795,79 +132803,26 @@ var getStats = async (req, res) => {
 };
 var getRestaurants2 = async (req, res) => {
   try {
-    const Branch2 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
-    const User2 = (await Promise.resolve().then(() => (init_User(), User_exports))).default;
-    const adminUsers = await User2.find({ role: { $in: ["RestaurantAdmin", "Admin"] } });
-    for (const admin of adminUsers) {
-      const exists = await Restaurant_default.exists({ $or: [{ ownerId: admin._id }, { _id: admin.restaurantId }] });
-      if (!exists) {
-        const restName = admin.name ? `${admin.name}'s Restaurant` : "New Restaurant";
-        const newRest = await Restaurant_default.create({
-          name: restName,
-          ownerId: admin._id,
-          subscription: {
-            status: "Pending Approval",
-            plan: "Basic",
-            billingCycle: "monthly",
-            trialActive: false,
-            paymentStatus: "Trial",
-            trialRequestDate: /* @__PURE__ */ new Date()
-          },
-          approvalStatus: "Pending",
-          verificationStatus: "Pending",
-          isActive: true
-        });
-        admin.restaurantId = newRest._id;
-        await admin.save();
-        await Branch2.create({
-          restaurantId: newRest._id,
-          name: `${newRest.name} Branch`,
-          location: { address: "Primary Location" },
-          contact: { phone: admin.phoneNumber || "" },
-          isActive: true
-        });
-      }
-    }
-    const restaurants = await Restaurant_default.find().populate("ownerId", "name email").sort({ createdAt: -1 }).lean();
-    const repairedRestaurants = await Promise.all(restaurants.map(async (r) => {
-      if (!r.ownerId) {
-        const owner = await User2.findOne({ restaurantId: r._id, role: { $in: ["RestaurantAdmin", "Admin"] } }).select("name email");
-        if (owner) {
-          r.ownerId = { _id: owner._id, name: owner.name, email: owner.email };
-          try {
-            await Restaurant_default.findByIdAndUpdate(r._id, { ownerId: owner._id });
-          } catch (e) {
-            console.error("Failed to persist ownerId", e);
-          }
-        } else {
-          r.ownerId = { name: `${r.name} Admin`, email: `admin@${r.name.toLowerCase().replace(/[^a-z0-9]/g, "") || "restaurant"}.com` };
-        }
-      }
-      if (!r.name || r.name.trim() === "" || r.name === "Unnamed") {
-        const ownerName = r.ownerId?.name || "Partner";
-        r.name = `${ownerName}'s Restaurant`;
-        try {
-          await Restaurant_default.findByIdAndUpdate(r._id, { name: r.name });
-        } catch (e) {
-          console.error("Failed to persist repaired restaurant name", e);
-        }
-      }
-      return r;
-    }));
-    const revenues = await Order_default.aggregate([
-      { $match: { isPaid: true } },
-      { $group: { _id: "$restaurantId", totalRevenue: { $sum: "$totalPrice" } } }
+    const [restaurants, revenues] = await Promise.all([
+      Restaurant_default.find({ isDeleted: { $ne: true } }).select("_id name status approvalStatus subscription ownerId address phone posConfig billingConfig").populate("ownerId", "name email phoneNumber").sort({ createdAt: -1 }).lean(),
+      Order_default.aggregate([
+        { $match: { isPaid: true } },
+        { $group: { _id: "$restaurantId", totalRevenue: { $sum: "$totalPrice" } } }
+      ])
     ]);
     const revMap = {};
     revenues.forEach((r) => {
       if (r._id) revMap[r._id.toString()] = r.totalRevenue;
     });
-    const result = repairedRestaurants.map((r) => ({
+    const result = (restaurants || []).map((r) => ({
       ...r,
+      name: r.name || (r.ownerId?.name ? `${r.ownerId.name}'s Restaurant` : "Partner Restaurant"),
+      ownerId: r.ownerId || { name: `${r.name || "Restaurant"} Admin`, email: "admin@restauranthub.com" },
       totalRevenue: revMap[r._id.toString()] || 0
     }));
     res.json(result);
   } catch (error) {
+    console.error("getRestaurants error:", error);
     res.status(500).json({ message: error.message });
   }
 };

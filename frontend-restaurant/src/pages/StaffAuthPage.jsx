@@ -431,6 +431,11 @@ const StaffAuthPage = () => {
                 {loading ? 'Please wait...' : 'Sign In'}
                 {!loading && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
             </button>
+            {loading && (
+                <p className="text-center text-xs text-slate-500 animate-pulse mt-2">
+                    Connecting to cloud server... (if waking from sleep, this may take up to 20s)
+                </p>
+            )}
         </form>
     );
 
