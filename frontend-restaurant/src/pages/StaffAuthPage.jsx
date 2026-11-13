@@ -170,6 +170,7 @@ const StaffAuthPage = () => {
             navigate(route);
         } else {
             setAuthError(result.message);
+            toast.error(result.message || 'Login failed');
         }
     };
 

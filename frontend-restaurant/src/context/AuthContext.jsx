@@ -362,7 +362,26 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             clearAllStaleState();
-            const { data } = await api.post('/auth/login', { email, password, loginType: 'staff' });
+            let res;
+            try {
+                res = await api.post('/auth/login', { email, password, loginType: 'staff' }, { timeout: 20000 });
+            } catch (localErr) {
+                const isNetErr = !localErr.response || localErr.code === 'ERR_NETWORK' || localErr.code === 'ECONNABORTED';
+                if (isNetErr) {
+                    res = await axios.post('https://backend-ochre-five-29.vercel.app/api/auth/login', {
+                        email,
+                        password,
+                        loginType: 'staff'
+                    }, {
+                        timeout: 25000,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                } else {
+                    throw localErr;
+                }
+            }
+
+            const data = res.data;
             setUser(data);
             localStorage.setItem('restosys_staff_user', JSON.stringify(data));
             if (data?.token) {
@@ -371,14 +390,13 @@ export const AuthProvider = ({ children }) => {
             if (data?.restaurant) {
                 setRestaurant(data.restaurant);
                 try { localStorage.setItem('restosys_restaurant', JSON.stringify(data.restaurant)); } catch (e) { }
-                // Background refresh without blocking login navigation
                 fetchRestaurant(data).catch(() => { });
             } else {
-                await fetchRestaurant(data);
+                fetchRestaurant(data).catch(() => { });
             }
             return { success: true, data };
         } catch (error) {
-            const errorMsg = error.response?.data?.message || 'Login failed';
+            const errorMsg = error.response?.data?.message || (error.code === 'ECONNABORTED' ? 'Login request timed out. Please try again.' : (error.message || 'Login failed'));
             if (!error.response || error.response.status !== 401) {
                 console.error('Login error:', errorMsg);
             }
