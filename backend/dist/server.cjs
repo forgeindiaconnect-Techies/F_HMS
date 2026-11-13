@@ -52414,10 +52414,10 @@ var require_connection2 = __commonJS({
         });
       });
     };
-    async function _wrapUserTransaction(fn, session, mongoose56) {
+    async function _wrapUserTransaction(fn, session, mongoose57) {
       try {
-        const res = mongoose56.transactionAsyncLocalStorage == null ? await fn(session) : await new Promise((resolve) => {
-          mongoose56.transactionAsyncLocalStorage.run(
+        const res = mongoose57.transactionAsyncLocalStorage == null ? await fn(session) : await new Promise((resolve) => {
+          mongoose57.transactionAsyncLocalStorage.run(
             { session },
             () => resolve(fn(session))
           );
@@ -65545,7 +65545,7 @@ var require_mongoose = __commonJS({
     Mongoose.prototype.ConnectionStates = STATES;
     Mongoose.prototype.driver = driver;
     Mongoose.prototype.setDriver = function setDriver(driver2) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose56;
+      const _mongoose = this instanceof Mongoose ? this : mongoose57;
       if (_mongoose.__driver === driver2) {
         return _mongoose;
       }
@@ -65563,7 +65563,7 @@ var require_mongoose = __commonJS({
         }
       }
       if (driver2.SchemaTypes != null) {
-        Object.assign(mongoose56.Schema.Types, driver2.SchemaTypes);
+        Object.assign(mongoose57.Schema.Types, driver2.SchemaTypes);
       }
       const Connection = driver2.Connection;
       const oldDefaultConnection = _mongoose.connections[0];
@@ -65581,7 +65581,7 @@ var require_mongoose = __commonJS({
       return _mongoose;
     };
     Mongoose.prototype.set = function getsetOptions(key, value) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose56;
+      const _mongoose = this instanceof Mongoose ? this : mongoose57;
       if (arguments.length === 1 && typeof key !== "object") {
         if (VALID_OPTIONS.indexOf(key) === -1) {
           const error2 = new SetOptionError();
@@ -65642,7 +65642,7 @@ var require_mongoose = __commonJS({
     };
     Mongoose.prototype.get = Mongoose.prototype.set;
     Mongoose.prototype.createConnection = function createConnection(uri, options) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose56;
+      const _mongoose = this instanceof Mongoose ? this : mongoose57;
       const Connection = _mongoose.__driver.Connection;
       const conn = new Connection(_mongoose);
       _mongoose.connections.push(conn);
@@ -65657,7 +65657,7 @@ var require_mongoose = __commonJS({
       if (typeof options === "function" || arguments.length >= 3 && typeof arguments[2] === "function") {
         throw new MongooseError("Mongoose.prototype.connect() no longer accepts a callback");
       }
-      const _mongoose = this instanceof Mongoose ? this : mongoose56;
+      const _mongoose = this instanceof Mongoose ? this : mongoose57;
       if (_mongoose.connection == null) {
         _createDefaultConnection(_mongoose);
       }
@@ -65668,7 +65668,7 @@ var require_mongoose = __commonJS({
       if (arguments.length >= 1 && typeof arguments[0] === "function") {
         throw new MongooseError("Mongoose.prototype.disconnect() no longer accepts a callback");
       }
-      const _mongoose = this instanceof Mongoose ? this : mongoose56;
+      const _mongoose = this instanceof Mongoose ? this : mongoose57;
       const remaining = _mongoose.connections.length;
       if (remaining <= 0) {
         return;
@@ -65676,18 +65676,18 @@ var require_mongoose = __commonJS({
       await Promise.all(_mongoose.connections.map((conn) => conn.close()));
     };
     Mongoose.prototype.startSession = function startSession() {
-      const _mongoose = this instanceof Mongoose ? this : mongoose56;
+      const _mongoose = this instanceof Mongoose ? this : mongoose57;
       return _mongoose.connection.startSession.apply(_mongoose.connection, arguments);
     };
     Mongoose.prototype.pluralize = function pluralize(fn) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose56;
+      const _mongoose = this instanceof Mongoose ? this : mongoose57;
       if (arguments.length > 0) {
         _mongoose._pluralize = fn;
       }
       return _mongoose._pluralize;
     };
     Mongoose.prototype.model = function model(name, schema, collection, options) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose56;
+      const _mongoose = this instanceof Mongoose ? this : mongoose57;
       if (typeof schema === "string") {
         collection = schema;
         schema = false;
@@ -65735,7 +65735,7 @@ var require_mongoose = __commonJS({
       return model2;
     };
     Mongoose.prototype._model = function _model(name, schema, collection, options) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose56;
+      const _mongoose = this instanceof Mongoose ? this : mongoose57;
       let model;
       if (typeof name === "function") {
         model = name;
@@ -65774,25 +65774,25 @@ var require_mongoose = __commonJS({
       return model;
     };
     Mongoose.prototype.deleteModel = function deleteModel(name) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose56;
+      const _mongoose = this instanceof Mongoose ? this : mongoose57;
       _mongoose.connection.deleteModel(name);
       delete _mongoose.models[name];
       return _mongoose;
     };
     Mongoose.prototype.modelNames = function modelNames() {
-      const _mongoose = this instanceof Mongoose ? this : mongoose56;
+      const _mongoose = this instanceof Mongoose ? this : mongoose57;
       const names = Object.keys(_mongoose.models);
       return names;
     };
     Mongoose.prototype._applyPlugins = function _applyPlugins(schema, options) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose56;
+      const _mongoose = this instanceof Mongoose ? this : mongoose57;
       options = options || {};
       options.applyPluginsToDiscriminators = _mongoose.options && _mongoose.options.applyPluginsToDiscriminators || false;
       options.applyPluginsToChildSchemas = typeof (_mongoose.options && _mongoose.options.applyPluginsToChildSchemas) === "boolean" ? _mongoose.options.applyPluginsToChildSchemas : true;
       applyPlugins(schema, _mongoose.plugins, options, "$globalPluginsApplied");
     };
     Mongoose.prototype.plugin = function plugin(fn, opts) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose56;
+      const _mongoose = this instanceof Mongoose ? this : mongoose57;
       _mongoose.plugins.push([fn, opts]);
       return _mongoose;
     };
@@ -65842,14 +65842,14 @@ var require_mongoose = __commonJS({
     Mongoose.prototype.DocumentProvider = require_documentProvider();
     Mongoose.prototype.ObjectId = SchemaTypes.ObjectId;
     Mongoose.prototype.isValidObjectId = function isValidObjectId(v) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose56;
+      const _mongoose = this instanceof Mongoose ? this : mongoose57;
       return _mongoose.Types.ObjectId.isValid(v);
     };
     Mongoose.prototype.isObjectIdOrHexString = function isObjectIdOrHexString(v) {
       return isBsonType(v, "ObjectId") || typeof v === "string" && objectIdHexRegexp.test(v);
     };
     Mongoose.prototype.syncIndexes = function syncIndexes(options) {
-      const _mongoose = this instanceof Mongoose ? this : mongoose56;
+      const _mongoose = this instanceof Mongoose ? this : mongoose57;
       return _mongoose.connection.syncIndexes(options);
     };
     Mongoose.prototype.Decimal128 = SchemaTypes.Decimal128;
@@ -65869,15 +65869,15 @@ var require_mongoose = __commonJS({
     Mongoose.prototype.skipMiddlewareFunction = Kareem.skipWrappedFunction;
     Mongoose.prototype.overwriteMiddlewareResult = Kareem.overwriteResult;
     Mongoose.prototype.omitUndefined = require_omitUndefined();
-    function _createDefaultConnection(mongoose57) {
-      if (mongoose57.connection) {
+    function _createDefaultConnection(mongoose58) {
+      if (mongoose58.connection) {
         return;
       }
-      const conn = mongoose57.createConnection();
+      const conn = mongoose58.createConnection();
       conn[defaultConnectionSymbol] = true;
-      conn.models = mongoose57.models;
+      conn.models = mongoose58.models;
     }
-    var mongoose56 = module2.exports = exports2 = new Mongoose({
+    var mongoose57 = module2.exports = exports2 = new Mongoose({
       [defaultMongooseSymbol]: true
     });
   }
@@ -65889,10 +65889,10 @@ var require_lib6 = __commonJS({
     "use strict";
     var mongodbDriver = require_node_mongodb_native();
     require_driver().set(mongodbDriver);
-    var mongoose56 = require_mongoose();
-    mongoose56.setDriver(mongodbDriver);
-    mongoose56.Mongoose.prototype.mongo = require_lib3();
-    module2.exports = mongoose56;
+    var mongoose57 = require_mongoose();
+    mongoose57.setDriver(mongodbDriver);
+    mongoose57.Mongoose.prototype.mongo = require_lib3();
+    module2.exports = mongoose57;
   }
 });
 
@@ -65900,55 +65900,55 @@ var require_lib6 = __commonJS({
 var require_mongoose2 = __commonJS({
   "node_modules/mongoose/index.js"(exports2, module2) {
     "use strict";
-    var mongoose56 = require_lib6();
-    module2.exports = mongoose56;
-    module2.exports.default = mongoose56;
-    module2.exports.mongoose = mongoose56;
-    module2.exports.cast = mongoose56.cast;
-    module2.exports.STATES = mongoose56.STATES;
-    module2.exports.setDriver = mongoose56.setDriver;
-    module2.exports.set = mongoose56.set;
-    module2.exports.get = mongoose56.get;
-    module2.exports.createConnection = mongoose56.createConnection;
-    module2.exports.connect = mongoose56.connect;
-    module2.exports.disconnect = mongoose56.disconnect;
-    module2.exports.startSession = mongoose56.startSession;
-    module2.exports.pluralize = mongoose56.pluralize;
-    module2.exports.model = mongoose56.model;
-    module2.exports.deleteModel = mongoose56.deleteModel;
-    module2.exports.modelNames = mongoose56.modelNames;
-    module2.exports.plugin = mongoose56.plugin;
-    module2.exports.connections = mongoose56.connections;
-    module2.exports.version = mongoose56.version;
-    module2.exports.Aggregate = mongoose56.Aggregate;
-    module2.exports.Mongoose = mongoose56.Mongoose;
-    module2.exports.Schema = mongoose56.Schema;
-    module2.exports.SchemaType = mongoose56.SchemaType;
-    module2.exports.SchemaTypes = mongoose56.SchemaTypes;
-    module2.exports.VirtualType = mongoose56.VirtualType;
-    module2.exports.Types = mongoose56.Types;
-    module2.exports.Query = mongoose56.Query;
-    module2.exports.Model = mongoose56.Model;
-    module2.exports.Document = mongoose56.Document;
-    module2.exports.ObjectId = mongoose56.ObjectId;
-    module2.exports.isValidObjectId = mongoose56.isValidObjectId;
-    module2.exports.isObjectIdOrHexString = mongoose56.isObjectIdOrHexString;
-    module2.exports.syncIndexes = mongoose56.syncIndexes;
-    module2.exports.Decimal128 = mongoose56.Decimal128;
-    module2.exports.Mixed = mongoose56.Mixed;
-    module2.exports.Date = mongoose56.Date;
-    module2.exports.Number = mongoose56.Number;
-    module2.exports.Error = mongoose56.Error;
-    module2.exports.MongooseError = mongoose56.MongooseError;
-    module2.exports.now = mongoose56.now;
-    module2.exports.CastError = mongoose56.CastError;
-    module2.exports.SchemaTypeOptions = mongoose56.SchemaTypeOptions;
-    module2.exports.mongo = mongoose56.mongo;
-    module2.exports.mquery = mongoose56.mquery;
-    module2.exports.sanitizeFilter = mongoose56.sanitizeFilter;
-    module2.exports.trusted = mongoose56.trusted;
-    module2.exports.skipMiddlewareFunction = mongoose56.skipMiddlewareFunction;
-    module2.exports.overwriteMiddlewareResult = mongoose56.overwriteMiddlewareResult;
+    var mongoose57 = require_lib6();
+    module2.exports = mongoose57;
+    module2.exports.default = mongoose57;
+    module2.exports.mongoose = mongoose57;
+    module2.exports.cast = mongoose57.cast;
+    module2.exports.STATES = mongoose57.STATES;
+    module2.exports.setDriver = mongoose57.setDriver;
+    module2.exports.set = mongoose57.set;
+    module2.exports.get = mongoose57.get;
+    module2.exports.createConnection = mongoose57.createConnection;
+    module2.exports.connect = mongoose57.connect;
+    module2.exports.disconnect = mongoose57.disconnect;
+    module2.exports.startSession = mongoose57.startSession;
+    module2.exports.pluralize = mongoose57.pluralize;
+    module2.exports.model = mongoose57.model;
+    module2.exports.deleteModel = mongoose57.deleteModel;
+    module2.exports.modelNames = mongoose57.modelNames;
+    module2.exports.plugin = mongoose57.plugin;
+    module2.exports.connections = mongoose57.connections;
+    module2.exports.version = mongoose57.version;
+    module2.exports.Aggregate = mongoose57.Aggregate;
+    module2.exports.Mongoose = mongoose57.Mongoose;
+    module2.exports.Schema = mongoose57.Schema;
+    module2.exports.SchemaType = mongoose57.SchemaType;
+    module2.exports.SchemaTypes = mongoose57.SchemaTypes;
+    module2.exports.VirtualType = mongoose57.VirtualType;
+    module2.exports.Types = mongoose57.Types;
+    module2.exports.Query = mongoose57.Query;
+    module2.exports.Model = mongoose57.Model;
+    module2.exports.Document = mongoose57.Document;
+    module2.exports.ObjectId = mongoose57.ObjectId;
+    module2.exports.isValidObjectId = mongoose57.isValidObjectId;
+    module2.exports.isObjectIdOrHexString = mongoose57.isObjectIdOrHexString;
+    module2.exports.syncIndexes = mongoose57.syncIndexes;
+    module2.exports.Decimal128 = mongoose57.Decimal128;
+    module2.exports.Mixed = mongoose57.Mixed;
+    module2.exports.Date = mongoose57.Date;
+    module2.exports.Number = mongoose57.Number;
+    module2.exports.Error = mongoose57.Error;
+    module2.exports.MongooseError = mongoose57.MongooseError;
+    module2.exports.now = mongoose57.now;
+    module2.exports.CastError = mongoose57.CastError;
+    module2.exports.SchemaTypeOptions = mongoose57.SchemaTypeOptions;
+    module2.exports.mongo = mongoose57.mongo;
+    module2.exports.mquery = mongoose57.mquery;
+    module2.exports.sanitizeFilter = mongoose57.sanitizeFilter;
+    module2.exports.trusted = mongoose57.trusted;
+    module2.exports.skipMiddlewareFunction = mongoose57.skipMiddlewareFunction;
+    module2.exports.overwriteMiddlewareResult = mongoose57.overwriteMiddlewareResult;
   }
 });
 
@@ -130797,6 +130797,11 @@ var updateOrderStatus = async (req, res) => {
             { orderId: order._id, status: { $ne: "Cancelled" } },
             { $set: { status: "Cancelled" }, $push: { statusHistory: { status: "Cancelled", timestamp: Date.now(), updatedBy: req.user?._id || null } } }
           );
+        } else if (newStatus === "Preparing" || newStatus === "In Kitchen") {
+          await KOT_default.updateMany(
+            { orderId: order._id, status: "Pending" },
+            { $set: { status: "Preparing", prepStartTime: /* @__PURE__ */ new Date() }, $push: { statusHistory: { status: "Preparing", timestamp: Date.now(), updatedBy: req.user?._id || null } } }
+          );
         } else if (newStatus === "Served" || newStatus === "Completed") {
           await KOT_default.updateMany(
             { orderId: order._id, status: { $nin: ["Served", "Cancelled"] } },
@@ -130966,8 +130971,8 @@ var updateOrderToPaid = async (req, res) => {
     };
     if (order.orderType === "Dine In") {
       try {
-        const mongoose56 = await Promise.resolve().then(() => __toESM(require_mongoose2(), 1));
-        const Table2 = mongoose56.model("Table");
+        const mongoose57 = await Promise.resolve().then(() => __toESM(require_mongoose2(), 1));
+        const Table2 = mongoose57.model("Table");
         const table = await Table2.findOne({
           tableNumber: order.tableNumber,
           restaurantId: order.restaurantId,
@@ -136949,6 +136954,9 @@ var supplierRoutes_default = router16;
 // routes/offerRoutes.js
 var import_express17 = __toESM(require_express2(), 1);
 
+// controllers/offerController.js
+var import_mongoose38 = __toESM(require_mongoose2(), 1);
+
 // models/Offer.js
 var import_mongoose37 = __toESM(require_mongoose2(), 1);
 var offerSchema = new import_mongoose37.default.Schema({
@@ -137013,23 +137021,33 @@ var getOffers = async (req, res) => {
 var createOffer = async (req, res) => {
   const { code, type, discountValue, minSpend, expiresAt, usageLimit, isActive } = req.body;
   try {
-    const offerExists = await Offer_default.findOne({ code: code.toUpperCase() });
+    if (!code || typeof code !== "string" || !code.trim()) {
+      return res.status(400).json({ message: "Promo code is required and cannot be empty" });
+    }
+    const normalizedCode = code.trim().toUpperCase();
+    const numDiscount = Number(discountValue);
+    if (isNaN(numDiscount) || numDiscount <= 0) {
+      return res.status(400).json({ message: "Valid discount value greater than 0 is required" });
+    }
+    const offerExists = await Offer_default.findOne({ code: normalizedCode });
     if (offerExists) {
-      return res.status(400).json({ message: "Offer code already exists" });
+      return res.status(400).json({
+        message: `Promo code "${normalizedCode}" already exists. Please choose a unique code or edit the existing one.`
+      });
     }
     const offer = await Offer_default.create({
-      code: code.toUpperCase(),
-      type,
-      discountValue,
-      minSpend,
-      expiresAt,
-      usageLimit: usageLimit || 0,
-      isActive: isActive !== void 0 ? isActive : true
+      code: normalizedCode,
+      type: type || "Percentage",
+      discountValue: numDiscount,
+      minSpend: Number(minSpend) || 0,
+      expiresAt: expiresAt || null,
+      usageLimit: Number(usageLimit) || 0,
+      isActive: isActive !== void 0 ? Boolean(isActive) : true
     });
     clearOffersCache();
     res.status(201).json(offer);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: error.message || "Failed to create offer" });
   }
 };
 var updateOffer = async (req, res) => {
@@ -137055,33 +137073,43 @@ var updateOffer = async (req, res) => {
 };
 var deleteOffer = async (req, res) => {
   try {
-    const offer = await Offer_default.findById(req.params.id);
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ message: "Offer ID or code is required" });
+    }
+    let offer = null;
+    if (import_mongoose38.default.Types.ObjectId.isValid(id)) {
+      offer = await Offer_default.findById(id);
+    }
+    if (!offer) {
+      offer = await Offer_default.findOne({ code: id.trim().toUpperCase() });
+    }
     if (offer) {
-      await offer.deleteOne();
+      await Offer_default.findByIdAndDelete(offer._id);
       clearOffersCache();
-      res.json({ message: "Offer removed" });
+      return res.json({ message: "Offer removed successfully", id: offer._id, code: offer.code });
     } else {
-      res.status(404).json({ message: "Offer not found" });
+      return res.status(404).json({ message: "Offer not found" });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message || "Failed to delete offer" });
   }
 };
 
 // routes/offerRoutes.js
 var router17 = import_express17.default.Router();
 router17.get("/", getOffers);
-router17.post("/", protect, authorize("RestaurantAdmin", "BranchManager"), checkBillingModule("discounts"), checkSubscription, createOffer);
-router17.put("/:id", protect, authorize("RestaurantAdmin", "BranchManager"), checkBillingModule("discounts"), checkSubscription, updateOffer);
-router17.delete("/:id", protect, authorize("RestaurantAdmin", "BranchManager"), checkBillingModule("discounts"), checkSubscription, deleteOffer);
+router17.post("/", protect, authorize("SuperAdmin", "Admin", "RestaurantAdmin", "BranchManager"), checkBillingModule("discounts"), checkSubscription, createOffer);
+router17.put("/:id", protect, authorize("SuperAdmin", "Admin", "RestaurantAdmin", "BranchManager"), checkBillingModule("discounts"), checkSubscription, updateOffer);
+router17.delete("/:id", protect, authorize("SuperAdmin", "Admin", "RestaurantAdmin", "BranchManager"), deleteOffer);
 var offerRoutes_default = router17;
 
 // routes/taxRoutes.js
 var import_express18 = __toESM(require_express2(), 1);
 
 // models/Tax.js
-var import_mongoose38 = __toESM(require_mongoose2(), 1);
-var taxSchema = new import_mongoose38.default.Schema({
+var import_mongoose39 = __toESM(require_mongoose2(), 1);
+var taxSchema = new import_mongoose39.default.Schema({
   name: {
     type: String,
     required: true,
@@ -137107,7 +137135,7 @@ var taxSchema = new import_mongoose38.default.Schema({
     default: true
   }
 }, { timestamps: true });
-var Tax = import_mongoose38.default.model("Tax", taxSchema);
+var Tax = import_mongoose39.default.model("Tax", taxSchema);
 var Tax_default = Tax;
 
 // controllers/taxController.js
@@ -137173,7 +137201,7 @@ var taxRoutes_default = router18;
 var import_express19 = __toESM(require_express2(), 1);
 
 // controllers/reportController.js
-var import_mongoose39 = __toESM(require_mongoose2(), 1);
+var import_mongoose40 = __toESM(require_mongoose2(), 1);
 init_Order();
 init_Restaurant();
 init_Plan();
@@ -137254,7 +137282,7 @@ var generateReport = async (req, res) => {
   } = req.body;
   try {
     const restaurantId = await getUserRestaurantId4(req.user, { ...req.query, ...req.body });
-    const restObjId = restaurantId ? new import_mongoose39.default.Types.ObjectId(restaurantId) : null;
+    const restObjId = restaurantId ? new import_mongoose40.default.Types.ObjectId(restaurantId) : null;
     if (!restObjId && req.user.role !== "SuperAdmin") {
       return res.json({
         reportType,
@@ -137282,7 +137310,7 @@ var generateReport = async (req, res) => {
         restaurantId: restObjId,
         createdAt: { $gte: start, $lte: end }
       };
-      if (effectiveBranchId) matchStage.branchId = new import_mongoose39.default.Types.ObjectId(effectiveBranchId);
+      if (effectiveBranchId) matchStage.branchId = new import_mongoose40.default.Types.ObjectId(effectiveBranchId);
       const dailyOrders = await Order_default.aggregate([
         { $match: matchStage },
         {
@@ -137319,7 +137347,7 @@ var generateReport = async (req, res) => {
         restaurantId: restObjId,
         date: { $gte: start, $lte: end }
       };
-      if (effectiveBranchId) expenseMatch.branchId = new import_mongoose39.default.Types.ObjectId(effectiveBranchId);
+      if (effectiveBranchId) expenseMatch.branchId = new import_mongoose40.default.Types.ObjectId(effectiveBranchId);
       const dailyExpenses = await Expense_default.aggregate([
         { $match: expenseMatch },
         {
@@ -137363,7 +137391,7 @@ var generateReport = async (req, res) => {
         createdAt: { $gte: start, $lte: end },
         status: { $ne: "Cancelled" }
       };
-      if (effectiveBranchId) matchStage.branchId = new import_mongoose39.default.Types.ObjectId(effectiveBranchId);
+      if (effectiveBranchId) matchStage.branchId = new import_mongoose40.default.Types.ObjectId(effectiveBranchId);
       reportData = await Order_default.aggregate([
         { $match: matchStage },
         {
@@ -137408,7 +137436,7 @@ var generateReport = async (req, res) => {
         restaurantId: restObjId,
         createdAt: { $gte: start, $lte: end }
       };
-      if (effectiveBranchId) matchOrders.branchId = new import_mongoose39.default.Types.ObjectId(effectiveBranchId);
+      if (effectiveBranchId) matchOrders.branchId = new import_mongoose40.default.Types.ObjectId(effectiveBranchId);
       const monthlyOrders = await Order_default.aggregate([
         { $match: matchOrders },
         {
@@ -137428,7 +137456,7 @@ var generateReport = async (req, res) => {
         restaurantId: restObjId,
         date: { $gte: start, $lte: end }
       };
-      if (effectiveBranchId) matchExpenses.branchId = new import_mongoose39.default.Types.ObjectId(effectiveBranchId);
+      if (effectiveBranchId) matchExpenses.branchId = new import_mongoose40.default.Types.ObjectId(effectiveBranchId);
       const monthlyExpenses = await Expense_default.aggregate([
         { $match: matchExpenses },
         {
@@ -137660,8 +137688,8 @@ var generateReport = async (req, res) => {
         restaurantId: restObjId,
         createdAt: { $gte: start, $lte: end }
       };
-      if (effectiveBranchId && import_mongoose39.default.Types.ObjectId.isValid(effectiveBranchId)) {
-        matchStage.branchId = new import_mongoose39.default.Types.ObjectId(effectiveBranchId);
+      if (effectiveBranchId && import_mongoose40.default.Types.ObjectId.isValid(effectiveBranchId)) {
+        matchStage.branchId = new import_mongoose40.default.Types.ObjectId(effectiveBranchId);
       }
       reportData = await Order_default.aggregate([
         { $match: matchStage },
@@ -137682,8 +137710,8 @@ var generateReport = async (req, res) => {
         restaurantId: restObjId,
         createdAt: { $gte: start, $lte: end }
       };
-      if (effectiveBranchId && import_mongoose39.default.Types.ObjectId.isValid(effectiveBranchId)) {
-        matchStage.branchId = new import_mongoose39.default.Types.ObjectId(effectiveBranchId);
+      if (effectiveBranchId && import_mongoose40.default.Types.ObjectId.isValid(effectiveBranchId)) {
+        matchStage.branchId = new import_mongoose40.default.Types.ObjectId(effectiveBranchId);
       }
       reportData = await Order_default.aggregate([
         { $match: matchStage },
@@ -137717,8 +137745,8 @@ var generateReport = async (req, res) => {
         restaurantId: restObjId,
         createdAt: { $gte: start, $lte: end }
       };
-      if (effectiveBranchId && import_mongoose39.default.Types.ObjectId.isValid(effectiveBranchId)) {
-        matchStage.branchId = new import_mongoose39.default.Types.ObjectId(effectiveBranchId);
+      if (effectiveBranchId && import_mongoose40.default.Types.ObjectId.isValid(effectiveBranchId)) {
+        matchStage.branchId = new import_mongoose40.default.Types.ObjectId(effectiveBranchId);
       }
       reportData = await Order_default.aggregate([
         { $match: matchStage },
@@ -138158,7 +138186,7 @@ var import_express21 = __toESM(require_express2(), 1);
 
 // controllers/planController.js
 var import_crypto2 = __toESM(require("crypto"), 1);
-var import_mongoose40 = __toESM(require_mongoose2(), 1);
+var import_mongoose41 = __toESM(require_mongoose2(), 1);
 init_Plan();
 init_Restaurant();
 init_Notification();
@@ -138170,7 +138198,7 @@ var getPublicFallbackPlans = () => [
 ];
 var getPublicPlans = async (req, res) => {
   try {
-    if (import_mongoose40.default.connection.readyState !== 1) {
+    if (import_mongoose41.default.connection.readyState !== 1) {
       return res.json(getPublicFallbackPlans());
     }
     const plans = await Plan_default.find({ isActive: { $ne: false } }).sort({ monthlyPrice: 1, createdAt: 1 }).maxTimeMS(3e3).lean();
@@ -138290,15 +138318,15 @@ var planRoutes_default = router21;
 var import_express22 = __toESM(require_express2(), 1);
 
 // models/ServiceRequest.js
-var import_mongoose41 = __toESM(require_mongoose2(), 1);
-var serviceRequestSchema = new import_mongoose41.default.Schema({
+var import_mongoose42 = __toESM(require_mongoose2(), 1);
+var serviceRequestSchema = new import_mongoose42.default.Schema({
   restaurantId: {
-    type: import_mongoose41.default.Schema.Types.ObjectId,
+    type: import_mongoose42.default.Schema.Types.ObjectId,
     ref: "Restaurant",
     required: true
   },
   branchId: {
-    type: import_mongoose41.default.Schema.Types.ObjectId,
+    type: import_mongoose42.default.Schema.Types.ObjectId,
     ref: "Branch",
     required: true
   },
@@ -138317,17 +138345,17 @@ var serviceRequestSchema = new import_mongoose41.default.Schema({
     default: "Pending"
   }
 }, { timestamps: true });
-var ServiceRequest = import_mongoose41.default.model("ServiceRequest", serviceRequestSchema);
+var ServiceRequest = import_mongoose42.default.model("ServiceRequest", serviceRequestSchema);
 var ServiceRequest_default = ServiceRequest;
 
 // controllers/serviceRequestController.js
-var import_mongoose42 = __toESM(require_mongoose2(), 1);
+var import_mongoose43 = __toESM(require_mongoose2(), 1);
 var createServiceRequest = async (req, res) => {
   const { restaurantId, branchId, tableNumber, requestType } = req.body;
   try {
     let finalBranchId = branchId;
     if (!finalBranchId) {
-      const Branch2 = import_mongoose42.default.model("Branch");
+      const Branch2 = import_mongoose43.default.model("Branch");
       const branch = await Branch2.findOne({ restaurantId });
       if (branch) finalBranchId = branch._id;
     }
@@ -138384,7 +138412,7 @@ var serviceRequestRoutes_default = router22;
 var import_express23 = __toESM(require_express2(), 1);
 
 // controllers/expenseController.js
-var import_mongoose43 = __toESM(require_mongoose2(), 1);
+var import_mongoose44 = __toESM(require_mongoose2(), 1);
 init_Branch();
 init_Restaurant();
 var getUserRestaurantId5 = async (user, queryOrBody = {}) => {
@@ -138489,11 +138517,11 @@ var getExpenses = async (req, res) => {
 var getExpenseSummary = async (req, res) => {
   try {
     const restaurantId = await getUserRestaurantId5(req.user, req.query);
-    const matchFilter = { restaurantId: new import_mongoose43.default.Types.ObjectId(restaurantId) };
+    const matchFilter = { restaurantId: new import_mongoose44.default.Types.ObjectId(restaurantId) };
     if (req.user && req.user.role === "BranchManager" && req.user.branchId) {
-      matchFilter.branchId = new import_mongoose43.default.Types.ObjectId(req.user.branchId);
+      matchFilter.branchId = new import_mongoose44.default.Types.ObjectId(req.user.branchId);
     } else if (req.query.branchId && req.query.branchId !== "All") {
-      matchFilter.branchId = new import_mongoose43.default.Types.ObjectId(req.query.branchId);
+      matchFilter.branchId = new import_mongoose44.default.Types.ObjectId(req.query.branchId);
     }
     const { start, end } = parseDateRange2(req.query.period, req.query.startDate, req.query.endDate);
     if (start || end) {
@@ -138872,15 +138900,15 @@ var expenseRoutes_default = router23;
 var import_express24 = __toESM(require_express2(), 1);
 
 // models/TicketReply.js
-var import_mongoose44 = __toESM(require_mongoose2(), 1);
-var ticketReplySchema = new import_mongoose44.default.Schema({
+var import_mongoose45 = __toESM(require_mongoose2(), 1);
+var ticketReplySchema = new import_mongoose45.default.Schema({
   ticketId: {
-    type: import_mongoose44.default.Schema.Types.ObjectId,
+    type: import_mongoose45.default.Schema.Types.ObjectId,
     ref: "Ticket",
     required: true
   },
   senderId: {
-    type: import_mongoose44.default.Schema.Types.ObjectId,
+    type: import_mongoose45.default.Schema.Types.ObjectId,
     ref: "User",
     required: true
   },
@@ -138896,20 +138924,20 @@ var ticketReplySchema = new import_mongoose44.default.Schema({
     default: false
   },
   readBy: [{
-    type: import_mongoose44.default.Schema.Types.ObjectId,
+    type: import_mongoose45.default.Schema.Types.ObjectId,
     ref: "User"
   }]
 }, {
   timestamps: true
 });
-var TicketReply = import_mongoose44.default.model("TicketReply", ticketReplySchema);
+var TicketReply = import_mongoose45.default.model("TicketReply", ticketReplySchema);
 var TicketReply_default = TicketReply;
 
 // models/SupportAgent.js
-var import_mongoose45 = __toESM(require_mongoose2(), 1);
-var supportAgentSchema = new import_mongoose45.default.Schema({
+var import_mongoose46 = __toESM(require_mongoose2(), 1);
+var supportAgentSchema = new import_mongoose46.default.Schema({
   userId: {
-    type: import_mongoose45.default.Schema.Types.ObjectId,
+    type: import_mongoose46.default.Schema.Types.ObjectId,
     ref: "User",
     required: true,
     unique: true
@@ -138940,12 +138968,12 @@ var supportAgentSchema = new import_mongoose45.default.Schema({
 }, {
   timestamps: true
 });
-var SupportAgent = import_mongoose45.default.model("SupportAgent", supportAgentSchema);
+var SupportAgent = import_mongoose46.default.model("SupportAgent", supportAgentSchema);
 var SupportAgent_default = SupportAgent;
 
 // models/KnowledgeBase.js
-var import_mongoose46 = __toESM(require_mongoose2(), 1);
-var knowledgeBaseSchema = new import_mongoose46.default.Schema({
+var import_mongoose47 = __toESM(require_mongoose2(), 1);
+var knowledgeBaseSchema = new import_mongoose47.default.Schema({
   title: {
     type: String,
     required: true
@@ -138986,12 +139014,12 @@ var knowledgeBaseSchema = new import_mongoose46.default.Schema({
 }, {
   timestamps: true
 });
-var KnowledgeBase = import_mongoose46.default.model("KnowledgeBase", knowledgeBaseSchema);
+var KnowledgeBase = import_mongoose47.default.model("KnowledgeBase", knowledgeBaseSchema);
 var KnowledgeBase_default = KnowledgeBase;
 
 // models/SupportAnnouncement.js
-var import_mongoose47 = __toESM(require_mongoose2(), 1);
-var supportAnnouncementSchema = new import_mongoose47.default.Schema({
+var import_mongoose48 = __toESM(require_mongoose2(), 1);
+var supportAnnouncementSchema = new import_mongoose48.default.Schema({
   title: {
     type: String,
     required: true
@@ -139015,21 +139043,21 @@ var supportAnnouncementSchema = new import_mongoose47.default.Schema({
     default: true
   },
   createdBy: {
-    type: import_mongoose47.default.Schema.Types.ObjectId,
+    type: import_mongoose48.default.Schema.Types.ObjectId,
     ref: "User",
     required: true
   }
 }, {
   timestamps: true
 });
-var SupportAnnouncement = import_mongoose47.default.model("SupportAnnouncement", supportAnnouncementSchema);
+var SupportAnnouncement = import_mongoose48.default.model("SupportAnnouncement", supportAnnouncementSchema);
 var SupportAnnouncement_default = SupportAnnouncement;
 
 // models/TicketActivityLog.js
-var import_mongoose48 = __toESM(require_mongoose2(), 1);
-var ticketActivityLogSchema = new import_mongoose48.default.Schema({
+var import_mongoose49 = __toESM(require_mongoose2(), 1);
+var ticketActivityLogSchema = new import_mongoose49.default.Schema({
   ticketId: {
-    type: import_mongoose48.default.Schema.Types.ObjectId,
+    type: import_mongoose49.default.Schema.Types.ObjectId,
     ref: "Ticket",
     required: true
   },
@@ -139038,7 +139066,7 @@ var ticketActivityLogSchema = new import_mongoose48.default.Schema({
     required: true
   },
   performedBy: {
-    type: import_mongoose48.default.Schema.Types.ObjectId,
+    type: import_mongoose49.default.Schema.Types.ObjectId,
     ref: "User",
     required: true
   },
@@ -139053,7 +139081,7 @@ var ticketActivityLogSchema = new import_mongoose48.default.Schema({
 }, {
   timestamps: true
 });
-var TicketActivityLog = import_mongoose48.default.model("TicketActivityLog", ticketActivityLogSchema);
+var TicketActivityLog = import_mongoose49.default.model("TicketActivityLog", ticketActivityLogSchema);
 var TicketActivityLog_default = TicketActivityLog;
 
 // controllers/supportController.js
@@ -139698,10 +139726,10 @@ var import_express25 = __toESM(require_express2(), 1);
 init_User();
 
 // models/DeliveryWithdrawal.js
-var import_mongoose49 = __toESM(require_mongoose2(), 1);
-var deliveryWithdrawalSchema = new import_mongoose49.default.Schema({
+var import_mongoose50 = __toESM(require_mongoose2(), 1);
+var deliveryWithdrawalSchema = new import_mongoose50.default.Schema({
   partnerId: {
-    type: import_mongoose49.default.Schema.Types.ObjectId,
+    type: import_mongoose50.default.Schema.Types.ObjectId,
     ref: "DeliveryPartner",
     required: true
   },
@@ -139719,7 +139747,7 @@ var deliveryWithdrawalSchema = new import_mongoose49.default.Schema({
     default: ""
   }
 }, { timestamps: true });
-var DeliveryWithdrawal = import_mongoose49.default.model("DeliveryWithdrawal", deliveryWithdrawalSchema);
+var DeliveryWithdrawal = import_mongoose50.default.model("DeliveryWithdrawal", deliveryWithdrawalSchema);
 var DeliveryWithdrawal_default = DeliveryWithdrawal;
 
 // controllers/deliveryController.js
@@ -140302,8 +140330,8 @@ var deliveryRoutes_default = router25;
 var import_express26 = __toESM(require_express2(), 1);
 
 // models/Inquiry.js
-var import_mongoose50 = __toESM(require_mongoose2(), 1);
-var inquirySchema = new import_mongoose50.default.Schema({
+var import_mongoose51 = __toESM(require_mongoose2(), 1);
+var inquirySchema = new import_mongoose51.default.Schema({
   name: {
     type: String,
     required: true
@@ -140321,17 +140349,17 @@ var inquirySchema = new import_mongoose50.default.Schema({
     default: "General"
   },
   restaurantId: {
-    type: import_mongoose50.default.Schema.Types.ObjectId,
+    type: import_mongoose51.default.Schema.Types.ObjectId,
     ref: "Restaurant",
     default: null
   },
   branchId: {
-    type: import_mongoose50.default.Schema.Types.ObjectId,
+    type: import_mongoose51.default.Schema.Types.ObjectId,
     ref: "Branch",
     default: null
   },
   customerId: {
-    type: import_mongoose50.default.Schema.Types.ObjectId,
+    type: import_mongoose51.default.Schema.Types.ObjectId,
     ref: "User",
     default: null
   },
@@ -140356,7 +140384,7 @@ var inquirySchema = new import_mongoose50.default.Schema({
 }, {
   timestamps: true
 });
-var Inquiry = import_mongoose50.default.model("Inquiry", inquirySchema);
+var Inquiry = import_mongoose51.default.model("Inquiry", inquirySchema);
 var Inquiry_default = Inquiry;
 
 // controllers/inquiryController.js
@@ -140496,8 +140524,8 @@ var inquiryRoutes_default = router26;
 var import_express27 = __toESM(require_express2(), 1);
 
 // models/BillingDemoRequest.js
-var import_mongoose51 = __toESM(require_mongoose2(), 1);
-var billingDemoRequestSchema = new import_mongoose51.default.Schema({
+var import_mongoose52 = __toESM(require_mongoose2(), 1);
+var billingDemoRequestSchema = new import_mongoose52.default.Schema({
   fullName: {
     type: String,
     required: [true, "Full name is required"],
@@ -140549,7 +140577,7 @@ var billingDemoRequestSchema = new import_mongoose51.default.Schema({
     default: ""
   },
   restaurantId: {
-    type: import_mongoose51.default.Schema.Types.ObjectId,
+    type: import_mongoose52.default.Schema.Types.ObjectId,
     ref: "Restaurant",
     default: null
   },
@@ -140609,7 +140637,7 @@ var billingDemoRequestSchema = new import_mongoose51.default.Schema({
     paidAt: { type: Date, default: null },
     isVerified: { type: Boolean, default: false },
     verifiedAt: { type: Date, default: null },
-    verifiedBy: { type: import_mongoose51.default.Schema.Types.ObjectId, ref: "User", default: null }
+    verifiedBy: { type: import_mongoose52.default.Schema.Types.ObjectId, ref: "User", default: null }
   },
   activation: {
     token: { type: String, default: null },
@@ -140628,7 +140656,7 @@ var billingDemoRequestSchema = new import_mongoose51.default.Schema({
 billingDemoRequestSchema.index({ phoneNumber: 1, status: 1 });
 billingDemoRequestSchema.index({ createdAt: -1 });
 billingDemoRequestSchema.index({ "activation.token": 1 });
-var BillingDemoRequest = import_mongoose51.default.model("BillingDemoRequest", billingDemoRequestSchema);
+var BillingDemoRequest = import_mongoose52.default.model("BillingDemoRequest", billingDemoRequestSchema);
 var BillingDemoRequest_default = BillingDemoRequest;
 
 // controllers/billingDemoController.js
@@ -141526,7 +141554,7 @@ var import_express28 = __toESM(require_express2(), 1);
 init_Order();
 init_Restaurant();
 init_Branch();
-var import_mongoose52 = __toESM(require_mongoose2(), 1);
+var import_mongoose53 = __toESM(require_mongoose2(), 1);
 var extractId2 = (id) => {
   if (!id) return null;
   if (typeof id === "object") return String(id._id || id.id || id);
@@ -141737,7 +141765,7 @@ var manualCreateKOT = async (req, res) => {
     let restaurantId = extractId2(req.user?.restaurantId);
     let branchId = extractId2(req.user?.branchId);
     let order = null;
-    if (orderId && import_mongoose52.default.Types.ObjectId.isValid(orderId)) {
+    if (orderId && import_mongoose53.default.Types.ObjectId.isValid(orderId)) {
       order = await Order_default.findById(orderId);
       if (order) {
         restaurantId = restaurantId || extractId2(order.restaurantId);
@@ -141756,7 +141784,7 @@ var manualCreateKOT = async (req, res) => {
     const kot = new KOT_default({
       kotNumber,
       kotSequence,
-      orderId: order ? order._id : new import_mongoose52.default.Types.ObjectId(),
+      orderId: order ? order._id : new import_mongoose53.default.Types.ObjectId(),
       orderNumber: order ? `#${String(order._id).slice(-5).toUpperCase()}` : "MANUAL",
       restaurantId,
       branchId,
@@ -141770,7 +141798,7 @@ var manualCreateKOT = async (req, res) => {
         qty: Number(i.qty) || 1,
         price: Number(i.price) || 0,
         notes: i.notes || "",
-        product: i.product && import_mongoose52.default.Types.ObjectId.isValid(i.product) ? i.product : null,
+        product: i.product && import_mongoose53.default.Types.ObjectId.isValid(i.product) ? i.product : null,
         kitchenStation: station,
         status: "Pending"
       })),
@@ -141860,7 +141888,7 @@ var import_express29 = __toESM(require_express2(), 1);
 // controllers/tipController.js
 init_Tip();
 init_User();
-var import_mongoose53 = __toESM(require_mongoose2(), 1);
+var import_mongoose54 = __toESM(require_mongoose2(), 1);
 var getTips = async (req, res) => {
   try {
     const restaurantId = req.user.restaurantId;
@@ -141869,10 +141897,10 @@ var getTips = async (req, res) => {
     }
     const { waiterId, status, startDate, endDate, branchId } = req.query;
     const query = { restaurantId };
-    if (branchId && import_mongoose53.default.Types.ObjectId.isValid(branchId)) {
+    if (branchId && import_mongoose54.default.Types.ObjectId.isValid(branchId)) {
       query.branchId = branchId;
     }
-    if (waiterId && import_mongoose53.default.Types.ObjectId.isValid(waiterId)) {
+    if (waiterId && import_mongoose54.default.Types.ObjectId.isValid(waiterId)) {
       query.waiterId = waiterId;
     }
     if (status && ["Pending", "Settled"].includes(status)) {
@@ -141902,9 +141930,9 @@ var getTipSummary = async (req, res) => {
     if (!restaurantId) {
       return res.status(400).json({ message: "No restaurant associated with this account" });
     }
-    const matchQuery = { restaurantId: new import_mongoose53.default.Types.ObjectId(restaurantId) };
-    if (req.query.branchId && import_mongoose53.default.Types.ObjectId.isValid(req.query.branchId)) {
-      matchQuery.branchId = new import_mongoose53.default.Types.ObjectId(req.query.branchId);
+    const matchQuery = { restaurantId: new import_mongoose54.default.Types.ObjectId(restaurantId) };
+    if (req.query.branchId && import_mongoose54.default.Types.ObjectId.isValid(req.query.branchId)) {
+      matchQuery.branchId = new import_mongoose54.default.Types.ObjectId(req.query.branchId);
     }
     const totalsAgg = await Tip_default.aggregate([
       { $match: matchQuery },
@@ -142045,7 +142073,7 @@ var settleTips = async (req, res) => {
     const updateFilter = { restaurantId, status: "Pending" };
     if (Array.isArray(tipIds) && tipIds.length > 0) {
       updateFilter._id = { $in: tipIds };
-    } else if (waiterId && import_mongoose53.default.Types.ObjectId.isValid(waiterId)) {
+    } else if (waiterId && import_mongoose54.default.Types.ObjectId.isValid(waiterId)) {
       updateFilter.waiterId = waiterId;
     } else {
       return res.status(400).json({ message: "Must provide either specific tipIds or a valid waiterId to settle" });
@@ -142084,17 +142112,17 @@ var tipRoutes_default = router29;
 var import_express30 = __toESM(require_express2(), 1);
 
 // models/Testimonial.js
-var import_mongoose54 = __toESM(require_mongoose2(), 1);
-var testimonialSchema = new import_mongoose54.default.Schema({
+var import_mongoose55 = __toESM(require_mongoose2(), 1);
+var testimonialSchema = new import_mongoose55.default.Schema({
   userId: {
-    type: import_mongoose54.default.Schema.Types.ObjectId,
+    type: import_mongoose55.default.Schema.Types.ObjectId,
     ref: "User",
     required: true,
     unique: true
     // One testimonial per restaurant owner
   },
   restaurantId: {
-    type: import_mongoose54.default.Schema.Types.ObjectId,
+    type: import_mongoose55.default.Schema.Types.ObjectId,
     ref: "Restaurant",
     required: true
   },
@@ -142142,14 +142170,14 @@ var testimonialSchema = new import_mongoose54.default.Schema({
     type: Date
   },
   reviewedBy: {
-    type: import_mongoose54.default.Schema.Types.ObjectId,
+    type: import_mongoose55.default.Schema.Types.ObjectId,
     ref: "User"
   }
 }, {
   timestamps: true
 });
 testimonialSchema.index({ status: 1, createdAt: -1 });
-var Testimonial = import_mongoose54.default.model("Testimonial", testimonialSchema);
+var Testimonial = import_mongoose55.default.model("Testimonial", testimonialSchema);
 var Testimonial_default = Testimonial;
 
 // controllers/testimonialController.js
@@ -142394,10 +142422,10 @@ var testimonialRoutes_default = router30;
 var import_express31 = __toESM(require_express2(), 1);
 
 // models/CustomerReview.js
-var import_mongoose55 = __toESM(require_mongoose2(), 1);
-var customerReviewSchema = new import_mongoose55.default.Schema({
+var import_mongoose56 = __toESM(require_mongoose2(), 1);
+var customerReviewSchema = new import_mongoose56.default.Schema({
   userId: {
-    type: import_mongoose55.default.Schema.Types.ObjectId,
+    type: import_mongoose56.default.Schema.Types.ObjectId,
     ref: "User",
     required: true
   },
@@ -142427,7 +142455,7 @@ var customerReviewSchema = new import_mongoose55.default.Schema({
     trim: true
   },
   orderId: {
-    type: import_mongoose55.default.Schema.Types.ObjectId,
+    type: import_mongoose56.default.Schema.Types.ObjectId,
     ref: "Order"
   },
   status: {
@@ -142440,7 +142468,7 @@ var customerReviewSchema = new import_mongoose55.default.Schema({
   timestamps: true
 });
 customerReviewSchema.index({ status: 1, createdAt: -1 });
-var CustomerReview = import_mongoose55.default.model("CustomerReview", customerReviewSchema);
+var CustomerReview = import_mongoose56.default.model("CustomerReview", customerReviewSchema);
 var CustomerReview_default = CustomerReview;
 
 // controllers/customerReviewController.js
