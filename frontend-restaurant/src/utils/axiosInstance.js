@@ -21,7 +21,7 @@ export const getApiUrl = () => {
     }
 
     // Default to deployed backend URL for seamless connectivity across web & mobile apps
-    return 'https://f-hms-1-a2ig.onrender.com/api';
+    return 'https://f-hms.onrender.com/api';
 };
 
 const api = axios.create({
@@ -81,7 +81,7 @@ api.interceptors.response.use(
 
         if (config && !config._fallbackTried && isNetworkDown && isLocalTarget) {
             config._fallbackTried = true;
-            config.baseURL = 'https://f-hms-1-a2ig.onrender.com/api';
+            config.baseURL = 'https://f-hms.onrender.com/api';
             return api.request(config);
         }
 

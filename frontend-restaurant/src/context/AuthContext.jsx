@@ -75,7 +75,7 @@ api.interceptors.response.use(
 
         if (config && !config._fallbackTried && isNetworkDown && isLocalTarget) {
             config._fallbackTried = true;
-            config.baseURL = 'https://f-hms-1-a2ig.onrender.com/api';
+            config.baseURL = 'https://f-hms.onrender.com/api';
             return api.request(config);
         }
         if (config && isColdStart && (!config._retryCount || config._retryCount < 5)) {
@@ -387,7 +387,7 @@ export const AuthProvider = ({ children }) => {
             } catch (localErr) {
                 const isNetErr = !localErr.response || localErr.code === 'ERR_NETWORK' || localErr.code === 'ECONNABORTED';
                 if (isNetErr) {
-                    res = await axios.post('https://f-hms-1-a2ig.onrender.com/api/auth/login', {
+                    res = await axios.post('https://f-hms.onrender.com/api/auth/login', {
                         email,
                         password,
                         loginType: 'staff'

@@ -52,7 +52,7 @@ api.interceptors.response.use(
         
         // Fallback to live backend if local/LAN port 5000 is unreachable
         if (config && isNetworkDown && config.baseURL && (config.baseURL.includes('5000') || config.baseURL.includes('localhost') || config.baseURL.includes('192.168.'))) {
-            config.baseURL = 'https://f-hms-1-a2ig.onrender.com/api';
+            config.baseURL = 'https://f-hms.onrender.com/api';
             return api.request(config);
         }
 

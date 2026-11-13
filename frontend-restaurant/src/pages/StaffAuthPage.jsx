@@ -246,7 +246,7 @@ const StaffAuthPage = () => {
             } catch (postErr) {
                 const isNetErr = !postErr.response || postErr.code === 'ERR_NETWORK' || postErr.code === 'ECONNABORTED';
                 if (isNetErr) {
-                    await axios.post('https://f-hms-1-a2ig.onrender.com/api/auth/register', formData, {
+                    await axios.post('https://f-hms.onrender.com/api/auth/register', formData, {
                         headers: { 'Content-Type': 'multipart/form-data' },
                         timeout: 60000
                     });

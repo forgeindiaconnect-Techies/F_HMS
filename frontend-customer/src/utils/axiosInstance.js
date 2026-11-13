@@ -26,13 +26,13 @@ export const getApiUrl = () => {
         if (!envUrl.endsWith('/api')) envUrl += '/api';
         // If native platform and envUrl is localhost, use live Vercel backend instead of localhost
         if (Capacitor.isNativePlatform() && (envUrl.includes('localhost') || envUrl.includes('127.0.0.1'))) {
-            return 'https://f-hms-1-a2ig.onrender.com/api';
+            return 'https://f-hms.onrender.com/api';
         }
         return envUrl;
     }
 
     // Default to the live backend URL for Capacitor Native Android and production deployments
-    return 'https://f-hms-1-a2ig.onrender.com/api';
+    return 'https://f-hms.onrender.com/api';
 };
 
 const api = axios.create({
@@ -92,7 +92,7 @@ api.interceptors.response.use(
 
         if (config && !config._fallbackTried && isNetworkDown && isLocalTarget) {
             config._fallbackTried = true;
-            config.baseURL = 'https://f-hms-1-a2ig.onrender.com/api';
+            config.baseURL = 'https://f-hms.onrender.com/api';
             return api.request(config);
         }
 
