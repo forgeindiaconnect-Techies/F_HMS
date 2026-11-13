@@ -1658,7 +1658,7 @@ const Home = () => {
                         /* 3 Horizontal Cards in one row on desktop starting from left side */
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {testimonials.slice(0, 3).map((item) => {
-                                const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms-1.onrender.com/api';
+                                const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms-1-a2ig.onrender.com/api';
                                 let origin = '';
                                 try { origin = new URL(apiBase).origin; } catch (_) {}
                                 const avatarSrc = item.avatar 
@@ -1736,7 +1736,7 @@ const Home = () => {
 
                         <div className="overflow-y-auto py-6 grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
                             {testimonials.map((item) => {
-                                const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms-1.onrender.com/api';
+                                const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms-1-a2ig.onrender.com/api';
                                 let origin = '';
                                 try { origin = new URL(apiBase).origin; } catch (_) {}
                                 const avatarSrc = item.avatar 

@@ -8,7 +8,7 @@ const resolveDocUrl = (filePath) => {
         if (filePath.startsWith('http://') || filePath.startsWith('https://') || filePath.startsWith('data:')) {
             return filePath;
         }
-        const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms-1.onrender.com/api';
+        const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms-1-a2ig.onrender.com/api';
         const origin = apiBase.replace(/\/api\/?$/, '');
         return `${origin}${filePath.startsWith('/') ? '' : '/'}${filePath}`;
     };
@@ -190,13 +190,13 @@ const VerificationManagement = () => {
         if (filePath.startsWith('http://') || filePath.startsWith('https://') || filePath.startsWith('data:')) {
             return filePath;
         }
-        let base = import.meta.env.VITE_API_URL || 'https://f-hms-1.onrender.com';
-        if (!base.startsWith('http')) base = 'https://f-hms-1.onrender.com';
+        let base = import.meta.env.VITE_API_URL || 'https://f-hms-1-a2ig.onrender.com';
+        if (!base.startsWith('http')) base = 'https://f-hms-1-a2ig.onrender.com';
         try {
             const origin = new URL(base).origin;
             return `${origin}${filePath.startsWith('/') ? '' : '/'}${filePath}`;
         } catch (e) {
-            return `https://f-hms-1.onrender.com${filePath.startsWith('/') ? '' : '/'}${filePath}`;
+            return `https://f-hms-1-a2ig.onrender.com${filePath.startsWith('/') ? '' : '/'}${filePath}`;
         }
     };
 

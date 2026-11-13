@@ -32,7 +32,7 @@ export const getApiUrl = () => {
     }
 
     // Default to the live backend URL for Capacitor Native Android and production deployments
-    return 'https://backend-ochre-five-29.vercel.app/api';
+    return 'https://f-hms-1-a2ig.onrender.com/api';
 };
 
 const api = axios.create({

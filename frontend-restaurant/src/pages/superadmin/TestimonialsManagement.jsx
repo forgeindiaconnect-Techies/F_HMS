@@ -120,7 +120,7 @@ const TestimonialsManagement = () => {
     const formatAvatarUrl = (avatar) => {
         if (!avatar) return null;
         if (avatar.startsWith('http') || avatar.startsWith('data:')) return avatar;
-        const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms-1.onrender.com/api';
+        const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms-1-a2ig.onrender.com/api';
         let origin = '';
         try { origin = new URL(apiBase).origin; } catch (_) {}
         return `${origin}${avatar.startsWith('/') ? '' : '/'}${avatar}`;

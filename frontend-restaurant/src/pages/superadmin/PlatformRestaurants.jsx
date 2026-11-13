@@ -429,7 +429,7 @@ const PlatformRestaurants = () => {
                                                 <div className="w-11 h-11 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
                                                     {restaurant.logo ? (
                                                         <img 
-                                                            src={restaurant.logo.startsWith('http') || restaurant.logo.startsWith('data:') ? restaurant.logo : `https://f-hms-1.onrender.com${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`} 
+                                                            src={restaurant.logo.startsWith('http') || restaurant.logo.startsWith('data:') ? restaurant.logo : `https://f-hms-1-a2ig.onrender.com${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`} 
                                                             alt={restaurant.name} 
                                                             className="w-full h-full object-cover" 
                                                             onError={(e) => { e.currentTarget.style.display = 'none'; }}
@@ -668,7 +668,7 @@ const PlatformRestaurants = () => {
                                 <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
                                     {viewingRestaurant.logo ? (
                                         <img 
-                                            src={viewingRestaurant.logo.startsWith('http') || viewingRestaurant.logo.startsWith('data:') ? viewingRestaurant.logo : `https://f-hms-1.onrender.com${viewingRestaurant.logo.startsWith('/') ? '' : '/'}${viewingRestaurant.logo}`} 
+                                            src={viewingRestaurant.logo.startsWith('http') || viewingRestaurant.logo.startsWith('data:') ? viewingRestaurant.logo : `https://f-hms-1-a2ig.onrender.com${viewingRestaurant.logo.startsWith('/') ? '' : '/'}${viewingRestaurant.logo}`} 
                                             alt={viewingRestaurant.name} 
                                             className="w-full h-full object-cover" 
                                             onError={(e) => { e.currentTarget.style.display = 'none'; }}

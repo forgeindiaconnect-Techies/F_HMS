@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const apiUrl = env.VITE_API_URL || 'https://f-hms-1.onrender.com/api';
+  const apiUrl = env.VITE_API_URL || 'https://f-hms-1-a2ig.onrender.com/api';
   const customerUrl = env.VITE_CUSTOMER_URL || 'https://f-hms.vercel.app';
 
   return {

@@ -42,7 +42,7 @@ const MyTestimonial = () => {
                     setQuote(data.quote || '');
                     setRating(data.rating || 5);
                     if (data.avatar && !data.avatar.includes('unsplash') && !data.avatar.includes('photo-1507003211169')) {
-                        const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms-1.onrender.com/api';
+                        const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms-1-a2ig.onrender.com/api';
                         let origin = '';
                         try {
                             origin = new URL(apiBase).origin;

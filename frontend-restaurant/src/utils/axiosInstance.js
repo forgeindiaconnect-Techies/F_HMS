@@ -21,7 +21,7 @@ export const getApiUrl = () => {
     }
 
     // Default to deployed backend URL for seamless connectivity across web & mobile apps
-    return 'https://backend-ochre-five-29.vercel.app/api';
+    return 'https://f-hms-1-a2ig.onrender.com/api';
 };
 
 const api = axios.create({

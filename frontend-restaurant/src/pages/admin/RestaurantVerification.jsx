@@ -8,7 +8,7 @@ const resolveDocUrl = (filePath) => {
         if (filePath.startsWith('http://') || filePath.startsWith('https://') || filePath.startsWith('data:')) {
             return filePath;
         }
-        const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms-1.onrender.com/api';
+        const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms-1-a2ig.onrender.com/api';
         const origin = apiBase.replace(/\/api\/?$/, '');
         return `${origin}${filePath.startsWith('/') ? '' : '/'}${filePath}`;
     };
