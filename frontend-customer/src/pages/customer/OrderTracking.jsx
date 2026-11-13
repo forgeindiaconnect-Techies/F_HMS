@@ -21,6 +21,7 @@ const OrderTracking = () => {
 
     const fetchOrder = useCallback(async (isManualRefresh = false) => {
         if (isManualRefresh) setRefreshing(true);
+        const capTimer = setTimeout(() => setLoading(false), 1500);
         try {
             const { data } = await api.get(`/orders/${id}`);
             setOrder(data);
@@ -56,6 +57,7 @@ const OrderTracking = () => {
         } catch (error) {
             console.error('Failed to fetch order details', error);
         } finally {
+            clearTimeout(capTimer);
             setLoading(false);
             if (isManualRefresh) setRefreshing(false);
         }

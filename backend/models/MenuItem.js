@@ -50,6 +50,10 @@ const menuItemSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+menuItemSchema.index({ restaurantId: 1, isActive: 1 });
+menuItemSchema.index({ isActive: 1 });
+menuItemSchema.index({ branchId: 1 });
+
 const MenuItem = mongoose.model('MenuItem', menuItemSchema);
 
 export default MenuItem;

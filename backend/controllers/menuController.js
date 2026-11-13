@@ -1,10 +1,23 @@
 import MenuItem from '../models/MenuItem.js';
 
+// In-memory cache for public menu requests to eliminate multi-second MongoDB Atlas roundtrips
+let menuCache = { data: null, expiresAt: 0, key: '' };
+
+export const clearMenuCache = () => {
+    menuCache = { data: null, expiresAt: 0, key: '' };
+};
+
 // @desc    Get all menu items
 // @route   GET /api/menu
 // @access  Public
 export const getMenuItems = async (req, res) => {
     try {
+        const cacheKey = `${req.query.restaurantId || ''}_${req.query.branchId || ''}_${req.user?.restaurantId || ''}_${req.user?.branchId || ''}`;
+        const now = Date.now();
+        if (menuCache.data && menuCache.key === cacheKey && menuCache.expiresAt > now) {
+            return res.json(menuCache.data);
+        }
+
         const filter = { isActive: true };
         
         // If explicit restaurantId is supplied in query (e.g. from customer QR scan),
@@ -52,6 +65,7 @@ export const getMenuItems = async (req, res) => {
             return true;
         });
 
+        menuCache = { data: validItems, expiresAt: now + 30000, key: cacheKey };
         res.json(validItems);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -71,6 +85,7 @@ export const createMenuItem = async (req, res) => {
             payload.branchId = req.user.branchId;
         }
         const item = await MenuItem.create(payload);
+        clearMenuCache();
         res.status(201).json(item);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -93,6 +108,7 @@ export const updateMenuItem = async (req, res) => {
         delete updates.restaurantId;
         Object.assign(existing, updates);
         const saved = await existing.save();
+        clearMenuCache();
         res.json(saved);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -112,6 +128,7 @@ export const deleteMenuItem = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized to delete this restaurant menu item' });
         }
         await item.deleteOne();
+        clearMenuCache();
         res.json({ message: 'Item removed' });
     } catch (error) {
         res.status(500).json({ message: error.message });

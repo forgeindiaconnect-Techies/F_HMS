@@ -96,19 +96,12 @@ export default function Explore() {
     if (restaurants.length === 0) setLoadingData(true);
     setFetchError(null);
 
-    // Guaranteed fallback timer so skeleton loading NEVER hangs indefinitely (25s for cold server starts)
+    // Guaranteed fallback timer so skeleton loading NEVER hangs indefinitely (1500ms max loading cap)
     const safetyTimeout = setTimeout(() => {
       if (isMounted) {
-        setLoadingData((prev) => {
-          if (prev) {
-            console.warn('[Explore] Data fetch timed out, clearing skeleton loading state.');
-            setFetchError((curErr) => curErr || 'Server is waking up. Tap Retry Connection to load restaurants.');
-            return false;
-          }
-          return false;
-        });
+        setLoadingData(false);
       }
-    }, 25000);
+    }, 1500);
 
     // Parallel atomic fetching with Promise.allSettled
     Promise.allSettled([

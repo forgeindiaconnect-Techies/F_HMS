@@ -1,11 +1,21 @@
 import Offer from '../models/Offer.js';
 
+let offersCache = { data: null, expiresAt: 0 };
+export const clearOffersCache = () => {
+    offersCache = { data: null, expiresAt: 0 };
+};
+
 // @desc    Get all offers
 // @route   GET /api/offers
 // @access  Public
 export const getOffers = async (req, res) => {
     try {
-        const offers = await Offer.find({}).sort({ createdAt: -1 });
+        const now = Date.now();
+        if (offersCache.data && offersCache.expiresAt > now) {
+            return res.json(offersCache.data);
+        }
+        const offers = await Offer.find({}).sort({ createdAt: -1 }).lean();
+        offersCache = { data: offers, expiresAt: now + 30000 };
         res.json(offers);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -35,6 +45,7 @@ export const createOffer = async (req, res) => {
             isActive: isActive !== undefined ? isActive : true
         });
 
+        clearOffersCache();
         res.status(201).json(offer);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -57,6 +68,7 @@ export const updateOffer = async (req, res) => {
             offer.isActive = req.body.isActive !== undefined ? req.body.isActive : offer.isActive;
 
             const updatedOffer = await offer.save();
+            clearOffersCache();
             res.json(updatedOffer);
         } else {
             res.status(404).json({ message: 'Offer not found' });
@@ -74,6 +86,7 @@ export const deleteOffer = async (req, res) => {
         const offer = await Offer.findById(req.params.id);
         if (offer) {
             await offer.deleteOne();
+            clearOffersCache();
             res.json({ message: 'Offer removed' });
         } else {
             res.status(404).json({ message: 'Offer not found' });

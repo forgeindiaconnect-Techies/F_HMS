@@ -39,6 +39,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // node_modules/bson/lib/bson.cjs
 var require_bson = __commonJS({
@@ -126348,6 +126349,9 @@ var init_MenuItem = __esm({
         ref: "Branch"
       }
     }, { timestamps: true });
+    menuItemSchema.index({ restaurantId: 1, isActive: 1 });
+    menuItemSchema.index({ isActive: 1 });
+    menuItemSchema.index({ branchId: 1 });
     MenuItem = import_mongoose15.default.model("MenuItem", menuItemSchema);
     MenuItem_default = MenuItem;
   }
@@ -126521,6 +126525,13 @@ var init_Category = __esm({
     Category_default = Category;
   }
 });
+
+// index.js
+var index_exports = {};
+__export(index_exports, {
+  default: () => index_default
+});
+module.exports = __toCommonJS(index_exports);
 
 // services/subscriptionCronService.js
 init_Restaurant();
@@ -126802,25 +126813,39 @@ var import_http = __toESM(require("http"), 1);
 
 // config/db.js
 var import_mongoose5 = __toESM(require_mongoose2(), 1);
+var cachedPromise = null;
 var connectDB = async () => {
+  if (import_mongoose5.default.connection.readyState === 1) {
+    return import_mongoose5.default.connection;
+  }
+  if (cachedPromise) {
+    return cachedPromise;
+  }
   const fallbackUri = "mongodb+srv://ruthralekhaantigraviity_db_user:bPtyhG4yQzSPcGgR@cluster0.3vd0qmf.mongodb.net/?appName=Cluster0";
   const uri = process.env.MONGO_URI || fallbackUri;
-  let retries = 5;
-  while (retries > 0) {
-    try {
-      const conn = await import_mongoose5.default.connect(uri, {
-        serverSelectionTimeoutMS: 5e3,
-        connectTimeoutMS: 1e4
-      });
-      console.log(`MongoDB Connected: ${conn.connection.host}`);
-      return;
-    } catch (error) {
-      console.error(`MongoDB Connection Error: ${error.message}. Retrying in 3s... (${retries} left)`);
-      retries -= 1;
-      await new Promise((res) => setTimeout(res, 3e3));
+  cachedPromise = (async () => {
+    let retries = process.env.VERCEL ? 2 : 5;
+    while (retries > 0) {
+      try {
+        const conn = await import_mongoose5.default.connect(uri, {
+          serverSelectionTimeoutMS: 5e3,
+          connectTimeoutMS: 1e4
+        });
+        console.log(`MongoDB Connected: ${conn.connection.host}`);
+        return conn.connection;
+      } catch (error) {
+        console.error(`MongoDB Connection Error: ${error.message}. Retrying in 1s... (${retries} left)`);
+        retries -= 1;
+        if (retries > 0) {
+          await new Promise((res) => setTimeout(res, 1e3));
+        }
+      }
     }
-  }
-  console.error("Failed to connect to MongoDB after multiple retries.");
+    cachedPromise = null;
+    console.error("Failed to connect to MongoDB after multiple retries.");
+    return null;
+  })();
+  return cachedPromise;
 };
 var db_default = connectDB;
 
@@ -127712,9 +127737,12 @@ var import_multer = __toESM(require("multer"), 1);
 var import_path2 = __toESM(require("path"), 1);
 var import_fs2 = __toESM(require("fs"), 1);
 var import_mongoose11 = __toESM(require_mongoose2(), 1);
-var uploadDir = "uploads/verification";
-if (!import_fs2.default.existsSync(uploadDir)) {
-  import_fs2.default.mkdirSync(uploadDir, { recursive: true });
+var uploadDir = process.env.VERCEL ? "/tmp/uploads/verification" : "uploads/verification";
+try {
+  if (!import_fs2.default.existsSync(uploadDir)) {
+    import_fs2.default.mkdirSync(uploadDir, { recursive: true });
+  }
+} catch {
 }
 var storage = import_multer.default.diskStorage({
   destination: (req, file, cb) => {
@@ -128400,10 +128428,14 @@ var import_path3 = __toESM(require("path"), 1);
 var import_fs3 = __toESM(require("fs"), 1);
 var import_razorpay2 = __toESM(require("razorpay"), 1);
 init_subscriptionHelper();
-var logoUploadDir = "uploads/logos";
-if (!import_fs3.default.existsSync(logoUploadDir)) {
-  import_fs3.default.mkdirSync(logoUploadDir, { recursive: true });
+var logoUploadDir = process.env.VERCEL ? "/tmp/uploads/logos" : "uploads/logos";
+try {
+  if (!import_fs3.default.existsSync(logoUploadDir)) {
+    import_fs3.default.mkdirSync(logoUploadDir, { recursive: true });
+  }
+} catch {
 }
+var restaurantsCache = { data: null, expiresAt: 0 };
 var logoStorage = import_multer2.default.diskStorage({
   destination: (req, file, cb) => cb(null, logoUploadDir),
   filename: (req, file, cb) => {
@@ -128430,6 +128462,10 @@ var getRestaurants = async (req, res) => {
   try {
     if (import_mongoose13.default.connection.readyState !== 1) {
       return res.json([]);
+    }
+    const now = Date.now();
+    if (restaurantsCache.data && restaurantsCache.expiresAt > now) {
+      return res.json(restaurantsCache.data);
     }
     const filter = {
       isDeleted: { $ne: true },
@@ -128528,6 +128564,7 @@ var getRestaurants = async (req, res) => {
       return rest;
     });
     if (nameFixes.length > 0) Promise.allSettled(nameFixes);
+    restaurantsCache = { data: populatedRestaurants, expiresAt: Date.now() + 3e4 };
     res.json(populatedRestaurants);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -132485,8 +132522,17 @@ var import_express6 = __toESM(require_express2(), 1);
 
 // controllers/menuController.js
 init_MenuItem();
+var menuCache = { data: null, expiresAt: 0, key: "" };
+var clearMenuCache = () => {
+  menuCache = { data: null, expiresAt: 0, key: "" };
+};
 var getMenuItems = async (req, res) => {
   try {
+    const cacheKey = `${req.query.restaurantId || ""}_${req.query.branchId || ""}_${req.user?.restaurantId || ""}_${req.user?.branchId || ""}`;
+    const now = Date.now();
+    if (menuCache.data && menuCache.key === cacheKey && menuCache.expiresAt > now) {
+      return res.json(menuCache.data);
+    }
     const filter = { isActive: true };
     if (req.query.restaurantId && req.query.restaurantId !== "null" && req.query.restaurantId !== "undefined") {
       filter.restaurantId = req.query.restaurantId;
@@ -132523,6 +132569,7 @@ var getMenuItems = async (req, res) => {
       }
       return true;
     });
+    menuCache = { data: validItems, expiresAt: now + 3e4, key: cacheKey };
     res.json(validItems);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -132538,6 +132585,7 @@ var createMenuItem = async (req, res) => {
       payload.branchId = req.user.branchId;
     }
     const item = await MenuItem_default.create(payload);
+    clearMenuCache();
     res.status(201).json(item);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -132556,6 +132604,7 @@ var updateMenuItem = async (req, res) => {
     delete updates.restaurantId;
     Object.assign(existing, updates);
     const saved = await existing.save();
+    clearMenuCache();
     res.json(saved);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -132571,6 +132620,7 @@ var deleteMenuItem = async (req, res) => {
       return res.status(403).json({ message: "Not authorized to delete this restaurant menu item" });
     }
     await item.deleteOne();
+    clearMenuCache();
     res.json({ message: "Item removed" });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -136943,9 +136993,18 @@ var Offer = import_mongoose37.default.model("Offer", offerSchema);
 var Offer_default = Offer;
 
 // controllers/offerController.js
+var offersCache = { data: null, expiresAt: 0 };
+var clearOffersCache = () => {
+  offersCache = { data: null, expiresAt: 0 };
+};
 var getOffers = async (req, res) => {
   try {
-    const offers = await Offer_default.find({}).sort({ createdAt: -1 });
+    const now = Date.now();
+    if (offersCache.data && offersCache.expiresAt > now) {
+      return res.json(offersCache.data);
+    }
+    const offers = await Offer_default.find({}).sort({ createdAt: -1 }).lean();
+    offersCache = { data: offers, expiresAt: now + 3e4 };
     res.json(offers);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -136967,6 +137026,7 @@ var createOffer = async (req, res) => {
       usageLimit: usageLimit || 0,
       isActive: isActive !== void 0 ? isActive : true
     });
+    clearOffersCache();
     res.status(201).json(offer);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -136984,6 +137044,7 @@ var updateOffer = async (req, res) => {
       offer.usageLimit = req.body.usageLimit !== void 0 ? req.body.usageLimit : offer.usageLimit;
       offer.isActive = req.body.isActive !== void 0 ? req.body.isActive : offer.isActive;
       const updatedOffer = await offer.save();
+      clearOffersCache();
       res.json(updatedOffer);
     } else {
       res.status(404).json({ message: "Offer not found" });
@@ -136997,6 +137058,7 @@ var deleteOffer = async (req, res) => {
     const offer = await Offer_default.findById(req.params.id);
     if (offer) {
       await offer.deleteOne();
+      clearOffersCache();
       res.json({ message: "Offer removed" });
     } else {
       res.status(404).json({ message: "Offer not found" });
@@ -139001,9 +139063,12 @@ init_Notification();
 var import_multer3 = __toESM(require("multer"), 1);
 var import_path4 = __toESM(require("path"), 1);
 var import_fs4 = __toESM(require("fs"), 1);
-var uploadDir2 = "uploads/tickets";
-if (!import_fs4.default.existsSync(uploadDir2)) {
-  import_fs4.default.mkdirSync(uploadDir2, { recursive: true });
+var uploadDir2 = process.env.VERCEL ? "/tmp/uploads/tickets" : "uploads/tickets";
+try {
+  if (!import_fs4.default.existsSync(uploadDir2)) {
+    import_fs4.default.mkdirSync(uploadDir2, { recursive: true });
+  }
+} catch {
 }
 var storage2 = import_multer3.default.diskStorage({
   destination: (req, file, cb) => {
@@ -140249,11 +140314,31 @@ var inquirySchema = new import_mongoose50.default.Schema({
   },
   phone: {
     type: String,
-    required: true
+    default: "N/A"
   },
   restaurantName: {
     type: String,
-    required: true
+    default: "General"
+  },
+  restaurantId: {
+    type: import_mongoose50.default.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    default: null
+  },
+  branchId: {
+    type: import_mongoose50.default.Schema.Types.ObjectId,
+    ref: "Branch",
+    default: null
+  },
+  customerId: {
+    type: import_mongoose50.default.Schema.Types.ObjectId,
+    ref: "User",
+    default: null
+  },
+  source: {
+    type: String,
+    enum: ["Public", "Customer"],
+    default: "Public"
   },
   subject: {
     type: String,
@@ -140277,15 +140362,31 @@ var Inquiry_default = Inquiry;
 // controllers/inquiryController.js
 var createInquiry = async (req, res) => {
   try {
-    const { name, email, phone, restaurantName, subject, message } = req.body;
-    if (!name || !phone || !restaurantName) {
-      return res.status(400).json({ message: "Name, phone number, and restaurant name are required" });
-    }
-    const inquiry = new Inquiry_default({
+    const {
       name,
-      email: email || `${phone.replace(/\D/g, "") || "lead"}@lead.restauranthub.com`,
+      email,
       phone,
       restaurantName,
+      restaurantId,
+      branchId,
+      customerId,
+      source,
+      subject,
+      message
+    } = req.body;
+    if (!name || !message && (!phone || !restaurantName)) {
+      return res.status(400).json({ message: "Name and message (or phone and restaurant name) are required" });
+    }
+    const cleanPhone = (phone || "").toString().trim();
+    const inquiry = new Inquiry_default({
+      name: name.trim(),
+      email: email || `${cleanPhone.replace(/\D/g, "") || "lead"}@lead.restauranthub.com`,
+      phone: cleanPhone || "N/A",
+      restaurantName: (restaurantName || "").trim() || "General",
+      restaurantId: restaurantId || null,
+      branchId: branchId || null,
+      customerId: customerId || null,
+      source: source === "Customer" ? "Customer" : "Public",
       subject: subject || "Demo",
       message: message || "Free Walkthrough Demo requested"
     });
@@ -140299,6 +140400,54 @@ var getInquiries = async (req, res) => {
   try {
     const inquiries = await Inquiry_default.find().sort({ createdAt: -1 });
     res.json(inquiries);
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Server Error" });
+  }
+};
+var getRestaurantInquiries = async (req, res) => {
+  try {
+    let query = {};
+    if (req.user.role !== "SuperAdmin") {
+      const orConditions = [{ source: "Customer", restaurantId: null }];
+      if (req.user.restaurantId) {
+        orConditions.push({ restaurantId: req.user.restaurantId });
+      }
+      query = { $or: orConditions };
+    }
+    const inquiries = await Inquiry_default.find(query).sort({ createdAt: -1 }).limit(100);
+    res.json(inquiries);
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Server Error" });
+  }
+};
+var getMyCustomerInquiries = async (req, res) => {
+  try {
+    const orConditions = [{ customerId: req.user._id }];
+    if (req.user.email) {
+      orConditions.push({ email: req.user.email, source: "Customer" });
+    }
+    const inquiries = await Inquiry_default.find({ $or: orConditions }).sort({ createdAt: -1 }).limit(50);
+    res.json(inquiries);
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Server Error" });
+  }
+};
+var updateRestaurantInquiryStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status || !["New", "In Progress", "Resolved"].includes(status)) {
+      return res.status(400).json({ message: "Valid status is required (New, In Progress, Resolved)" });
+    }
+    const inquiry = await Inquiry_default.findById(req.params.id);
+    if (!inquiry) {
+      return res.status(404).json({ message: "Inquiry not found" });
+    }
+    if (req.user.role !== "SuperAdmin" && inquiry.restaurantId && req.user.restaurantId && inquiry.restaurantId.toString() !== req.user.restaurantId.toString()) {
+      return res.status(403).json({ message: "Not authorized to update this inquiry" });
+    }
+    inquiry.status = status;
+    await inquiry.save();
+    res.json(inquiry);
   } catch (error) {
     res.status(500).json({ message: error.message || "Server Error" });
   }
@@ -140336,6 +140485,9 @@ var deleteInquiry = async (req, res) => {
 // routes/inquiryRoutes.js
 var router26 = import_express26.default.Router();
 router26.route("/").post(createInquiry);
+router26.route("/mine").get(protect, getMyCustomerInquiries);
+router26.route("/restaurant").get(protect, authorize("RestaurantAdmin", "Admin", "BranchManager", "SuperAdmin"), getRestaurantInquiries);
+router26.route("/restaurant/:id").put(protect, authorize("RestaurantAdmin", "Admin", "BranchManager", "SuperAdmin"), updateRestaurantInquiryStatus);
 router26.route("/admin").get(protect, authorize("SuperAdmin"), getInquiries);
 router26.route("/admin/:id").put(protect, authorize("SuperAdmin"), updateInquiryStatus).delete(protect, authorize("SuperAdmin"), deleteInquiry);
 var inquiryRoutes_default = router26;
@@ -142005,9 +142157,12 @@ init_Restaurant();
 var import_multer4 = __toESM(require("multer"), 1);
 var import_path5 = __toESM(require("path"), 1);
 var import_fs5 = __toESM(require("fs"), 1);
-var testimonialUploadDir = "uploads/testimonials";
-if (!import_fs5.default.existsSync(testimonialUploadDir)) {
-  import_fs5.default.mkdirSync(testimonialUploadDir, { recursive: true });
+var testimonialUploadDir = process.env.VERCEL ? "/tmp/uploads/testimonials" : "uploads/testimonials";
+try {
+  if (!import_fs5.default.existsSync(testimonialUploadDir)) {
+    import_fs5.default.mkdirSync(testimonialUploadDir, { recursive: true });
+  }
+} catch {
 }
 var storage3 = import_multer4.default.diskStorage({
   destination: (req, file, cb) => cb(null, testimonialUploadDir),
@@ -142410,6 +142565,15 @@ app.use(import_express32.default.json({
 }));
 app.use(import_express32.default.urlencoded({ limit: "50mb", extended: true }));
 app.use((0, import_cookie_parser.default)());
+app.use(async (req, res, next) => {
+  if (req.path === "/health" || req.path === "/api/health") return next();
+  try {
+    await db_default();
+  } catch (err) {
+    console.error("DB connect middleware error:", err.message);
+  }
+  next();
+});
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", time: (/* @__PURE__ */ new Date()).toISOString() });
 });
@@ -142474,32 +142638,35 @@ if (import_fs6.default.existsSync(frontendDistPath)) {
 app.use(notFound);
 app.use(errorHandler);
 var server = import_http.default.createServer(app);
-initWebSocket(server);
-server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
-  db_default().then(async () => {
-    initSubscriptionScheduler();
-    try {
-      const count = await Plan_default.countDocuments();
-      if (count === 0) {
-        await Plan_default.insertMany([
-          { name: "Basic", monthlyPrice: 2999, yearlyPrice: 2399, branchesLimit: 1, staffLimit: 5, features: ["1 Branch", "Basic POS Billing", "QR Ordering", "Email Support"], isActive: true },
-          { name: "Pro", monthlyPrice: 5999, yearlyPrice: 4799, branchesLimit: 3, staffLimit: 9999, features: ["Up to 3 Branches", "Kitchen Display System", "Online Ordering", "Advanced Analytics", "Priority Support"], isActive: true },
-          { name: "Enterprise", monthlyPrice: 12999, yearlyPrice: 10399, branchesLimit: 9999, staffLimit: 9999, features: ["Unlimited Branches", "Custom APIs & Webhooks", "Dedicated Account Manager", "SLA Guarantee", "White-label Branding"], isActive: true }
-        ]);
+if (!process.env.VERCEL) {
+  initWebSocket(server);
+  server.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server running on port ${PORT}`);
+    db_default().then(async () => {
+      initSubscriptionScheduler();
+      try {
+        const count = await Plan_default.countDocuments();
+        if (count === 0) {
+          await Plan_default.insertMany([
+            { name: "Basic", monthlyPrice: 2999, yearlyPrice: 2399, branchesLimit: 1, staffLimit: 5, features: ["1 Branch", "Basic POS Billing", "QR Ordering", "Email Support"], isActive: true },
+            { name: "Pro", monthlyPrice: 5999, yearlyPrice: 4799, branchesLimit: 3, staffLimit: 9999, features: ["Up to 3 Branches", "Kitchen Display System", "Online Ordering", "Advanced Analytics", "Priority Support"], isActive: true },
+            { name: "Enterprise", monthlyPrice: 12999, yearlyPrice: 10399, branchesLimit: 9999, staffLimit: 9999, features: ["Unlimited Branches", "Custom APIs & Webhooks", "Dedicated Account Manager", "SLA Guarantee", "White-label Branding"], isActive: true }
+          ]);
+        }
+      } catch (e) {
+        console.error("Plan initialization warning:", e.message);
       }
-    } catch (e) {
-      console.error("Plan initialization warning:", e.message);
-    }
-  }).catch((err) => {
-    console.error("MongoDB Atlas connection error on startup:", err.message);
-  });
-  setInterval(() => {
-    import_http.default.get(`http://127.0.0.1:${PORT}/api/health`, (res) => {
-    }).on("error", () => {
+    }).catch((err) => {
+      console.error("MongoDB Atlas connection error on startup:", err.message);
     });
-  }, 2 * 60 * 1e3);
-});
+    setInterval(() => {
+      import_http.default.get(`http://127.0.0.1:${PORT}/api/health`, (res) => {
+      }).on("error", () => {
+      });
+    }, 2 * 60 * 1e3);
+  });
+}
+var index_default = app;
 /*! Bundled license information:
 
 mongoose/lib/connectionState.js:

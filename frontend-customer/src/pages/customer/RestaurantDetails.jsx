@@ -71,24 +71,21 @@ const RestaurantDetails = () => {
     };
 
     useEffect(() => {
+        const capTimer = setTimeout(() => setLoading(false), 1500);
         const fetchDetails = async () => {
             try {
-                // Fetch restaurant profile directly to verify visibility and status
-                let fetchedRest = null;
-                try {
-                    const restRes = await api.get(`/restaurants/${id}`);
-                    fetchedRest = restRes.data;
-                } catch (rErr) {
-                    // Fallback to list search
-                    try {
-                        const listRes = await api.get('/restaurants');
-                        if (Array.isArray(listRes.data)) {
-                            fetchedRest = listRes.data.find(r => String(r._id) === String(id));
-                        }
-                    } catch (lErr) {
-                        console.error("Failed to query fallback restaurants list", lErr);
-                    }
-                }
+                // Fetch restaurant profile, branches, and menu in parallel
+                const [restRes, branchRes, menuRes] = await Promise.all([
+                    api.get(`/restaurants/${id}`).catch(() => 
+                        api.get('/restaurants').then(res => ({
+                            data: Array.isArray(res.data) ? res.data.find(r => String(r._id) === String(id)) : null
+                        })).catch(() => ({ data: null }))
+                    ),
+                    api.get(`/restaurants/${id}/branches`).catch(() => ({ data: [] })),
+                    api.get(`/menu?restaurantId=${id}`).catch(() => ({ data: [] }))
+                ]);
+
+                const fetchedRest = restRes?.data || null;
 
                 // Check if restaurant is inactive, suspended, or soft-deleted
                 const isInactiveStatus = fetchedRest?.status && fetchedRest.status.toLowerCase() === 'inactive';
@@ -110,38 +107,28 @@ const RestaurantDetails = () => {
 
                 setRestaurant(fetchedRest);
 
-                // Fetch branches
-                try {
-                    const branchRes = await api.get(`/restaurants/${id}/branches`);
-                    setBranches(branchRes.data || []);
-                    if (branchRes.data?.length > 0) {
-                        setSelectedBranch(branchRes.data[0]._id);
-                    }
-                } catch (bErr) {
-                    setBranches([]);
+                const branchList = Array.isArray(branchRes?.data) ? branchRes.data : [];
+                setBranches(branchList);
+                if (branchList.length > 0) {
+                    setSelectedBranch(branchList[0]._id);
                 }
-                
-                // Fetch menu
-                try {
-                    const menuRes = await api.get(`/menu?restaurantId=${id}`);
-                    const rawMenu = Array.isArray(menuRes.data) ? menuRes.data : [];
-                    const restaurantMenu = rawMenu.filter(m => {
-                        const rId = typeof m.restaurantId === 'object' ? (m.restaurantId?._id || m.restaurantId?.id) : m.restaurantId;
-                        return !rId || String(rId) === String(id);
-                    });
-                    setMenu(restaurantMenu);
-                } catch (mErr) {
-                    setMenu([]);
-                }
-                
+
+                const rawMenu = Array.isArray(menuRes?.data) ? menuRes.data : [];
+                const restaurantMenu = rawMenu.filter(m => {
+                    const rId = typeof m.restaurantId === 'object' ? (m.restaurantId?._id || m.restaurantId?.id) : m.restaurantId;
+                    return !rId || String(rId) === String(id);
+                });
+                setMenu(restaurantMenu);
             } catch (error) {
                 console.error("Failed to load restaurant details", error);
                 setRestaurant(null);
             } finally {
+                clearTimeout(capTimer);
                 setLoading(false);
             }
         };
         fetchDetails();
+        return () => clearTimeout(capTimer);
     }, [id]);
 
     const getItemQuantity = (itemId) => {

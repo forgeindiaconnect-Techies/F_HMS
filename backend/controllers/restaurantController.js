@@ -32,6 +32,11 @@ try {
     }
 } catch {}
 
+let restaurantsCache = { data: null, expiresAt: 0 };
+export const clearRestaurantsCache = () => {
+    restaurantsCache = { data: null, expiresAt: 0 };
+};
+
 const logoStorage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, logoUploadDir),
     filename: (req, file, cb) => {
@@ -62,6 +67,11 @@ export const getRestaurants = async (req, res) => {
     try {
         if (mongoose.connection.readyState !== 1) {
             return res.json([]);
+        }
+
+        const now = Date.now();
+        if (restaurantsCache.data && restaurantsCache.expiresAt > now) {
+            return res.json(restaurantsCache.data);
         }
 
         // Return eligible customer-facing restaurants: must not be deleted, must be active,
@@ -185,6 +195,7 @@ export const getRestaurants = async (req, res) => {
 
         if (nameFixes.length > 0) Promise.allSettled(nameFixes);
         
+        restaurantsCache = { data: populatedRestaurants, expiresAt: Date.now() + 30000 };
         res.json(populatedRestaurants);
     } catch (error) {
         res.status(500).json({ message: error.message });

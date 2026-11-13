@@ -13,26 +13,41 @@ const Menu = () => {
     const { addToCart, wishlist, toggleWishlist } = useCart();
     const { api } = useCustomerAuth();
     
-    const [menuItems, setMenuItems] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [menuItems, setMenuItems] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('foodnest_menu_cache');
+            return cached ? JSON.parse(cached) : [];
+        } catch { return []; }
+    });
+    const [loading, setLoading] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('foodnest_menu_cache');
+            return !(cached && JSON.parse(cached)?.length > 0);
+        } catch { return true; }
+    });
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('All');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [selectedDish, setSelectedDish] = useState(null);
 
     useEffect(() => {
+        const capTimer = setTimeout(() => setLoading(false), 1500);
         const fetchMenu = async () => {
             try {
                 const { data } = await api.get('/menu');
-                setMenuItems(Array.isArray(data) ? data : []);
+                if (Array.isArray(data)) {
+                    setMenuItems(data);
+                    try { sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(data)); } catch {}
+                }
             } catch (error) {
                 console.error('Failed to fetch menu', error);
-                setMenuItems([]);
             } finally {
+                clearTimeout(capTimer);
                 setLoading(false);
             }
         };
         fetchMenu();
+        return () => clearTimeout(capTimer);
     }, [api]);
 
     const filteredMenu = useMemo(() => {

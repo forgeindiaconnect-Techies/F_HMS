@@ -44,6 +44,7 @@ const SuperAdminDashboard = () => {
     };
 
     const fetchDashboardData = async () => {
+        const capTimer = setTimeout(() => setLoading(false), 1500);
         try {
             const [statsRes, restsRes, verifsRes, inquiriesRes, ticketsRes, notifsRes, demosRes] = await Promise.all([
                 api.get('/super-admin/stats').catch(() => ({ data: null })),
@@ -75,6 +76,7 @@ const SuperAdminDashboard = () => {
         } catch (error) {
             console.error("Failed to fetch super admin data", error);
         } finally {
+            clearTimeout(capTimer);
             setLoading(false);
         }
     };
