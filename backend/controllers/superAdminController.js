@@ -86,90 +86,35 @@ export const getStats = async (req, res) => {
 // @desc    Get all restaurants
 // @route   GET /api/super-admin/restaurants
 // @access  Private/SuperAdmin
-// @desc    Get all restaurants
-// @route   GET /api/super-admin/restaurants
-// @access  Private/SuperAdmin
 export const getRestaurants = async (req, res) => {
     try {
-        // Auto-heal: Ensure any registered RestaurantAdmin/Admin user has a Restaurant record
-        const Branch = (await import('../models/Branch.js')).default;
-        const User = (await import('../models/User.js')).default;
-        const adminUsers = await User.find({ role: { $in: ['RestaurantAdmin', 'Admin'] } });
-        for (const admin of adminUsers) {
-            const exists = await Restaurant.exists({ $or: [{ ownerId: admin._id }, { _id: admin.restaurantId }] });
-            if (!exists) {
-                const restName = admin.name ? `${admin.name}'s Restaurant` : 'New Restaurant';
-                const newRest = await Restaurant.create({
-                    name: restName,
-                    ownerId: admin._id,
-                    subscription: {
-                        status: 'Pending Approval',
-                        plan: 'Basic',
-                        billingCycle: 'monthly',
-                        trialActive: false,
-                        paymentStatus: 'Trial',
-                        trialRequestDate: new Date()
-                    },
-                    approvalStatus: 'Pending',
-                    verificationStatus: 'Pending',
-                    isActive: true
-                });
-                admin.restaurantId = newRest._id;
-                await admin.save();
-
-                await Branch.create({
-                    restaurantId: newRest._id,
-                    name: `${newRest.name} Branch`,
-                    location: { address: 'Primary Location' },
-                    contact: { phone: admin.phoneNumber || '' },
-                    isActive: true
-                });
-            }
-        }
-
-        const restaurants = await Restaurant.find().populate('ownerId', 'name email').sort({ createdAt: -1 }).lean();
-
-        // Auto-repair any restaurants with blank, null, or missing owner/names
-        const repairedRestaurants = await Promise.all(restaurants.map(async (r) => {
-            if (!r.ownerId) {
-                const owner = await User.findOne({ restaurantId: r._id, role: { $in: ['RestaurantAdmin', 'Admin'] } }).select('name email');
-                if (owner) {
-                    r.ownerId = { _id: owner._id, name: owner.name, email: owner.email };
-                    try {
-                        await Restaurant.findByIdAndUpdate(r._id, { ownerId: owner._id });
-                    } catch (e) {
-                        console.error("Failed to persist ownerId", e);
-                    }
-                } else {
-                    r.ownerId = { name: `${r.name} Admin`, email: `admin@${r.name.toLowerCase().replace(/[^a-z0-9]/g, '') || 'restaurant'}.com` };
-                }
-            }
-            if (!r.name || r.name.trim() === '' || r.name === 'Unnamed') {
-                const ownerName = r.ownerId?.name || 'Partner';
-                r.name = `${ownerName}'s Restaurant`;
-                try {
-                    await Restaurant.findByIdAndUpdate(r._id, { name: r.name });
-                } catch (e) {
-                    console.error("Failed to persist repaired restaurant name", e);
-                }
-            }
-            return r;
-        }));
-
-        const revenues = await Order.aggregate([
-            { $match: { isPaid: true } },
-            { $group: { _id: "$restaurantId", totalRevenue: { $sum: "$totalPrice" } } }
+        const [restaurants, revenues] = await Promise.all([
+            Restaurant.find({ isDeleted: { $ne: true } })
+                .select('_id name status approvalStatus subscription ownerId address phone posConfig billingConfig')
+                .populate('ownerId', 'name email phoneNumber')
+                .sort({ createdAt: -1 })
+                .lean(),
+            Order.aggregate([
+                { $match: { isPaid: true } },
+                { $group: { _id: "$restaurantId", totalRevenue: { $sum: "$totalPrice" } } }
+            ])
         ]);
+
         const revMap = {};
         revenues.forEach(r => {
             if (r._id) revMap[r._id.toString()] = r.totalRevenue;
         });
-        const result = repairedRestaurants.map(r => ({
+
+        const result = (restaurants || []).map(r => ({
             ...r,
+            name: r.name || (r.ownerId?.name ? `${r.ownerId.name}'s Restaurant` : 'Partner Restaurant'),
+            ownerId: r.ownerId || { name: `${r.name || 'Restaurant'} Admin`, email: 'admin@restauranthub.com' },
             totalRevenue: revMap[r._id.toString()] || 0
         }));
+
         res.json(result);
     } catch (error) {
+        console.error("getRestaurants error:", error);
         res.status(500).json({ message: error.message });
     }
 };
