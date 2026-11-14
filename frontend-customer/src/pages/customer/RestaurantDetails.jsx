@@ -1,17 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { MapPin, Star, Clock, Info, ShoppingBag, Plus, Minus, CheckCircle, Store, AlertCircle, ArrowLeft, Heart } from 'lucide-react';
+import { MapPin, Star, Clock, Info, ShoppingBag, Plus, Minus, CheckCircle, Store, AlertCircle, ArrowLeft, Heart, Truck, Navigation } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { getItemImage } from '../../utils/imageHelper';
 import api, { getApiUrl } from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
 import DishDetailModal from '../../components/DishDetailModal';
+import { getSavedCoordinates, getSavedLocation, calculateDistanceKm, requestBrowserGpsLocation, EVENT_LOCATION_UPDATED } from '../../utils/locationHelper';
 
 const RestaurantDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { cartItems, addToCart, removeFromCart, clearCart, cartTotal, cartCount, wishlist, toggleWishlist, setIsWishlistOpen } = useCart();
+
+    const [customerCoords, setCustomerCoords] = useState(() => getSavedCoordinates());
+    const [customerLocation, setCustomerLocation] = useState(() => getSavedLocation() || '');
+    const [detectingGps, setDetectingGps] = useState(false);
     
     const [restaurant, setRestaurant] = useState(() => {
         try {
@@ -156,19 +161,63 @@ const RestaurantDetails = () => {
         return () => clearTimeout(capTimer);
     }, [id]);
 
+    // Synchronize customer GPS location when updated across tabs/modals
+    useEffect(() => {
+        const handleLocUpdate = (e) => {
+            if (e.detail?.location) setCustomerLocation(e.detail.location);
+            if (e.detail?.coordinates) {
+                setCustomerCoords(e.detail.coordinates);
+            } else {
+                setCustomerCoords(getSavedCoordinates());
+            }
+        };
+        window.addEventListener(EVENT_LOCATION_UPDATED, handleLocUpdate);
+        return () => window.removeEventListener(EVENT_LOCATION_UPDATED, handleLocUpdate);
+    }, []);
+
+    const handleDetectGps = async () => {
+        setDetectingGps(true);
+        try {
+            const res = await requestBrowserGpsLocation();
+            if (res?.coordinates) {
+                setCustomerCoords(res.coordinates);
+                toast.success('GPS location detected successfully!');
+            } else {
+                toast.error('Unable to retrieve GPS coordinates. Please enable location services in your browser.');
+            }
+        } catch (err) {
+            toast.error('GPS location request failed.');
+        } finally {
+            setDetectingGps(false);
+        }
+    };
+
     const getItemQuantity = (itemId) => {
         const item = cartItems.find((i) => (i.id || i._id) === itemId);
         return item ? (item.quantity || item.qty || 0) : 0;
     };
 
+    // Calculate delivery radius & distance to customer GPS
+    const deliverySettings = restaurant?.deliverySettings || { enabled: true, radius: 5, freeRadius: 2, baseFee: 30, perKmCharge: 10 };
+    const deliveryRadius = deliverySettings.radius || 5;
+    const restLat = deliverySettings.location?.latitude || restaurant?.branches?.[0]?.location?.latitude || null;
+    const restLon = deliverySettings.location?.longitude || restaurant?.branches?.[0]?.location?.longitude || null;
+
+    const distanceKm = (customerCoords?.latitude && customerCoords?.longitude && restLat && restLon)
+        ? calculateDistanceKm(customerCoords.latitude, customerCoords.longitude, restLat, restLon)
+        : null;
+
+    const isWithinRadius = distanceKm !== null ? distanceKm <= deliveryRadius : null;
+    const isHomeDeliveryEnabled = deliverySettings.enabled !== false && restaurant?.restaurantConfig?.orderKitchen?.homeDelivery !== false;
+
     const handleCheckout = () => {
         const storedCustomer = localStorage.getItem('restosys_customer_user');
         if (!storedCustomer) {
             toast.error('Please sign in or create an account to place your order.');
-            navigate('/customer/login', { state: { from: { pathname: '/checkout', state: { restaurantId: id, branchId: selectedBranch } } } });
+            navigate('/customer/login', { state: { from: { pathname: '/checkout', state: { restaurantId: id, branchId: selectedBranch, isWithinRadius, distanceKm } } } });
             return;
         }
-        navigate('/checkout', { state: { restaurantId: id, branchId: selectedBranch } });
+        navigate('/checkout', { state: { restaurantId: id, branchId: selectedBranch, isWithinRadius, distanceKm } });
     };
 
     if (loading) return <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-slate-950"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div></div>;
@@ -302,6 +351,83 @@ const RestaurantDetails = () => {
                             </div>
                         </div>
                     )}
+                </div>
+
+                {/* Delivery Radius & Customer GPS Distance Card */}
+                <div className="mt-3 sm:mt-4 bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-xl sm:rounded-2xl shadow-xs border border-gray-100 dark:border-slate-800 text-left">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-gray-100 dark:border-slate-800">
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-[#FF5A1F] flex items-center justify-center shrink-0">
+                                <Truck size={17} />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-gray-900 dark:text-white text-xs sm:text-sm">
+                                    Fixed Delivery Radius: <span className="text-[#FF5A1F]">{deliveryRadius} km</span>
+                                </h3>
+                                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                                    Home delivery accepted within {deliveryRadius} km of this outlet
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Customer GPS Distance Status Pill / Action */}
+                        {distanceKm !== null ? (
+                            <div className="flex items-center gap-2">
+                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
+                                    isWithinRadius
+                                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+                                        : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800'
+                                }`}>
+                                    <MapPin size={13} />
+                                    <span>{distanceKm} km from your GPS location</span>
+                                    <span className="opacity-60">•</span>
+                                    <span>{isWithinRadius ? 'Within Radius' : 'Outside Radius'}</span>
+                                </span>
+                            </div>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={handleDetectGps}
+                                disabled={detectingGps}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] text-xs font-bold transition-colors cursor-pointer border border-orange-200/80 self-start sm:self-auto"
+                            >
+                                {detectingGps ? (
+                                    <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full" />
+                                ) : (
+                                    <Navigation size={13} />
+                                )}
+                                <span>Detect Distance with GPS</span>
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Delivery Availability Status Notice */}
+                    <div className="pt-2.5">
+                        {!isHomeDeliveryEnabled ? (
+                            <div className="flex items-center gap-2 text-xs text-rose-600 dark:text-rose-400 font-medium bg-rose-50 dark:bg-rose-950/30 p-2.5 rounded-xl border border-rose-100 dark:border-rose-900/40">
+                                <AlertCircle size={15} className="shrink-0" />
+                                <span>Home Delivery is currently disabled by this restaurant. Self-Pickup and Dine-In are available.</span>
+                            </div>
+                        ) : isWithinRadius === true ? (
+                            <div className="flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-300 font-semibold bg-emerald-50 dark:bg-emerald-950/30 p-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
+                                <CheckCircle size={15} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+                                <span>🟢 Home Delivery is available for your location ({distanceKm} km is within the {deliveryRadius} km fixed radius).</span>
+                            </div>
+                        ) : isWithinRadius === false ? (
+                            <div className="flex items-start gap-2 text-xs text-amber-800 dark:text-amber-300 font-medium bg-amber-50 dark:bg-amber-950/30 p-2.5 rounded-xl border border-amber-200 dark:border-amber-900/40">
+                                <AlertCircle size={15} className="shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+                                <div>
+                                    <span className="font-bold block">Outside Delivery Radius ({distanceKm} km away)</span>
+                                    <span>This outlet's fixed delivery limit is {deliveryRadius} km. Home Delivery is unavailable for your address, but Self-Pickup and Dine-In orders are available!</span>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 font-medium bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-800">
+                                <Info size={15} className="shrink-0 text-slate-400" />
+                                <span>Home delivery is served within {deliveryRadius} km. Click "Detect Distance with GPS" to verify your exact location.</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Branch Selection - Compact */}

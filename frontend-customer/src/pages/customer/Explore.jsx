@@ -11,7 +11,7 @@ import {
 import toast from 'react-hot-toast';
 import LocationPickerModal from '../../components/LocationPickerModal';
 import DishDetailModal from '../../components/DishDetailModal';
-import { getSavedLocation, saveUserLocation, detectUserLocation, requestBrowserGpsLocation, reverseGeocodeCoords, filterRestaurantsForLocation, EVENT_LOCATION_UPDATED } from '../../utils/locationHelper';
+import { getSavedLocation, saveUserLocation, detectUserLocation, requestBrowserGpsLocation, reverseGeocodeCoords, filterRestaurantsForLocation, EVENT_LOCATION_UPDATED, getSavedCoordinates, calculateDistanceKm } from '../../utils/locationHelper';
 import { useCart } from '../../context/CartContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { getApiUrl } from '../../utils/axiosInstance';
@@ -59,8 +59,9 @@ export default function Explore() {
   });
   const [selectedCuisine, setSelectedCuisine] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  // Initialize location from localStorage if previously detected
+  // Initialize location and GPS coordinates from localStorage if previously detected
   const [location, setLocation] = useState(() => getSavedLocation() || '');
+  const [userCoordinates, setUserCoordinates] = useState(() => getSavedCoordinates());
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
@@ -88,6 +89,20 @@ export default function Explore() {
 
   const [fetchError, setFetchError] = useState(null);
   const [fetchTrigger, setFetchTrigger] = useState(0);
+
+  // Synchronize location and GPS coordinates from locationHelper updates
+  useEffect(() => {
+    const handleLocationUpdated = (e) => {
+      if (e.detail?.location) setLocation(e.detail.location);
+      if (e.detail?.coordinates) {
+        setUserCoordinates(e.detail.coordinates);
+      } else {
+        setUserCoordinates(getSavedCoordinates());
+      }
+    };
+    window.addEventListener(EVENT_LOCATION_UPDATED, handleLocationUpdated);
+    return () => window.removeEventListener(EVENT_LOCATION_UPDATED, handleLocationUpdated);
+  }, []);
 
   // --------------------------------------------------------------------------
   // Fetch Real-time Backend Data Exclusively from MongoDB
@@ -156,7 +171,8 @@ export default function Explore() {
             country: r.country || '',
             address: r.address || '',
             verificationAddress: r.verificationAddress || '',
-            branches: r.branches || []
+            branches: r.branches || [],
+            deliverySettings: r.deliverySettings || { enabled: true, radius: 5, freeRadius: 2, deliveryType: 'Both', location: { latitude: 13.0475, longitude: 80.2090 } }
           };
         });
         setRestaurants(backendMapped);
@@ -165,7 +181,8 @@ export default function Explore() {
             ...r,
             image: r.image && r.image.length < 4000 ? r.image : null,
             logo: r.logo && r.logo.length < 4000 ? r.logo : '',
-            showcaseImages: []
+            showcaseImages: [],
+            deliverySettings: r.deliverySettings ? { radius: r.deliverySettings.radius || 5, location: r.deliverySettings.location } : null
           }));
           localStorage.setItem('foodnest_explore_restaurants_cache', JSON.stringify(slimCache));
         } catch {}
@@ -1122,6 +1139,15 @@ export default function Explore() {
                   ? primaryBranch.location.address
                   : (rest.address && rest.address !== 'Primary Location' ? rest.address : (rest.city ? `${rest.city}, India` : 'Verified Outlet'));
 
+                // Delivery radius and customer distance calculation
+                const deliveryRadius = rest.deliverySettings?.radius || 5;
+                const restLat = rest.deliverySettings?.location?.latitude || primaryBranch?.location?.latitude || null;
+                const restLon = rest.deliverySettings?.location?.longitude || primaryBranch?.location?.longitude || null;
+                const distanceKm = (userCoordinates && restLat && restLon)
+                  ? calculateDistanceKm(userCoordinates.latitude, userCoordinates.longitude, restLat, restLon)
+                  : null;
+                const isWithinRadius = distanceKm !== null ? distanceKm <= deliveryRadius : null;
+
                 return (
                   <div
                     key={rest._id}
@@ -1159,6 +1185,13 @@ export default function Explore() {
                           {rest.badge}
                         </div>
                       )}
+                      
+                      {/* Delivery Radius Badge on Showcase Card */}
+                      <div className="absolute top-2.5 right-2.5 bg-black/65 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs border border-white/20">
+                        <Truck size={10} className="text-[#FF5A1F]" />
+                        <span>Radius: {deliveryRadius} km</span>
+                      </div>
+
                       {rest.image && (
                         <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
                           <Sparkles size={10} className="text-amber-300" />
@@ -1206,6 +1239,28 @@ export default function Explore() {
                         <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-50 text-[#FF5A1F] border border-orange-200/60">
                           {outletCount > 1 ? `${outletCount} Outlets` : 'Main Outlet'}
                         </span>
+                      </div>
+
+                      {/* Location Delivery Radius & Customer Distance Status */}
+                      <div className="pt-1.5 flex items-center justify-between text-[11px]">
+                        <div className="flex items-center gap-1 text-slate-600 font-medium truncate">
+                          <Truck size={12} className="text-[#FF5A1F] shrink-0" />
+                          <span>Radius: <strong className="text-slate-800">{deliveryRadius} km</strong></span>
+                        </div>
+                        {distanceKm !== null ? (
+                          <span className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1 ${
+                            isWithinRadius 
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/70' 
+                              : 'bg-amber-50 text-amber-700 border border-amber-200/70'
+                          }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${isWithinRadius ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                            <span>{distanceKm} km {isWithinRadius ? '• In Radius' : '• Outside'}</span>
+                          </span>
+                        ) : (
+                          <span className="shrink-0 text-[10px] font-semibold text-slate-500 bg-slate-50 border border-slate-200/60 px-1.5 py-0.5 rounded">
+                            Fixed {deliveryRadius} km
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

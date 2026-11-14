@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bell, Megaphone, AlertCircle, Info, MailOpen, X, Clock, Eye, ShoppingCart, CheckCircle2, PackageCheck, Send } from 'lucide-react';
+import { Bell, Megaphone, AlertCircle, Info, MailOpen, X, Clock, Eye, ShoppingCart, CheckCircle2, PackageCheck, Send, Trash2, Utensils } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
@@ -210,6 +210,34 @@ const NotificationCenter = () => {
         }
     };
 
+    const handleDeleteNotification = async (id, e) => {
+        if (e) e.stopPropagation();
+        try {
+            if (!id.startsWith('dummy-')) {
+                await api.delete(`/notifications/${id}`);
+            }
+            setNotifications(prev => prev.filter(n => n._id !== id));
+            toast.success('Notification deleted');
+            window.dispatchEvent(new Event('notifications-updated'));
+        } catch (error) {
+            setNotifications(prev => prev.filter(n => n._id !== id));
+            toast.success('Notification deleted');
+        }
+    };
+
+    const handleClearAll = async () => {
+        if (!window.confirm('Are you sure you want to clear all notifications?')) return;
+        try {
+            await api.delete('/notifications/clear-all');
+            setNotifications([]);
+            toast.success('All notifications cleared');
+            window.dispatchEvent(new Event('notifications-updated'));
+        } catch (error) {
+            setNotifications([]);
+            toast.success('Notifications cleared');
+        }
+    };
+
     const handleBroadcastSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -238,13 +266,34 @@ const NotificationCenter = () => {
         }
     };
 
-    const filteredNotifications = filter === 'Unread' 
-        ? notifications.filter(n => !n.read) 
-        : filter === 'Alerts' 
-            ? notifications.filter(n => n.type === 'Alert') 
-            : notifications;
+    // Filter out routine kitchen tickets so Admin dashboard displays only important events
+    const isImportantForAdmin = (n) => {
+        if (n.type === 'Alert' || n.type === 'Broadcast' || n.type === 'System' || n.type === 'Info') return true;
+        if (n.metadata?.isImportant === true) return true;
+        if (isRestockRequestNote(n)) return true;
+        const titleLower = (n.title || '').toLowerCase();
+        if (titleLower.includes('cancelled') || titleLower.includes('urgent') || titleLower.includes('refund') || titleLower.includes('dispute') || titleLower.includes('complaint')) {
+            return true;
+        }
+        // Exclude routine preparation, ready, and served updates from admin clutter
+        if (titleLower.includes('ready') || titleLower.includes('preparation') || titleLower.includes('cashier counter') || titleLower.includes('served')) {
+            return false;
+        }
+        if (n.metadata?.totalPrice && Number(n.metadata.totalPrice) < 1000) {
+            return false;
+        }
+        return true;
+    };
 
-    const unreadCount = notifications.filter(n => !n.read).length;
+    const adminRelevantNotifications = notifications.filter(isImportantForAdmin);
+
+    const filteredNotifications = filter === 'Unread' 
+        ? adminRelevantNotifications.filter(n => !n.read) 
+        : filter === 'Alerts' 
+            ? adminRelevantNotifications.filter(n => n.type === 'Alert') 
+            : adminRelevantNotifications;
+
+    const unreadCount = adminRelevantNotifications.filter(n => !n.read).length;
 
     return (
         <div className="px-0 py-2 sm:p-4 md:p-8 max-w-5xl mx-auto space-y-4 sm:space-y-6 font-sans">
@@ -288,6 +337,14 @@ const NotificationCenter = () => {
                             <MailOpen size={16} /> Mark all as read
                         </button>
                     )}
+                    {filteredNotifications.length > 0 && (
+                        <button 
+                            onClick={handleClearAll}
+                            className="text-sm text-red-500 hover:text-red-700 flex items-center gap-1.5 font-bold transition-colors cursor-pointer"
+                        >
+                            <Trash2 size={15} /> Clear All
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -310,10 +367,18 @@ const NotificationCenter = () => {
                         <div className="flex-1">
                             <div className="flex justify-between items-start mb-1">
                                 <h3 className={`text-base font-bold ${note.read ? 'text-gray-700 dark:text-slate-200' : 'text-gray-900 dark:text-white'}`}>{note.title}</h3>
-                                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                                <div className="flex items-center gap-2 sm:gap-3">
                                     <span className="text-xs font-medium text-gray-400 dark:text-slate-500 flex items-center gap-1">
                                         <Clock size={12} /> {formatTime(note.createdAt)}
                                     </span>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => handleDeleteNotification(note._id, e)}
+                                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors cursor-pointer"
+                                        title="Delete notification"
+                                    >
+                                        <Trash2 size={15} />
+                                    </button>
                                 </div>
                             </div>
                             <p className="text-sm text-gray-600 dark:text-slate-300 line-clamp-2">{note.desc}</p>
@@ -389,7 +454,54 @@ const NotificationCenter = () => {
                                 <p className="text-sm text-gray-700 dark:text-slate-200 whitespace-pre-line leading-relaxed font-medium">{selectedNoteForView.desc}</p>
                             </div>
 
-                            <div className="pt-2 flex justify-end">
+                            {/* Structured Order Information if Order Notification */}
+                            {(selectedNoteForView.metadata?.items || selectedNoteForView.metadata?.orderId || selectedNoteForView.type === 'Order') && (
+                                <div className="p-4 rounded-2xl bg-orange-50/60 dark:bg-orange-950/30 border border-orange-200/60 dark:border-orange-900/40 space-y-2">
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-orange-600 block">
+                                        Order Breakdown &amp; Specifics
+                                    </span>
+                                    {selectedNoteForView.metadata?.tableNumber && (
+                                        <p className="text-xs font-bold text-gray-800 dark:text-gray-200">
+                                            Table: <span className="text-orange-600">Table {selectedNoteForView.metadata.tableNumber}</span>
+                                        </p>
+                                    )}
+                                    {selectedNoteForView.metadata?.customerName && (
+                                        <p className="text-xs font-semibold text-gray-600 dark:text-gray-300">
+                                            Customer: <span className="font-bold text-gray-900 dark:text-white">{selectedNoteForView.metadata.customerName}</span>
+                                        </p>
+                                    )}
+                                    {selectedNoteForView.metadata?.totalPrice && (
+                                        <p className="text-xs font-semibold text-gray-600 dark:text-gray-300">
+                                            Total Amount: <span className="font-mono font-bold text-gray-900 dark:text-white">₹{selectedNoteForView.metadata.totalPrice}</span>
+                                        </p>
+                                    )}
+                                    {selectedNoteForView.metadata?.items && Array.isArray(selectedNoteForView.metadata.items) && (
+                                        <div className="pt-1.5 space-y-1">
+                                            <span className="text-[10px] font-bold text-gray-500 uppercase">Ordered Dishes:</span>
+                                            <div className="space-y-1 max-h-32 overflow-y-auto">
+                                                {selectedNoteForView.metadata.items.map((it, idx) => (
+                                                    <div key={idx} className="flex justify-between text-xs font-medium text-gray-800 dark:text-gray-200 bg-white dark:bg-slate-900 px-2.5 py-1.5 rounded-lg border border-orange-100 dark:border-orange-950">
+                                                        <span>{it.qty}x {it.name}</span>
+                                                        <span className="font-mono text-gray-500">₹{it.price}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            <div className="pt-2 flex justify-between items-center">
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        handleDeleteNotification(selectedNoteForView._id, e);
+                                        setSelectedNoteForView(null);
+                                    }}
+                                    className="text-xs font-bold text-red-500 hover:text-red-700 flex items-center gap-1.5 cursor-pointer"
+                                >
+                                    <Trash2 size={14} /> Delete Notification
+                                </button>
                                 <button 
                                     onClick={() => setSelectedNoteForView(null)}
                                     className="px-6 py-2.5 bg-gray-900 dark:bg-green-600 hover:bg-black dark:hover:bg-green-700 text-white text-sm font-bold rounded-xl transition-all shadow-md cursor-pointer"

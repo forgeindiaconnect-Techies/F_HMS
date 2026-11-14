@@ -7,6 +7,7 @@ import axios from 'axios';
 import { getItemImage } from '../../utils/imageHelper';
 import { getApiUrl } from '../../utils/axiosInstance';
 import toast from 'react-hot-toast';
+import { getSavedCoordinates, EVENT_LOCATION_UPDATED } from '../../utils/locationHelper';
 
 const Checkout = () => {
     const { cartItems, cartTotal, clearCart } = useCart();
@@ -102,8 +103,22 @@ const Checkout = () => {
         subscriptionDiscount = cartTotal * 0.20;
     }
 
-    const [customerCoords, setCustomerCoords] = useState({ latitude: 13.0827, longitude: 80.2707 }); // Customer location
+    const [customerCoords, setCustomerCoords] = useState(() => getSavedCoordinates() || { latitude: 13.0827, longitude: 80.2707 }); // Customer location
     const [actualDistance, setActualDistance] = useState(3.2);
+
+    // Sync coordinates when GPS location is updated
+    useEffect(() => {
+        const handleLocUpdate = (e) => {
+            if (e.detail?.coordinates) {
+                setCustomerCoords(e.detail.coordinates);
+            } else {
+                const saved = getSavedCoordinates();
+                if (saved) setCustomerCoords(saved);
+            }
+        };
+        window.addEventListener(EVENT_LOCATION_UPDATED, handleLocUpdate);
+        return () => window.removeEventListener(EVENT_LOCATION_UPDATED, handleLocUpdate);
+    }, []);
 
     // Evaluate delivery availability & fee upfront (even before Proceed or clicking Home Delivery)
     useEffect(() => {
@@ -191,10 +206,14 @@ const Checkout = () => {
     const paymentOptionsList = [
         { id: 'Card', label: 'Card', enabled: pmRaw.card !== false || pmRaw.onlineGateway !== false },
         { id: 'UPI', label: 'UPI', enabled: pmRaw.upi !== false || pmRaw.onlineGateway !== false },
-        { id: 'Cash on Delivery', label: 'Cash on Delivery', enabled: pmRaw.cash !== false }
+        { id: 'Cash on Delivery', label: 'Cash on Delivery', enabled: pmRaw.cash !== false && orderType !== 'Self-Pickup' }
     ];
-    const enabledPaymentOptions = paymentOptionsList.filter(p => p.enabled);
-    const unavailablePaymentOptions = paymentOptionsList.filter(p => !p.enabled);
+    // For Self-Pickup orders, Cash on Delivery is strictly removed
+    const filteredPaymentList = orderType === 'Self-Pickup' 
+        ? paymentOptionsList.filter(p => p.id !== 'Cash on Delivery')
+        : paymentOptionsList;
+    const enabledPaymentOptions = filteredPaymentList.filter(p => p.enabled);
+    const unavailablePaymentOptions = filteredPaymentList.filter(p => !p.enabled);
 
     // Keep selected orderType & paymentMethod synchronized with live restaurant availability
     useEffect(() => {
@@ -205,11 +224,19 @@ const Checkout = () => {
         }
     }, [orderType, isSelfPickupAvailable, isHomeDeliveryAvailable]);
 
+    // Ensure Self-Pickup never has Cash on Delivery selected
+    useEffect(() => {
+        if (orderType === 'Self-Pickup' && paymentMethod === 'Cash on Delivery') {
+            const nextOption = enabledPaymentOptions.find(p => p.id !== 'Cash on Delivery') || { id: 'UPI' };
+            setPaymentMethod(nextOption.id);
+        }
+    }, [orderType, paymentMethod, enabledPaymentOptions]);
+
     useEffect(() => {
         if (enabledPaymentOptions.length > 0 && !enabledPaymentOptions.some(p => p.id === paymentMethod)) {
             setPaymentMethod(enabledPaymentOptions[0].id);
         }
-    }, [pmRaw.card, pmRaw.upi, pmRaw.cash, pmRaw.onlineGateway, paymentMethod]);
+    }, [pmRaw.card, pmRaw.upi, pmRaw.cash, pmRaw.onlineGateway, paymentMethod, orderType]);
 
     useEffect(() => {
         if (restaurantId && !selectedRestaurantId) {
@@ -561,7 +588,7 @@ const Checkout = () => {
                         <div className="pt-4 border-t border-gray-100 space-y-2.5 text-left">
                             <span className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Accepted Payment Methods</span>
                             <div className="flex flex-wrap gap-2">
-                                {paymentOptionsList.map((pm) => (
+                                {filteredPaymentList.map((pm) => (
                                     <span
                                         key={pm.id}
                                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border ${

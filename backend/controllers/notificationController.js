@@ -443,3 +443,51 @@ export const markAllAsRead = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+// @desc    Delete a single notification
+// @route   DELETE /api/notifications/:id
+// @access  Private
+export const deleteNotification = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!id || id.startsWith('dummy-')) {
+            return res.json({ message: 'Notification removed successfully', id });
+        }
+        const query = {
+            _id: id,
+            $or: [
+                { userId: req.user._id },
+                { restaurantId: req.user.restaurantId }
+            ]
+        };
+        let notification = await Notification.findOne(query);
+        if (!notification && req.user.role === 'SuperAdmin') {
+            notification = await Notification.findById(id);
+        }
+        if (notification) {
+            await Notification.findByIdAndDelete(notification._id);
+            return res.json({ message: 'Notification deleted successfully', id });
+        }
+        await Notification.findByIdAndDelete(id);
+        res.json({ message: 'Notification deleted successfully', id });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+// @desc    Clear all notifications for the current user/restaurant
+// @route   DELETE /api/notifications/clear-all
+// @access  Private
+export const clearAllNotifications = async (req, res) => {
+    try {
+        const conditions = [];
+        if (req.user._id) conditions.push({ userId: req.user._id });
+        if (req.user.restaurantId) conditions.push({ restaurantId: req.user.restaurantId });
+
+        const filter = conditions.length > 0 ? { $or: conditions } : {};
+        await Notification.deleteMany(filter);
+        res.json({ message: 'All notifications cleared successfully' });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};

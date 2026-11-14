@@ -130546,13 +130546,27 @@ var addOrderItems = async (req, res) => {
       }
     }
     try {
+      const isHighValue = Number(totalPrice) >= 1e3 || orderType === "Party";
+      const targetRoles = ["Chef", "Kitchen", "Waiter", "Cashier"];
+      if (isHighValue) {
+        targetRoles.push("RestaurantAdmin", "Admin");
+      }
       const Notification2 = (await Promise.resolve().then(() => (init_Notification(), Notification_exports))).default;
       await Notification2.create({
         title: `\u{1F514} New Order #${createdOrder._id.toString().substring(createdOrder._id.toString().length - 5).toUpperCase()}`,
         desc: `${determinedServiceType} ${tableNumber ? `(Table ${tableNumber})` : ""}${customerName ? ` \u2022 Guest: ${customerName}` : ""} - ${orderItems.map((i) => `${i.qty}x ${i.name}`).join(", ")} (\u20B9${totalPrice})`,
         type: "Order",
         restaurantId: finalRestaurantId,
-        targetRole: ["Chef", "Kitchen", "Waiter", "Cashier", "RestaurantAdmin", "Admin"],
+        targetRole: targetRoles,
+        metadata: {
+          orderId: createdOrder._id,
+          orderType: createdOrder.orderType,
+          tableNumber: createdOrder.tableNumber,
+          customerName: createdOrder.customerName,
+          totalPrice: createdOrder.totalPrice,
+          items: orderItems,
+          isImportant: isHighValue
+        },
         read: false
       });
     } catch (notifErr) {
@@ -130891,6 +130905,26 @@ var updateOrderStatus = async (req, res) => {
           console.error("Failed to create preparing notification", err);
         }
       }
+      if (newStatus === "Cancelled") {
+        try {
+          const Notification2 = (await Promise.resolve().then(() => (init_Notification(), Notification_exports))).default;
+          const notif = await Notification2.create({
+            title: `\u26A0\uFE0F Order #${ticketNum} Cancelled`,
+            desc: `Order #${ticketNum} ${order.tableNumber ? `(Table ${order.tableNumber})` : ""} has been cancelled.`,
+            type: "Alert",
+            restaurantId: order.restaurantId,
+            targetRole: ["Chef", "Kitchen", "Waiter", "Cashier", "RestaurantAdmin", "Admin"],
+            metadata: {
+              orderId: order._id,
+              isImportant: true,
+              status: "Cancelled"
+            },
+            read: false
+          });
+          broadcastToRestaurant(order.restaurantId, "new_notification", notif);
+        } catch (err) {
+        }
+      }
       if (newStatus === "Ready" || newStatus === "Ready for Pickup" || newStatus === "Ready for Dispatch") {
         try {
           const Notification2 = (await Promise.resolve().then(() => (init_Notification(), Notification_exports))).default;
@@ -130899,7 +130933,12 @@ var updateOrderStatus = async (req, res) => {
             desc: `Order #${ticketNum} ${order.tableNumber ? `(Table ${order.tableNumber})` : ""} is plated and ready for pickup/service.`,
             type: "Order",
             restaurantId: order.restaurantId,
-            targetRole: ["Waiter", "Cashier", "RestaurantAdmin", "Admin"],
+            targetRole: ["Waiter", "Cashier"],
+            metadata: {
+              orderId: order._id,
+              orderType: order.orderType,
+              tableNumber: order.tableNumber
+            },
             read: false
           });
           broadcastToRestaurant(order.restaurantId, "new_notification", notif);
@@ -130914,6 +130953,10 @@ var updateOrderStatus = async (req, res) => {
             type: "Order",
             restaurantId: order.restaurantId,
             userId: order.user,
+            targetRole: ["Customer"],
+            metadata: {
+              orderId: order._id
+            },
             read: false
           });
         } catch (err) {
@@ -138185,18 +138228,59 @@ var markAllAsRead = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+var deleteNotification = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id || id.startsWith("dummy-")) {
+      return res.json({ message: "Notification removed successfully", id });
+    }
+    const query = {
+      _id: id,
+      $or: [
+        { userId: req.user._id },
+        { restaurantId: req.user.restaurantId }
+      ]
+    };
+    let notification = await Notification_default.findOne(query);
+    if (!notification && req.user.role === "SuperAdmin") {
+      notification = await Notification_default.findById(id);
+    }
+    if (notification) {
+      await Notification_default.findByIdAndDelete(notification._id);
+      return res.json({ message: "Notification deleted successfully", id });
+    }
+    await Notification_default.findByIdAndDelete(id);
+    res.json({ message: "Notification deleted successfully", id });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+var clearAllNotifications = async (req, res) => {
+  try {
+    const conditions = [];
+    if (req.user._id) conditions.push({ userId: req.user._id });
+    if (req.user.restaurantId) conditions.push({ restaurantId: req.user.restaurantId });
+    const filter = conditions.length > 0 ? { $or: conditions } : {};
+    await Notification_default.deleteMany(filter);
+    res.json({ message: "All notifications cleared successfully" });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
 
 // routes/notificationRoutes.js
 var router20 = import_express20.default.Router();
 router20.use(protect);
-router20.use(authorize("RestaurantAdmin", "BranchManager", "Chef", "Staff"));
+router20.use(authorize("RestaurantAdmin", "Admin", "BranchManager", "Chef", "Staff", "Waiter", "Cashier", "SuperAdmin"));
 router20.use(checkSubscription);
 router20.route("/").get(getNotifications);
-router20.route("/broadcast").post(authorize("RestaurantAdmin", "BranchManager"), createBroadcast);
+router20.route("/broadcast").post(authorize("RestaurantAdmin", "Admin", "BranchManager"), createBroadcast);
 router20.route("/restock").post(requestRestock);
-router20.route("/:id/order-restock").post(authorize("RestaurantAdmin", "BranchManager"), orderRestockFromNotification);
+router20.route("/:id/order-restock").post(authorize("RestaurantAdmin", "Admin", "BranchManager"), orderRestockFromNotification);
 router20.route("/read-all").put(markAllAsRead);
+router20.route("/clear-all").delete(clearAllNotifications);
 router20.route("/:id/read").put(markAsRead);
+router20.route("/:id").delete(deleteNotification);
 var notificationRoutes_default = router20;
 
 // routes/planRoutes.js

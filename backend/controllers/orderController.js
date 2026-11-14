@@ -330,15 +330,30 @@ export const addOrderItems = async (req, res) => {
             }
         }
 
-        // Create a notification for kitchen & staff
+        // Create a notification for kitchen & staff (only important/high-value orders notify Admin)
         try {
+            const isHighValue = Number(totalPrice) >= 1000 || orderType === 'Party';
+            const targetRoles = ['Chef', 'Kitchen', 'Waiter', 'Cashier'];
+            if (isHighValue) {
+                targetRoles.push('RestaurantAdmin', 'Admin');
+            }
+
             const Notification = (await import('../models/Notification.js')).default;
             await Notification.create({
                 title: `🔔 New Order #${createdOrder._id.toString().substring(createdOrder._id.toString().length - 5).toUpperCase()}`,
                 desc: `${determinedServiceType} ${tableNumber ? `(Table ${tableNumber})` : ''}${customerName ? ` • Guest: ${customerName}` : ''} - ${orderItems.map(i => `${i.qty}x ${i.name}`).join(', ')} (₹${totalPrice})`,
                 type: 'Order',
                 restaurantId: finalRestaurantId,
-                targetRole: ['Chef', 'Kitchen', 'Waiter', 'Cashier', 'RestaurantAdmin', 'Admin'],
+                targetRole: targetRoles,
+                metadata: {
+                    orderId: createdOrder._id,
+                    orderType: createdOrder.orderType,
+                    tableNumber: createdOrder.tableNumber,
+                    customerName: createdOrder.customerName,
+                    totalPrice: createdOrder.totalPrice,
+                    items: orderItems,
+                    isImportant: isHighValue
+                },
                 read: false
             });
         } catch (notifErr) {
@@ -775,6 +790,26 @@ export const updateOrderStatus = async (req, res) => {
                 }
             }
 
+            if (newStatus === 'Cancelled') {
+                try {
+                    const Notification = (await import('../models/Notification.js')).default;
+                    const notif = await Notification.create({
+                        title: `⚠️ Order #${ticketNum} Cancelled`,
+                        desc: `Order #${ticketNum} ${order.tableNumber ? `(Table ${order.tableNumber})` : ''} has been cancelled.`,
+                        type: 'Alert',
+                        restaurantId: order.restaurantId,
+                        targetRole: ['Chef', 'Kitchen', 'Waiter', 'Cashier', 'RestaurantAdmin', 'Admin'],
+                        metadata: {
+                            orderId: order._id,
+                            isImportant: true,
+                            status: 'Cancelled'
+                        },
+                        read: false
+                    });
+                    broadcastToRestaurant(order.restaurantId, 'new_notification', notif);
+                } catch (err) {}
+            }
+
             if (newStatus === 'Ready' || newStatus === 'Ready for Pickup' || newStatus === 'Ready for Dispatch') {
                 // Waiter & Cashier notification
                 try {
@@ -784,7 +819,12 @@ export const updateOrderStatus = async (req, res) => {
                         desc: `Order #${ticketNum} ${order.tableNumber ? `(Table ${order.tableNumber})` : ''} is plated and ready for pickup/service.`,
                         type: 'Order',
                         restaurantId: order.restaurantId,
-                        targetRole: ['Waiter', 'Cashier', 'RestaurantAdmin', 'Admin'],
+                        targetRole: ['Waiter', 'Cashier'],
+                        metadata: {
+                            orderId: order._id,
+                            orderType: order.orderType,
+                            tableNumber: order.tableNumber
+                        },
                         read: false
                     });
                     broadcastToRestaurant(order.restaurantId, 'new_notification', notif);
@@ -801,6 +841,10 @@ export const updateOrderStatus = async (req, res) => {
                         type: 'Order',
                         restaurantId: order.restaurantId,
                         userId: order.user,
+                        targetRole: ['Customer'],
+                        metadata: {
+                            orderId: order._id
+                        },
                         read: false
                     });
                 } catch (err) {
