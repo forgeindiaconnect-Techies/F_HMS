@@ -189,38 +189,38 @@ const DashboardHome = () => {
                         QR Dine-In Ordering Ops
                     </h3>
                     
-                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 sm:gap-4">
-                        <div className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center">
-                            <p className="text-[10px] sm:text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Active Tables</p>
-                            <p className="text-xl sm:text-2xl font-black text-gray-900 dark:text-slate-100 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.activeTables}</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 sm:gap-3.5">
+                        <div className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 p-3 rounded-2xl flex flex-col justify-between items-center min-h-[96px] text-center">
+                            <p className="text-[10px] sm:text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider h-7 flex items-center justify-center">Active Tables</p>
+                            <p className="flex-1 flex items-center justify-center text-2xl font-black text-gray-900 dark:text-slate-100" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.activeTables}</p>
                         </div>
-                        <div className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center">
-                            <p className="text-[10px] sm:text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Current Orders</p>
-                            <p className="text-xl sm:text-2xl font-black text-gray-900 dark:text-slate-100 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.currentOrders}</p>
+                        <div className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 p-3 rounded-2xl flex flex-col justify-between items-center min-h-[96px] text-center">
+                            <p className="text-[10px] sm:text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider h-7 flex items-center justify-center">Current Orders</p>
+                            <p className="flex-1 flex items-center justify-center text-2xl font-black text-gray-900 dark:text-slate-100" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.currentOrders}</p>
                         </div>
-                        <div className="bg-orange-50/70 dark:bg-orange-950/40 border border-orange-100 dark:border-orange-900/50 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center">
-                            <p className="text-[10px] sm:text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">Pending</p>
-                            <p className="text-xl sm:text-2xl font-black text-orange-700 dark:text-orange-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.pendingOrders}</p>
+                        <div className="bg-orange-50/70 dark:bg-orange-950/40 border border-orange-100 dark:border-orange-900/50 p-3 rounded-2xl flex flex-col justify-between items-center min-h-[96px] text-center">
+                            <p className="text-[10px] sm:text-[11px] font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wider h-7 flex items-center justify-center">Pending</p>
+                            <p className="flex-1 flex items-center justify-center text-2xl font-black text-orange-700 dark:text-orange-300" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.pendingOrders}</p>
                         </div>
-                        <div className="bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center">
-                            <p className="text-[10px] sm:text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Preparing</p>
-                            <p className="text-xl sm:text-2xl font-black text-blue-700 dark:text-blue-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.preparingOrders}</p>
+                        <div className="bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 p-3 rounded-2xl flex flex-col justify-between items-center min-h-[96px] text-center">
+                            <p className="text-[10px] sm:text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider h-7 flex items-center justify-center">Preparing</p>
+                            <p className="flex-1 flex items-center justify-center text-2xl font-black text-blue-700 dark:text-blue-300" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.preparingOrders}</p>
                         </div>
-                        <div className="bg-green-50/70 dark:bg-green-950/40 border border-green-100 dark:border-green-900/50 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center">
-                            <p className="text-[10px] sm:text-xs font-semibold text-green-600 dark:text-green-400 uppercase tracking-wider">Ready</p>
-                            <p className="text-xl sm:text-2xl font-black text-green-700 dark:text-green-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.readyOrders}</p>
+                        <div className="bg-green-50/70 dark:bg-green-950/40 border border-green-100 dark:border-green-900/50 p-3 rounded-2xl flex flex-col justify-between items-center min-h-[96px] text-center">
+                            <p className="text-[10px] sm:text-[11px] font-bold text-green-600 dark:text-green-400 uppercase tracking-wider h-7 flex items-center justify-center">Ready</p>
+                            <p className="flex-1 flex items-center justify-center text-2xl font-black text-green-700 dark:text-green-300" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.readyOrders}</p>
                         </div>
-                        <div className="bg-purple-50/70 dark:bg-purple-950/40 border border-purple-100 dark:border-purple-900/50 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center">
-                            <p className="text-[10px] sm:text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">Served</p>
-                            <p className="text-xl sm:text-2xl font-black text-purple-700 dark:text-purple-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.servedOrders}</p>
+                        <div className="bg-purple-50/70 dark:bg-purple-950/40 border border-purple-100 dark:border-purple-900/50 p-3 rounded-2xl flex flex-col justify-between items-center min-h-[96px] text-center">
+                            <p className="text-[10px] sm:text-[11px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider h-7 flex items-center justify-center">Served</p>
+                            <p className="flex-1 flex items-center justify-center text-2xl font-black text-purple-700 dark:text-purple-300" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.servedOrders}</p>
                         </div>
-                        <div className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center">
-                            <p className="text-[10px] sm:text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Completed</p>
-                            <p className="text-xl sm:text-2xl font-black text-gray-900 dark:text-slate-100 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.completedOrders}</p>
+                        <div className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 p-3 rounded-2xl flex flex-col justify-between items-center min-h-[96px] text-center">
+                            <p className="text-[10px] sm:text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider h-7 flex items-center justify-center">Completed</p>
+                            <p className="flex-1 flex items-center justify-center text-2xl font-black text-gray-900 dark:text-slate-100" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.completedOrders}</p>
                         </div>
-                        <div className="bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center">
-                            <p className="text-[10px] sm:text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Avg Prep Time</p>
-                            <p className="text-base sm:text-lg font-black text-emerald-800 dark:text-emerald-300 mt-1" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.avgPrepTime} min</p>
+                        <div className="bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 p-3 rounded-2xl flex flex-col justify-between items-center min-h-[96px] text-center">
+                            <p className="text-[10px] sm:text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider h-7 flex items-center justify-center">Avg Prep Time</p>
+                            <p className="flex-1 flex items-center justify-center text-lg font-black text-emerald-800 dark:text-emerald-300" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.avgPrepTime} <span className="text-xs font-semibold">min</span></p>
                         </div>
                     </div>
                 </div>

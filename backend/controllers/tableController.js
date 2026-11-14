@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Table from '../models/Table.js';
 import Order from '../models/Order.js';
+import { broadcastToRestaurant } from '../config/websocket.js';
 
 // @desc    Get all tables for a branch
 // @route   GET /api/tables
@@ -89,8 +90,22 @@ export const deleteTable = async (req, res) => {
             if (table.restaurantId.toString() !== req.user.restaurantId.toString()) {
                 return res.status(403).json({ message: 'Not authorized to delete this table' });
             }
+            const deletedTableNumber = table.tableNumber;
+            const restaurantId = table.restaurantId;
             await table.deleteOne();
-            res.json({ message: 'Table removed successfully' });
+
+            // Broadcast deletion event to all connected dashboards (Waiter, Cashier, Manager)
+            try {
+                broadcastToRestaurant(restaurantId, {
+                    type: 'TABLE_DELETED',
+                    tableId: req.params.id,
+                    tableNumber: deletedTableNumber
+                });
+            } catch (wsErr) {
+                console.warn('Could not broadcast table deletion', wsErr);
+            }
+
+            res.json({ message: 'Table removed successfully', tableId: req.params.id, tableNumber: deletedTableNumber });
         } else {
             res.status(404).json({ message: 'Table not found' });
         }

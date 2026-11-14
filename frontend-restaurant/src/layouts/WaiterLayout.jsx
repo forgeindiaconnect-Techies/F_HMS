@@ -28,20 +28,20 @@ const WaiterLayout = () => {
             <SubscriptionBanner />
             <div className="flex flex-1 overflow-hidden bg-gray-50">
                 <WaiterSidebar />
-            
-            <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
-                <WaiterTopbar />
-                
-                <main className="flex-1 overflow-x-hidden overflow-y-auto p-2.5 sm:p-4 md:p-6 custom-scrollbar">
-                    {isFrozen ? (
-                        <SubscriptionFreezeOverlay onUnfrozen={() => fetchRestaurant()} />
-                    ) : isUnverified ? (
-                        <VerificationBlockedOverlay />
-                    ) : (
-                        <Outlet />
-                    )}
-                </main>
-            </div>
+
+                <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
+                    <WaiterTopbar />
+
+                    <main className="flex-1 overflow-x-hidden overflow-y-auto p-2.5 sm:p-4 md:p-6 custom-scrollbar">
+                        {isFrozen ? (
+                            <SubscriptionFreezeOverlay onUnfrozen={() => fetchRestaurant()} />
+                        ) : isUnverified ? (
+                            <VerificationBlockedOverlay />
+                        ) : (
+                            <Outlet />
+                        )}
+                    </main>
+                </div>
             </div>
         </div>
     );

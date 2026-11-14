@@ -16,18 +16,22 @@ const WaiterPerformance = () => {
         try {
             setLoading(true);
             const res = await api.get('/orders');
-            setOrders(res.data || []);
+            const orderList = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.orders) ? res.data.orders : []);
+            setOrders(orderList);
 
             if (tipsEnabled) {
                 try {
                     const tipRes = await api.get('/tips/waiter-mine');
-                    setMyTips(tipRes.data || []);
+                    const tipList = Array.isArray(tipRes.data?.records) ? tipRes.data.records : (Array.isArray(tipRes.data) ? tipRes.data : []);
+                    setMyTips(tipList);
                 } catch (tipErr) {
                     console.warn('Could not load waiter tips', tipErr);
+                    setMyTips([]);
                 }
             }
         } catch (err) {
             console.error('Failed to fetch performance data', err);
+            setOrders([]);
         } finally {
             setLoading(false);
         }
@@ -49,8 +53,11 @@ const WaiterPerformance = () => {
         return new Date(now.getFullYear(), now.getMonth(), 1);
     })();
 
-    const periodOrders = orders.filter(o => new Date(o.createdAt) >= periodStart);
-    const periodTips = myTips.filter(t => new Date(t.createdAt) >= periodStart);
+    const safeOrders = Array.isArray(orders) ? orders : [];
+    const safeTips = Array.isArray(myTips) ? myTips : [];
+
+    const periodOrders = safeOrders.filter(o => o && new Date(o.createdAt) >= periodStart);
+    const periodTips = safeTips.filter(t => t && new Date(t.createdAt || t.date) >= periodStart);
 
     const servedOrders = periodOrders.filter(o => ['Served', 'Completed', 'Delivered', 'Picked Up'].includes(o.status));
     const totalTips = periodTips.reduce((sum, t) => sum + (t.amount || 0), 0);

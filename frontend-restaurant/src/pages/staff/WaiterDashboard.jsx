@@ -4,7 +4,7 @@ import {
     Coffee, CheckCircle2, Clock, Utensils, AlertTriangle,
     Plus, Minus, X, Send, Receipt, Users, MessageSquare, Bell, Check, Star, RefreshCw,
     Search, Flame, ShieldAlert, Sparkles, UserCheck, DollarSign, ArrowRightLeft,
-    HelpCircle, ChevronRight, Award, Layers, TrendingUp, CheckSquare, HeartPulse, Filter, Settings, Printer
+    HelpCircle, ChevronRight, Award, Layers, TrendingUp, CheckSquare, HeartPulse, Filter, Settings, Printer, Play
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getApiUrl } from '../../utils/axiosInstance';
@@ -48,6 +48,49 @@ const WaiterDashboard = () => {
     const [managerModalOpen, setManagerModalOpen] = useState(false);
     const [managerReason, setManagerReason] = useState('Table Assistance Needed');
     const [printModalKOT, setPrintModalKOT] = useState(null);
+    const [attendance, setAttendance] = useState(null);
+    const [todayTips, setTodayTips] = useState(0);
+    const [waiterRating, setWaiterRating] = useState('5.0');
+    const [isClockedIn, setIsClockedIn] = useState(() => {
+        try {
+            const userName = user?.name || 'Staff Member';
+            const userStorageKey = `staff_shift_clock_${userName.replace(/\s+/g, '_')}`;
+            const saved = localStorage.getItem(userStorageKey);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed.status === 'ClockedIn' || parsed.status === 'OnBreak') {
+                    return true;
+                }
+            }
+        } catch (_) {}
+        return false;
+    });
+
+    const handleClockInNow = async () => {
+        try {
+            await api.post('/staff/attendance', { status: 'Present' }).catch(() => {});
+            setIsClockedIn(true);
+            const userName = user?.name || 'Floor Staff';
+            const userStorageKey = `staff_shift_clock_${userName.replace(/\s+/g, '_')}`;
+            const now = new Date().toISOString();
+            localStorage.setItem(userStorageKey, JSON.stringify({
+                status: 'ClockedIn',
+                clockInTime: now,
+                breakStartTime: null,
+                totalBreakSeconds: 0,
+                totalShiftSecondsToday: 0,
+                lastClockInTime: now,
+                lastClockOutTime: null
+            }));
+            toast.success('Successfully clocked in! Shift is active.');
+            fetchData();
+        } catch (err) {
+            setIsClockedIn(true);
+            toast.success('Shift clock-in recorded! Shift is active.');
+            fetchData();
+        }
+    };
+
     const audioCtxRef = useRef(null);
 
     const playWaiterChime = (startFreq, endFreq, duration = 0.35, wave = 'sine') => {
@@ -118,15 +161,40 @@ const WaiterDashboard = () => {
     // Fetch live operational data
     const fetchData = async () => {
         try {
-            const [ordersRes, tablesRes, requestsRes] = await Promise.all([
-                api.get('/orders'),
+            const [ordersRes, tablesRes, requestsRes, attendanceRes, tipsRes] = await Promise.all([
+                api.get('/orders').catch(() => ({ data: [] })),
                 api.get('/tables').catch(() => ({ data: [] })),
-                api.get('/service-requests').catch(() => ({ data: [] }))
+                api.get('/service-requests').catch(() => ({ data: [] })),
+                api.get('/staff/my-attendance-today').catch(() => ({ data: null })),
+                api.get('/tips/waiter-mine').catch(() => ({ data: null }))
             ]);
-            setAllOrders(ordersRes.data);
-            setActiveOrders(ordersRes.data.filter(o => !['Delivered', 'Completed'].includes(o.status)));
-            setDbTables(tablesRes.data);
-            setServiceRequests(requestsRes.data);
+            const ords = Array.isArray(ordersRes.data) ? ordersRes.data : [];
+            setAllOrders(ords);
+            setActiveOrders(ords.filter(o => !['Delivered', 'Completed'].includes(o.status)));
+            setDbTables(Array.isArray(tablesRes.data) ? tablesRes.data : []);
+            setServiceRequests(Array.isArray(requestsRes.data) ? requestsRes.data : []);
+
+            if (attendanceRes?.data) {
+                setAttendance(attendanceRes.data);
+                if (attendanceRes.data.status === 'Present' && attendanceRes.data.checkIn && !attendanceRes.data.checkOut) {
+                    setIsClockedIn(true);
+                } else if (attendanceRes.data.checkOut || attendanceRes.data.status === 'Not Clocked In') {
+                    setIsClockedIn(false);
+                }
+            }
+
+            if (tipsRes?.data) {
+                setTodayTips(tipsRes.data.todayTips || 0);
+            }
+
+            // Real waiter rating calculation from actual orders
+            const ratedOrders = ords.filter(o => o.rating && Number(o.rating) > 0);
+            if (ratedOrders.length > 0) {
+                const avgR = (ratedOrders.reduce((sum, o) => sum + Number(o.rating), 0) / ratedOrders.length).toFixed(1);
+                setWaiterRating(`${avgR} / 5.0`);
+            } else {
+                setWaiterRating('5.0 / 5.0');
+            }
 
             // Helper function for identifying self-pickup / takeout orders
             const isSelfOrder = (o) => {
@@ -137,7 +205,7 @@ const WaiterDashboard = () => {
 
             // Generate Priority Actions dynamically from Ready orders and service requests
             const dynamicActions = [];
-            ordersRes.data.forEach(o => {
+            ords.forEach(o => {
                 const hasTable = o.tableNumber && o.tableNumber !== 'Any' && o.tableNumber !== 'Takeout';
                 const tableText = hasTable ? (o.tableNumber.startsWith('Table') ? o.tableNumber : `Table ${o.tableNumber}`) : null;
                 const isReady = ['Ready', 'Ready for Pickup'].includes(o.status);
@@ -233,10 +301,30 @@ const WaiterDashboard = () => {
                     if (msg.data.status === 'Completed') {
                         setServiceRequests(prev => prev.filter(r => r._id !== msg.data._id));
                     }
+                } else if (msg.type === 'TABLE_DELETED' || msg.data?.type === 'TABLE_DELETED') {
+                    const tableId = msg.tableId || msg.data?.tableId;
+                    const tableNum = msg.tableNumber || msg.data?.tableNumber;
+                    setDbTables(prev => prev.filter(t => t._id !== tableId && t.tableNumber !== tableNum));
+                    try {
+                        sessionStorage.removeItem('restosys_tables_cache');
+                        localStorage.removeItem('restosys_tables_cache');
+                    } catch (_) {}
                 }
             }
         });
     }, [api, user]);
+
+    // Handle cross-tab table deletion event
+    useEffect(() => {
+        const handleTableDeleted = (e) => {
+            const deletedId = e.detail;
+            if (deletedId) {
+                setDbTables(prev => prev.filter(t => t._id !== deletedId));
+            }
+        };
+        window.addEventListener('table-deleted', handleTableDeleted);
+        return () => window.removeEventListener('table-deleted', handleTableDeleted);
+    }, []);
 
     const handleToggleAssignment = (tableId) => {
         let updated;
@@ -642,6 +730,41 @@ const WaiterDashboard = () => {
     const splitBillTotal = splitOrderToSplit?.totalPrice || 0;
     const splitPerGuest = splitParts > 0 ? (splitBillTotal / splitParts).toFixed(2) : 0;
 
+    if (!isClockedIn) {
+        return (
+            <div className="w-full max-w-[1600px] mx-auto min-h-[75vh] flex items-center justify-center p-4 font-sans">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full text-center shadow-xl space-y-5 animate-in zoom-in-95 duration-200">
+                    <div className="w-20 h-20 mx-auto rounded-3xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-amber-600 shadow-inner">
+                        <Clock size={40} className="animate-pulse" />
+                    </div>
+                    <div>
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 px-3 py-1 rounded-full border border-amber-200">
+                            Shift Clock-In Required
+                        </span>
+                        <h2 className="text-2xl font-black text-slate-900 dark:text-white mt-3" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            Welcome, {user?.name || 'Floor Captain'}!
+                        </h2>
+                        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                            To receive table assignments, live kitchen ready alerts, and process customer orders, you must clock in for your shift first.
+                        </p>
+                    </div>
+
+                    <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 flex items-center justify-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                        Terminal: Waitstaff Station · {user?.role || 'Waiter'}
+                    </div>
+
+                    <button
+                        onClick={handleClockInNow}
+                        className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-black rounded-2xl shadow-lg shadow-emerald-600/25 transition-all text-sm flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                        <Play size={18} fill="currentColor" /> Clock In for Shift Now
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="w-full max-w-[1700px] mx-auto text-slate-900 font-sans pb-16 selection:bg-emerald-100 selection:text-emerald-900">
             <div className="space-y-4 sm:space-y-6">
@@ -680,13 +803,13 @@ const WaiterDashboard = () => {
                     <div className="bg-white/80 backdrop-blur-md p-4 rounded-2xl border border-slate-200/70 shadow-xs hover:shadow-md transition-all duration-300 group hover:-translate-y-0.5">
                         <div className="flex items-center justify-between mb-2">
                             <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">Shift Status</span>
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span className={`w-2.5 h-2.5 rounded-full ${isClockedIn ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
                         </div>
-                        <div className="font-extrabold text-sm text-emerald-700 flex items-center gap-1.5">
-                            <UserCheck size={16} className="text-emerald-600" /> On Duty
+                        <div className={`font-extrabold text-sm flex items-center gap-1.5 ${isClockedIn ? 'text-emerald-700' : 'text-slate-500'}`}>
+                            <UserCheck size={16} className={isClockedIn ? 'text-emerald-600' : 'text-slate-400'} /> {isClockedIn ? 'On Duty' : 'Off Duty'}
                         </div>
-                        <div className="mt-2 text-[10px] font-semibold text-slate-400 flex items-center gap-1 border-t border-slate-100 pt-2">
-                            <Clock size={11} /> 5h 32m (In: 09:00 AM)
+                        <div className="mt-2 text-[10px] font-semibold text-slate-400 flex items-center gap-1 border-t border-slate-100 pt-2 truncate">
+                            <Clock size={11} /> {attendance?.checkIn ? `In: ${new Date(attendance.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : (isClockedIn ? 'Shift Active' : 'Not Clocked In')}
                         </div>
                     </div>
 
@@ -702,7 +825,7 @@ const WaiterDashboard = () => {
                             {assignedTablesCount} <span className="text-xs font-bold text-slate-400">Tables</span>
                         </div>
                         <div className="mt-1.5 text-[10px] font-bold text-emerald-600">
-                            Active Floor Zone A
+                            {assignedTablesCount > 0 ? `${assignedTablesCount} active floor stations` : 'No tables assigned'}
                         </div>
                     </div>
 
@@ -747,10 +870,10 @@ const WaiterDashboard = () => {
                             </div>
                         </div>
                         <div className="text-2xl font-black text-slate-900 tracking-tight">
-                            4.9 <span className="text-xs font-extrabold text-slate-400">/ 5.0</span>
+                            {waiterRating} <span className="text-xs font-extrabold text-slate-400">/ 5.0</span>
                         </div>
                         <div className="mt-1.5 text-[10px] font-semibold text-slate-400 flex items-center gap-1">
-                            <Award size={11} className="text-emerald-600" /> Top Server Today
+                            <Award size={11} className="text-emerald-600" /> Customer Service Score
                         </div>
                     </div>
 
@@ -763,10 +886,10 @@ const WaiterDashboard = () => {
                             </div>
                         </div>
                         <div className="text-2xl font-black text-emerald-700 tracking-tight">
-                            ₹1,850
+                            ₹{todayTips}
                         </div>
                         <div className="mt-1.5 text-[10px] font-bold text-emerald-600">
-                            +₹450 last hour
+                            Live shift tip earnings
                         </div>
                     </div>
 

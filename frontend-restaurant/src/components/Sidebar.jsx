@@ -11,6 +11,7 @@ import {
 import clsx from 'clsx';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import ConfirmModal from './ConfirmModal';
 
 // Same config as DashboardLayout — aligned with DB plans when loaded
 const ROUTE_PLAN_REQUIREMENTS = [
@@ -54,10 +55,11 @@ const Sidebar = () => {
     const { logout, restaurant, plans: allPlans = [] } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [logoError, setLogoError] = useState(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
     useEffect(() => {
         setLogoError(false);
-    }, [restaurant?.logo]);
+    }, [restaurant?.logo, restaurant?._id]);
 
     useEffect(() => {
         const handleToggle = () => setIsOpen(prev => !prev);
@@ -71,17 +73,28 @@ const Sidebar = () => {
     const isEnterprise = plan === 'Enterprise' && status === 'Active';
 
     const getLogoUrl = () => {
-        if (!restaurant?.logo) return null;
-        if (restaurant.logo.startsWith('http') || restaurant.logo.startsWith('data:')) {
-            return restaurant.logo;
+        if (restaurant?.logo) {
+            if (restaurant.logo.startsWith('http') || restaurant.logo.startsWith('data:')) {
+                return restaurant.logo;
+            }
+            const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms.onrender.com/api';
+            try {
+                const origin = new URL(apiBase).origin;
+                return `${origin}${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`;
+            } catch (e) {
+                return restaurant.logo;
+            }
         }
-        const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms.onrender.com/api';
-        try {
-            const origin = new URL(apiBase).origin;
-            return `${origin}${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`;
-        } catch (e) {
-            return restaurant.logo;
+        if (restaurant?._id) {
+            const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms.onrender.com/api';
+            try {
+                const origin = new URL(apiBase).origin;
+                return `${origin}/api/restaurants/${restaurant._id}/thumbnail?kind=logo`;
+            } catch (e) {
+                return `/api/restaurants/${restaurant._id}/thumbnail?kind=logo`;
+            }
         }
+        return null;
     };
     const logoSrc = getLogoUrl();
 
@@ -306,7 +319,7 @@ const Sidebar = () => {
 
                 <div className="p-3 border-t border-[#0d3b2b] shrink-0">
                     <button
-                        onClick={logout}
+                        onClick={() => setShowLogoutConfirm(true)}
                         className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl font-medium text-emerald-200/70 hover:bg-red-500/10 hover:text-red-400 transition-all text-sm cursor-pointer"
                     >
                         <LogOut size={17} />
@@ -314,6 +327,20 @@ const Sidebar = () => {
                     </button>
                 </div>
             </aside>
+
+            <ConfirmModal
+                isOpen={showLogoutConfirm}
+                onClose={() => setShowLogoutConfirm(false)}
+                onConfirm={() => {
+                    logout();
+                    toast.success('Successfully signed out');
+                }}
+                title="Sign Out Confirmation"
+                message="Are you sure you want to sign out of your admin dashboard session?"
+                confirmText="Sign Out"
+                cancelText="Stay Logged In"
+                isDestructive={true}
+            />
         </>
     );
 };

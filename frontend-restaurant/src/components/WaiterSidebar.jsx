@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
+import ConfirmModal from './ConfirmModal';
 
 const WaiterSidebar = () => {
     const navigate = useNavigate();
@@ -13,6 +15,7 @@ const WaiterSidebar = () => {
     const { logout, restaurant } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [logoError, setLogoError] = useState(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
     useEffect(() => {
         setLogoError(false);
@@ -180,7 +183,7 @@ const WaiterSidebar = () => {
                     <p className="text-[10px] text-teal-400 font-medium">Service & Order Desk</p>
                 </div>
                 <button 
-                    onClick={handleLogout} 
+                    onClick={() => setShowLogoutConfirm(true)} 
                     className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl font-medium text-teal-200/70 hover:bg-red-500/10 hover:text-red-400 transition-all text-sm cursor-pointer"
                 >
                     <LogOut size={17} />
@@ -188,6 +191,21 @@ const WaiterSidebar = () => {
                 </button>
             </div>
         </aside>
+
+        <ConfirmModal
+            isOpen={showLogoutConfirm}
+            onClose={() => setShowLogoutConfirm(false)}
+            onConfirm={() => {
+                logout();
+                toast.success('Successfully signed out');
+                navigate('/login');
+            }}
+            title="End Shift & Sign Out"
+            message="Are you sure you want to end your shift and sign out of the Waiter Desk?"
+            confirmText="End Shift & Sign Out"
+            cancelText="Stay on Floor"
+            isDestructive={true}
+        />
         </>
     );
 };

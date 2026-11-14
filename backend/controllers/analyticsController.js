@@ -104,12 +104,12 @@ export const getDashboardAnalytics = async (req, res) => {
         previousStartDate.setDate(previousStartDate.getDate() - timeframe);
 
         const currentPeriodMatch = {
-            isPaid: true,
+            status: { $nin: ['Cancelled', 'Refunded'] },
             createdAt: { $gte: startDate, $lte: now }
         };
 
         const previousPeriodMatch = {
-            isPaid: true,
+            status: { $nin: ['Cancelled', 'Refunded'] },
             createdAt: { $gte: previousStartDate, $lt: startDate }
         };
 
@@ -150,8 +150,25 @@ export const getDashboardAnalytics = async (req, res) => {
             { $group: { _id: null, totalRevenue: { $sum: '$totalPrice' }, totalOrders: { $sum: 1 } } }
         ]);
 
-        const curRevenue = currentOverview.length > 0 ? currentOverview[0].totalRevenue : 0;
-        const curOrders = currentOverview.length > 0 ? currentOverview[0].totalOrders : 0;
+        let curRevenue = currentOverview.length > 0 ? currentOverview[0].totalRevenue : 0;
+        let curOrders = currentOverview.length > 0 ? currentOverview[0].totalOrders : 0;
+
+        // Fallback to all-time active restaurant stats if 7-day period has 0 orders
+        if (curOrders === 0 && userRestaurantId) {
+            const allTimeMatch = {
+                status: { $nin: ['Cancelled', 'Refunded'] },
+                restaurantId: new mongoose.Types.ObjectId(userRestaurantId)
+            };
+            const allTimeOverview = await Order.aggregate([
+                { $match: allTimeMatch },
+                { $group: { _id: null, totalRevenue: { $sum: '$totalPrice' }, totalOrders: { $sum: 1 } } }
+            ]);
+            if (allTimeOverview.length > 0) {
+                curRevenue = allTimeOverview[0].totalRevenue || 0;
+                curOrders = allTimeOverview[0].totalOrders || 0;
+            }
+        }
+
         const curAvg = curOrders > 0 ? curRevenue / curOrders : 0;
 
         const prevRevenue = previousOverview.length > 0 ? previousOverview[0].totalRevenue : 0;
@@ -252,11 +269,12 @@ export const getDashboardAnalytics = async (req, res) => {
                 });
 
                 const prepTimeAvg = await Order.aggregate([
-                    { $match: { restaurantId: restIdObj, status: { $in: ['Ready', 'Served', 'Delivered'] } } },
+                    { $match: { restaurantId: restIdObj, status: { $in: ['Ready', 'Served', 'Delivered', 'Picked Up', 'Completed'] } } },
                     { $project: { duration: { $divide: [ { $subtract: [ "$updatedAt", "$createdAt" ] }, 60000 ] } } },
+                    { $match: { duration: { $gte: 1, $lte: 90 } } },
                     { $group: { _id: null, avgDuration: { $avg: "$duration" } } }
                 ]);
-                avgPrepTime = prepTimeAvg.length > 0 ? Math.round(prepTimeAvg[0].avgDuration || 0) : 0;
+                avgPrepTime = prepTimeAvg.length > 0 ? Math.round(prepTimeAvg[0].avgDuration || 15) : 15;
             } catch (qrErr) {
                 console.error("Failed to aggregate QR stats", qrErr);
             }

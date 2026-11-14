@@ -128614,6 +128614,8 @@ var getRestaurantFallbackSvg = (name = "FoodNest", isLogo = false) => {
 };
 var getRestaurantThumbnail = async (req, res) => {
   const wantLogo = req.query.kind === "logo";
+  const wantBanner = req.query.kind === "banner";
+  const imgIndex = req.query.index !== void 0 ? parseInt(req.query.index, 10) : null;
   let restName = "FoodNest";
   try {
     let raw = null;
@@ -128621,13 +128623,22 @@ var getRestaurantThumbnail = async (req, res) => {
       const rest = await Restaurant_default.findById(req.params.id).select("+showcaseImages +bannerImage +image +logo name").lean();
       if (rest) {
         restName = rest.name || "FoodNest";
-        const candidate = wantLogo ? rest.logo && !String(rest.logo).includes(".pdf") ? rest.logo : null : Array.isArray(rest.showcaseImages) && rest.showcaseImages[0] || rest.bannerImage || rest.image || (rest.logo && !String(rest.logo).includes(".pdf") ? rest.logo : null);
+        let candidate = null;
+        if (wantLogo) {
+          candidate = rest.logo && !String(rest.logo).includes(".pdf") ? rest.logo : null;
+        } else if (wantBanner) {
+          candidate = rest.bannerImage || Array.isArray(rest.showcaseImages) && rest.showcaseImages[0] || rest.image;
+        } else if (imgIndex !== null && !isNaN(imgIndex) && Array.isArray(rest.showcaseImages) && rest.showcaseImages[imgIndex]) {
+          candidate = rest.showcaseImages[imgIndex];
+        } else {
+          candidate = Array.isArray(rest.showcaseImages) && rest.showcaseImages[0] || rest.bannerImage || rest.image || (rest.logo && !String(rest.logo).includes(".pdf") ? rest.logo : null);
+        }
         if (candidate && typeof candidate === "string" && !candidate.includes("/thumbnail")) {
           raw = candidate;
         }
         if (!raw) {
           const verif = await RestaurantVerification_default.findOne({ restaurantId: rest._id }).select(wantLogo ? "documents.logo.filePath" : "documents.images.filePath documents.logo.filePath").lean();
-          const verifCandidate = wantLogo ? verif?.documents?.logo?.filePath : verif?.documents?.images?.[0]?.filePath || verif?.documents?.logo?.filePath;
+          const verifCandidate = wantLogo ? verif?.documents?.logo?.filePath : imgIndex !== null && !isNaN(imgIndex) && Array.isArray(verif?.documents?.images) && verif.documents.images[imgIndex]?.filePath ? verif.documents.images[imgIndex].filePath : verif?.documents?.images?.[0]?.filePath || verif?.documents?.logo?.filePath;
           if (verifCandidate && typeof verifCandidate === "string" && !verifCandidate.includes(".pdf") && !verifCandidate.includes("/thumbnail")) {
             raw = verifCandidate;
           }
@@ -128793,7 +128804,7 @@ var getMyRestaurant = async (req, res) => {
     }
     let restaurantId = req.user?.restaurantId;
     if (!restaurantId && req.user?._id) {
-      const ownedRestaurant = await Restaurant_default.findOne({ ownerId: req.user._id }).select("-logo -bannerImage -showcaseImages");
+      const ownedRestaurant = await Restaurant_default.findOne({ ownerId: req.user._id }).select("-bannerImage -showcaseImages");
       if (ownedRestaurant) {
         restaurantId = ownedRestaurant._id;
         req.user.restaurantId = ownedRestaurant._id;
@@ -128803,7 +128814,7 @@ var getMyRestaurant = async (req, res) => {
     if (!restaurantId) {
       return res.json(null);
     }
-    const restaurant = await Restaurant_default.findById(restaurantId).select("-logo -bannerImage -showcaseImages");
+    const restaurant = await Restaurant_default.findById(restaurantId).select("-bannerImage -showcaseImages");
     if (!restaurant) {
       return res.json(null);
     }
@@ -129056,9 +129067,13 @@ var getRestaurantPublicConfig = async (req, res) => {
       return res.status(403).json({ message: "This restaurant is currently unavailable or inactive." });
     }
     const config = restaurant.restaurantConfig || {};
+    let logo = restaurant.logo;
+    if (logo && typeof logo === "string" && logo.length > 5e3) {
+      logo = `/api/restaurants/${restaurant._id}/thumbnail?kind=logo`;
+    }
     res.json({
       restaurantName: restaurant.name,
-      logo: restaurant.logo,
+      logo,
       deliverySettings: restaurant.deliverySettings || { enabled: true },
       qrOrdering: {
         enabled: config.qrOrdering?.enabled ?? true,
@@ -129341,7 +129356,21 @@ var getRestaurantById = async (req, res) => {
     }
     const restObj = restaurant.toObject ? restaurant.toObject() : { ...restaurant };
     if (restObj.logo && typeof restObj.logo === "string" && restObj.logo.length > 5e3) {
-      restObj.logo = `/api/restaurants/${restaurant._id}/thumbnail`;
+      restObj.logo = `/api/restaurants/${restaurant._id}/thumbnail?kind=logo`;
+    }
+    if (Array.isArray(restObj.showcaseImages)) {
+      restObj.showcaseImages = restObj.showcaseImages.map((img, idx) => {
+        if (typeof img === "string" && img.length > 5e3) {
+          return `/api/restaurants/${restaurant._id}/thumbnail?index=${idx}`;
+        }
+        return img;
+      });
+    }
+    if (restObj.bannerImage && typeof restObj.bannerImage === "string" && restObj.bannerImage.length > 5e3) {
+      restObj.bannerImage = `/api/restaurants/${restaurant._id}/thumbnail?kind=banner`;
+    }
+    if (restObj.image && typeof restObj.image === "string" && restObj.image.length > 5e3) {
+      restObj.image = `/api/restaurants/${restaurant._id}/thumbnail`;
     }
     res.json(restObj);
   } catch (error) {
@@ -131951,11 +131980,11 @@ var getDashboardAnalytics = async (req, res) => {
     const previousStartDate = new Date(startDate);
     previousStartDate.setDate(previousStartDate.getDate() - timeframe);
     const currentPeriodMatch = {
-      isPaid: true,
+      status: { $nin: ["Cancelled", "Refunded"] },
       createdAt: { $gte: startDate, $lte: now }
     };
     const previousPeriodMatch = {
-      isPaid: true,
+      status: { $nin: ["Cancelled", "Refunded"] },
       createdAt: { $gte: previousStartDate, $lt: startDate }
     };
     let userRestaurantId = await getUserRestaurantId(req.user, req.query);
@@ -131987,8 +132016,22 @@ var getDashboardAnalytics = async (req, res) => {
       { $match: previousPeriodMatch },
       { $group: { _id: null, totalRevenue: { $sum: "$totalPrice" }, totalOrders: { $sum: 1 } } }
     ]);
-    const curRevenue = currentOverview.length > 0 ? currentOverview[0].totalRevenue : 0;
-    const curOrders = currentOverview.length > 0 ? currentOverview[0].totalOrders : 0;
+    let curRevenue = currentOverview.length > 0 ? currentOverview[0].totalRevenue : 0;
+    let curOrders = currentOverview.length > 0 ? currentOverview[0].totalOrders : 0;
+    if (curOrders === 0 && userRestaurantId) {
+      const allTimeMatch = {
+        status: { $nin: ["Cancelled", "Refunded"] },
+        restaurantId: new import_mongoose24.default.Types.ObjectId(userRestaurantId)
+      };
+      const allTimeOverview = await Order_default.aggregate([
+        { $match: allTimeMatch },
+        { $group: { _id: null, totalRevenue: { $sum: "$totalPrice" }, totalOrders: { $sum: 1 } } }
+      ]);
+      if (allTimeOverview.length > 0) {
+        curRevenue = allTimeOverview[0].totalRevenue || 0;
+        curOrders = allTimeOverview[0].totalOrders || 0;
+      }
+    }
     const curAvg = curOrders > 0 ? curRevenue / curOrders : 0;
     const prevRevenue = previousOverview.length > 0 ? previousOverview[0].totalRevenue : 0;
     const prevOrders = previousOverview.length > 0 ? previousOverview[0].totalOrders : 0;
@@ -132071,11 +132114,12 @@ var getDashboardAnalytics = async (req, res) => {
           isPaid: true
         });
         const prepTimeAvg = await Order_default.aggregate([
-          { $match: { restaurantId: restIdObj, status: { $in: ["Ready", "Served", "Delivered"] } } },
+          { $match: { restaurantId: restIdObj, status: { $in: ["Ready", "Served", "Delivered", "Picked Up", "Completed"] } } },
           { $project: { duration: { $divide: [{ $subtract: ["$updatedAt", "$createdAt"] }, 6e4] } } },
+          { $match: { duration: { $gte: 1, $lte: 90 } } },
           { $group: { _id: null, avgDuration: { $avg: "$duration" } } }
         ]);
-        avgPrepTime = prepTimeAvg.length > 0 ? Math.round(prepTimeAvg[0].avgDuration || 0) : 0;
+        avgPrepTime = prepTimeAvg.length > 0 ? Math.round(prepTimeAvg[0].avgDuration || 15) : 15;
       } catch (qrErr) {
         console.error("Failed to aggregate QR stats", qrErr);
       }
@@ -133832,8 +133876,19 @@ var deleteTable = async (req, res) => {
       if (table.restaurantId.toString() !== req.user.restaurantId.toString()) {
         return res.status(403).json({ message: "Not authorized to delete this table" });
       }
+      const deletedTableNumber = table.tableNumber;
+      const restaurantId = table.restaurantId;
       await table.deleteOne();
-      res.json({ message: "Table removed successfully" });
+      try {
+        broadcastToRestaurant(restaurantId, {
+          type: "TABLE_DELETED",
+          tableId: req.params.id,
+          tableNumber: deletedTableNumber
+        });
+      } catch (wsErr) {
+        console.warn("Could not broadcast table deletion", wsErr);
+      }
+      res.json({ message: "Table removed successfully", tableId: req.params.id, tableNumber: deletedTableNumber });
     } else {
       res.status(404).json({ message: "Table not found" });
     }

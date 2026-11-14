@@ -7,12 +7,15 @@ import {
 import clsx from 'clsx';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
+import ConfirmModal from './ConfirmModal';
 
 const ChefSidebar = () => {
     const navigate = useNavigate();
     const { logout, restaurant } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [logoError, setLogoError] = useState(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
     useEffect(() => {
         setLogoError(false);
@@ -162,7 +165,7 @@ const ChefSidebar = () => {
                     <p className="text-[10px] text-orange-400 font-medium">Head Chef Station</p>
                 </div>
                 <button 
-                    onClick={handleLogout} 
+                    onClick={() => setShowLogoutConfirm(true)} 
                     className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl font-medium text-orange-200/70 hover:bg-red-500/10 hover:text-red-400 transition-all text-sm cursor-pointer"
                 >
                     <LogOut size={17} />
@@ -170,6 +173,21 @@ const ChefSidebar = () => {
                 </button>
             </div>
         </aside>
+
+        <ConfirmModal
+            isOpen={showLogoutConfirm}
+            onClose={() => setShowLogoutConfirm(false)}
+            onConfirm={() => {
+                logout();
+                toast.success('Successfully signed out');
+                navigate('/login');
+            }}
+            title="Exit Kitchen Session"
+            message="Are you sure you want to exit your Kitchen Station session?"
+            confirmText="Exit Kitchen"
+            cancelText="Stay in Kitchen"
+            isDestructive={true}
+        />
         </>
     );
 };

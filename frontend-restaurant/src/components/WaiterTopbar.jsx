@@ -3,12 +3,15 @@ import { useAuth } from '../context/AuthContext';
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { setWaiterSearchQuery } from '../hooks/useWaiterSearch';
+import ConfirmModal from './ConfirmModal';
+import toast from 'react-hot-toast';
 
 const WaiterTopbar = () => {
     const { user, api, logout } = useAuth();
     const [showNotifs, setShowNotifs] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [showProfile, setShowProfile] = useState(false);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [selectedOrderNote, setSelectedOrderNote] = useState(null);
     const [searchTerm, setSearchTerm] = useState(() => {
         try {
@@ -278,8 +281,11 @@ const WaiterTopbar = () => {
                                 <Settings size={16} /> Settings
                             </Link>
                             <button 
-                                onClick={logout}
-                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-600 dark:text-slate-300 hover:bg-red-50 hover:text-red-600 transition-colors border-t border-gray-100 dark:border-slate-800"
+                                onClick={() => {
+                                    setShowProfile(false);
+                                    setShowLogoutConfirm(true);
+                                }}
+                                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-600 dark:text-slate-300 hover:bg-red-50 hover:text-red-600 transition-colors border-t border-gray-100 dark:border-slate-800 cursor-pointer"
                             >
                                 <LogOut size={16} /> Logout
                             </button>
@@ -287,6 +293,20 @@ const WaiterTopbar = () => {
                     )}
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={showLogoutConfirm}
+                onClose={() => setShowLogoutConfirm(false)}
+                onConfirm={() => {
+                    logout();
+                    toast.success('Successfully signed out');
+                }}
+                title="Sign Out Confirmation"
+                message="Are you sure you want to sign out? You will be logged out of your waiter shift session."
+                confirmText="Sign Out"
+                cancelText="Stay Logged In"
+                isDestructive={true}
+            />
         </header>
     );
 };

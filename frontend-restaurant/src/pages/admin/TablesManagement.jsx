@@ -113,6 +113,11 @@ const TablesManagement = () => {
         try {
             await api.delete(`/tables/${tableId}`);
             toast.success('Table deleted successfully');
+            try {
+                sessionStorage.removeItem('restosys_tables_cache');
+                localStorage.removeItem('restosys_tables_cache');
+                window.dispatchEvent(new CustomEvent('table-deleted', { detail: tableId }));
+            } catch (_) {}
             fetchData();
             setConfirmModal(prev => ({ ...prev, isOpen: false }));
         } catch (error) {
@@ -490,28 +495,28 @@ const TablesManagement = () => {
                             <X size={18} />
                         </button>
 
-                        <div className="bg-emerald-50/80 border border-emerald-100 rounded-2xl p-3 sm:p-3.5 mt-0.5 mb-2 w-full">
+                        <div className="bg-emerald-50/90 border border-emerald-100 rounded-2xl p-4 mt-0.5 mb-2.5 w-full flex flex-col items-center justify-center">
                             <h3 className="text-xl font-black text-emerald-800 tracking-wider">TABLE {selectedTable.tableNumber}</h3>
-                            <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">FoodNest QR Ordering</p>
+                            <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-0.5">FoodNest QR Ordering</p>
 
                             {/* Live Production QR Ordering Badge */}
-                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 text-emerald-800 text-[11px] font-bold mt-2 border border-emerald-200/80 shadow-2xs">
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 text-emerald-800 text-[11px] font-bold mt-2.5 mb-2.5 border border-emerald-200/80 shadow-2xs">
                                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                                 Live Scanner
                             </div>
                             
-                            <div className="bg-white p-2.5 rounded-xl border border-emerald-100 mt-2 shadow-xs inline-block">
+                            <div className="bg-white p-3 rounded-2xl border border-emerald-100 shadow-xs flex items-center justify-center mx-auto">
                                 <QRCodeSVG
                                     id={`table-qr-svg-${selectedTable?._id || selectedTable?.tableNumber}`}
                                     value={getQrUrl(selectedTable)}
-                                    size={146}
+                                    size={156}
                                     level="H"
                                     includeMargin={false}
                                 />
                             </div>
                         </div>
 
-                        <p className="text-[11px] font-medium text-gray-500 mb-2 max-w-[270px]">
+                        <p className="text-[11px] font-medium text-gray-500 mb-2.5 max-w-[270px]">
                             Scan with camera or click below to test ordering.
                         </p>
 
@@ -519,15 +524,15 @@ const TablesManagement = () => {
                             href={getQrUrl(selectedTable)} 
                             target="_blank" 
                             rel="noreferrer" 
-                            className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-600/20 mb-2 cursor-pointer"
+                            className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-600/20 mb-2.5 cursor-pointer"
                         >
                             <span>Open Table Menu &amp; Order (Test)</span>
                             <span>↗</span>
                         </a>
 
                         <div className="w-full mb-3 text-left">
-                            <div className="p-2 bg-emerald-50/70 rounded-xl border border-emerald-100 text-xs flex items-center justify-between gap-2">
-                                <span className="text-emerald-800 font-mono text-[10px] truncate max-w-[200px]">
+                            <div className="p-2.5 bg-emerald-50/70 rounded-xl border border-emerald-100 text-xs flex items-center justify-between gap-2">
+                                <span className="text-emerald-800 font-mono text-[10px] sm:text-[11px] truncate flex-1 select-all">
                                     {getQrUrl(selectedTable)}
                                 </span>
                                 <button
@@ -536,7 +541,7 @@ const TablesManagement = () => {
                                         navigator.clipboard.writeText(getQrUrl(selectedTable));
                                         toast.success('Table ordering URL copied to clipboard!');
                                     }}
-                                    className="text-[10px] font-bold text-emerald-700 hover:underline cursor-pointer shrink-0 bg-white px-2 py-0.5 rounded-md border border-emerald-200"
+                                    className="text-[10px] sm:text-[11px] font-bold text-emerald-700 hover:text-emerald-900 cursor-pointer shrink-0 bg-white px-2.5 py-1 rounded-lg border border-emerald-200 shadow-2xs hover:bg-emerald-50 transition-colors"
                                 >
                                     Copy Link
                                 </button>
