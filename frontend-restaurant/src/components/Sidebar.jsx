@@ -136,8 +136,8 @@ const Sidebar = () => {
         {
             title: 'Customer Care',
             items: [
-                { name: 'Admin & Super Admin', path: '/admin/support/tickets', icon: LifeBuoy },
-                { name: 'Admin & Customer', path: '/admin/support', icon: MessageSquare },
+                { name: 'Admin & Customer', path: '/admin/support/customer', icon: MessageSquare },
+                { name: 'Admin & Super Admin', path: '/admin/support/super-admin', icon: LifeBuoy },
             ]
         },
         {
@@ -276,11 +276,15 @@ const Sidebar = () => {
                                         if (item.path === '/admin') {
                                             return location.pathname === '/admin';
                                         }
-                                        if (item.path === '/admin/support') {
-                                            return location.pathname === '/admin/support';
+                                        if (item.path === '/admin/support/customer') {
+                                            return location.pathname === '/admin/support/customer';
                                         }
-                                        if (item.path === '/admin/support/tickets') {
-                                            return location.pathname.startsWith('/admin/support/tickets');
+                                        if (item.path === '/admin/support/super-admin') {
+                                            return location.pathname === '/admin/support/super-admin' ||
+                                                   location.pathname === '/admin/support' ||
+                                                   location.pathname.startsWith('/admin/support/tickets') ||
+                                                   location.pathname.startsWith('/admin/support/knowledge-base') ||
+                                                   location.pathname.startsWith('/admin/support/announcements');
                                         }
                                         return location.pathname === item.path || location.pathname.startsWith(item.path + '/');
                                     };

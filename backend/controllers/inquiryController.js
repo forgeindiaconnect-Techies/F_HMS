@@ -97,7 +97,7 @@ export const getMyCustomerInquiries = async (req, res) => {
 // @access  Private/RestaurantAdmin,Admin,BranchManager,SuperAdmin
 export const updateRestaurantInquiryStatus = async (req, res) => {
     try {
-        const { status } = req.body;
+        const { status, adminReply } = req.body;
         if (!status || !['New', 'In Progress', 'Resolved'].includes(status)) {
             return res.status(400).json({ message: 'Valid status is required (New, In Progress, Resolved)' });
         }
@@ -117,6 +117,10 @@ export const updateRestaurantInquiryStatus = async (req, res) => {
         }
 
         inquiry.status = status;
+        if (adminReply !== undefined) {
+            inquiry.adminReply = adminReply;
+            inquiry.repliedAt = new Date();
+        }
         await inquiry.save();
         res.json(inquiry);
     } catch (error) {

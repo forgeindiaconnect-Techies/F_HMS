@@ -140337,6 +140337,14 @@ var inquirySchema = new import_mongoose51.default.Schema({
     type: String,
     enum: ["New", "In Progress", "Resolved"],
     default: "New"
+  },
+  adminReply: {
+    type: String,
+    default: ""
+  },
+  repliedAt: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true
@@ -140419,7 +140427,7 @@ var getMyCustomerInquiries = async (req, res) => {
 };
 var updateRestaurantInquiryStatus = async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, adminReply } = req.body;
     if (!status || !["New", "In Progress", "Resolved"].includes(status)) {
       return res.status(400).json({ message: "Valid status is required (New, In Progress, Resolved)" });
     }
@@ -140431,6 +140439,10 @@ var updateRestaurantInquiryStatus = async (req, res) => {
       return res.status(403).json({ message: "Not authorized to update this inquiry" });
     }
     inquiry.status = status;
+    if (adminReply !== void 0) {
+      inquiry.adminReply = adminReply;
+      inquiry.repliedAt = /* @__PURE__ */ new Date();
+    }
     await inquiry.save();
     res.json(inquiry);
   } catch (error) {

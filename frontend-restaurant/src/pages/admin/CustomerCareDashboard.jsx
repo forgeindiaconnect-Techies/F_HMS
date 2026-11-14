@@ -16,16 +16,15 @@ const CustomerCareDashboard = () => {
     const [categories, setCategories] = useState([]);
     const [trend, setTrend] = useState([]);
     const [announcements, setAnnouncements] = useState([]);
-    const [customerInquiries, setCustomerInquiries] = useState([]);
-    const [updatingInquiryId, setUpdatingInquiryId] = useState(null);
+    const [platformTickets, setPlatformTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [kbSearch, setKbSearch] = useState('');
 
     useEffect(() => {
         const fetchDashboardData = async () => {
-            const capTimer = setTimeout(() => setLoading(false), 1500);
+            const capTimer = setTimeout(() => setLoading(false), 2000);
             try {
-                const [statsRes, announceRes, inquiriesRes] = await Promise.all([
+                const [statsRes, announceRes, ticketsRes] = await Promise.all([
                     api.get('/support/analytics').catch(err => {
                         console.warn('Analytics fetch warning:', err);
                         return { data: { summary: null, categories: [], trend: [] } };
@@ -34,8 +33,8 @@ const CustomerCareDashboard = () => {
                         console.warn('Announcements fetch warning:', err);
                         return { data: [] };
                     }),
-                    api.get('/inquiries/restaurant').catch(err => {
-                        console.warn('Customer inquiries fetch warning:', err);
+                    api.get('/support/tickets').catch(err => {
+                        console.warn('Platform tickets fetch warning:', err);
                         return { data: [] };
                     })
                 ]);
@@ -50,8 +49,8 @@ const CustomerCareDashboard = () => {
                     setAnnouncements(announceRes.data.slice(0, 3));
                 }
 
-                if (inquiriesRes && Array.isArray(inquiriesRes.data)) {
-                    setCustomerInquiries(inquiriesRes.data);
+                if (ticketsRes && Array.isArray(ticketsRes.data)) {
+                    setPlatformTickets(ticketsRes.data);
                 }
             } catch (error) {
                 console.error('Failed to load support dashboard data:', error);
@@ -64,19 +63,6 @@ const CustomerCareDashboard = () => {
         fetchDashboardData();
     }, [api]);
 
-    const handleUpdateInquiryStatus = async (id, status) => {
-        setUpdatingInquiryId(id);
-        try {
-            const { data } = await api.put(`/inquiries/restaurant/${id}`, { status });
-            setCustomerInquiries(prev => prev.map(item => (item._id === id ? data : item)));
-            toast.success(`Customer ticket marked as ${status}`);
-        } catch (error) {
-            toast.error(error?.response?.data?.message || 'Failed to update ticket status');
-        } finally {
-            setUpdatingInquiryId(null);
-        }
-    };
-
     const handleSearchKb = (e) => {
         e.preventDefault();
         if (kbSearch.trim()) {
@@ -88,7 +74,7 @@ const CustomerCareDashboard = () => {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4 font-sans">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div>
-                <p className="text-sm font-semibold text-gray-500 dark:text-slate-400">Loading your Care Dashboard...</p>
+                <p className="text-sm font-semibold text-gray-500 dark:text-slate-400">Loading Support Dashboard...</p>
             </div>
         );
     }
@@ -113,7 +99,7 @@ const CustomerCareDashboard = () => {
     const statCards = [
         { title: 'Open Tickets', value: summary.totalOpen, icon: LifeBuoy, color: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 border-blue-100 dark:border-blue-900/50' },
         { title: 'In Progress', value: summary.totalInProgress + summary.totalAssigned, icon: Clock, color: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 border-amber-100 dark:border-amber-900/50' },
-        { title: 'Waiting for Customer', value: summary.totalWaiting, icon: MessageSquare, color: 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/50 border-purple-100 dark:border-purple-900/50' },
+        { title: 'Waiting on Support', value: summary.totalWaiting, icon: MessageSquare, color: 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/50 border-purple-100 dark:border-purple-900/50' },
         { title: 'Resolved & Closed', value: summary.totalResolved + summary.totalClosed, icon: CheckCircle, color: 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/50 border-green-100 dark:border-green-900/50' },
         { title: 'Critical Tickets', value: summary.totalCritical, icon: ShieldAlert, color: 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 border-red-100 dark:border-red-900/50 animate-pulse' },
         { title: 'CSAT Rating', value: summary.avgCsat ? `${summary.avgCsat} / 5` : 'N/A', icon: Star, color: 'text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950/50 border-yellow-100 dark:border-yellow-900/50' },
@@ -122,7 +108,32 @@ const CustomerCareDashboard = () => {
     ];
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500 font-sans text-gray-900 dark:text-slate-100">
+        <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500 font-sans text-gray-900 dark:text-slate-100">
+            {/* Top Navigation Switcher: Admin & Customer vs Admin & Super Admin */}
+            <div className="flex items-center gap-2 p-1.5 bg-gray-100 dark:bg-slate-900/80 rounded-2xl w-fit border border-gray-200/80 dark:border-slate-800 shadow-inner">
+                <Link
+                    to="/admin/support/customer"
+                    className="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/60 dark:hover:bg-slate-800/60 transition-all cursor-pointer"
+                >
+                    <MessageSquare size={16} />
+                    <span>Admin & Customer</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold">
+                        Diner Inquiries
+                    </span>
+                </Link>
+
+                <button
+                    type="button"
+                    className="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-md transition-all cursor-default"
+                >
+                    <LifeBuoy size={16} />
+                    <span>Admin & Super Admin</span>
+                    <span className="px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
+                        Platform SLA
+                    </span>
+                </button>
+            </div>
+
             {/* Header section with styling */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-gray-900 via-slate-800 to-gray-900 p-6 md:p-8 rounded-3xl text-white shadow-xl relative overflow-hidden">
                 <div className="absolute right-0 top-0 opacity-10 pointer-events-none transform translate-x-12 -translate-y-8">
@@ -130,11 +141,11 @@ const CustomerCareDashboard = () => {
                 </div>
                 <div className="space-y-2 relative z-10">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/20 text-green-300 border border-green-500/30 text-xs font-bold uppercase tracking-wider">
-                        <Sparkles size={12} /> Enterprise Plan SLA Included
+                        <Sparkles size={12} /> FoodNest Platform SLA Included
                     </div>
-                    <h1 className="text-3xl font-black font-sans leading-tight">24/7 Enterprise Customer Care</h1>
-                    <p className="text-slate-300 max-w-xl text-sm leading-relaxed">
-                        Welcome to your dedicated support portal. Create emergency tickets, track resolutions, browse our complete knowledge center, and check live system updates.
+                    <h1 className="text-2xl sm:text-3xl font-black font-sans leading-tight">FoodNest Platform & Super Admin Helpdesk</h1>
+                    <p className="text-slate-300 max-w-xl text-xs sm:text-sm leading-relaxed">
+                        Welcome to your dedicated platform support hub. Report system issues to the Super Admin team, track tickets, search our knowledge base, and view system releases.
                     </p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0 relative z-10">
@@ -281,68 +292,74 @@ const CustomerCareDashboard = () => {
                 </div>
             </div>
 
-            {/* Customer Tickets & Inquiries (Admin & Customer) */}
+            {/* Platform Support Tickets (Admin & Super Admin) */}
             <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-gray-100 dark:border-slate-800 shadow-sm space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 dark:border-slate-800 pb-4">
                     <div>
-                        <h3 className="font-extrabold text-gray-900 dark:text-white text-lg">Customer Tickets & Inquiries</h3>
-                        <p className="text-xs text-gray-500 dark:text-slate-400">Direct feedback, complaints, and inquiries submitted by customers</p>
+                        <h3 className="font-extrabold text-gray-900 dark:text-white text-lg">My Platform Support Tickets</h3>
+                        <p className="text-xs text-gray-500 dark:text-slate-400">Technical issues, feature requests, and emergency tickets submitted to FoodNest Super Admin</p>
                     </div>
-                    <span className="px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 text-xs font-bold self-start sm:self-center">
-                        {customerInquiries.length} Total
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <Link
+                            to="/admin/support/tickets"
+                            className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-bold flex items-center gap-1"
+                        >
+                            View All ({platformTickets.length}) <ArrowRight size={14} />
+                        </Link>
+                        <Link
+                            to="/admin/support/tickets/create"
+                            className="px-4 py-2 bg-gray-900 hover:bg-black dark:bg-slate-800 dark:hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5"
+                        >
+                            New Ticket <LifeBuoy size={14} />
+                        </Link>
+                    </div>
                 </div>
 
-                {customerInquiries.length === 0 ? (
-                    <div className="text-center py-8 text-gray-400 dark:text-slate-500 text-sm font-medium">
-                        No customer inquiries or tickets submitted yet.
+                {platformTickets.length === 0 ? (
+                    <div className="text-center py-8 text-gray-400 dark:text-slate-500 text-sm font-medium space-y-2">
+                        <p>No active platform support tickets submitted to Super Admin.</p>
+                        <Link 
+                            to="/admin/support/tickets/create" 
+                            className="inline-block text-xs text-green-600 dark:text-green-400 font-bold hover:underline"
+                        >
+                            + Submit a new technical ticket
+                        </Link>
                     </div>
                 ) : (
                     <div className="space-y-3">
-                        {customerInquiries.map((inq) => (
-                            <div key={inq._id} className="p-4 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950/60 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        {platformTickets.slice(0, 5).map((ticket) => (
+                            <div 
+                                key={ticket._id} 
+                                onClick={() => navigate(`/admin/support/tickets/${ticket._id}`)}
+                                className="p-4 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950/60 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-blue-200 dark:hover:border-blue-900 transition-all cursor-pointer"
+                            >
                                 <div className="space-y-1 min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="font-bold text-sm text-gray-900 dark:text-white">{inq.subject}</span>
-                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                                            inq.status === 'Resolved' ? 'bg-emerald-100 text-emerald-700' :
-                                            inq.status === 'In Progress' ? 'bg-amber-100 text-amber-700' :
-                                            'bg-blue-100 text-blue-700'
-                                        }`}>
-                                            {inq.status || 'New'}
+                                        <span className="text-xs font-bold text-gray-400 dark:text-slate-500">
+                                            #{ticket.ticketNumber || ticket._id.substring(ticket._id.length - 6).toUpperCase()}
                                         </span>
-                                        {inq.restaurantName && inq.restaurantName !== 'General' && (
-                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-700">
-                                                {inq.restaurantName}
+                                        <span className="font-bold text-sm text-gray-900 dark:text-white">
+                                            {ticket.subject}
+                                        </span>
+                                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                                            ticket.status === 'Resolved' || ticket.status === 'Closed' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' :
+                                            ticket.status === 'In Progress' ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300' :
+                                            'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+                                        }`}>
+                                            {ticket.status || 'Open'}
+                                        </span>
+                                        {ticket.priority === 'Critical' && (
+                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 text-red-700 animate-pulse">
+                                                Critical
                                             </span>
                                         )}
                                     </div>
-                                    <p className="text-xs text-gray-600 dark:text-slate-300">{inq.message}</p>
-                                    <p className="text-[11px] text-gray-400 dark:text-slate-500">
-                                        From <strong className="text-gray-600 dark:text-slate-300">{inq.name}</strong> ({inq.email}) • {new Date(inq.createdAt).toLocaleString()}
+                                    <p className="text-xs text-gray-500 dark:text-slate-400">
+                                        Category: <strong className="text-gray-700 dark:text-slate-300">{ticket.category || 'General'}</strong> • Created {new Date(ticket.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
                                     </p>
                                 </div>
-                                <div className="flex items-center gap-2 shrink-0">
-                                    {inq.status !== 'In Progress' && inq.status !== 'Resolved' && (
-                                        <button
-                                            type="button"
-                                            disabled={updatingInquiryId === inq._id}
-                                            onClick={() => handleUpdateInquiryStatus(inq._id, 'In Progress')}
-                                            className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
-                                        >
-                                            In Progress
-                                        </button>
-                                    )}
-                                    {inq.status !== 'Resolved' && (
-                                        <button
-                                            type="button"
-                                            disabled={updatingInquiryId === inq._id}
-                                            onClick={() => handleUpdateInquiryStatus(inq._id, 'Resolved')}
-                                            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
-                                        >
-                                            Resolve
-                                        </button>
-                                    )}
+                                <div className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400 shrink-0">
+                                    View Conversation <ArrowRight size={14} />
                                 </div>
                             </div>
                         ))}

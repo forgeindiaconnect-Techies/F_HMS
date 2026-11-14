@@ -37,6 +37,7 @@ import ExpenseSummaryAdmin from './pages/admin/ExpenseSummaryAdmin';
 import ProfitAndLoss from './pages/admin/ProfitAndLoss';
 import DailyEarnings from './pages/admin/DailyEarnings';
 import VerificationManagement from './pages/superadmin/VerificationManagement';
+import AdminCustomerCare from './pages/admin/AdminCustomerCare';
 import CustomerCareDashboard from './pages/admin/CustomerCareDashboard';
 import CreateTicket from './pages/admin/CreateTicket';
 import TicketList from './pages/admin/TicketList';
@@ -288,7 +289,9 @@ function App() {
           <Route path="bi" element={<BusinessIntelligence />} />
 
           {/* Customer Care */}
-          <Route path="support" element={<CustomerCareDashboard />} />
+          <Route path="support" element={<Navigate to="/admin/support/customer" replace />} />
+          <Route path="support/customer" element={<AdminCustomerCare />} />
+          <Route path="support/super-admin" element={<CustomerCareDashboard />} />
           <Route path="support/tickets" element={<TicketList />} />
           <Route path="support/tickets/create" element={<CreateTicket />} />
           <Route path="support/tickets/:id" element={<TicketDetails />} />

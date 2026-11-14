@@ -49,6 +49,14 @@ const inquirySchema = new mongoose.Schema({
         type: String,
         enum: ['New', 'In Progress', 'Resolved'],
         default: 'New'
+    },
+    adminReply: {
+        type: String,
+        default: ''
+    },
+    repliedAt: {
+        type: Date,
+        default: null
     }
 }, {
     timestamps: true
