@@ -11,8 +11,17 @@ const ChefLayout = () => {
     const { user, restaurant, subscriptionState, fetchRestaurant } = useAuth();
     const isFrozen = Boolean(subscriptionState?.isFrozen);
 
-    const isApproved = restaurant?.approvalStatus === 'Approved' || restaurant?.verificationStatus === 'Verified';
-    const isUnverified = user?.role !== 'SuperAdmin' && Boolean(restaurant && !isApproved && (restaurant.approvalStatus === 'Pending' || restaurant.approvalStatus === 'Rejected' || restaurant.verificationStatus === 'Rejected' || restaurant.verificationStatus === 'Re-upload Required'));
+    const isApproved = restaurant?.approvalStatus === 'Approved' && restaurant?.subscription?.status !== 'Pending Approval';
+    const isUnverified = user?.role !== 'SuperAdmin' && Boolean(
+        restaurant && (
+            !isApproved || 
+            restaurant.approvalStatus === 'Pending' || 
+            restaurant.approvalStatus === 'Rejected' || 
+            restaurant.subscription?.status === 'Pending Approval' || 
+            restaurant.verificationStatus === 'Rejected' || 
+            restaurant.verificationStatus === 'Re-upload Required'
+        )
+    );
 
     return (
         <div className="flex flex-col h-screen overflow-hidden font-sans text-slate-900 dark:text-gray-200 bg-gray-50 dark:bg-[#151923]">

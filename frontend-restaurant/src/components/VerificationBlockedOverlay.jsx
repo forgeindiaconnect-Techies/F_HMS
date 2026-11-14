@@ -2,15 +2,57 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { Lock, FileText, AlertTriangle, CheckCircle, RefreshCw, Clock } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const VerificationBlockedOverlay = () => {
-    const { user, restaurant } = useAuth();
+    const { user, restaurant, fetchRestaurant } = useAuth();
+    const [refreshing, setRefreshing] = React.useState(false);
     
-    const status = restaurant?.verificationStatus || 'Pending';
+    const isTrialPending = Boolean(
+        restaurant?.subscription?.trialRequestDate && 
+        !restaurant?.subscription?.trialActive && 
+        (restaurant?.subscription?.status === 'Pending Approval' || restaurant?.approvalStatus === 'Pending')
+    );
+    const isApprovalPending = restaurant?.approvalStatus === 'Pending' || restaurant?.subscription?.status === 'Pending Approval' || isTrialPending;
+    const isApprovalRejected = restaurant?.approvalStatus === 'Rejected';
+
+    const status = isApprovalRejected 
+        ? 'Rejected' 
+        : isApprovalPending 
+            ? (isTrialPending ? 'Trial Pending Approval' : 'Pending SuperAdmin Approval') 
+            : (restaurant?.verificationStatus || 'Pending');
+
     const isAdmin = ['RestaurantAdmin', 'Admin'].includes(user?.role);
+
+    const handleCheckStatus = async () => {
+        setRefreshing(true);
+        try {
+            if (fetchRestaurant) await fetchRestaurant();
+            toast.success('Status checked.');
+        } catch (_) {}
+        setTimeout(() => setRefreshing(false), 800);
+    };
 
     // Status styling maps
     const config = {
+        'Trial Pending Approval': {
+            icon: Clock,
+            color: 'text-amber-500 bg-amber-50',
+            borderColor: 'border-amber-200',
+            title: 'Free Trial Pending SuperAdmin Approval',
+            description: 'Your free trial registration has been submitted and is currently awaiting approval from the SuperAdmin. Once approved, your restaurant dashboard, POS billing, KDS kitchen display, and digital menu will unlock automatically.',
+            actionText: 'Submit Verification Documents (Optional)',
+            actionLink: '/admin/verification'
+        },
+        'Pending SuperAdmin Approval': {
+            icon: Clock,
+            color: 'text-amber-500 bg-amber-50',
+            borderColor: 'border-amber-200',
+            title: 'Account Registration Pending SuperAdmin Approval',
+            description: 'Your restaurant registration has been received and is waiting for SuperAdmin verification. The management dashboard will unlock as soon as your account is approved.',
+            actionText: 'Submit Verification Documents',
+            actionLink: '/admin/verification'
+        },
         Pending: {
             icon: FileText,
             color: 'text-amber-500 bg-amber-50',
@@ -123,10 +165,13 @@ const VerificationBlockedOverlay = () => {
                     )}
                     
                     <button 
-                        onClick={() => window.location.reload()} 
-                        className="text-xs text-gray-400 hover:text-gray-600 font-bold self-center transition-colors py-2"
+                        type="button"
+                        onClick={handleCheckStatus} 
+                        disabled={refreshing}
+                        className="inline-flex items-center justify-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 font-bold self-center transition-colors py-2 cursor-pointer"
                     >
-                        🔄 Refresh Status
+                        <RefreshCw size={13} className={refreshing ? 'animate-spin text-emerald-600' : ''} />
+                        <span>{refreshing ? 'Checking Approval...' : 'Check Approval Status'}</span>
                     </button>
                 </div>
             </div>

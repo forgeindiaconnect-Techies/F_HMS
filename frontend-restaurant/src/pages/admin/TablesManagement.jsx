@@ -7,7 +7,7 @@ import ConfirmModal from '../../components/ConfirmModal';
 import { useAuth } from '../../context/AuthContext';
 
 const TablesManagement = () => {
-    const { api } = useAuth();
+    const { api, restaurant } = useAuth();
     const location = useLocation();
     const [activeTab, setActiveTab] = useState(() =>
         new URLSearchParams(location.search).get('tab') === 'qr' ? 'qr' : 'tables'
@@ -132,7 +132,7 @@ const TablesManagement = () => {
         if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
 
         const bId = table.branchId?._id || table.branchId || '';
-        const rId = table.restaurantId?._id || table.restaurantId || (table.branchId?.restaurantId) || '';
+        const rId = table.restaurantId?._id || table.restaurantId || (table.branchId?.restaurantId) || restaurant?._id || '';
         return `${baseUrl}/customer/menu?restaurantId=${rId}&branchId=${bId}&tableNumber=${table.tableNumber}`;
     };
 

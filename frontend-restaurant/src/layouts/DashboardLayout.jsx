@@ -132,8 +132,17 @@ const DashboardLayout = () => {
         return (PLAN_ORDER_FALLBACK[planName] ?? 0) >= (PLAN_ORDER_FALLBACK[fallbackMinPlan] ?? 99);
     };
 
-    const isApproved = restaurant?.approvalStatus === 'Approved' || restaurant?.verificationStatus === 'Verified';
-    const isUnverified = user?.role !== 'SuperAdmin' && Boolean(restaurant && !isApproved && (restaurant.approvalStatus === 'Pending' || restaurant.approvalStatus === 'Rejected' || restaurant.verificationStatus === 'Rejected' || restaurant.verificationStatus === 'Re-upload Required'));
+    const isApproved = restaurant?.approvalStatus === 'Approved' && restaurant?.subscription?.status !== 'Pending Approval';
+    const isUnverified = user?.role !== 'SuperAdmin' && Boolean(
+        restaurant && (
+            !isApproved || 
+            restaurant.approvalStatus === 'Pending' || 
+            restaurant.approvalStatus === 'Rejected' || 
+            restaurant.subscription?.status === 'Pending Approval' || 
+            restaurant.verificationStatus === 'Rejected' || 
+            restaurant.verificationStatus === 'Re-upload Required'
+        )
+    );
     const isVerificationPage = location.pathname === '/admin/verification';
 
     const plan = restaurant?.subscription?.plan || 'Basic';

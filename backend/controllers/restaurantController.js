@@ -263,6 +263,8 @@ const getRestaurantFallbackSvg = (name = 'FoodNest', isLogo = false) => {
 // @access  Public
 export const getRestaurantThumbnail = async (req, res) => {
     const wantLogo = req.query.kind === 'logo';
+    const wantBanner = req.query.kind === 'banner';
+    const imgIndex = req.query.index !== undefined ? parseInt(req.query.index, 10) : null;
     let restName = 'FoodNest';
     try {
         let raw = null;
@@ -273,9 +275,16 @@ export const getRestaurantThumbnail = async (req, res) => {
                 .lean();
             if (rest) {
                 restName = rest.name || 'FoodNest';
-                const candidate = wantLogo
-                    ? (rest.logo && !String(rest.logo).includes('.pdf') ? rest.logo : null)
-                    : ((Array.isArray(rest.showcaseImages) && rest.showcaseImages[0]) || rest.bannerImage || rest.image || (rest.logo && !String(rest.logo).includes('.pdf') ? rest.logo : null));
+                let candidate = null;
+                if (wantLogo) {
+                    candidate = (rest.logo && !String(rest.logo).includes('.pdf')) ? rest.logo : null;
+                } else if (wantBanner) {
+                    candidate = rest.bannerImage || (Array.isArray(rest.showcaseImages) && rest.showcaseImages[0]) || rest.image;
+                } else if (imgIndex !== null && !isNaN(imgIndex) && Array.isArray(rest.showcaseImages) && rest.showcaseImages[imgIndex]) {
+                    candidate = rest.showcaseImages[imgIndex];
+                } else {
+                    candidate = (Array.isArray(rest.showcaseImages) && rest.showcaseImages[0]) || rest.bannerImage || rest.image || (rest.logo && !String(rest.logo).includes('.pdf') ? rest.logo : null);
+                }
 
                 // Guard against recursive self-referencing thumbnail paths
                 if (candidate && typeof candidate === 'string' && !candidate.includes('/thumbnail')) {
@@ -288,7 +297,9 @@ export const getRestaurantThumbnail = async (req, res) => {
                         .lean();
                     const verifCandidate = wantLogo
                         ? verif?.documents?.logo?.filePath
-                        : (verif?.documents?.images?.[0]?.filePath || verif?.documents?.logo?.filePath);
+                        : (imgIndex !== null && !isNaN(imgIndex) && Array.isArray(verif?.documents?.images) && verif.documents.images[imgIndex]?.filePath
+                            ? verif.documents.images[imgIndex].filePath
+                            : (verif?.documents?.images?.[0]?.filePath || verif?.documents?.logo?.filePath));
 
                     if (verifCandidate && typeof verifCandidate === 'string' && !verifCandidate.includes('.pdf') && !verifCandidate.includes('/thumbnail')) {
                         raw = verifCandidate;
@@ -799,9 +810,13 @@ export const getRestaurantPublicConfig = async (req, res) => {
         }
 
         const config = restaurant.restaurantConfig || {};
+        let logo = restaurant.logo;
+        if (logo && typeof logo === 'string' && logo.length > 5000) {
+            logo = `/api/restaurants/${restaurant._id}/thumbnail?kind=logo`;
+        }
         res.json({
             restaurantName: restaurant.name,
-            logo: restaurant.logo,
+            logo,
             deliverySettings: restaurant.deliverySettings || { enabled: true },
             qrOrdering: {
                 enabled: config.qrOrdering?.enabled ?? true,
@@ -1143,7 +1158,21 @@ export const getRestaurantById = async (req, res) => {
         
         const restObj = restaurant.toObject ? restaurant.toObject() : { ...restaurant };
         if (restObj.logo && typeof restObj.logo === 'string' && restObj.logo.length > 5000) {
-            restObj.logo = `/api/restaurants/${restaurant._id}/thumbnail`;
+            restObj.logo = `/api/restaurants/${restaurant._id}/thumbnail?kind=logo`;
+        }
+        if (Array.isArray(restObj.showcaseImages)) {
+            restObj.showcaseImages = restObj.showcaseImages.map((img, idx) => {
+                if (typeof img === 'string' && img.length > 5000) {
+                    return `/api/restaurants/${restaurant._id}/thumbnail?index=${idx}`;
+                }
+                return img;
+            });
+        }
+        if (restObj.bannerImage && typeof restObj.bannerImage === 'string' && restObj.bannerImage.length > 5000) {
+            restObj.bannerImage = `/api/restaurants/${restaurant._id}/thumbnail?kind=banner`;
+        }
+        if (restObj.image && typeof restObj.image === 'string' && restObj.image.length > 5000) {
+            restObj.image = `/api/restaurants/${restaurant._id}/thumbnail`;
         }
         res.json(restObj);
     } catch (error) {

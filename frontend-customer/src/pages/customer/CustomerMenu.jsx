@@ -105,16 +105,22 @@ const CustomerMenu = () => {
                 ]);
 
                 // Verify restaurant is active and visible
-                if (
-                    restRes?.status === 403 ||
+                const isExplicitlyDead =
                     restRes?.status === 404 ||
-                    !restRes?.data ||
-                    restRes?.data?.isDeleted ||
-                    (restRes?.data?.status && restRes?.data?.status !== 'Active') ||
-                    restRes?.data?.isActive === false
-                ) {
+                    restRes?.status === 403 ||
+                    restRes?.data?.isDeleted === true ||
+                    restRes?.data?.status === 'Deleted' ||
+                    restRes?.data?.status === 'Suspended' ||
+                    restRes?.data?.status === 'Inactive' ||
+                    restRes?.data?.isActive === false ||
+                    configRes?.status === 404 ||
+                    configRes?.status === 403;
+
+                const hasAnyValidData = Boolean(restRes?.data?._id || configRes?.data?.restaurantName || (Array.isArray(menuRes?.data) && menuRes.data.length > 0));
+
+                if (isExplicitlyDead || (!hasAnyValidData && (restRes?.status >= 400 || !restRes?.data))) {
                     setIsUnavailable(true);
-                    setUnavailableReason(restRes?.data?.message || 'This restaurant is currently hidden, inactive, or suspended.');
+                    setUnavailableReason(restRes?.data?.message || configRes?.data?.message || 'This restaurant is currently hidden, inactive, or suspended.');
                     setLoading(false);
                     return;
                 }
@@ -145,8 +151,12 @@ const CustomerMenu = () => {
                         setPaymentOption('UPI');
                     }
                     try {
-                        sessionStorage.setItem(qrConfigCacheKey, JSON.stringify(configRes.data));
-                        localStorage.setItem(qrConfigCacheKey, JSON.stringify(configRes.data));
+                        const cleanConfig = { ...configRes.data };
+                        if (typeof cleanConfig.logo === 'string' && cleanConfig.logo.length > 1000) {
+                            cleanConfig.logo = `/api/restaurants/${restaurantId}/thumbnail?kind=logo`;
+                        }
+                        sessionStorage.setItem(qrConfigCacheKey, JSON.stringify(cleanConfig));
+                        localStorage.setItem(qrConfigCacheKey, JSON.stringify(cleanConfig));
                     } catch {}
                 }
 

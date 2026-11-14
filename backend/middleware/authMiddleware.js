@@ -127,7 +127,16 @@ export const checkVerification = async (req, res, next) => {
             return next();
         }
 
-        if (restaurant.verificationStatus !== 'Verified') {
+        if (restaurant.approvalStatus !== 'Approved' || restaurant.subscription?.status === 'Pending Approval') {
+            return res.status(403).json({
+                message: 'Restaurant registration and free trial are pending SuperAdmin approval.',
+                requiresApproval: true,
+                approvalStatus: restaurant.approvalStatus,
+                subscriptionStatus: restaurant.subscription?.status
+            });
+        }
+
+        if (restaurant.verificationStatus !== 'Verified' && restaurant.approvalStatus !== 'Approved') {
             return res.status(403).json({
                 message: 'Restaurant verification is pending or incomplete.',
                 requiresVerification: true,
