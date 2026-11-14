@@ -70,9 +70,11 @@ const ChefKOTManagement = () => {
 
     const autoPrintIncomingKOT = (kotData) => {
         if (!kotData) return;
-        const key = kotData._id || kotData.kotNumber;
-        if (!key || seenPrintedKOTsRef.current.has(key)) return;
-        seenPrintedKOTsRef.current.add(key);
+        const orderIdKey = String(kotData.orderId?._id || kotData.orderId || kotData._id || kotData.kotNumber || '');
+        if (!orderIdKey || seenPrintedKOTsRef.current.has(orderIdKey)) return;
+        seenPrintedKOTsRef.current.add(orderIdKey);
+        if (kotData._id) seenPrintedKOTsRef.current.add(String(kotData._id));
+        if (kotData.kotNumber) seenPrintedKOTsRef.current.add(String(kotData.kotNumber));
 
         if (autoPrintKOTEnabled) {
             const html = generateThermalKOTHtml(kotData, restaurant);

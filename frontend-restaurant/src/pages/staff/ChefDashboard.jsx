@@ -154,17 +154,19 @@ const ChefDashboard = () => {
                     fetchOrders();
 
                     const orderData = msg.data?.orderData || msg.data?.order || msg.data;
-                    if ((msg.type === 'new_order' || msg.type === 'new_kot') && orderData && orderData._id) {
+                    if ((msg.type === 'new_order' || msg.type === 'new_kot') && orderData) {
+                        const orderIdKey = String(orderData.orderId?._id || orderData.orderId || orderData._id || '');
                         const isPendingStatus = !orderData.status || orderData.status === 'Pending' || orderData.status === 'Placed';
-                        if (isPendingStatus && !seenTicketIdsRef.current.has(orderData._id)) {
-                            seenTicketIdsRef.current.add(orderData._id);
+                        if (isPendingStatus && orderIdKey && !seenTicketIdsRef.current.has(orderIdKey)) {
+                            seenTicketIdsRef.current.add(orderIdKey);
+                            if (orderData._id) seenTicketIdsRef.current.add(String(orderData._id));
                             setNewTicketModalOrder(orderData);
                             if (autoPrintKOTEnabled) autoPrintKitchenKOT(orderData);
 
-                            const ticketNum = String(orderData._id).substring(String(orderData._id).length - 5).toUpperCase();
+                            const ticketNum = orderIdKey.substring(orderIdKey.length - 5).toUpperCase();
                             playChefChime();
                             toast.success(`🔔 NEW ORDER RECEIVED! Ticket #${ticketNum}`, {
-                                id: `new-order-${orderData._id}`,
+                                id: `new-order-${orderIdKey}`,
                                 duration: 8000,
                                 position: 'top-right'
                             });

@@ -134,10 +134,9 @@ const Sidebar = () => {
         },
 
         {
-            title: 'Customer Care',
+            title: 'Support',
             items: [
-                { name: 'Admin & Customer', path: '/admin/support/customer', icon: MessageSquare },
-                { name: 'Admin & Super Admin', path: '/admin/support/super-admin', icon: LifeBuoy },
+                { name: 'Support Tickets', path: '/admin/support', icon: LifeBuoy },
             ]
         },
         {
@@ -276,15 +275,8 @@ const Sidebar = () => {
                                         if (item.path === '/admin') {
                                             return location.pathname === '/admin';
                                         }
-                                        if (item.path === '/admin/support/customer') {
-                                            return location.pathname === '/admin/support/customer';
-                                        }
-                                        if (item.path === '/admin/support/super-admin') {
-                                            return location.pathname === '/admin/support/super-admin' ||
-                                                   location.pathname === '/admin/support' ||
-                                                   location.pathname.startsWith('/admin/support/tickets') ||
-                                                   location.pathname.startsWith('/admin/support/knowledge-base') ||
-                                                   location.pathname.startsWith('/admin/support/announcements');
+                                        if (item.path === '/admin/support') {
+                                            return location.pathname.startsWith('/admin/support');
                                         }
                                         return location.pathname === item.path || location.pathname.startsWith(item.path + '/');
                                     };

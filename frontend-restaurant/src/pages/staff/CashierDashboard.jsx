@@ -170,12 +170,7 @@ const CashierDashboard = () => {
                                                       orderData.isKotEnabled === true ||
                                                       orderData.orderWorkflow === 'KOT';
 
-                                    // 1. Kitchen Side: Auto-print Kitchen KOT for KOT-method restaurants or if KOT auto-print toggle is ON
-                                    if (autoPrintKOTEnabled || isKotMode) {
-                                        autoPrintKitchenKOT(orderData);
-                                    }
-
-                                    // 2. Cashier Side: Auto-print Cashier Bill if auto-print bill is ON
+                                    // Cashier Side: Auto-print Cashier Bill if auto-print bill is ON (Kitchen KOT is handled strictly on kitchen side)
                                     if (autoPrintBillEnabled) {
                                         autoPrintCashierBill(orderData);
                                     }

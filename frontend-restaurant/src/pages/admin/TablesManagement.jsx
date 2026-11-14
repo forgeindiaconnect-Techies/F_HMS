@@ -26,12 +26,6 @@ const TablesManagement = () => {
     });
     const [loading, setLoading] = useState(() => !sessionStorage.getItem('restosys_tables_cache'));
     const [searchQuery, setSearchQuery] = useState('');
-    const [qrMode, setQrMode] = useState(() => {
-        if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-            return 'localhost';
-        }
-        return 'network';
-    });
     
     // Modal states
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -134,18 +128,8 @@ const TablesManagement = () => {
 
     const getQrUrl = (table) => {
         if (!table) return '';
-        let baseUrl = 'http://localhost:5174';
-
-        if (qrMode === 'network') {
-            const host = (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
-                ? window.location.hostname
-                : '192.168.1.48';
-            baseUrl = `http://${host}:5174`;
-        } else if (qrMode === 'production') {
-            baseUrl = 'https://f-hms-customer-two.vercel.app';
-        } else {
-            baseUrl = 'http://localhost:5174';
-        }
+        let baseUrl = import.meta.env.VITE_CUSTOMER_URL || 'https://f-hms.vercel.app';
+        if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
 
         const bId = table.branchId?._id || table.branchId || '';
         const rId = table.restaurantId?._id || table.restaurantId || (table.branchId?.restaurantId) || '';
@@ -510,36 +494,10 @@ const TablesManagement = () => {
                             <h3 className="text-xl font-black text-emerald-800 tracking-wider">TABLE {selectedTable.tableNumber}</h3>
                             <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">FoodNest QR Ordering</p>
 
-                            {/* Target Environment Switcher for Localhost / Phone Scanning */}
-                            <div className="flex justify-center gap-1 mt-2 bg-white/90 p-0.5 rounded-xl border border-emerald-200/60">
-                                <button
-                                    type="button"
-                                    onClick={() => setQrMode('localhost')}
-                                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                                        qrMode === 'localhost' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-emerald-700'
-                                    }`}
-                                >
-                                    Localhost:5174
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setQrMode('network')}
-                                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                                        qrMode === 'network' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-emerald-700'
-                                    }`}
-                                    title="Allows your mobile phone on the same WiFi to scan and open"
-                                >
-                                    WiFi / Phone
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setQrMode('production')}
-                                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                                        qrMode === 'production' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-emerald-700'
-                                    }`}
-                                >
-                                    Production
-                                </button>
+                            {/* Live Production QR Ordering Badge */}
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 text-emerald-800 text-[11px] font-bold mt-2 border border-emerald-200/80 shadow-2xs">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                Live Scanner
                             </div>
                             
                             <div className="bg-white p-2.5 rounded-xl border border-emerald-100 mt-2 shadow-xs inline-block">
